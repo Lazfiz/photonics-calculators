@@ -66,8 +66,23 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "brillouin-scattering",
     title: "Brillouin Scattering",
-    description: "Stimulated Brillouin scattering (SBS): frequency shift, gain coefficient, and power threshold in optical fibers and bulk materials.",
-    knownIssue: "The Brillouin shift is shown 1000 times too large, the gain formula omits the acoustic velocity, and the SBS threshold uses fixed placeholders for the effective area and length.",
+    description: "Brillouin scattering: frequency shift ν_B = 2nv_A/λ, Stokes wavelength, acoustic wavelength, phonon lifetime and peak gain g_B = 2πn⁷p₁₂²/(cλ²ρv_AΔν_B), for fused silica or your own medium.",
+    keywords: ["Brillouin Shift", "Brillouin Gain Coefficient", "Stimulated Brillouin Scattering", "Acoustic Phonon"],
+    tier: "textbook",
+    modelNote: "Backward scattering from one longitudinal acoustic mode, with a Lorentzian gain line and a pump narrower than Δν_B. Δν_B is an input at the pump wavelength (it scales as λ⁻²). Bulk values: acoustic guiding and the overlap integral of a real fibre are not modelled. The fibre SBS threshold has its own page.",
+    references: [
+      {
+        citation: "Agrawal G. P. (2019). Nonlinear Fiber Optics, 6th ed. Academic Press. Brillouin shift ν_B = 2nv_A/λ_p, peak gain g_B and fused-silica n, v_A, ρ₀ and p₁₂.",
+        url: "https://doi.org/10.1016/C2018-0-01168-8",
+      },
+      {
+        citation: "Kobyakov A., Sauer M., Chowdhury D. (2010). Stimulated Brillouin scattering in optical fibers. Adv. Opt. Photon. 2, 1–59.",
+        url: "https://doi.org/10.1364/AOP.2.000001",
+      },
+    ],
+    related: [
+      { href: "/fiber-optics/sbs-threshold", note: "SBS threshold of a fibre span from A_eff, length, loss and linewidth." },
+    ],
   },
   {
     slug: "chromatic-dispersion",
@@ -397,8 +412,40 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "raman-scattering",
     title: "Raman Scattering",
-    description: "Spontaneous and stimulated Raman scattering cross-sections and gain spectra for common optical materials.",
-    knownIssue: "Peak Raman gains for CS₂, benzene and diamond appear about 100 times too low and their linewidths too wide, and the chart misses narrow lines.",
+    description: "Stimulated Raman gain of diamond, Ba(NO₃)₂, KGW and fused silica: Stokes wavelength, peak gain at your pump wavelength, Lorentzian gain line, dephasing time and single-pass gain e^(gIL).",
+    keywords: ["Raman Gain Coefficient", "Stimulated Raman Scattering", "Raman Crystal", "Stokes Wavelength", "Diamond Raman Laser"],
+    tier: "textbook",
+    modelNote: "Steady-state SRS (pulses much longer than T₂) of an undepleted plane-wave pump, with a homogeneous Lorentzian line. Diamond gains are interpolated in pump wavenumber between the six Savitski 2013 points; outside the measured pump range a gain is scaled as 1/λ_p and flagged as an estimate. The silica line is broad and not Lorentzian.",
+    references: [
+      {
+        citation: "Savitski V. G., Reilly S., Kemp A. J. (2013). Steady-state Raman gain in diamond as a function of pump wavelength. IEEE J. Quantum Electron. 49, 218–223. Table 1.",
+        url: "https://doi.org/10.1109/JQE.2012.2237505",
+      },
+      {
+        citation: "Basiev T. T., Sobol A. A., Zverev P. G., Osiko V. V., Powell R. C. (1999). Comparative spontaneous Raman spectroscopy of crystals for Raman lasers. Appl. Opt. 38, 594–598. Raman shifts and linewidths.",
+        url: "https://doi.org/10.1364/AO.38.000594",
+      },
+      {
+        citation: "EKSMA Optics. KGW / Ba(NO₃)₂ crystals for stimulated Raman scattering, data sheet. Raman gain at 1064 nm.",
+        url: "https://eksmaoptics.com/out/media/EKSMA_Optics_KGW-BaNO32_Crystal.pdf",
+      },
+      {
+        citation: "Optogama (2023). Raman crystals, white paper. Ba(NO₃)₂ steady-state gain 47 cm/GW at 532 nm.",
+        url: "https://www.rp-photonics.com/bg/promotions/optogama/Raman%20Crystals%20White%20Papaer%20Optogama%204Lasers.pdf",
+      },
+      {
+        citation: "Stolen R. H., Ippen E. P. (1973). Raman gain in glass optical waveguides. Appl. Phys. Lett. 22, 276–278.",
+        url: "https://doi.org/10.1063/1.1654637",
+      },
+      {
+        citation: "Agrawal G. P. (2019). Nonlinear Fiber Optics, 6th ed. Academic Press. Silica Raman gain ≈ 1e-13 m/W at 1 µm, peak near 13.2 THz, scaling as 1/λ_p.",
+        url: "https://doi.org/10.1016/C2018-0-01168-8",
+      },
+    ],
+    related: [
+      { href: "/fiber-optics/srs-threshold", note: "SRS threshold and Raman gain of a silica fibre span." },
+      { href: "/spectroscopy/raman-shift", note: "Raman shift between laser and scattered wavelengths." },
+    ],
   },
   {
     slug: "rare-earth-absorption",
@@ -472,8 +519,20 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "two-photon-absorption",
     title: "Two-Photon Absorption",
-    description: "Nonlinear absorption coefficient β₂PA and intensity-dependent transmission. TPA becomes significant at high peak intensities (pulsed lasers).",
-    knownIssue: "β comes from an ad hoc (λg/λ)³ scaling that overestimates measured two-photon coefficients several-fold and jumps by 100× below λg/2.",
+    description: "Two-photon absorption of GaAs, CdTe, CdSe, ZnTe, ZnSe, CdS and ZnO: measured β scaled across the 2PA window by F₂(2ħω/E_g), induced absorption βI and slab transmission 1/(1 + βI₀L).",
+    keywords: ["Two-Photon Absorption Coefficient", "Nonlinear Absorption", "Optical Limiting", "Band-Gap Scaling"],
+    tier: "textbook",
+    modelNote: "Degenerate 2PA between two parabolic bands, valid for E_g/2 < ħω < E_g. A measured β is moved to another wavelength by the ratio of F₂(x) = (x − 1)^(3/2)/x⁵, with n held constant. Transmission is for a plane wave of constant intensity, without linear, free-carrier or reflection losses. Measured β carry about ±40 % error.",
+    references: [
+      {
+        citation: "Van Stryland E. W., Woodall M. A., Vanherzeele H., Soileau M. J. (1985). Energy band-gap dependence of two-photon absorption. Opt. Lett. 10, 490–492. Eq. 1–2 and Table 1.",
+        url: "https://doi.org/10.1364/OL.10.000490",
+      },
+      {
+        citation: "Sheik-Bahae M., Hagan D. J., Van Stryland E. W. (1990). Dispersion and band-gap scaling of the electronic Kerr effect in solids associated with two-photon absorption. Phys. Rev. Lett. 65, 96–99.",
+        url: "https://doi.org/10.1103/PhysRevLett.65.96",
+      },
+    ],
   },
   {
     slug: "x-ray-optics",

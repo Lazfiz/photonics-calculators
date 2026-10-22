@@ -78,6 +78,12 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   25.0 (Shoji, read via WebFetch of the Optica page) vs 27–34 (vendors). BiBO n from CASTECH's garbled Sellmeier table.
 - `nonlinear-index`: Si, GaAs, AlGaAs, CS₂, air, chalcogenide and SF glasses were dropped (n₂ unsourced; audit: As₂S₃ 7× high).
   Candidates: Dinu 2003 / Bristow 2007 (Si), Sheik-Bahae 1991 (semiconductors), Milam 1998 (silica 1064 nm).
+- `brillouin-scattering` (session 131): SMF-28, Ge-doped, As₂S₃, Bi₂O₃, tellurite, PMMA and diamond were dropped (n, ρ, v_A,
+  p₁₂ unsourced); fused silica (Agrawal) + custom remain. Candidates: Ogusu 2004 JOSA B (chalcogenides), Kobyakov 2010 (fibres).
+- `raman-scattering` (session 131): Ge-/P-doped silica, CS₂, benzene, water and As₂S₃ were dropped. Liquids: Boyd's SRS table
+  (Kaiser & Maier 1972) wasn't readable; KY(WO₄)₂ has Basiev linewidths but no gain. Ba(NO₃)₂ gain at 532 nm is a vendor value.
+- `two-photon-absorption` (session 131): fused silica, BK7, CS₂, Si, water and BBO were dropped (no wide-gap or indirect-gap
+  scaling). Candidates: Bristow 2007 (Si 850–2200 nm), DeSalvo 1996 JQE (wide-gap crystals), arXiv:2301.06138 data tables.
 - `optical-glass-catalog`: the TIE-19 limits (−100 to +140 °C; data sheets tabulate dn/dT 435.8–1060 nm) are from memory, since the
   TIE-19 PDF doesn't download to scripts. Check them in Chrome (SCHOTT TIE-19 or an N-BK7 data sheet), then drop this note.
 - `infrared-glass`: As₂S₃, ZBLAN and AMTIR-1 have no sourced transmission band, dn/dT, conductivity or hardness (Amorphous

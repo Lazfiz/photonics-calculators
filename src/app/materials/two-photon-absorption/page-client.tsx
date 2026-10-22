@@ -1,102 +1,159 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import { hc_eV_nm } from "../../../physics/constants";
+import {
+  TPA_MEDIA, scaledBeta, scalingBeta, tpaRegime, tpaTransmission, type TpaMediumId,
+} from "../../../physics/materials/two-photon";
 
-// Two-photon absorption: β₂PA coefficient in cm/GW
-interface TPAMaterial { name: string; beta0: number; Eg_eV: number; lambda_g: number; color: string; type: string }
+const IDS = Object.keys(TPA_MEDIA) as TpaMediumId[];
+type Choice = TpaMediumId | "custom";
+const CHOICES: readonly Choice[] = [...IDS, "custom"];
+const DEFAULT_ID: Choice = "gaas";
+const WAVELENGTH_MIN_NM = 200;
+const WAVELENGTH_MAX_NM = 20000;
+const INTENSITY_MAX_GW_CM2 = 1e4;
+const THICKNESS_MIN_MM = 1e-3;
+const THICKNESS_MAX_MM = 1e3;
+const REGIME_NOTE = {
+  transparent: "2ħω < E_g: no degenerate two-photon absorption.",
+  linear: "ħω ≥ E_g: one-photon (linear) absorption dominates; the 2PA model does not apply.",
+} as const;
 
-const TPA_MATERIALS: Record<string, TPAMaterial> = {
-  FusedSilica: { name: "Fused Silica", beta0: 0.5, Eg_eV: 9.0, lambda_g: 138, color: "#60a5fa", type: "glass" },
-  BK7: { name: "BK7", beta0: 0.7, Eg_eV: 8.5, lambda_g: 146, color: "#34d399", type: "glass" },
-  CS2: { name: "CS₂", beta0: 25, Eg_eV: 4.5, lambda_g: 275, color: "#f87171", type: "liquid" },
-  ZnSe: { name: "ZnSe", beta0: 55, Eg_eV: 2.7, lambda_g: 459, color: "#f59e0b", type: "semiconductor" },
-  GaAs: { name: "GaAs", beta0: 260, Eg_eV: 1.42, lambda_g: 873, color: "#a78bfa", type: "semiconductor" },
-  Si: { name: "Silicon", beta0: 90, Eg_eV: 1.12, lambda_g: 1107, color: "#ec4899", type: "semiconductor" },
-  Water: { name: "Water", beta0: 0.05, Eg_eV: 6.5, lambda_g: 191, color: "#06b6d4", type: "liquid" },
-  BBO: { name: "BBO", beta0: 4.0, Eg_eV: 6.2, lambda_g: 200, color: "#84cc16", type: "crystal" },
-};
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const sig = (x: number, digits: number) => (Number.isFinite(x) ? String(+x.toPrecision(digits)) : "—");
 
-// Simplified dispersion: β(λ) ≈ β₀ · (λ_g / λ)^3 for λ > λ_g/2
-function tpaBeta(mat: TPAMaterial, wavelength_nm: number): number {
-  const ratio = mat.lambda_g / wavelength_nm;
-  if (ratio < 0.5) return 0; // above bandgap
-  if (ratio > 2) return mat.beta0 * 100; // resonance enhancement
-  return mat.beta0 * Math.pow(ratio, 3);
+/** β (cm/GW) across the 2PA window E_g/2 < ħω < E_g: scaled from the measurement and the Eq. 1 prediction. */
+function betaCurves(betaRef: number, lambdaRef: number, bandGap_eV: number, n: number | null, Ep_eV: number | null) {
+  const lambdaGap = hc_eV_nm / bandGap_eV;
+  const x = Array.from({ length: 121 }, (_, i) => +(lambdaGap * (1.002 + (i / 120) * 0.998)).toFixed(3));
+  const curves = [{
+    x, y: x.map((l) => +(scaledBeta(betaRef, lambdaRef, l * 1e-9, bandGap_eV) / 1e-11).toFixed(6)),
+    type: "scatter" as const, mode: "lines" as const, name: "Scaled from measured β", line: { color: "#a78bfa", width: 2 },
+  }];
+  if (n !== null && Ep_eV !== null) {
+    curves.push({
+      x, y: x.map((l) => +(scalingBeta(l * 1e-9, n, bandGap_eV, Ep_eV) / 1e-11).toFixed(6)),
+      type: "scatter" as const, mode: "lines" as const, name: "Eq. 1 (K = 3100)", line: { color: "#9ca3af", width: 1 },
+    });
+  }
+  return curves;
+}
+
+/** Transmission (%) against peak intensity, 0.01–1000 GW/cm², log-spaced. */
+function transmissionCurve(beta: number, length: number) {
+  const x = Array.from({ length: 101 }, (_, i) => +(10 ** (-2 + i * 0.05)).toPrecision(6));
+  return { x, y: x.map((I) => +(tpaTransmission(beta, I * 1e13, length) * 100).toFixed(6)) };
 }
 
 export default function TwoPhotonAbsorptionPage() {
-  const [material, setMaterial] = useState<keyof typeof TPA_MATERIALS>("FusedSilica");
-  const [wavelength, setWavelength] = useURLState("wavelength", 800);
-  const [intensity, setIntensity] = useURLState("intensity", 100); // GW/cm²
-  const [thickness, setThickness] = useURLState("thickness", 1); // mm
+  const [materialParam, setMaterial] = useURLState("material", DEFAULT_ID as string);
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 1064); // nm
+  const [intensityRaw, setIntensity] = useURLState("intensity", 1); // GW/cm²
+  const [thicknessRaw, setThickness] = useURLState("thickness", 1); // mm
+  const [betaRefRaw, setBetaRef] = useURLState("beta", 23); // cm/GW, custom medium
+  const [lambdaRefRaw, setLambdaRef] = useURLState("lambdaRef", 1064); // nm, custom medium
+  const [gapRaw, setGap] = useURLState("bandGap", 1.42); // eV, custom medium
+  const choice = (CHOICES as readonly string[]).includes(materialParam) ? (materialParam as Choice) : DEFAULT_ID;
+  const medium = choice === "custom" ? null : TPA_MEDIA[choice];
+  const wavelength_nm = clamp(wavelengthRaw, WAVELENGTH_MIN_NM, WAVELENGTH_MAX_NM, 1064);
+  const intensity_GWcm2 = clamp(intensityRaw, 0, INTENSITY_MAX_GW_CM2, 1);
+  const thickness_mm = clamp(thicknessRaw, THICKNESS_MIN_MM, THICKNESS_MAX_MM, 1);
 
-  const mat = TPA_MATERIALS[material];
-  const beta = tpaBeta(mat, wavelength);
-  const L = thickness * 0.1; // mm → cm
-  const alphaTPA = beta * intensity; // cm⁻¹, effective TPA absorption coefficient α₂ = β·I
-  const betaIL = beta * intensity * L; // dimensionless (β in cm/GW × I in GW/cm² × L in cm)
-  const transmission = 1 / (1 + betaIL); // T = 1/(1+β·I₀·L) for plane wave TPA
-  const loss_dB = -10 * Math.log10(transmission);
-
-  const chartData = useMemo(() => {
-    const wls = Array.from({ length: 300 }, (_, i) => 200 + i * 10);
-    return [
-      { x: wls, y: wls.map(wl => tpaBeta(mat, wl)), type: "scatter" as const, mode: "lines" as const, name: "β₂PA", line: { color: mat.color, width: 2 } },
-      { x: [wavelength, wavelength], y: [0, tpaBeta(mat, wavelength) * 1.2], type: "scatter" as const, mode: "lines" as const, name: `λ = ${wavelength} nm`, line: { color: "#9ca3af", width: 1, dash: "dash" } },
-      { x: [mat.lambda_g, mat.lambda_g], y: [0, tpaBeta(mat, mat.lambda_g) * 1.2], type: "scatter" as const, mode: "lines" as const, name: "λ_g", line: { color: "#f87171", width: 1, dash: "dot" } },
-    ];
-  }, [material, wavelength]);
-
-  const intensityData = useMemo(() => {
-    const intensities = Array.from({ length: 200 }, (_, i) => 0.1 + i * 2);
-    const b = tpaBeta(mat, wavelength);
-    return [{ x: intensities, y: intensities.map(I => 1 / (1 + b * I * thickness * 0.1) * 100), type: "scatter" as const, mode: "lines" as const, name: "Transmission", line: { color: "#f59e0b", width: 2 } }];
-  }, [material, wavelength, thickness]);
+  const betaRef = medium ? medium.beta : clamp(betaRefRaw, 0, 1e5, 23) * 1e-11;
+  const lambdaRef = medium ? medium.lambda : clamp(lambdaRefRaw, WAVELENGTH_MIN_NM, WAVELENGTH_MAX_NM, 1064) * 1e-9;
+  const bandGap_eV = medium ? medium.bandGap_eV : clamp(gapRaw, 0.05, 15, 1.42);
+  const lambda = wavelength_nm * 1e-9;
+  const L = thickness_mm * 1e-3;
+  const regime = tpaRegime(lambda, bandGap_eV);
+  const refRegime = tpaRegime(lambdaRef, bandGap_eV);
+  const beta = scaledBeta(betaRef, lambdaRef, lambda, bandGap_eV);
+  const betaEq1 = medium ? scalingBeta(lambda, medium.n, medium.bandGap_eV, medium.Ep_eV) : NaN;
+  const T = tpaTransmission(beta, intensity_GWcm2 * 1e13, L);
+  const curves = refRegime === "two-photon" ? betaCurves(betaRef, lambdaRef, bandGap_eV, medium?.n ?? null, medium?.Ep_eV ?? null) : null;
+  const tCurve = Number.isFinite(beta) ? transmissionCurve(beta, L) : null;
+  const select = (id: Choice) => {
+    setMaterial(id);
+    if (id !== "custom") setWavelength(Math.round(TPA_MEDIA[id].lambda * 1e9));
+  };
 
   return (
     <>
-            
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <div>
-          <label className="block text-sm text-gray-400 mb-1">Material</label>
-          <select value={material} onChange={e => setMaterial(e.target.value as any)} className="w-full bg-gray-800 rounded px-3 py-2">
-            {Object.entries(TPA_MATERIALS).map(([k, v]) => <option key={k} value={k}>{v.name} ({v.type})</option>)}
-          </select>
-        </div>
-        <div>
-          <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
-        </div>
-        <div>
-          <ValidatedNumberInput label="Peak Intensity (GW/cm²)" value={intensity} onChange={setIntensity} />
-        </div>
-        <div>
-          <ValidatedNumberInput label="Thickness (mm)" value={thickness} onChange={setThickness} />
-        </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6" role="group" aria-label="Medium">
+        {CHOICES.map((id) => (
+          <button key={id} onClick={() => select(id)} aria-pressed={choice === id}
+            className={`px-3 py-2 rounded text-sm ${choice === id ? "bg-blue-600" : "bg-gray-800 hover:bg-gray-700"}`}>
+            {id === "custom" ? "Custom" : TPA_MEDIA[id].name}
+          </button>
+        ))}
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4 mb-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div><div className="text-xs text-gray-500">β₂PA</div><div className="text-lg font-bold text-blue-400">{beta.toFixed(3)} cm/GW</div></div>
-        <div><div className="text-xs text-gray-500">α₂PA</div><div className="text-lg font-bold text-yellow-400">{alphaTPA.toFixed(2)} cm⁻¹</div></div>
-        <div><div className="text-xs text-gray-500">Transmission</div><div className="text-lg font-bold text-green-400">{(transmission * 100).toFixed(1)}%</div></div>
-        <div><div className="text-xs text-gray-500">TPA Loss</div><div className="text-lg font-bold text-red-400">{loss_dB.toFixed(2)} dB</div></div>
+      {!medium && (
+        <div className="grid gap-4 sm:grid-cols-3 mb-4">
+          <ValidatedNumberInput label="Measured β (cm/GW)" value={betaRefRaw} onChange={setBetaRef} min={0} max={1e5} step="any" />
+          <ValidatedNumberInput label="at wavelength (nm)" value={lambdaRefRaw} onChange={setLambdaRef} min={WAVELENGTH_MIN_NM} max={WAVELENGTH_MAX_NM} step="1" />
+          <ValidatedNumberInput label="Direct band gap E_g (eV)" value={gapRaw} onChange={setGap} min={0.05} max={15} step="0.01" />
+        </div>
+      )}
+
+      <div className="grid gap-4 sm:grid-cols-3 mb-4">
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthRaw} onChange={setWavelength} min={WAVELENGTH_MIN_NM} max={WAVELENGTH_MAX_NM} step="1" />
+        <ValidatedNumberInput label="Peak intensity I₀ (GW/cm²)" value={intensityRaw} onChange={setIntensity} min={0} max={INTENSITY_MAX_GW_CM2} step="any" />
+        <ValidatedNumberInput label="Thickness L (mm)" value={thicknessRaw} onChange={setThickness} min={THICKNESS_MIN_MM} max={THICKNESS_MAX_MM} step="any" />
+      </div>
+      <p className="text-xs mb-6 text-gray-500">
+        {medium
+          ? `${medium.name}: β = ${sig(medium.beta / 1e-11, 3)} cm/GW measured at ${Math.round(medium.lambda * 1e9)} nm, E_g = ${medium.bandGap_eV} eV, n = ${medium.n}, E_p = ${medium.Ep_eV} eV; Van Stryland et al. 1985, Table 1.`
+          : `Custom medium: β = ${sig(betaRef / 1e-11, 4)} cm/GW at ${sig(lambdaRef * 1e9, 5)} nm, E_g = ${sig(bandGap_eV, 4)} eV.`}{" "}
+        2PA window {sig(hc_eV_nm / bandGap_eV, 4)}–{sig((2 * hc_eV_nm) / bandGap_eV, 4)} nm.{" "}
+        {refRegime !== "two-photon" && <span className="text-yellow-400">The measurement wavelength lies outside the 2PA window, so β cannot be scaled.</span>}
+        {refRegime === "two-photon" && regime && regime !== "two-photon" && <span className="text-yellow-400">{REGIME_NOTE[regime]}</span>}
+      </p>
+
+      <div className="grid gap-4 sm:grid-cols-4 mb-8">
+        <ResultCard label="β at this wavelength" value={`${sig(beta / 1e-11, 4)} cm/GW`} tone="blue"
+          subtext={medium ? `Eq. 1 predicts ${sig(betaEq1 / 1e-11, 3)} cm/GW` : "scaled by F₂(2ħω/E_g)"} />
+        <ResultCard label="Induced absorption α₂ = βI₀" value={`${sig((beta * intensity_GWcm2 * 1e13) / 100, 4)} cm⁻¹`} tone="orange" />
+        <ResultCard label="Transmission T = 1/(1 + βI₀L)" value={`${sig(T * 100, 4)} %`} tone="green" subtext="plane wave, no linear loss" />
+        <ResultCard label="2PA loss" value={`${sig(-10 * Math.log10(T), 4)} dB`} tone="red" />
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4 mb-6">
-        <h3 className="text-sm font-bold mb-2">β₂PA vs Wavelength</h3>
-        <ChartPanel data={chartData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "β₂PA (cm/GW)", gridcolor: "#374151", type: "log" }, legend: { orientation: "h", y: -0.25 }, margin: { t: 20, b: 70, l: 60, r: 20 } }} />
-      </div>
+      {curves && (
+        <div className="bg-gray-900 rounded-lg p-4 mb-6">
+          <h3 className="text-sm font-bold mb-2">β across the 2PA window</h3>
+          <ChartPanel data={curves} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "β (cm/GW)", gridcolor: "#374151" }, margin: { t: 20, b: 50, l: 60, r: 20 } }} />
+        </div>
+      )}
 
-      <div className="bg-gray-900 rounded-lg p-4">
-        <h3 className="text-sm font-bold mb-2">Transmission vs Intensity</h3>
-        <ChartPanel data={intensityData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Intensity (GW/cm²)", gridcolor: "#374151", type: "log" }, yaxis: { title: "Transmission (%)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.2 }, margin: { t: 20, b: 60, l: 60, r: 20 } }} />
-      </div>
+      {tCurve && (
+        <div className="bg-gray-900 rounded-lg p-4 mb-6">
+          <h3 className="text-sm font-bold mb-2">Transmission vs peak intensity ({sig(thickness_mm, 4)} mm)</h3>
+          <ChartPanel
+            data={[{ x: tCurve.x, y: tCurve.y, type: "scatter" as const, mode: "lines" as const, name: "T", line: { color: "#f59e0b", width: 2 } }]}
+            layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "I₀ (GW/cm²)", gridcolor: "#374151", type: "log" }, yaxis: { title: "Transmission (%)", gridcolor: "#374151" }, margin: { t: 20, b: 50, l: 60, r: 20 } }}
+          />
+        </div>
+      )}
 
-      <div className="mt-8 bg-gray-900 rounded-lg p-4 text-sm text-gray-400">
-        <p className="font-mono bg-gray-800 p-2 rounded mb-2">dI/dz = −β₂PA · I² | T = exp(−β₂PA · I₀ · L<sub>eff</sub>)</p>
-        <p className="font-mono bg-gray-800 p-2 rounded">L<sub>eff</sub> = [1 − exp(−α₂PA · L)] / α₂PA | α₂PA = β₂PA · I</p>
-        <p className="mt-2 text-xs">Bandgap wavelength: λ_g = {mat.lambda_g} nm. Two-photon absorption occurs when 2·ℏ·ω &gt; E_g, i.e., λ &lt; 2·λ_g.</p>
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+        <h3 className="text-lg font-semibold mb-2">Model</h3>
+        <div className="text-sm text-gray-300 space-y-2">
+          <p className="font-mono">dI/dz = −βI²,  T = 1/(1 + βI₀L),  β ∝ F₂(2ħω/E_g) = (x − 1)^(3/2)/x⁵</p>
+          <p>
+            Degenerate two-photon absorption between two parabolic bands, allowed for E_g/2 &lt; ħω &lt; E_g. A measured β moves
+            to another wavelength by the ratio of F₂, which peaks at 2ħω = 1.43 E_g; Eq. 1 of Van Stryland et al. (1985) predicts
+            β from n, E_g and E_p alone; it matches their measurements within the ±40 % error, except ZnTe, whose 1064 nm
+            point sits at the edge of the window.
+          </p>
+          <p>
+            T is for a plane wave of constant intensity. Gaussian beams and pulses transmit more at the same peak intensity,
+            and free carriers made by 2PA add absorption for pulses longer than a few picoseconds. Indirect-gap silicon is not
+            described by this two-band model.
+          </p>
+        </div>
       </div>
     </>
   );
