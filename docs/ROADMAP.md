@@ -49,9 +49,9 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   `modelNote` + references, drop the `knownIssue`. About 4 pages each; 45 → 27 pages (32 after part 4).
   7. ~~7a merges~~ (session 132), ~~7b~~ (session 133): rare-earth-absorption (`DOPANT_PRESETS`, α in m⁻¹ and dB/m); color-centers (Stokes
      shift, drop η = σ_em/σ_abs).
-  8. Thermal and damage: heat-capacity (Debye scaled to Cp300; Si 0.7125 J/(g·K)); thermal-conductivity-optics (k300
+  8. 8a thermal and damage: heat-capacity (Debye scaled to Cp300; Si 0.7125 J/(g·K)); thermal-conductivity-optics (k300
      table, slab ΔT 72.46 K); damage-threshold (ns label, Gaussian peak 2E/(πw²), √τ ≥ 20 ps); radiation-damage (mm,
-     power law A·D^f); aging-effects, contamination, humidity-effects → thin-film/environmental-stability.
+     power law A·D^f). 8b merges: aging-effects, contamination, humidity-effects → thin-film/environmental-stability.
   9. Leftovers: polymer-optics (Sultanova PMMA 1.4906), x-ray-optics (δ, β from Henke f₁, f₂: Be 3.41e-6), thermal-expansion
      (tier only).
 - [ ] Golden-value tests for the top 50 calculators by traffic (needs traffic data, e.g. Vercel Analytics).

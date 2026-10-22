@@ -1,146 +1,91 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import SimpleLineChart from "../../../components/simple-line-chart";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import { doseForLoss, inducedAttenuation, internalTransmission } from "../../../physics/materials/radiation-induced-loss";
 
-interface Material {
-  name: string;
-  // Radiation-induced absorption coefficient at 1 Mrad dose (cm⁻¹)
-  alphaGamma1M: number;
-  // Recovery time constant (hours)
-  tauRecovery: number;
-  // Permanent darkening fraction (0-1)
-  permanentFrac: number;
-  // Displacement damage threshold (neq/cm²)
-  displacementThreshold: number;
-  // Notes
-  radiationHard: boolean;
-}
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const show = (x: number, text: () => string) => (Number.isFinite(x) ? text() : "—");
+const CHART_DOSE = Array.from({ length: 81 }, (_, i) => 10 ** (-1 + i * 0.1)); // 0.1 Gy to 10 MGy
+const gy = (d: number) => (d >= 1e6 ? `${(d / 1e6).toPrecision(3)} MGy` : d >= 1e3 ? `${(d / 1e3).toPrecision(3)} kGy` : `${d.toPrecision(3)} Gy`);
 
-const materials: Record<string, Material> = {
-  "Fused Silica": { name: "Fused Silica", alphaGamma1M: 0.02, tauRecovery: 500, permanentFrac: 0.3, displacementThreshold: 1e15, radiationHard: true },
-  "BK7": { name: "BK7", alphaGamma1M: 0.1, tauRecovery: 200, permanentFrac: 0.5, displacementThreshold: 5e14, radiationHard: false },
-  "CaF2": { name: "CaF₂", alphaGamma1M: 0.005, tauRecovery: 100, permanentFrac: 0.1, displacementThreshold: 5e15, radiationHard: true },
-  "Sapphire": { name: "Sapphire", alphaGamma1M: 0.01, tauRecovery: 50, permanentFrac: 0.2, displacementThreshold: 1e16, radiationHard: true },
-  "Diamond": { name: "Diamond", alphaGamma1M: 0.001, tauRecovery: 10, permanentFrac: 0.05, displacementThreshold: 1e17, radiationHard: true },
-  "ZnSe": { name: "ZnSe", alphaGamma1M: 0.5, tauRecovery: 1000, permanentFrac: 0.7, displacementThreshold: 1e13, radiationHard: false },
-  "ULE": { name: "ULE", alphaGamma1M: 0.03, tauRecovery: 600, permanentFrac: 0.3, displacementThreshold: 8e14, radiationHard: true },
-  "MgF2": { name: "MgF₂", alphaGamma1M: 0.008, tauRecovery: 150, permanentFrac: 0.15, displacementThreshold: 3e15, radiationHard: true },
-  "LiF": { name: "LiF", alphaGamma1M: 0.8, tauRecovery: 5000, permanentFrac: 0.6, displacementThreshold: 1e14, radiationHard: false },
-  "SiO2 (crystalline)": { name: "α-Quartz", alphaGamma1M: 0.03, tauRecovery: 800, permanentFrac: 0.35, displacementThreshold: 5e14, radiationHard: false },
-};
-
-function inducedAbsorption(mat: Material, doseMrad: number): number {
-  return mat.alphaGamma1M * doseMrad; // linear approximation
-}
-
-function transmissionAfterRadiation(mat: Material, doseMrad: number, thicknessCm: number, timeHours: number): number {
-  const alphaTotal = inducedAbsorption(mat, doseMrad);
-  const alphaTransient = alphaTotal * (1 - mat.permanentFrac) * Math.exp(-timeHours / mat.tauRecovery);
-  const alphaPermanent = alphaTotal * mat.permanentFrac;
-  return Math.exp(-(alphaTransient + alphaPermanent) * thicknessCm);
-}
-
-function dnFromRadiation(mat: Material, doseMrad: number): number {
-  // Typical: ~1e-7 per Mrad for hard materials, more for soft
-  const base = mat.radiationHard ? 1e-7 : 5e-7;
-  return base * doseMrad;
+function Card({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone: string }) {
+  return (
+    <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+      <p className="text-sm text-gray-400">{label}</p>
+      <p className={`text-xl font-bold ${tone}`}>{value}</p>
+      {sub && <p className="text-xs text-gray-400">{sub}</p>}
+    </div>
+  );
 }
 
 export default function RadiationDamagePage() {
-  const [selected, setSelected] = useState("Fused Silica");
-  const [dose, setDose] = useURLState("dose", 100);
-  const [thickness, setThickness] = useURLState("thickness", 10);
-  const [timeAfter, setTimeAfter] = useURLState("timeAfter", 24);
-  const [neutronFluence, setNeutronFluence] = useURLState("neutronFluence", 1e14);
+  const [a1Raw, setA1] = useURLState("a1", 0.1); // dB/m at 1 Gy
+  const [fRaw, setF] = useURLState("exponent", 0.5);
+  const [doseRaw, setDose] = useURLState("dose", 1000); // Gy
+  const [lengthRaw, setLength] = useURLState("length", 10); // mm
+  const [budgetRaw, setBudget] = useURLState("lossBudget", 1); // dB
 
-  const mat = materials[selected];
-  const alphaInduced = useMemo(() => inducedAbsorption(mat, dose), [mat, dose]);
-  const trans = useMemo(() => transmissionAfterRadiation(mat, dose, thickness, timeAfter), [mat, dose, thickness, timeAfter]);
-  const dn = useMemo(() => dnFromRadiation(mat, dose), [mat, dose]);
-  const displacementOk = useMemo(() => neutronFluence < mat.displacementThreshold, [neutronFluence, mat.displacementThreshold]);
+  const a1 = clamp(a1Raw, 0, 1e6, 0.1);
+  const f = clamp(fRaw, 0.01, 1, 0.5);
+  const dose = clamp(doseRaw, 0, 1e8, 1000);
+  const length = clamp(lengthRaw, 1e-3, 1e7, 10) * 1e-3;
+  const budget = clamp(budgetRaw, 0, 1000, 1);
 
-  const chartData = useMemo(() => {
-    const doses = Array.from({ length: 100 }, (_, i) => i * 10);
-    const mat = materials[selected];
-    const times = [0, 1, 24, 168, 720];
-    const colors = ["#ef4444", "#f59e0b", "#3b82f6", "#22c55e", "#8b5cf6"];
-    return times.map((t, i) => ({
-      x: doses,
-      y: doses.map(d => transmissionAfterRadiation(mat, d, thickness, t) * 100),
-      type: "scatter" as const, mode: "lines" as const,
-      name: `${t === 0 ? "Immediate" : t < 24 ? t + "h" : t < 168 ? (t/24) + "d" : (t/168) + "wk"}`,
-      line: { color: colors[i], width: 2, dash: t === 0 ? "dash" : "solid" },
-    }));
-  }, [selected, thickness]);
+  const A = inducedAttenuation(a1, f, dose);
+  const lossDb = A * length;
+  const T = internalTransmission(A, length);
+  const doseAtBudget = doseForLoss(a1, f, length, budget);
+
+  const series = [
+    { name: "Internal transmission", color: "#3b82f6", points: CHART_DOSE.map((d) => ({ x: d, y: Number((internalTransmission(inducedAttenuation(a1, f, d), length) * 100).toFixed(6)) })) },
+    ...(dose > 0 ? [{ name: "Your dose", color: "#f59e0b", showPoints: true, points: [{ x: dose, y: Number((T * 100).toFixed(6)) }] }] : []),
+  ];
 
   return (
     <>
-            
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono">
-        <p>α_ind = α₁M · Dose &nbsp;|&nbsp; T = exp(-α·d) &nbsp;|&nbsp; Recovery: α(t) = α₀·exp(-t/τ) + α_perm</p>
+      <p className="text-sm text-gray-400 mb-4">
+        Enter A₁ and f fitted to measured induced loss for your glass or fibre at your wavelength, dose rate and
+        temperature. The defaults are an example, not a material value.
+      </p>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <ValidatedNumberInput label="Induced Loss at 1 Gy, A₁ (dB/m)" value={a1Raw} onChange={setA1} min={0} max={1e6} step="any" />
+        <ValidatedNumberInput label="Dose Exponent f" value={fRaw} onChange={setF} min={0.01} max={1} step="any" />
+        <ValidatedNumberInput label="Total Dose (Gy)" value={doseRaw} onChange={setDose} min={0} max={1e8} step="any" />
+        <ValidatedNumberInput label="Path Length (mm)" value={lengthRaw} onChange={setLength} min={0.001} max={1e7} step="any" />
+        <ValidatedNumberInput label="Loss Budget (dB)" value={budgetRaw} onChange={setBudget} min={0} max={1000} step="any" />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <div>
-          <label className="block text-sm text-gray-400 mb-1">Material</label>
-          <select value={selected} onChange={e => setSelected(e.target.value)}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white">
-            {Object.entries(materials).map(([k, v]) => <option key={k} value={k}>{v.name}</option>)}
-          </select>
-        </div>
-        <div>
-          <ValidatedNumberInput label="γ Dose (Mrad)" value={dose} onChange={setDose} min={0} />
-        </div>
-        <div>
-          <ValidatedNumberInput label="Thickness (mm)" value={thickness} onChange={setThickness} min={0.1} />
-        </div>
-        <div>
-          <ValidatedNumberInput label="Time after exposure (h)" value={timeAfter} onChange={setTimeAfter} min={0} />
-        </div>
-        <div>
-          <label className="block text-sm text-gray-400 mb-1">Neutron fluence (n/cm²)</label>
-          <input type="text" value={neutronFluence.toExponential(1)} onChange={e => setNeutronFluence(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" />
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <Card label="Induced Attenuation" value={show(A, () => `${A.toPrecision(4)} dB/m`)}
+          sub={show(A, () => `A₁D^f; ${(A * Math.LN10 / 10).toPrecision(4)} m⁻¹ (natural log)`)} tone="text-blue-400" />
+        <Card label="Induced Loss over the Path" value={show(lossDb, () => `${lossDb.toPrecision(4)} dB`)}
+          sub={`${gy(dose)} = ${(dose * 100).toPrecision(3)} rad`} tone="text-red-400" />
+        <Card label="Internal Transmission" value={show(T, () => `${(T * 100).toPrecision(4)} %`)}
+          sub="10^(−loss/10), induced loss only" tone="text-green-400" />
+        <Card label="Dose at the Loss Budget" value={show(doseAtBudget, () => gy(doseAtBudget))}
+          sub={`(budget/(A₁L))^(1/f) for ${budget} dB`} tone="text-yellow-400" />
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">α_induced</p>
-          <p className="text-2xl font-bold text-blue-400 mt-1">{alphaInduced.toExponential(2)} cm⁻¹</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Transmission</p>
-          <p className={`text-2xl font-bold mt-1 ${trans > 0.9 ? "text-green-400" : trans > 0.5 ? "text-yellow-400" : "text-red-400"}`}>
-            {(trans * 100).toFixed(1)}%
-          </p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Δn (radiation)</p>
-          <p className="text-2xl font-bold text-purple-400 mt-1">{dn.toExponential(2)}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Displacement</p>
-          <p className={`text-xl font-bold mt-1 ${displacementOk ? "text-green-400" : "text-red-400"}`}>
-            {displacementOk ? "✓ Below threshold" : "✗ Damage expected"}
-          </p>
-        </div>
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
+        <SimpleLineChart title="Internal transmission against dose" xLabel="Dose (Gy)" yLabel="Transmission (%)" series={series} xScale="log" />
       </div>
 
-      <ChartPanel data={chartData}
-        layout={{
-          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-          font: { color: "#9ca3af" },
-          xaxis: { title: "Dose (Mrad)", gridcolor: "#374151" },
-          yaxis: { title: "Transmission (%)", gridcolor: "#374151", range: [0, 105] },
-          margin: { t: 20, r: 20, b: 50, l: 70 },
-          legend: { orientation: "h", y: -0.2 },
-        }}
-       
-       
-      />
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+        <h3 className="text-lg font-semibold mb-3">Model</h3>
+        <div className="text-sm text-gray-300 space-y-2 font-mono">
+          <p>A(D) = A₁ D^f, 0 &lt; f ≤ 1</p>
+          <p>loss = A L; T_int = 10^(−A L/10)</p>
+        </div>
+        <p className="text-xs text-gray-400 mt-3">
+          Illustrative: a power law describes many measured growth curves of radiation-induced loss at one dose
+          rate, temperature and wavelength, with f below 1 as the colour centres saturate (Griscom, Gingerich and
+          Friebele 1994). A₁ varies by orders of magnitude between glasses and fibres, so no material presets
+          are given. Recovery after the exposure, dose-rate and temperature effects, and refractive-index changes
+          are not modelled.
+        </p>
+      </div>
     </>
   );
 }
