@@ -1,31 +1,34 @@
-# Handover — 2026-10-22 (session 134 → session 135)
+# Handover — 2026-10-22 (session 135 → session 136)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 134: **materials fix part 8a** (heat-capacity, thermal-conductivity-optics, damage-threshold, radiation-damage), branch
-`phase-4/materials-fix-8a`, PR #165 to open. Next: part 8b (merge aging-effects, contamination, humidity-effects into
-thin-film/environmental-stability, each with a redirect). 414 pages.
+Session 135: **materials fix part 8b** (aging-effects, contamination, humidity-effects merged into
+thin-film/environmental-stability, each with a redirect), branch `phase-4/materials-fix-8b`, PR #166 to open.
+Next: part 9 leftovers (polymer-optics, x-ray-optics, thermal-expansion tier). 411 pages.
 
 ## State
-- `src/physics/materials/heat-capacity.ts`: `debyeFunction(x)` (Simpson, T³ law beyond x = 50), `debyeMolarHeatCapacity(θ, T, atoms)`,
-  `scaledHeatCapacity(cRef, tRef, θ, T)`, `heatInput(…, mass, T1, T2)`; `HEAT_CAPACITY_MATERIALS` si/ge/caf2/lif. Golden: D(1) 0.95173,
-  D(10) 0.075821, Si Debye 300 K 0.71248 J/(g·K), Si 200 K = Desai 556.9 J/(kg·K), Q 10 g 293.15→473.15 K 1387.28 J.
-- `thermal-conduction.ts`: `slabConductionRise` Pd/(kA), `cylinderCentreRise` P/(4πkL), `rodThermalLens` 2kA/(P dn/dT) (Koechner rod;
-  the slab `slabThermalLens` has half that f). k and dn/dT from `WINDOW_MATERIALS` (Crystran). FS 1 W, 10 mm, 100 mm²: 72.46 K, 5.766 K, 21.40 m.
-- `laser-damage.ts`: `scaleDamageThreshold(F, τref, τ, a = ½)`, `gaussianPeakFluence` 2E/(πw²), `energyAtFluence`,
-  `THERMAL_SCALING_MIN_TAU` 20 ps. `radiation-induced-loss.ts`: `inducedAttenuation` A₁D^f (dB/m), `internalTransmission`, `doseForLoss`.
-- URL keys: heat-capacity `material`, `cRef`/`thetaD`/`density` (0 = preset), `temp`, `mass` (g), `t1`/`t2` (K; old °C `tempFrom`/`tempTo`
-  dropped); thermal-conductivity `material`, `k`, `dndT` (1e-6/K, 0 = preset), `thickness`, `area`, `power`; damage-threshold `fRef`,
-  `tauRef`, `tau` (ns), `exponent`, `energy`, `diameter` (mm, 1/e²); radiation-damage `a1`, `exponent`, `dose` (Gy), `length` (mm), `lossBudget`.
-- Tests: `tests/materials-thermal-damage.test.ts`. Materials 24 / 30 tiered, 5 `knownIssue`s; 407 / 414 total.
+- `src/physics/thin-film/environmental-stability.ts`: `poreIndex(fill)`, `filmIndex(nS, nV, p, law)`, `solidIndex(nDry, p, law)`,
+  `wetIndex`, `environmentLayer`/`environmentStack(h, l, pairs, λ0, ΔT, fill)`, `centreShift`; `MixingLaw` "linear" | "bragg-pippard"
+  (Macleod 1988 eqs. 3–5); `cc1246Count(x_um, level)`, `cc1246Obscuration(level, xMin_um = 1, area = 0.1 m²)`;
+  `accelerationFactor(Ea_eV, T_use, T_test, rhUse, rhTest, n)`. Golden: filled pores p 0.85 15.318 nm at 550 nm, ΔT 50 K 0.35697 nm,
+  Ma eq. 17a 12.27 % (level 1000, ft²), AF 96.0 (0.7 eV, 25/85 °C), Peck ×1.7³.
+- URL keys: nH, nL, nSub, nInc, numPairs, designWl, tempC (default now 75), `fill` (% pores, replaces humidityPct), pH, pL, lawH, lawL,
+  dndtH, dndtL, cteH, cteL (1e-6/K); level (µm), surfaces; tUse, tTest (°C), ea (eV), rhUse, rhTest, rhExp, testHours.
+- Tests: `tests/thin-film-environmental-stability.test.ts`. Materials 24 / 27 tiered, 2 `knownIssue`s; 407 / 411 total.
 
 ## Next actions
-1. `/ship` this branch. Release-check values: `materials/thermal-conductivity-optics` "72.46", `materials/damage-threshold` "7.071",
-   `materials/radiation-damage` "3.162", `materials/heat-capacity` "0.7143"; older ones in PR #141–#164. No release unless asked.
-2. Materials fix part 8b (ROADMAP item 8). PR #155 findings: `gh pr view 155 --json body -q .body | grep -n -E "aging|contamination|humidity"`.
+1. `/ship` this branch. Release-check values: `thin-film/environmental-stability` "15.32"; 8a's `materials/thermal-conductivity-optics`
+   "72.46", `materials/damage-threshold` "7.071", `materials/radiation-damage` "3.162", `materials/heat-capacity` "0.7143"; older ones in
+   PR #141–#165. No release unless asked.
+2. Materials fix part 9 (ROADMAP item 9): polymer-optics (Sultanova PMMA 1.4906), x-ray-optics (δ, β from Henke f₁, f₂: Be 3.41e-6),
+   thermal-expansion (tier only). PR #155 findings: `gh pr view 155 --json body -q .body | grep -n -E "polymer|x-ray|thermal-exp"`.
 3. Later: open findings (ROADMAP), `polarizer-types` (needs the user at the laptop with Chrome).
 
 ## Non-obvious facts
+- **Session 135:** NASA NTRS PDFs download (`https://ntrs.nasa.gov/api/citations/<id>/downloads/<id>.pdf`; metadata at
+  `/api/citations/<id>`): Macleod's "Moisture adsorption in optical coatings" is 19890003956. GSFC CCMPP presentations download via
+  WebFetch (binary saved, then `pdftotext`): Edwards 2021 quotes Ma et al. eqs. 17a–e. The pdx.edu Peck 1986 PDF 403s.
+  `npx tsx --test` on one file can take > 2 min on this disk: run it in the background.
 - **Session 134:** Crystran pages fetch with curl (`https://www.crystran.com/optical-materials/<slug>`, slugs from that index page; strip
   tags, grep "Specific Heat Capacity|Density"); no Debye temperatures there. NIST JPCRD reprints download
   (`https://srd.nist.gov/jpcrdreprint/<doi suffix>.pdf`, e.g. 1.555761 Desai). Heredocs halve backslashes (a regex `\s` arrives as `s`): write such scripts with Write.
