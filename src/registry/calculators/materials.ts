@@ -171,8 +171,20 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "damage-threshold",
     title: "Laser Damage Threshold",
-    description: "LIDT for pulsed and CW laser optics",
-    knownIssue: "Pulse duration is labelled in seconds but read in nanoseconds, and fluence uses a flat-top area, so the peak fluence of a Gaussian beam and the damage risk are understated twofold.",
+    description: "Scale an optic's rated pulsed laser damage threshold (LIDT) to your pulse duration with the √τ law and compare it with the 2E/(πw²) peak fluence of your Gaussian beam: margin and energy at threshold.",
+    tier: "textbook",
+    modelNote: "F_th(τ) = F_ref (τ/τ_ref)^a with a = ½ (heat diffusion), measured above about 20 ps; real optics scatter around it. Peak fluence 2E/(πw²) of a TEM₀₀ beam (ISO 21254 effective area πw²/2). Wavelength, spot-size and repetition-rate effects are not modelled; the rated value comes from the optic's data sheet.",
+    references: [
+      {
+        citation: "Stuart B. C., Feit M. D., Herman S., Rubenchik A. M., Shore B. W., Perry M. D. (1996). Nanosecond-to-femtosecond laser-induced breakdown in dielectrics. Phys. Rev. B 53, 1749–1761. √τ scaling above about 20 ps (fused silica, CaF₂).",
+        url: "https://doi.org/10.1103/PhysRevB.53.1749",
+      },
+      {
+        citation: "Wood R. M. (2003). Laser-Induced Damage of Optical Materials. IOP Publishing (CRC Press).",
+        url: "https://doi.org/10.1201/9781420034059",
+      },
+      { citation: "ISO 21254-1:2011. Lasers and laser-related equipment — Test methods for laser-induced damage threshold — Part 1: Definitions and general principles. Effective area of a Gaussian beam πw²/2." },
+    ],
   },
   {
     slug: "diamond-optics",
@@ -223,8 +235,27 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "heat-capacity",
     title: "Heat Capacity of Optical Materials",
-    description: "Specific heat and thermal energy storage",
-    knownIssue: "Cp(T) comes from a broken interpolation that gives about a tenth of the room-temperature value, the heat input treats °C as kelvin, and ρ·Cp is shown 1000 times too small.",
+    description: "Specific heat c_p(T) of Si, Ge, CaF₂ and LiF from the Debye model scaled to the measured room-temperature value, volumetric heat capacity, and the heat to warm a part from T₁ to T₂.",
+    tier: "textbook",
+    modelNote: "c_p(T) = c_p(T_ref)·D(θ_D/T)/D(θ_D/T_ref) with the Debye function D and one Debye temperature; Q = m∫c_p dT. Harmonic, so it runs low above room temperature (Si at 1000 K: 8 % below Desai's value) and misses the dip of θ_D near 40 K. No presets for glasses or diamond.",
+    references: [
+      {
+        citation: "Debye P. (1912). Zur Theorie der spezifischen Wärmen. Ann. Phys. 344, 789–839.",
+        url: "https://doi.org/10.1002/andp.19123441404",
+      },
+      {
+        citation: "Råsander M., Moram M. A. (2015). On the accuracy of commonly used density functional approximations in determining the elastic constants of insulators and semiconductors. J. Chem. Phys. 143, 144104. Table VII: experimental Debye temperatures (Landolt–Börnstein): Si 645, Ge 373, LiF 732, CaF₂ 510 K.",
+        url: "https://doi.org/10.1063/1.4932334",
+      },
+      {
+        citation: "Desai P. D. (1986). Thermodynamic properties of iron and silicon. J. Phys. Chem. Ref. Data 15, 967–983. Si c_p 20.007 J/(mol·K) at 298.15 K (Table 4), 26.569 at 1000 K (Table 5).",
+        url: "https://doi.org/10.1063/1.555761",
+      },
+      {
+        citation: "Crystran. Handbook of Infrared and Ultraviolet Optical Materials, data sheets: specific heat and density of Ge, CaF₂ and LiF; density of Si.",
+        url: "https://www.crystran.com/optical-materials",
+      },
+    ],
   },
   {
     slug: "humidity-effects",
@@ -413,8 +444,15 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "radiation-damage",
     title: "Radiation Damage Effects",
-    description: "Radiation-induced absorption and transmission loss in optical materials",
-    knownIssue: "Thickness entered in millimetres is used as centimetres, so transmission is far too low, and induced absorption is linear in dose with invented coefficients and no wavelength dependence.",
+    description: "Radiation-induced attenuation of glass and fibre as a power law of dose, A₁D^f: induced loss in dB/m and dB, internal transmission, and the dose that uses up a loss budget.",
+    tier: "illustrative",
+    modelNote: "A(D) = A₁D^f with 0 < f ≤ 1, fitted per glass, wavelength, dose rate and temperature; no material presets. Recovery after exposure, dose-rate and temperature effects and index changes are not modelled.",
+    references: [
+      {
+        citation: "Griscom D. L., Gingerich M. E., Friebele E. J. (1994). Model for the dose, dose-rate and temperature dependence of radiation-induced loss in optical fibers. IEEE Trans. Nucl. Sci. 41, 523–527.",
+        url: "https://doi.org/10.1109/23.299793",
+      },
+    ],
   },
   {
     slug: "raman-scattering",
@@ -504,8 +542,23 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "thermal-conductivity-optics",
     title: "Thermal Conductivity for Optics",
-    description: "Heat transport in optical substrates",
-    knownIssue: "The k(T) fit does not reproduce its own room-temperature values (32 W/(m·K) for fused silica instead of 1.38), so k and the temperature rise are off by factors of 6 to 30.",
+    description: "Room-temperature thermal conductivity of window materials (Crystran) and what it means for an absorbing optic: thermal resistance, face-to-face and beam centre-to-edge temperature rise, and the dn/dT thermal lens.",
+    tier: "textbook",
+    modelNote: "Steady state, constant room-temperature k. ΔT = Pd/(kA) through a slab; P/(4πkd) beam centre to edge for uniform heating with radial flow; dn/dT lens f = 2kA/(P dn/dT) (Koechner's rod). Stress-optic and end-bulging lens terms, Gaussian heating, axial flow and k(T) are not modelled.",
+    references: [
+      {
+        citation: "Koechner W. (2006). Solid-State Laser Engineering, 6th ed. Springer. Ch. 7: temperature profile and thermal lens of a uniformly heated rod.",
+        url: "https://doi.org/10.1007/0-387-29338-8",
+      },
+      {
+        citation: "Crystran. Handbook of Infrared and Ultraviolet Optical Materials, data sheets: thermal conductivity and dn/dT.",
+        url: "https://www.crystran.com/optical-materials",
+      },
+      {
+        citation: "Glassbrenner C. J., Slack G. A. (1964). Thermal conductivity of silicon and germanium from 3 °K to the melting point. Phys. Rev. 134, A1058–A1069.",
+        url: "https://doi.org/10.1103/PhysRev.134.A1058",
+      },
+    ],
   },
   {
     slug: "thermal-expansion",

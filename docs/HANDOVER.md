@@ -1,30 +1,34 @@
-# Handover — 2026-10-22 (session 133 → session 134)
+# Handover — 2026-10-22 (session 134 → session 135)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 133: **materials fix part 7b** (rare-earth-absorption, color-centers), branch `phase-4/materials-fix-7b`, PR #164 to
-open. Next: part 8 (thermal and damage: heat-capacity, thermal-conductivity-optics, damage-threshold, radiation-damage; three
-merges into thin-film/environmental-stability). 414 pages.
+Session 134: **materials fix part 8a** (heat-capacity, thermal-conductivity-optics, damage-threshold, radiation-damage), branch
+`phase-4/materials-fix-8a`, PR #165 to open. Next: part 8b (merge aging-effects, contamination, humidity-effects into
+thin-film/environmental-stability, each with a redirect). 414 pages.
 
 ## State
-- `src/physics/materials/dopant-absorption.ts`: `dopantAbsorption(σ_a, N, L, Γ = 1)` → α (m⁻¹), dB/m, 1/α, loss dB, T;
-  `DOPANT_LINES` (Er980/Er1480/Er1550/Yb976/Yb1064 from `DOPANT_PRESETS`, unchanged). Golden: Yb976 1000 wt-ppm → N 7.6597e24,
-  α 19.149 m⁻¹, 83.164 dB/m.
-- `src/physics/materials/color-centers.ts`: `COLOR_CENTERS` (NV⁻ 2.180/1.945/1.760 eV from Doherty 2013 Table 9, σ 3.1e-21 m²
-  at 532 nm from Wee 2007; LiF F₂ 443→678 nm, F₂⁺ 645→910 nm, Baldacchini 2002 via arXiv:2412.21060 Table I, no σ),
-  `stokesShift(λa, λe)` → eV, m⁻¹, quantum defect 1 − λa/λe. Tests: `tests/materials-dopant-absorption.test.ts`.
-- rare-earth-absorption: title "Rare-Earth Dopant Absorption"; URL `line`, `sigmaA` (1e-25 m², 0 = preset), `dopantConcentration`
-  (wt-ppm), `overlap`, `length` (m). color-centers: URL `center`, `absPeak`/`emPeak` (nm, 0 = preset), `sigmaA` (1e-17 cm²),
-  `concentration` (m⁻³), `thickness` (mm). Old keys `pumpWl` and rare-earth `concentration` dropped.
-- Materials 20 / 30 tiered, 9 `knownIssue`s; 403 / 414 total. New open finding: unsourced Er preset σ (ROADMAP).
+- `src/physics/materials/heat-capacity.ts`: `debyeFunction(x)` (Simpson, T³ law beyond x = 50), `debyeMolarHeatCapacity(θ, T, atoms)`,
+  `scaledHeatCapacity(cRef, tRef, θ, T)`, `heatInput(…, mass, T1, T2)`; `HEAT_CAPACITY_MATERIALS` si/ge/caf2/lif. Golden: D(1) 0.95173,
+  D(10) 0.075821, Si Debye 300 K 0.71248 J/(g·K), Si 200 K = Desai 556.9 J/(kg·K), Q 10 g 293.15→473.15 K 1387.28 J.
+- `thermal-conduction.ts`: `slabConductionRise` Pd/(kA), `cylinderCentreRise` P/(4πkL), `rodThermalLens` 2kA/(P dn/dT) (Koechner rod;
+  the slab `slabThermalLens` has half that f). k and dn/dT from `WINDOW_MATERIALS` (Crystran). FS 1 W, 10 mm, 100 mm²: 72.46 K, 5.766 K, 21.40 m.
+- `laser-damage.ts`: `scaleDamageThreshold(F, τref, τ, a = ½)`, `gaussianPeakFluence` 2E/(πw²), `energyAtFluence`,
+  `THERMAL_SCALING_MIN_TAU` 20 ps. `radiation-induced-loss.ts`: `inducedAttenuation` A₁D^f (dB/m), `internalTransmission`, `doseForLoss`.
+- URL keys: heat-capacity `material`, `cRef`/`thetaD`/`density` (0 = preset), `temp`, `mass` (g), `t1`/`t2` (K; old °C `tempFrom`/`tempTo`
+  dropped); thermal-conductivity `material`, `k`, `dndT` (1e-6/K, 0 = preset), `thickness`, `area`, `power`; damage-threshold `fRef`,
+  `tauRef`, `tau` (ns), `exponent`, `energy`, `diameter` (mm, 1/e²); radiation-damage `a1`, `exponent`, `dose` (Gy), `length` (mm), `lossBudget`.
+- Tests: `tests/materials-thermal-damage.test.ts`. Materials 24 / 30 tiered, 5 `knownIssue`s; 407 / 414 total.
 
 ## Next actions
-1. `/ship` this branch. Release-check values: `materials/rare-earth-absorption` "19.15" (α m⁻¹, defaults),
-   `materials/color-centers` "0.420" (Stokes eV, defaults); older ones in PR #141–#163. No release unless asked.
-2. Materials fix part 8 (ROADMAP item 8). PR #155 findings: `gh pr view 155 --json body -q .body | grep -n "heat-capacity|damage"`.
+1. `/ship` this branch. Release-check values: `materials/thermal-conductivity-optics` "72.46", `materials/damage-threshold` "7.071",
+   `materials/radiation-damage` "3.162", `materials/heat-capacity` "0.7143"; older ones in PR #141–#164. No release unless asked.
+2. Materials fix part 8b (ROADMAP item 8). PR #155 findings: `gh pr view 155 --json body -q .body | grep -n -E "aging|contamination|humidity"`.
 3. Later: open findings (ROADMAP), `polarizer-types` (needs the user at the laptop with Chrome).
 
 ## Non-obvious facts
+- **Session 134:** Crystran pages fetch with curl (`https://www.crystran.com/optical-materials/<slug>`, slugs from that index page; strip
+  tags, grep "Specific Heat Capacity|Density"); no Debye temperatures there. NIST JPCRD reprints download
+  (`https://srd.nist.gov/jpcrdreprint/<doi suffix>.pdf`, e.g. 1.555761 Desai). Heredocs halve backslashes (a regex `\s` arrives as `s`): write such scripts with Write.
 - **Session 133:** `timeout N npx next start` kills the server after N s, so a later ui-check reports "not hydrated" on every page;
   a leftover listener on :3100 gives ChunkLoadError. Check `netstat -ano | grep :3100` and allow ≥ 300 s. Doherty's NV review is
   arXiv:1302.3288. Barnes 1991 (Er σ): Southampton eprints blocks scripts; rp-photonics.com 403s to WebFetch; the Optica abstract

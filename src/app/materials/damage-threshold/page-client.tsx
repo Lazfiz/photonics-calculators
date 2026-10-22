@@ -1,143 +1,110 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import SimpleLineChart from "../../../components/simple-line-chart";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import {
+  THERMAL_SCALING_MIN_TAU,
+  energyAtFluence,
+  gaussianPeakFluence,
+  scaleDamageThreshold,
+} from "../../../physics/materials/laser-damage";
 
-interface Material {
-  name: string;
-  // LIDT in J/cm² at various pulse durations (ns), reference 1064nm
-  lidt1ns: number;
-  lidt10ns: number;
-  lidt100ns: number;
-  cwThreshold: number; // W/cm²
-  tauRef: number; // reference pulse duration for scaling
-  exponent: number; // τ^0.5 scaling exponent
-  arCoating: number; // AR coating LIDT multiplier (typically 0.3-0.5 of bulk)
-  notes: string;
-}
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const show = (x: number, text: () => string) => (Number.isFinite(x) ? text() : "—");
+const NS = 1e-9;
+const J_CM2 = 1e4; // J/m² per J/cm²
+const CHART_TAU = Array.from({ length: 61 }, (_, i) => 10 ** (-11 + i * 0.1)); // 10 ps to 10 µs
 
-const materials: Record<string, Material> = {
-  "Fused Silica": { name: "Fused Silica", lidt1ns: 15, lidt10ns: 50, lidt100ns: 150, cwThreshold: 1e6, tauRef: 10, exponent: 0.5, arCoating: 0.4, notes: "Standard UV-grade" },
-  "BK7": { name: "BK7", lidt1ns: 10, lidt10ns: 35, lidt100ns: 100, cwThreshold: 5e5, tauRef: 10, exponent: 0.5, arCoating: 0.35, notes: "Borosilicate crown" },
-  "CaF2": { name: "CaF₂", lidt1ns: 20, lidt10ns: 60, lidt100ns: 180, cwThreshold: 2e6, tauRef: 10, exponent: 0.5, arCoating: 0.45, notes: "Deep UV capable" },
-  "Sapphire": { name: "Sapphire", lidt1ns: 25, lidt10ns: 80, lidt100ns: 250, cwThreshold: 5e6, tauRef: 10, exponent: 0.5, arCoating: 0.5, notes: "Very high thermal" },
-  "Diamond": { name: "Diamond", lidt1ns: 50, lidt10ns: 150, lidt100ns: 500, cwThreshold: 1e7, tauRef: 10, exponent: 0.5, arCoating: 0.3, notes: "Highest LIDT known" },
-  "ZnSe": { name: "ZnSe", lidt1ns: 5, lidt10ns: 15, lidt100ns: 40, cwThreshold: 2e5, tauRef: 10, exponent: 0.5, arCoating: 0.3, notes: "CO₂ laser optics" },
-  "SiC": { name: "SiC", lidt1ns: 30, lidt10ns: 100, lidt100ns: 300, cwThreshold: 8e6, tauRef: 10, exponent: 0.5, arCoating: 0.4, notes: "Extreme environments" },
-  "ULE": { name: "ULE", lidt1ns: 12, lidt10ns: 40, lidt100ns: 120, cwThreshold: 8e5, tauRef: 10, exponent: 0.5, arCoating: 0.35, notes: "Low CTE glass" },
-};
-
-// Scale LIDT with pulse duration: LIDT(τ) = LIDT_ref * (τ/τ_ref)^0.5
-function scaleLIDT(mat: Material, tauNs: number, coating: boolean) {
-  const bulk = mat.lidt10ns * Math.pow(tauNs / mat.tauRef, mat.exponent);
-  return coating ? bulk * mat.arCoating : bulk;
-}
-
-// Peak fluence from pulse energy and beam area
-function peakFluence(energy: number, diameter: number) {
-  const area = Math.PI * Math.pow(diameter / 2, 2); // cm²
-  return energy / area; // J/cm²
-}
-
-// Peak intensity for CW
-function peakIntensity(power: number, diameter: number) {
-  const area = Math.PI * Math.pow(diameter / 2, 2); // cm²
-  return power / area; // W/cm²
+function Card({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone: string }) {
+  return (
+    <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+      <p className="text-sm text-gray-400">{label}</p>
+      <p className={`text-xl font-bold ${tone}`}>{value}</p>
+      {sub && <p className="text-xs text-gray-400">{sub}</p>}
+    </div>
+  );
 }
 
 export default function DamageThresholdPage() {
-  const [selected, setSelected] = useState("Fused Silica");
-  const [pulseDuration, setPulseDuration] = useURLState("pulseDuration", 10);
-  const [energy, setEnergy] = useURLState("energy", 0.5);
-  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 1);
-  const [isCW, setIsCW] = useState(false);
-  const [cwPower, setCwPower] = useURLState("cwPower", 100);
-  const [useCoating, setUseCoating] = useState(true);
+  const [fRefRaw, setFRef] = useURLState("fRef", 10); // J/cm²
+  const [tauRefRaw, setTauRef] = useURLState("tauRef", 10); // ns
+  const [tauRaw, setTau] = useURLState("tau", 5); // ns
+  const [expRaw, setExp] = useURLState("exponent", 0.5);
+  const [energyRaw, setEnergy] = useURLState("energy", 0.1); // J
+  const [diamRaw, setDiam] = useURLState("diameter", 5); // mm, 1/e²
 
-  const mat = materials[selected];
-  const lidt = useMemo(() => scaleLIDT(mat, pulseDuration, useCoating), [mat, pulseDuration, useCoating]);
-  const fluence = useMemo(() => peakFluence(energy, beamDiam), [energy, beamDiam]);
-  const cwIntensity = useMemo(() => peakIntensity(cwPower, beamDiam), [cwPower, beamDiam]);
-  const margin = useMemo(() => isCW ? mat.cwThreshold / cwIntensity : lidt / fluence, [isCW, mat.cwThreshold, cwIntensity, lidt, fluence]);
+  const fRef = clamp(fRefRaw, 1e-3, 1e5, 10) * J_CM2;
+  const tauRef = clamp(tauRefRaw, 1e-6, 1e9, 10) * NS;
+  const tau = clamp(tauRaw, 1e-6, 1e9, 5) * NS;
+  const exponent = clamp(expRaw, 0, 1, 0.5);
+  const energy = clamp(energyRaw, 0, 1e6, 0.1);
+  const w = (clamp(diamRaw, 1e-3, 1e4, 5) / 2) * 1e-3;
 
-  const chartData = useMemo(() => {
-    const taus = Array.from({ length: 100 }, (_, i) => Math.pow(10, -3 + i * 0.06)); // 0.001 to 10000 ns
-    const mat = materials[selected];
-    return [
-      {
-        x: taus, y: taus.map(t => scaleLIDT(mat, t, false)),
-        type: "scatter" as const, mode: "lines" as const,
-        name: "Bulk", line: { color: "#3b82f6", width: 2 },
-      },
-      {
-        x: taus, y: taus.map(t => scaleLIDT(mat, t, true)),
-        type: "scatter" as const, mode: "lines" as const,
-        name: "AR Coating", line: { color: "#ef4444", width: 2, dash: "dash" },
-      },
-    ];
-  }, [selected]);
+  const fTh = scaleDamageThreshold(fRef, tauRef, tau, exponent);
+  const fPeak = gaussianPeakFluence(energy, w);
+  const margin = fTh / fPeak;
+  const eMax = energyAtFluence(fTh, w);
+  const outsideScaling = tau < THERMAL_SCALING_MIN_TAU || tauRef < THERMAL_SCALING_MIN_TAU;
+
+  const series = [
+    { name: "Scaled LIDT", color: "#3b82f6", points: CHART_TAU.map((t) => ({ x: t / NS, y: Number((scaleDamageThreshold(fRef, tauRef, t, exponent) / J_CM2).toPrecision(6)) })) },
+    { name: "Peak fluence", color: "#ef4444", dashed: true, points: [CHART_TAU[0], CHART_TAU[CHART_TAU.length - 1]].map((t) => ({ x: t / NS, y: fPeak > 0 ? Number((fPeak / J_CM2).toPrecision(6)) : null })) },
+    { name: "This pulse", color: "#f59e0b", showPoints: true, points: [{ x: tau / NS, y: Number((fTh / J_CM2).toPrecision(6)) }] },
+  ];
 
   return (
     <>
-            
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono">
-        <p>LIDT(τ) = LIDT_ref · (τ/τ_ref)^0.5 &nbsp;|&nbsp; F = E/A &nbsp;|&nbsp; I = P/A</p>
+      <p className="text-sm text-gray-400 mb-4">
+        Enter the optic&apos;s rated damage threshold and the pulse duration it was measured at, from its data sheet
+        (same wavelength as your laser). The defaults are an example, not a material value.
+      </p>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <ValidatedNumberInput label="Rated LIDT (J/cm²)" value={fRefRaw} onChange={setFRef} min={0.001} max={100000} step="any" />
+        <ValidatedNumberInput label="Rated at Pulse Duration (ns)" value={tauRefRaw} onChange={setTauRef} min={0.000001} max={1e9} step="any" />
+        <ValidatedNumberInput label="Scaling Exponent a" value={expRaw} onChange={setExp} min={0} max={1} step="any" />
+        <ValidatedNumberInput label="Your Pulse Duration (ns)" value={tauRaw} onChange={setTau} min={0.000001} max={1e9} step="any" />
+        <ValidatedNumberInput label="Pulse Energy (J)" value={energyRaw} onChange={setEnergy} min={0} max={1e6} step="any" />
+        <ValidatedNumberInput label="Beam Diameter, 1/e² (mm)" value={diamRaw} onChange={setDiam} min={0.001} max={10000} step="any" />
       </div>
 
-      {!isCW ? (
-      <div className="flex gap-4 mb-6">
-        <div>
-          <ValidatedNumberInput label="Pulse duration (s)" value={pulseDuration} onChange={setPulseDuration} min={0.001} step="0.1" />
-        </div>
-        <div>
-          <ValidatedNumberInput label="Pulse energy (J)" value={energy} onChange={setEnergy} min={0} step="0.01" />
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-4">
+        <Card label="LIDT at Your Pulse" value={show(fTh, () => `${(fTh / J_CM2).toPrecision(4)} J/cm²`)}
+          sub={`F_ref (τ/τ_ref)^${exponent}`} tone="text-blue-400" />
+        <Card label="Peak Fluence" value={show(fPeak, () => `${(fPeak / J_CM2).toPrecision(4)} J/cm²`)}
+          sub={show(fPeak, () => `2E/(πw²); mean over πw² ${(fPeak / 2 / J_CM2).toPrecision(4)} J/cm²`)} tone="text-yellow-400" />
+        <Card label="Threshold / Peak" value={show(margin, () => (margin === Infinity ? "∞" : `${margin.toPrecision(3)}×`))}
+          sub={margin >= 1 ? "below the rated threshold" : "at or above the rated threshold: damage likely"}
+          tone={margin >= 1 ? "text-green-400" : "text-red-400"} />
+        <Card label="Energy at Threshold" value={show(eMax, () => (eMax >= 1 ? `${eMax.toPrecision(4)} J` : `${(eMax * 1000).toPrecision(4)} mJ`))}
+          sub="πw²F_th/2 for this beam" tone="text-gray-200" />
       </div>
-      ) : (
-        <div className="mb-4">
-          <ValidatedNumberInput label="CW Power (W)" value={cwPower} onChange={setCwPower} min={0} />
-        </div>
+      {outsideScaling && (
+        <p role="alert" className="mb-8 rounded-lg border border-yellow-700 bg-yellow-950 p-3 text-sm text-yellow-200">
+          A pulse duration is below 20 ps, where damage is driven by multiphoton and avalanche ionisation and the
+          threshold depends on τ more weakly than √τ: the scaled value is not reliable there.
+        </p>
       )}
-      <ValidatedNumberInput label="Beam diameter (cm)" value={beamDiam} onChange={setBeamDiam} min={0.01} step="0.01" />
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">LIDT</p>
-          <p className="text-2xl font-bold text-blue-400 mt-1">{!isCW ? `${lidt.toFixed(1)} J/cm²` : `${(mat.cwThreshold).toExponential(1)} W/cm²`}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">{isCW ? "Intensity" : "Fluence"}</p>
-          <p className="text-2xl font-bold text-yellow-400 mt-1">{isCW ? `${cwIntensity.toExponential(1)} W/cm²` : `${fluence.toFixed(2)} J/cm²`}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Safety margin</p>
-          <p className={`text-2xl font-bold mt-1 ${margin > 2 ? "text-green-400" : margin > 1 ? "text-yellow-400" : "text-red-400"}`}>
-            {margin.toFixed(2)}×
-          </p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Status</p>
-          <p className={`text-xl font-bold mt-1 ${margin > 2 ? "text-green-400" : margin > 1 ? "text-yellow-400" : "text-red-400"}`}>
-            {margin > 2 ? "✓ Safe" : margin > 1 ? "⚠ Marginal" : "✗ DAMAGE RISK"}
-          </p>
-        </div>
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 my-8">
+        <SimpleLineChart title="Damage threshold against pulse duration" xLabel="Pulse Duration (ns)" yLabel="Fluence (J/cm²)"
+          series={series} xScale="log" yScale="log" />
       </div>
 
-      {!isCW && (
-        <ChartPanel data={chartData}
-          layout={{
-            paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-            font: { color: "#9ca3af" },
-            xaxis: { title: "Pulse Duration (ns)", gridcolor: "#374151", type: "log" },
-            yaxis: { title: "LIDT (J/cm²)", gridcolor: "#374151", type: "log" },
-            margin: { t: 20, r: 20, b: 50, l: 70 },
-            legend: { orientation: "h", y: -0.15 },
-          }}
-         
-         
-        />
-      )}
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+        <h3 className="text-lg font-semibold mb-3">Model</h3>
+        <div className="text-sm text-gray-300 space-y-2 font-mono">
+          <p>F_th(τ) = F_ref (τ/τ_ref)^a, a = ½ for τ ≳ 20 ps</p>
+          <p>F_peak = 2E/(πw²), w the 1/e² radius</p>
+        </div>
+        <p className="text-xs text-gray-400 mt-3">
+          The √τ law comes from heat diffusion during the pulse and was measured for fused silica and CaF₂ above
+          about 20 ps (Stuart et al. 1996). Real optics scatter around it, as defects set the threshold. A Gaussian
+          beam&apos;s peak fluence is twice the mean over πw² (the ISO 21254 effective area πw²/2), so compare it, not
+          E/(πw²), with the rated value. Wavelength, spot size and repetition rate also change the threshold and
+          are not modelled; continuous-wave ratings (W/cm) are a different quantity.
+        </p>
+      </div>
     </>
   );
 }
