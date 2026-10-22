@@ -227,7 +227,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
-  - Materials fix part 7b (session 133, `phase-4/materials-fix-7b`): rare-earth-absorption (`dopant-absorption.ts`, Yb 976 nm 1000 wt-ppm
+  - Materials fix part 7b (session 133, `phase-4/materials-fix-7b`, PR #164): rare-earth-absorption (`dopant-absorption.ts`, Yb 976 nm 1000 wt-ppm
     α 19.149 m⁻¹ = 83.16 dB/m), color-centers (`color-centers.ts`: NV⁻ Doherty Table 9, Stokes 0.420 eV; LiF F₂ 7824 cm⁻¹); 414 pages.
   - Materials fix part 7a (session 132, `phase-4/materials-fix-7a`): oh-absorption → fiber-optics/low-water-peak (OH bands 943/1383/2722 nm
     in `silica-attenuation.ts`: 1.2, 62.7, 10 030 dB/km/ppm), absorption → spectroscopy/lambert-beer-law (bulk slab T = e^(−αd)); 414 pages.

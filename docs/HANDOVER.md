@@ -1,32 +1,34 @@
-# Handover — 2026-10-22 (session 132 → session 133)
+# Handover — 2026-10-22 (session 133 → session 134)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 132: **materials fix part 7a** (two merges), branch `phase-4/materials-fix-7a`, PR to open. Next: part 7b
-(rare-earth-absorption, color-centers). 414 pages.
+Session 133: **materials fix part 7b** (rare-earth-absorption, color-centers), branch `phase-4/materials-fix-7b`, PR #164 to
+open. Next: part 8 (thermal and damage: heat-capacity, thermal-conductivity-optics, damage-threshold, radiation-damage; three
+merges into thin-film/environmental-stability). 414 pages.
 
 ## State
-- Redirects: `/materials/oh-absorption` → `/fiber-optics/low-water-peak`, `/materials/absorption` → `/spectroscopy/lambert-beer-law`
-  (merge codemod run; page floor 414 in `tests/calculator-pages.test.ts`).
-- `src/physics/fiber-optics/silica-attenuation.ts`: `OH_BANDS` (Humbach positions 943, 1246, 1383, 2212, 2722 nm; strengths
-  1.2 Philen 1982 BSTJ, 62.7 Humbach, `ohDbPerKmPerPpm(7.75)` = 10 029.8 from Hetherington & Jack ε 77.5 L/(mol·cm), ρ 2201,
-  M_OH 17.007; 1246/2212 NaN = not modelled), `ohBandFwhm` (30 nm·(λ/1383)²), `ohContentPpm`, `OH_1383_DB_PER_KM_PER_PPM`.
-  `silicaLossDbPerKm` sums the bands scaled from `ohPeakDbPerKm`; 1310/1550 goldens unchanged.
-- low-water-peak page: URL values clamped, OH content (ppb) in the 1383 card, new 0.8–2.9 µm log chart + band table.
-- `src/physics/spectroscopy/lambert-beer-law.ts`: `absorbanceFromNapierian(α m⁻¹, d m)` = αd/ln 10. Lambert-Beer page: new
-  "Bulk sample" section, URL `alpha` (cm⁻¹, default 1) and `thickness` (mm, default 10; the old absorption page's name).
-- PR #155's absorption golden "α 0.1 cm⁻¹, 10 mm → T 0.36788" is inconsistent: T = e⁻¹ needs α = 1 cm⁻¹ (tested both).
-- Materials 18 / 30 tiered, 11 `knownIssue`s; 401 / 414 total.
+- `src/physics/materials/dopant-absorption.ts`: `dopantAbsorption(σ_a, N, L, Γ = 1)` → α (m⁻¹), dB/m, 1/α, loss dB, T;
+  `DOPANT_LINES` (Er980/Er1480/Er1550/Yb976/Yb1064 from `DOPANT_PRESETS`, unchanged). Golden: Yb976 1000 wt-ppm → N 7.6597e24,
+  α 19.149 m⁻¹, 83.164 dB/m.
+- `src/physics/materials/color-centers.ts`: `COLOR_CENTERS` (NV⁻ 2.180/1.945/1.760 eV from Doherty 2013 Table 9, σ 3.1e-21 m²
+  at 532 nm from Wee 2007; LiF F₂ 443→678 nm, F₂⁺ 645→910 nm, Baldacchini 2002 via arXiv:2412.21060 Table I, no σ),
+  `stokesShift(λa, λe)` → eV, m⁻¹, quantum defect 1 − λa/λe. Tests: `tests/materials-dopant-absorption.test.ts`.
+- rare-earth-absorption: title "Rare-Earth Dopant Absorption"; URL `line`, `sigmaA` (1e-25 m², 0 = preset), `dopantConcentration`
+  (wt-ppm), `overlap`, `length` (m). color-centers: URL `center`, `absPeak`/`emPeak` (nm, 0 = preset), `sigmaA` (1e-17 cm²),
+  `concentration` (m⁻³), `thickness` (mm). Old keys `pumpWl` and rare-earth `concentration` dropped.
+- Materials 20 / 30 tiered, 9 `knownIssue`s; 403 / 414 total. New open finding: unsourced Er preset σ (ROADMAP).
 
 ## Next actions
-1. `/ship` this branch. Release-check values: `fiber-optics/low-water-peak` "0.311" (loss at 1383 nm, dB/km, defaults),
-   `spectroscopy/lambert-beer-law` "36.79" (bulk internal T %); older ones in PR #141–#162. No release unless asked.
-2. Materials fix part 7b: rare-earth-absorption (`DOPANT_PRESETS` from `doped-fiber-gain.ts`, α in m⁻¹ and dB/m; Yb σa
-   2.6e-24 Paschotta 1997, Er Barnes 1991), color-centers (Stokes shift, drop η = σem/σabs; NV Wee 2007, Moulton 1986).
-   PR #155 findings: `gh pr view 155 --json body -q .body | grep -n "rare-earth|color"`.
-3. Later: open findings (ROADMAP; new: low-water-peak 1246/2212 nm band strengths), `polarizer-types` (needs the user at the laptop with Chrome).
+1. `/ship` this branch. Release-check values: `materials/rare-earth-absorption` "19.15" (α m⁻¹, defaults),
+   `materials/color-centers` "0.420" (Stokes eV, defaults); older ones in PR #141–#163. No release unless asked.
+2. Materials fix part 8 (ROADMAP item 8). PR #155 findings: `gh pr view 155 --json body -q .body | grep -n "heat-capacity|damage"`.
+3. Later: open findings (ROADMAP), `polarizer-types` (needs the user at the laptop with Chrome).
 
 ## Non-obvious facts
+- **Session 133:** `timeout N npx next start` kills the server after N s, so a later ui-check reports "not hydrated" on every page;
+  a leftover listener on :3100 gives ChunkLoadError. Check `netstat -ano | grep :3100` and allow ≥ 300 s. Doherty's NV review is
+  arXiv:1302.3288. Barnes 1991 (Er σ): Southampton eprints blocks scripts; rp-photonics.com 403s to WebFetch; the Optica abstract
+  of Moulton 1986 returned only "Please wait".
 - **Session 132:** archive.org hosts the whole Bell System Technical Journal as OCR text:
   `https://archive.org/download/bstj<vol>-<issue>-<page>/bstj<vol>-<issue>-<page>_djvu.txt` (retry on a 500). Humbach 1996
   (J. Non-Cryst. Solids) is closed; its band positions are in arXiv:1402.0466 Table 2. The inline-constant test flags any literal
