@@ -47,8 +47,8 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   in the PR description; OK pages: brewster-tir, thermal-expansion). Every merge below is a user decision (session 124)
   and gets a redirect. Every page: clamp URL values, material in the URL, physics into `src/physics/materials/` (or reuse the named module), golden test, tier +
   `modelNote` + references, drop the `knownIssue`. About 4 pages each; 45 → 27 pages (32 after part 4).
-  5. Pockels and χ⁽²⁾/χ⁽³⁾ tables: electro-optic + photorefractive on one `pockels.ts` EO table (KDP V_π 7.48 kV, Γ in
-     cm⁻¹); nonlinear-crystals (length and power wired, d_eff fixes); nonlinear-index (`kerr.ts`, γ with A_eff).
+  5a. Pockels: electro-optic + photorefractive on one `pockels.ts` EO table (KDP V_π 7.48 kV, Γ in cm⁻¹).
+  5b. χ⁽²⁾/χ⁽³⁾ tables: nonlinear-crystals (length and power wired, d_eff fixes); nonlinear-index (`kerr.ts`, γ with A_eff).
   6. Scattering and TPA: brillouin-scattering (`fiber-nonlinear.ts`: ν_B 11.15 GHz, g_B 3.65e-11 m/W, `sbsThreshold`);
      raman-scattering (gains, Lorentzian lines, `stokesWavelength`); two-photon-absorption (Sheik-Bahae F₂ scaling).
   7. Absorption: oh-absorption → fiber-optics/low-water-peak (add the 0.945, 1.24, 2.2, 2.72 µm bands to

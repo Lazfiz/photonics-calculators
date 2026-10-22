@@ -174,8 +174,23 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "electro-optic",
     title: "Electro-Optic Coefficients",
-    description: "Pockels effect materials for modulators, Q-switches, and phase shifters",
-    knownIssue: "The half-wave voltage is the retardation value λ/(2n³r) while the phase shift is for one polarization, so they disagree by 2. The electrode gap input is not used.",
+    description: "Pockels-effect half-wave voltage of longitudinal KDP, KD*P and ADP cells and transverse LiNbO₃ modulators: retardation and single-polarization phase, V_π·L, the index change −½n³rE and the crossed-polarizer transmission.",
+    keywords: ["Pockels Effect", "Half-Wave Voltage", "Pockels Cell", "Electro-Optic Modulator"],
+    tier: "textbook",
+    modelNote: "Principal-axis geometries with r fixed at its reference wavelength; only n follows the Sellmeier fits (Zernike KDP, Zelmon LiNbO₃), and KD*P and ADP use one published index. LiNbO₃ uses clamped (high-frequency) coefficients. The z–o retardation of a transverse modulator adds to the natural birefringence.",
+    references: [
+      {
+        citation: "Wilson J., Hawkes J. Optoelectronics: An Introduction. Prentice Hall. Table 3.1 (r₆₃ of KDP, KD*P, ADP) and Example 3.2 (KDP V_π = 14.5 kV at 1.06 µm).",
+      },
+      {
+        citation: "Weis R. S., Gaylord T. K. (1985). Lithium niobate: summary of physical properties and crystal structure. Appl. Phys. A 37, 191–203.",
+        url: "https://doi.org/10.1007/BF00614817",
+      },
+      {
+        citation: "Zelmon D. E., Small D. L., Jundt D. (1997). Infrared corrected Sellmeier coefficients for congruently grown lithium niobate and 5 mol.% magnesium oxide–doped lithium niobate. J. Opt. Soc. Am. B 14, 3319.",
+        url: "https://doi.org/10.1364/JOSAB.14.003319",
+      },
+    ],
   },
   {
     slug: "heat-capacity",
@@ -301,7 +316,23 @@ export const materials: CalculatorEntry[] = [
     slug: "photorefractive",
     title: "Photorefractive Effect",
     description: "Light-induced refractive index changes via space-charge fields in electro-optic materials. Key for holographic storage, phase conjugation, and beam coupling.",
-    knownIssue: "The two-beam coupling gain is computed in m⁻¹ but labelled cm⁻¹, so it reads 100 times too large, and several electro-optic coefficients are wrong.",
+    keywords: ["Two-Beam Coupling", "Space-Charge Field", "Kukhtarev Model", "Photorefractive Gain"],
+    tier: "textbook",
+    modelNote: "Kukhtarev's band-transport model in steady state: one carrier type, diffusion only (no applied field, no photovoltaic current), small fringe modulation. E_sc = E_D/(1 + E_D/E_q) and Γ = 2πn³r_eff E_sc/(λ cos θ). The trap density is an input; Fe:LiNbO₃'s photovoltaic field, which usually dominates, is left out.",
+    references: [
+      {
+        citation: "Kukhtarev N. V., Markov V. B., Odulov S. G., Soskin M. S., Vinetskii V. L. (1978). Holographic storage in electrooptic crystals. I. Steady state. Ferroelectrics 22, 949–960.",
+        url: "https://doi.org/10.1080/00150197908239450",
+      },
+      {
+        citation: "Yeh P. (1989). Two-wave mixing in nonlinear media. IEEE J. Quantum Electron. 25, 484–519.",
+        url: "https://doi.org/10.1109/3.18564",
+      },
+      {
+        citation: "Weis R. S., Gaylord T. K. (1985). Lithium niobate: summary of physical properties and crystal structure. Appl. Phys. A 37, 191–203.",
+        url: "https://doi.org/10.1007/BF00614817",
+      },
+    ],
   },
   {
     slug: "polymer-optics",
