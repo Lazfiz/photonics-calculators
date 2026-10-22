@@ -9,9 +9,26 @@ export const materials: CalculatorEntry[] = [
   },
   {
     slug: "acousto-optic",
-    title: "Acousto-Optic Materials",
-    description: "Acousto-optic figure of merit, Bragg angle, and deflection calculations",
-    knownIssue: "The M₂ values hold for acoustic modes and wavelengths the page does not show, and the Bragg angle is the isotropic one, which anisotropic TeO₂ shear cells do not follow.",
+    title: "Acousto-Optic Bragg Cell",
+    description: "Acousto-optic Bragg cell design: Bragg and deflection angles, scan range, Klein–Cook Q, first-order diffraction efficiency from the figure of merit M₂ and acoustic power, access time and resolvable spots, for TeO₂, PbMoO₄ and fused silica.",
+    keywords: ["Acousto-Optic Materials", "AOM", "Acousto-Optic Deflector", "Figure of Merit M₂"],
+    tier: "textbook",
+    modelNote: "Isotropic Bragg diffraction of plane waves with acoustic attenuation ignored. M₂ and the sound velocity hold for the listed acoustic mode at 633 nm. TeO₂ slow-shear deflectors use anisotropic diffraction, so their Bragg angles differ from the isotropic ones.",
+    references: [
+      {
+        citation: "Uchida N., Niizeki N. (1973). Acoustooptic deflection materials and techniques. Proc. IEEE 61, 1073–1092.",
+        url: "https://doi.org/10.1109/PROC.1973.9212",
+      },
+      {
+        citation: "Dixon R. W. (1967). Photoelastic properties of selected materials and their relevance for applications to acoustic light modulators and scanners. J. Appl. Phys. 38, 5149–5153.",
+        url: "https://doi.org/10.1063/1.1709293",
+      },
+      {
+        citation: "Klein W. R., Cook B. D. (1967). Unified approach to ultrasonic light diffraction. IEEE Trans. Sonics Ultrason. 14, 123–134.",
+        url: "https://doi.org/10.1109/T-SU.1967.29423",
+      },
+      { citation: "Yariv A., Yeh P. (1984). Optical Waves in Crystals. Wiley. Ch. 9, acousto-optics." },
+    ],
   },
   {
     slug: "aging-effects",
@@ -44,18 +61,6 @@ export const materials: CalculatorEntry[] = [
         citation: "Zernike F. (1964). Refractive indices of ammonium dihydrogen phosphate and potassium dihydrogen phosphate between 2000 Å and 1.5 µ. J. Opt. Soc. Am. 54, 1215–1220.",
         url: "https://doi.org/10.1364/JOSA.54.001215",
       },
-    ],
-  },
-  {
-    slug: "brewster-tir",
-    title: "Brewster Angle & Total Internal Reflection",
-    description: "Interactive Brewster-angle and critical-angle explorer with common material presets.",
-    lede: "Interactive Brewster-angle and critical-angle explorer with common interface presets.",
-    related: [
-      { href: "/materials/aging-effects" },
-      { href: "/materials/birefringent-crystals" },
-      { href: "/materials/brillouin-scattering" },
-      { href: "/materials/crystal-properties" },
     ],
   },
   {
@@ -218,9 +223,21 @@ export const materials: CalculatorEntry[] = [
   },
   {
     slug: "magneto-optic",
-    title: "Magneto-Optic Materials",
-    description: "Faraday rotation, Verdet constants, and isolator design calculations",
-    knownIssue: "YIG and Bi:YIG are ferrimagnetic, so their rotation saturates near 0.2 T instead of growing as V·B·L, and the 1/λ² scaling misses the tabulated Verdet values by up to 20 %.",
+    title: "Faraday Rotation & Verdet Constants",
+    description: "Faraday rotation θ = VBL in TGG, TSAG, CeF₃ and fused silica, with the Verdet constant's dispersion from published fits, the field or length for a 45° isolator rotator, and YIG's saturated rotation at 1550 nm.",
+    keywords: ["Verdet Constant", "Faraday Isolator", "Faraday Rotator", "TGG"],
+    tier: "textbook",
+    modelNote: "θ = VBL is exact for a uniform field. V(λ) comes from published fits inside their ranges: the single-transition model for the Tb³⁺ and Ce³⁺ paramagnets (Vojna et al.), a dispersion fit for fused silica (Tran et al.). YIG is ferrimagnetic, so only its saturated rotation at 1550 nm is given.",
+    references: [
+      {
+        citation: "Vojna D., Slezák O., Lucianetti A., Mocek T. (2019). Verdet constant of magneto-active materials developed for high-power Faraday devices. Appl. Sci. 9, 3160. Eq. 13 and Tables 1–3.",
+        url: "https://doi.org/10.3390/app9153160",
+      },
+      {
+        citation: "Tran D.-B.-A., Edwards E., Tew D. P., Peverall R., Ritchie G. A. D. (2024). Continuous-wave cavity ringdown for high-sensitivity polarimetry and magnetometry measurements. J. Chem. Phys. 160, 054201. Fused silica Verdet dispersion, eq. 2.",
+        url: "https://doi.org/10.1063/5.0187832",
+      },
+    ],
   },
   {
     slug: "nonlinear-crystals",
@@ -263,9 +280,22 @@ export const materials: CalculatorEntry[] = [
   },
   {
     slug: "photoelastic",
-    title: "Photoelastic Constants",
-    description: "Stress-induced birefringence: Δn = C · σ, where C is the stress-optic coefficient",
-    knownIssue: "Si, Ge, GaAs, BaF₂, diamond and ZnSe silently use a placeholder stress-optic coefficient, and water is given a stress birefringence that a liquid cannot sustain.",
+    title: "Stress Birefringence in Optical Glass",
+    description: "Stress birefringence of optical glass: Δn = C(σ₁ − σ₂) and the retardance R = C d (σ₁ − σ₂) for fused silica and twelve Schott glasses, in nm/cm as glass catalogs quote it, with the stress that gives a half-wave retardance.",
+    keywords: ["Photoelastic Constants", "Stress-Optic Coefficient", "Stress Optical Coefficient K"],
+    tier: "textbook",
+    modelNote: "Linear stress-optic law for isotropic glass at one wavelength (C varies a few percent across the visible). Crystals are not covered: they have a stress-optic tensor, so their birefringence depends on the stress and light directions.",
+    references: [
+      {
+        citation: "SCHOTT AG (2017). Optical glass data sheets, 2017-01-20: stress optical coefficient K.",
+        url: "https://refractiveindex.info/download/data/2017/schott_2017-01-20.pdf",
+      },
+      {
+        citation: "Jog E. S. (1957). The dispersion of the stress optical coefficient of vitreous silica. J. Indian Inst. Sci. 39(2), 93. Table I.",
+        url: "https://journal.iisc.ac.in/index.php/iisc/article/view/2928",
+      },
+      { citation: "Dally J. W., Riley W. F. (2005). Experimental Stress Analysis, 4th ed. College House Enterprises. Theory of photoelasticity." },
+    ],
   },
   {
     slug: "photorefractive",
@@ -365,12 +395,6 @@ export const materials: CalculatorEntry[] = [
     title: "Two-Photon Absorption",
     description: "Nonlinear absorption coefficient β₂PA and intensity-dependent transmission. TPA becomes significant at high peak intensities (pulsed lasers).",
     knownIssue: "β comes from an ad hoc (λg/λ)³ scaling that overestimates measured two-photon coefficients several-fold and jumps by 100× below λg/2.",
-  },
-  {
-    slug: "verdet-constant",
-    title: "Verdet Constant",
-    description: "Faraday rotation: θ = V · B · L, where V ∝ 1/λ² for paramagnetic materials",
-    knownIssue: "Diamagnetic materials carry the wrong sign, ZnSe is scaled from a 10.6 µm value to about 34000 rad/(T·m) at 633 nm, and the 45° isolator length comes out negative for TGG.",
   },
   {
     slug: "x-ray-optics",

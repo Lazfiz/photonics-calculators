@@ -451,8 +451,7 @@ export const thinFilm: CalculatorEntry[] = [
       {
         href: "/polarization/fresnel-polarization",
         note: "Interface reflection/transmission fundamentals.",
-      },
-      { href: "/materials/brewster-tir", note: "Angle-dependent reflection behavior." },
+      }
     ],
   },
   {

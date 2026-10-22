@@ -1,202 +1,189 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import {
+  MAGNETO_OPTIC, faradayRotation, fieldForRotation, lengthForRotation, verdetConstant, type MagnetoOpticId,
+} from "../../../physics/materials/faraday";
 
-interface MOMaterial {
-  name: string;
-  type: string; // "diamagnetic" or "paramagnetic"
-  Verdet_633: number; // rad/T·m at 633 nm
-  Verdet_1064: number;
-  Verdet_1550: number;
-  n: number;
-  transparencyMin: number;
-  transparencyMax: number;
-  // Verdet constant ~ λ⁻², so we extrapolate
-  refWavelength: number; // nm for reference Verdet
-  refVerdet: number; // rad/T·m at ref wavelength
-}
+const IDS = ["tgg", "tsag", "cef3", "silica", "yig"] as const satisfies readonly MagnetoOpticId[];
+const CURVE_IDS = ["tgg", "tsag", "cef3", "silica"] as const;
+const COLORS: Record<MagnetoOpticId, string> = { tgg: "#60a5fa", tsag: "#34d399", cef3: "#fbbf24", silica: "#a78bfa", yig: "#f87171" };
+const DEFAULT_ID: MagnetoOpticId = "tgg";
+const WAVELENGTH_MIN_NM = 250;
+const WAVELENGTH_MAX_NM = 2000;
+const FIELD_MIN_T = 0.001;
+const FIELD_MAX_T = 20;
+const LENGTH_MIN_MM = 0.1;
+const LENGTH_MAX_MM = 200;
+const YIG_WAVELENGTH_NM = 1550;
+const CHART_POINTS = 120;
+const DEG = Math.PI / 180;
+const QUARTER_PI = Math.PI / 4;
 
-const materials: Record<string, MOMaterial> = {
-  "TGG": {
-    name: "TGG (Tb₃Ga₅O₁₂)", type: "paramagnetic",
-    Verdet_633: -134, Verdet_1064: -40, Verdet_1550: -18,
-    n: 1.95, transparencyMin: 0.4, transparencyMax: 1.5,
-    refWavelength: 632, refVerdet: -134,
-  },
-  "TSAG": {
-    name: "TSAG (Tb₃Sc₂Al₃O₁₂)", type: "paramagnetic",
-    Verdet_633: -170, Verdet_1064: -50, Verdet_1550: -22,
-    n: 1.85, transparencyMin: 0.4, transparencyMax: 1.5,
-    refWavelength: 632, refVerdet: -170,
-  },
-  "CeF₃": {
-    name: "CeF₃", type: "paramagnetic",
-    Verdet_633: -120, Verdet_1064: -38, Verdet_1550: -16,
-    n: 1.62, transparencyMin: 0.3, transparencyMax: 5.0,
-    refWavelength: 632, refVerdet: -120,
-  },
-  "YIG": {
-    name: "YIG (Y₃Fe₅O₁₂)", type: "ferromagnetic",
-    Verdet_633: -3200, Verdet_1064: -900, Verdet_1550: -400,
-    n: 2.22, transparencyMin: 1.1, transparencyMax: 5.5,
-    refWavelength: 1310, refVerdet: -600,
-  },
-  "Bi:YIG": {
-    name: "Bi:YIG (bismuth-substituted)", type: "ferromagnetic",
-    Verdet_633: -8000, Verdet_1064: -3000, Verdet_1550: -1500,
-    n: 2.55, transparencyMin: 1.1, transparencyMax: 6.0,
-    refWavelength: 1310, refVerdet: -2000,
-  },
-  "SiO₂": {
-    name: "Fused Silica (SiO₂)", type: "diamagnetic",
-    Verdet_633: 3.67, Verdet_1064: 1.32, Verdet_1550: 0.63,
-    n: 1.46, transparencyMin: 0.18, transparencyMax: 3.5,
-    refWavelength: 632, refVerdet: 3.67,
-  },
-  "SF11": {
-    name: "Schott SF11", type: "diamagnetic",
-    Verdet_633: 25, Verdet_1064: 9.0, Verdet_1550: 4.2,
-    n: 1.78, transparencyMin: 0.38, transparencyMax: 2.5,
-    refWavelength: 632, refVerdet: 25,
-  },
-  "ZnSe": {
-    name: "ZnSe", type: "diamagnetic",
-    Verdet_633: 80, Verdet_1064: 30, Verdet_1550: 15,
-    n: 2.59, transparencyMin: 0.5, transparencyMax: 18.0,
-    refWavelength: 1064, refVerdet: 30,
-  },
-  "CdMnTe": {
-    name: "CdMnTe", type: "paramagnetic (semimagnetic)",
-    Verdet_633: -500, Verdet_1064: -200, Verdet_1550: -100,
-    n: 2.75, transparencyMin: 0.8, transparencyMax: 16.0,
-    refWavelength: 1064, refVerdet: -200,
-  },
-  "Diamagnetic Glass": {
-    name: "FR5 (Terbium Glass)", type: "paramagnetic",
-    Verdet_633: -68, Verdet_1064: -25, Verdet_1550: -12,
-    n: 1.72, transparencyMin: 0.4, transparencyMax: 2.0,
-    refWavelength: 632, refVerdet: -68,
-  },
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const round6 = (x: number) => Math.round(x * 1e6) / 1e6;
+const fmt = (x: number, digits: number) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
+const sig = (x: number, digits: number) => (Number.isFinite(x) ? String(+x.toPrecision(digits)) : "—");
+const layout = (x: string, y: string, logY = false) => ({
+  paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+  xaxis: { title: x, gridcolor: "#374151" }, yaxis: { title: y, gridcolor: "#374151", ...(logY ? { type: "log" } : {}) },
+  margin: { t: 20, r: 20, b: 50, l: 60 }, height: 320,
+});
+const rangeText = (id: MagnetoOpticId) => {
+  const [lo, hi] = MAGNETO_OPTIC[id].range;
+  return lo === hi ? `${Math.round(lo * 1e9)} nm only` : `${Math.round(lo * 1e9)}–${Math.round(hi * 1e9)} nm`;
 };
 
-const colors = ["#3b82f6", "#ef4444", "#22c55e", "#f59e0b", "#8b5cf6", "#ec4899", "#06b6d4", "#f97316", "#14b8a6", "#a855f7"];
-
-function verdetAt(m: MOMaterial, lambdaNm: number): number {
-  // Verdet ∝ 1/λ²
-  return m.refVerdet * Math.pow(m.refWavelength / lambdaNm, 2);
+function verdetChart(selected: MagnetoOpticId, lambda_nm: number, V: number) {
+  const traces: Record<string, unknown>[] = CURVE_IDS.map((id) => {
+    const [lo, hi] = MAGNETO_OPTIC[id].range.map((x) => x * 1e9);
+    const nm = Array.from({ length: CHART_POINTS + 1 }, (_, k) => lo + (k * (hi - lo)) / CHART_POINTS);
+    const pts = nm.map((x) => ({ x, y: Math.abs(MAGNETO_OPTIC[id].verdet(x * 1e-9)) })).filter((p) => Number.isFinite(p.y) && p.y > 0);
+    return { x: pts.map((p) => round6(p.x)), y: pts.map((p) => round6(p.y)), type: "scatter", mode: "lines", name: MAGNETO_OPTIC[id].name, line: { color: COLORS[id], width: 2 } };
+  });
+  if (selected !== "yig" && Number.isFinite(V) && V !== 0) {
+    traces.push({ x: [round6(lambda_nm)], y: [round6(Math.abs(V))], type: "scatter", mode: "markers", name: "selected", line: { color: "#f87171" }, marker: { color: "#f87171", size: 9 } });
+  }
+  return traces;
 }
 
 export default function MagnetoOpticPage() {
-  const [selected, setSelected] = useState("TGG");
-  const [wavelength, setWavelength] = useURLState("wavelength", 633);
-  const [fieldStrength, setFieldStrength] = useURLState("fieldStrength", 0.5); // Tesla
-  const [length, setLength] = useURLState("length", 20); // mm
+  const [materialParam, setMaterial] = useURLState("material", DEFAULT_ID as string);
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 633); // nm
+  const [fieldRaw, setField] = useURLState("fieldStrength", 0.5); // T
+  const [lengthRaw, setLength] = useURLState("length", 20); // mm
+  const material = (IDS as readonly string[]).includes(materialParam) ? (materialParam as MagnetoOpticId) : DEFAULT_ID;
+  const wavelength_nm = clamp(wavelengthRaw, WAVELENGTH_MIN_NM, WAVELENGTH_MAX_NM, 633);
+  const field = clamp(fieldRaw, FIELD_MIN_T, FIELD_MAX_T, 0.5);
+  const length_mm = clamp(lengthRaw, LENGTH_MIN_MM, LENGTH_MAX_MM, 20);
+  const lambda = wavelength_nm * 1e-9;
+  const L = length_mm * 1e-3;
+  const m = MAGNETO_OPTIC[material];
+  const yig = m.kind === "ferrimagnetic";
 
-  const m = materials[selected];
-  const V = verdetAt(m, wavelength);
-  const faradayRotation = V * fieldStrength * (length / 1000); // radians
-  const faradayDegrees = faradayRotation * (180 / Math.PI);
+  const choose = (id: MagnetoOpticId) => {
+    setMaterial(id);
+    if (id === "yig") setWavelength(YIG_WAVELENGTH_NM);
+  };
 
-  // Field needed for 45° rotation
-  const fieldFor45 = Math.abs(45 * Math.PI / 180 / (V * (length / 1000)));
-
-  const verdetSpectrum = useMemo(() => {
-    const ws: number[] = [];
-    for (let w = 400; w <= 2000; w += 10) ws.push(w);
-    return Object.entries(materials).map(([key, mat], i) => ({
-      x: ws,
-      y: ws.map(w => verdetAt(mat, w)),
-      type: "scatter" as const, mode: "lines" as const, name: mat.name,
-      line: { color: colors[i % colors.length], width: key === selected ? 3 : 1.5 },
-    }));
-  }, [selected]);
-
-  const comparisonBar = useMemo(() => {
-    const entries = Object.entries(materials).sort((a, b) => Math.abs(verdetAt(b[1], wavelength)) - Math.abs(verdetAt(a[1], wavelength)));
-    return [{
-      x: entries.map(([, cr]) => cr.name),
-      y: entries.map(([, cr]) => Math.abs(verdetAt(cr, wavelength))),
-      type: "bar" as const,
-      marker: { color: entries.map(([k]) => k === selected ? "#3b82f6" : "#4b5563") },
-    }];
-  }, [selected, wavelength]);
+  const V = verdetConstant(material, lambda);
+  const [lo, hi] = m.range;
+  const inRange = lambda >= lo * (1 - 1e-9) && lambda <= hi * (1 + 1e-9);
+  const rotation_deg = (yig ? faradayRotation(V, 1, L) : faradayRotation(V, field, L)) / DEG;
+  const field45 = yig ? NaN : fieldForRotation(V, L, QUARTER_PI);
+  const length45_mm = (yig ? lengthForRotation(V, 1, QUARTER_PI) : lengthForRotation(V, field, QUARTER_PI)) * 1e3;
+  const chart = verdetChart(material, wavelength_nm, V);
+  const outside = "outside the fit range";
+  const nonReciprocal = "non-reciprocal: a return pass doubles it, so an isolator's 45° becomes 90° and the input polarizer blocks the return";
 
   return (
     <>
-            
-      <div className="grid gap-4 sm:grid-cols-2 mb-6">
-        <div>
-          <label className="block text-sm text-gray-400 mb-1">Material</label>
-          <select value={selected} onChange={e => setSelected(e.target.value)}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white">
-            {Object.entries(materials).map(([k, v]) => <option key={k} value={k}>{v.name} ({v.type})</option>)}
-          </select>
-        </div>
-        <div>
-          <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={300} max={2000} />
-        </div>
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-6" role="group" aria-label="Material">
+        {IDS.map((id) => (
+          <button key={id} onClick={() => choose(id)} aria-pressed={material === id}
+            className={`px-3 py-2 rounded text-sm ${material === id ? "bg-blue-600" : "bg-gray-800 hover:bg-gray-700"}`}>
+            {MAGNETO_OPTIC[id].name}
+          </button>
+        ))}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3 mb-6">
-        <div>
-          <ValidatedNumberInput label="Magnetic Field (T)" value={fieldStrength} onChange={setFieldStrength} min={0.01} max={5} />
-        </div>
-        <div>
-          <ValidatedNumberInput label="Crystal Length (mm)" value={length} onChange={setLength} min={1} max={100} />
-        </div>
+      <div className="grid gap-4 sm:grid-cols-3 mb-4">
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthRaw} onChange={setWavelength} min={WAVELENGTH_MIN_NM} max={WAVELENGTH_MAX_NM} step="1" />
+        <ValidatedNumberInput label="Magnetic field B (T)" value={fieldRaw} onChange={setField} min={FIELD_MIN_T} max={FIELD_MAX_T} step="0.01" />
+        <ValidatedNumberInput label="Length L (mm)" value={lengthRaw} onChange={setLength} min={LENGTH_MIN_MM} max={LENGTH_MAX_MM} step="0.5" />
+      </div>
+      <p className="text-xs mb-6 text-gray-500">
+        {m.kind}; {m.source}; fit range {rangeText(material)}.{" "}
+        {!inRange && <span className="text-yellow-400">The wavelength is outside the fit range.</span>}
+      </p>
+
+      {yig ? (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 mb-4">
+            <ResultCard label="Saturated rotation |θ/L|" value={Number.isFinite(V) ? `${sig(V, 4)} rad/m` : "—"} tone="blue"
+              subtext={Number.isFinite(V) ? `${sig(V / DEG / 1e3, 4)} °/mm; ferrimagnetic, not a Verdet constant` : outside} />
+            <ResultCard label={`Rotation of ${length_mm} mm`} value={Number.isFinite(rotation_deg) ? `${fmt(rotation_deg, 2)}°` : "—"} tone="green"
+              subtext={Number.isFinite(rotation_deg) ? "above saturation; independent of B" : outside} />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 mb-8">
+            <ResultCard label="Field for 45° at this length" value="—" tone="orange" subtext="saturated: set by length" />
+            <ResultCard label="Length for 45°" value={Number.isFinite(length45_mm) ? `${sig(length45_mm, 4)} mm` : "—"} tone="purple"
+              subtext={Number.isFinite(length45_mm) ? nonReciprocal : outside} />
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 mb-4">
+            <ResultCard label="Verdet constant V" value={Number.isFinite(V) ? `${sig(V, 4)} rad/(T·m)` : "—"} tone="blue"
+              subtext={Number.isFinite(V) ? (V < 0 ? "paramagnetic: negative" : "diamagnetic: positive") : outside} />
+            <ResultCard label="Faraday rotation θ = V·B·L" value={Number.isFinite(rotation_deg) ? `${fmt(rotation_deg, 3)}°` : "—"} tone="green"
+              subtext={Number.isFinite(rotation_deg) ? nonReciprocal : outside} />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 mb-8">
+            <ResultCard label="Field for 45° at this length" value={Number.isFinite(field45) ? `${sig(field45, 4)} T` : "—"} tone="orange"
+              subtext={Number.isFinite(field45) ? undefined : outside} />
+            <ResultCard label="Length for 45° at this field" value={Number.isFinite(length45_mm) ? `${sig(length45_mm, 4)} mm` : "—"} tone="purple"
+              subtext={Number.isFinite(length45_mm) ? undefined : outside} />
+          </div>
+        </>
+      )}
+
+      <div className="bg-gray-900 rounded-lg p-4 mb-6">
+        <h3 className="text-lg font-semibold mb-3">Verdet constant against wavelength</h3>
+        <ChartPanel data={chart} layout={layout("Wavelength (nm)", "|V| (rad/(T·m))", true)} />
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">V at {wavelength} nm</p>
-          <p className="text-2xl font-bold text-blue-400 mt-1">{V.toFixed(1)} rad/T·m</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Faraday Rotation</p>
-          <p className="text-2xl font-bold text-green-400 mt-1">{faradayDegrees.toFixed(2)}°</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">n</p>
-          <p className="text-2xl font-bold text-amber-400 mt-1">{m.n.toFixed(3)}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">B for 45° (T)</p>
-          <p className="text-2xl font-bold text-purple-400 mt-1">{fieldFor45.toFixed(3)}</p>
-        </div>
+      <div className="bg-gray-900 rounded-lg p-4 mb-6 overflow-x-auto">
+        <h3 className="text-lg font-semibold mb-3">Materials at {wavelength_nm} nm</h3>
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-gray-400">
+              <th className="pr-4 py-1">Material</th><th className="pr-4 py-1">V (rad/(T·m))</th><th className="pr-4 py-1">Kind</th>
+              <th className="pr-4 py-1">Range</th><th className="py-1">Source</th>
+            </tr>
+          </thead>
+          <tbody>
+            {IDS.map((id) => {
+              const v = verdetConstant(id, lambda);
+              return (
+                <tr key={id} onClick={() => choose(id)} className={`cursor-pointer hover:bg-gray-800 ${id === material ? "bg-gray-800" : ""}`}>
+                  <td className="pr-4 py-1"><span style={{ color: COLORS[id] }}>{MAGNETO_OPTIC[id].name}</span></td>
+                  <td className="pr-4 py-1">{Number.isFinite(v) ? sig(v, 4) : "—"}{id === "yig" && Number.isFinite(v) ? " rad/m" : ""}</td>
+                  <td className="pr-4 py-1 text-gray-300">{MAGNETO_OPTIC[id].kind}</td>
+                  <td className="pr-4 py-1 text-gray-300">{rangeText(id)}</td>
+                  <td className="py-1 text-gray-400">{MAGNETO_OPTIC[id].source}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        <p className="text-xs text-gray-500 mt-2">Click a row to select the material.</p>
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
-        <p className="text-sm text-gray-400">Faraday rotation: <span className="text-white">θ = V · B · L = {V.toFixed(1)} × {fieldStrength} × {length / 1000} = {faradayDegrees.toFixed(2)}°</span></p>
-        <p className="text-sm text-gray-400 mt-1">Type: <span className="text-cyan-400 font-bold">{m.type}</span> | Transparency: <span className="text-cyan-400 font-bold">{m.transparencyMin}–{m.transparencyMax} μm</span></p>
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+        <h3 className="text-lg font-semibold mb-2">Model</h3>
+        <div className="text-sm text-gray-300 space-y-2">
+          <p className="font-mono">θ = V B L</p>
+          <p>
+            Sign convention (Vojna et al.): V &lt; 0 when the medium rotates the polarization clockwise for light propagating
+            along B. Tb³⁺ and Ce³⁺ paramagnets are negative, diamagnetic glass is positive. The rotation does not reverse with
+            the beam, so a round trip doubles it.
+          </p>
+          <p className="font-mono">|V| = F λ₀²/(λ² − λ₀²) + G</p>
+          <p>
+            Single-transition fit of Vojna et al. 2019: TGG F 820.3 rad/(T·m), G −6.2, λ₀ 239.3 nm; TSAG F 756.7, λ₀ 262 nm;
+            CeF₃ F 743.6, λ₀ 239 nm, stopped at 700 nm because it underestimates 1064 nm by 15 %. Fused silica uses
+            V = α/(λ² − λ₀²) + β (Tran et al. 2024), fitted to 310 ± 3 °/(T·m) at 532 nm.
+          </p>
+          <p>
+            YIG is ferrimagnetic: its rotation saturates (304 rad/m at 1550 nm) and stops growing with B, so the field input has
+            no effect on it.
+          </p>
+        </div>
       </div>
-
-      <ChartPanel data={verdetSpectrum}
-        layout={{
-          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-          font: { color: "#9ca3af" },
-          xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
-          yaxis: { title: "Verdet Constant (rad/T·m)", gridcolor: "#374151" },
-          margin: { t: 20, r: 20, b: 50, l: 60 },
-          legend: { orientation: "h", y: -0.35 },
-        }}
-       
-       
-      />
-
-      <h2 className="text-xl font-bold mt-8 mb-4">|V| Comparison at {wavelength} nm</h2>
-      <ChartPanel data={comparisonBar}
-        layout={{
-          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-          font: { color: "#9ca3af" },
-          xaxis: { title: "Material", gridcolor: "#374151" },
-          yaxis: { title: "|V| (rad/T·m)", gridcolor: "#374151" },
-          margin: { t: 20, r: 20, b: 100, l: 60 },
-        }}
-       
-       
-      />
     </>
   );
 }
