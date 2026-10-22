@@ -1,41 +1,41 @@
-# Handover — 2026-10-21 (session 128 → session 129)
+# Handover — 2026-10-22 (session 129 → session 130)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 128: **materials fix part 4** (field effects), branch `phase-4/materials-fix-4`. verdet-constant → magneto-optic;
-brewster-tir → polarization/fresnel-polarization; photoelastic and acousto-optic rewritten (2 redirects, 418 → 416 pages).
-Next: **materials fix part 5** (Pockels and χ⁽²⁾/χ⁽³⁾ tables).
+Session 129: **materials fix part 5a** (Pockels), branch `phase-4/materials-fix-5`, PR #160 to open. Part 5 was split:
+5a electro-optic + photorefractive (done), 5b nonlinear-crystals + nonlinear-index (next). No merges, 416 pages.
 
 ## State
-- `src/physics/materials/faraday.ts`: `MAGNETO_OPTIC` (tgg, tsag, cef3, silica, yig), `singleTransitionVerdet`, `silicaVerdet`,
-  `verdetConstant(id, λ)` (NaN outside each fit range), `faradayRotation`, `fieldForRotation`, `lengthForRotation`. Sign:
-  Vojna (V < 0 = clockwise along B), paramagnets negative. YIG is a saturated 304 rad/m at 1550 nm only.
-- `stress-optic.ts`: `STRESS_OPTIC` (silica Jog 1957 3.55e-12 Pa⁻¹ + 12 Schott glasses), `stressForRetardance`; the
-  retardance itself is `photoelasticRetardance` from `polarization/photoelasticity.ts`.
-- `acousto-optic.ts`: `ACOUSTO_OPTIC` (teo2-shear, teo2-long, pbmoo4, silica: n, v, M₂ at 633 nm), `braggAngle`, `scanAngle`,
-  `kleinCookQ`, `braggEfficiency`, `fullEfficiencyPower`, `accessTime`.
-- URL params: magneto-optic `material`, `wavelength` nm, `fieldStrength` T, `length` mm; photoelastic `material` (or
-  `custom` + `C` ×10⁻¹² Pa⁻¹), `stress` MPa, `thickness` mm, `wavelength` nm; acousto-optic `material` (or `custom` + `n`,
-  `velocity`, `m2`), `wavelength`, `frequency` MHz, `power` W (default 0.02), `length`, `height`, `beam` mm, `bandwidth` MHz.
-- `tests/materials-field-effects.test.ts` (9 tests). Materials 11 / 32 tiered, 20 `knownIssue`s; 394 / 416 total; page floor 416.
+- `src/physics/materials/pockels.ts`: `POCKELS` (kdp Zernike n_o, kdp-d n 1.51, adp n 1.52: r₆₃ 10.6/26.4/8.5 pm/V Wilson &
+  Hawkes Table 3.1; linbo3 r₃₃ 30.8, r₁₃ 8.6 clamped, ε₃₃ 28 Weis & Gaylord, Zelmon n), `pockelsIndexChange`,
+  `longitudinalHalfWaveVoltage` (retardation λ/2n³r), `phaseHalfWaveVoltage` (λd/(n³rL), one polarization, = 2× in a
+  longitudinal cell), `transverseHalfWaveVoltage` (n_e³r₃₃ − n_o³r₁₃), `crossedPolarizerTransmission`, `gratingPeriod`,
+  `diffusionField`, `trapLimitedField`, `spaceChargeField`, `twoBeamCouplingGain` (m⁻¹), `balancedGratingPeriod`,
+  `twoBeamSignalGain` ((1+β)/(1+βe^(−ΓL))).
+- URL params: electro-optic `material` (kdp, kdp-d, adp, linbo3, custom + `n`, `r` pm/V, `geometry`), `wavelength` nm,
+  `voltage` V, `length` mm, `gap` µm (old unit kept); photorefractive `material` (linbo3, custom + `n`, `r`, `epsilon`),
+  `wavelength`, `angle` (full outside 2θ, °), `temperature` K, `traps` (10²² m⁻³), `length` mm, `ratio` (pump/signal).
+- `tests/materials-pockels.test.ts` (10 tests), 1014 tests. Materials 13 / 32 tiered, 18 `knownIssue`s; 396 / 416 total.
 
 ## Next actions
-1. `/ship` this branch. Values for a later release check: `materials/magneto-optic=-130.6` (default, V at 633 nm),
-   `materials/acousto-optic=2.94` (`?wavelength=633&frequency=100`, θ_B °), `materials/photoelastic=3.55` (default C).
-   Part 3: `materials/birefringent-crystals=1.67062` (`?crystal=bbo&wavelength=589.3`), `materials/crystal-properties=6.232`,
-   `materials/diamond-optics=2.4173`; older: PR #141–#158 descriptions. No release unless asked.
-2. Materials fix part 5 (ROADMAP item 5): read the PR #155 findings first
-   (`gh pr view 155 --json body -q .body | grep -n -A3 "electro-optic"`). It may need splitting into a/b boxes.
-3. Later: open findings (ROADMAP; new: AO M₂ from secondary listings, CeF₃ range, Schott K wavelength), `polarizer-types`
-   (needs the user at the laptop with Chrome).
+1. `/ship` this branch. Release-check values: `materials/electro-optic=8.717` (default KDP V_π kV),
+   `materials/photorefractive=4.211` (Γ cm⁻¹); older ones in PR #141–#159. No release unless asked.
+2. Materials fix part 5b (ROADMAP item 5b): nonlinear-crystals (wire length and power through
+   `imaging/second-harmonic-generation.ts` or `wave-optics/three-wave.ts`; d_eff fixes: bulk MgO:LN ≈ 4.5, OP-GaAs QPM ≈ 69,
+   PPLN 2d₃₃/π; Nikogosyan 2005 10.1007/b138685) and nonlinear-index (`wave-optics/kerr.ts` `nonlinearPhase`, golden
+   1550 nm, 2.6e-20 m²/W, 1e16 W/m², 1 cm → 10.54 rad; γ via `fiber-nonlinear.ts` `nonlinearCoefficient` with A_eff).
+   PR #155's batch-3 findings: `gh pr view 155 --json body -q .body | grep -n -A2 "nonlinear"`.
+3. Later: open findings (ROADMAP; new: EO crystals without a source), `polarizer-types` (needs the user at the laptop
+   with Chrome).
 
 ## Non-obvious facts
+- **Session 129:** textbook tables and worked examples: FOSSEE notebooks (`tbc-python.fossee.in/convert-notebook/<book>/ChapterN.ipynb`,
+  WebFetch). Caltech authors' PDFs download, but their tables are OCR-garbled. Chrome exit 75 (another project's devctl job holds it): rerun in background.
 - **Session 128:** MDPI PDFs 403 to curl and WebFetch: try the Semantic Scholar cache (`pdfs.semanticscholar.org/…`).
   Schott's per-glass sheets return HTML; refractiveindex.info hosts `schott_2017-01-20.pdf` (`pdftotext` puts each E, μ, K
   value a line below its label). Crossref every DOI and article number; add no sign convention a source doesn't state.
-- **Session 127:** the page tests list pages via git: `git add` a new page directory before the gate. Crystran's "1.06 µm"
-  sapphire values are at 1064 nm, quartz's "0.6 µm" at 589 nm. refractiveindex.info formula 4's last term c₉λ^c₁₀ is Sellmeier
-  `K`. A redirect can't add a query, so a merged preset page lands on the default.
+- **Session 127:** `git add` a new page directory or test before the gate (page tests list via git). refractiveindex.info formula 4's
+  last term c₉λ^c₁₀ is Sellmeier `K`. A redirect can't add a query, so a merged preset page lands on the default.
 - **Session 126:** sources that download: Crystran data sheets (`curl -L -A "Mozilla/5.0" https://www.crystran.com/optical-materials/<slug>`,
   slugs from that index page; its "reflection loss (2 surfaces)" is 1 − 2n/(n²+1), a free golden value); refractiveindex.info
   YAML via `gh api "repos/polyanskiy/refractiveindex.info-database/git/trees/main?recursive=1"` and raw.githubusercontent
