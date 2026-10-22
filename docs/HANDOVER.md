@@ -1,34 +1,33 @@
-# Handover — 2026-10-22 (session 129 → session 130)
+# Handover — 2026-10-22 (session 130 → session 131)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 129: **materials fix part 5a** (Pockels), branch `phase-4/materials-fix-5`, PR #160 to open. Part 5 was split:
-5a electro-optic + photorefractive (done), 5b nonlinear-crystals + nonlinear-index (next). No merges, 416 pages.
+Session 130: **materials fix part 5b** (nonlinear-index, nonlinear-crystals), branch `phase-4/materials-fix-5b`, PR #161 to
+open. Next: materials fix part 6 (brillouin, raman, two-photon-absorption). No merges, 416 pages.
 
 ## State
-- `src/physics/materials/pockels.ts`: `POCKELS` (kdp Zernike n_o, kdp-d n 1.51, adp n 1.52: r₆₃ 10.6/26.4/8.5 pm/V Wilson &
-  Hawkes Table 3.1; linbo3 r₃₃ 30.8, r₁₃ 8.6 clamped, ε₃₃ 28 Weis & Gaylord, Zelmon n), `pockelsIndexChange`,
-  `longitudinalHalfWaveVoltage` (retardation λ/2n³r), `phaseHalfWaveVoltage` (λd/(n³rL), one polarization, = 2× in a
-  longitudinal cell), `transverseHalfWaveVoltage` (n_e³r₃₃ − n_o³r₁₃), `crossedPolarizerTransmission`, `gratingPeriod`,
-  `diffusionField`, `trapLimitedField`, `spaceChargeField`, `twoBeamCouplingGain` (m⁻¹), `balancedGratingPeriod`,
-  `twoBeamSignalGain` ((1+β)/(1+βe^(−ΓL))).
-- URL params: electro-optic `material` (kdp, kdp-d, adp, linbo3, custom + `n`, `r` pm/V, `geometry`), `wavelength` nm,
-  `voltage` V, `length` mm, `gap` µm (old unit kept); photorefractive `material` (linbo3, custom + `n`, `r`, `epsilon`),
-  `wavelength`, `angle` (full outside 2θ, °), `temperature` K, `traps` (10²² m⁻³), `length` mm, `ratio` (pump/signal).
-- `tests/materials-pockels.test.ts` (10 tests), 1014 tests. Materials 13 / 32 tiered, 18 `knownIssue`s; 396 / 416 total.
+- `src/physics/materials/kerr-index.ts`: `KERR_MEDIA` (silica fibre 1550 nm: `SILICA_N2`, Malitson n₀; 12 media at 800 nm
+  from Dubietis 2017 Table 1, n₂ in 1e-16 cm²/W → m²/W), `kerrIndexChange`, `piPhaseIntensity`. The page reuses
+  `kerr.ts` `nonlinearPhase`/`criticalPower` and `fiber-nonlinear.ts` `nonlinearCoefficient`.
+- `src/physics/materials/nonlinear-crystals.ts`: `SHG_CRYSTALS` (bbo, lbo, ktp, bibo, mgo-ln, ppln; 1064 → 532 nm; d_eff,
+  n_ω, n_2ω, transparency), `typeIPhaseMatchingAngle`, `uniaxialWalkOff`, `xyPlaneIndex`, `focusedShg` (Boyd–Kleinman, Δk = 0),
+  `shgPrefactor`, `waistForXi`, `shgFigureOfMerit`, `BK_OPTIMUM`. User decision: lean SHG page, unsourced crystals dropped.
+- URL params: nonlinear-index `material`, `n2` (cm²/W, custom), `n0`, `intensity` W/cm², `wavelength` nm, `length` mm, `area` µm²;
+  nonlinear-crystals `material`, `length` mm, `pumpPower` W, `waist` µm, custom `pumpWavelength` nm, `deff` pm/V, `n`.
+- `tests/materials-nonlinear.test.ts` (7 tests), 1021 tests. Materials 15 / 32 tiered, 16 `knownIssue`s; 398 / 416 total.
 
 ## Next actions
-1. `/ship` this branch. Release-check values: `materials/electro-optic=8.717` (default KDP V_π kV),
-   `materials/photorefractive=4.211` (Γ cm⁻¹); older ones in PR #141–#159. No release unless asked.
-2. Materials fix part 5b (ROADMAP item 5b): nonlinear-crystals (wire length and power through
-   `imaging/second-harmonic-generation.ts` or `wave-optics/three-wave.ts`; d_eff fixes: bulk MgO:LN ≈ 4.5, OP-GaAs QPM ≈ 69,
-   PPLN 2d₃₃/π; Nikogosyan 2005 10.1007/b138685) and nonlinear-index (`wave-optics/kerr.ts` `nonlinearPhase`, golden
-   1550 nm, 2.6e-20 m²/W, 1e16 W/m², 1 cm → 10.54 rad; γ via `fiber-nonlinear.ts` `nonlinearCoefficient` with A_eff).
-   PR #155's batch-3 findings: `gh pr view 155 --json body -q .body | grep -n -A2 "nonlinear"`.
-3. Later: open findings (ROADMAP; new: EO crystals without a source), `polarizer-types` (needs the user at the laptop
-   with Chrome).
+1. `/ship` this branch. Release-check values: `materials/nonlinear-index=10.54` (default φ rad),
+   `materials/nonlinear-crystals=12.11` (default BBO P_2ω mW); older ones in PR #141–#160. No release unless asked.
+2. Materials fix part 6 (ROADMAP item 6): brillouin-scattering, raman-scattering, two-photon-absorption. PR #155 batch-3
+   findings: `gh pr view 155 --json body -q .body | grep -n "brillouin\|raman\|two-photon"`. Split 6a/6b if needed.
+3. Later: open findings (ROADMAP; new: nonlinear-crystals and nonlinear-index dropped data), `polarizer-types` (needs the
+   user at the laptop with Chrome).
 
 ## Non-obvious facts
+- **Session 130:** EKSMA data sheets download (`curl -L -A "Mozilla/5.0" https://eksmaoptics.com/out/media/EKSMA_Optics_<BBO|LBO|KTP>_Crystals.pdf`,
+  `pdftotext` without `-layout`); castech-us.com serves HTML pages (`index.htm` lists them); findlight CASTECH PDFs return HTML.
+  WebFetch of an Optica abstract page can read its tables (small model: cross-check the numbers).
 - **Session 129:** textbook tables and worked examples: FOSSEE notebooks (`tbc-python.fossee.in/convert-notebook/<book>/ChapterN.ipynb`,
   WebFetch). Caltech authors' PDFs download, but their tables are OCR-garbled. Chrome exit 75 (another project's devctl job holds it): rerun in background.
 - **Session 128:** MDPI PDFs 403 to curl and WebFetch: try the Semantic Scholar cache (`pdfs.semanticscholar.org/…`).

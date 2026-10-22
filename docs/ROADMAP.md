@@ -21,10 +21,10 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | free-space-comms | 26 / 26 | done: part 0 audit (session 56), fix parts 1–6 (sessions 57–62); open findings below |
 | spectroscopy | 41 / 41 | done: part 0 audit (session 96), fix parts 1–12b (sessions 97–109) |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
-| materials | 13 / 32 | part 0 audit (session 124): 39 `knownIssue`s, 18 merges decided; fix parts 1–5a done (sessions 125–129); parts 5b–9 next |
+| materials | 15 / 32 | part 0 audit (session 124): 39 `knownIssue`s, 18 merges decided; fix parts 1–5b done (sessions 125–130); parts 6–9 next |
 | wave-optics | 37 / 37 | done: part 0 audit (session 110), fix parts 1–13 (sessions 111–123); open findings below |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **396 / 416** | 18 `knownIssue`s (materials) |
+| **total** | **398 / 416** | 16 `knownIssue`s (materials) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -47,7 +47,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   in the PR description; OK pages: brewster-tir, thermal-expansion). Every merge below is a user decision (session 124)
   and gets a redirect. Every page: clamp URL values, material in the URL, physics into `src/physics/materials/` (or reuse the named module), golden test, tier +
   `modelNote` + references, drop the `knownIssue`. About 4 pages each; 45 → 27 pages (32 after part 4).
-  5b. χ⁽²⁾/χ⁽³⁾ tables: nonlinear-crystals (length and power wired, d_eff fixes); nonlinear-index (`kerr.ts`, γ with A_eff).
   6. Scattering and TPA: brillouin-scattering (`fiber-nonlinear.ts`: ν_B 11.15 GHz, g_B 3.65e-11 m/W, `sbsThreshold`);
      raman-scattering (gains, Lorentzian lines, `stokesWavelength`); two-photon-absorption (Sheik-Bahae F₂ scaling).
   7. Absorption: oh-absorption → fiber-optics/low-water-peak (add the 0.945, 1.24, 2.2, 2.72 µm bands to
@@ -218,6 +217,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Materials fix part 5b (session 130, `phase-4/materials-fix-5b`, PR #161): nonlinear-index on `kerr-index.ts` (Dubietis Table 1 n₂, φ 10.54 rad, γ 1.317 W⁻¹km⁻¹) and nonlinear-crystals on `nonlinear-crystals.ts` (lean SHG page, user decision: 6 crystals, Boyd–Kleinman at Δk = 0, BBO d_eff 2.06, PPLN 15.9 pm/V); 1021 tests.
   - Materials fix part 5a (session 129, `phase-4/materials-fix-5`, PR #160): electro-optic + photorefractive on `pockels.ts` (KDP V_π 7.48 kV at 546 nm, W&H Ex. 3.2 14 522 V; LN transverse V_π, Kukhtarev diffusion E_sc, Γ = 2πn³rE_sc/(λ cos θ) in cm⁻¹); 1014 tests.
   - Materials fix part 4 (session 128, `phase-4/materials-fix-4`): verdet-constant → magneto-optic (`faraday.ts`: Vojna fits, TGG −130.6 rad/(T·m) at 633 nm, silica Tran 2024, YIG saturated); brewster-tir → fresnel-polarization; photoelastic (`stress-optic.ts`, Schott K, silica 3.55); acousto-optic (`acousto-optic.ts`: mode, η, P₁₀₀, Q).
   - Materials fix part 3 (session 127, `phase-4/materials-fix-3`, PR #158): crystal-birefringence → birefringent-crystals (n(λ)/Δn of all `uniaxial-data` crystals, + BBO Eimerl with Sellmeier `K` term, KDP Zernike; SHG type I 22.88°/41.21°); calcite-properties, quartz-crystal, sapphire-properties → crystal-properties (`crystal-properties.ts`: walk-off 6.232° at 45°, quartz rotation 21.75 °/mm Chandrasekhar); diamond-optics (Peter 2.4173 + Palik IR, T 70.65 %); 421 → 418 pages, 995 tests.
