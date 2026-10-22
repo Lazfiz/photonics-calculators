@@ -68,6 +68,8 @@ export const m_p = 1.67262192595e-27;
 export const m_u = 1.66053906892e-27;
 /** Bohr radius, m, (82)e-21. */
 export const a_0 = 5.29177210544e-11;
+/** Classical electron radius r_e, m, (13)e-25. */
+export const r_e = 2.8179403205e-15;
 /** Newtonian constant of gravitation, m³/(kg·s²), (15)e-15. */
 export const G = 6.6743e-11;
 

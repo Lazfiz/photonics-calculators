@@ -1,30 +1,34 @@
-# Handover — 2026-10-22 (session 135 → session 136)
+# Handover — 2026-10-22 (session 136 → session 137)
 
-**Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
-`docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 135: **materials fix part 8b** (aging-effects, contamination, humidity-effects merged into
-thin-film/environmental-stability, each with a redirect), branch `phase-4/materials-fix-8b`, PR #166 to open.
-Next: part 9 leftovers (polymer-optics, x-ray-optics, thermal-expansion tier). 411 pages.
+**Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
+Session 136: **materials fix part 9** (x-ray-optics, polymer-optics, thermal-expansion), branch `phase-4/materials-fix-9`, PR #167.
+Materials is done: 410 / 411 pages tiered, 0 `knownIssue`s. Only `polarizer-types` (needs the user with Chrome) is left in Phase 4.
 
 ## State
-- `src/physics/thin-film/environmental-stability.ts`: `poreIndex(fill)`, `filmIndex(nS, nV, p, law)`, `solidIndex(nDry, p, law)`,
-  `wetIndex`, `environmentLayer`/`environmentStack(h, l, pairs, λ0, ΔT, fill)`, `centreShift`; `MixingLaw` "linear" | "bragg-pippard"
-  (Macleod 1988 eqs. 3–5); `cc1246Count(x_um, level)`, `cc1246Obscuration(level, xMin_um = 1, area = 0.1 m²)`;
-  `accelerationFactor(Ea_eV, T_use, T_test, rhUse, rhTest, n)`. Golden: filled pores p 0.85 15.318 nm at 550 nm, ΔT 50 K 0.35697 nm,
-  Ma eq. 17a 12.27 % (level 1000, ft²), AF 96.0 (0.7 eV, 25/85 °C), Peck ×1.7³.
-- URL keys: nH, nL, nSub, nInc, numPairs, designWl, tempC (default now 75), `fill` (% pores, replaces humidityPct), pH, pL, lawH, lawL,
-  dndtH, dndtL, cteH, cteL (1e-6/K); level (µm), surfaces; tUse, tTest (°C), ea (eV), rhUse, rhTest, rhExp, testHours.
-- Tests: `tests/thin-film-environmental-stability.test.ts`. Materials 24 / 27 tiered, 2 `knownIssue`s; 407 / 411 total.
+- `src/physics/materials/x-ray-optics.ts`: `scatteringFactors(id, E_eV)` (ln-E interpolation, NaN outside 1–30 keV),
+  `xrayIndex(formula, rho, E_eV)` → δ, β, θ_c, attenuation length, μ/ρ; `XRAY_MATERIALS` (10, CXRO default densities, diamond
+  3.515); `xrayTransmission`. `henke-data.ts`: CXRO .nff rows for H, Be, C, N, O, Si, Ni, Cu, Mo, Pt, Au thinned to 0.2 % (412 rows),
+  exempt in `tests/no-inline-constants.test.ts`. `r_e` added to constants. URL: material, density (0 = preset), energy (keV), thickness (µm).
+- `polymer-optics.ts`: `POLYMERS` (pmma Beadie n²-power, pc/ps/zeonex Sultanova Sellmeier, noa61/su8 Cauchy), `polymerIndex`,
+  `polymerDnDlambda`, `polymerGroupIndex`, `polymerAbbe`, `normalReflectance`, `corecladNA`. URL: polymer, cladding, wavelength.
+- `thermal-expansion.ts`: `thermalExpansion(α, L, ΔT)`, `expansionWaves`. Page table has a Crystran/typical source column.
+- Tests: `materials-x-ray-optics`, `materials-polymer-optics`, `materials-thermal-expansion` (1055 total).
 
 ## Next actions
-1. `/ship` this branch. Release-check values: `thin-film/environmental-stability` "15.32"; 8a's `materials/thermal-conductivity-optics`
-   "72.46", `materials/damage-threshold` "7.071", `materials/radiation-damage` "3.162", `materials/heat-capacity` "0.7143"; older ones in
-   PR #141–#165. No release unless asked.
-2. Materials fix part 9 (ROADMAP item 9): polymer-optics (Sultanova PMMA 1.4906), x-ray-optics (δ, β from Henke f₁, f₂: Be 3.41e-6),
-   thermal-expansion (tier only). PR #155 findings: `gh pr view 155 --json body -q .body | grep -n -E "polymer|x-ray|thermal-exp"`.
-3. Later: open findings (ROADMAP), `polarizer-types` (needs the user at the laptop with Chrome).
+1. `/ship` this branch. Post-merge values: `materials/x-ray-optics` "3.4077e-6" (Be 10 keV default), `materials/polymer-optics`
+   "1.49081", `materials/thermal-expansion` "0.0710" (BK7 100 mm 100 K = 0.0710 mm); older ones in PRs #141–#166. No release unless asked.
+2. Ask the user what comes next; no category audit is left. Options: open findings (ROADMAP, per category), `polarizer-types`
+   (user at the laptop with Chrome), golden tests for the top-50 pages (Vercel Analytics is reachable through the Vercel MCP tools),
+   or Phase 3 (charts, Plotly, JS budget).
 
 ## Non-obvious facts
+- **Session 136:** CXRO serves Henke tables (`https://henke.lbl.gov/optical_constants/sf/<el>.nff`) and its calculator by POST to
+  `/cgi-bin/getdb.pl` (Formula, Density (-1 = default), Min, Max, Npts, Output=Text+File; the reply links `/tmp/xrayNNNN.dat`). Its β
+  includes Compton, the .nff f₂ does not. refractiveindex.info YAML: `gh api -H "Accept: application/vnd.github.raw"
+  repos/polyanskiy/refractiveindex.info-database/contents/database/data/<path>` (URL-encode each path segment). Acta Phys. Pol. A PDFs
+  download (`przyrbwn.icm.edu.pl/APP/PDF/116/a116z442.pdf`). norlandprod.com refuses connections. A Crystran slug list is on
+  `/optical-materials` (e.g. sapphire-al2o3, silicon-si). `.sort()` on an array literal drops its contextual type (string-literal fields
+  fail tsc): declare the typed array, then sort a copy.
 - **Session 135:** NASA NTRS PDFs download (`https://ntrs.nasa.gov/api/citations/<id>/downloads/<id>.pdf`; metadata at
   `/api/citations/<id>`): Macleod's "Moisture adsorption in optical coatings" is 19890003956. GSFC CCMPP presentations download via
   WebFetch (binary saved, then `pdftotext`): Edwards 2021 quotes Ma et al. eqs. 17a–e. The pdx.edu Peck 1986 PDF 403s.

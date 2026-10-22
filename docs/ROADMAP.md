@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 134, 2026-10-22)
+## Status (session 136, 2026-10-22)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -21,10 +21,10 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | free-space-comms | 26 / 26 | done: part 0 audit (session 56), fix parts 1–6 (sessions 57–62); open findings below |
 | spectroscopy | 41 / 41 | done: part 0 audit (session 96), fix parts 1–12b (sessions 97–109) |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
-| materials | 24 / 27 | part 0 audit (session 124): 39 `knownIssue`s, 18 merges decided; fix parts 1–8b done (sessions 125–135); part 9 next |
+| materials | 27 / 27 | done: part 0 audit (session 124), fix parts 1–9 (sessions 125–136); open findings below |
 | wave-optics | 37 / 37 | done: part 0 audit (session 110), fix parts 1–13 (sessions 111–123); open findings below |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **407 / 411** | 2 `knownIssue`s (materials) |
+| **total** | **410 / 411** | 0 `knownIssue`s |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -43,15 +43,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   `light-sheet`, `working-distance` → `image-distance`, `strehl-ratio` + `wavefront-error` into one page, `sensor-ccm` +
   `sensor-cmos` into one page with CCD/CMOS presets. Not decided, so keep separate: dynamic-range vs
   detectors/well-capacity, stimulated-raman-microscopy vs coherent-raman, resolution vs airy-disk.
-- [ ] **Materials fix parts** (part 0 audit, session 124, PR #155: per-page findings, golden values and references are
-  in the PR description; OK pages: brewster-tir, thermal-expansion). Every merge below is a user decision (session 124)
-  and gets a redirect. Every page: clamp URL values, material in the URL, physics into `src/physics/materials/` (or reuse the named module), golden test, tier +
-  `modelNote` + references, drop the `knownIssue`. About 4 pages each; 45 → 27 pages (32 after part 4).
-  7. ~~7a merges~~ (session 132), ~~7b~~ (session 133): rare-earth-absorption (`DOPANT_PRESETS`, α in m⁻¹ and dB/m); color-centers (Stokes
-     shift, drop η = σ_em/σ_abs).
-  8. ~~8a thermal and damage~~ (session 134), ~~8b merges into thin-film/environmental-stability~~ (session 135).
-  9. Leftovers: polymer-optics (Sultanova PMMA 1.4906), x-ray-optics (δ, β from Henke f₁, f₂: Be 3.41e-6), thermal-expansion
-     (tier only).
 - [ ] Golden-value tests for the top 50 calculators by traffic (needs traffic data, e.g. Vercel Analytics).
 - [ ] Rewrite each heuristic model, or label it illustrative, during its category's audit. Macro-bend and
   second-harmonic are done.
@@ -64,6 +55,12 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - `bend-insensitive` (`g657.ts`): the physics review recalls a G.657.A3 category (2016) that shares the B3 limits. Unverified
   because the ITU PDF is blocked to scripts; check the ITU text in Chrome, then add A3 or drop the note.
 **Materials**
+- `x-ray-optics` (session 136): β is photoabsorption only (Henke f₂); CXRO adds Compton (Be +28 %, C +6 % at 10 keV). Hubbell's
+  incoherent scattering functions could add it. Range 1–30 keV (Henke tables); Al, W, Ge filters/targets not in the presets.
+- `polymer-optics` (session 136): dropped PDMS (Schneider 2009 Sylgard 184 fit 1.431 vs Zhang 2020 1.397 at 550 nm), CYTOP, OrmoComp
+  and all loss, T_g, dn/dT and stress-optic data (unsourced). NOA 61 n_D 1.56 unchecked against Norland (site refuses connections).
+- `thermal-expansion` (session 136): ULE, Zerodur, Pyrex, SF11, Al 6061, Invar, SS304 and Cu α are typical values, not checked
+  (marked "typical" on the page). No α(T) model (Okada & Tokumaru 1984 eq. for Si could add one).
 - `thin-film/environmental-stability` (session 135): the H-layer (TiO₂ film) dn/dT 20 and α 8 × 10⁻⁶/K defaults are unsourced
   placeholders; free-film expansion ignores the substrate constraint and Poisson term. Peck's n and Eₐ (≈ 2.7, 0.79 eV in
   secondary sources) are unverified: the IRPS PDF 403s, so the page defaults to n = 0.
@@ -231,6 +228,9 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Materials fix part 9 (session 136, `phase-4/materials-fix-9`, PR #167): x-ray-optics (`x-ray-optics.ts` + Henke tables, Be 10 keV
+    δ 3.408e-6, Au 12 keV 1.840e-5 = CXRO), polymer-optics (`polymer-optics.ts`, Sultanova/Beadie, PMMA n(1550) 1.4809), thermal-expansion
+    (Crystran values, Si 2.6 µm). Materials 27 / 27, 0 `knownIssue`s.
   - Materials fix part 8b (session 135, `phase-4/materials-fix-8b`, PR #166): aging-effects, contamination, humidity-effects → thin-film/environmental-stability
     (`environmental-stability.ts`: Macleod 1988 packing-density laws, filled pores 15.32 nm; CC1246 obscuration vs Ma 1990 eq. 17a; Arrhenius–Peck AF 96.0).
   - Materials fix part 8a (session 134, `phase-4/materials-fix-8a`, PR #165): heat-capacity (`heat-capacity.ts`, Debye scaled, Si 200 K = Desai
