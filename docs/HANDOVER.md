@@ -1,26 +1,30 @@
-# Handover — 2026-10-23 (session 140 → session 141)
+# Handover — 2026-10-23 (session 141 → session 142)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 140: **Findings 4c-a**, branch `phase-4/findings-4c-leftovers` (PR #171). Reviewer on the claims → sources → fixes +
-goldens → reviewer on the diff (no formula bugs; four text claims corrected). Next: Findings 4c-b (`intensified-ccd` first).
+Session 141: **Findings 4c-b**, branch `phase-4/findings-4c-b` (PR #172), `intensified-ccd` only. The reviewer on the diff
+found the background under-counted through the matched filter (fixed). Next: Findings 4c-c (`streak-camera`; data in ROADMAP).
 
 ## State
-- `scrambler.ts`: `lockedGroup` finds stages locked at q·f_i = p·f_j (p, q ≤ 12, 1e-9 relative) and their common period;
-  `scramblerMeanMueller` averages E_T[… M_locked(t) … E[M_free] …] (trapezoid for sines, N from the bandwidth; Simpson
-  between ramp flybacks). Stages have a drive phase φ (page input, deg). Goldens: 1:1 in phase 0.884815608, antiphase
-  0.371442 (A&S J₀), product of means J₀(1.5) = 0.5118; brute-force agreement 1e-10 (sine), 1e-6 (ramp).
-- `optical-sectioning-thickness`: wave-optical section (`confocal.ts`) beside Wilhelm; Wilhelm 23 % (low NA) to ≈ 140 %
-  (NA → n) above it; 45 % at the defaults (3.54 vs 2.43 µm).
-- `photoemission.ts`: `PHOTOCATHODE_DARK_EMISSION` (Burle TP-136 Table I, 25 °C), `effectiveThermionicBarrier` (K₂CsSb
-  0.02 fA/cm² → ψ 1.40371 eV), `streakWindow` = min(N·p, L_screen)/v. vacuum-photodiode: dark from the measured value, stray C
-  input (Hamamatsu PMT handbook Eq. 5-7). streak-camera: screen 18 mm and tube spread 0.8 ps (C16910), undersampling flag.
+- `photoemission.ts`: `phosphorEfficiency` (inverse of `phosphorGain`), `PHOSPHOR_SCREENS` (Photek PH-DS039: P43 240, P46 55
+  photons/e⁻ at 5 kV, 548/530 nm), `SpotStatistics` + `POINT_SPOT`, `gaussianSpotShares(fwhm ≤ 1000)` → peak, Σh²,
+  c₃ = Σh³/(Σh²)², κ = Σ(h⋆h)²/(Σh²)² (separable sums). `intensifiedSnr(S, B, G_e, F_MCP, σ_r, spot)`: the 4th argument is now
+  the tube's variance factor K_f², not F_MCP + 1/G_e. Var = S·G_e²(F + c₃/G_e) + B·G_e²(F·κ + N_eff/G_e) + N_eff·σ_r².
+- Goldens (2 px spot): peak 0.1970835, Σh² 0.0988504, c₃ 1.3538208, κ 5.0565663 (brute-force 2-D); κ·Σh² → ½ for a wide
+  spot; page defaults SNR 1.140756 (was 1.3163); B = S gives 0.475103.
+- Page: URL key `mcpNoise` → `kf` (amplitude, default 1.6), new `spotFwhm` (px, default 2), screen 3–10 kV.
 
 ## Next actions
-1. `/ship` this branch. Post-merge value: `imaging/optical-sectioning-thickness=2.43`. No release unless asked.
-2. Findings 4c-b: `intensified-ccd` (spot spread, SNR label, F, P43 η; notes and refs in ROADMAP), then the
-   imaging/spectroscopy leftovers if they fit.
+1. `/ship` this branch. Post-merge value: `detectors/intensified-ccd=1.14`. No release unless asked.
+2. Findings 4c-c: `streak-camera` (M ≈ 2.8, 968 × 9.75 µm pixels, 35 lp/mm blur against the 0.8 ps tube default; see the
+   ROADMAP note), then the imaging/spectroscopy leftovers if they fit.
 
 ## Non-obvious facts
+- **Session 141:** Photek PDFs download with curl (`photek.com/wp-content/uploads/2021/08/PH-DS039-ImageDiode-Rev02-Aug21.pdf`
+  gives photons/e⁻ at 5 kV; the intensifier sheet PH-DS001 only relative efficiencies), as does the Andor iStar spec
+  (`andor.oxinst.com/downloads/uploads/andor-istar-ccd-imaging-specifications.pdf`); ipo.exosens.com doesn't resolve. Data-sheet
+  intensifier noise factors are amplitude ratios (EMCCD 1.4 = √2): square them. A spot read through its matched filter collects
+  even background from κ ≈ N_eff/2 pixels. Monte Carlo probes: `Math.random`, not an LCG (it biased a variance by 1–2 %).
+  Backticks inside a bash-quoted `node -e` script get command-substituted: write a .mjs file or use Edit.
 - **Session 140:** Burle Photomultiplier Handbook PDF: `psec.uchicago.edu/links/Photomultiplier_Handbook.pdf`; read its tables
   with `pdftotext -table` (`-layout` misaligns Table I; no pdftoppm). Hamamatsu PMT handbook 4th ed.: `…/etd/PMT_handbook_v4E.pdf`;
   C16910 data sheet SHSS0026E downloads. A data-sheet streak resolution is a system value, not a tube term. React Compiler skips a
@@ -50,10 +54,6 @@ goldens → reviewer on the diff (no formula bugs; four text claims corrected). 
   download (`przyrbwn.icm.edu.pl/APP/PDF/116/a116z442.pdf`). norlandprod.com refuses connections. A Crystran slug list is on
   `/optical-materials` (e.g. sapphire-al2o3, silicon-si). `.sort()` on an array literal drops its contextual type (string-literal fields
   fail tsc): declare the typed array, then sort a copy.
-- **Session 135:** NASA NTRS PDFs download (`https://ntrs.nasa.gov/api/citations/<id>/downloads/<id>.pdf`; metadata at
-  `/api/citations/<id>`): Macleod's "Moisture adsorption in optical coatings" is 19890003956. GSFC CCMPP presentations download via
-  WebFetch (binary saved, then `pdftotext`): Edwards 2021 quotes Ma et al. eqs. 17a–e. The pdx.edu Peck 1986 PDF 403s.
-  `npx tsx --test` on one file can take > 2 min on this disk: run it in the background.
 - **Session 134:** Crystran pages fetch with curl (`https://www.crystran.com/optical-materials/<slug>`, slugs from that index page; strip
   tags, grep "Specific Heat Capacity|Density"); no Debye temperatures there. NIST JPCRD reprints download
   (`https://srd.nist.gov/jpcrdreprint/<doi suffix>.pdf`, e.g. 1.555761 Desai). Heredocs halve backslashes (a regex `\s` arrives as `s`): write such scripts with Write.
