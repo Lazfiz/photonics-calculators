@@ -1,27 +1,29 @@
-# Handover — 2026-10-22 (session 136 → session 137)
+# Handover — 2026-10-23 (session 137 → session 138)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 136: **materials fix part 9** (x-ray-optics, polymer-optics, thermal-expansion), branch `phase-4/materials-fix-9`, PR #167.
-Materials is done: 410 / 411 pages tiered, 0 `knownIssue`s. Only `polarizer-types` (needs the user with Chrome) is left in Phase 4.
+Session 137: **polarizer-types** from Thorlabs specs read in Chrome, branch `phase-4/polarizer-types`, PR #168.
+All 411 pages are tiered, 0 `knownIssue`s; every category audit is done.
 
 ## State
-- `src/physics/materials/x-ray-optics.ts`: `scatteringFactors(id, E_eV)` (ln-E interpolation, NaN outside 1–30 keV),
-  `xrayIndex(formula, rho, E_eV)` → δ, β, θ_c, attenuation length, μ/ρ; `XRAY_MATERIALS` (10, CXRO default densities, diamond
-  3.515); `xrayTransmission`. `henke-data.ts`: CXRO .nff rows for H, Be, C, N, O, Si, Ni, Cu, Mo, Pt, Au thinned to 0.2 % (412 rows),
-  exempt in `tests/no-inline-constants.test.ts`. `r_e` added to constants. URL: material, density (0 = preset), energy (keV), thickness (µm).
-- `polymer-optics.ts`: `POLYMERS` (pmma Beadie n²-power, pc/ps/zeonex Sultanova Sellmeier, noa61/su8 Cauchy), `polymerIndex`,
-  `polymerDnDlambda`, `polymerGroupIndex`, `polymerAbbe`, `normalReflectance`, `corecladNA`. URL: polymer, cladding, wavelength.
-- `thermal-expansion.ts`: `thermalExpansion(α, L, ΔT)`, `expansionWaves`. Page table has a Crystran/typical source column.
-- Tests: `materials-x-ray-optics`, `materials-polymer-optics`, `materials-thermal-expansion` (1055 total).
+- `src/physics/polarization/polarizer-types.ts`: `POLARIZERS` (8 Thorlabs families: GT10, GTH10, WP10, RPM10, WP25H-K, LPVISE2X2,
+  PBSW-1064, PBS253; ER minima, range nm, aperture mm, `tPass` or `tUnpolarized`, pulsed J/cm² and CW W/cm LIDT with conditions),
+  `polarizerFigures(spec)` → erDb, dop, k1, k2 (NaN when no stated T), tUnpolarized; `coversWavelength(spec, λ)` (±1 % for one-line parts).
+  URL: inputPower (mW), wavelength (nm), input (aligned | unpolarized). Test `polarization-polarizer-types` (1062 total).
 
 ## Next actions
-1. `/ship` this branch. Post-merge values: `materials/x-ray-optics` "3.4077e-6" (Be 10 keV default), `materials/polymer-optics`
-   "1.49081", `materials/thermal-expansion` "0.0710" (BK7 100 mm 100 K = 0.0710 mm); older ones in PRs #141–#166. No release unless asked.
-2. Ask the user what comes next; no category audit is left. Options: open findings (ROADMAP, per category), `polarizer-types`
-   (user at the laptop with Chrome), golden tests for the top-50 pages (Vercel Analytics is reachable through the Vercel MCP tools),
-   or Phase 3 (charts, Plotly, JS budget).
+1. `/ship` this branch. Post-merge value: `polarization/polarizer-types` "9.500" (PBSW-1064 output, 10 mW aligned at 1064 nm). No
+   release unless asked.
+2. Ask the user what comes next. Options: open findings (ROADMAP, per category), golden tests for the top-50 pages (Vercel
+   Analytics is reachable through the Vercel MCP tools), or Phase 3 (charts, Plotly, JS budget).
 
 ## Non-obvious facts
+- **Session 137:** the Chrome extension works once Chrome is signed in to claude.ai (the Google popup failed "Couldn't verify your
+  browser"; email sign-in worked). Thorlabs moved to slug URLs (`https://www.thorlabs.com/<family-slug>?tabName=Specs` or
+  `Damage%20Thresholds`); old `objectgroup_id` links redirect to wrong products; index pages (`/polarizers`, `/crystal-polarizers`,
+  `/polarizing-beamsplitters`) list the slugs. Pages are client-rendered (fetch returns a 1.3 KB shell). `javascript_tool` results
+  truncate at ≈ 1000 characters: filter lines, or use `get_page_text`. Chrome tabs freeze when devctl runs another project's
+  `cargo nextest` (CPU 100 %): fall back to headless `ui-check` / `--dump-dom`. **Port 3000 can be another project** (Planet
+  Incubator): run this repo on 3100 and check the page title.
 - **Session 136:** CXRO serves Henke tables (`https://henke.lbl.gov/optical_constants/sf/<el>.nff`) and its calculator by POST to
   `/cgi-bin/getdb.pl` (Formula, Density (-1 = default), Min, Max, Npts, Output=Text+File; the reply links `/tmp/xrayNNNN.dat`). Its β
   includes Compton, the .nff f₂ does not. refractiveindex.info YAML: `gh api -H "Accept: application/vnd.github.raw"
