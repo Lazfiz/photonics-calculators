@@ -68,7 +68,12 @@ export function averagePowerCoupling(p: {
   return (2 * kappa * kappa * d * realPart(cdiv(complex(1), root))) / s;
 }
 
-/** Hayashi's homogeneous-MCF limit h = 2κ²R_b/(βΛ) (Δβ = 0, correlation length ≫ R_b/(βΛ)). */
+/**
+ * Hayashi's homogeneous-MCF limit h = 2κ²R_b/(βΛ) (Δβ = 0, correlation length ≫ R_b/(βΛ)). R_b is the physical
+ * radius of the equivalent-index model n(1 + r cosθ/R_b) (Hayashi et al., Opt. Express 19, 16576, 2011, eq. 2), with
+ * no elasto-optic factor; R_eq = R_b/(1 − (n²/2)[p₁₂ − ν(p₁₁ + p₁₂)]) ≈ 1.27 R_b for silica (Nagano, Kawakami and
+ * Nishida, Appl. Opt. 17, 2080, 1978) would raise h by that factor.
+ */
 export function hayashiPowerCoupling(kappa: number, beta: number, pitch: number, bendRadius: number): number {
   return beta > 0 && pitch > 0 && bendRadius > 0 ? (2 * kappa * kappa * bendRadius) / (beta * pitch) : NaN;
 }

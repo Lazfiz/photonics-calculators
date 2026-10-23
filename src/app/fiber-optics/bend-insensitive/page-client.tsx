@@ -8,7 +8,7 @@ import { useURLState } from "../../../hooks/use-url-state";
 import {
   LP11_CUTOFF_V, MIN_V, bendLossPerTurnDb, lp01Mode, lp11CutoffWavelength, modeFieldRadius, vNumber, type StepIndexFiber,
 } from "../../../physics/fiber-optics/macro-bending-loss";
-import { G657A_MIN_MFD_UM, G657_CATEGORIES, G657_LIMITS, g657Category, type G657Category } from "../../../physics/fiber-optics/g657";
+import { G657_MIN_MFD_UM, G657_CATEGORIES, G657_LIMITS, g657Category, type G657Category } from "../../../physics/fiber-optics/g657";
 
 // SMF-28-like G.652 step equivalent (same as the macrobending-loss and mode-field-diameter pages).
 const SMF = { a: 4.1e-6, NA: 0.1246 };
@@ -23,7 +23,10 @@ function finitePairs(xs: number[], ys: number[]) {
   return { x: xs.filter((_, i) => keep[i]), y: ys.filter((_, i) => keep[i]) };
 }
 
-const classText = (c: G657Category | null) => (c ? `Meets the G.657.${c} macrobend limits` : "Meets no G.657 macrobend limits");
+/** Category line; the macrobend limits alone don't qualify a fibre whose MFD at 1310 nm is below the G.657 minimum. */
+const classText = (c: G657Category | null, mfd1310_um: number) =>
+  (c ? `Meets the G.657.${c} macrobend limits` : "Meets no G.657 macrobend limits") +
+  (c && mfd1310_um < G657_MIN_MFD_UM ? `, but its MFD is below ${G657_MIN_MFD_UM} µm` : "");
 
 const perTurn = (f: StepIndexFiber) => (R: number, lambda: number) => bendLossPerTurnDb(f, lambda, R);
 
@@ -102,14 +105,14 @@ export default function BendInsensitivePage() {
       )}
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">
-        <ResultCard label={`Standard SMF at ${radius} mm`} value={`${fmtDb(calc.smf.loss)} dB/turn`} tone="red" subtext={classText(calc.smf.category)} />
-        <ResultCard label={`Design at ${radius} mm`} value={`${fmtDb(calc.design.loss)} dB/turn`} tone="green" subtext={classText(calc.design.category)} />
+        <ResultCard label={`Standard SMF at ${radius} mm`} value={`${fmtDb(calc.smf.loss)} dB/turn`} tone="red" subtext={classText(calc.smf.category, calc.smf.mfd1310_um)} />
+        <ResultCard label={`Design at ${radius} mm`} value={`${fmtDb(calc.design.loss)} dB/turn`} tone="green" subtext={classText(calc.design.category, calc.design.mfd1310_um)} />
         <ResultCard
           label="Design MFD"
           value={fmt(calc.design.mfd1310_um, 2, " µm at 1310 nm")}
           tone="blue"
           subtext={`${fmt(calc.design.mfd1550_um, 2, " µm at 1550 nm")} (SMF ${fmt(calc.smf.mfd1550_um, 2, " µm")})${
-            calc.design.mfd1310_um < G657A_MIN_MFD_UM ? `; below the ${G657A_MIN_MFD_UM} µm that G.657.A allows` : ""
+            calc.design.mfd1310_um < G657_MIN_MFD_UM ? `; below the ${G657_MIN_MFD_UM} µm that G.657 allows` : ""
           }`}
         />
         <ResultCard label="Design LP11 cutoff" value={fmt(calc.design.cutoff_nm, 0, " nm")} tone="purple" subtext={`V = ${fmt(calc.design.V, 3)} at ${wavelength} nm (SMF λc ${fmt(calc.smf.cutoff_nm, 0, " nm")})`} />
@@ -169,7 +172,7 @@ export default function BendInsensitivePage() {
             around the core instead, which keeps the MFD near 9 µm; trench profiles need a numerical mode solver and are not modelled.
           </p>
           <p>
-            The formula leaves out the elasto-optic correction (silica acts as if R were about 1.28× larger, so real fibre loses
+            The formula leaves out the elasto-optic correction (silica acts as if R were about 1.27× larger, so real fibre loses
             less), coating reflections and transition loss, so treat the category as indicative.
           </p>
         </div>

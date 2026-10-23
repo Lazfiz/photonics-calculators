@@ -1,8 +1,8 @@
 /**
- * ITU-T G.657 (11/2016) macrobending loss limits of bend-insensitive single-mode fibre, and the
+ * ITU-T G.657 (08/2024) macrobending loss limits of bend-insensitive single-mode fibre, and the
  * highest category a fibre meets. Losses in dB for the stated number of turns at mandrel radius R (m).
- * A2 and B2 share the same macrobend limits. Values as tabulated by HFCL ("Understanding fiber
- * macrobending specifications", 2024) and STL; the ITU text was not reachable to recheck them.
+ * Values from Table 1 (A1, A2) and Table 2 (B3) of the Recommendation, read 2026-10-23. The 2024 edition has
+ * no B2 (its Note 3 to Table 2: B2 had the A2 macrobend limits) and no A3.
  */
 export interface MacrobendLimit {
   /** Bend radius, m. */
@@ -14,7 +14,7 @@ export interface MacrobendLimit {
   max1625: number;
 }
 
-export type G657Category = "B3" | "A2/B2" | "A1";
+export type G657Category = "B3" | "A2" | "A1";
 
 /** Categories from the strictest to the loosest. */
 export const G657_LIMITS: Record<G657Category, readonly MacrobendLimit[]> = {
@@ -23,7 +23,7 @@ export const G657_LIMITS: Record<G657Category, readonly MacrobendLimit[]> = {
     { R: 7.5e-3, turns: 1, max1550: 0.08, max1625: 0.25 },
     { R: 5e-3, turns: 1, max1550: 0.15, max1625: 0.45 },
   ],
-  "A2/B2": [
+  A2: [
     { R: 15e-3, turns: 10, max1550: 0.03, max1625: 0.1 },
     { R: 10e-3, turns: 1, max1550: 0.1, max1625: 0.2 },
     { R: 7.5e-3, turns: 1, max1550: 0.5, max1625: 1.0 },
@@ -52,7 +52,7 @@ export function g657Category(perTurnDb: (R: number, lambda: number) => number): 
 }
 
 /**
- * Smallest MFD at 1310 nm that G.657.A allows, µm: nominal range 8.6–9.2 µm minus the ±0.4 µm tolerance (the
- * G.652.D values; G.657.B allows a nominal 6.3–9.5 µm). A design below it can only be category B.
+ * Smallest MFD at 1310 nm that G.657 (08/2024) allows, µm: nominal range 8.6–9.2 µm minus the ±0.4 µm tolerance,
+ * for both A and B3 (Tables 1 and 2; earlier editions allowed B a nominal 6.3–9.5 µm).
  */
-export const G657A_MIN_MFD_UM = 8.2;
+export const G657_MIN_MFD_UM = 8.2;

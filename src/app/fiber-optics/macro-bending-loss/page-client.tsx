@@ -6,7 +6,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  DB_PER_NEPER, LP11_CUTOFF_V, MIN_V, bendLossCoefficient, bendLossPerTurnDb, lp01Mode, lp11CutoffWavelength,
+  DB_PER_NEPER, LP11_CUTOFF_V, MFD_FIT_V_RANGE, MIN_V, bendLossCoefficient, bendLossPerTurnDb, lp01Mode, lp11CutoffWavelength,
   modeFieldRadius, vNumber,
 } from "../../../physics/fiber-optics/macro-bending-loss";
 
@@ -28,7 +28,9 @@ export default function MacrobendingLossPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
   const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.1); // µm
   const [coreNA, setCoreNA] = useURLState("coreNA", 0.1246);
-  const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.4682);
+  // SMF-28-like step-index equivalent: n₂ = 1.4440 (fused silica at 1550 nm, Malitson 1965), n₁ = √(n₂² + NA²).
+  // 1.4682 is SMF-28's group index, not a core index.
+  const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.4494);
   const [numBends, setNumBends] = useURLState("numBends", 1); // turns
 
   const fiber = useMemo(() => ({ a: coreRadius * 1e-6, n1: coreIndex, NA: coreNA }), [coreRadius, coreIndex, coreNA]);
@@ -67,6 +69,7 @@ export default function MacrobendingLossPage() {
   }, [fiber, bendRadius]);
 
   const valid = Number.isFinite(calc.perTurn);
+  const mfdInFit = Number.isFinite(calc.mfd_um) && calc.V >= MFD_FIT_V_RANGE[0] && calc.V <= MFD_FIT_V_RANGE[1];
 
   return (
     <>
@@ -98,7 +101,12 @@ export default function MacrobendingLossPage() {
           tone={calc.total > 0.5 ? "red" : calc.total > 0.1 ? "yellow" : "green"}
         />
         <ResultCard label="V-number" value={Number.isFinite(calc.V) ? calc.V.toFixed(3) : "—"} tone="purple" subtext={`LP11 cutoff λc = ${Number.isFinite(calc.cutoff_nm) ? calc.cutoff_nm.toFixed(0) : "—"} nm`} />
-        <ResultCard label="Mode-field diameter" value={Number.isFinite(calc.mfd_um) ? `${calc.mfd_um.toFixed(2)} µm` : "—"} tone="blue" subtext="Marcuse 1977 Gaussian fit" />
+        <ResultCard
+          label="Mode-field diameter"
+          value={Number.isFinite(calc.mfd_um) ? `${calc.mfd_um.toFixed(2)} µm` : "—"}
+          tone="blue"
+          subtext={mfdInFit ? "Marcuse 1977 Gaussian fit" : "Marcuse 1977 fit, extrapolated outside V = 1.2–2.4"}
+        />
         <ResultCard label="Cladding index n₂" value={Number.isFinite(calc.n2) ? calc.n2.toFixed(4) : "—"} tone="gray" subtext="n₂ = √(n₁² − NA²)" />
       </div>
 
@@ -130,7 +138,7 @@ export default function MacrobendingLossPage() {
           <p className="font-mono">α = √π κ² exp(−2γ³R / 3β²) / (2 γ^(3/2) V² √R K₁²(W))   [1/m, power]</p>
           <p className="font-mono">κ = U/a, γ = W/a, β² = (n₁k)² − κ², U J₁(U)/J₀(U) = W K₁(W)/K₀(W)</p>
           <p>Marcuse&apos;s curvature-loss formula for the LP01 mode of a step-index fibre (J. Opt. Soc. Am. 66, 216, 1976), with the exact LP01 eigenvalues. Loss per turn = 4.343 α · 2πR dB.</p>
-          <p>Textbook approximation. It leaves out the elasto-optic correction (silica acts as if R were about 1.28× larger, so real fibre loses less), reflections from the cladding and coating (ripples in R and λ), and the transition loss where each bend starts and ends. ITU-T G.657 specifies bend loss at R = 7.5, 10, 15 and 30 mm.</p>
+          <p>Textbook approximation. It leaves out the elasto-optic correction (silica acts as if R were about 1.27× larger, so real fibre loses less), reflections from the cladding and coating (ripples in R and λ), and the transition loss where each bend starts and ends. ITU-T G.657 (08/2024) specifies bend loss at R = 5, 7.5, 10 and 15 mm.</p>
         </div>
       </div>
     </>

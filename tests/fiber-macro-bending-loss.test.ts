@@ -2,7 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  LP11_CUTOFF_V, bendLossCoefficient, bendLossPerTurnDb, lp01Mode, lp11CutoffWavelength, modeFieldRadius, vNumber,
+  LP11_CUTOFF_V, MFD_FIT_V_RANGE, bendLossCoefficient, bendLossPerTurnDb, lp01Mode, lp11CutoffWavelength, modeFieldRadius,
+  vNumber,
 } from "../src/physics/fiber-optics/macro-bending-loss";
 import { besselJ, besselK } from "../src/physics/math";
 
@@ -73,4 +74,21 @@ test("bend loss domain edges", () => {
     assert.ok(a < prev, `monotonic at ${R}`);
     prev = a;
   }
+});
+
+test("page default: n₁ = 1.4494 over Malitson silica, not the group index 1.4682", () => {
+  // Malitson, J. Opt. Soc. Am. 55, 1205 (1965): fused silica n(1550 nm) = 1.44402. With NA 0.1246,
+  // n₁ = √(1.44402² + 0.1246²) = 1.44939. Marcuse, J. Opt. Soc. Am. 66, 216 (1976), α as in macro-bending-loss.ts,
+  // evaluated by a second, independent script (quadrature Bessel functions, own eigenvalue solve: V = 2.0709,
+  // U = 1.5516): 2.622 dB/turn at R = 10 mm and 0.08519 dB/turn at R = 15 mm, 1550 nm.
+  assertRel(Math.sqrt(1.44402 ** 2 + 0.1246 ** 2), 1.4494, 1e-5, "n₁");
+  const page = { a: 4.1e-6, n1: 1.4494, NA: 0.1246 };
+  assertRel(bendLossPerTurnDb(page, lambda, 10e-3), 2.62, 2e-3, "R = 10 mm");
+  assertRel(bendLossPerTurnDb(page, lambda, 15e-3), 0.0852, 2e-3, "R = 15 mm");
+  // The group index raised the loss ~20 % at 10 mm (3.16 dB/turn): β and so the decay exponent depend on n₁.
+  assertRel(bendLossPerTurnDb({ ...page, n1: 1.4682 }, lambda, 10e-3), 3.16, 5e-3, "with n₁ = 1.4682");
+  // Edge: the fit range Marcuse (1977) states; the default fibre at 1550 nm sits inside it.
+  assert.deepEqual([...MFD_FIT_V_RANGE], [1.2, 2.4]);
+  const V = vNumber(page, lambda);
+  assert.ok(V > MFD_FIT_V_RANGE[0] && V < MFD_FIT_V_RANGE[1]);
 });

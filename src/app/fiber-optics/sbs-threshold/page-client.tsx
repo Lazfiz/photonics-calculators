@@ -5,7 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import {
-  SBS_POLARIZATION_FACTOR, alphaFromDbPerKm, brillouinShift, effectiveLength, sbsLinewidthFactor, sbsThreshold,
+  SBS_POLARIZATION_FACTOR, SILICA_BRILLOUIN_GAIN, alphaFromDbPerKm, brillouinShift, effectiveLength, sbsLinewidthFactor, sbsThreshold,
 } from "../../../physics/fiber-optics/fiber-nonlinear";
 
 const POL_CASES = [
@@ -21,7 +21,7 @@ export default function SBSThresholdPage() {
   const [fiberLength, setFiberLength] = useURLState("fiberLength", 10); // km
   const [effectiveArea, setEffectiveArea] = useURLState("effectiveArea", 80); // μm²
   const [loss, setLoss] = useURLState("loss", 0.2); // dB/km
-  const [brillouinGain, setBrillouinGain] = useURLState("brillouinGain", 5e-11); // m/W
+  const [brillouinGain, setBrillouinGain] = useURLState("brillouinGain", SILICA_BRILLOUIN_GAIN); // m/W
   const [brillouinBandwidth, setBrillouinBandwidth] = useURLState("brillouinBandwidth", 35); // MHz
   const [laserLinewidth, setLaserLinewidth] = useURLState("laserLinewidth", 1); // MHz
 

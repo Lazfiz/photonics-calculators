@@ -185,7 +185,9 @@ export default function MultiCoreFiberCalculator() {
           <p className="text-gray-400">
             κ is computed for identical cores; Δβ enters only through phase matching, which is fine while the cores differ slightly.
             Not included: LP11 and other higher-order modes, trench-assisted profiles, and coupling to cores beyond the nearest
-            neighbours. The worst-core value adds the neighbour pairs, which holds while each pair is well below −10 dB.
+            neighbours. The worst-core value adds the neighbour pairs, which holds while each pair is well below −10 dB. R_b is the
+            physical bend radius, as in Hayashi&apos;s equivalent-index model; the elasto-optic effect makes silica act as if it were
+            about 1.27× larger (Nagano et al. 1978), which would raise the Δβ = 0 crosstalk by about 1 dB.
           </p>
         </div>
       </div>
