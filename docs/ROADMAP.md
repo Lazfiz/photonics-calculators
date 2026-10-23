@@ -28,8 +28,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 
 ## Next (Phase 4, in order)
 Open findings, one PR each; each claim goes through an adversarial `physics-reviewer` pass against primary literature first.
-- [ ] **Findings 4b, FSO/comms bugs:** ber and bpsk-qpsk log axes; bpsk-qpsk RF noise floor; diversity-reception (fixed 3σ,
-  equal SC/EGC/MRC gain, Fenton–Wilkinson margin).
+- [x] **Findings 4b, FSO/comms bugs** (session 139, `phase-4/fso-comms-bugs`): log axes; LO-shot-noise P_req; exact diversity outage.
 - [ ] **Findings 4c, polarization, imaging, spectroscopy, detectors leftovers** (polarization-scrambling, streak-camera, …).
 - [ ] **Findings 4d, materials unsourced data** (split in 2–3 parts: EO/NLO crystals, glasses, Raman/Brillouin media).
 - [ ] **Findings 4e, wave-optics defaults from memory** (diode/dye laser, injection locking, d_eff).
@@ -117,8 +116,6 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   σ_ap(940) 0.75, σ_ep(940) 0.16 × 10⁻²⁰ cm² (check Koerner 2012, doi 10.1364/JOSAB.29.002493); heat fractions 0.32 (Nd) and 0.11 (Yb)
   attributed to Fan 1993 (doi 10.1109/3.234394, paywalled); κ 14 W/(m K) for YAG (Koechner), lower when heavily Yb-doped.
 **Free-space comms**
-- `diversity-reception`: for N ≥ 3 the Fenton–Wilkinson margin is 0.07–0.41 dB high at σ_I² ≤ 0.5 and ≈ 1–1.2 dB at σ_I² = 1, and MRC is capped at
-  EGC (exact MRC 0.1–0.2 dB lower); the exact N = 3 nested integral (in the tests) is too slow for the chart (~40 ms per threshold).
 - `aperture-averaging`: only the Gaussian aperture is modelled; a hard circular aperture gives a 5–11 % lower A at d² = 1–30 (reviewer quadrature, unchecked).
 - `adaptive-optics` (FSO): the actuator count is fed to Noll's fit 0.2944 J^(−√3/2) as a mode count (input up to 10⁵). The
   exact residual falls as J^(−5/6): 8 % above the fit at J = 1000, 12 % at 4000. Use `nollResidual` (J ≤ 5000) or Hudgin's
@@ -136,10 +133,6 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 **Free-space comms**
 - `snow-attenuation` (low): the sources never define S (read as water-equivalent), and the 2005 ICTON origin of the law
   is unverified (joanneum PDF is an HTML wall). Check Awan et al. WOCN 2009 / ICTON 2005 in Chrome; tier could drop to illustrative.
-- `bpsk-qpsk`: "Required RX power" uses the RF floor kT = −174 dBm/Hz + 3 dB NF. Coherent optical detection is
-  shot-noise limited at hν ≈ −159 dBm/Hz (1550 nm).
-- `ber` and `bpsk-qpsk` plot log₁₀(BER) on a linear axis. Switch them back to log axes; the floor is gone.
-- `diversity-reception`: a fixed "3σ" outage, and identical gain for SC, EGC and MRC.
 - `geometric-loss` (low): the top-hat law (d_t + θR) is cited to Kim & Korevaar, SPIE 4530, 84 (2001) by DOI only; full text
   unread. Confirm in Chrome, or cite Ghassemlooy et al., Optical Wireless Communications (CRC 2019, doi:10.1201/9781315151724).
 - `background-noise`, `receiver-fov` (low): sky radiances are Giggenbach 2022 Table 1 typical values (×10 spread), 850–1550 nm only, log-log across the 1.13/1.38 µm water bands; no night sky or Moon (his Moon row is ≈ 10× E_sun·albedo/π at 850/1064 nm). A sourced sky model (MODTRAN tables, ITU-R P.1621) would extend it.

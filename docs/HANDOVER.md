@@ -1,24 +1,32 @@
-# Handover — 2026-10-23 (session 138 → session 139)
+# Handover — 2026-10-23 (session 139 → session 140)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 138: **Findings 4a** (fibre leftovers), branch `phase-4/fiber-smf-consistency`, PR #169. Each claim went through an
-adversarial `physics-reviewer` pass, then the primary source (ITU PDF, Optica full text). Next: Findings 4b (FSO/comms bugs).
+Session 139: **Findings 4b** (FSO/comms bugs), branch `phase-4/fso-comms-bugs`. Two adversarial `physics-reviewer` passes
+(first on the claims, then on the final diff); each found real bugs, fixed with tests. Next: Findings 4c.
 
 ## State
-- `macro-bending-loss.ts`: `MFD_FIT_V_RANGE = [1.2, 2.4]` (Marcuse 1977), shared with mode-field-diameter; macro-bending page
-  default n₁ 1.4494 (was the group index 1.4682): 0.0852 dB/turn at 15 mm, 2.62 at 10 mm (1550 nm).
-- `g657.ts`: ITU-T G.657 (08/2024) Tables 1–2. Categories `"B3" | "A2" | "A1"` (B2 withdrawn in 2024, no A3);
-  `G657_MIN_MFD_UM = 8.2` (was `G657A_…`) applies to B3 too. bend-insensitive appends "but its MFD is below 8.2 µm".
-- Elasto-optic factor written as ≈ 1.27× everywhere (n = 1.444, Nagano 1978); multi-core keeps the physical R_b (Hayashi 2011
-  eq. 2; the 2019 erratum fixes only eq. 1 and a table). birefringence-fiber keeps Sakai–Kimura 1981 "as quoted in Rashleigh".
-- 1063 tests. Fibre open findings removed from ROADMAP.
+- `ber`, `bpsk-qpsk`: raw BER on log axes (SimpleChart has no 1e-10 floor any more).
+- `bpsk-qpsk.ts`: `shotNoiseN0(λ, η, receiver)` = hν/η (heterodyne/intradyne) or hν/2η (single-quadrature homodyne, BPSK
+  only) and `requiredRxPower` (Ip et al. 2008, Opt. Express 16, 753, Table 1). Replaces the RF kT + 3 dB NF floor. Default
+  10 dB, 1 Gb/s, 1550 nm, η = 1: N₀ −158.92 dBm/Hz, P_req −58.92 dBm, 18 photons/bit at BER 1e-9.
+- `turbulence.ts` diversityOutage, N ≥ 3 EGC/MRC: exact for the equicorrelated log-normal model. Given Z₀ the branches are
+  iid; `lnSumCdfTable` builds ln P(Σ of k log-normals) on 80 points over [ln k ± 9σ], each inner integral split at e^v = y/2
+  (Simpson in v below, in r = ln(1 − e^(v−u)) above, 6 panels/σ). Outer Z₀ integral Simpson. FW fit and MRC ≤ EGC cap removed.
+  P within 1e-3 relative of 4×-refined tables (240 cases); ≈ 15 ms per table at N = 8; cache 64 tables; chart 17 points
+  (≈ 0.6 s at N = 8).
+- 1065 tests (goldens vs brute force, MC, MRC ≤ EGC scan, σ_b ≥ 1.85 no-hang regression).
 
 ## Next actions
-1. `/ship` this branch. Post-merge value: `fiber-optics/macro-bending-loss=0.0852`. No release unless asked.
-2. Findings 4b: ber and bpsk-qpsk log axes, bpsk-qpsk RF noise floor, diversity-reception (fixed 3σ, equal SC/EGC/MRC gain,
-   Fenton–Wilkinson margin). Same loop: reviewer attacks the claims → check primary sources → fix + golden tests → reviewer on diff.
+1. `/ship` this branch. Post-merge value: `free-space-comms/bpsk-qpsk=-58.9`. No release unless asked.
+2. Findings 4c (polarization, imaging, spectroscopy, detectors leftovers). Same loop: reviewer attacks the claims → primary
+   sources → fix + golden tests → reviewer on the diff.
 
 ## Non-obvious facts
+- **Session 139:** tanh-sinh is too coarse in the middle (≈ 2.6σ spacing) for Gaussian-times-CDF integrands; a uniform rule is
+  spectral only when the integrand is smooth and ≈ 0 at both ends. ∫φ(v)F(ln(y − e^v))dv has a sharp edge as e^v → y: substitute
+  r = ln(1 − e^(v−u)). Brute-force references need a convergence check (linear-interp bias 8e-3 at 20 points/σ). Tune quadrature
+  with an env-parametrised scratch copy of the module (`sed` the constants to `Number(process.env.K ?? …)`). `exp` round-off:
+  1 − e^(−18σ) is exactly 1 for σ ≳ 1.85, so a log of it went −∞ and Simpson looped forever: cap panel counts.
 - **Session 138:** ITU-T PDFs download with curl: `https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-G.657-202408-I!!PDF-E&type=items`
   (the edition list at `/rec/T-REC-G.657/en`; check which is in force, 2016 is superseded). Optica full text (Opt. Express) reads in
   Chrome via `get_page_text` on `opg.optica.org/oe/fulltext.cfm?uri=oe-<vol>-<issue>-<page>`; WebFetch gets "Please wait".
@@ -49,16 +57,6 @@ adversarial `physics-reviewer` pass, then the primary source (ITU PDF, Optica fu
   a leftover listener on :3100 gives ChunkLoadError. Check `netstat -ano | grep :3100` and allow ≥ 300 s. Doherty's NV review is
   arXiv:1302.3288. Barnes 1991 (Er σ): Southampton eprints blocks scripts; rp-photonics.com 403s to WebFetch; the Optica abstract
   of Moulton 1986 returned only "Please wait".
-- **Session 132:** archive.org hosts the whole Bell System Technical Journal as OCR text:
-  `https://archive.org/download/bstj<vol>-<issue>-<page>/bstj<vol>-<issue>-<page>_djvu.txt` (retry on a 500). Humbach 1996
-  (J. Non-Cryst. Solids) is closed; its band positions are in arXiv:1402.0466 Table 2. The inline-constant test flags any literal
-  within 1 % of a constant (1246e-9 ≈ μ₀): write such wavelengths as `1246 * NM`. devctl exit 75 skips a heredoc that writes a
-  script too: write scripts with the Write tool, then run them.
-- **Session 131:** CREOL papers download (`curl -L -A "Mozilla/5.0" https://api.creol.ucf.edu/Publications/<n>.pdf`). A garbled
-  `pdftotext -layout` table often reads column by column without `-layout`. A `next start` left on :3100 serves the old build.
-- **Session 126:** Crystran data sheets and refractiveindex.info YAML (via `gh api`) download; amorphousmaterials.com does not.
-  Export a table as `Record<Id, Interface>` (not `as const satisfies`). Round long floats in a `style` to 3 decimals.
-  Background `npm run check` "exit code 0" can hide a red tsc: read the log's `exit` line.
 - **Sessions 120–125:** registry entries end with a `  },` line. A removed page breaks tsc (TS2307 in `.next/types/validator.ts`)
   until `rm -rf .next/types .next/dev/types`. A merge lowers the page floor. The merge codemod runs after appending to
   `redirects.json`. A user `next dev` on :3000 can garble `.next/dev/types`: delete it again.
