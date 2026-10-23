@@ -6,7 +6,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  LAMBDA_C, LAMBDA_D, LAMBDA_F, SCHOTT_DNDT_RANGE_C, abbeNumber, inRange, refractiveIndex, schottDeltaN, schottDnDt,
+  LAMBDA_C, LAMBDA_D, LAMBDA_F, SCHOTT_DNDT_RANGE_C, SCHOTT_DNDT_RANGE_NM, abbeNumber, inRange, refractiveIndex, schottDeltaN, schottDnDt,
 } from "../../../physics/materials/sellmeier";
 import { MATERIALS, SCHOTT_GLASSES, type DispersionMaterial, type GlassId } from "../../../physics/materials/sellmeier-data";
 
@@ -15,8 +15,6 @@ const DEFAULT_SELECTION = "N-BK7,N-SF11,N-LAK9,N-FK5";
 const COLORS = ["#60a5fa", "#f87171", "#34d399", "#fbbf24", "#a78bfa", "#fb923c", "#f472b6", "#22d3ee", "#84cc16", "#e879f9"];
 // e-line (mercury 546.07 nm), where SCHOTT data sheets quote dn/dT.
 const LAMBDA_E = 546.07e-9;
-// SCHOTT data sheets tabulate dn/dT from the g-line (435.8 nm) to 1060 nm.
-const DNDT_TABLE_NM = [435.8, 1060] as const;
 const [T_MIN_C, T_MAX_C] = SCHOTT_DNDT_RANGE_C;
 
 // Abbe numbers for every set whose fit range covers the F and C lines (the infrared crystals' fits don't).
@@ -91,7 +89,7 @@ export default function OpticalGlassCatalogPage() {
     dn: schottDeltaN(glass.model, glass.thermal, lambda, T1) - schottDeltaN(glass.model, glass.thermal, lambda, T0),
   };
   const heldAtEnd = T1 !== T0 + deltaT;
-  const outsideTable = wavelength_nm < DNDT_TABLE_NM[0] || wavelength_nm > DNDT_TABLE_NM[1];
+  const outsideTable = wavelength_nm < SCHOTT_DNDT_RANGE_NM[0] || wavelength_nm > SCHOTT_DNDT_RANGE_NM[1];
 
   const ndVdChart = useMemo(() => ({
     data: GLASS_IDS.map((id) => {
@@ -212,7 +210,7 @@ export default function OpticalGlassCatalogPage() {
         {(heldAtEnd || outsideTable) && (
           <p className="mb-4 text-sm text-yellow-300" role="status">
             {heldAtEnd && `T₀ + ΔT is held at ${T1} °C, the end of the TIE-19 range (${T_MIN_C} to +${T_MAX_C} °C). `}
-            {outsideTable && `${wavelength_nm} nm is outside the ${DNDT_TABLE_NM[0]}–${DNDT_TABLE_NM[1]} nm span that SCHOTT tabulates, so the formula is extrapolated.`}
+            {outsideTable && `${wavelength_nm} nm is outside ${SCHOTT_DNDT_RANGE_NM[0]}–${SCHOTT_DNDT_RANGE_NM[1]} nm, where SCHOTT states the dn/dT constants valid, so the formula is extrapolated.`}
           </p>
         )}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
@@ -238,7 +236,7 @@ export default function OpticalGlassCatalogPage() {
           <p>
             Sellmeier coefficients, n<sub>d</sub>, V<sub>d</sub>, density and thermo-optic coefficients from the SCHOTT
             optical glass catalog (2017). Each formula reproduces its catalog n<sub>d</sub> to 1e-5 and V<sub>d</sub> to 0.01.
-            dn/dT and Δn are absolute (in vacuum), from SCHOTT TIE-19, valid from −100 to +140 °C; n is the catalog index at
+            dn/dT and Δn are absolute (in vacuum), from SCHOTT TIE-19, valid from −100 to +140 °C and 365 to 1014 nm (SCHOTT data sheets); n is the catalog index at
             20 °C. Values relative to air are larger by about n × 0.9×10⁻⁶/K, from the air&apos;s own dn/dT ≈ −(n<sub>air</sub> − 1)/T.
             Curves cover each glass&apos;s 0.3–2.5 µm data range. The crystal and fused silica V<sub>d</sub> come from each set&apos;s
             published formula (fused silica: Malitson 1965, V<sub>d</sub> 67.82).

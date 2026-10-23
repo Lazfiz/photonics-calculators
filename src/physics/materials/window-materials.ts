@@ -88,12 +88,14 @@ const DATA = {
   si: { name: "Silicon", dispersion: MATERIALS.si, bands: um([1.2, 15], [30, 100]), dnDT: 160e-6, conductivity: 163, knoop: 1150 },
   ge: { name: "Germanium", dispersion: MATERIALS.ge, bands: um([1.8, 23]), dnDT: 396e-6, conductivity: 58.62, knoop: 780 },
   as2s3: {
-    name: "As₂S₃ glass", dispersion: MATERIALS.as2s3, bands: [], dnDT: null, conductivity: null, knoop: null,
-    note: "No sourced transmission range or thermal data yet; Rodney et al. measured the index over 0.57–11.8 µm.",
+    name: "As₂S₃ glass", dispersion: MATERIALS.as2s3, bands: um([0.6, 8]), dnDT: null, conductivity: null, knoop: 109,
+    note: "Band and Knoop of Amorphous Materials' AMTIR-6 (As₂S₃), whose index is ≈ 0.004 above Rodney's glass from 0.9 to 8 µm; " +
+      "Rodney measured out to 11.8 µm. AMTIR-6 dn/dT changes sign across the band (+20.7 ×10⁻⁶/K at 0.9 µm, −3.5 at 8 µm), so none is " +
+      "applied; AMI's two sheets disagree on its conductivity (0.33 and 0.17 W/(m·K)).",
   },
   amtir1: {
-    name: "AMTIR-1 (Ge₃₃As₁₂Se₅₅)", dispersion: { n: 2.4981, lambda: 10e-6, source: "Amorphous Materials data sheet" },
-    bands: [], dnDT: null, conductivity: null, knoop: null, note: "No sourced transmission range or thermal data yet.",
+    name: "AMTIR-1 (Ge₃₃As₁₂Se₅₅)", dispersion: MATERIALS.amtir1, bands: um([0.7, 12]), dnDT: 71e-6, conductivity: 0.25, knoop: 170,
+    note: "dn/dT at 10 µm; 76 ×10⁻⁶/K at 3 µm, 166 at 1 µm (Amorphous Materials).",
   },
   zblan: {
     name: "ZBLAN glass", dispersion: MATERIALS.zblan, bands: [], dnDT: null, conductivity: null, knoop: null,

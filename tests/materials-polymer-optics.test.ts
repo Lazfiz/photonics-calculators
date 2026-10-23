@@ -45,6 +45,9 @@ test("Cauchy fits (NOA 61, SU-8): hand values", () => {
   // NOA 61 at 589.3 nm: 1.5375 + 0.00829045/0.347275 − 0.000211046/0.347275² = 1.55962 (Norland quotes n = 1.56).
   assertAbs(polymerIndex(P.noa61.dispersion, 589.3 * nm), 1.5375 + 0.00829045 / 0.5893 ** 2 - 0.000211046 / 0.5893 ** 4, 1e-12, "NOA 61");
   assertAbs(polymerIndex(P.noa61.dispersion, 589.3 * nm), 1.56, 1e-3, "NOA 61 n_D");
+  // Norland NOA 61 data sheet (2022), cured polymer: 1.5562, 1.5594, 1.5634, 1.5691 at 643.8, 589.6, 546.1, 480.0 nm.
+  for (const [l, n] of [[643.8, 1.5562], [589.6, 1.5594], [546.1, 1.5634], [480, 1.5691]])
+    assertAbs(polymerIndex(P.noa61.dispersion, l * nm), n, 5e-4, `NOA 61 at ${l} nm`);
   // SU-8 at 632.8 nm: 1.566 + 0.00796/0.400436 + 0.00014/0.400436² = 1.58675.
   assertAbs(polymerIndex(P.su8.dispersion, 632.8 * nm), 1.58675, 1e-5, "SU-8");
 });

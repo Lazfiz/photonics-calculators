@@ -60,7 +60,7 @@ export const POLYMERS = {
   noa61: {
     name: "Norland NOA 61 (cured adhesive)",
     dispersion: { form: "n-power", A: 1.5375, terms: [[0.00829045, -2], [-0.000211046, -4]], range: um([0.45, 1.55]) },
-    reference: "Norland Products, NOA 61 data sheet (Cauchy fit as recorded by refractiveindex.info, 2016)",
+    reference: "Norland Products, NOA 61 data sheet (Cauchy fit as recorded by refractiveindex.info, 2016; within 5e-4 of the sheet's 480–644 nm table)",
   },
   su8: {
     name: "SU-8 2000 (uncured resist)",

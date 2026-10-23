@@ -173,8 +173,10 @@ export function schottDnDt(model: SellmeierModel, k: SchottThermalCoefficients, 
   return ((n * n - 1) / (2 * n)) * (D0 + 2 * D1 * dT + 3 * D2 * dT * dT + (E0 + 2 * E1 * dT) / (x * x - lambdaTK * lambdaTK));
 }
 
-/** Temperature range of the TIE-19 coefficients, °C. */
+/** Temperature range of the TIE-19 coefficients, °C (SCHOTT data sheets 2017, Explanations). */
 export const SCHOTT_DNDT_RANGE_C = [-100, 140] as const;
+/** Wavelength range of the TIE-19 coefficients, nm (same source). */
+export const SCHOTT_DNDT_RANGE_NM = [365, 1014] as const;
 
 /**
  * SCHOTT change of the absolute index from 20 °C to T (°C) at λ (TIE-19):

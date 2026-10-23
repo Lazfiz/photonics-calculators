@@ -102,6 +102,12 @@ export const MATERIALS = {
     reference: "F. Gan, J. Non-Cryst. Solids 184, 9 (1995), doi:10.1016/0022-3093(94)00592-3",
     temperature_C: null,
   },
+  amtir1: {
+    name: "AMTIR-1 chalcogenide glass (Ge₃₃As₁₂Se₅₅)",
+    model: fromSquaredForm(1, [4.80213322, 0.503764838, 1.02792518], [0.054171865, 0.25030573, 1488.91047], [1, 14]),
+    reference: "Amorphous Materials Inc., AMTIR-1 data sheet (2024-11-21), Sellmeier fit of M3-MSI data",
+    temperature_C: 22,
+  },
   ge: {
     name: "Germanium (Ge)",
     model: fromSquaredForm(1, [0.4886331, 14.5142535, 0.0091224], [1.393959, 0.1626427, 752.19], [2, 14]),
