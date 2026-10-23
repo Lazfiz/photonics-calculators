@@ -438,19 +438,35 @@ export const detectors: CalculatorEntry[] = [
     description: "Photocathode → MCP → phosphor → CCD gain chain with gating and noise analysis.",
     keywords: ["Intensified Camera (ICCD)"],
     tier: "textbook",
-    modelNote: "Cascaded gain stages: Poisson photoelectrons, an MCP of noise factor F (2 for exponential pulse heights, more with open-area loss), a Poisson phosphor η·qV/E_ph and binomial coupling. The aluminium film's dead voltage, light spread over neighbouring pixels, ion feedback and dark counts are left out.",
+    modelNote: "Cascade: Poisson photoelectrons, tube noise factor K_f squared, Poisson phosphor (Photek gains at 5 kV, scaled ∝ V), binomial coupling. Gaussian spot read through its matched filter. No ion feedback or dark counts.",
     references: [
       {
         citation: "Shockley W., Pierce J. R. (1938). A theory of noise for electron multipliers. Proc. IRE 26, 321–332. Noise factor of cascaded gain stages, F = F₁ + (F₂ − 1)/G₁ + ….",
         url: "https://doi.org/10.1109/JRPROC.1938.228127",
       },
       {
-        citation: "Wiza J. L. (1979). Microchannel plate detectors. Nucl. Instrum. Methods 162, 587–601. Exponential single-electron pulse heights of an unsaturated MCP (F = 2).",
+        citation: "Wiza J. L. (1979). Microchannel plate detectors. Nucl. Instrum. Methods 162, 587–601. Exponential single-electron pulse heights of an unsaturated MCP (variance factor 2).",
         url: "https://doi.org/10.1016/0029-554X(79)90734-1",
       },
       {
-        citation: "Stanford Computer Optics. Image intensifier: phosphor screen. P43 about 200 and P46 about 95 photons per electron; decay to 10 % in 1.5 ms and 0.2 µs.",
+        citation: "Dussault D., Hoess P. (2004). ICCDs edge out electron-multiplying CCDs in low light. Laser Focus World 40(9). Noise factor 1.3 < F < 2.2 for ICCD and EMCCD; 1.6 for the ICCD, 1.4 (≈ √2) for the EMCCD. Full analysis: Proc. SPIE 5563, 195 (2004), doi:10.1117/12.561839.",
+        url: "https://www.laserfocusworld.com/detectors-imaging/article/16549710/iccds-edge-out-electron-multiplying-ccds-in-low-light",
+      },
+      {
+        citation: "Photek. Image Diode data sheet PH-DS039 Rev 02 (2021), Phosphor options: P43 240 and P46 55 photons per electron at 5 kV, peaks 548 and 530 nm.",
+        url: "https://www.photek.com/wp-content/uploads/2021/08/PH-DS039-ImageDiode-Rev02-Aug21.pdf",
+      },
+      {
+        citation: "Stanford Computer Optics. Image intensifier: phosphor screen. P43 and P46 decay to 10 % in 1.5 ms and 0.2 µs.",
         url: "https://stanfordcomputeroptics.com/technology/image-intensifier/phosphor-screen.php",
+      },
+      {
+        citation: "Andor (Oxford Instruments). iStar CCD imaging specifications, DH334T: 13 µm pixels, 5 e⁻ read noise at 50 kHz, 100 000 e⁻ well; the smallest resolvable FWHM feature is about 2 CCD pixels (note 6).",
+        url: "https://andor.oxinst.com/downloads/uploads/andor-istar-ccd-imaging-specifications.pdf",
+      },
+      {
+        citation: "King I. R. (1983). Accuracy of measurement of star images on a pixel array. PASP 95, 163. Noise-equivalent area 1/Σh² of a spread image.",
+        url: "https://doi.org/10.1086/131139",
       },
     ],
   },
