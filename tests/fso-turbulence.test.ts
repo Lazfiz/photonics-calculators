@@ -143,7 +143,7 @@ test("weak plane-wave irradiance correlation: table vs its integral, the 1.23 pr
   close(logIrradianceCorrelation(0.5, 1), Math.log(1.5) / Math.log(2), 1e-12);
 });
 
-test("diversity outage: orthant probabilities, exact N = 2 combiners and Fenton–Wilkinson for N ≥ 3", () => {
+test("diversity outage: orthant probabilities, exact N = 2 combiners and iid log-normal sum tables for N ≥ 3", () => {
   const sI2 = 0.2;
   const median = Math.exp(-Math.log1p(sI2) / 2); // ln t = μ: each branch is below t with probability ½
   // Sheppard: P(Z₁ < 0, Z₂ < 0) = 1/4 + asin ρ/(2π) = 1/3 at ρ = ½; trivariate equicorrelated: 1/8 + 3 asin ρ/(4π) = 1/4.
@@ -165,7 +165,14 @@ test("diversity outage: orthant probabilities, exact N = 2 combiners and Fenton�
   // The threshold inverts the outage.
   const t = diversityThreshold(1e-6, 2, sI2, 0.3, "egc");
   close(diversityOutage(t, 2, sI2, 0.3, "egc"), 1e-6, 1e-6);
-  // N = 3 EGC: the Fenton–Wilkinson outage vs a seeded Monte Carlo (2e5 runs at P = 1e-2; MC 0.88 %): within 20 %, never optimistic.
+  // N = 3 against brute-force nested quadrature (scratch probe: Σ of three log-normals by a 2-D trapezoid in the
+  // branch deviates, 800² points, inside a 480-point trapezoid over Z₀; unchanged from 400² × 240).
+  close(diversityOutage(0.4, 3, 0.3, 0.3, "egc"), 1.108841e-4, 1e-3);
+  close(diversityOutage(0.4, 3, 0.3, 0.3, "mrc"), 8.13649e-5, 1e-3);
+  close(diversityOutage(0.3, 3, 0.5, 0.7, "egc"), 2.66549e-3, 1e-3);
+  close(diversityOutage(0.5, 3, 0.5, 0, "egc"), 1.08279e-3, 1e-3);
+  close(diversityOutage(0.3, 3, 0.2, 0, "egc"), 2.89260e-12, 5e-3); // deep tail: table interpolation 4e-3
+  // N = 3 EGC at its threshold vs a seeded Monte Carlo (2e5 runs at P = 1e-2, 1σ = 2.2e-4).
   let seed = 99;
   const rnd = () => {
     seed = (seed + 0x6d2b79f5) | 0;
@@ -182,7 +189,32 @@ test("diversity outage: orthant probabilities, exact N = 2 combiners and Fenton�
     for (let i = 0; i < 3; i++) sum += Math.exp(-s * s / 2 + s * Math.sqrt(-2 * Math.log(rnd())) * Math.cos(2 * Math.PI * rnd()));
     if (sum / Math.sqrt(3) < tE) hits++;
   }
-  assert.ok(hits / runs < 1.03e-2 && hits / runs > 0.8e-2, `MC ${hits / runs}`);
+  assert.ok(Math.abs(hits / runs - 1e-2) < 7e-4, `MC ${hits / runs}`);
+});
+
+test("diversity outage at small branch spread (σ_I² ≪ 1 or ρ → 1): brute force, MRC ≤ EGC margins, guards", () => {
+  // Brute-force sum tables (scratch probe: σ/80 grid and step, linear interpolation, trapezoid over Z₀) at the
+  // code's own 1e-3 thresholds; a 4e6-run Monte Carlo gave 9.72e-4 and 9.96e-4 (1σ = 1.6e-5). The tanh-sinh
+  // version was off by up to 2× here (σ_b = 0.07: N = 8, σ_I² = 0.01, ρ = 0.5).
+  close(diversityOutage(2.23827, 8, 0.01, 0.5, "egc"), 9.997487e-4, 1e-3);
+  close(diversityOutage(0.42471, 3, 0.2, 0.99, "egc"), 9.999595e-4, 1e-3);
+  // √(ΣI²) ≥ ΣI/√N (Cauchy–Schwarz): the MRC margin never exceeds the EGC margin.
+  for (const n of [3, 4, 8]) for (const sI2 of [1e-4, 1e-3, 0.01, 0.1]) for (const rho of [0, 0.3, 0.9, 0.99]) {
+    const mrc = diversityThreshold(1e-6, n, sI2, rho, "mrc");
+    const egc = diversityThreshold(1e-6, n, sI2, rho, "egc");
+    assert.ok(mrc >= egc * (1 - 1e-6), `N=${n} σ_I²=${sI2} ρ=${rho}: t_MRC ${mrc} < t_EGC ${egc}`);
+  }
+  // Tiny σ_I²: the table grid scales with σ, so the threshold still inverts the outage.
+  for (const c of ["egc", "mrc"] as const) {
+    const t = diversityThreshold(1e-6, 8, 1e-6, 0.5, c);
+    close(diversityOutage(t, 8, 1e-6, 0.5, c), 1e-6, 1e-3, c);
+  }
+  assert.ok(Number.isNaN(diversityOutage(0.5, 3, 0.2, Number.NaN, "egc")));
+  // Large branch spread (σ_b = 1.85–2.4): the table's top row once looped forever (r = ln(1 − e^0) = −∞).
+  for (const sI2 of [1.36, 3]) {
+    const p = diversityOutage(0.5, 3, sI2, 0, "mrc");
+    assert.ok(p > 0 && p < 1 && p >= diversityOutage(0.45, 3, sI2, 0, "mrc"), `σ_I² = ${sI2}: ${p}`);
+  }
 });
 
 test("beam wander: 2.42 C_n² L³ W₀^(−1/3) and the mean on-axis loss 10 log(1 + 2⟨r_c²⟩/W²)", () => {
@@ -205,9 +237,8 @@ test("numerics at the edges: huge α, β, the large-aperture asymptote, exact N 
   // d² → ∞, plane wave: A·d^(7/3) → (5/216)·4^(7/6)/(cos 75°·6/11) = 0.826351 (expanding the kernel to O(τ²)).
   const asym = ((5 / 216) * 4 ** (7 / 6)) / (Math.cos((5 * Math.PI) / 12) * (6 / 11));
   close(weakApertureFactor(1e6, "plane") * 1e7, asym, 1e-4);
-  // N = 3, ρ = 0, σ_I² = 0.5, P = 1e-6: exact outage by conditioning on I₁ and the exact N = 2 result. The
-  // Fenton–Wilkinson margin must be conservative (exact P ≤ 1e-6 at its threshold) and within 0.35 dB (EGC, exact
-  // 5.752 dB vs 6.054) or 0.5 dB (MRC, exact 5.600 dB; capped at the EGC fit).
+  // N = 3, ρ = 0, σ_I² = 0.5, P = 1e-6: exact outage by conditioning on I₁ and the exact N = 2 result. The margins
+  // are 5.752 dB (EGC) and 5.600 dB (MRC); the Fenton–Wilkinson fit used before gave 6.054 dB for both.
   const s = Math.sqrt(Math.log1p(0.5));
   const exact3 = (t: number, mrc: boolean) => {
     const zMax = (Math.log(mrc ? t : t * Math.sqrt(3)) + s * s / 2) / s;
@@ -218,10 +249,10 @@ test("numerics at the edges: huge α, β, the large-aperture asymptote, exact N 
     };
     return integrateTanhSinh(f, Math.min(zMax - 8, -12), zMax) / Math.sqrt(2 * Math.PI);
   };
-  for (const [c, slack] of [["egc", 0.35], ["mrc", 0.5]] as const) {
+  for (const [c, margin] of [["egc", 5.752], ["mrc", 5.600]] as const) {
     const t = diversityThreshold(1e-6, 3, 0.5, 0, c);
-    assert.ok(exact3(t, c === "mrc") <= 1e-6, `${c} conservative`);
-    assert.ok(exact3(t * 10 ** (slack / 10), c === "mrc") >= 1e-6, `${c} within ${slack} dB`);
+    close(exact3(t, c === "mrc"), 1e-6, 2e-3, c);
+    assert.ok(Math.abs(-10 * Math.log10(t) - margin) < 1e-3, `${c} margin ${-10 * Math.log10(t)}`);
   }
   // SC far below the median: the true value is 9e-56; the integral is only claimed to 1e-31 absolute (no Φ(−12) floor).
   assert.ok(diversityOutage(0.05, 2, 0.05, 0.5, "sc") < 1e-31);

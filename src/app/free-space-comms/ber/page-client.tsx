@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 import {
   MAX_NOISE_PER_SLOT,
   MAX_PHOTONS_PER_BIT,
@@ -24,7 +25,7 @@ function formatBer(ber: number): string {
   return ber < 1e-300 ? "< 1e-300" : ber.toExponential(2);
 }
 
-/** log₁₀ BER curve, trimmed at CHART_FLOOR (SimpleChart's log axis can't go below 1e-10). */
+/** BER curve for a log axis, trimmed at CHART_FLOOR so the noise-free curves don't stretch the axis. */
 function berCurve(scheme: PhotonCountingScheme, noisePerSlot: number, name: string, line: Record<string, unknown>) {
   const x: number[] = [];
   const y: number[] = [];
@@ -33,7 +34,7 @@ function berCurve(scheme: PhotonCountingScheme, noisePerSlot: number, name: stri
     const ber = photonCountingBer(scheme, ppb, noisePerSlot);
     if (!(ber >= CHART_FLOOR)) break; // BER only falls with ppb
     x.push(ppb);
-    y.push(Math.log10(ber));
+    y.push(ber);
   }
   return { x, y, type: "scatter", mode: "lines", name, line };
 }
@@ -111,7 +112,7 @@ export default function BERPage() {
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
             <ChartPanel data={plotData} layout={{
               xaxis: { title: "Detected photons per bit", type: "log", color: "#9ca3af", gridcolor: "#374151" },
-              yaxis: { title: "log₁₀ BER", color: "#9ca3af", gridcolor: "#374151" },
+              yaxis: { title: "BER", type: "log", color: "#9ca3af", gridcolor: "#374151" },
               paper_bgcolor: "transparent", plot_bgcolor: "transparent",
               margin: { t: 20, r: 20, b: 40, l: 50 }, font: { color: "#9ca3af" },
             }} />

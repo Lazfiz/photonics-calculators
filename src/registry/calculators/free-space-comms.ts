@@ -130,12 +130,16 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "bpsk-qpsk",
     title: "BPSK and QPSK Error Rates",
-    description: "Bit and symbol error rates of BPSK, Gray-coded QPSK and OQPSK versus Eb/N0, with spectral efficiency, bandwidth, required receive power and margin.",
+    description: "Bit and symbol error rates of BPSK, Gray-coded QPSK and OQPSK versus Eb/N0, with spectral efficiency, bandwidth, and the shot-noise-limited coherent receive power and margin.",
     tier: "textbook",
-    modelNote: "Error rates are exact for ideal coherent detection in AWGN (perfect carrier and timing recovery). The required-power line uses a fixed kT = −174 dBm/Hz and a 3 dB noise figure, which the cited text does not cover.",
+    modelNote: "Exact error rates for ideal coherent detection in AWGN. Required power at the LO shot-noise limit, N₀ = hν/η (heterodyne) or hν/2η (homodyne BPSK); no thermal noise, LO RIN or ASE.",
     references: [
       {
         citation: "Proakis J. G., Salehi M. (2008). Digital Communications, 5th ed. McGraw-Hill. Binary antipodal signalling and Gray-coded QPSK.",
+      },
+      {
+        citation: "Ip E., Lau A. P. T., Barros D. J. F., Kahn J. M. (2008). Coherent detection in optical fiber systems. Opt. Express 16(2), 753–791. Table 1: SNR per symbol of shot-noise-limited heterodyne and homodyne receivers.",
+        url: "https://doi.org/10.1364/OE.16.000753",
       },
     ],
   },
@@ -165,7 +169,7 @@ export const freeSpaceComms: CalculatorEntry[] = [
     title: "Diversity Reception",
     description: "Required fade margin and diversity gain of selection, equal-gain and maximal-ratio combining with N receivers, from the irradiance correlation at their separation in weak turbulence.",
     tier: "textbook",
-    modelNote: "Weak fluctuations: log-normal receivers correlated by the plane-wave irradiance covariance at one separation d. SC and N = 2 are exact; EGC and MRC for N ≥ 3 use a Fenton–Wilkinson fit, conservative by up to ≈ 1 dB.",
+    modelNote: "Weak fluctuations: log-normal receivers correlated by the plane-wave irradiance covariance at one separation d. SC, EGC and MRC outages are exact for that model (numerical convolution, < 0.001 dB).",
     references: [
       {
         citation: "Lee E. J., Chan V. W. S. (2004). Part 1: Optical communication over the clear turbulent atmospheric channel using diversity. IEEE J. Sel. Areas Commun. 22(9), 1896–1906.",

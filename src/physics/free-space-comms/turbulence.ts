@@ -34,7 +34,7 @@
  *   (R. R. Parenti, R. J. Sasiela, JOSA A 11, 288 (1994)). It tends to (r₀/D)² for an uncorrected D ≫ r₀.
  */
 
-import { erfc, integrateTanhSinh, lnGamma, regularizedGammaP } from "../math";
+import { erfc, integrateSimpson, integrateTanhSinh, lnGamma, regularizedGammaP } from "../math";
 
 const waveNumber = (lambda: number) => (2 * Math.PI) / lambda;
 
@@ -226,18 +226,107 @@ export function logIrradianceCorrelation(bI: number, sigmaI2: number): number {
 
 export type Combiner = "sc" | "egc" | "mrc";
 
+const SUM_GRID = 80;
+const PANELS_PER_SIGMA = 6;
+const MAX_PANELS = 4000; // both ranges span < 21σ + ln 2 (126 panels); a guard only
+
+/**
+ * ln P(Σᵢ₌₁ⁿ e^(σWᵢ) < e^u) for iid standard normal Wᵢ, tabulated on 80 points of u ∈ [ln n − 9σ, ln n + 9σ]: a sum
+ * below n·e^(−9σ) needs one term below e^(−9σ), and above n·e^(9σ) one above e^(9σ), so the probability outside is
+ * < nΦ(−9) = n·1.1e-19 (absolute). Built by the recursion
+ * F_k(y) = ∫ φ(v/σ)/σ · F_(k−1)(y − e^v) dv over v < ln y (one term in log space, the other k − 1 from the previous
+ * table, Catmull–Rom in u), by Simpson's rule at 6 panels per σ. Against the same recursion on 320 points at 24 panels
+ * per σ (σ = 0.07–1.3, n = 3 and 8, P = 1e-12 to 0.5) the relative error is < 1.5e-3, falling as h⁴ (1.4e-3 at σ = 1.7 by an
+ * independent quadrature); ≈ 15 ms for n = 8.
+ */
+function lnSumCdfTable(n: number, sigma: number): { lo: number; du: number; lnF: Float64Array } {
+  const du = (18 * sigma) / (SUM_GRID - 1);
+  let lo = -9 * sigma;
+  let lnF = new Float64Array(SUM_GRID);
+  for (let i = 0; i < SUM_GRID; i++) lnF[i] = Math.log(0.5 * erfc(-(lo + i * du) / sigma / Math.SQRT2));
+  const norm = 1 / (sigma * Math.sqrt(2 * Math.PI));
+  const vLo = -10 * sigma; // φ(v/σ) beyond ±10σ adds < Φ(−10) = 8e-24 (absolute)
+  for (let k = 2; k <= n; k++) {
+    const prev = { lo, du, lnF };
+    lo = Math.log(k) - 9 * sigma;
+    const next = new Float64Array(SUM_GRID);
+    for (let i = 0; i < SUM_GRID; i++) {
+      const u = lo + i * du;
+      // v < 10σ, and the other k − 1 terms need at least e^(prev.lo): v < ln(e^u − e^(prev.lo)).
+      const vEnd = Math.min(10 * sigma, u + Math.log(-Math.expm1(prev.lo - u)));
+      // Split at e^v = y/2. Below, step in v: y − e^v = e^u (1 − e^(v − u)) stays within a factor 2 of y. Above, the
+      // other terms' CDF falls off over a v-interval far narrower than σ as e^v → y, so step in their log-share
+      // r = ln(1 − e^(v − u)) instead: v = u + ln(1 − e^r), |dv/dr| = e^r/(1 − e^r) ≤ 1. Simpson, PANELS_PER_SIGMA.
+      const vA = Math.min(u - Math.LN2, vEnd);
+      let total = 0;
+      if (vA > vLo) {
+        total += integrateSimpson((v) => {
+          const l = interpLnSumCdf(prev, u + Math.log(-Math.expm1(v - u)));
+          return l > -Infinity ? Math.exp(-0.5 * (v / sigma) ** 2 + l) : 0;
+        }, vLo, vA, Math.min(MAX_PANELS, Math.ceil((PANELS_PER_SIGMA * (vA - vLo)) / sigma)));
+      }
+      const vB = Math.max(u - Math.LN2, vLo);
+      if (vEnd > vB) {
+        const rHi = Math.log(-Math.expm1(vB - u));
+        // r at vEnd, exactly: e^(prev.lo − u) can round 1 − e^(vEnd − u) to 0 (σ ≳ 1.85), which would give r = −∞.
+        const rLo = Math.max(prev.lo - u, Math.log(-Math.expm1(Math.min(10 * sigma, u) - u)));
+        total += integrateSimpson((r) => {
+          const l = interpLnSumCdf(prev, u + r);
+          const v = u + Math.log(-Math.expm1(r));
+          return l > -Infinity ? Math.exp(-0.5 * (v / sigma) ** 2 + l + r) / -Math.expm1(r) : 0;
+        }, rLo, rHi, Math.min(MAX_PANELS, Math.ceil((PANELS_PER_SIGMA * (rHi - rLo)) / sigma)));
+      }
+      next[i] = total > 0 ? Math.log(total * norm) : -Infinity;
+    }
+    lnF = next;
+  }
+  return { lo, du, lnF };
+}
+
+function interpLnSumCdf(table: { lo: number; du: number; lnF: Float64Array }, u: number): number {
+  const { lo, du, lnF } = table;
+  const x = (u - lo) / du;
+  if (!(x > 0)) return -Infinity;
+  if (x >= SUM_GRID - 1) return 0;
+  const i = Math.floor(x);
+  const f = x - i;
+  const p1 = lnF[i];
+  const p2 = lnF[i + 1];
+  if (!(p1 > -Infinity && p2 > -Infinity)) return -Infinity;
+  const p0 = i > 0 ? lnF[i - 1] : -Infinity;
+  const p3 = i + 2 < SUM_GRID ? lnF[i + 2] : -Infinity;
+  if (!(p0 > -Infinity && p3 > -Infinity)) return p1 + f * (p2 - p1);
+  return p1 + 0.5 * f * (p2 - p0 + f * (2 * p0 - 5 * p1 + 4 * p2 - p3 + f * (3 * (p1 - p2) + p3 - p0)));
+}
+
+// diversityThreshold calls the outage ~20 times with one (n, σ), and the page's chart needs 34 tables: keep the last 64.
+const sumTableCache = new Map<string, ReturnType<typeof lnSumCdfTable>>();
+function cachedSumTable(n: number, sigma: number) {
+  const key = `${n}|${sigma}`;
+  let table = sumTableCache.get(key);
+  if (!table) {
+    if (sumTableCache.size >= 64) sumTableCache.clear();
+    table = lnSumCdfTable(n, sigma);
+    sumTableCache.set(key, table);
+  }
+  return table;
+}
+
 /**
  * Outage probability of N receivers with equicorrelated log-normal irradiances I_n (mean 1, scintillation σ_I²,
  * correlation ρ of ln I, clamped to [0, 1]; a negative ρ is treated as 0, which overestimates the outage). The
  * combined signal is the irradiance-equivalent of the electrical SNR of thermal-noise-limited IM/DD, each receiver
  * having the single receiver's aperture: SC max I_n, EGC ΣI_n/√N, MRC √(ΣI_n²). Outage = P(signal < t).
  * SC is exact: given the common factor Z₀ the branches are independent, P = ∫φ(z) Φ((ln t − μ − σ√ρ z)/(σ√(1 − ρ)))ᴺ dz.
- * EGC and MRC are exact for N = 2 (one conditioned integral); for N ≥ 3 they fit a log-normal to the exact mean and
- * variance of ΣI_n or ΣI_n² (Fenton 1960), which is conservative: against the exact nested integral (N = 3, ρ = 0)
- * the margin comes out high by 0.07–0.41 dB (EGC) at σ_I² = 0.2–0.5 and by ≈ 1 dB at σ_I² = 1.
+ * EGC and MRC are exact for N = 2 (one conditioned integral). For N ≥ 3, given Z₀ the ΣI_n (EGC) or ΣI_n² (MRC, I² is
+ * log-normal with twice the log-deviation) is a sum of iid log-normals, whose CDF comes from lnSumCdfTable; the outer
+ * integral over Z₀ is Simpson's rule. Against 4×-refined tables and a 40000-panel outer integral (240 cases: N = 3, 8;
+ * σ_I² = 1e-4–1; ρ = 0.05–0.99999; EGC and MRC; P = 1e-3–1e-9) P is within 1e-3 relative (2.8e-3 at σ_I² = 1, MRC), i.e.
+ * < 0.001 dB; 4e6-run Monte Carlo agrees within 2σ (±1.6 %). The Fenton–Wilkinson log-normal fit it replaces overstated
+ * the EGC margin by 0.02–0.30 dB at σ_I² ≤ 0.5 and up to 0.8 dB at σ_I² = 1.
  */
 export function diversityOutage(t: number, n: number, sigmaI2: number, rhoLn: number, combiner: Combiner): number {
-  if (!(n >= 1) || Number.isNaN(t) || !(sigmaI2 >= 0)) return NaN;
+  if (!(n >= 1) || Number.isNaN(t) || Number.isNaN(rhoLn) || !(sigmaI2 >= 0)) return NaN;
   if (t <= 0) return 0;
   const gain = combiner === "sc" ? 1 : Math.sqrt(n); // signal without fading
   if (sigmaI2 === 0) return t > gain ? 1 : 0;
@@ -291,28 +380,32 @@ export function diversityOutage(t: number, n: number, sigmaI2: number, rhoLn: nu
     };
     return Math.min(1, integrateTanhSinh(integrand, Math.min(zMax - 8, -12), zMax) / Math.sqrt(2 * Math.PI));
   }
-  // Fenton–Wilkinson: exact moments of S = ΣI_n (EGC) or ΣI_n² (MRC) for log-normal I with E[I^k] = e^(k(k−1)σ²/2).
-  const fentonWilkinson = (mrc: boolean) => {
-    const mean = mrc ? n * Math.exp(s2) : n;
-    const variance = mrc
-      ? n * (Math.exp(6 * s2) - Math.exp(2 * s2)) + n * (n - 1) * Math.exp(2 * s2) * Math.expm1(4 * rho * s2)
-      : n * sigmaI2 + n * (n - 1) * Math.expm1(rho * s2);
-    const fitS2 = Math.log1p(variance / (mean * mean));
-    return phi((Math.log(mrc ? t * t : t * Math.sqrt(n)) - (Math.log(mean) - fitS2 / 2)) / Math.sqrt(fitS2));
-  };
-  if (combiner === "egc") return fentonWilkinson(false);
-  // The fit to ΣI_n² alone overestimates the MRC margin by up to ≈ 1 dB (N = 4, σ_I² = 0.5, against Monte Carlo).
-  // √(ΣI_n²) is never below ΣI_n/√N (Cauchy–Schwarz) nor below max I_n, so the MRC outage is also bounded by the EGC
-  // value and by the exact SC value; the smallest of the three stays an upper bound when the fits are conservative.
-  // Monte Carlo (4e5 runs, P = 1e-3): the margin is then high by 0.06–0.41 dB for N = 3–8, σ_I² = 0.2–0.5.
-  return Math.min(fentonWilkinson(true), fentonWilkinson(false), diversityOutage(t, n, sigmaI2, rho, "sc"));
+  // N ≥ 3: ln(sum) < uAt(z) given Z₀ = z, in units of the branch log-deviation (EGC: σ_c, MRC: 2σ_c).
+  const mrc = combiner === "mrc";
+  const power = mrc ? 2 : 1;
+  const branch = power * s * Math.sqrt(1 - rho);
+  const table = cachedSumTable(n, branch);
+  const u0 = mrc ? 2 * (lnT - mu) : lnT + Math.log(n) / 2 - mu;
+  const slope = power * s * Math.sqrt(rho); // du/dz
+  if (rho === 0) return Math.min(1, Math.exp(interpLnSumCdf(table, u0)));
+  // The table spans u ∈ [lo, hi]: P = 1 above (z < zA), negligible below (z > zB).
+  const hi = table.lo + (SUM_GRID - 1) * table.du;
+  const zA = Math.max(-12, Math.min(12, (u0 - hi) / slope));
+  const zB = Math.max(-12, Math.min(12, (u0 - table.lo) / slope));
+  const tail = zA > -12 ? phi(zA) : 0;
+  if (!(zB > zA)) return Math.min(1, tail);
+  // Simpson over the 18σ_b/slope window (≥ 64 panels, ≤ 0.05 in z).
+  const integral = integrateSimpson(
+    (z) => Math.exp(-z * z / 2 + interpLnSumCdf(table, u0 - slope * z)), zA, zB, Math.max(64, Math.ceil((zB - zA) / 0.05)),
+  ) / Math.sqrt(2 * Math.PI);
+  return Math.min(1, tail + integral);
 }
 
 /**
  * Threshold t (fraction of one receiver's mean irradiance) at which diversityOutage equals pOut. Bracket: with q(p)
  * the single-receiver threshold, ρ ≥ 0 gives p^N ≤ P_SC ≤ p, so q(pOut) ≤ t_SC ≤ q(pOut^(1/N)); and
  * max I ≤ √(ΣI²) ≤ √N max I, ΣI/√N between max I/√N and √N max I, so EGC and MRC lie within a factor √N of that range
- * (widened by e for the approximate fits, else [e^(−80), e^10]). Root of ln P(t) − ln pOut in ln t by the Illinois
+ * (widened by a factor e, else [e^(−80), e^10]). Root of ln P(t) − ln pOut in ln t by the Illinois
  * method, to |Δ ln P| < 1e-9 or |Δ ln t| < 1e-9.
  */
 export function diversityThreshold(pOut: number, n: number, sigmaI2: number, rhoLn: number, combiner: Combiner): number {
