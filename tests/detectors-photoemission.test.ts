@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 
 import { erf } from "../src/physics/math";
 import {
-  childLangmuirCurrentDensity, effectiveThermionicBarrier, gaussianSpotShares, intensifiedSnr, intensifierNoiseFactor,
-  PHOSPHOR_SCREENS, PHOTOCATHODE_DARK_EMISSION, POINT_SPOT, phosphorEfficiency, phosphorGain, planarTransitTime, quadratureFwhm,
+  childLangmuirCurrentDensity, effectiveThermionicBarrier, gaussianAllowance, gaussianSpotShares, intensifiedSnr,
+  intensifierNoiseFactor, limitingResolutionBlur, PHOSPHOR_SCREENS, PHOTOCATHODE_DARK_EMISSION, POINT_SPOT, phosphorEfficiency, phosphorGain, planarTransitTime, quadratureFwhm,
   RICHARDSON_A0, rectGaussFwhm, streakTime, streakWindow, thermionicCurrentDensity, thresholdWavelength, VACUUM_TRANSIT_FACTOR, vacuumTransitBandwidth,
 } from "../src/physics/detectors/photoemission";
 
@@ -141,6 +141,32 @@ test("streak camera: time per length and quadrature resolution", () => {
   assert.equal(quadratureFwhm([]), 0);
   assert.ok(Number.isNaN(quadratureFwhm([1e-12, -1e-12])));
   assert.ok(Number.isNaN(streakTime(1e-6, 0)));
+});
+
+test("streak camera: blur from a limiting resolution and the tube term a data sheet allows", () => {
+  // Gaussian MTF exp(−2π²σ²f²) = 0.05 at 35 lp/mm (C16910 data sheet SHSS0026E06): σ = √(ln 20 / 2)/(π·35000 m⁻¹)
+  // = 11.1306 µm, FWHM 26.2106 µm at the cathode (hand calculation).
+  close(limitingResolutionBlur(35e3, 0.05), 26.2106e-6, 1e-5);
+  // Read at 2 % instead: √(ln 50 / 2) → 29.952 µm.
+  close(limitingResolutionBlur(35e3, 0.02), 29.952e-6, 1e-4);
+  assert.ok(Number.isNaN(limitingResolutionBlur(35e3, 1)));
+  assert.ok(Number.isNaN(limitingResolutionBlur(0, 0.05)));
+  // Without rectangles the allowance is √(T² − other²): 3-4-5.
+  close(gaussianAllowance([], 3, 5), 4, 1e-12);
+  // Inverts the brute-force case above (rect 3 ⊗ rect 3 ⊗ Gauss 1 → 3.3390152): g = 1, or √(1 − 0.6²) = 0.8 with 0.6 known.
+  close(gaussianAllowance([3, 3], 0, 3.3390152), 1, 1e-6);
+  close(gaussianAllowance([3, 3], 0.6, 3.3390152), 0.8, 1e-6);
+  // C16910 fastest sweep (9.44 mm in 60 ps), 10 µm slit × M 2.77, 9.75 µm pixel, 35 lp/mm blur × 2.77, < 800 fs total:
+  // the page default 0.5 ps fits under the 0.6409 ps allowance (total 0.69228 ps); the allowance reproduces 0.8 ps.
+  const v = 9.44e-3 / 60e-12;
+  const slit = (10e-6 * 2.77) / v, pixel = 9.75e-6 / v, blur = (limitingResolutionBlur(35e3, 0.05) * 2.77) / v;
+  const g = gaussianAllowance([slit, pixel], blur, 0.8e-12);
+  close(rectGaussFwhm([slit, pixel], Math.hypot(g, blur)), 0.8e-12, 1e-9);
+  close(g, 0.64094e-12, 1e-4);
+  close(rectGaussFwhm([slit, pixel], Math.hypot(0.5e-12, blur)), 0.69228e-12, 1e-4);
+  // The known terms alone exceed a 0.3 ps total; known = total leaves 0.
+  assert.ok(Number.isNaN(gaussianAllowance([slit, pixel], blur, 0.3e-12)));
+  assert.equal(gaussianAllowance([], 2, 2), 0);
 });
 
 test("photocathode dark emission: Burle Table I values carried to other temperatures over an effective barrier", () => {

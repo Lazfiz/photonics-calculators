@@ -221,3 +221,27 @@ export function rectGaussFwhm(rectWidths: readonly number[], gaussianFwhm: numbe
   const peak = profile(0);
   return 2 * firstCrossing((t) => profile(t) / peak, 0, span + 2 * gaussianFwhm, 0.5);
 }
+
+/**
+ * FWHM (m) of the Gaussian line spread whose MTF exp(−2π²σ²f²) falls to `mtf` at the limiting resolution f (line
+ * pairs per m): σ = √(ln(1/mtf)/2)/(π·f). A data-sheet limiting resolution (C16910: 35 lp/mm at the photocathode) is
+ * where a bar target's contrast is just visible; the caller picks that contrast (5 % on the streak-camera page).
+ */
+export function limitingResolutionBlur(linePairsPerMetre: number, mtf: number): number {
+  if (!(linePairsPerMetre > 0 && Number.isFinite(linePairsPerMetre) && mtf > 0 && mtf < 1)) return NaN;
+  return (FWHM_PER_SIGMA * Math.sqrt(Math.log(1 / mtf) / 2)) / (Math.PI * linePairsPerMetre);
+}
+
+/**
+ * Largest Gaussian FWHM g that keeps rectGaussFwhm(rects, √(g² + other²)) ≤ total, in any one unit: the room a
+ * data-sheet total resolution leaves for an unknown Gaussian term such as the tube's own spread (transit-time and
+ * deflection dispersion). The FWHM rises with g and is ≥ g, so the crossing lies in [0, total] and is bisected
+ * (firstCrossing, 1e-13 relative). Without rectangles it is √(total² − other²). NaN if the known terms already exceed
+ * the total.
+ */
+export function gaussianAllowance(rectWidths: readonly number[], otherGaussianFwhm: number, total: number): number {
+  const fwhm = (g: number) => rectGaussFwhm(rectWidths, Math.hypot(g, otherGaussianFwhm));
+  const known = fwhm(0);
+  if (!(total > 0 && known <= total)) return NaN;
+  return known === total ? 0 : firstCrossing(fwhm, 0, total, total);
+}
