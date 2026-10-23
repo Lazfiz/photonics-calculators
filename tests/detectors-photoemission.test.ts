@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 
 import { erf } from "../src/physics/math";
 import {
-  childLangmuirCurrentDensity, effectiveThermionicBarrier, intensifiedSnr, intensifierNoiseFactor, PHOTOCATHODE_DARK_EMISSION,
-  phosphorGain, planarTransitTime, quadratureFwhm,
+  childLangmuirCurrentDensity, effectiveThermionicBarrier, gaussianSpotShares, intensifiedSnr, intensifierNoiseFactor,
+  PHOSPHOR_SCREENS, PHOTOCATHODE_DARK_EMISSION, POINT_SPOT, phosphorEfficiency, phosphorGain, planarTransitTime, quadratureFwhm,
   RICHARDSON_A0, rectGaussFwhm, streakTime, streakWindow, thermionicCurrentDensity, thresholdWavelength, VACUUM_TRANSIT_FACTOR, vacuumTransitBandwidth,
 } from "../src/physics/detectors/photoemission";
 
@@ -54,14 +54,59 @@ test("image intensifier: phosphor gain, cascade noise factor and SNR", () => {
   // Page defaults: G_e = 10⁴ × 329.679 × 0.6 × 0.5 = 9.89037e5, F = 2 + 1/G_e.
   const ge = 1e4 * 329.6791084 * 0.3;
   close(intensifierNoiseFactor(2, ge), 2.000001011, 1e-9);
-  // 35 photoelectrons, 0.035 background, read noise 5 e⁻: SNR → √(35²/(35.035·2)) = 4.18121.
-  close(intensifiedSnr(35, 0.035, ge, intensifierNoiseFactor(2, ge), 5), 4.181209, 1e-6);
-  // Noiseless gain and no read noise: Poisson limit √N.
-  close(intensifiedSnr(35, 0, 1, 1, 0), Math.sqrt(35), 1e-15);
-  // Read-noise limit: S·G/σ_r for small S·G.
-  close(intensifiedSnr(1, 0, 1e-3, 1, 1), 1e-3 / Math.sqrt(1e-6 + 1), 1e-12);
+  // Point spot, 35 photoelectrons, 0.035 background, read noise 5 e⁻: SNR → √(35²/(35.035·2)) = 4.18121.
+  close(intensifiedSnr(35, 0.035, ge, 2, 5), 4.181209, 1e-6);
+  // Noiseless MCP at high G_e, no read noise: Poisson limit √N.
+  close(intensifiedSnr(35, 0, 1e12, 1, 0), Math.sqrt(35), 1e-11);
+  // One CCD electron per photoelectron: the Poisson phosphor and coupling add 1/G_e = 1, so √(N/2).
+  close(intensifiedSnr(35, 0, 1, 1, 0), Math.sqrt(35 / 2), 1e-15);
+  // Read-noise limit: Var = 1e-6·(1 + 1/1e-3) + 1.
+  close(intensifiedSnr(1, 0, 1e-3, 1, 1), 1e-3 / Math.sqrt(1 + 1e-3 + 1e-6), 1e-12);
   assert.ok(Number.isNaN(intensifiedSnr(0, 0, 1, 2, 0)));
+  assert.ok(Number.isNaN(intensifiedSnr(1, 0, 1, 0.5, 0)));
   assert.ok(Number.isNaN(intensifierNoiseFactor(0.5, 1e3)));
+});
+
+test("phosphor screens: Photek gains at 5 kV as energy efficiencies", () => {
+  // Photek PH-DS039 Rev 02: P43 240 photons/e⁻ at 5 kV, peak 548 nm. E_ph = 1239.841984/548 = 2.262485 eV, so
+  // η = 240·2.262485/5000 = 0.1085993 (aluminium film included); P46 55 at 530 nm: 55·2.339325/5000 = 0.0257326.
+  close(phosphorEfficiency(240, 5000, 548e-9), 0.10859930, 1e-7);
+  close(phosphorEfficiency(55, 5000, 530e-9), 0.02573257, 1e-6);
+  const eta = phosphorEfficiency(PHOSPHOR_SCREENS.p43.photonsAt5kV, 5000, PHOSPHOR_SCREENS.p43.peak);
+  close(phosphorGain(eta, 5000, 548e-9), 240, 1e-12);
+  close(phosphorGain(eta, 3000, 548e-9), 144, 1e-12); // ∝ V
+  assert.ok(Number.isNaN(phosphorEfficiency(240, 0, 548e-9)));
+  // intensified-ccd defaults: S = 3.5, B = 0.035, G_e = 10³·240·0.1·0.5 = 12 000, F_MCP = 1.6², 2 px spot (c₃ = 1.353821,
+  // κ = 5.056566, N_eff = 10.11629), σ_r = 5: Var = 3.5·1.44e8·(2.56 + c₃/12 000) + 0.035·1.44e8·(2.56κ + N_eff/12 000)
+  // + 25·N_eff, SNR = 42 000/√Var = 1.140756. Background equal to the signal (B = 3.5) drops it to 0.475103.
+  const ge = 1e3 * phosphorGain(eta, 5000, 548e-9) * 0.1 * 0.5;
+  close(intensifiedSnr(3.5, 0.035, ge, 1.6 ** 2, 5, gaussianSpotShares(2)), 1.140756, 1e-6);
+  close(intensifiedSnr(3.5, 3.5, ge, 1.6 ** 2, 5, gaussianSpotShares(2)), 0.475103, 1e-5);
+});
+
+test("Gaussian spot on a pixel grid: centre share, Σh², c₃ and κ", () => {
+  // FWHM 2 px: σ√2 = 1.2011224; 1-D shares s₀ = erf(0.5/1.2011224) = 0.4439408, s₁ = ½[erf(1.5/·) − erf(0.5/·)] =
+  // 0.2393413, s₂ = 0.0370658, s₃ = 0.0016036. Centre pixel s₀² = 0.1970835; Σh² = (s₀² + 2Σs_k²)² = 0.3144049² =
+  // 0.0988504 (N_eff = 10.1). A Monte Carlo even field (exponential MCP, Poisson phosphor, binomial coupling,
+  // 8.4e4 pixel samples) gave a per-pixel variance 0.5 % above N·G²(2·Σh² + 1/G) and 10× below N·G²(2 + 1/G).
+  const spot = gaussianSpotShares(2);
+  close(spot.peak, 0.4439408243 ** 2, 1e-8);
+  close(spot.sumSquares, 0.3144048712 ** 2, 1e-8);
+  // c₃ = Σh³/(Σh²)² and κ = Σ(h⋆h)²/(Σh²)² against a brute-force 2-D sum (17 × 17 shares, direct autocorrelation):
+  // 1.3538208 and 5.0565663.
+  close(spot.cubeRatio, 1.3538207918, 1e-9);
+  close(spot.footprint, 5.0565662946, 1e-9);
+  // Wide spot: Σh² → 1/(4π(σ² + 1/12)), the Gaussian with the pixel's variance 1/12 added per axis, and κ·Σh² → ½
+  // (continuum Gaussian: κ = 2πσ², N_eff = 4πσ²).
+  close(gaussianSpotShares(20).footprint * gaussianSpotShares(20).sumSquares, 0.5, 1e-6);
+  const sigma = 20 / 2.354820045;
+  close(gaussianSpotShares(20).sumSquares, 1 / (4 * Math.PI * (sigma ** 2 + 1 / 12)), 1e-4);
+  // Point spot: all in one pixel.
+  assert.deepEqual(gaussianSpotShares(0), POINT_SPOT);
+  assert.deepEqual(POINT_SPOT, { peak: 1, sumSquares: 1, cubeRatio: 1, footprint: 1 });
+  close(gaussianSpotShares(0.01).peak, 1, 1e-12);
+  assert.ok(Number.isNaN(gaussianSpotShares(-1).peak));
+  assert.ok(Number.isNaN(gaussianSpotShares(Infinity).footprint));
 });
 
 test("streak camera: time per length and quadrature resolution", () => {
