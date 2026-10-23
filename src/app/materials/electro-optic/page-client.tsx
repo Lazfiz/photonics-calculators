@@ -9,7 +9,7 @@ import {
   transverseHalfWaveVoltage, type PockelsGeometry, type PockelsId,
 } from "../../../physics/materials/pockels";
 
-const IDS = ["kdp", "kdp-d", "adp", "linbo3"] as const satisfies readonly PockelsId[];
+const IDS = ["kdp", "kdp-d", "adp", "linbo3", "ktp"] as const satisfies readonly PockelsId[];
 type Choice = PockelsId | "custom";
 const CHOICES: readonly Choice[] = [...IDS, "custom"];
 const DEFAULT_ID: Choice = "kdp";
@@ -31,6 +31,7 @@ const layout = (x: string, y: string) => ({
   margin: { t: 20, r: 20, b: 50, l: 60 }, height: 300,
 });
 const kV = (V: number) => (Number.isFinite(V) ? (Math.abs(V) >= 1000 ? `${sig(V / 1000, 4)} kV` : `${sig(V, 4)} V`) : "—");
+const ORDINARY = { n: "n_o", nz: "n_e", r: "r₁₃" };
 const rangeNm = (id: PockelsId) => POCKELS[id].range.map((x) => Math.round(x * 1e9)).join("–");
 
 interface Modulator {
@@ -113,10 +114,11 @@ export default function ElectroOpticPage() {
   const outside = "outside the index model's range";
   const chart = transmissionChart(m.VpiRet, voltage);
   const fixedIndex = choice === "kdp-d" || choice === "adp";
+  const perp = crystal?.perp ?? ORDINARY;
 
   return (
     <>
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-6" role="group" aria-label="Material">
+      <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 mb-6" role="group" aria-label="Material">
         {CHOICES.map((id) => (
           <button key={id} onClick={() => setMaterial(id)} aria-pressed={choice === id}
             className={`px-3 py-2 rounded text-sm ${choice === id ? "bg-blue-600" : "bg-gray-800 hover:bg-gray-700"}`}>
@@ -159,13 +161,13 @@ export default function ElectroOpticPage() {
       </p>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-4">
-        <ResultCard label={longitudinal ? "Half-wave voltage V_π (retardation)" : "Half-wave voltage V_π (z–o retardation)"} value={kV(m.VpiRet)} tone="blue"
+        <ResultCard label={longitudinal ? "Half-wave voltage V_π (retardation)" : `Half-wave voltage V_π (z–${perp.n.slice(2)} retardation)`} value={kV(m.VpiRet)} tone="blue"
           subtext={Number.isFinite(m.VpiRet)
-            ? (longitudinal ? "λ/(2n_o³r₆₃): amplitude modulator between crossed polarizers" : "λd/((n_e³r₃₃ − n_o³r₁₃)L), on top of the natural birefringence")
+            ? (longitudinal ? "λ/(2n_o³r₆₃): amplitude modulator between crossed polarizers" : `λd/((${perp.nz}³r₃₃ − ${perp.n}³${perp.r})L), on top of the natural birefringence`)
             : (custom ? "needs r₃₃ and r₁₃: use a table crystal" : outside)} />
         <ResultCard label="Phase half-wave voltage (one polarization)" value={kV(m.VpiPhase)} tone="green"
           subtext={Number.isFinite(m.VpiPhase)
-            ? (longitudinal ? "λ/(n_o³r₆₃): twice the retardation value" : `λd/(n_e³r₃₃L); V_π·L = ${sig(VpiL_Vcm, 4)} V·cm`)
+            ? (longitudinal ? "λ/(n_o³r₆₃): twice the retardation value" : `λd/(${perp.nz}³r₃₃L); V_π·L = ${sig(VpiL_Vcm, 4)} V·cm`)
             : outside} />
       </div>
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
@@ -197,7 +199,7 @@ export default function ElectroOpticPage() {
             {IDS.map((id) => {
               const row = modulator(id, lambda, d, L, { n: nCustom, r: rCustom_pmV * 1e-12, geometry: customGeometry });
               const c = POCKELS[id];
-              const rText = c.geometry === "longitudinal" ? `r₆₃ ${sig(c.r.r63! * 1e12, 3)}` : `r₃₃ ${sig(c.r.r33! * 1e12, 3)}, r₁₃ ${sig(c.r.r13! * 1e12, 3)}`;
+              const rText = c.geometry === "longitudinal" ? `r₆₃ ${sig(c.r.r63! * 1e12, 3)}` : `r₃₃ ${sig(c.r.r33! * 1e12, 3)}, ${(c.perp ?? ORDINARY).r} ${sig(c.r.r13! * 1e12, 3)}`;
               return (
                 <tr key={id} onClick={() => setMaterial(id)} className={`cursor-pointer hover:bg-gray-800 ${id === choice ? "bg-gray-800" : ""}`}>
                   <td className="pr-4 py-1">{c.name}</td>
@@ -229,7 +231,11 @@ export default function ElectroOpticPage() {
             birefringence, which a real modulator compensates.
           </p>
           <p>
-            r is taken at its reference wavelength (633 nm for LiNbO₃) and only n follows the Sellmeier fit, so V_π far from
+            KTP (biaxial, mm2) in the same geometry with light along x: the z polarization uses n_z³r₃₃ and the y
+            polarization n_y³r₂₃, so the retardation uses n_z³r₃₃ − n_y³r₂₃. Its r₃₃ and r₂₃ are 633 nm values.
+          </p>
+          <p>
+            r is taken at its reference wavelength (633 nm for LiNbO₃ and KTP) and only n follows the Sellmeier fit, so V_π far from
             it is approximate. LiNbO₃&apos;s r₃₃ and r₁₃ are the clamped (high-frequency) values; below the acoustic resonances
             the unclamped ones are a few per cent larger.
           </p>

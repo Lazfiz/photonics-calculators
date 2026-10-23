@@ -12,6 +12,10 @@
  * - Transverse z-field modulator (3m crystals such as LiNbO₃, light along x or y, electrode gap d, length L): a
  *   z-polarized beam gets φ = π n_e³ r₃₃ V L / (λ d), V_π = λ d / (n_e³ r₃₃ L); the retardation between z and the
  *   ordinary polarization is Γ = π (n_e³ r₃₃ − n_o³ r₁₃) V L / (λ d) on top of the natural birefringence.
+ * - KTP (mm2) in the same geometry, light along x: the z and y polarizations see n_z³ r₃₃ and n_y³ r₂₃, so the
+ *   retardation uses n_z³ r₃₃ − n_y³ r₂₃ (D. Xie & O. Pfister, arXiv:physics/0507123 (2005), eqs. 3–4). r₃₃ = 36.3 and
+ *   r₂₃ = 15.7 pm/V at 633 nm are L. K. Cheng et al.'s values (J. Cryst. Growth 137, 107 (1994),
+ *   doi:10.1016/0022-0248(94)91256-4) as quoted there; n_y, n_z from Kato & Takaoka 2002 (`biaxial-data.ts`).
  * - Photorefractive grating (N. V. Kukhtarev et al., Ferroelectrics 22, 949 (1978), doi:10.1080/00150197908239450),
  *   diffusion only, no applied field and no photovoltaic current, small fringe modulation m: the space-charge field
  *   per unit m is E_sc = E_D / (1 + E_D / E_q), E_D = k_B T K / q, E_q = q N_eff / (ε₀ ε K), K = 2π/Λ, shifted by a
@@ -21,19 +25,28 @@
  */
 
 import { epsilon_0, k_B, q } from "../constants";
+import { biaxialIndices, biaxialRange } from "./biaxial-data";
 import { crystalIndices, crystalRange } from "./uniaxial-data";
 
-export type PockelsId = "kdp" | "kdp-d" | "adp" | "linbo3";
+export type PockelsId = "kdp" | "kdp-d" | "adp" | "linbo3" | "ktp";
 export type PockelsGeometry = "longitudinal" | "transverse";
 
 export interface PockelsCrystal {
   name: string;
   pointGroup: string;
   geometry: PockelsGeometry;
-  /** Coefficients in m/V: r₆₃ for a longitudinal cell, r₃₃ and r₁₃ for a transverse one. */
+  /**
+   * Coefficients in m/V: r₆₃ for a longitudinal cell; for a transverse one r₃₃ (z polarization) and r₁₃, the
+   * coefficient of the polarization across z (r₂₃ for KTP, labelled by `perp`).
+   */
   r: { r63?: number; r33?: number; r13?: number };
-  /** n_o and n_e at λ (m): a Sellmeier fit, or fixed values where only a single index is published. */
+  /**
+   * Index across z (n_o; n_y for KTP) and along z (n_e; n_z for KTP) at λ (m): a Sellmeier fit, or fixed values
+   * where only a single index is published.
+   */
   indices: (lambda: number) => { no: number; ne: number };
+  /** Labels of the polarization across z when it isn't the ordinary one (biaxial crystals). */
+  perp?: { n: string; nz: string; r: string };
   /** Wavelength range of the index model, m (fixed indices: the range of the source's examples). */
   range: [number, number];
   /** Static relative permittivity along the field (photorefractive E_q), or NaN where not tabulated. */
@@ -63,6 +76,15 @@ export const POCKELS: Record<PockelsId, PockelsCrystal> = {
     name: "LiNbO₃ (congruent)", pointGroup: "3m", geometry: "transverse", r: { r33: 30.8e-12, r13: 8.6e-12 },
     indices: (lambda) => crystalIndices("linbo3", lambda), range: crystalRange("linbo3"), epsilon: 28,
     source: "r₃₃, r₁₃ (clamped, 633 nm) and ε₃₃ Weis & Gaylord 1985; n_o, n_e Zelmon et al. 1997",
+  },
+  ktp: {
+    name: "KTP (KTiOPO₄)", pointGroup: "mm2", geometry: "transverse", r: { r33: 36.3e-12, r13: 15.7e-12 },
+    indices: (lambda) => {
+      const { ny, nz } = biaxialIndices("ktp", lambda);
+      return { no: ny, ne: nz };
+    },
+    range: biaxialRange("ktp"), epsilon: NaN, perp: { n: "n_y", nz: "n_z", r: "r₂₃" },
+    source: "r₃₃, r₂₃ (633 nm) Cheng et al. 1994 via Xie & Pfister 2005; n_y, n_z Kato & Takaoka 2002",
   },
 };
 

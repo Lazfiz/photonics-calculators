@@ -202,10 +202,10 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "electro-optic",
     title: "Electro-Optic Coefficients",
-    description: "Pockels-effect half-wave voltage of longitudinal KDP, KD*P and ADP cells and transverse LiNbO₃ modulators: retardation and single-polarization phase, V_π·L, the index change −½n³rE and the crossed-polarizer transmission.",
+    description: "Pockels-effect half-wave voltage of longitudinal KDP, KD*P and ADP cells and transverse LiNbO₃ and KTP modulators: retardation and single-polarization phase, V_π·L, the index change −½n³rE and the crossed-polarizer transmission.",
     keywords: ["Pockels Effect", "Half-Wave Voltage", "Pockels Cell", "Electro-Optic Modulator"],
     tier: "textbook",
-    modelNote: "Principal-axis geometries with r fixed at its reference wavelength; only n follows the Sellmeier fits (Zernike KDP, Zelmon LiNbO₃), and KD*P and ADP use one published index. LiNbO₃ uses clamped (high-frequency) coefficients. The z–o retardation of a transverse modulator adds to the natural birefringence.",
+    modelNote: "Principal-axis geometries with r fixed at its reference wavelength; only n follows the Sellmeier fits (Zernike KDP, Zelmon LiNbO₃, Kato KTP), and KD*P and ADP use one published index. LiNbO₃ uses clamped (high-frequency) coefficients; KTP's 633 nm r₃₃ and r₂₃ are low-frequency measurements whose clamping the source doesn't state. The z–o retardation of a transverse modulator adds to the natural birefringence.",
     references: [
       {
         citation: "Wilson J., Hawkes J. Optoelectronics: An Introduction. Prentice Hall. Table 3.1 (r₆₃ of KDP, KD*P, ADP) and Example 3.2 (KDP V_π = 14.5 kV at 1.06 µm).",
@@ -217,6 +217,14 @@ export const materials: CalculatorEntry[] = [
       {
         citation: "Zelmon D. E., Small D. L., Jundt D. (1997). Infrared corrected Sellmeier coefficients for congruently grown lithium niobate and 5 mol.% magnesium oxide–doped lithium niobate. J. Opt. Soc. Am. B 14, 3319.",
         url: "https://doi.org/10.1364/JOSAB.14.003319",
+      },
+      {
+        citation: "Xie D., Pfister O. (2005). Low-frequency measurements of electro-optic coefficients of Na:KTiOPO₄ and RbTiOAsO₄. arXiv:physics/0507123. Eqs. 3–4 (Δn_y, Δn_z of a z field) and KTP r₂₃ = 15.7, r₃₃ = 36.3 pm/V at 633 nm, quoted from Cheng L. K. et al. (1994), J. Cryst. Growth 137, 107–115.",
+        url: "https://arxiv.org/abs/physics/0507123",
+      },
+      {
+        citation: "Kato K., Takaoka E. (2002). Sellmeier and thermo-optic dispersion formulas for KTP. Appl. Opt. 41, 5040–5044 (coefficients via the refractiveindex.info database).",
+        url: "https://doi.org/10.1364/AO.41.005040",
       },
     ],
   },
@@ -301,7 +309,7 @@ export const materials: CalculatorEntry[] = [
     description: "Second-harmonic generation of 1064 nm in BBO, LBO, KTP, BiBO, bulk MgO:LiNbO₃ and PPLN: d_eff of each phase-matched cut, and the focused-beam (Boyd–Kleinman) SH power and efficiency for a crystal length, pump power and waist.",
     keywords: ["Second Harmonic Generation", "d_eff", "Boyd–Kleinman Focusing", "PPLN", "BBO"],
     tier: "textbook",
-    modelNote: "Boyd–Kleinman focused Gaussian beam at exact phase matching (Δk = 0), undepleted pump, no walk-off or absorption. d_eff comes from each source's d_ij and cut at 1064 nm (BBO's angle from its indices); published values differ by tens of per cent between sources. Mid-IR crystals (AgGaS₂, ZGP, GaSe, OP-GaAs) and walk-off, acceptance and damage data are not included until sourced.",
+    modelNote: "Boyd–Kleinman focused Gaussian beam at exact phase matching (Δk = 0), undepleted pump, no walk-off or absorption. d_eff comes from each source's d_ij and cut at 1064 nm (BBO's and BiBO's angles from their indices); published values differ by tens of per cent between sources. Mid-IR crystals (AgGaS₂, ZGP, GaSe, OP-GaAs) and walk-off, acceptance and damage data are not included until sourced.",
     references: [
       {
         citation: "Boyd G. D., Kleinman D. A. (1968). Parametric Interaction of Focused Gaussian Light Beams. J. Appl. Phys. 39, 3597–3639. Focusing function h(σ, ξ).",
@@ -316,8 +324,12 @@ export const materials: CalculatorEntry[] = [
         url: "https://eksmaoptics.com/out/media/EKSMA_Optics_BBO_Crystals.pdf",
       },
       {
-        citation: "CASTECH. BiB₃O₆ (BiBO) properties: d_eff 3.0 pm/V and θ = 168.9° for SHG of 1064 nm, Sellmeier equations.",
+        citation: "CASTECH. BiB₃O₆ (BiBO) properties: d_eff 3.0 pm/V and θ = 168.9° for SHG of 1064 nm.",
         url: "https://www.castech-us.com/casbib3o6.htm",
+      },
+      {
+        citation: "Umemura N., Miyata K., Kato K. (2007). New data on the optical properties of BiB₃O₆. Opt. Mater. 30, 532–534. Sellmeier equations (via the refractiveindex.info database): BiBO n_x(532 nm) and the type I cut computed from them (168.8°).",
+        url: "https://doi.org/10.1016/j.optmat.2006.12.014",
       },
       {
         citation: "Zelmon D. E., Small D. L., Jundt D. (1997). Infrared corrected Sellmeier coefficients for congruently grown lithium niobate and 5 mol.% magnesium oxide–doped lithium niobate. J. Opt. Soc. Am. B 14, 3319.",

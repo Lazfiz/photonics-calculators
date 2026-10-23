@@ -11,8 +11,11 @@
  *   1/n² = sin²φ/n_x² + cos²φ/n_y².
  * - d_eff from the d_ij tensor and the cut, using each source's expression: BBO ooe d₃₁ sinθ − d₂₂ cosθ sin3φ (taken at
  *   |sin3φ| = 1 with both terms adding; the sheet gives d₃₁ as ±, and the opposite sign lowers d_eff by 3 %), LBO XY-plane ooe d₃₂ cosφ, KTP XY-plane type II d₁₅ sin²φ + d₂₄ cos²φ (EKSMA Optics data sheets for
- *   BBO, LBO and KTP: d_ij, indices at 1064 and 532 nm, cut angles, transparency). BiBO d_eff, cut and Sellmeier from
- *   CASTECH's BiBO sheet. LiNbO₃: d₃₁ = 4.4 and d₃₃ = 25.0 pm/V of 5 % MgO:LiNbO₃ at 1064 nm (I. Shoji et al., J. Opt.
+ *   BBO, LBO and KTP: d_ij, indices at 1064 and 532 nm, cut angles, transparency). BiBO d_eff and transparency from
+ *   CASTECH's BiBO sheet; its type I (ee → o) cut in the YZ plane from the Umemura 2007 Sellmeier fits (`biaxial-data.ts`):
+ *   the in-plane fundamental at θ from Z, 1/n² = cos²θ/n_y² + sin²θ/n_z², matches n_x(2ω) at 11.2° from Z; it is quoted as
+ *   180° − 11.2° = 168.8° (CASTECH: 168.9°), because in point group 2 the d₁₄ term makes d_eff differ between θ and 180° − θ
+ *   and CASTECH's 3.0 pm/V belongs to 168.9°. LiNbO₃: d₃₁ = 4.4 and d₃₃ = 25.0 pm/V of 5 % MgO:LiNbO₃ at 1064 nm (I. Shoji et al., J. Opt.
  *   Soc. Am. B 14, 2268 (1997), doi 10.1364/JOSAB.14.002268, Table 10); first-order QPM d_eff = 2d₃₃/π; indices of
  *   congruent LiNbO₃ (Zelmon et al. 1997) and the 420–5200 nm window of Raicol's PPLN sheet.
  * - SHG power P_2ω = K P_ω², K = 16π² d_eff² L h(σ, ξ)/(ε₀ c n_ω n_2ω λ³), ξ = L/b, b = 2πn_ω w₀²/λ
@@ -23,6 +26,7 @@
 
 import { c, epsilon_0 } from "../constants";
 import { boydKleinmanH, confocalParameter } from "../imaging/second-harmonic-generation";
+import { biaxialIndices } from "./biaxial-data";
 import { crystalIndices } from "./uniaxial-data";
 
 /** Fundamental wavelength of the tabulated process (1064 → 532 nm), m. */
@@ -44,6 +48,16 @@ export function uniaxialWalkOff(no: number, ne: number, theta: number): number {
   if (!(no > 0 && ne > 0) || !Number.isFinite(theta)) return NaN;
   const neTheta2 = 1 / (Math.cos(theta) ** 2 / no ** 2 + Math.sin(theta) ** 2 / ne ** 2);
   return Math.atan((neTheta2 / 2) * (ne ** -2 - no ** -2) * Math.sin(2 * theta));
+}
+
+/**
+ * Type I angle θ from Z in the YZ plane of a biaxial crystal where the in-plane wave of index
+ * 1/n² = cos²θ/n_y² + sin²θ/n_z² equals `target`, rad. NaN if no angle in [0, 90°] does.
+ */
+export function yzPlaneMatchingAngle(ny: number, nz: number, target: number): number {
+  if (!(ny > 0 && nz > 0 && target > 0) || ny === nz) return NaN;
+  const s2 = (ny ** -2 - target ** -2) / (ny ** -2 - nz ** -2);
+  return s2 >= 0 && s2 <= 1 ? Math.asin(Math.sqrt(s2)) : NaN;
 }
 
 /** Index of a wave in the XY plane of a biaxial crystal at φ from X, polarized in that plane. */
@@ -72,9 +86,10 @@ export interface ShgCrystal {
 const BBO = { d22: 2.2, d31: 0.08, no1064: 1.6551, no532: 1.675, ne532: 1.5555 };
 const LBO = { d32: 0.98, phi: 11.6 * deg, nz1064: 1.6055, nx532: 1.5785, ny532: 1.6065 };
 const KTP = { d15: 1.95, d24: 3.9, phi: 23.5 * deg, nx1064: 1.7404, ny1064: 1.7479, nz1064: 1.8296, nx532: 1.7797, ny532: 1.7897 };
-// CASTECH BiBO Sellmeier n_x² = 3.0740 + 0.0323/(λ² − 0.0316) − 0.01337λ² (λ in µm): the e-polarized fundamental in
-// the YZ plane is matched to n_x(532 nm), so n_ω = n_2ω = n_x(532 nm).
-const BIBO_N = Math.sqrt(3.074 + 0.0323 / (0.532 ** 2 - 0.0316) - 0.01337 * 0.532 ** 2);
+// BiBO (Umemura 2007): the in-plane fundamental in the YZ plane is matched to n_x(532 nm), so n_ω = n_2ω = n_x(532 nm).
+const BIBO = { o1064: biaxialIndices("bibo", SHG_LAMBDA), e532: biaxialIndices("bibo", SHG_LAMBDA / 2) };
+export const BIBO_THETA = yzPlaneMatchingAngle(BIBO.o1064.ny, BIBO.o1064.nz, BIBO.e532.nx);
+const BIBO_N = BIBO.e532.nx;
 const LN = { d31: 4.4, d33: 25.0, o1064: crystalIndices("linbo3", 1064e-9), e532: crystalIndices("linbo3", 532e-9) };
 
 export const BBO_THETA = typeIPhaseMatchingAngle(BBO.no1064, BBO.no532, BBO.ne532);
@@ -99,8 +114,8 @@ export const SHG_CRYSTALS: Record<ShgCrystalId, ShgCrystal> = {
     source: "EKSMA KTP sheet",
   },
   bibo: {
-    name: "BiBO", cut: "type I, YZ plane, θ = 168.9°", deff: 3.0e-12, nOmega: BIBO_N, n2Omega: BIBO_N,
-    transparency: [286e-9, 2500e-9], source: "CASTECH BiBO sheet",
+    name: "BiBO", cut: `type I (ee → o), YZ plane, θ = ${(180 - BIBO_THETA / deg).toFixed(1)}°`, deff: 3.0e-12, nOmega: BIBO_N, n2Omega: BIBO_N,
+    transparency: [286e-9, 2500e-9], source: "CASTECH BiBO sheet (d_eff); n and θ from Umemura et al. 2007",
   },
   "mgo-ln": {
     name: "MgO:LiNbO₃ (bulk)", cut: "type I (ooe), θ = 90°, temperature-tuned", deff: LN.d31 * 1e-12,
