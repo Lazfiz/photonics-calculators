@@ -44,6 +44,19 @@ test("transverse LiNbO₃ modulator: phase and retardation half-wave voltages by
   assert.ok(Number.isNaN(phaseHalfWaveVoltage(1.55e-6, 2.2, 30.8e-12, 0, 0.02)), "zero gap");
 });
 
+test("transverse KTP modulator at 632.8 nm: r₃₃ 36.3, r₂₃ 15.7 pm/V (Cheng et al. 1994 via Xie & Pfister 2005)", () => {
+  // Kato & Takaoka 2002 at 632.8 nm: n_y 1.77129, n_z 1.86480. n_z³r₃₃ − n_y³r₂₃ = 235.400 − 87.251 = 148.149 pm/V
+  // (the composite coefficient of Xie & Pfister), d = 1 mm, L = 20 mm: 632.8e-12 / (148.149e-12 · 0.02) = 213.57 V.
+  const { no: ny, ne: nz } = POCKELS.ktp.indices(632.8e-9);
+  assertRel(ny, 1.77129, 1e-5, "n_y");
+  assertRel(nz, 1.8648, 1e-5, "n_z");
+  const { r33, r13: r23 } = POCKELS.ktp.r;
+  assertRel(transverseHalfWaveVoltage(632.8e-9, ny, nz, r33!, r23!, 1e-3, 0.02), 213.57, 1e-4, "retardation V_π");
+  // z polarization alone: 632.8e-12 / (235.400e-12 · 0.02) = 134.41 V.
+  assertRel(phaseHalfWaveVoltage(632.8e-9, nz, r33!, 1e-3, 0.02), 134.41, 1e-4, "phase V_π");
+  assert.ok(Number.isNaN(POCKELS.ktp.indices(5e-6).ne), "outside Kato's 0.43–3.54 µm");
+});
+
 test("crossed polarizers: T = sin²(Γ/2) is 0 at Γ = 0, ½ at π/2 and 1 at π", () => {
   assert.equal(crossedPolarizerTransmission(0), 0);
   assertRel(crossedPolarizerTransmission(Math.PI / 2), 0.5, 1e-12, "π/2");
