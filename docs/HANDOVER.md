@@ -1,42 +1,36 @@
-# Handover — 2026-10-23 (session 143 → session 144)
+# Handover — 2026-10-23 (session 144 → session 145)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 143: Findings 4d was split into a/b/c; **4d-a** done on `phase-4/findings-4d-a` (PR #174): KTP on `electro-optic`, BiBO
-indices on `nonlinear-crystals`; the physics reviewer passed both. Next: **Findings 4d-b** (glasses and polymers).
+Session 144: **Findings 4d-b** done on `phase-4/findings-4d-b` (PR #175): glass catalog, thermal expansion, heat capacity,
+polymer and IR-glass data now sourced; a physics-reviewer pass was applied. Next: **Findings 4d-c** (nonlinear and scattering media).
 
 ## State
-- New `src/physics/materials/biaxial-data.ts`: `BIAXIAL_CRYSTALS` (ktp: Kato & Takaoka 2002; bibo: Umemura 2007, with K term),
-  `biaxialIndices(id, λ)` → {nx, ny, nz} (NaN outside the fit), `biaxialRange`. `tests/materials-biaxial.test.ts`.
-- `pockels.ts`: `POCKELS.ktp` (transverse; `indices` returns {no: n_y, ne: n_z}, r₂₃ stored in `r13`, labels in the new `perp` field).
-- `nonlinear-crystals.ts`: `yzPlaneMatchingAngle(ny, nz, target)`, `BIBO_THETA` (11.196° from Z, shown as 168.8°). 1075 tests.
+- `sellmeier.ts`: `SCHOTT_DNDT_RANGE_NM = [365, 1014]` (the glass catalog warns outside it). `sellmeier-data.ts`: `MATERIALS.amtir1`
+  (AMI Sellmeier, 22 °C, 1–14 µm; it also shows on `chromatic-dispersion`). `window-materials.ts`: AMTIR-1 band/dn/dT/κ/Knoop, As₂S₃ band + Knoop.
+- `heat-capacity.ts`: + `mgo` (JANAF c_p, θ_D 945) and `sapphire` (Archer 1993, θ_D 990, 81.56 J/(mol·K) at 300 K).
+- `thermal-expansion` page: `source` is now Crystran | SCHOTT | Corning | Kaye & Laby | NIST (no "typical").
+- Tests: N-BK7 dn/dT table, AMTIR-1 table, NOA 61 table, sapphire vs Archer, MgO vs JANAF.
 
 ## Next actions
-1. `/ship` this branch. No default value changed (KTP, BiBO aren't defaults); `?material=ktp` shows V_π ≈ 213.6 V. No release unless asked.
-2. Findings 4d-b: `optical-glass-catalog` TIE-19 limits in Chrome, `infrared-glass`, `thermal-expansion`, `polymer-optics`,
-   `heat-capacity` θ_D; reviewer pass per claim first.
+1. `/ship` this branch. No default value changed; post-merge-check e.g. `materials/heat-capacity?material=sapphire` (c_p at 300 K
+   799.9 J/(kg·K)) and `materials/infrared-glass?material=amtir1&wavelength=10` (n 2.4974 at 25 °C). No release unless asked.
+2. Findings 4d-c: `nonlinear-index`, `two-photon-absorption`, `brillouin-scattering`, `raman-scattering`, rare-earth σ, `acousto-optic`;
+   reviewer pass per claim first.
 
 ## Non-obvious facts
+- **Session 144:** web.archive.org holds vendor PDFs that block scripts: list captures with `web.archive.org/cdx/search/cdx?url=<url>&output=txt`,
+  fetch `/web/<ts>id_/<url>` (a capture can be truncated at 1 MiB: take an older one). Amorphous Materials sheets (AMTIR-1 2024,
+  AMTIR-6 = As₂S₃, comparison ver 5: `pdftotext -table` unscrambles it), Norland NOA sheets, Corning ULE and Kaye & Laby
+  (`kayelaby.npl.co.uk/general_physics/…`) came that way. SCHOTT 2017 data sheets: `refractiveindex.info/download/data/2017/schott_2017-01-20.pdf`
+  (Explanations: TIE-19 validity); refractiveindex.info `data/specs/schott/optical/<glass>.yml` has α and density. NIST-JANAF tables
+  curl (`janaf.nist.gov/tables/Mg-008.txt` = MgO cr); NIST cryogenic pages (`trc.nist.gov/cryogenics/materials/…`) fit (L − L₂₉₃)/L₂₉₃.
+  Check a data-sheet c_p against 3·atoms·R/M: Crystran's GaAs 360 J/(kg·K) exceeds Dulong–Petit.
 - **Session 143:** refractiveindex.info has KTP (Kato α/β/γ), BiBO (Umemura), BaTiO₃ (Wemple, Johnston), Bi₁₂SiO₂₀ (Gospodinov) and
   LiTaO₃ (Bond) sets; list a folder with `gh api repos/polyanskiy/refractiveindex.info-database/contents/database/data/main/<M>/nk`.
   Formula 4 = `fromPoleForm(A, [B…], [C…], range, K)` when the exponents are 0/1. HAL (hal-iogs) is behind Anubis (needs a
   browser); OSTI refuses connections; git.fossee.in 502s. CASTECH's BiBO page curls (walk-off 25.6 mrad, d_eff 3.0). BaTiO₃
   Zgonik tensors: Petraru thesis `kups.ub.uni-koeln.de/1050/1/thesis_petraru_final.pdf` Table 2.2. Biaxial YZ-plane cuts: θ and
   180° − θ differ in d_eff (point group 2, d₁₄), so keep the source's convention.
-- **Session 142:** Hamamatsu C16910 sheet (SHSS0026E) and the Guide to Streak Cameras (SHSS0006E) download with curl;
-  `pdftotext -layout` puts specs in columns ≈ 160+ (`cut -c160-330`). AIP APL reprints sometimes sit on university servers
-  (Shakya & Chang 2005 at `api.creol.ucf.edu/Publications/4970.pdf`). devctl blocks a whole `&&` chain when the CPU is busy,
-  so edits chained before a test never ran: edit first, run tests in a separate call (background).
-- **Session 141:** Photek PDFs download with curl (`photek.com/wp-content/uploads/2021/08/PH-DS039-ImageDiode-Rev02-Aug21.pdf`
-  gives photons/e⁻ at 5 kV; the intensifier sheet PH-DS001 only relative efficiencies), as does the Andor iStar spec
-  (`andor.oxinst.com/downloads/uploads/andor-istar-ccd-imaging-specifications.pdf`); ipo.exosens.com doesn't resolve. Data-sheet
-  intensifier noise factors are amplitude ratios (EMCCD 1.4 = √2): square them. A spot read through its matched filter collects
-  even background from κ ≈ N_eff/2 pixels. Monte Carlo probes: `Math.random`, not an LCG (it biased a variance by 1–2 %).
-  Backticks inside a bash-quoted `node -e` script get command-substituted: write a .mjs file or use Edit.
-- **Session 139:** tanh-sinh is too coarse in the middle (≈ 2.6σ spacing) for Gaussian-times-CDF integrands; a uniform rule is
-  spectral only when the integrand is smooth and ≈ 0 at both ends. ∫φ(v)F(ln(y − e^v))dv has a sharp edge as e^v → y: substitute
-  r = ln(1 − e^(v−u)). Brute-force references need a convergence check (linear-interp bias 8e-3 at 20 points/σ). Tune quadrature
-  with an env-parametrised scratch copy of the module (`sed` the constants to `Number(process.env.K ?? …)`). `exp` round-off:
-  1 − e^(−18σ) is exactly 1 for σ ≳ 1.85, so a log of it went −∞ and Simpson looped forever: cap panel counts.
 - **Session 138:** ITU-T PDFs download with curl: `https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-G.657-202408-I!!PDF-E&type=items`
   (the edition list at `/rec/T-REC-G.657/en`; check which is in force, 2016 is superseded). Optica full text (Opt. Express) reads in
   Chrome via `get_page_text` on `opg.optica.org/oe/fulltext.cfm?uri=oe-<vol>-<issue>-<page>`; WebFetch gets "Please wait".

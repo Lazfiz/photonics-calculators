@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 143, 2026-10-23)
+## Status (session 144, 2026-10-23)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4: every page is tiered; open findings and the top-50 tests remain.
@@ -37,8 +37,8 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   35 lp/mm blur, `gaussianAllowance` (0.64 ps under < 800 fs); tube 0.8 → 0.5 ps. Imaging/spectroscopy leftovers stay below (features).
 - [x] **Findings 4d-a** (session 143, `phase-4/findings-4d-a`, PR #174): `biaxial-data.ts` (Kato KTP, Umemura BiBO); KTP
   modulator V_π 213.6 V (633 nm, 1 mm/20 mm); BiBO cut 168.8° (CASTECH 168.9°). Photorefractive crystals stay open (below).
-- [ ] **Findings 4d-b, glasses and polymers:** `optical-glass-catalog` TIE-19 limits (Chrome), `infrared-glass`, `thermal-expansion`,
-  `polymer-optics`, `heat-capacity` θ_D presets.
+- [x] **Findings 4d-b** (session 144, `phase-4/findings-4d-b`, PR #175): TIE-19 365–1014 nm (N-BK7 table to 0.05); sourced α for 9 materials;
+  sapphire (Archer, θ_D 990 K) and MgO (JANAF) presets; AMTIR-1 Sellmeier, band, dn/dT; NOA 61 within 5e-4 of Norland.
 - [ ] **Findings 4d-c, nonlinear and scattering media:** `nonlinear-index`, `two-photon-absorption`, `brillouin-scattering`,
   `raman-scattering`, rare-earth σ, `acousto-optic`.
 - [ ] **Findings 4e, wave-optics defaults from memory** (diode/dye laser, injection locking, d_eff).
@@ -67,15 +67,14 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - `x-ray-optics` (session 136): β is photoabsorption only (Henke f₂); CXRO adds Compton (Be +28 %, C +6 % at 10 keV). Hubbell's
   incoherent scattering functions could add it. Range 1–30 keV (Henke tables); Al, W, Ge filters/targets not in the presets.
 - `polymer-optics` (session 136): dropped PDMS (Schneider 2009 Sylgard 184 fit 1.431 vs Zhang 2020 1.397 at 550 nm), CYTOP, OrmoComp
-  and all loss, T_g, dn/dT and stress-optic data (unsourced). NOA 61 n_D 1.56 unchecked against Norland (site refuses connections).
-- `thermal-expansion` (session 136): ULE, Zerodur, Pyrex, SF11, Al 6061, Invar, SS304 and Cu α are typical values, not checked
-  (marked "typical" on the page). No α(T) model (Okada & Tokumaru 1984 eq. for Si could add one).
+  and all loss, T_g, dn/dT and stress-optic data (unsourced). NOA 61 checked (session 144) against Norland's archived sheet.
+- `thermal-expansion` (session 144: every α sourced): conventions are mixed (glasses: mean over a range; Kaye & Laby/NIST: 293 K).
+  Invar is an endpoint fit slope (± 20 %). The table is page data without a test. No α(T) model (Okada & Tokumaru 1984 for Si).
 - `thin-film/environmental-stability` (session 135): the H-layer (TiO₂ film) dn/dT 20 and α 8 × 10⁻⁶/K defaults are unsourced
   placeholders; free-film expansion ignores the substrate constraint and Poisson term. Peck's n and Eₐ (≈ 2.7, 0.79 eV in
   secondary sources) are unverified: the IRPS PDF 403s, so the page defaults to n = 0.
-- `heat-capacity` (session 134): presets only for Si, Ge, CaF₂, LiF (θ_D from Råsander & Moram 2015 Table VII). Sapphire, MgF₂,
-  ZnSe, BaF₂ and fused silica have Crystran c_p but no cited θ_D; NIST SRM 720 (Ditmars 1982, sapphire c_p 10–2250 K) could validate one.
-  Diamond: θ_D 2250 K gives 266 vs 502 J/(kg·K) at 273 K. `damage-threshold` and `radiation-damage` have user inputs, no presets.
+- `heat-capacity` (session 144: + sapphire, MgO): MgF₂, ZnSe, BaF₂ and fused silica have no cited θ_D. GaAs: Crystran's 360 J/(kg·K)
+  exceeds 6R/M = 345 (Blakemore 1982 ≈ 327, unread). Diamond: θ_D 2250 K gives 266 vs 502 J/(kg·K) at 273 K. `damage-threshold` and `radiation-damage` have user inputs, no presets.
 - `electro-optic`, `photorefractive` (session 143: KTP added): BaTiO₃, SBN, BSO and LiTaO₃ are still out. BaTiO₃ unclamped r₁₃ 8,
   r₃₃ 105, r₄₂ 1300 pm/V at 633 nm (Zgonik 1994 PRB 50, 5941, quoted in Petraru's thesis, `kups.ub.uni-koeln.de/1050/1/thesis_petraru_final.pdf`
   Table 2.2) needs ε and an r_eff(β) geometry on the photorefractive page; LiTaO₃ has only a vendor r₃₃ (Crylink 30.4, no r₁₃ or λ;
@@ -100,10 +99,8 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   wavenumber elsewhere). The 1383 nm 62.7 dB/km/ppm is Humbach as quoted by arXiv:2303.17814.
 - `two-photon-absorption` (session 131): fused silica, BK7, CS₂, Si, water and BBO were dropped (no wide-gap or indirect-gap
   scaling). Candidates: Bristow 2007 (Si 850–2200 nm), DeSalvo 1996 JQE (wide-gap crystals), arXiv:2301.06138 data tables.
-- `optical-glass-catalog`: the TIE-19 limits (−100 to +140 °C; data sheets tabulate dn/dT 435.8–1060 nm) are from memory, since the
-  TIE-19 PDF doesn't download to scripts. Check them in Chrome (SCHOTT TIE-19 or an N-BK7 data sheet), then drop this note.
-- `infrared-glass`: As₂S₃, ZBLAN and AMTIR-1 have no sourced transmission band, dn/dT, conductivity or hardness (Amorphous
-  Materials' site doesn't serve scripts); AMTIR-1 n(10 µm) 2.4981 is unchecked. Gan's ZBLAN formula gives n_d 1.5011, the audit's
+- `infrared-glass` (session 144: AMTIR-1, As₂S₃ from AMI's archived sheets): ZBLAN has no sourced band, dn/dT, conductivity or
+  hardness (only reseller pages found); AMTIR-1's single dn/dT is 2× low below 1.5 µm. Gan's ZBLAN formula gives n_d 1.5011, the audit's
   1.499 is unverified (Gan 1995 is paywalled). Crystran's fused-silica "1.47012 at 4 µm" is n at 0.4 µm (Malitson).
 - `crystal-properties`: old quartz-crystal and sapphire-properties links land on the calcite default (a redirect can't add
   `?crystal=`). `birefringent-crystals`: KDP type-I SHG 41.21° at 1064 nm is checked against the Dmitriev handbook value
