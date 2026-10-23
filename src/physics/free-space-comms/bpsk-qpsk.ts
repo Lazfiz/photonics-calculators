@@ -6,9 +6,18 @@
  * antipodal signalling and Gray-coded QPSK: P_b = Q(√(2E_b/N₀)) for BPSK, and the same per-bit
  * error rate for Gray-coded QPSK and OQPSK (two independent BPSK rails). The QPSK symbol error rate is
  * P_s = 1 − (1 − P_b)².
+ *
+ * Optical receive power: LO-shot-noise-limited coherent detection. Ip, Lau, Barros & Kahn, "Coherent detection in
+ * optical fiber systems," Opt. Express 16, 753 (2008), doi:10.1364/OE.16.000753, Table 1: the SNR per symbol of a
+ * heterodyne or two-quadrature (intradyne) receiver is the number of detected photons per symbol ηn̄_s, so
+ * N₀ = hν/η referred to the received optical power; a single-quadrature homodyne receiver doubles it (N₀ = hν/2η),
+ * which only BPSK can use.
  */
 
+import { c, h } from "../constants";
 import { qFunction } from "../math";
+
+export type CoherentReceiver = "heterodyne" | "homodyne";
 
 /** Bit error rate of BPSK, and of Gray-coded QPSK/OQPSK, at linear E_b/N₀ ≥ 0. */
 export function bpskBer(ebN0: number): number {
@@ -37,4 +46,21 @@ export function requiredEbN0dB(targetBer: number): number {
     else hi = mid;
   }
   return hi;
+}
+
+/**
+ * Noise spectral density N₀ (W/Hz, referred to the received optical power) of an LO-shot-noise-limited coherent
+ * receiver: hν/η for heterodyne or two-quadrature intradyne detection, hν/(2η) for single-quadrature homodyne (BPSK).
+ */
+export function shotNoiseN0(lambda: number, eta: number, receiver: CoherentReceiver = "heterodyne"): number {
+  if (!(lambda > 0) || !(eta > 0 && eta <= 1)) return NaN;
+  return (h * c) / lambda / eta / (receiver === "homodyne" ? 2 : 1);
+}
+
+/** Received optical power (W) that gives E_b/N₀ (dB) at bit rate R (bit/s): P = (E_b/N₀)·N₀·R. */
+export function requiredRxPower(
+  ebN0dB: number, bitRate: number, lambda: number, eta: number, receiver: CoherentReceiver = "heterodyne",
+): number {
+  if (!Number.isFinite(ebN0dB) || !(bitRate > 0)) return NaN;
+  return 10 ** (ebN0dB / 10) * shotNoiseN0(lambda, eta, receiver) * bitRate;
 }

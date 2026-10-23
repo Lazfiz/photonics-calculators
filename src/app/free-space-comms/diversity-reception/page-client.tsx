@@ -59,7 +59,8 @@ export default function DiversityReceptionPage() {
   const sepData = useMemo(() => {
     const { lambda, L, sigmaI2 } = base;
     const sMax = 3 * Math.sqrt(lambda * L);
-    const seps = Array.from({ length: 40 }, (_, i) => (sMax * i) / 39);
+    // 17 points: each separation needs its own N-branch sum tables (≈ 10 ms each at N = 8).
+    const seps = Array.from({ length: 17 }, (_, i) => (sMax * i) / 16);
     const x = seps.map((s) => s * 100);
     const rhos = seps.map((s) => logIrradianceCorrelation(irradianceCorrelation(s, lambda, L), sigmaI2));
     const single = marginDb(diversityThreshold(pOut, 1, sigmaI2, 0, "sc"));
@@ -141,10 +142,9 @@ export default function DiversityReceptionPage() {
           Point receivers with log-normal irradiance, σ_I² from the all-regime plane-wave expression and the
           spatial correlation b_I(d) of the Kolmogorov spectrum; ρ_ln is the correlation of ln I. Equicorrelation
           assumes every pair of receivers is separated by d, which is conservative for a line or grid array. Each receiver
-          has the single receiver&apos;s aperture, so EGC and MRC include the √N array gain. SC and N = 2 are exact; for N ≥ 3 EGC and
-          MRC use a Fenton–Wilkinson log-normal fit, which is conservative: it overstates the margin by about 0.1–0.5 dB
-          at σ_I² ≤ 0.5 and by about 1 dB near σ_I² = 1. For N ≥ 3 the MRC margin is capped at the EGC value, so the two
-          often coincide (the exact MRC margin is 0.1–0.2 dB lower).
+          has the single receiver&apos;s aperture, so EGC and MRC include the √N array gain. All three combiners are computed
+          exactly (to &lt; 0.001 dB): given the common part of the fading the receivers are independent, and the sum of N
+          independent log-normals is built by numerical convolution.
         </p>
         <p>
           Valid for weak fluctuations (σ_R² &lt; 1). Margins are relative to one receiver&apos;s mean irradiance.
