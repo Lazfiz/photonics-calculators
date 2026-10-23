@@ -5,10 +5,10 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 136, 2026-10-22)
+## Status (session 137, 2026-10-23)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
-- Phase 3 hasn't started. Phase 4 is ongoing.
+- Phase 3 hasn't started. Phase 4: every page is tiered; open findings and the top-50 tests remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -16,7 +16,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 |---|---|---|
 | laser-safety | 40 / 40 | done (sessions 18, 23, 29–36) |
 | thin-film | 45 / 45 | done (sessions 25–28, 54–55); small findings below |
-| polarization | 32 / 33 | parts 1–4 done (sessions 37–42); `polarizer-types` left |
+| polarization | 33 / 33 | done: parts 1–4 (sessions 37–42), polarizer-types (session 137) |
 | imaging | 61 / 61 | done: part 0 audit (session 78), fix parts 1–15b (sessions 79–95) |
 | free-space-comms | 26 / 26 | done: part 0 audit (session 56), fix parts 1–6 (sessions 57–62); open findings below |
 | spectroscopy | 41 / 41 | done: part 0 audit (session 96), fix parts 1–12b (sessions 97–109) |
@@ -24,12 +24,9 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | materials | 27 / 27 | done: part 0 audit (session 124), fix parts 1–9 (sessions 125–136); open findings below |
 | wave-optics | 37 / 37 | done: part 0 audit (session 110), fix parts 1–13 (sessions 111–123); open findings below |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **410 / 411** | 0 `knownIssue`s |
+| **total** | **411 / 411** | 0 `knownIssue`s; every category audited |
 
 ## Next (Phase 4, in order)
-- [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
-  extension not connected). The Thorlabs, Edmund and Newport spec pages are JS-rendered or return 403 to WebFetch and
-  curl. Also clear the eslint warning there (unused `wavelength` state).
 - [x] Detectors part 9b (session 77, `phase-4/detectors-mtf-cosmic`): `sensor-mtf.ts` (Seib diffusion, column shares),
   `cosmic-rays.ts` (MPV 23 075 e⁻ in 300 µm vs PDG 23 000), `poissonQuantile`; detectors 54/54, 0 `knownIssue`s.
 - [x] **Imaging audit, part 0** (session 78, branch `phase-4/imaging-audit`). Eight `physics-reviewer` batches of 7
@@ -228,6 +225,8 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Polarizer types (session 137, `phase-4/polarizer-types`, PR #168): `polarizer-types.ts`, Thorlabs specs for 8 families read in Chrome
+    (wire grid 150:1, was 10 000:1; LIDT with test conditions), k₂ = k₁/ER, DOP (ER − 1)/(ER + 1). All 411 pages tiered.
   - Materials fix part 9 (session 136, `phase-4/materials-fix-9`, PR #167): x-ray-optics (`x-ray-optics.ts` + Henke tables, Be 10 keV
     δ 3.408e-6, Au 12 keV 1.840e-5 = CXRO), polymer-optics (`polymer-optics.ts`, Sultanova/Beadie, PMMA n(1550) 1.4809), thermal-expansion
     (Crystran values, Si 2.6 µm). Materials 27 / 27, 0 `knownIssue`s.

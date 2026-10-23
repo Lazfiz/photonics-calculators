@@ -381,7 +381,17 @@ export const polarization: CalculatorEntry[] = [
   {
     slug: "polarizer-types",
     title: "Polarizer Types Comparison",
-    description: "Compare extinction ratio, transmission, damage threshold, and other specs across common polarizer types.",
+    description: "Compare Glan-Taylor, Glan-Thompson, Wollaston, Rochon, wire-grid, film, thin-film plate and PBS cube polarizers on catalogue extinction ratio, wavelength range, transmission, aperture and damage threshold, with output and leakage power.",
+    tier: "exact",
+    modelNote: "Thorlabs catalogue minima for one product family per type (read 2026-10-23), and the ideal-diattenuator algebra: k₁ passes along the pass axis, k₂ = k₁/ER across it, (k₁ + k₂)/2 for unpolarized light. Not modelled: ER and transmission against wavelength or angle, other vendors' parts, damage scaling with wavelength and pulse length.",
+    references: [
+      shurcliffParameters,
+      goldsteinMueller,
+      {
+        citation: "Thorlabs product-family specifications (read 2026-10-23): Glan-Taylor GT10, Glan-Thompson GTH10, Wollaston WP10, Rochon RPM10, holographic wire grid WP25H-K, film LPVISE2X2, plate PBSW-1064, cube PBS253.",
+        url: "https://www.thorlabs.com/polarizers",
+      },
+    ],
   },
   {
     slug: "polarizing-beamsplitter",
