@@ -1,24 +1,24 @@
-# Handover — 2026-10-23 (session 141 → session 142)
+# Handover — 2026-10-23 (session 142 → session 143)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 141: **Findings 4c-b**, branch `phase-4/findings-4c-b` (PR #172), `intensified-ccd` only. The reviewer on the diff
-found the background under-counted through the matched filter (fixed). Next: Findings 4c-c (`streak-camera`; data in ROADMAP).
+Session 142: **Findings 4c-c**, branch `phase-4/findings-4c-c` (PR #173), `streak-camera` only; the physics reviewer passed it with
+two default caveats (fixed: tube 0.5 ps). Next: **Findings 4d** (materials unsourced data; split it into 2–3 parts first).
 
 ## State
-- `photoemission.ts`: `phosphorEfficiency` (inverse of `phosphorGain`), `PHOSPHOR_SCREENS` (Photek PH-DS039: P43 240, P46 55
-  photons/e⁻ at 5 kV, 548/530 nm), `SpotStatistics` + `POINT_SPOT`, `gaussianSpotShares(fwhm ≤ 1000)` → peak, Σh²,
-  c₃ = Σh³/(Σh²)², κ = Σ(h⋆h)²/(Σh²)² (separable sums). `intensifiedSnr(S, B, G_e, F_MCP, σ_r, spot)`: the 4th argument is now
-  the tube's variance factor K_f², not F_MCP + 1/G_e. Var = S·G_e²(F + c₃/G_e) + B·G_e²(F·κ + N_eff/G_e) + N_eff·σ_r².
-- Goldens (2 px spot): peak 0.1970835, Σh² 0.0988504, c₃ 1.3538208, κ 5.0565663 (brute-force 2-D); κ·Σh² → ½ for a wide
-  spot; page defaults SNR 1.140756 (was 1.3163); B = S gives 0.475103.
-- Page: URL key `mcpNoise` → `kf` (amplitude, default 1.6), new `spotFwhm` (px, default 2), screen 3–10 kV.
+- `photoemission.ts`: `limitingResolutionBlur(lp/m, mtf)` (Gaussian MTF, FWHM 26.2106 µm at 35 lp/mm, 5 %),
+  `gaussianAllowance(rects, otherGauss, total)` (largest Gaussian under a data-sheet total; 0.64094 ps for the C16910 defaults).
+- `streak-camera` defaults = C16910 fastest sweep: 157.33 mm/ns (9.44 mm / 60 ps), M 2.77, 9.75 µm × 968, slit 10 µm, 35 lp/mm,
+  tube 0.5 ps → total 0.69228 ps. URL key `screenBlur` → `lpmm`; new `spec` (0.8 ps).
 
 ## Next actions
-1. `/ship` this branch. Post-merge value: `detectors/intensified-ccd=1.14`. No release unless asked.
-2. Findings 4c-c: `streak-camera` (M ≈ 2.8, 968 × 9.75 µm pixels, 35 lp/mm blur against the 0.8 ps tube default; see the
-   ROADMAP note), then the imaging/spectroscopy leftovers if they fit.
+1. `/ship` this branch. Post-merge value: `detectors/streak-camera=692.280` (shown in fs). No release unless asked.
+2. Findings 4d: split into a/b/c boxes (EO/NLO crystals, glasses, Raman/Brillouin), reviewer pass per claim, fix part a.
 
 ## Non-obvious facts
+- **Session 142:** Hamamatsu C16910 sheet (SHSS0026E) and the Guide to Streak Cameras (SHSS0006E) download with curl;
+  `pdftotext -layout` puts specs in columns ≈ 160+ (`cut -c160-330`). AIP APL reprints sometimes sit on university servers
+  (Shakya & Chang 2005 at `api.creol.ucf.edu/Publications/4970.pdf`). devctl blocks a whole `&&` chain when the CPU is busy,
+  so edits chained before a test never ran: edit first, run tests in a separate call (background).
 - **Session 141:** Photek PDFs download with curl (`photek.com/wp-content/uploads/2021/08/PH-DS039-ImageDiode-Rev02-Aug21.pdf`
   gives photons/e⁻ at 5 kV; the intensifier sheet PH-DS001 only relative efficiencies), as does the Andor iStar spec
   (`andor.oxinst.com/downloads/uploads/andor-istar-ccd-imaging-specifications.pdf`); ipo.exosens.com doesn't resolve. Data-sheet
