@@ -6,7 +6,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  LP11_CUTOFF_V, MIN_V, bendLossPerTurnDb, lp01Mode, lp11CutoffWavelength, modeFieldRadius, vNumber,
+  LP11_CUTOFF_V, MFD_FIT_V_RANGE, MIN_V, bendLossPerTurnDb, lp01Mode, lp11CutoffWavelength, modeFieldRadius, vNumber,
 } from "../../../physics/fiber-optics/macro-bending-loss";
 import {
   claddingIndex, coreConfinement, effectiveIndex, lp01Field, normalizedB, petermannIIRadius,
@@ -14,8 +14,6 @@ import {
 
 // SMF-28-like step-index equivalent: a = 4.1 µm, NA 0.1246, pure-silica cladding (n₂ = 1.4440 at 1550 nm).
 const SMF_PRESET = { coreRadius: 4.1, na: 0.1246, coreIndex: 1.4494 };
-// Marcuse's 1977 Gaussian fit is within ~1 % for 1.2 < V < 2.4.
-const FIT_V_RANGE = [1.2, 2.4] as const;
 const MIN_PLOTTED_DB = 1e-6;
 
 const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
@@ -129,7 +127,7 @@ export default function ModeFieldDiameterPage() {
           V = {calc.V.toFixed(2)} &gt; 2.405: LP11 is also guided, so the fibre is not single-mode here. Values are for LP01.
         </p>
       )}
-      {valid && (calc.V < FIT_V_RANGE[0] || calc.V > FIT_V_RANGE[1]) && (
+      {valid && (calc.V < MFD_FIT_V_RANGE[0] || calc.V > MFD_FIT_V_RANGE[1]) && (
         <p className="mb-6 text-sm text-yellow-300" role="status">
           V = {calc.V.toFixed(2)} is outside 1.2–2.4, where Marcuse&apos;s Gaussian fit is within about 1 %.
         </p>

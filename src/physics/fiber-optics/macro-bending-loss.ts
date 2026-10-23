@@ -13,7 +13,7 @@
  * In normalized form, with β² ≈ (n₁k)² and Δ = NA²/(2n₁²), this is Snyder & Love's power attenuation
  * coefficient for the fundamental mode of a step profile (Optical Waveguide Theory, 1983, bend-loss chapter):
  *   α = (√π/2a) (a/R)^(1/2) U² / (V² W^(3/2) K₁²(W)) · exp(−(4/3)(R/a) Δ W³/V²).
- * Not included: the elasto-optic correction (silica behaves as if R were ≈ 1.28× larger, so measured loss
+ * Not included: the elasto-optic correction (silica behaves as if R were ≈ 1.27× larger, so measured loss
  * is lower; Schermer & Cole, IEEE J. Quantum Electron. 43, 899 (2007)), reflections from the
  * cladding/coating boundary (oscillations in R and λ), and the transition loss where a bend starts and
  * ends. Marcuse's formula is asymptotic for R ≫ a.
@@ -106,7 +106,13 @@ export function lp01Mode(V: number): Lp01Mode {
   return { V, U, W: Math.sqrt(V * V - U * U) };
 }
 
-/** Mode-field radius (1/e² intensity), m, from Marcuse's 1977 fit. NaN outside the domain. */
+/** V range of Marcuse's Gaussian fit (Bell Syst. Tech. J. 56, 703, 1977): within ~1 % for 1.2 < V < 2.4. */
+export const MFD_FIT_V_RANGE = [1.2, 2.4] as const;
+
+/**
+ * Mode-field radius (1/e² intensity), m, from Marcuse's 1977 fit. NaN below MIN_V; callers flag V outside
+ * MFD_FIT_V_RANGE, where the fit is an extrapolation.
+ */
 export function modeFieldRadius(f: StepIndexFiber, lambda: number): number {
   const V = vNumber(f, lambda);
   if (!(V >= MIN_V)) return NaN;

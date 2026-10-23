@@ -40,15 +40,15 @@ export const fiberOptics: CalculatorEntry[] = [
     description: "Compare the macrobend loss of standard single-mode fibre with a reduced-MFD step-index design and check the design against the ITU-T G.657 limits.",
     heading: "Bend-Insensitive Fiber Design",
     tier: "textbook",
-    modelNote: "Marcuse curvature loss of LP01 for two step-index fibres, checked against the G.657 (2016) macrobend limits. Not modelled: trench profiles, the elasto-optic correction (R_eff ≈ 1.28R), coating, transitions.",
+    modelNote: "Marcuse curvature loss of LP01 for two step-index fibres, checked against the G.657 (08/2024) macrobend limits. Not modelled: trench profiles, the elasto-optic correction (R_eff ≈ 1.27R), coating, transitions.",
     references: [
       {
         citation: "Marcuse D. (1976). Curvature loss formula for optical fibers. J. Opt. Soc. Am. 66, 216. Bend loss of LP01.",
         url: "https://doi.org/10.1364/josa.66.000216",
       },
       {
-        citation: "ITU-T G.657 (11/2016). Characteristics of a bending-loss insensitive single-mode optical fibre and cable. Macrobend loss limits of categories A1, A2, B2 and B3.",
-        url: "https://www.itu.int/rec/T-REC-G.657",
+        citation: "ITU-T G.657 (08/2024). Characteristics of a bending-loss insensitive single-mode optical fibre and cable. Tables 1 and 2: macrobend loss limits of A1, A2 and B3, MFD 8.6–9.2 µm ± 0.4 µm at 1310 nm.",
+        url: "https://www.itu.int/rec/T-REC-G.657-202408-I",
       },
       {
         citation: "Gloge D. (1971). Weakly Guiding Fibers. Appl. Opt. 10, 2252. LP modes, eigenvalue equation and core power fraction.",
@@ -64,7 +64,7 @@ export const fiberOptics: CalculatorEntry[] = [
     modelNote: "Sakai–Kimura first-order geometric birefringence B = εn₁Δ²G(V) of a slightly elliptical step-index core and its group value, plus a stress term you enter. Not modelled: large ellipticity, material dispersion.",
     references: [
       {
-        citation: "Sakai J., Kimura T. (1981). Birefringence and polarization characteristics of single-mode optical fibers under elastic deformations. IEEE J. Quantum Electron. 17, 1041. G(V) for an elliptical core.",
+        citation: "Sakai J., Kimura T. (1981). Birefringence and polarization characteristics of single-mode optical fibers under elastic deformations. IEEE J. Quantum Electron. 17, 1041. G(V) for an elliptical core, as quoted in Rashleigh (1983).",
         url: "https://doi.org/10.1109/jqe.1981.1071213",
       },
       {
@@ -593,7 +593,7 @@ export const fiberOptics: CalculatorEntry[] = [
     description: "Detailed macrobending loss calculation using the curvature radiation model for single-mode fiber.",
     keywords: ["Macro Bending Loss", "Macro Bend Loss"],
     tier: "textbook",
-    modelNote: "Marcuse's asymptotic curvature loss (R much larger than a) for the LP01 mode of a step-index, weakly guiding fibre. Not modelled: the elasto-optic correction (R_eff ≈ 1.28 R), coating reflections, transition loss.",
+    modelNote: "Marcuse's asymptotic curvature loss (R much larger than a) for the LP01 mode of a step-index, weakly guiding fibre. Not modelled: the elasto-optic correction (R_eff ≈ 1.27 R), coating reflections, transition loss.",
     references: [
       {
         citation: "Marcuse D. (1976). Curvature loss formula for optical fibers. J. Opt. Soc. Am. 66, 216. Curvature loss formula for an LP_ν mode, used here for LP01.",
@@ -676,7 +676,7 @@ export const fiberOptics: CalculatorEntry[] = [
     title: "Multi-Core Fiber Crosstalk",
     description: "Inter-core coupling coefficient, bend-averaged power coupling and crosstalk of a multi-core fiber versus core pitch, bend radius, core mismatch and length.",
     tier: "textbook",
-    modelNote: "Snyder κ (identical cores, exact LP01); Koshiba bend/twist-averaged h̄ → Hayashi 2κ²R/(βΛ) for Δβ = 0, d ≫ R/(βΛ); XT = tanh(h̄L). LP01 only; no trenches; worst core sums neighbours.",
+    modelNote: "Snyder κ (exact LP01); Koshiba h̄ → Hayashi 2κ²R/(βΛ) for Δβ = 0; XT = tanh(h̄L). LP01 only, no trenches, worst core sums neighbours; physical R, no ≈ 1.27× elasto-optic factor (+1 dB).",
     references: [
       {
         citation: "Snyder A. W. (1972). Coupled-mode theory for optical fibers. J. Opt. Soc. Am. 62, 1267. Coupling coefficient of two identical step-index cores.",

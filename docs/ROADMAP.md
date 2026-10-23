@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 137, 2026-10-23)
+## Status (session 138, 2026-10-23)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4: every page is tiered; open findings and the top-50 tests remain.
@@ -27,6 +27,13 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | **total** | **411 / 411** | 0 `knownIssue`s; every category audited |
 
 ## Next (Phase 4, in order)
+Open findings, one PR each; each claim goes through an adversarial `physics-reviewer` pass against primary literature first.
+- [ ] **Findings 4b, FSO/comms bugs:** ber and bpsk-qpsk log axes; bpsk-qpsk RF noise floor; diversity-reception (fixed 3σ,
+  equal SC/EGC/MRC gain, Fenton–Wilkinson margin).
+- [ ] **Findings 4c, polarization, imaging, spectroscopy, detectors leftovers** (polarization-scrambling, streak-camera, …).
+- [ ] **Findings 4d, materials unsourced data** (split in 2–3 parts: EO/NLO crystals, glasses, Raman/Brillouin media).
+- [ ] **Findings 4e, wave-optics defaults from memory** (diode/dye laser, injection locking, d_eff).
+- [ ] **Findings 4f, cross-cutting:** URL clamping (codemod), `erf`/`sinc` copies, search relevance floor.
 - [x] Detectors part 9b (session 77, `phase-4/detectors-mtf-cosmic`): `sensor-mtf.ts` (Seib diffusion, column shares),
   `cosmic-rays.ts` (MPV 23 075 e⁻ in 300 µm vs PDG 23 000), `poissonQuantile`; detectors 54/54, 0 `knownIssue`s.
 - [x] **Imaging audit, part 0** (session 78, branch `phase-4/imaging-audit`). Eight `physics-reviewer` batches of 7
@@ -47,10 +54,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 ## Open findings (evidence; fix during that category's audit)
 **Fiber optics**
 - `photonic-crystal`: confinement loss isn't modelled (it needs the ring count N); an empirical fit could add it. The Saitoh–Koshiba fit is ≈ 20 % off the multipole D for Λ ≤ 1 µm.
-- `multi-core`: crosstalk papers often use an equivalent bend radius R_eq ≈ 1.28 R_b (photoelastic effect, ≈ +1.1 dB); the
-  reviewer was unsure and the page uses R_b as given. Check Koshiba 2012 / Hayashi 2011 text, then add it or drop this note.
-- `bend-insensitive` (`g657.ts`): the physics review recalls a G.657.A3 category (2016) that shares the B3 limits. Unverified
-  because the ITU PDF is blocked to scripts; check the ITU text in Chrome, then add A3 or drop the note.
 **Materials**
 - `x-ray-optics` (session 136): β is photoabsorption only (Henke f₂); CXRO adds Compton (Be +28 %, C +6 % at 10 keV). Hubbell's
   incoherent scattering functions could add it. Range 1–30 keV (Henke tables); Al, W, Ge filters/targets not in the presets.
@@ -147,15 +150,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - `point-ahead` (low): the LEO preset uses orbital velocity alone (as the cited chapter does); station rotation lowers it by ≈ 3 µrad.
 - `optical-antenna` (low): M² is capped at 2 (θ × M², gain / M⁴). A Gaussian Schell-model far field would cover multimode beams.
 
-**Fiber optics** (part 0, session 43; per-page evidence in PR #43)
-- `birefringence-fiber` cites Sakai & Kimura 1981 for G(V) (Optiwave attributes it there); the reviewer couldn't confirm the equation in that paper. The formula itself is checked by perturbation (session 49). Confirm the page/equation when a copy is at hand.
-- The SMF core is redefined on six pages (a 4.1/4.5 µm, NA 0.12/0.1246/0.14). Use a = 4.1 µm, NA 0.1246 → MFD 10.08 µm.
-- D(1550) for SMF is 13.4/17/17.46/22.1 on different pages. Use G.652 S₀/4(λ−λ₀⁴/λ³), S₀ 0.092, λ₀ 1310 → 17.46.
-- `macro-bending-loss.ts` `MIN_V = 0.5` lets the Marcuse fit run far below its 1.2–2.4 range.
-- Silica n₂, g_B, g_R are now `SILICA_*` in `fiber-nonlinear.ts`; other pages still inline them.
-- `v-number` (minor): it shows floor(V²/2) modes for V < 2.405; literal "&lt;" in the text.
-- 1.4682 is SMF-28's group index (fine for delay, OTDR, gyro); ≈ 20 pages also use it as the phase index (Fresnel, V, n_eff). Use ≈ 1.447.
-
 **Imaging / spectroscopy** (found in the detectors part 0, session 63)
 - Spectroscopy part 11 (session 107): `infrared-spectroscopy` has no Herman–Wallis factor or absolute band strength; `electron-spectroscopy` graphite ρ 2.2 (SRD 71 table value) vs 2.26 g/cm³ crystal; LHM water ε₂ = 3.52 + 7.52θ kept (fits Table I with RMS 0.43, against 0.49 with −), and the page allows only −5 to 40 °C.
 - `spectroscopy/conc-mirror` and `jacquinot` (session 104) both show the Jacquinot ratio π f/(h tan θ) from `throughput.ts`;
@@ -225,6 +219,8 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Findings 4a (session 138, `phase-4/fiber-smf-consistency`, PR #169): macro-bending n₁ 1.4494 (2.62 dB/turn at 10 mm), G.657 (08/2024)
+    re-read (no A3, B2 withdrawn, MFD ≥ 8.2 µm for B3), MFD fit range, R_eq 1.27 stated; fibre open findings cleared.
   - Polarizer types (session 137, `phase-4/polarizer-types`, PR #168): `polarizer-types.ts`, Thorlabs specs for 8 families read in Chrome
     (wire grid 150:1, was 10 000:1; LIDT with test conditions), k₂ = k₁/ER, DOP (ER − 1)/(ER + 1). All 411 pages tiered.
   - Materials fix part 9 (session 136, `phase-4/materials-fix-9`, PR #167): x-ray-optics (`x-ray-optics.ts` + Henke tables, Be 10 keV

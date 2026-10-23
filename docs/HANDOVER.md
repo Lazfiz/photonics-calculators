@@ -1,22 +1,29 @@
-# Handover — 2026-10-23 (session 137 → session 138)
+# Handover — 2026-10-23 (session 138 → session 139)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 137: **polarizer-types** from Thorlabs specs read in Chrome, branch `phase-4/polarizer-types`, PR #168.
-All 411 pages are tiered, 0 `knownIssue`s; every category audit is done.
+Session 138: **Findings 4a** (fibre leftovers), branch `phase-4/fiber-smf-consistency`, PR #169. Each claim went through an
+adversarial `physics-reviewer` pass, then the primary source (ITU PDF, Optica full text). Next: Findings 4b (FSO/comms bugs).
 
 ## State
-- `src/physics/polarization/polarizer-types.ts`: `POLARIZERS` (8 Thorlabs families: GT10, GTH10, WP10, RPM10, WP25H-K, LPVISE2X2,
-  PBSW-1064, PBS253; ER minima, range nm, aperture mm, `tPass` or `tUnpolarized`, pulsed J/cm² and CW W/cm LIDT with conditions),
-  `polarizerFigures(spec)` → erDb, dop, k1, k2 (NaN when no stated T), tUnpolarized; `coversWavelength(spec, λ)` (±1 % for one-line parts).
-  URL: inputPower (mW), wavelength (nm), input (aligned | unpolarized). Test `polarization-polarizer-types` (1062 total).
+- `macro-bending-loss.ts`: `MFD_FIT_V_RANGE = [1.2, 2.4]` (Marcuse 1977), shared with mode-field-diameter; macro-bending page
+  default n₁ 1.4494 (was the group index 1.4682): 0.0852 dB/turn at 15 mm, 2.62 at 10 mm (1550 nm).
+- `g657.ts`: ITU-T G.657 (08/2024) Tables 1–2. Categories `"B3" | "A2" | "A1"` (B2 withdrawn in 2024, no A3);
+  `G657_MIN_MFD_UM = 8.2` (was `G657A_…`) applies to B3 too. bend-insensitive appends "but its MFD is below 8.2 µm".
+- Elasto-optic factor written as ≈ 1.27× everywhere (n = 1.444, Nagano 1978); multi-core keeps the physical R_b (Hayashi 2011
+  eq. 2; the 2019 erratum fixes only eq. 1 and a table). birefringence-fiber keeps Sakai–Kimura 1981 "as quoted in Rashleigh".
+- 1063 tests. Fibre open findings removed from ROADMAP.
 
 ## Next actions
-1. `/ship` this branch. Post-merge value: `polarization/polarizer-types` "9.500" (PBSW-1064 output, 10 mW aligned at 1064 nm). No
-   release unless asked.
-2. Ask the user what comes next. Options: open findings (ROADMAP, per category), golden tests for the top-50 pages (Vercel
-   Analytics is reachable through the Vercel MCP tools), or Phase 3 (charts, Plotly, JS budget).
+1. `/ship` this branch. Post-merge value: `fiber-optics/macro-bending-loss=0.0852`. No release unless asked.
+2. Findings 4b: ber and bpsk-qpsk log axes, bpsk-qpsk RF noise floor, diversity-reception (fixed 3σ, equal SC/EGC/MRC gain,
+   Fenton–Wilkinson margin). Same loop: reviewer attacks the claims → check primary sources → fix + golden tests → reviewer on diff.
 
 ## Non-obvious facts
+- **Session 138:** ITU-T PDFs download with curl: `https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-G.657-202408-I!!PDF-E&type=items`
+  (the edition list at `/rec/T-REC-G.657/en`; check which is in force, 2016 is superseded). Optica full text (Opt. Express) reads in
+  Chrome via `get_page_text` on `opg.optica.org/oe/fulltext.cfm?uri=oe-<vol>-<issue>-<page>`; WebFetch gets "Please wait".
+  `javascript_tool` results holding URLs with query strings come back BLOCKED: use `find` or a known URL pattern. Reviewer
+  claims from memory were wrong twice (A3 is not in G.657 (2024); G(V) attribution held), so check each before editing.
 - **Session 137:** the Chrome extension works once Chrome is signed in to claude.ai (the Google popup failed "Couldn't verify your
   browser"; email sign-in worked). Thorlabs moved to slug URLs (`https://www.thorlabs.com/<family-slug>?tabName=Specs` or
   `Damage%20Thresholds`); old `objectgroup_id` links redirect to wrong products; index pages (`/polarizers`, `/crystal-polarizers`,
@@ -49,12 +56,6 @@ All 411 pages are tiered, 0 `knownIssue`s; every category audit is done.
   script too: write scripts with the Write tool, then run them.
 - **Session 131:** CREOL papers download (`curl -L -A "Mozilla/5.0" https://api.creol.ucf.edu/Publications/<n>.pdf`). A garbled
   `pdftotext -layout` table often reads column by column without `-layout`. A `next start` left on :3100 serves the old build.
-- **Session 130:** EKSMA data sheets download (`https://eksmaoptics.com/out/media/EKSMA_Optics_<BBO|LBO|KTP>_Crystals.pdf`);
-  WebFetch of an Optica abstract page can read its tables (small model: cross-check the numbers).
-- **Session 128:** MDPI PDFs 403 to curl and WebFetch; the Semantic Scholar cache sometimes works. Crossref every DOI and
-  article number; add no sign convention a source doesn't state.
-- **Session 127:** `git add` a new page directory or test before the gate (page tests list via git). A redirect can't add a
-  query, so a merged preset page lands on the default.
 - **Session 126:** Crystran data sheets and refractiveindex.info YAML (via `gh api`) download; amorphousmaterials.com does not.
   Export a table as `Record<Id, Interface>` (not `as const satisfies`). Round long floats in a `style` to 3 decimals.
   Background `npm run check` "exit code 0" can hide a red tsc: read the log's `exit` line.
@@ -72,7 +73,7 @@ All 411 pages are tiered, 0 `knownIssue`s; every category audit is done.
 - **Pages:** `useURLState` in `.map` breaks hooks; per page `xRaw` from `useURLState`, `x = clamp(xRaw, lo, hi, default)`, pass
   `xRaw` to the input. `detectors.ts`, `imaging.ts`, `materials.ts` registries are LF. NaN/∞ show as "—" with a reason. eslint:
   ≈ 85 old warnings, lint only changed files; JSX text needs `&apos;`. Prerendered HTML shows defaults.
-- **Sources:** arXiv, TI notes, PDG, JACoW, APS PRAB, Europe PMC XML download; Optics Express, Appl. Opt., IEEE, Elsevier, nature.com don't.
+- **Sources:** arXiv, TI notes, PDG, JACoW, APS PRAB, Europe PMC XML download; Appl. Opt., IEEE, Elsevier, nature.com don't (Opt. Express: Chrome).
 - **Shell:** probes are scratchpad `.ts` files run from the repo (`node --import tsx <abs path>`). `python -` hangs. `git grep`
   skips untracked files. CI ≈ 2–3 min. Wrap chrome/ui-check/server commands in `timeout <s>`; port 3100: `netstat -ano | grep :3100`,
   `taskkill //PID <pid> //T //F`; never `taskkill /IM chrome.exe`.
