@@ -936,19 +936,23 @@ export const detectors: CalculatorEntry[] = [
     heading: "Streak Camera",
     lede: "Temporal resolution of a streak camera: the slit image, one pixel and screen blur (lengths converted to time by the sweep speed), the tube's own spread and trigger jitter, convolved; and the time window on the screen.",
     tier: "textbook",
-    modelNote: "The slit image and one pixel aperture are rectangles of length/sweep speed; tube spread, screen blur and jitter are Gaussians. The FWHM of their convolution is exact for this model, where quadrature overstates the rectangles. A FWHM under 2 pixels is flagged as undersampled. Window min(N·p, screen)/v. Linear sweep; a data-sheet resolution is a system value, not a tube term.",
+    modelNote: "Slit image and pixel are rectangles, tube, blur and jitter Gaussians; exact FWHM of their convolution. Blur: 5 % Gaussian MTF at the cathode limit, × M. Defaults: C16910, 60 ps sweep.",
     references: [
       {
         citation: "Hamamatsu Photonics (2008). Guide to Streak Cameras, cat. no. SHSS0006E. Temporal resolution as the FWHM of the streak image of a delta pulse; trigger jitter in summed sweeps.",
         url: "https://www.hamamatsu.com/content/dam/hamamatsu-photonics/sites/documents/99_SALES_LIBRARY/sys/SHSS0006E_STREAK.pdf",
       },
       {
-        citation: "Hamamatsu Photonics. Streak camera C16910 data sheet, cat. no. SHSS0026E06: temporal resolution < 800 fs, Ø18 mm P-43 phosphor screen, 35 lp/mm at the photocathode centre, 1:1 input optics, sweep time per full screen with an ORCA-Flash4.0 V3.",
+        citation: "Hamamatsu Photonics. Streak camera C16910 data sheet, cat. no. SHSS0026E06: temporal resolution < 800 fs, Ø18 mm P-43 phosphor screen, 35 lp/mm at the photocathode centre, effective photocathode 0.15 × 4.5 mm and working area 12.48 × 9.44 mm (1280 × 968 pixels) with an ORCA-Flash4.0 V3 behind 3:2 output optics, 1:1 input optics, fastest sweep ≈ 60 ps per full screen.",
         url: "https://www.hamamatsu.com/content/dam/hamamatsu-photonics/sites/documents/99_SALES_LIBRARY/sys/SHSS0026E_C16910s.pdf",
       },
       {
         citation: "Zavoisky E. K., Fanchenko S. D. (1965). Image converter high-speed photography with 10⁻⁹–10⁻¹⁴ sec time resolution. Appl. Opt. 4, 1155–1167. Technical (slit image/sweep speed) and physical (energy spread) limits of the time resolution.",
         url: "https://doi.org/10.1364/AO.4.001155",
+      },
+      {
+        citation: "Shakya M. M., Chang Z. (2005). Achieving 280 fs resolution with a streak camera by reducing the deflection dispersion. Appl. Phys. Lett. 87, 041103. Transit-time dispersion 2.63·√Δε/E ps (Δε in eV, E in kV/mm) and deflection dispersion as tube terms.",
+        url: "https://doi.org/10.1063/1.2001732",
       },
     ],
   },

@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 141, 2026-10-23)
+## Status (session 142, 2026-10-23)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4: every page is tiered; open findings and the top-50 tests remain.
@@ -33,8 +33,8 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   wave-optical section beside Wilhelm; vacuum-photodiode measured dark emission + stray C; streak window min(N·p, L)/v.
 - [x] **Findings 4c-b** (session 141, `phase-4/findings-4c-b`, PR #172): `intensified-ccd` K_f², Photek phosphor gains, Gaussian spot
   (κ 5.06, N_eff 10.1); default SNR 1.32 → 1.14.
-- [ ] **Findings 4c-c, detectors/imaging leftovers:** `streak-camera` magnification, blur and tube term (notes below), then
-  the imaging/spectroscopy items below if they fit.
+- [x] **Findings 4c-c** (session 142, `phase-4/findings-4c-c`, PR #173): `streak-camera` C16910 defaults (M 2.77, 9.75 µm, 60 ps),
+  35 lp/mm blur, `gaussianAllowance` (0.64 ps under < 800 fs); tube 0.8 → 0.5 ps. Imaging/spectroscopy leftovers stay below (features).
 - [ ] **Findings 4d, materials unsourced data** (split in 2–3 parts: EO/NLO crystals, glasses, Raman/Brillouin media).
 - [ ] **Findings 4e, wave-optics defaults from memory** (diode/dye laser, injection locking, d_eff).
 - [ ] **Findings 4f, cross-cutting:** URL clamping (codemod), `erf`/`sinc` copies, search relevance floor.
@@ -153,12 +153,8 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - `spectroscopy/conc-mirror` and `jacquinot` (session 104) both show the Jacquinot ratio π f/(h tan θ) from `throughput.ts`;
   conc-mirror adds the mirror cone and slit étendue. Merge into jacquinot only if the user asks.
 - Imaging part 8 (session 86): `photoacoustic` applies only the single-pulse and ≥ 10 s skin limits (`pulse-train.ts` has no skin rules); `sum-frequency-microscopy` withholds the power for L > b (no non-degenerate Boyd–Kleinman); SRS δ is an input (no cross-section model).
-- `streak-camera` (sessions 140–141): tube magnification 1.5 is unsourced and screen blur defaults to 0. C16910 data sheet
-  (SHSS0026E06): effective photocathode 0.15 × 4.5 mm (±5 %, with ORCA-Flash4.0 V3), working area on the screen 12.48 × 9.44 mm
-  read by 1280 × 968 pixels (6.5 µm × 3:2 output optics = 9.75 µm on the screen), so M ≈ 12.48/4.5 = 2.8 (check this reading),
-  968 pixels along the sweep (9.44 mm). 35 lp/mm at the cathode as 5 % MTF gives a Gaussian FWHM 26.2 µm (73 µm on the screen).
-  Problem: that blur at the fastest sweep (9.44 mm/60 ps) is 0.47 ps, so blur + the 0.8 ps tube default exceed the sheet's
-  < 800 fs total; rethink the tube term (energy-spread dispersion, or 0.8 ps as a fastest-sweep total). Fix in Findings 4c-c.
+- `streak-camera` (session 142): M taken equal on the time axis (no source); the data-sheet allowance holds only at the
+  spec's sweep (C16910 fastest range factory-set 60–80 ps; at 80 ps it is 0.48 ps, under the 0.5 ps default).
 - `intensified-ccd` (session 141): the gain sweep holds the data-sheet K_f down to unity gain (noted on the page).
 - `imaging/fluorophores.ts` (session 84): log-normal bands are exactly 0 past their anti-Stokes cutoff (EGFP emission below 480 nm, mCherry excitation above 622 nm), so tail-only bleed-through reads 0; sampled FPbase spectra would fix it. Disclosed on the pages.
 - `detectors/gain-temperature` PMT branch: the −0.3 %/°C default is an entered value; source a typical dynode-gain coefficient in part 7 (Hamamatsu handbook §13.1.1 gives no number).
