@@ -8,7 +8,7 @@ import { useURLState } from "../../../hooks/use-url-state";
 import { fix } from "../../../components/polarization-format";
 import { applyMueller } from "../../../physics/polarization/mueller";
 import {
-  MAX_SAMPLES, type DriveWaveform, type ScramblerStage, residualDopVsTime, scramblerMeanMueller, stageResonance,
+  MAX_SAMPLES, type DriveWaveform, type ScramblerStage, lockedGroup, residualDopVsTime, scramblerMeanMueller, stageResonance,
   worstCaseResidualDop,
 } from "../../../physics/polarization/scrambler";
 import { degreeOfPolarization, stokesFromEllipse } from "../../../physics/polarization/stokes";
@@ -30,9 +30,10 @@ function useStage(k: number, axis: number, kHz: number) {
   const [ampIn, setAmp] = useURLState(`amplitude${k}`, J0_ZERO);
   const [biasIn, setBias] = useURLState(`bias${k}`, 0);
   const [freqIn, setFreq] = useURLState(`frequency${k}`, kHz);
+  const [phaseIn, setPhase] = useURLState(`phase${k}`, 0);
   return {
     axis: clamp(axisIn, -180, 180), amp: clamp(ampIn, 0, 20), bias: clamp(biasIn, -20, 20), kHz: clamp(freqIn, 0.01, 1000),
-    setAxis, setAmp, setBias, setFreq,
+    phase: clamp(phaseIn, -360, 360), setAxis, setAmp, setBias, setFreq, setPhase,
   };
 }
 type Stage = ReturnType<typeof useStage>;
@@ -41,11 +42,12 @@ function StageInputs({ k, s }: { k: number; s: Stage }) {
   return (
     <div className={card}>
       <h3 className="text-sm text-gray-300 mb-3">Stage {k}</h3>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <ValidatedNumberInput label="Fast-axis azimuth (°)" value={s.axis} onChange={s.setAxis} min={-180} max={180} step="1" />
         <ValidatedNumberInput label="Drive amplitude Γm (rad)" value={s.amp} onChange={s.setAmp} min={0} max={20} step="0.001" />
         <ValidatedNumberInput label="Bias Γ0 (rad)" value={s.bias} onChange={s.setBias} min={-20} max={20} step="0.01" />
         <ValidatedNumberInput label="Frequency (kHz)" value={s.kHz} onChange={s.setFreq} min={0.01} max={1000} step="0.0001" />
+        <ValidatedNumberInput label="Drive phase φ (°)" value={s.phase} onChange={s.setPhase} min={-360} max={360} step="1" />
       </div>
     </div>
   );
@@ -67,14 +69,18 @@ export default function PolarizationScramblingPage() {
   // Stage objects in SI (rad, Hz), built from primitives.
   const stages = useMemo<ScramblerStage[]>(() => {
     const rows = [
-      [s1.axis, s1.bias, s1.amp, s1.kHz], [s2.axis, s2.bias, s2.amp, s2.kHz], [s3.axis, s3.bias, s3.amp, s3.kHz],
+      [s1.axis, s1.bias, s1.amp, s1.kHz, s1.phase], [s2.axis, s2.bias, s2.amp, s2.kHz, s2.phase],
+      [s3.axis, s3.bias, s3.amp, s3.kHz, s3.phase],
     ];
-    return rows.slice(0, n).map(([axis, bias, amplitude, kHz]) => ({ axis: axis * DEG, bias, amplitude, frequency: kHz * 1e3, waveform }));
-  }, [n, waveform, s1.axis, s1.bias, s1.amp, s1.kHz, s2.axis, s2.bias, s2.amp, s2.kHz, s3.axis, s3.bias, s3.amp, s3.kHz]);
+    return rows.slice(0, n).map(([axis, bias, amplitude, kHz, phase]) =>
+      ({ axis: axis * DEG, bias, amplitude, frequency: kHz * 1e3, waveform, phase: phase * DEG }));
+  }, [n, waveform, s1.axis, s1.bias, s1.amp, s1.kHz, s1.phase, s2.axis, s2.bias, s2.amp, s2.kHz, s2.phase,
+    s3.axis, s3.bias, s3.amp, s3.kHz, s3.phase]);
 
   const Sin = stokesFromEllipse(1, psi_deg * DEG, chi_deg * DEG);
   const longTime = degreeOfPolarization(applyMueller(scramblerMeanMueller(stages), Sin));
   const worst = worstCaseResidualDop(stages);
+  const locked = lockedGroup(stages);
   const resonance = stageResonance(stages.map((s) => s.frequency));
 
   const timeChart = useMemo(() => {
@@ -114,6 +120,7 @@ export default function PolarizationScramblingPage() {
         <p>stage k: retarder with fast axis θ<sub>k</sub>, Γ<sub>k</sub>(t) = Γ0 + Γm w(f<sub>k</sub> t); a slow detector sees the time-average Stokes vector</p>
         <p>sine: ⟨cos Γ⟩ = J₀(Γm) cos Γ0, ⟨sin Γ⟩ = J₀(Γm) sin Γ0 &nbsp;(J₀ = 0 at Γm = 2.4048 rad)</p>
         <p>ramp: ⟨cos Γ⟩ = [sin(Γ0 + Γm) − sin Γ0]/Γm, &nbsp;⟨sin Γ⟩ = [cos Γ0 − cos(Γ0 + Γm)]/Γm</p>
+        <p>independent stages: ⟨M<sub>3</sub>M<sub>2</sub>M<sub>1</sub>⟩ = ⟨M<sub>3</sub>⟩⟨M<sub>2</sub>⟩⟨M<sub>1</sub>⟩; locked stages: (1/T)∫₀ᵀ M<sub>3</sub>(t)M<sub>2</sub>(t)M<sub>1</sub>(t) dt over their common period T</p>
       </div>
 
       <div className="flex flex-wrap items-end gap-4 mb-4">
@@ -134,7 +141,8 @@ export default function PolarizationScramblingPage() {
       </div>
       <p className="text-xs text-gray-500 mb-4">
         {waveform === "ramp" ? "Ramp: the amplitude is the total sweep of the retardance; 2π sweeps a full wave. " : ""}
-        Use incommensurate frequencies (the defaults are 1, √2 and √5 kHz) so the stage phases are independent.
+        With incommensurate frequencies (the defaults are 1, √2 and √5 kHz) the stage phases are independent and the drive
+        phases φ don&apos;t matter; with locked frequencies (whole-number ratios up to 12) they do.
       </p>
       <div className="space-y-3 mb-6">
         <StageInputs k={1} s={s1} />
@@ -147,12 +155,18 @@ export default function PolarizationScramblingPage() {
         <ValidatedNumberInput label="Input ellipticity χ (°, −45 … 45)" value={chi_deg} onChange={setChi} min={-45} max={45} step="1" />
       </div>
 
-      {resonance && (
+      {locked && (
+        <p className="text-sm text-yellow-400 mb-4" role="status">
+          Stages {locked.members.map((k) => k + 1).join(" and ")} are locked ({locked.harmonics.join(" : ")} drive periods
+          in a common period of {fix(locked.period * 1e3, 3)} ms): their phases are not independent, so the long-time values
+          below are the average over that common period, and they depend on the drive phases φ.
+        </p>
+      )}
+      {resonance && Number.isFinite(resonance.beatPeriod) && (
         <p className="text-sm text-yellow-400 mb-4" role="status">
           Stages {resonance.i + 1} and {resonance.j + 1} are near {resonance.q}·f<sub>{resonance.i + 1}</sub> = {resonance.p}·f<sub>{resonance.j + 1}</sub>:
-          their phases lock, so the long-time values below (a product of stage means) {Number.isFinite(resonance.beatPeriod)
-            ? `hold only for averaging times well beyond the ${fix(resonance.beatPeriod * 1e3, 1)} ms beat period`
-            : "do not apply"}. Use incommensurate frequencies; the chart shows the true average.
+          the long-time values below (a product of stage means) hold only for averaging times well beyond the{" "}
+          {fix(resonance.beatPeriod * 1e3, 1)} ms beat period; the chart shows the average over shorter windows.
         </p>
       )}
       <div className="grid gap-4 sm:grid-cols-2 mb-4">
