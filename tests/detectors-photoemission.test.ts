@@ -3,8 +3,9 @@ import assert from "node:assert/strict";
 
 import { erf } from "../src/physics/math";
 import {
-  childLangmuirCurrentDensity, intensifiedSnr, intensifierNoiseFactor, phosphorGain, planarTransitTime, quadratureFwhm,
-  RICHARDSON_A0, rectGaussFwhm, streakTime, thermionicCurrentDensity, thresholdWavelength, VACUUM_TRANSIT_FACTOR, vacuumTransitBandwidth,
+  childLangmuirCurrentDensity, effectiveThermionicBarrier, intensifiedSnr, intensifierNoiseFactor, PHOTOCATHODE_DARK_EMISSION,
+  phosphorGain, planarTransitTime, quadratureFwhm,
+  RICHARDSON_A0, rectGaussFwhm, streakTime, streakWindow, thermionicCurrentDensity, thresholdWavelength, VACUUM_TRANSIT_FACTOR, vacuumTransitBandwidth,
 } from "../src/physics/detectors/photoemission";
 
 const close = (actual: number, expected: number, rel: number, msg = "") =>
@@ -67,9 +68,14 @@ test("streak camera: time per length and quadrature resolution", () => {
   // 10 mm/ns = 10⁷ m/s: a 75 µm slit image spans 7.5 ps, a 13 µm pixel 1.3 ps.
   close(streakTime(75e-6, 1e7), 7.5e-12, 1e-12);
   close(streakTime(13e-6, 1e7), 1.3e-12, 1e-12);
+  // Window: 1024 × 13 µm = 13.312 mm fits the Ø18 mm C16910 screen, 1.3312 ns at 10 mm/ns; 2048 × 13 µm = 26.6 mm
+  // overfills it, so the screen sets 18 mm / 10⁷ m/s = 1.8 ns.
+  close(streakWindow(1024 * 13e-6, 18e-3, 1e7), 1.3312e-9, 1e-12);
+  close(streakWindow(2048 * 13e-6, 18e-3, 1e7), 1.8e-9, 1e-12);
+  assert.ok(Number.isNaN(streakWindow(1e-3, 0, 1e7)));
   // Gaussians add in quadrature: √(2² + 1.5²) = 2.5.
   close(quadratureFwhm([2e-12, 1.5e-12, 0]), 2.5e-12, 1e-12);
-  // Page defaults: rect 7.5 ps ⊗ rect 1.3 ps ⊗ Gauss 2 ps FWHM. A brute-force sum (trapezoid sampled every 1e-4 ps,
+  // Rect 7.5 ps ⊗ rect 1.3 ps ⊗ Gauss 2 ps FWHM. A brute-force sum (trapezoid sampled every 1e-4 ps,
   // times the Gaussian, half maximum bisected) gives 7.5000973 ps; quadrature would give √61.94 = 7.8702 ps.
   close(rectGaussFwhm([7.5, 1.3], 2), 7.5000973, 1e-7);
   // Two equal rectangles 3 ⊗ 3 (a triangle of FWHM 3) blurred by a 1 ps Gaussian: brute force 3.3390152.
@@ -90,4 +96,20 @@ test("streak camera: time per length and quadrature resolution", () => {
   assert.equal(quadratureFwhm([]), 0);
   assert.ok(Number.isNaN(quadratureFwhm([1e-12, -1e-12])));
   assert.ok(Number.isNaN(streakTime(1e-6, 0)));
+});
+
+test("photocathode dark emission: Burle Table I values carried to other temperatures over an effective barrier", () => {
+  // K₂CsSb, 0.02 fA/cm² = 2e-13 A/m² at 25 °C (Burle Photomultiplier Handbook 1980, Table I). By hand: k_BT/q =
+  // 8.617333262e-5 · 298.15 = 0.02569258 V, A₀T² = 1.2017323e6 · 298.15² = 1.068261e11 A/m², ln(A₀T²/j) = 54.63491,
+  // so ψ = 1.40371 eV, well below the ≈ 1.9 eV photoemission threshold of a bialkali cathode.
+  const j = PHOTOCATHODE_DARK_EMISSION.find((p) => p.name.startsWith("K₂CsSb"))!.jDark25;
+  close(j, 2e-13, 1e-12);
+  const psi = effectiveThermionicBarrier(j, 298.15);
+  close(psi, 1.40371, 1e-5);
+  close(thermionicCurrentDensity(298.15, psi), j, 1e-12);
+  // Cooling to 0 °C: (273.15/298.15)² · exp(−(ψ/k_B)(1/273.15 − 1/298.15)) = 0.83933 · e^(−5.00044) = 5.653e-3.
+  close(thermionicCurrentDensity(273.15, psi) / j, 0.83933 * Math.exp(-5.00044), 1e-4);
+  // The page's old model, Richardson over the 2.0 eV threshold, was ten decades low.
+  assert.ok(thermionicCurrentDensity(298.15, 2.0) / j < 1e-9);
+  assert.ok(Number.isNaN(effectiveThermionicBarrier(0, 298.15)));
 });

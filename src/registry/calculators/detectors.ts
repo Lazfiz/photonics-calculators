@@ -918,13 +918,17 @@ export const detectors: CalculatorEntry[] = [
     title: "Streak Camera Calculator",
     description: "Temporal resolution and time window of a streak camera from sweep speed, slit image, pixel size, tube limit and trigger jitter.",
     heading: "Streak Camera",
-    lede: "Temporal resolution of a streak camera: the slit image, one pixel, the tube's own limit and trigger jitter, each converted to time by the sweep speed and added in quadrature.",
+    lede: "Temporal resolution of a streak camera: the slit image, one pixel and screen blur (lengths converted to time by the sweep speed), the tube's own spread and trigger jitter, convolved; and the time window on the screen.",
     tier: "textbook",
-    modelNote: "The slit image and one pixel are rectangles of length/sweep speed; tube limit, screen blur and jitter are Gaussians. The FWHM of their convolution is exact for this model, where quadrature overstates the rectangles. Linear sweep, 1:1 readout.",
+    modelNote: "The slit image and one pixel aperture are rectangles of length/sweep speed; tube spread, screen blur and jitter are Gaussians. The FWHM of their convolution is exact for this model, where quadrature overstates the rectangles. A FWHM under 2 pixels is flagged as undersampled. Window min(N·p, screen)/v. Linear sweep; a data-sheet resolution is a system value, not a tube term.",
     references: [
       {
         citation: "Hamamatsu Photonics (2008). Guide to Streak Cameras, cat. no. SHSS0006E. Temporal resolution as the FWHM of the streak image of a delta pulse; trigger jitter in summed sweeps.",
         url: "https://www.hamamatsu.com/content/dam/hamamatsu-photonics/sites/documents/99_SALES_LIBRARY/sys/SHSS0006E_STREAK.pdf",
+      },
+      {
+        citation: "Hamamatsu Photonics. Streak camera C16910 data sheet, cat. no. SHSS0026E06: temporal resolution < 800 fs, Ø18 mm P-43 phosphor screen, 35 lp/mm at the photocathode centre, 1:1 input optics, sweep time per full screen with an ORCA-Flash4.0 V3.",
+        url: "https://www.hamamatsu.com/content/dam/hamamatsu-photonics/sites/documents/99_SALES_LIBRARY/sys/SHSS0026E_C16910s.pdf",
       },
       {
         citation: "Zavoisky E. K., Fanchenko S. D. (1965). Image converter high-speed photography with 10⁻⁹–10⁻¹⁴ sec time resolution. Appl. Opt. 4, 1155–1167. Technical (slit image/sweep speed) and physical (energy spread) limits of the time resolution.",
@@ -995,7 +999,7 @@ export const detectors: CalculatorEntry[] = [
     heading: "Vacuum Photodiode",
     lede: "Responsivity, thermionic dark current, transit-time and RC bandwidth, space-charge limit and the shot- plus Johnson-noise SNR of a planar vacuum photodiode.",
     tier: "textbook",
-    modelNote: "Planar diode, flat QE up to hc/φ, electrons leaving at rest, a brick-wall filter at the −3 dB bandwidth and load Johnson noise at 25 °C. Richardson at φ fits metals; semiconductor cathodes have far more dark emission. Stray capacitance is left out.",
+    modelNote: "Planar diode, flat QE up to hc/φ, electrons leaving at rest, a brick-wall filter at the −3 dB bandwidth and load Johnson noise at 25 °C. Dark emission is a measured 25 °C value (Burle Table I presets), carried to other temperatures over an effective Richardson barrier (order of magnitude away from 25 °C). Stray capacitance is an input; a coax-matched tube is a transmission line, not a lumped RC.",
     references: [
       {
         citation: "Dushman S. (1923). Electron emission from metals as a function of temperature. Phys. Rev. 21, 623–636. J = A₀·T²·exp(−φ/k_B·T).",
@@ -1008,6 +1012,14 @@ export const detectors: CalculatorEntry[] = [
       {
         citation: "Child C. D. (1911). Discharge from hot CaO. Phys. Rev. (Series I) 32, 492–511. Space-charge-limited current ∝ V^(3/2)/d².",
         url: "https://doi.org/10.1103/PhysRevSeriesI.32.492",
+      },
+      {
+        citation: "Burle Industries (1980). Photomultiplier Handbook (TP-136), Table I: dark emission at 25 °C of Cs₃Sb, Na₂KSb, K₂CsSb, multialkali and GaAs photocathodes; p. 20: thermionic and photoemission barriers differ in semiconductor cathodes.",
+        url: "https://psec.uchicago.edu/links/Photomultiplier_Handbook.pdf",
+      },
+      {
+        citation: "Hamamatsu Photonics (2017). Photomultiplier Tubes: Basics and Applications, 4th ed., §4.3.6 Eq. 4-19 (thermionic dark emission over the work function) and Eq. 5-7 (f_c = 1/(2π C_s R_L), C_s including stray and wiring capacitance).",
+        url: "https://www.hamamatsu.com/content/dam/hamamatsu-photonics/sites/documents/99_SALES_LIBRARY/etd/PMT_handbook_v4E.pdf",
       },
       {
         citation: "Bowers J. E., Burrus C. A. (1987). Ultrawide-band long-wavelength p-i-n photodetectors. J. Lightwave Technol. 5, 1339–1350. Combined RC and transit bandwidth 1/f² = 1/f_RC² + 1/f_tr².",
