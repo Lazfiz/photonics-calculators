@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 142, 2026-10-23)
+## Status (session 143, 2026-10-23)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4: every page is tiered; open findings and the top-50 tests remain.
@@ -35,7 +35,12 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   (κ 5.06, N_eff 10.1); default SNR 1.32 → 1.14.
 - [x] **Findings 4c-c** (session 142, `phase-4/findings-4c-c`, PR #173): `streak-camera` C16910 defaults (M 2.77, 9.75 µm, 60 ps),
   35 lp/mm blur, `gaussianAllowance` (0.64 ps under < 800 fs); tube 0.8 → 0.5 ps. Imaging/spectroscopy leftovers stay below (features).
-- [ ] **Findings 4d, materials unsourced data** (split in 2–3 parts: EO/NLO crystals, glasses, Raman/Brillouin media).
+- [x] **Findings 4d-a** (session 143, `phase-4/findings-4d-a`, PR #174): `biaxial-data.ts` (Kato KTP, Umemura BiBO); KTP
+  modulator V_π 213.6 V (633 nm, 1 mm/20 mm); BiBO cut 168.8° (CASTECH 168.9°). Photorefractive crystals stay open (below).
+- [ ] **Findings 4d-b, glasses and polymers:** `optical-glass-catalog` TIE-19 limits (Chrome), `infrared-glass`, `thermal-expansion`,
+  `polymer-optics`, `heat-capacity` θ_D presets.
+- [ ] **Findings 4d-c, nonlinear and scattering media:** `nonlinear-index`, `two-photon-absorption`, `brillouin-scattering`,
+  `raman-scattering`, rare-earth σ, `acousto-optic`.
 - [ ] **Findings 4e, wave-optics defaults from memory** (diode/dye laser, injection locking, d_eff).
 - [ ] **Findings 4f, cross-cutting:** URL clamping (codemod), `erf`/`sinc` copies, search relevance floor.
 - [x] Detectors part 9b (session 77, `phase-4/detectors-mtf-cosmic`): `sensor-mtf.ts` (Seib diffusion, column shares),
@@ -71,13 +76,15 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - `heat-capacity` (session 134): presets only for Si, Ge, CaF₂, LiF (θ_D from Råsander & Moram 2015 Table VII). Sapphire, MgF₂,
   ZnSe, BaF₂ and fused silica have Crystran c_p but no cited θ_D; NIST SRM 720 (Ditmars 1982, sapphire c_p 10–2250 K) could validate one.
   Diamond: θ_D 2250 K gives 266 vs 502 J/(kg·K) at 273 K. `damage-threshold` and `radiation-damage` have user inputs, no presets.
-- `electro-optic`, `photorefractive`: BaTiO₃, SBN, BSO, LiTaO₃ and KTP were dropped from the EO table (no downloadable
-  source; Xie & Pfister arXiv:physics/0507123 confirms only KTP r₂₃ 15.7, r₃₃ 36.3 pm/V at 633 nm, and KTP needs n_y, n_z).
-  Wilson & Hawkes Table 3.1 was read through a FOSSEE notebook of its examples; its edition is not cited.
+- `electro-optic`, `photorefractive` (session 143: KTP added): BaTiO₃, SBN, BSO and LiTaO₃ are still out. BaTiO₃ unclamped r₁₃ 8,
+  r₃₃ 105, r₄₂ 1300 pm/V at 633 nm (Zgonik 1994 PRB 50, 5941, quoted in Petraru's thesis, `kups.ub.uni-koeln.de/1050/1/thesis_petraru_final.pdf`
+  Table 2.2) needs ε and an r_eff(β) geometry on the photorefractive page; LiTaO₃ has only a vendor r₃₃ (Crylink 30.4, no r₁₃ or λ;
+  Casson 2004 JOSA B is paywalled, OSTI refuses connections). Whether KTP's r (Cheng 1994) are clamped is unstated. Wilson & Hawkes
+  Table 3.1 was read through a FOSSEE notebook; its edition is still not cited (git.fossee.in returned 502; HAL needs a browser).
 - `nonlinear-crystals` (user decision, session 130: lean SHG page): CLBO, KTA, AgGaS₂, ZGP, GaSe and OP-GaAs and the walk-off,
   acceptance and damage columns were dropped (no downloadable source; CASTECH/findlight PDFs return HTML). OP-GaAs QPM
   d_eff ≈ 69 needs d₁₄ ≈ 94 pm/V (Skauli, unread). d_eff spread: KTP d₂₄ 3.9 (EKSMA) vs 3.64 (United Crystals); LN d₃₃
-  25.0 (Shoji, read via WebFetch of the Optica page) vs 27–34 (vendors). BiBO n from CASTECH's garbled Sellmeier table.
+  25.0 (Shoji, read via WebFetch of the Optica page) vs 27–34 (vendors). BiBO n and cut now from Umemura 2007 (168.8° vs CASTECH 168.9°).
 - `rare-earth-absorption` (+ `fiber-optics/rare-earth-doped`, `fiber-amplifier`): the Er σ in `DOPANT_PRESETS` are unsourced
   "typical" values (Barnes 1991, Miniscalco 1991 and Desurvire are closed; Southampton eprints blocks scripts); Yb 976 nm is
   2.5e-24 vs Paschotta's 2.6e-24 m². Nd, Tm, Ho dropped. `color-centers`: F(KCl), Ti:sapphire, ruby and SiV⁻ dropped (no open

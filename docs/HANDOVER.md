@@ -1,20 +1,27 @@
-# Handover — 2026-10-23 (session 142 → session 143)
+# Handover — 2026-10-23 (session 143 → session 144)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 142: **Findings 4c-c**, branch `phase-4/findings-4c-c` (PR #173), `streak-camera` only; the physics reviewer passed it with
-two default caveats (fixed: tube 0.5 ps). Next: **Findings 4d** (materials unsourced data; split it into 2–3 parts first).
+Session 143: Findings 4d was split into a/b/c; **4d-a** done on `phase-4/findings-4d-a` (PR #174): KTP on `electro-optic`, BiBO
+indices on `nonlinear-crystals`; the physics reviewer passed both. Next: **Findings 4d-b** (glasses and polymers).
 
 ## State
-- `photoemission.ts`: `limitingResolutionBlur(lp/m, mtf)` (Gaussian MTF, FWHM 26.2106 µm at 35 lp/mm, 5 %),
-  `gaussianAllowance(rects, otherGauss, total)` (largest Gaussian under a data-sheet total; 0.64094 ps for the C16910 defaults).
-- `streak-camera` defaults = C16910 fastest sweep: 157.33 mm/ns (9.44 mm / 60 ps), M 2.77, 9.75 µm × 968, slit 10 µm, 35 lp/mm,
-  tube 0.5 ps → total 0.69228 ps. URL key `screenBlur` → `lpmm`; new `spec` (0.8 ps).
+- New `src/physics/materials/biaxial-data.ts`: `BIAXIAL_CRYSTALS` (ktp: Kato & Takaoka 2002; bibo: Umemura 2007, with K term),
+  `biaxialIndices(id, λ)` → {nx, ny, nz} (NaN outside the fit), `biaxialRange`. `tests/materials-biaxial.test.ts`.
+- `pockels.ts`: `POCKELS.ktp` (transverse; `indices` returns {no: n_y, ne: n_z}, r₂₃ stored in `r13`, labels in the new `perp` field).
+- `nonlinear-crystals.ts`: `yzPlaneMatchingAngle(ny, nz, target)`, `BIBO_THETA` (11.196° from Z, shown as 168.8°). 1075 tests.
 
 ## Next actions
-1. `/ship` this branch. Post-merge value: `detectors/streak-camera=692.280` (shown in fs). No release unless asked.
-2. Findings 4d: split into a/b/c boxes (EO/NLO crystals, glasses, Raman/Brillouin), reviewer pass per claim, fix part a.
+1. `/ship` this branch. No default value changed (KTP, BiBO aren't defaults); `?material=ktp` shows V_π ≈ 213.6 V. No release unless asked.
+2. Findings 4d-b: `optical-glass-catalog` TIE-19 limits in Chrome, `infrared-glass`, `thermal-expansion`, `polymer-optics`,
+   `heat-capacity` θ_D; reviewer pass per claim first.
 
 ## Non-obvious facts
+- **Session 143:** refractiveindex.info has KTP (Kato α/β/γ), BiBO (Umemura), BaTiO₃ (Wemple, Johnston), Bi₁₂SiO₂₀ (Gospodinov) and
+  LiTaO₃ (Bond) sets; list a folder with `gh api repos/polyanskiy/refractiveindex.info-database/contents/database/data/main/<M>/nk`.
+  Formula 4 = `fromPoleForm(A, [B…], [C…], range, K)` when the exponents are 0/1. HAL (hal-iogs) is behind Anubis (needs a
+  browser); OSTI refuses connections; git.fossee.in 502s. CASTECH's BiBO page curls (walk-off 25.6 mrad, d_eff 3.0). BaTiO₃
+  Zgonik tensors: Petraru thesis `kups.ub.uni-koeln.de/1050/1/thesis_petraru_final.pdf` Table 2.2. Biaxial YZ-plane cuts: θ and
+  180° − θ differ in d_eff (point group 2, d₁₄), so keep the source's convention.
 - **Session 142:** Hamamatsu C16910 sheet (SHSS0026E) and the Guide to Streak Cameras (SHSS0006E) download with curl;
   `pdftotext -layout` puts specs in columns ≈ 160+ (`cut -c160-330`). AIP APL reprints sometimes sit on university servers
   (Shakya & Chang 2005 at `api.creol.ucf.edu/Publications/4970.pdf`). devctl blocks a whole `&&` chain when the CPU is busy,
@@ -25,11 +32,6 @@ two default caveats (fixed: tube 0.5 ps). Next: **Findings 4d** (materials unsou
   intensifier noise factors are amplitude ratios (EMCCD 1.4 = √2): square them. A spot read through its matched filter collects
   even background from κ ≈ N_eff/2 pixels. Monte Carlo probes: `Math.random`, not an LCG (it biased a variance by 1–2 %).
   Backticks inside a bash-quoted `node -e` script get command-substituted: write a .mjs file or use Edit.
-- **Session 140:** Burle Photomultiplier Handbook PDF: `psec.uchicago.edu/links/Photomultiplier_Handbook.pdf`; read its tables
-  with `pdftotext -table` (`-layout` misaligns Table I; no pdftoppm). Hamamatsu PMT handbook 4th ed.: `…/etd/PMT_handbook_v4E.pdf`;
-  C16910 data sheet SHSS0026E downloads. A data-sheet streak resolution is a system value, not a tube term. React Compiler skips a
-  `useMemo` whose deps are clamped render values: compute the chart in an IIFE. Reviewer numbers from memory were wrong again
-  (bialkali dark emission), check each.
 - **Session 139:** tanh-sinh is too coarse in the middle (≈ 2.6σ spacing) for Gaussian-times-CDF integrands; a uniform rule is
   spectral only when the integrand is smooth and ≈ 0 at both ends. ∫φ(v)F(ln(y − e^v))dv has a sharp edge as e^v → y: substitute
   r = ln(1 − e^(v−u)). Brute-force references need a convergence check (linear-interp bias 8e-3 at 20 points/σ). Tune quadrature
@@ -57,8 +59,7 @@ two default caveats (fixed: tube 0.5 ps). Next: **Findings 4d** (materials unsou
 - **Session 134:** Crystran pages fetch with curl (`https://www.crystran.com/optical-materials/<slug>`, slugs from that index page; strip
   tags, grep "Specific Heat Capacity|Density"); no Debye temperatures there. NIST JPCRD reprints download
   (`https://srd.nist.gov/jpcrdreprint/<doi suffix>.pdf`, e.g. 1.555761 Desai). Heredocs halve backslashes (a regex `\s` arrives as `s`): write such scripts with Write.
-- **Session 133:** `timeout N npx next start` kills the server after N s, so a later ui-check reports "not hydrated" on every page;
-  a leftover listener on :3100 gives ChunkLoadError. Check `netstat -ano | grep :3100` and allow ≥ 300 s. rp-photonics.com 403s to WebFetch.
+- **Session 133:** `timeout N npx next start` kills the server after N s (ui-check then says "not hydrated"; a leftover :3100 listener gives ChunkLoadError): allow ≥ 300 s. rp-photonics.com 403s to WebFetch.
 - **Sessions 120–125:** registry entries end with a `  },` line. A removed page breaks tsc (TS2307 in `.next/types/validator.ts`)
   until `rm -rf .next/types .next/dev/types`. A merge lowers the page floor. The merge codemod runs after appending to
   `redirects.json`. A user `next dev` on :3000 can garble `.next/dev/types`: delete it again.
