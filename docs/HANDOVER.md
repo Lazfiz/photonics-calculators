@@ -1,27 +1,31 @@
-# Handover — 2026-10-23 (session 139 → session 140)
+# Handover — 2026-10-23 (session 140 → session 141)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 139: **Findings 4b** (FSO/comms bugs), branch `phase-4/fso-comms-bugs`. Two adversarial `physics-reviewer` passes
-(first on the claims, then on the final diff); each found real bugs, fixed with tests. Next: Findings 4c.
+Session 140: **Findings 4c-a**, branch `phase-4/findings-4c-leftovers` (PR #171). Reviewer on the claims → sources → fixes +
+goldens → reviewer on the diff (no formula bugs; four text claims corrected). Next: Findings 4c-b (`intensified-ccd` first).
 
 ## State
-- `ber`, `bpsk-qpsk`: raw BER on log axes (SimpleChart has no 1e-10 floor any more).
-- `bpsk-qpsk.ts`: `shotNoiseN0(λ, η, receiver)` = hν/η (heterodyne/intradyne) or hν/2η (single-quadrature homodyne, BPSK
-  only) and `requiredRxPower` (Ip et al. 2008, Opt. Express 16, 753, Table 1). Replaces the RF kT + 3 dB NF floor. Default
-  10 dB, 1 Gb/s, 1550 nm, η = 1: N₀ −158.92 dBm/Hz, P_req −58.92 dBm, 18 photons/bit at BER 1e-9.
-- `turbulence.ts` diversityOutage, N ≥ 3 EGC/MRC: exact for the equicorrelated log-normal model. Given Z₀ the branches are
-  iid; `lnSumCdfTable` builds ln P(Σ of k log-normals) on 80 points over [ln k ± 9σ], each inner integral split at e^v = y/2
-  (Simpson in v below, in r = ln(1 − e^(v−u)) above, 6 panels/σ). Outer Z₀ integral Simpson. FW fit and MRC ≤ EGC cap removed.
-  P within 1e-3 relative of 4×-refined tables (240 cases); ≈ 15 ms per table at N = 8; cache 64 tables; chart 17 points
-  (≈ 0.6 s at N = 8).
-- 1065 tests (goldens vs brute force, MC, MRC ≤ EGC scan, σ_b ≥ 1.85 no-hang regression).
+- `scrambler.ts`: `lockedGroup` finds stages locked at q·f_i = p·f_j (p, q ≤ 12, 1e-9 relative) and their common period;
+  `scramblerMeanMueller` averages E_T[… M_locked(t) … E[M_free] …] (trapezoid for sines, N from the bandwidth; Simpson
+  between ramp flybacks). Stages have a drive phase φ (page input, deg). Goldens: 1:1 in phase 0.884815608, antiphase
+  0.371442 (A&S J₀), product of means J₀(1.5) = 0.5118; brute-force agreement 1e-10 (sine), 1e-6 (ramp).
+- `optical-sectioning-thickness`: wave-optical section (`confocal.ts`) beside Wilhelm; Wilhelm 23 % (low NA) to ≈ 140 %
+  (NA → n) above it; 45 % at the defaults (3.54 vs 2.43 µm).
+- `photoemission.ts`: `PHOTOCATHODE_DARK_EMISSION` (Burle TP-136 Table I, 25 °C), `effectiveThermionicBarrier` (K₂CsSb
+  0.02 fA/cm² → ψ 1.40371 eV), `streakWindow` = min(N·p, L_screen)/v. vacuum-photodiode: dark from the measured value, stray C
+  input (Hamamatsu PMT handbook Eq. 5-7). streak-camera: screen 18 mm and tube spread 0.8 ps (C16910), undersampling flag.
 
 ## Next actions
-1. `/ship` this branch. Post-merge value: `free-space-comms/bpsk-qpsk=-58.9`. No release unless asked.
-2. Findings 4c (polarization, imaging, spectroscopy, detectors leftovers). Same loop: reviewer attacks the claims → primary
-   sources → fix + golden tests → reviewer on the diff.
+1. `/ship` this branch. Post-merge value: `imaging/optical-sectioning-thickness=2.43`. No release unless asked.
+2. Findings 4c-b: `intensified-ccd` (spot spread, SNR label, F, P43 η; notes and refs in ROADMAP), then the
+   imaging/spectroscopy leftovers if they fit.
 
 ## Non-obvious facts
+- **Session 140:** Burle Photomultiplier Handbook PDF: `psec.uchicago.edu/links/Photomultiplier_Handbook.pdf`; read its tables
+  with `pdftotext -table` (`-layout` misaligns Table I; no pdftoppm). Hamamatsu PMT handbook 4th ed.: `…/etd/PMT_handbook_v4E.pdf`;
+  C16910 data sheet SHSS0026E downloads. A data-sheet streak resolution is a system value, not a tube term. React Compiler skips a
+  `useMemo` whose deps are clamped render values: compute the chart in an IIFE. Reviewer numbers from memory were wrong again
+  (bialkali dark emission), check each.
 - **Session 139:** tanh-sinh is too coarse in the middle (≈ 2.6σ spacing) for Gaussian-times-CDF integrands; a uniform rule is
   spectral only when the integrand is smooth and ≈ 0 at both ends. ∫φ(v)F(ln(y − e^v))dv has a sharp edge as e^v → y: substitute
   r = ln(1 − e^(v−u)). Brute-force references need a convergence check (linear-interp bias 8e-3 at 20 points/σ). Tune quadrature
@@ -54,9 +58,7 @@ Session 139: **Findings 4b** (FSO/comms bugs), branch `phase-4/fso-comms-bugs`. 
   tags, grep "Specific Heat Capacity|Density"); no Debye temperatures there. NIST JPCRD reprints download
   (`https://srd.nist.gov/jpcrdreprint/<doi suffix>.pdf`, e.g. 1.555761 Desai). Heredocs halve backslashes (a regex `\s` arrives as `s`): write such scripts with Write.
 - **Session 133:** `timeout N npx next start` kills the server after N s, so a later ui-check reports "not hydrated" on every page;
-  a leftover listener on :3100 gives ChunkLoadError. Check `netstat -ano | grep :3100` and allow ≥ 300 s. Doherty's NV review is
-  arXiv:1302.3288. Barnes 1991 (Er σ): Southampton eprints blocks scripts; rp-photonics.com 403s to WebFetch; the Optica abstract
-  of Moulton 1986 returned only "Please wait".
+  a leftover listener on :3100 gives ChunkLoadError. Check `netstat -ano | grep :3100` and allow ≥ 300 s. rp-photonics.com 403s to WebFetch.
 - **Sessions 120–125:** registry entries end with a `  },` line. A removed page breaks tsc (TS2307 in `.next/types/validator.ts`)
   until `rm -rf .next/types .next/dev/types`. A merge lowers the page floor. The merge codemod runs after appending to
   `redirects.json`. A user `next dev` on :3000 can garble `.next/dev/types`: delete it again.

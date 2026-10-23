@@ -29,7 +29,10 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 ## Next (Phase 4, in order)
 Open findings, one PR each; each claim goes through an adversarial `physics-reviewer` pass against primary literature first.
 - [x] **Findings 4b, FSO/comms bugs** (session 139, `phase-4/fso-comms-bugs`): log axes; LO-shot-noise P_req; exact diversity outage.
-- [ ] **Findings 4c, polarization, imaging, spectroscopy, detectors leftovers** (polarization-scrambling, streak-camera, …).
+- [x] **Findings 4c-a** (session 140, `phase-4/findings-4c-leftovers`): scrambler locked-stage average with drive phases;
+  wave-optical section beside Wilhelm; vacuum-photodiode measured dark emission + stray C; streak window min(N·p, L)/v.
+- [ ] **Findings 4c-b, detectors/imaging leftovers:** `intensified-ccd` spot spread and SNR label (notes below), then the
+  imaging/spectroscopy items below if they fit.
 - [ ] **Findings 4d, materials unsourced data** (split in 2–3 parts: EO/NLO crystals, glasses, Raman/Brillouin media).
 - [ ] **Findings 4e, wave-optics defaults from memory** (diode/dye laser, injection locking, d_eff).
 - [ ] **Findings 4f, cross-cutting:** URL clamping (codemod), `erf`/`sinc` copies, search relevance floor.
@@ -148,14 +151,16 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - `spectroscopy/conc-mirror` and `jacquinot` (session 104) both show the Jacquinot ratio π f/(h tan θ) from `throughput.ts`;
   conc-mirror adds the mirror cone and slit étendue. Merge into jacquinot only if the user asks.
 - Imaging part 8 (session 86): `photoacoustic` applies only the single-pulse and ≥ 10 s skin limits (`pulse-train.ts` has no skin rules); `sum-frequency-microscopy` withholds the power for L > b (no non-degenerate Boyd–Kleinman); SRS δ is an input (no cross-section model).
-- Detectors part 7b leftovers (session 74 review): `streak-camera` window ignores the usable screen length and reads one pixel (not 2, Nyquist); `intensified-ccd` puts each electron's light in one pixel (no spot spread); `vacuum-photodiode` has one φ for threshold and dark emission and no stray capacitance.
-- `imaging/optical-sectioning-thickness` (session 80): Wilhelm's geometric section √[(0.88 λ/d)² + (√2 n PH/NA)²] is 40 % above the scalar wave-optical plane response at 1 AU and 25 % at 2 AU (`confocal.ts`); show both there too.
+- `intensified-ccd` (session 74; reviewed session 140): each electron's light lands in one pixel, so the peak-pixel full well is
+  ~5× pessimistic (2 px FWHM Gaussian spot: peak share 0.197, Σh² 0.0988); label the SNR "per resolution element"; check F
+  is a variance factor; P43 η 0.15 gives 329.7 photons/e⁻ vs Stanford's ~200. Refs: Rabbani 1987 doi:10.1364/JOSAA.4.000895,
+  Dussault & Hoess 2004 doi:10.1117/12.561839, Frenkel 1997 doi:10.1364/AO.36.005288.
+- `streak-camera` (session 140): tube magnification 1.5 is unsourced and screen blur defaults to 0 (C16910: 35 lp/mm at the cathode).
 - `imaging/fluorophores.ts` (session 84): log-normal bands are exactly 0 past their anti-Stokes cutoff (EGFP emission below 480 nm, mCherry excitation above 622 nm), so tail-only bleed-through reads 0; sampled FPbase spectra would fix it. Disclosed on the pages.
 - `detectors/gain-temperature` PMT branch: the −0.3 %/°C default is an entered value; source a typical dynode-gain coefficient in part 7 (Hamamatsu handbook §13.1.1 gives no number).
 **Polarization**
-- `polarization-scrambling` multiplies the stage means, which holds only for incommensurate frequencies. Near-resonant
-  stages (q·f_i ≈ p·f_j, p, q ≤ 4) only get a warning: locked 1 kHz stages give 0.5118 in the product but 0.8848 averaged
-  in time (`tests/polarization-scrambler.test.ts`). An exact average over the beat period would fix it.
+- `polarization-scrambling` (session 140): near-locked (not exactly locked) stages still use the product of means; only p, q ≤ 4 get a
+  beat-period warning (5:7 detuned 0.1 % gets none), and a 1e-9 lock tolerance makes the DOP jump at exact lock.
 
 **Laser safety** (optional)
 - A scanned-lidar mode on `lidar-safety`.

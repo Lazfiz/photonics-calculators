@@ -367,7 +367,7 @@ export const polarization: CalculatorEntry[] = [
     title: "Polarization Scrambling",
     description: "Simulate polarization scrambling: how randomizing polarization state reduces residual polarization.",
     tier: "exact",
-    modelNote: "Ideal driven retarders; stage means in closed form (sine J₀(Γm), ramp sinc-type), multiplied, so stage frequencies must be incommensurate. Worst case = top singular value of the 3×3 block. No drive nonlinearity or loss.",
+    modelNote: "Ideal driven retarders; stage means in closed form (sine J₀(Γm), ramp sinc-type), multiplied for incommensurate frequencies. Locked stages (whole-number ratios up to 12) are averaged numerically over their common period, with the drive phases. Worst case = top singular value of the 3×3 block. No drive nonlinearity or loss.",
     references: [goldsteinMueller, heismannTokuda1995, dlmfJacobiAnger, abramowitzStegun, smith1961],
   },
   {

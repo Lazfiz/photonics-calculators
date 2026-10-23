@@ -2,9 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { largestSymmetricEigenvalue } from "../src/physics/math";
-import { applyMueller } from "../src/physics/polarization/mueller";
+import { applyMueller, chainMueller, muellerRetarder } from "../src/physics/polarization/mueller";
 import {
-  type ScramblerStage, residualDopVsTime, scramblerMeanMueller, stageMeanCosSin, stageResonance,
+  type ScramblerStage, lockedGroup, residualDopVsTime, scramblerMeanMueller, stageMeanCosSin, stageMeanMueller,
+  stageResonance, stageRetardance,
   worstCaseResidualDop,
 } from "../src/physics/polarization/scrambler";
 import { type Stokes, degreeOfPolarization } from "../src/physics/polarization/stokes";
@@ -71,14 +72,22 @@ test("Scrambler: worst-case residual DOP over all inputs (Smith 1961 eigenvalues
   assert.equal(largestSymmetricEigenvalue([1, 0, 0, 0, 5, 0, 0, 0, 2]), 5);
 });
 
-test("Scrambler: locked stage frequencies break the product of stage means, and stageResonance flags them", () => {
-  // Two stages at 0° and 45°, Γm = 1.5 rad, both at 1 kHz, input linear at 22.5°: the product of stage means gives
-  // DOP 0.5118, but the phases are locked and the true long-time average (whole periods, numerical) is 0.8848.
+test("Scrambler: locked stage frequencies are averaged over their common period, not as a product of means", () => {
+  // Two stages at 0° and 45°, Γm = 1.5 rad, both at 1 kHz in phase, input linear at 22.5°. By hand (mueller.ts
+  // matrices), with c = cos Γ, s = sin Γ, Γ = Γm sin ωt shared: S_out = (1/√2)(c + s², c, s(1 − c)). Over a period
+  // ⟨c⟩ = J₀(Γm), ⟨s²⟩ = (1 − J₀(2Γm))/2 and the odd terms vanish, so
+  //   DOP = (1/√2)√[(J₀(1.5) + (1 − J₀(3))/2)² + J₀(1.5)²] = 0.884815608 (J₀ from A&S Table 9.1),
+  // while the product of the stage means gives J₀(1.5) = 0.5118277.
+  const J0_15 = 0.5118276717, J0_3 = -0.2600519549;
+  const exact = Math.SQRT1_2 * Math.hypot(J0_15 + (1 - J0_3) / 2, J0_15);
   const S: Stokes = [1, Math.cos(45 * deg), Math.sin(45 * deg), 0];
   const locked = [sine(0, 1.5), sine(45 * deg, 1.5)];
-  assert.ok(Math.abs(dopAfter(locked, S) - 0.5118) < 1e-4);
+  assert.ok(Math.abs(dopAfter(locked, S) - exact) < 1e-9, `locked ${dopAfter(locked, S)}`);
+  const product = degreeOfPolarization(applyMueller(chainMueller(locked.map(stageMeanMueller)), S));
+  assert.ok(Math.abs(product - J0_15) < 1e-9);
+  // The numerical time average over whole periods agrees.
   const [actual] = residualDopVsTime(locked, S, [10e-3]);
-  assert.ok(Math.abs(actual - 0.8848) < 1e-4, `locked ${actual}`);
+  assert.ok(Math.abs(actual - exact) < 1e-4, `time average ${actual}`);
   const r = stageResonance([1e3, 1e3]);
   assert.ok(r && r.p === 1 && r.q === 1 && r.beatPeriod === Infinity);
   // 3 f₁ ≈ 2 f₂ within 0.5 %: flagged (q = 3, p = 2), with the beat period 1/|3 f₁ − 2 f₂| = 0.1 s.
@@ -86,4 +95,49 @@ test("Scrambler: locked stage frequencies break the product of stage means, and 
   assert.ok(r23 && r23.p === 2 && r23.q === 3 && Math.abs(r23.beatPeriod - 1 / 10) < 1e-12, JSON.stringify(r23));
   // The page defaults 1, √2, √5 kHz are not within 1 % of any p/q with p, q ≤ 4.
   assert.equal(stageResonance([1e3, Math.SQRT2 * 1e3, Math.sqrt(5) * 1e3]), null);
+});
+
+/** Brute-force long-time Stokes average: midpoint over `periods` of T, free stages averaged over `nPhase` drive phases. */
+function bruteDop(stages: ScramblerStage[], S: Stokes, T: number, nT: number, free: number[] = [], nPhase = 1): number {
+  const acc = [0, 0, 0, 0];
+  for (let p = 0; p < nPhase; p++) {
+    const ph = (2 * Math.PI * (p + 0.5)) / nPhase;
+    for (let i = 0; i < nT; i++) {
+      const t = ((i + 0.5) / nT) * T;
+      const M = chainMueller(stages.map((s, k) =>
+        muellerRetarder(free.includes(k) ? stageRetardance({ ...s, frequency: 0, phase: ph }, 0) : stageRetardance(s, t), s.axis)));
+      applyMueller(M, S).forEach((v, r) => { acc[r] += v / (nT * nPhase); });
+    }
+  }
+  return degreeOfPolarization(acc as Stokes);
+}
+
+test("Scrambler: lockedGroup finds the common period of locked stages", () => {
+  assert.equal(lockedGroup([sine(0, 1, 1e3), sine(1, 1, 1414.2)]), null, "5000:7071 is beyond order 12");
+  assert.deepEqual(lockedGroup([sine(0, 1, 2e3), sine(1, 1, 3e3), sine(2, 1, 5e3)]), { members: [0, 1, 2], harmonics: [2, 3, 5], period: 1e-3 });
+  assert.deepEqual(lockedGroup([sine(0, 1, 1e3), sine(1, 1, Math.SQRT2 * 1e3), sine(2, 1, 2e3)]), { members: [0, 2], harmonics: [1, 2], period: 1e-3 });
+});
+
+test("Scrambler: locked averages match brute-force time averages (sine, ramp, drive phase, a free stage)", () => {
+  const S: Stokes = [1, Math.cos(45 * deg), Math.sin(45 * deg), 0];
+  // 2:3 sine with a drive phase.
+  const a = [sine(0, 2, 2e3), { ...sine(45 * deg, 2.4, 3e3), phase: 1.1 }];
+  const Se: Stokes = [1, 0.6, 0.48, 0.64];
+  assert.ok(Math.abs(dopAfter(a, Se) - bruteDop(a, Se, 1e-3, 20000)) < 1e-10);
+  // The drive phase changes the answer, which a product of means cannot show. The 1:1 pair of the previous test with
+  // stage 2 in antiphase (Γ₂ = −Γ₁): by hand S_out = (1/√2)(c − s², c, −s(1 + c)), so
+  // DOP = (1/√2)√[(J₀(1.5) − (1 − J₀(3))/2)² + J₀(1.5)²] = 0.371442 (A&S Table 9.1), against 0.884816 in phase.
+  const anti = [sine(0, 1.5), { ...sine(45 * deg, 1.5), phase: Math.PI }];
+  const J0_15 = 0.5118276717, J0_3 = -0.2600519549;
+  assert.ok(Math.abs(dopAfter(anti, S) - Math.SQRT1_2 * Math.hypot(J0_15 - (1 - J0_3) / 2, J0_15)) < 1e-9);
+  // Ramp 3:5 with phases: Simpson between flybacks against a 10⁶-point midpoint rule (error ≈ 1e-7 at the flybacks).
+  const ramp = (axis: number, amplitude: number, frequency: number, phase: number): ScramblerStage =>
+    ({ axis, bias: 0, amplitude, frequency, waveform: "ramp", phase });
+  const r = [ramp(0, 6.28, 3e3, 0.3), ramp(45 * deg, 3, 5e3, 1)];
+  const Sr: Stokes = [1, 0.6, 0.48, 0.64];
+  assert.ok(Math.abs(dopAfter(r, Sr) - bruteDop(r, Sr, 1e-3, 1_000_000)) < 1e-6);
+  // Stages 1 and 3 locked at 1:2, stage 2 free at √2 kHz: the module's E_T[M₃ E[M₂] M₁] against a grid over t and
+  // over stage 2's phase.
+  const three = [sine(0, 2, 1e3), sine(45 * deg, 1.7, Math.SQRT2 * 1e3), { ...sine(10 * deg, 2.2, 2e3), phase: 0.5 }];
+  assert.ok(Math.abs(dopAfter(three, S) - bruteDop(three, S, 1e-3, 400, [1], 64)) < 1e-10);
 });

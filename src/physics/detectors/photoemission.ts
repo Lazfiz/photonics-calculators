@@ -10,7 +10,9 @@
  *   i(t) = 2q·t/τ², whose spectrum is H(x) = 2[(1 + ix)·e^(−ix) − 1]/x² with x = 2πfτ; |H| = 1/√2 at x = 3.4767, so
  *   f_tr = 0.5533/τ (derived here). Space charge caps the current at Child's law J = (4ε₀/9)·√(2q/m_e)·V^(3/2)/d²
  *   (C. D. Child, Phys. Rev. (Series I) 32, 492 (1911), doi:10.1103/PhysRevSeriesI.32.492). Thermionic emission at
- *   the photoemission threshold fits metals; semiconductor photocathodes have a lower effective φ for dark emission.
+ *   the photoemission threshold fits metals; semiconductor photocathodes emit over a lower barrier, so their dark
+ *   emission comes from measured values (PHOTOCATHODE_DARK_EMISSION). The RC limit uses the gap capacitance ε₀A/d plus
+ *   the stray (anode-to-electrodes and wiring) capacitance C_s: f_c = 1/(2π C_s R_L) (Hamamatsu PMT handbook, Eq. 5-7).
  * - Image intensifier: a phosphor of energy efficiency η hit by electrons of energy qV emits η·qV/E_ph photons per
  *   electron (E_ph = hc/λ_peak); the aluminium film's dead voltage, ignored here, lowers it. Each further stage adds
  *   to the noise factor (F_k − 1)/(G₁…G_(k−1)) (cascade formula); a Poisson phosphor (F = 1 + 1/g) and a binomial
@@ -37,6 +39,31 @@ export const VACUUM_TRANSIT_FACTOR = 0.55332713;
 export function thermionicCurrentDensity(temperature: number, workFunction_eV: number): number {
   if (!(temperature > 0) || !(workFunction_eV > 0)) return NaN;
   return RICHARDSON_A0 * temperature ** 2 * Math.exp(-(workFunction_eV * q) / (k_B * temperature));
+}
+
+/**
+ * Dark (thermionic) emission of photocathodes at 25 °C, A/m², from Burle Photomultiplier Handbook (Burle Industries,
+ * 1980), Table I, "Dark Emission at 25 °C (fA/cm²)" (1 fA/cm² = 1e-11 A/m²). A semiconductor photocathode emits over
+ * a barrier below its photoemission threshold E_G + E_A (Burle p. 20; Hamamatsu, Photomultiplier Tubes: Basics and
+ * Applications, 4th ed., §4.3.6, Eq. 4-19), so the threshold cannot predict it.
+ */
+export const PHOTOCATHODE_DARK_EMISSION: readonly { name: string; jDark25: number }[] = [
+  { name: "Na₂KSb (bialkali, high temperature)", jDark25: 0.0003e-11 },
+  { name: "K₂CsSb (bialkali)", jDark25: 0.02e-11 },
+  { name: "Cs₃Sb (S-11)", jDark25: 3e-11 },
+  { name: "Na₂KSb:Cs (S-20)", jDark25: 0.4e-11 },
+  { name: "GaAs:Cs-O", jDark25: 92e-11 },
+];
+
+/**
+ * Effective barrier ψ (eV) for which Richardson–Dushman gives the dark emission jRef (A/m²) at tRef (K):
+ * ψ = k_B·T·ln(A₀T²/j). It carries a measured 25 °C value to other temperatures; the impurity-semiconductor law has
+ * T^(5/4) in place of T² and real cathodes curve away on an Arrhenius plot (Burle Fig. 16), so away from 25 °C the
+ * scaling is an order-of-magnitude estimate.
+ */
+export function effectiveThermionicBarrier(jRef: number, tRef: number): number {
+  if (!(jRef > 0) || !(tRef > 0)) return NaN;
+  return ((k_B * tRef) / q) * Math.log((RICHARDSON_A0 * tRef ** 2) / jRef);
 }
 
 /** Longest wavelength hc/φ that can free an electron over a threshold φ (eV), m. */
@@ -87,6 +114,15 @@ export function intensifiedSnr(signal: number, background: number, electronsPerP
 /** Time a length L (m) on the screen spans at sweep speed v (m/s), s. */
 export function streakTime(length: number, sweepSpeed: number): number {
   return length >= 0 && sweepSpeed > 0 ? length / sweepSpeed : NaN;
+}
+
+/**
+ * Time window of a streak camera, s: the part of the sweep that is both on the phosphor screen and in the readout,
+ * min(readout length, screen length)/v, all lengths on the screen (m) and v in m/s. Hamamatsu quotes sweep times per
+ * "full screen" with a given camera (C16910 data sheet: Ø18 mm P-43 screen, read by an ORCA-Flash4.0 V3).
+ */
+export function streakWindow(readoutLength: number, screenLength: number, sweepSpeed: number): number {
+  return screenLength > 0 ? streakTime(Math.min(readoutLength, screenLength), sweepSpeed) : NaN;
 }
 
 /** Quadrature sum √(Σ t_i²) of FWHM contributions (s); NaN if any is negative or NaN. Exact for Gaussians. */

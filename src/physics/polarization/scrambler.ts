@@ -10,9 +10,13 @@
  *   - ramp (sawtooth), w = frac(ft) sweeping Γ over [Γ0, Γ0 + Γm]: ⟨cos Γ⟩ = (sin(Γ0 + Γm) − sin Γ0)/Γm,
  *     ⟨sin Γ⟩ = (cos Γ0 − cos(Γ0 + Γm))/Γm; zero when Γm is a whole number of waves.
  * A stage keeps the Stokes component along its eigen-axis on the Poincaré sphere, so one stage cannot scramble an
- * input on that axis; two stages with axes 45° apart (orthogonal on the sphere) can scramble any input. For the long-
- * time limit of a cascade the stage phases must be independent (incommensurate frequencies); the average of the
- * product is then the product of the averages. A finite averaging window is integrated numerically.
+ * input on that axis; two stages with axes 45° apart (orthogonal on the sphere) can scramble any input. When the stage
+ * frequencies are incommensurate the stage phases are independent over a long time, and the average of the product is
+ * the product of the averages. When two or three frequencies are locked (q·f_i = p·f_j exactly, p, q ≤ LOCK_MAX_ORDER)
+ * their phases are not independent: the joint drive repeats with the common period T (f_k T a whole number for each
+ * locked stage), and the long-time average is the average over one T, which depends on the drive phases. That average
+ * is integrated numerically; unlocked stages enter it through their closed-form means (the stages are independent, so
+ * E[M₃M₂M₁] = E_T[M₃ E[M₂] M₁] when stage 2 is free). A finite averaging window is integrated numerically.
  */
 import { besselJ, largestSymmetricEigenvalue } from "../math";
 import { type MuellerMatrix, applyMueller, chainMueller, muellerRetarder, retarderFromCosSin } from "./mueller";
@@ -30,14 +34,16 @@ export interface ScramblerStage {
   /** Drive frequency, Hz. */
   frequency: number;
   waveform: DriveWaveform;
+  /** Drive phase φ, rad (sine: Γm sin(2πft + φ); ramp: w = frac(ft + φ/2π)); 0 when absent. */
+  phase?: number;
 }
 
 /** Retardance of a stage at time t. */
 export function stageRetardance(s: ScramblerStage, t: number): number {
-  const phase = s.frequency * t;
+  const cycles = s.frequency * t + (s.phase ?? 0) / (2 * Math.PI);
   return s.waveform === "sine"
-    ? s.bias + s.amplitude * Math.sin(2 * Math.PI * phase)
-    : s.bias + s.amplitude * (phase - Math.floor(phase));
+    ? s.bias + s.amplitude * Math.sin(2 * Math.PI * cycles)
+    : s.bias + s.amplitude * (cycles - Math.floor(cycles));
 }
 
 /** ⟨cos Γ⟩ and ⟨sin Γ⟩ of a stage over whole drive periods (closed forms above). */
@@ -57,9 +63,115 @@ export function stageMeanMueller(s: ScramblerStage): MuellerMatrix {
   return retarderFromCosSin(meanCos, meanSin, s.axis);
 }
 
-/** Long-time-averaged Mueller matrix of the cascade (independent stage phases), element 1 first. */
+/** Highest harmonic order p, q at which lockedGroup treats two frequencies as locked, q·f_i = p·f_j. */
+export const LOCK_MAX_ORDER = 12;
+
+const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
+
+/** Coprime [p, q], p, q ≤ LOCK_MAX_ORDER, with q·fi = p·fj to 1e-9 relative, or null. */
+function lockRatio(fi: number, fj: number): [number, number] | null {
+  if (!(fi > 0 && fj > 0)) return null;
+  for (let q = 1; q <= LOCK_MAX_ORDER; q++) {
+    for (let p = 1; p <= LOCK_MAX_ORDER; p++) {
+      if (gcd(p, q) === 1 && Math.abs(q * fi - p * fj) <= 1e-9 * q * fi) return [p, q];
+    }
+  }
+  return null;
+}
+
+export interface LockedGroup {
+  /** Indices of the locked stages, ascending. */
+  members: number[];
+  /** Whole number of drive periods of each member in one common period (same order as members). */
+  harmonics: number[];
+  /** Common period T, s: harmonics[k] / f of member k. */
+  period: number;
+}
+
+/**
+ * The stages whose frequencies are locked to each other (connected through ratios with p, q ≤ LOCK_MAX_ORDER), with
+ * their common period; null when no two stages are locked. With at most three stages there is at most one such set.
+ */
+export function lockedGroup(stages: readonly ScramblerStage[]): LockedGroup | null {
+  for (let ref = 0; ref < stages.length; ref++) {
+    // ratio[k] = f_k / f_ref as [numerator, denominator], filled by a breadth-first search from ref.
+    const ratio: ([number, number] | null)[] = stages.map(() => null);
+    ratio[ref] = [1, 1];
+    const queue = [ref];
+    while (queue.length) {
+      const i = queue.shift()!;
+      for (let j = 0; j < stages.length; j++) {
+        const r = ratio[j] ? null : lockRatio(stages[i].frequency, stages[j].frequency);
+        if (!r) continue;
+        const a = ratio[i]![0] * r[1], b = ratio[i]![1] * r[0], g = gcd(a, b); // q f_i = p f_j, so f_j = (q/p) f_i
+        ratio[j] = [a / g, b / g];
+        queue.push(j);
+      }
+    }
+    const members = ratio.flatMap((r, k) => (r ? [k] : []));
+    if (members.length < 2) continue;
+    // With L = lcm(b_k), f_k = (a_k/b_k) f_ref is the harmonic a_k L/b_k of f_ref/L.
+    const L = members.reduce((l, k) => (l * ratio[k]![1]) / gcd(l, ratio[k]![1]), 1);
+    const raw = members.map((k) => (ratio[k]![0] * L) / ratio[k]![1]);
+    const g = raw.reduce(gcd);
+    const harmonics = raw.map((h) => h / g);
+    return { members, harmonics, period: harmonics[0] / stages[members[0]].frequency };
+  }
+  return null;
+}
+
+/**
+ * Long-time-averaged Mueller matrix of the cascade, element 1 first: the product of stage means when no frequencies
+ * are locked, else the average over the common period of the locked stages (header). Sine drives: the integrand is
+ * periodic and analytic, so the trapezoid rule converges geometrically once its N points exceed the harmonic content;
+ * stage k spans harmonics up to ≈ n_k(Γm + 3Γm^⅓) of 1/T (J_m(Γm) is negligible beyond), and N = 2Σ n_k(Γm + 3Γm^⅓ + 10)
+ * + 32 agrees with brute force to 1e-12. Ramp drives: composite Simpson on the pieces between flybacks, 8 panels per
+ * radian swept by the locked stages together (≥ 16 per piece); within 1e-7 of brute force.
+ */
 export function scramblerMeanMueller(stages: readonly ScramblerStage[]): MuellerMatrix {
-  return chainMueller(stages.map(stageMeanMueller));
+  const means = stages.map(stageMeanMueller);
+  const group = lockedGroup(stages);
+  if (!group) return chainMueller(means);
+  const T = group.period;
+  const locked = stages.map((_, k) => group.members.includes(k));
+  const at = (t: number) =>
+    chainMueller(stages.map((s, k) => (locked[k] ? muellerRetarder(stageRetardance(s, t), s.axis) : means[k])));
+  const acc = [0, 1, 2, 3].map(() => [0, 0, 0, 0]);
+  const add = (M: MuellerMatrix, w: number) => {
+    for (let r = 0; r < 4; r++) for (let q = 0; q < 4; q++) acc[r][q] += w * M[r][q];
+  };
+  if (group.members.every((k) => stages[k].waveform === "sine")) {
+    const N = 32 + 2 * Math.ceil(group.members.reduce((sum, k, i) => {
+      const a = Math.abs(stages[k].amplitude);
+      return sum + group.harmonics[i] * (a + 3 * Math.cbrt(a) + 10);
+    }, 0));
+    for (let i = 0; i < N; i++) add(at((i * T) / N), 1 / N);
+    return acc;
+  }
+  const cuts = [0, T];
+  for (const k of group.members) {
+    // Flybacks where f t + φ/2π is a whole number.
+    const s = stages[k], offset = (s.phase ?? 0) / (2 * Math.PI);
+    for (let m = Math.ceil(offset); (m - offset) / s.frequency < T; m++) {
+      const t = (m - offset) / s.frequency;
+      if (t > 0) cuts.push(t);
+    }
+  }
+  cuts.sort((a, b) => a - b);
+  // Retardance sweep rate bound, rad per unit f·t: Γm for a ramp, 2π·Γm for a sine.
+  const rate = group.members.reduce((r, k) => r + Math.abs(stages[k].amplitude * stages[k].frequency) * (stages[k].waveform === "sine" ? 2 * Math.PI : 1), 0);
+  for (let c = 0; c + 1 < cuts.length; c++) {
+    const a = cuts[c], b = cuts[c + 1];
+    if (!(b - a > 1e-12 * T)) continue;
+    const panels = 2 * Math.ceil(Math.max(8, 4 * rate * (b - a)));
+    const h = (b - a) / panels;
+    for (let i = 0; i <= panels; i++) {
+      // The end samples sit just inside the piece, on the side of a ramp flyback that the piece covers.
+      const t = i === 0 ? a + 1e-9 * h : i === panels ? b - 1e-9 * h : a + i * h;
+      add(at(t), ((i === 0 || i === panels ? 1 : i % 2 ? 4 : 2) * h) / (3 * T));
+    }
+  }
+  return acc;
 }
 
 /** Instantaneous output Stokes vector at time t. */
@@ -73,8 +185,8 @@ export function scramblerOutput(stages: readonly ScramblerStage[], input: Stokes
 export const MAX_SAMPLES = 400_000;
 
 /**
- * Residual DOP of the output averaged over [0, T] for each T in `windows` (ascending, > 0), all stages starting at
- * phase 0. One midpoint-rule pass of N = min(MAX_SAMPLES, max(4000, 64 f_max T_max)) steps; a window ends at the
+ * Residual DOP of the output averaged over [0, T] for each T in `windows` (ascending, > 0), each stage starting at
+ * its drive phase φ. One midpoint-rule pass of N = min(MAX_SAMPLES, max(4000, 64 f_max T_max)) steps; a window ends at the
  * nearest step, so windows shorter than 4 steps return NaN. Error ≲ 1/(samples per fastest period)².
  */
 export function residualDopVsTime(
@@ -138,8 +250,6 @@ export interface StageResonance {
   /** 1/|q f_i − p f_j|, s; Infinity for an exact ratio. */
   beatPeriod: number;
 }
-
-const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
 
 /**
  * Lowest-order near-resonance between two stage frequencies: coprime p, q ≤ maxOrder with |q f_i − p f_j| ≤ tol·q f_i.
