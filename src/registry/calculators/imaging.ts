@@ -629,8 +629,12 @@ export const imaging: CalculatorEntry[] = [
     title: "Optical Sectioning Thickness Calculator",
     description: "Compare optical sectioning capability across widefield, confocal, and multiphoton microscopy techniques.",
     tier: "textbook",
-    modelNote: "Paraxial and fitted formulas: confocal sections for a finite (≥ 1 AU) and a point-like pinhole, two-photon from Zipfel's fit. Widefield has no optical sectioning; its depth of field is the first axial zero.",
+    modelNote: "Paraxial and fitted formulas: confocal sections for a finite (≥ 1 AU) and a point-like pinhole, two-photon from Zipfel's fit. Widefield has no optical sectioning; its depth of field is the first axial zero. The scalar wave-optical plane response (0.1–5 AU, no Stokes shift) is shown next to Wilhelm's geometric sum, which lies 23 % (low NA) to about 140 % (NA near n) above it.",
     references: [
+      {
+        citation: "Wilson T. (2011). Resolution and optical sectioning in the confocal microscope. J. Microsc. 244, 113–121. Lateral, axial and plane responses against pinhole size.",
+        url: "https://doi.org/10.1111/j.1365-2818.2011.03549.x",
+      },
       {
         citation: "Wilhelm R., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Optical-section FWHM for a finite and a point-like pinhole.",
       },
