@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 147, 2026-10-24)
+## Status (session 149, 2026-10-24)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4: every page is tiered; open findings and the top-50 tests remain.
@@ -47,7 +47,9 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   edge min(E_g, E′_g)); Si Bristow 2007 (n₂ 1.2e-17 at 1800 nm; indirect 2PA fit 1.839 cm/GW at 1220 nm vs 2.1 ± 0.4).
 - [x] **Findings 4d-c-b** (session 148, `phase-4/findings-4d-c-b`, PR #179): Er Barnes 1991 / Yb Melkumov 2004 σ; Brillouin As₂Se₃, As₂S₃, diamond
   (measured g beside the formula); KGW/Ba(NO₃)₂ 532 nm Markevich, As₂S₃ Raman; TeO₂/LiNbO₃ M₂ from US 3,661,441.
-- [ ] **Findings 4e, wave-optics defaults from memory** (diode/dye laser, injection locking, d_eff).
+- [x] **Findings 4e-a** (session 149, `phase-4/findings-4e`, PR #180): PPLN d_eff 12.4 pm/V (Shoji d₃₃ 19.5 at 1.313 µm); diode g₀ 1200,
+  A 4e8, n_g 3.9 (De Koninck 2025, Wenzel 2021; I_th 12.03 mA, radiative share 44 %); injection k_c (1 − R)/(τ_rt√R) 24.51 GHz, α 1.
+- [ ] **Findings 4e-b, laser defaults from memory:** thin-disk Yb:YAG σ/τ/heat fraction/κ, dye-laser Rh6G set, OPO BBO-like defaults.
 - [ ] **Findings 4f, cross-cutting:** URL clamping (codemod), `erf`/`sinc` copies, search relevance floor.
 - [x] Detectors part 9b (session 77, `phase-4/detectors-mtf-cosmic`): `sensor-mtf.ts` (Seib diffusion, column shares),
   `cosmic-rays.ts` (MPV 23 075 e⁻ in 300 µm vs PDG 23 000), `poissonQuantile`; detectors 54/54, 0 `knownIssue`s.
@@ -119,17 +121,19 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   Ce:TAG, TSLAG, Ho₂O₃ and Pr/Ho:TGG fits don’t reproduce their own tabulated values, so they are left out.
 - `photoelastic`: the Schott sheet doesn’t state the wavelength of K, so the page claims none.
 **Wave optics**
-- `injection-locking`: default k_c/2π 10 GHz is an order-of-magnitude diode value, not sourced; k_c(R, τ_in) conventions differ
-  by O(1) factors between Lang, Mogensen and Schunk, so it stays an input. `four-wave-mixing`: no fiber loss in the gain (lossless OPA).
+- `injection-locking` (session 149): k_c is estimated as (1 − R)/(τ_rt√R) (Kondratiev 2023 Eq. 4; Kondratiev's B/A normalisation unread);
+  α 1 is Berger et al. CLEO 1991 (conference abstract, below-threshold?); a journal α (Banerjee et al. APL 58, 2198 (1991)) unchecked. `four-wave-mixing`: no fiber loss in the gain (lossless OPA).
 - `slow-light`: one isolated Lorentzian, no pulse distortion or saturation (a warning shows when the signal is wider than the line).
   Old `/wave-optics/interferometer?wavelength=633` links land on michelson-interferometer's µm input (clamped to 50 µm).
-- χ⁽²⁾ pages (`sum-frequency`, `difference-frequency`, `optical-parametric-amplifier`): default d_eff 14 pm/V is a typical PPLN value, not
-  sourced; Shoji et al. 1997 (doi 10.1364/josab.14.002268) d₃₃ table is paywalled. Source it or keep it labelled as an input.
+- χ⁽²⁾ pages (session 149): d_eff 12.4 pm/V from Shoji Table 10 (read on the Optica abstract page); Miller's rule gives ×0.87 for the
+  3.39 µm idler (Shoji: Miller Δ not constant, so not applied). `optical-parametric-oscillator`: n 1.65/1.53/1.53, d_eff 2.0 pm/V and
+  walk-off 0.5° are unsourced BBO-like values (4e-b).
 - `dye-laser-resonator`: default σₑ 2e-16 cm², τ 4 ns, σ_T 1e-17 cm², k_ST 5e6 s⁻¹, τ_T 1 µs are Rh6G-order examples (page says so);
   source them from Webb et al. 1970 (doi 10.1063/1.1673926, paywalled). `gas-laser-resonator`: g₀ 0.15 /m and I_sat 25 W/cm² come from one
   HeNe course report (Ng et al. 2015); no sourced g₀/I_sat for Ar⁺ or CO₂, so the line buttons set λ only.
-- Defaults from memory, not yet sourced (session 116): `diode-laser-resonator` g₀ 1800/cm, N_tr 1.8e18 cm⁻³, A 1e8/s, B 1e-10 cm³/s,
-  C 3.5e-30 cm⁶/s, n_g 3.7 (Coldren's gain tables are in the book only); `thin-disk-laser` Yb:YAG σ_e(1030) 2.0, σ_a(1030) 0.11,
+- `diode-laser-resonator` (session 149): hybrid set (De Koninck g₀/N_tr/B/C, Wenzel A/n_g); De Koninck's g₀ is Tsvid's dg/d ln J used as
+  is (≈ 1750/cm in the N law); η_i·share 35 % vs Tsvid's 40–54 %. Coldren's gain tables have no open copy.
+- Defaults from memory, not yet sourced (session 116): `thin-disk-laser` Yb:YAG σ_e(1030) 2.0, σ_a(1030) 0.11,
   σ_ap(940) 0.75, σ_ep(940) 0.16 × 10⁻²⁰ cm² (check Koerner 2012, doi 10.1364/JOSAB.29.002493); heat fractions 0.32 (Nd) and 0.11 (Yb)
   attributed to Fan 1993 (doi 10.1109/3.234394, paywalled); κ 14 W/(m K) for YAG (Koechner), lower when heavily Yb-doped.
 **Free-space comms**
