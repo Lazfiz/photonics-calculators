@@ -6,7 +6,7 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { c } from "../../../physics/constants";
 import {
-  differentialEfficiency, facetShare, gaussianFarField, logGainCarrierDensity, mirrorLoss, modeSpacing, recombinationRate,
+  differentialEfficiency, facetShare, gaussianFarField, logGainCarrierDensity, mirrorLoss, modeSpacing, radiativeShare, recombinationRate,
   slopeEfficiency, thresholdCurrent, thresholdModalGain,
 } from "../../../physics/wave-optics/diode-laser";
 
@@ -25,14 +25,14 @@ export default function DiodeLaserResonatorPage() {
   const [r2Raw, setR2] = useURLState("mirrorR2", 0.32); // front facet
   const [gammaRaw, setGamma] = useURLState("gamma", 0.06);
   const [etaIRaw, setEtaI] = useURLState("etaI", 0.8);
-  const [g0Raw, setG0] = useURLState("g0", 1800); // 1/cm
+  const [g0Raw, setG0] = useURLState("g0", 1200); // 1/cm
   const [nTrRaw, setNTr] = useURLState("Ntr", 1.8); // 1e18 cm⁻³
-  const [aRaw, setA] = useURLState("A", 1e8); // 1/s
+  const [aRaw, setA] = useURLState("A", 4e8); // 1/s
   const [bRaw, setB] = useURLState("B", 1e-10); // cm³/s
   const [cRaw, setC] = useURLState("C", 3.5e-30); // cm⁶/s
   const [wPerpRaw, setWPerp] = useURLState("wPerp", 0.5); // µm
   const [wParRaw, setWPar] = useURLState("wPar", 2); // µm
-  const [ngRaw, setNg] = useURLState("ng", 3.7);
+  const [ngRaw, setNg] = useURLState("ng", 3.9);
 
   const L = clamp(lengthRaw, 20, 1e4, 300) * 1e-6;
   const w = clamp(stripeRaw, 0.5, 500, 3) * 1e-6;
@@ -43,14 +43,14 @@ export default function DiodeLaserResonatorPage() {
   const R2 = clamp(r2Raw, 0.001, 1, 0.32);
   const gamma = clamp(gammaRaw, 0.001, 1, 0.06);
   const etaI = clamp(etaIRaw, 0.01, 1, 0.8);
-  const g0 = clamp(g0Raw, 1, 1e5, 1800) * 100; // 1/m
+  const g0 = clamp(g0Raw, 1, 1e5, 1200) * 100; // 1/m
   const nTr = clamp(nTrRaw, 0.01, 100, 1.8) * 1e24; // 1/m³
-  const A = clamp(aRaw, 0, 1e10, 1e8);
+  const A = clamp(aRaw, 0, 1e10, 4e8);
   const B = clamp(bRaw, 0, 1e-8, 1e-10) * 1e-6; // m³/s
   const C = clamp(cRaw, 0, 1e-27, 3.5e-30) * 1e-12; // m⁶/s
   const wPerp = clamp(wPerpRaw, 0.05, 100, 0.5) * 1e-6;
   const wPar = clamp(wParRaw, 0.05, 500, 2) * 1e-6;
-  const ng = clamp(ngRaw, 1, 6, 3.7);
+  const ng = clamp(ngRaw, 1, 6, 3.9);
 
   const alphaM = mirrorLoss(L, R1, R2);
   const gTh = thresholdModalGain(alphaI, L, R1, R2);
@@ -58,6 +58,7 @@ export default function DiodeLaserResonatorPage() {
   const iTh = thresholdCurrent(w * d * L, nTh, A, B, C, etaI);
   const jTh = iTh / (w * L); // A/m²
   const tauN = nTh / recombinationRate(nTh, A, B, C);
+  const radShare = radiativeShare(nTh, A, B, C);
   const etaD = differentialEfficiency(etaI, alphaI, alphaM);
   const slope = slopeEfficiency(etaD, lambda);
   const front = facetShare(R1, R2);
@@ -132,7 +133,7 @@ export default function DiodeLaserResonatorPage() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-4">
         <ResultCard label="Threshold modal gain Γg_th" value={`${fmt(gTh / 100)} 1/cm`} subtext={`α_i + α_m, mirror loss α_m = ${fmt(alphaM / 100)} 1/cm`} tone="blue" />
         <ResultCard label="Threshold carrier density" value={`${fmt(nTh / 1e24)} × 10¹⁸ cm⁻³`} subtext={`material gain g_th = ${fmt(gTh / gamma / 100)} 1/cm; lifetime ${fmt(tauN * 1e9)} ns`} tone="cyan" />
-        <ResultCard label="Threshold current I_th" value={`${fmt(iTh * 1e3)} mA`} subtext={`J_th = ${fmt(jTh / 1e4)} A/cm²`} tone="green" />
+        <ResultCard label="Threshold current I_th" value={`${fmt(iTh * 1e3)} mA`} subtext={`J_th = ${fmt(jTh / 1e4)} A/cm²; radiative share ${fmt(radShare * 100)} %`} tone="green" />
         <ResultCard label="Differential efficiency η_d" value={`${fmt(etaD * 100)} %`} subtext={`η_i α_m/(α_i + α_m), both facets`} tone="yellow" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
@@ -154,6 +155,13 @@ export default function DiodeLaserResonatorPage() {
         <p>I_th = qwdL(AN_th + BN_th² + CN_th³)/η_i; above threshold P = η_d(hc/qλ)(I − I_th), η_d = η_i α_m/(α_i + α_m).</p>
         <p>Front share (1 − R₂)√R₁/((1 − R₂)√R₁ + (1 − R₁)√R₂). Far field of a Gaussian near field: θ₀ = atan(λ/πw), FWHM = √(2 ln 2) θ₀;
           for w⊥ below λ it underestimates the true fast-axis divergence.</p>
+        <p>Default material: g₀ = 1200/cm, N_tr = 1.8 × 10¹⁸ cm⁻³, B = 10⁻¹⁰ cm³/s and C = 3.5 × 10⁻³⁰ cm⁶/s from the InGaAs/GaAs
+          quantum-well laser model of De Koninck et al. (2025, Suppl. Table 1; g₀ after Tsvid et al. 2008, who measured
+          dg/d ln J = 1130/cm at 0.98 µm, a current-density form; B and C after Strand et al. 1995); A = 4 × 10⁸/s and
+          n_g = 3.9 from Wenzel et al. (2021, Table I). At threshold the radiative share BN²/(AN + BN² + CN³) is then 44 %, or
+          35 % of the injected current with η_i = 0.8. Tsvid et al. measured 40–54 % of the current as spontaneous emission at
+          0.98 µm, so this A is on the high side. Their g₀ is per ln J: with J ∝ N^1.55 at this threshold it would be ≈ 1750/cm
+          in the carrier-density law.</p>
       </div>
 
       <div className="space-y-6">

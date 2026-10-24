@@ -20,7 +20,7 @@ test("SFG 1064 + 1550 nm: P₃ = 9.064 µW at n 1.8, d 2 pm/V, L 10 mm, w 30 µm
   assertRel(gaussianMixingPower(eta, 0.1, 0.05, 30e-6, 30e-6), 9.0637e-6, 1e-4, "P₃");
 });
 
-test("SFG page default (PPLN, Zelmon indices, d 14 pm/V, w 50 µm): η = 1.4431e-10 m²/W, P₃ = 91.87 µW", () => {
+test("SFG case (PPLN, Zelmon indices, d 14 pm/V, w 50 µm): η = 1.4431e-10 m²/W, P₃ = 91.87 µW", () => {
   // Hand calculation: 8π²(14e-12)²(0.01)² = 1.5476e-24; ε₀c·2.1555·2.1376·2.2027·(630.91e-9)² = 1.0724e-14.
   const eta = mixingEfficiency({ lambdaOut: 630.9105e-9, length: 0.01, deff: 14e-12, n1: 2.1555, n2: 2.1376, nOut: 2.2027, deltaK: 0 });
   assertRel(eta, 1.4431e-10, 1e-4, "η");
@@ -79,7 +79,7 @@ test("OPA idler when the signal is the longer wave (Manley–Rowe): 1064 → 300
   assert.ok(Number.isNaN(idlerPower(1047.15, 1, 3000e-9, 0)));
 });
 
-test("OPA page default (PPLN, 50 kW, w 300 µm, 20 mm): Γ = 202.18 /m, G = 813.7 (29.10 dB)", () => {
+test("OPA case (PPLN, d 14 pm/V, 50 kW, w 300 µm, 20 mm): Γ = 202.18 /m, G = 813.7 (29.10 dB)", () => {
   // Hand calculation: I₀ = 2P/(πw²) = 3.5368e11 W/m²; Γ² = 2ω_sω_i d²I₀/(n_pn_sn_i ε₀c³) = 4.0878e4 m⁻²;
   // G = cosh²(4.0436) = 813.7.
   const p = { lambdaPump: 1064e-9, lambdaSignal: 1550e-9, dEff: 14e-12, nPump: 2.1555, nSignal: 2.1376, nIdler: 2.0814 };

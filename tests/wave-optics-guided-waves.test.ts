@@ -5,7 +5,7 @@ import { nonlinearCoefficient } from "../src/physics/fiber-optics/fiber-nonlinea
 import {
   fwmDetuning, fwmGainCoefficient, fwmIdlerPower, fwmIdlerWavelength, fwmLinearMismatch, fwmPhaseMatchedDetuning, fwmSignalGain,
 } from "../src/physics/wave-optics/four-wave-mixing";
-import { lockingRange } from "../src/physics/wave-optics/injection-locking";
+import { facetCouplingRate, lockingRange } from "../src/physics/wave-optics/injection-locking";
 import { slabEffectiveIndex, slabModeB, slabModeCount, slabTEConfinement, slabTEField, slabV } from "../src/physics/wave-optics/slab-waveguide";
 
 function assertRel(actual: number, expected: number, tol: number, label: string) {
@@ -154,4 +154,14 @@ test("injection locking range (Lang 1982, Mogensen 1985; Adler 1946 for α = 0)"
   // Edge: no injection, no range; invalid inputs give NaN.
   assert.equal(lockingRange(10, 0, 3).upper, 0);
   assert.ok(Number.isNaN(lockingRange(-1, 0.01, 3).upper));
+});
+
+test("facet coupling rate k_c = (1 − R)/(τ_rt√R) (Kondratiev et al. 2023, Eq. 4)", () => {
+  // L 300 µm, n_g 3.9: τ_rt = 2·3.9·300e-6/c = 7.80540 ps; (1 − 0.32)/√0.32 = 1.202082; k_c = 1.540064e11 rad/s = 2π·24.5109 GHz.
+  const k = facetCouplingRate(0.32, 300e-6, 3.9);
+  assertRel(k, 1.540064e11, 1e-6, "k_c (rad/s)");
+  assertRel(k / (2 * Math.PI), 24.5109e9, 1e-5, "k_c/2π (Hz)");
+  // Edge: a perfect mirror (R = 1) lets nothing in; R = 0 has no cavity.
+  assert.ok(Number.isNaN(facetCouplingRate(1, 300e-6, 3.9)));
+  assert.ok(Number.isNaN(facetCouplingRate(0, 300e-6, 3.9)));
 });

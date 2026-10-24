@@ -92,7 +92,7 @@ export const waveOptics: CalculatorEntry[] = [
     title: "Difference Frequency Generation (DFG)",
     description: "Idler power, wavelength and quasi-phase-matching period of χ⁽²⁾ difference-frequency generation (ωp − ωs → ωi) from pump and signal powers, beam radius, d_eff, indices and phase mismatch.",
     tier: "textbook",
-    modelNote: "Plane waves over two Gaussian beams of equal radius, both inputs undepleted, low parametric gain (ΓL ≪ 1), no focusing, walk-off or absorption. d_eff is an input: the default 12.4 pm/V is 2d₃₃/π of periodically poled congruent LiNbO₃ with d₃₃ measured for SHG of 1.313 µm (Shoji et al. 1997); d₃₃ falls with wavelength, so a mid-infrared idler sees somewhat less.",
+    modelNote: "Plane waves over two Gaussian beams of equal radius, both inputs undepleted, low parametric gain (ΓL ≪ 1), no focusing, walk-off or absorption. d_eff is an input: 12.4 pm/V is 2d₃₃/π of congruent PPLN, d₃₃ for SHG of 1.313 µm (Shoji et al. 1997); Miller's rule scales it by 0.87 (≈ 10.8 pm/V) for a 3.39 µm idler.",
     references: [
       {
         citation: "Boyd R. W. (2008). Nonlinear Optics, 3rd ed., §2.2 and §2.8. Academic Press. Coupled-amplitude equations for sum- and difference-frequency generation and parametric amplification.",
@@ -132,9 +132,21 @@ export const waveOptics: CalculatorEntry[] = [
     description: "Fabry–Pérot diode laser: threshold modal gain, carrier density and current, differential and slope efficiency, front-facet share, far-field divergence and mode spacing.",
     keywords: ["laser diode threshold current", "semiconductor laser", "differential quantum efficiency", "confinement factor", "fast-axis divergence", "quantum well laser"],
     tier: "textbook",
-    modelNote: "Γg_th = α_i + α_m with logarithmic gain g = g₀ ln(N/N_tr) and ABC recombination, uniform carriers in the active volume (no current spreading or leakage). Gain parameters and A, B, C are your epitaxy's; the defaults are typical InGaAs/GaAs values, not a datasheet. Far field from a Gaussian near field, paraxial.",
+    modelNote: "Γg_th = α_i + α_m with logarithmic gain g = g₀ ln(N/N_tr) and ABC recombination, uniform carriers in the active volume (no current spreading or leakage). Gain parameters and A, B, C are your epitaxy's; the defaults are a published InGaAs/GaAs quantum-well model set (g₀, N_tr, B, C: De Koninck et al. 2025; A, n_g: Wenzel et al. 2021), not a datasheet. De Koninck's g₀ is Tsvid et al.'s dg/d ln J = 1130/cm used as is; converted with J ∝ N^1.55 it would be ≈ 1750/cm. Far field from a Gaussian near field, paraxial.",
     references: [
       { citation: "Coldren L. A., Corzine S. W., Mašanović M. L. (2012). Diode Lasers and Photonic Integrated Circuits, 2nd ed., ch. 2 and 4. Wiley.", url: "https://doi.org/10.1002/9781118148167" },
+      {
+        citation: "De Koninck Y. et al. (2025). GaAs nano-ridge laser diodes fully fabricated in a 300-mm CMOS pilot line. Nature 637, 63–69. Supplementary Table 1 (arXiv:2309.04473): g₀ 1200 cm⁻¹, N_tr 1.8 × 10¹⁸ cm⁻³, B 10⁻¹⁰ cm³/s, C 3.5 × 10⁻³⁰ cm⁶/s.",
+        url: "https://doi.org/10.1038/s41586-024-08364-2",
+      },
+      {
+        citation: "Wenzel H., Kantner M., Radziunas M., Bandelow U. (2021). Semiconductor Laser Linewidth Theory Revisited. Appl. Sci. 11, 6004. Table I (InGaAs quantum well, 1064 nm): A 4 × 10⁸ s⁻¹, n_g 3.9.",
+        url: "https://doi.org/10.3390/app11136004",
+      },
+      {
+        citation: "Tsvid G. et al. (2008). Spontaneous Radiative Efficiency and Gain Characteristics of Strained-Layer InGaAs–GaAs Quantum-Well Lasers. IEEE J. Quantum Electron. 44, 732–739. Abstract: 40–54 % spontaneous radiative efficiency and g₀ = dg/d ln J = 1130 cm⁻¹ at 0.98 µm.",
+        url: "https://doi.org/10.1109/JQE.2008.924242",
+      },
     ],
   },
   {
@@ -280,11 +292,23 @@ export const waveOptics: CalculatorEntry[] = [
     description: "Locking range of an injection-locked laser from the injection ratio, coupling rate and linewidth enhancement factor α: Adler's symmetric range and the asymmetric semiconductor-laser range, with a locking map.",
     keywords: ["injection locking", "Adler", "locking range", "linewidth enhancement factor", "alpha factor", "master slave laser"],
     tier: "textbook",
-    modelNote: "Static locking range −k_c√ρ√(1 + α²) ≤ Δω ≤ k_c√ρ of the single-mode rate equations, weak injection. The coupling rate k_c is an input (its expression from facet reflectivity and round-trip time varies between authors by factors of order unity). Dynamic instabilities inside the static range are not computed.",
+    modelNote: "Static locking range −k_c√ρ√(1 + α²) ≤ Δω ≤ k_c√ρ of the single-mode rate equations, weak injection. The coupling rate k_c is an input; the page estimates it as (1 − R)/(τ_rt√R) (Kondratiev et al. 2023), and other authors' expressions differ by factors of order unity. Defaults: a 300 µm GaAs-based diode (R 0.32, n_g 3.9, k_c/2π 24.51 GHz) with the α ≈ 1 Berger et al. measured at 0.98 µm. Dynamic instabilities inside the static range are not computed.",
     references: [
       { citation: "Adler R. (1946). A study of locking phenomena in oscillators. Proc. IRE 34, 351.", url: "https://doi.org/10.1109/JRPROC.1946.229930" },
       { citation: "Lang R. (1982). Injection locking properties of a semiconductor laser. IEEE J. Quantum Electron. 18, 976.", url: "https://doi.org/10.1109/JQE.1982.1071632" },
       { citation: "Mogensen F., Olesen H., Jacobsen G. (1985). Locking conditions and stability properties for a semiconductor laser with external light injection. IEEE J. Quantum Electron. 21, 784.", url: "https://doi.org/10.1109/JQE.1985.1072760" },
+      {
+        citation: "Kondratiev N. M. et al. (2023). Recent advances in laser self-injection locking to high-Q microresonators. Front. Phys. 18, 21305. Eq. (4): coupling rate κ = (1 − R_o²)/(τ R_o), R_o the amplitude reflectivity.",
+        url: "https://doi.org/10.1007/s11467-022-1245-3",
+      },
+      {
+        citation: "Berger P. R., Dutta N. K., Lopata J., Chand N. (1991). In0.2Ga0.8As/GaAs strained quantum-well lasers. CLEO 1991, paper CTuA7. Measured α ≈ 1.0 at 0.98 µm (≈ 3.5 for InGaAsP/InP quantum wells).",
+        url: "https://opg.optica.org/abstract.cfm?uri=cleo-1991-CTuA7",
+      },
+      {
+        citation: "Wenzel H., Kantner M., Radziunas M., Bandelow U. (2021). Semiconductor Laser Linewidth Theory Revisited. Appl. Sci. 11, 6004. Table I: group index 3.9.",
+        url: "https://doi.org/10.3390/app11136004",
+      },
     ],
   },
   {
@@ -367,7 +391,7 @@ export const waveOptics: CalculatorEntry[] = [
     title: "Optical Parametric Amplifier",
     description: "Signal gain, idler output and gain bandwidth of an optical parametric amplifier from pump power and radius, d_eff, indices, phase mismatch and signal–idler group-velocity mismatch.",
     tier: "textbook",
-    modelNote: "Plane-wave, undepleted-pump gain at the pump's on-axis intensity; the bandwidth comes from first-order group-velocity mismatch only (no group-velocity dispersion). No focusing, walk-off or pump depletion. d_eff is an input: the default 12.4 pm/V is 2d₃₃/π of periodically poled congruent LiNbO₃ with d₃₃ measured for SHG of 1.313 µm (Shoji et al. 1997); d₃₃ falls with wavelength, so a mid-infrared idler sees somewhat less.",
+    modelNote: "Plane-wave, undepleted-pump gain at the pump's on-axis intensity; the bandwidth comes from first-order group-velocity mismatch only (no group-velocity dispersion). No focusing, walk-off or pump depletion. d_eff is an input: 12.4 pm/V is 2d₃₃/π of congruent PPLN, d₃₃ for SHG of 1.313 µm (Shoji et al. 1997); Miller's rule scales it by 0.87 (≈ 10.8 pm/V) for a 3.39 µm idler.",
     references: [
       {
         citation: "Boyd R. W. (2008). Nonlinear Optics, 3rd ed., §2.2 and §2.8. Academic Press. Coupled-amplitude equations for sum- and difference-frequency generation and parametric amplification.",
@@ -543,7 +567,7 @@ export const waveOptics: CalculatorEntry[] = [
     title: "Sum Frequency Generation (SFG)",
     description: "Sum-frequency power, wavelength and quasi-phase-matching period of χ⁽²⁾ upconversion (ω1 + ω2 → ω3) from the input powers, beam radius, d_eff, indices and phase mismatch.",
     tier: "textbook",
-    modelNote: "Plane waves over two Gaussian beams of equal radius, both inputs undepleted, no focusing, walk-off or absorption. d_eff is an input: the default 12.4 pm/V is 2d₃₃/π of periodically poled congruent LiNbO₃ with d₃₃ measured for SHG of 1.313 µm (Shoji et al. 1997); d₃₃ falls with wavelength, so a mid-infrared idler sees somewhat less.",
+    modelNote: "Plane waves over two Gaussian beams of equal radius, both inputs undepleted, no focusing, walk-off or absorption. d_eff is an input: 12.4 pm/V is 2d₃₃/π of congruent PPLN, d₃₃ for SHG of 1.313 µm (Shoji et al. 1997); Miller's rule moves it by 1 % for 1064 + 1550 nm.",
     references: [
       {
         citation: "Boyd R. W. (2008). Nonlinear Optics, 3rd ed., §2.2 and §2.8. Academic Press. Coupled-amplitude equations for sum- and difference-frequency generation and parametric amplification.",

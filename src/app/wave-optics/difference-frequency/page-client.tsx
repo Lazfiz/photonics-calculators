@@ -104,7 +104,8 @@ export default function DifferenceFrequencyPage() {
           and the process becomes parametric amplification. The defaults are a 1064 nm − 1550 nm → 3.39 µm mixer in
           periodically poled LiNbO₃: extraordinary indices from the Zelmon Sellmeier (21 °C)
           and d_eff = 2d₃₃/π = 12.4 pm/V from d₃₃ = 19.5 pm/V of congruent LiNbO₃ for SHG of 1.313 µm
-          (Shoji et al. 1997; 25.2 pm/V at 1.064 µm).</p>
+          (Shoji et al. 1997; 25.2 pm/V at 1.064 µm).
+          Miller&apos;s rule scales d by 0.87 for the 3.39 µm idler, to ≈ 10.8 pm/V.</p>
         {warnings.map((msg) => <p key={msg} className="text-yellow-400">{msg}</p>)}
       </div>
 
