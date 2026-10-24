@@ -8,8 +8,8 @@ import { useURLState } from "../../../hooks/use-url-state";
 import { fix } from "../../../components/polarization-format";
 import { applyMueller } from "../../../physics/polarization/mueller";
 import {
-  MAX_SAMPLES, type DriveWaveform, type ScramblerStage, lockedGroup, residualDopVsTime, scramblerMeanMueller, stageResonance,
-  worstCaseResidualDop,
+  MAX_SAMPLES, type DriveWaveform, type ScramblerStage, combinationLock, combinationResonance, lockedGroup, residualDopVsTime,
+  scramblerMeanMueller, stageResonance, worstCaseResidualDop,
 } from "../../../physics/polarization/scrambler";
 import { degreeOfPolarization, stokesFromEllipse } from "../../../physics/polarization/stokes";
 
@@ -25,6 +25,12 @@ const layoutOf = (x: string, extra: Record<string, unknown> = {}) => ({
 });
 
 /** URL state of one stage, clamped; angles in degrees, frequency in kHz. */
+/** "f₁ + f₂ − f₃ = 0" for the orders n. */
+function relationText(n: readonly number[]): string {
+  const sub = ["₁", "₂", "₃"];
+  return n.map((c, k) => `${k === 0 ? (c < 0 ? "−" : "") : c < 0 ? " − " : " + "}${Math.abs(c) === 1 ? "" : `${Math.abs(c)}`}f${sub[k]}`).join("") + " = 0";
+}
+
 function useStage(k: number, axis: number, kHz: number) {
   const [axisIn, setAxis] = useURLState(`axis${k}`, axis);
   const [ampIn, setAmp] = useURLState(`amplitude${k}`, J0_ZERO);
@@ -82,6 +88,8 @@ export default function PolarizationScramblingPage() {
   const worst = worstCaseResidualDop(stages);
   const locked = lockedGroup(stages);
   const resonance = stageResonance(stages.map((s) => s.frequency));
+  const combination = locked ? null : combinationLock(stages);
+  const nearCombination = combinationResonance(stages.map((s) => s.frequency));
 
   const timeChart = useMemo(() => {
     const S = stokesFromEllipse(1, psi_deg * DEG, chi_deg * DEG);
@@ -121,6 +129,7 @@ export default function PolarizationScramblingPage() {
         <p>sine: ⟨cos Γ⟩ = J₀(Γm) cos Γ0, ⟨sin Γ⟩ = J₀(Γm) sin Γ0 &nbsp;(J₀ = 0 at Γm = 2.4048 rad)</p>
         <p>ramp: ⟨cos Γ⟩ = [sin(Γ0 + Γm) − sin Γ0]/Γm, &nbsp;⟨sin Γ⟩ = [cos Γ0 − cos(Γ0 + Γm)]/Γm</p>
         <p>independent stages: ⟨M<sub>3</sub>M<sub>2</sub>M<sub>1</sub>⟩ = ⟨M<sub>3</sub>⟩⟨M<sub>2</sub>⟩⟨M<sub>1</sub>⟩; locked stages: (1/T)∫₀ᵀ M<sub>3</sub>(t)M<sub>2</sub>(t)M<sub>1</sub>(t) dt over their common period T</p>
+        <p>combination n₁f₁ + n₂f₂ + n₃f₃ = 0: ⟨M<sub>3</sub>M<sub>2</sub>M<sub>1</sub>⟩ = Σ<sub>j</sub> A<sub>3,jn₃</sub>A<sub>2,jn₂</sub>A<sub>1,jn₁</sub> e<sup>ij n·φ</sup> (A<sub>k,m</sub>: Fourier coefficients of M<sub>k</sub> in its drive phase)</p>
       </div>
 
       <div className="flex flex-wrap items-end gap-4 mb-4">
@@ -142,7 +151,8 @@ export default function PolarizationScramblingPage() {
       <p className="text-xs text-gray-500 mb-4">
         {waveform === "ramp" ? "Ramp: the amplitude is the total sweep of the retardance; 2π sweeps a full wave. " : ""}
         With incommensurate frequencies (the defaults are 1, √2 and √5 kHz) the stage phases are independent and the drive
-        phases φ don&apos;t matter; with locked frequencies (whole-number ratios up to 12) they do.
+        phases φ don&apos;t matter; with locked frequencies (whole-number ratios up to 12, or a relation such as
+        f₁ + f₂ = f₃) they do.
       </p>
       <div className="space-y-3 mb-6">
         <StageInputs k={1} s={s1} />
@@ -160,6 +170,19 @@ export default function PolarizationScramblingPage() {
           Stages {locked.members.map((k) => k + 1).join(" and ")} are locked ({locked.harmonics.join(" : ")} drive periods
           in a common period of {fix(locked.period * 1e3, 3)} ms): their phases are not independent, so the long-time values
           below are the average over that common period, and they depend on the drive phases φ.
+        </p>
+      )}
+      {combination && (
+        <p className="text-sm text-yellow-400 mb-4" role="status">
+          The stage frequencies satisfy {relationText(combination)}: no two stages are locked, but the three phases are not
+          independent, so the long-time values below keep the terms of that relation and depend on the drive phases φ.
+        </p>
+      )}
+      {nearCombination && Number.isFinite(nearCombination.beatPeriod) && (
+        <p className="text-sm text-yellow-400 mb-4" role="status">
+          The stage frequencies are near {relationText(nearCombination.orders)}: the long-time values below hold only for
+          averaging times well beyond the {fix(nearCombination.beatPeriod * 1e3, 1)} ms beat period; the chart shows the
+          average over shorter windows.
         </p>
       )}
       {resonance && Number.isFinite(resonance.beatPeriod) && (

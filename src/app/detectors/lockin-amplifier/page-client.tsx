@@ -5,10 +5,10 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  REFERENCE_GAIN,
   lockinSnrGain,
   lowPassEnbw,
   lowPassMagnitude,
+  referenceMatch,
   type LockinFilter,
   type LockinReference,
 } from "../../../physics/detectors/lockin";
@@ -39,16 +39,16 @@ export default function LockinAmplifierPage() {
   const reference: LockinReference = referenceRaw === "square" ? "square" : "sine";
   const inputBandwidth = clamp(inputBandwidthRaw, 1, 1e10, 1e5);
 
-  const deltaF = Math.abs(signalFreq - refFreq);
+  // Unit-power reference: in phase, X = g_k·(A/√2)·cos φ; detuned, X beats at Δf_k with envelope g_k·(A/√2)·|H(Δf_k)|.
+  // A square reference detects the signal at the odd harmonic k·f_r with the largest g_k·|H(Δf_k)|.
+  const match = referenceMatch(signalFreq, refFreq, phaseRad, tau, order, filter, reference);
+  const deltaF = match.detuning_Hz;
   const enbw = lowPassEnbw(tau, order, filter);
-  const h = lowPassMagnitude(deltaF, tau, order, filter);
-  const g = REFERENCE_GAIN[reference];
-  // Unit-power reference: in phase, X = g·(A/√2)·cos φ; detuned, X beats at Δf with envelope g·(A/√2)·|H(Δf)|.
-  const outputSignal = g * (signalAmp / Math.SQRT2) * (deltaF === 0 ? Math.cos(phaseRad) : 1) * h;
+  const outputSignal = (signalAmp / Math.SQRT2) * match.gain;
   const outputNoise = noiseDensity * Math.sqrt(enbw);
   const inputNoise = noiseDensity * Math.sqrt(inputBandwidth);
   const snrInput = signalAmp / Math.SQRT2 / inputNoise;
-  const snrGain = lockinSnrGain({ phase_rad: deltaF === 0 ? phaseRad : 0, detuning_Hz: deltaF, tau, order, filter, reference, inputBandwidth_Hz: inputBandwidth });
+  const snrGain = lockinSnrGain({ phase_rad: phaseRad, signal_Hz: signalFreq, reference_Hz: refFreq, tau, order, filter, reference, inputBandwidth_Hz: inputBandwidth });
 
   // Filter response vs detuning, 1e-3/τ … 1e2/τ, for orders 1–4 of the chosen filter type.
   const n = 161;
@@ -95,7 +95,7 @@ export default function LockinAmplifierPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ResultCard label="ENBW" value={`${fmt(enbw)} Hz`} tone="blue" subtext={`Detuning Δf = ${fmt(deltaF, 4)} Hz`} />
+        <ResultCard label="ENBW" value={`${fmt(enbw)} Hz`} tone="blue" subtext={`Detuning Δf = ${fmt(deltaF, 4)} Hz${match.harmonic > 1 ? ` from ${match.harmonic}·f_r` : ""}`} />
         <ResultCard
           label={deltaF === 0 ? "Output X (rms)" : "Output beat amplitude"}
           value={`${fmt(outputSignal * 1e6, 3)} µV`}
@@ -108,6 +108,7 @@ export default function LockinAmplifierPage() {
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p>X = g · (A/√2) · cos φ · |H(Δf)|, &nbsp;noise = e_n · √ENBW &nbsp;(g = 1 sine, 2√2/π square reference)</p>
+        <p>A ±1 square reference also detects odd harmonics: g_k = 2√2/(kπ) at Δf_k = |f_s − k·f_r|, k = 3, 5, …</p>
         <p>RC cascade: ENBW = 1/4τ, 1/8τ, 3/32τ, 5/64τ (N = 1–4) &nbsp;| &nbsp;Butterworth: ENBW = (1/4Nτ)/sin(π/2N)</p>
         <p>SNR improvement = g · |cos φ| · |H(Δf)| · √(B_in / ENBW)</p>
       </div>

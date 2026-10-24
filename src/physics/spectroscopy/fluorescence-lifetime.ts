@@ -74,23 +74,27 @@ export function convolvedDecay(components: DecayComponent[], t: number, irfSigma
 }
 
 /**
- * The same decay under a pulse train of period T (TCSPC at repetition rate 1/T): Σₙ y(t + nT) over the pulses at
- * t₀ − nT, n = −1, 0, 1, …, so tails of earlier pulses that have not decayed add to the window ("incomplete decay").
- * Once Φ in y has reached 1 (argument ≥ 8, error < 7e-16) the remaining terms are a geometric series, summed in closed
- * form: e^(σ²/2τ² − x_m/τ) / (1 − e^(−T/τ)). NaN if T ≤ 0 or more than 10⁵ explicit terms would be needed (σ ≫ T).
+ * The same decay under a pulse train of period T (TCSPC at repetition rate 1/T): Σₙ y(t + nT) over all pulses t₀ − nT,
+ * so tails of earlier pulses that have not decayed add to the window ("incomplete decay"). The sum is periodic, so t − t₀
+ * is first reduced into [0, T); pulses later than t by more than 8σ (Gaussian tail < 2e-15) are dropped. Once Φ in y
+ * has reached 1 (argument ≥ 8, error < 7e-16) the remaining terms are a geometric series, summed in closed form:
+ * e^(σ²/2τ² − x_m/τ) / (1 − e^(−T/τ)). NaN if T ≤ 0 or more than 10⁵ explicit terms would be needed (σ ≫ T).
  * W. Becker, Advanced Time-Correlated Single Photon Counting Techniques (Springer, 2005).
  */
 export function periodicDecay(components: DecayComponent[], t: number, irfSigma: number, t0: number, period: number): number {
-  if (!(period > 0)) return NaN;
+  if (!(period > 0) || !Number.isFinite(t - t0)) return NaN;
+  const x = (((t - t0) % period) + period) % period;
+  // First n with x + nT ≥ −8σ; the pulses before it have not arrived.
+  const n0 = Math.min(-1, Math.ceil((-8 * irfSigma - x) / period));
   let sum = 0;
   for (const c of components) {
     const tau = c.lifetime;
-    // First n with (t + nT − t₀ − σ²/τ)/σ ≥ 8.
-    const m = Math.max(0, Math.ceil((t0 + irfSigma * irfSigma / tau + 8 * irfSigma - t) / period));
-    if (m > 1e5) return NaN;
+    // First n with (x + nT − σ²/τ)/σ ≥ 8.
+    const m = Math.max(0, Math.ceil((irfSigma * irfSigma / tau + 8 * irfSigma - x) / period));
+    if (m - n0 > 1e5) return NaN;
     let s = 0;
-    for (let n = -1; n < m; n++) s += emgDecay(t + n * period, tau, irfSigma, t0);
-    const xm = t + m * period - t0;
+    for (let n = n0; n < m; n++) s += emgDecay(x + n * period, tau, irfSigma, 0);
+    const xm = x + m * period;
     s += Math.exp((irfSigma * irfSigma) / (2 * tau * tau) - xm / tau) / -Math.expm1(-period / tau);
     sum += c.amplitude * s;
   }

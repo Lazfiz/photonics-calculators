@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 import { darkCurrentRatio, doublingLawRatio, localDoublingTemperature } from "../src/physics/detectors/dark-current";
 import { VARSHNI, varshniBandGap } from "../src/physics/materials/bandgap";
-import { lockinSnrGain, lowPassEnbw, lowPassMagnitude } from "../src/physics/detectors/lockin";
+import { lockinSnrGain, lowPassEnbw, lowPassMagnitude, referenceMatch } from "../src/physics/detectors/lockin";
 import { gateNoiseBandwidth, gateNoiseRms, gaussianGateAverage, optimalGateWidthRatio } from "../src/physics/detectors/boxcar";
 
 const close = (actual: number, expected: number, rel: number, msg = "") =>
@@ -62,10 +62,42 @@ test("lock-in ENBW: RC cascade 1/4τ, 1/8τ, 3/32τ, 5/64τ; Butterworth (1/4Nτ
 
 test("lock-in SNR gain: √(B_in/ENBW) for a sine reference, ×2√2/π for a square one", () => {
   // Hand: √(1e5/0.25) = 632.456; square, 2nd-order Butterworth: 0.900316·√(1e5/0.1767767) = 677.15.
-  const base = { phase_rad: 0, detuning_Hz: 0, tau: 1, inputBandwidth_Hz: 1e5 } as const;
+  const base = { phase_rad: 0, signal_Hz: 1e3, reference_Hz: 1e3, tau: 1, inputBandwidth_Hz: 1e5 } as const;
   close(lockinSnrGain({ ...base, order: 1, filter: "rc", reference: "sine" }), 632.456, 1e-6);
   close(lockinSnrGain({ ...base, order: 2, filter: "butterworth", reference: "square" }), 677.15, 1e-5);
   assert.equal(lockinSnrGain({ ...base, phase_rad: Math.PI / 2, order: 1, filter: "rc", reference: "sine" }) < 1e-12, true);
+});
+
+test("lock-in square reference detects odd harmonics (Codex review 2026-10-24)", () => {
+  // ±1 square wave = (4/π) Σ sin(kωt)/k: f_s 3 kHz, f_r 1 kHz, A 1 µV → X = (A/2)·4/(3π) = 0.2122 µV (the old page: 5.07e-5 µV).
+  const m3 = referenceMatch(3e3, 1e3, 0, 1, 1, "rc", "square");
+  assert.equal(m3.harmonic, 3);
+  assert.equal(m3.detuning_Hz, 0);
+  close((1 / Math.SQRT2) * m3.gain, 2 / (3 * Math.PI), 1e-12);
+  close(2 / (3 * Math.PI), 0.2122, 1e-3);
+  // 5f_r detuned by 0.1 Hz: g₅·|H| = 2√2/(5π)/√(1 + (2π·0.1)²) for one RC stage, τ 1 s
+  const m5 = referenceMatch(5e3 + 0.1, 1e3, 0, 1, 1, "rc", "square");
+  assert.equal(m5.harmonic, 5);
+  close(m5.gain, (2 * Math.SQRT2) / (5 * Math.PI) / Math.sqrt(1 + (0.2 * Math.PI) ** 2), 1e-9);
+  // even harmonic: a square wave has no 2f_r component; the 1f_r and 3f_r beats are both 1 kHz away and k = 1 wins
+  const m2 = referenceMatch(2e3, 1e3, 0, 1, 1, "rc", "square");
+  assert.equal(m2.harmonic, 1);
+  close(m2.gain, (2 * Math.SQRT2) / Math.PI / Math.sqrt(1 + (2 * Math.PI * 1e3) ** 2), 1e-9);
+  // a sine reference has no harmonics: 3 kHz on 1 kHz stays at |H(2 kHz)|
+  const s3 = referenceMatch(3e3, 1e3, 0, 1, 1, "rc", "sine");
+  assert.equal(s3.harmonic, 1);
+  close(s3.gain, 1 / Math.sqrt(1 + (4e3 * Math.PI) ** 2), 1e-9);
+  // a matched harmonic in quadrature gives X = 0, not a detuned beat (physics review); k·f_r matches despite rounding
+  const q1 = referenceMatch(1e3, 1e3, Math.PI / 2, 1, 1, "rc", "square");
+  assert.equal(q1.harmonic, 1);
+  assert.ok(Math.abs(q1.gain) < 1e-15, `${q1.gain}`);
+  const q3 = referenceMatch(41.1, 13.7, Math.PI / 2, 1, 1, "rc", "square");
+  assert.equal(q3.harmonic, 3);
+  assert.equal(q3.detuning_Hz, 0);
+  assert.ok(Math.abs(q3.gain) < 1e-15, `${q3.gain}`);
+  // phase past 90° flips the sign of X but not the SNR gain
+  close(referenceMatch(1e3, 1e3, Math.PI, 1, 1, "rc", "sine").gain, -1, 1e-12);
+  close(lockinSnrGain({ phase_rad: Math.PI, signal_Hz: 1e3, reference_Hz: 1e3, tau: 1, order: 1, filter: "rc", reference: "sine", inputBandwidth_Hz: 1e5 }), 632.456, 1e-6);
 });
 
 test("boxcar gate average of a Gaussian pulse: 0.990834 for a 100 ns gate on a 500 ns pulse; → peak for a narrow gate", () => {
