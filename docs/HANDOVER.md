@@ -14,7 +14,8 @@ polymer and IR-glass data now sourced; a physics-reviewer pass was applied. Next
 ## Next actions
 1. `/ship` this branch. No default value changed; post-merge-check e.g. `materials/heat-capacity?material=sapphire` (c_p at 300 K
    799.9 J/(kg·K)) and `materials/infrared-glass?material=amtir1&wavelength=10` (n 2.4974 at 25 °C). No release unless asked.
-2. Findings 4d-c: `nonlinear-index`, `two-photon-absorption`, `brillouin-scattering`, `raman-scattering`, rare-earth σ, `acousto-optic`;
+2. Findings 4g-a then 4g-b (Codex review 2026-10-24, all claims reproduced; cases and fixes in ROADMAP "Codex review").
+3. Findings 4d-c: `nonlinear-index`, `two-photon-absorption`, `brillouin-scattering`, `raman-scattering`, rare-earth σ, `acousto-optic`;
    reviewer pass per claim first.
 
 ## Non-obvious facts
