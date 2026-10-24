@@ -1,27 +1,32 @@
-# Handover — 2026-10-24 (session 150 → session 151)
+# Handover — 2026-10-25 (session 151 → session 152)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 150: **Findings 4e-b** done on `phase-4/findings-4e-b` (PR #181): sourced OPO, thin-disk and dye-laser defaults.
-Next: **Findings 4f** (cross-cutting: URL clamping codemod, `erf`/`sinc` copies, search relevance floor).
+Session 151: **Findings 4f-a** done on `phase-4/findings-4f` (PR #182): URL ranges, one `sinc`, search relevance floor.
+Next: **Findings 4f-b**, the 185 URL values the codemod skipped (laser-safety pages first).
 
 ## State
-- `uniaxial-data.ts`: `BBO_TAMOSAUSKAS` (Opt. Mater. Express 8, 1410 (2018)), kept out of `UNIAXIAL_CRYSTALS` so dropdowns don't change.
-  `nonlinear-crystals.ts`: `BBO_D` (EKSMA d22 2.2, d31 0.08 pm/V).
-- `optical-parametric-oscillator.ts`: `bboTypeICut(λp, λs)` → θ, n_p/n_s/n_i, walk-off, d_eff (NaN out of Sellmeier range). Page card
-  "BBO type I cut" + "Use these BBO values". Defaults 532 → 800 nm: θ 22.12°, n 1.6555/1.6604/1.64576, ρ 3.114°, d_eff 2.068 pm/V.
-- Thin-disk Yb:YAG: σ_e 2.4, σ_a 0.16, σ_ap 0.76, σ_ep 0.22 (×1e-20 cm², Chanteloup 2014 Table 1), τ 0.951 ms, η_h 0.087 = 1 − λ_p/λ,
-  κ 7 W/(m·K) (Chénais 2006): P_th 41.68 W, slope 0.6507, ΔT 33.35 K.
-- Dye Rh6G: σₑ 1.1e-16 cm², τ 4.2 ns (Falkenstein 1978), σ_T 3.7e-17 (Pavlopoulos 1988, 77 K glass), k_ST 3.4e6/s, τ_T 0.25 µs
-  (Webb 1970, air-saturated): triplet factor 0.7199, K_T 0.286 (Phillion 1974 measured 0.35 ± 0.02).
-- Tests: 1101 pass. Build green; ui-check load of the 3 pages: 0 console errors.
+- `parseParam(raw, def, range?)` / `useURLState(key, def, { min?, max? })` clamp a numeric URL value to the range; the hook
+  passes `min`/`max` as primitives so the setter stays stable. Tests in `tests/url-state-store.test.ts`.
+- `scripts/codemods/2026-10-24-url-ranges.ts`: copies the literal or module-constant min/max of the `ValidatedNumberInput` /
+  `InputSlider` that shows a URL value into its `useURLState` call, for values the page doesn't clamp. 671 bindings in 127
+  pages; idempotent. `CODEMOD_LIST=1` lists the 185 skipped (with reason), `CODEMOD_ALL=1` the changes too.
+- `src/lib/site-search.ts` (`searchTerms`, `scoreItem`, `searchItems`): every term must match title/tags/category/URL/
+  description, priority only breaks ties; `site-search.tsx` shows "No calculator matches…". Tests on the real index.
+- `sinc` only in `src/physics/math.ts` (9 files); no `erf` copies remain. 1105 tests pass; build green.
 
 ## Next actions
-1. `/ship` this branch. Post-merge-check (only after a release the user asks for): `wave-optics/thin-disk-laser=41.68`
-   `wave-optics/optical-parametric-oscillator=2.068`. No release unless asked.
-2. Findings 4f (cross-cutting): URL clamping via codemod, merge local `erf`/`sinc` copies into `src/physics/math.ts`, search
-   relevance floor.
+1. `/ship` this branch. No default value changed: after a release the user asks for, post-merge-check only needs page loads
+   (`fiber-optics/attenuation`, `wave-optics/sum-frequency`). No release unless asked.
+2. Findings 4f-b: per page, clamp in the page (`x = clamp(xRaw, lo, hi, default)`) or pass a range to `useURLState`; give the
+   52 bound-less fields real min/max. Laser-safety first (`od-requirements`, `nohd`, `diffuse-reflection`, `optical-density`,
+   `classification`, `ael-limits`, `mpe`, `blue-light-hazard`, `uv-exposure`). 70 pages: split by category if needed.
 
 ## Non-obvious facts
+- **Session 151:** ts-morph `sf.insertText` forgets every node: record positions (numbers) first, insert last-to-first.
+  ts-morph scripts must live under `scripts/` (a scratchpad script can't resolve `ts-morph`). A `next start -p 3100` left
+  from an earlier session serves the old build (EADDRINUSE for the new one): check the PID's command line with
+  `Get-CimInstance Win32_Process -Filter 'ProcessId=<pid>'` and kill it. ui-check reports "not hydrated" for a slug that
+  doesn't exist: check `ls src/app/<category>`.
 - **Session 150:** Chénais 2006 (Yb thermal review) is open at arXiv:0704.0701; Chanteloup 2014 (HPL) is open at researching.cn.
   Falkenstein 1978 and Penzkofer papers are OCR PDFs at epub.uni-regensburg.de: digitize figures by pixel analysis and check the tick
   calibration against a tabulated value. Pavlopoulos 1988 is the DTIC ADA208291 reprint on archive.org. Tamošauskas BBO coefficients
@@ -59,9 +64,6 @@ Next: **Findings 4f** (cross-cutting: URL clamping codemod, `erf`/`sinc` copies,
   truncate at ≈ 1000 characters: filter lines, or use `get_page_text`. Chrome tabs freeze when devctl runs another project's
   `cargo nextest` (CPU 100 %): fall back to headless `ui-check` / `--dump-dom`. **Port 3000 can be another project** (Planet
   Incubator): run this repo on 3100 and check the page title.
-- **Sessions 120–125:** registry entries end with a `  },` line. A removed page breaks tsc (TS2307 in `.next/types/validator.ts`)
-  until `rm -rf .next/types .next/dev/types`. A merge lowers the page floor. The merge codemod runs after appending to
-  `redirects.json`. A user `next dev` on :3000 can garble `.next/dev/types`: delete it again.
 - **Sessions 113–115:** unsourceable constants: make them inputs or drop them, cite the defaults, log the gap. Next redirects keep
   the query string. Render a SimpleLineChart only with data. `besselJ0Fast` inside quadratures.
 - **Session 107:** prefix `MSYS_NO_PATHCONV=1` for ui-check and chrome (`C:/Program Files/Google/Chrome/Application/chrome.exe`,
