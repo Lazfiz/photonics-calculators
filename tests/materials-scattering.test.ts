@@ -4,7 +4,8 @@ import assert from "node:assert/strict";
 import { FUSED_SILICA_BRILLOUIN, acousticWavelength, brillouinGain, phononLifetime } from "../src/physics/materials/brillouin";
 import { RAMAN_LINES, dephasingTime, lorentzianGain, ramanGainAtPump, ramanGainExponent } from "../src/physics/materials/raman-gain";
 import {
-  TPA_MEDIA, scaledBeta, scalingBeta, tpaF2, tpaRegime, tpaTransmission, twoPhotonRatio,
+  TPA_MEDIA, indirectBeta, indirectF2, mediumBeta, mediumRegime, scaledBeta, scalingBeta, tpaF2, tpaRegime, tpaTransmission,
+  twoPhotonRatio,
 } from "../src/physics/materials/two-photon";
 import { brillouinShift } from "../src/physics/fiber-optics/fiber-nonlinear";
 import { stokesWavelength } from "../src/physics/imaging/coherent-raman";
@@ -82,7 +83,7 @@ test("2PA scaling of Eq. 1 against the predicted column of Van Stryland 1985 Tab
   for (const [id, twoPhoton_eV, beta_cmGW] of predicted) {
     const m = TPA_MEDIA[id];
     const lambda = (2 * hc_eV_nm * 1e-9) / twoPhoton_eV;
-    assertRel(scalingBeta(lambda, m.n, m.bandGap_eV, m.Ep_eV), beta_cmGW * 1e-11, 0.03, id);
+    assertRel(scalingBeta(lambda, m.n ?? NaN, m.bandGap_eV, m.Ep_eV ?? NaN), beta_cmGW * 1e-11, 0.03, id);
   }
 });
 
@@ -100,6 +101,46 @@ test("F₂ scaling of the measured GaAs β and the 2PA window", () => {
   assert.ok(Number.isNaN(scaledBeta(g.beta, g.lambda, 800e-9, g.bandGap_eV)));
   assert.equal(tpaRegime(800e-9, g.bandGap_eV), "linear");
   assert.equal(tpaRegime(1064e-9, g.bandGap_eV), "two-photon");
+});
+
+test("silicon indirect-gap 2PA: Bristow et al. 2007 fit against their measurement", () => {
+  // F₂⁽⁰⁾(x) at 2x = 2 (ħω = E_gi): π/8 · 2⁻⁵ · 1 = 0.0122718.
+  assertRel(indirectF2(0, 1), Math.PI / 256, 1e-12, "F₂⁽⁰⁾(1)");
+  // 1220 nm: ħω = 1.016264 eV, x = 0.907379, 2x = 1.814757, (2x)⁻⁵ = 0.050805, 2x − 1 = 0.814757:
+  // F⁽⁰⁾ = π/8 · 0.050805 · 0.663829 = 0.013244, F⁽¹⁾ = 3π/48 · 0.050805 · 0.540861 = 0.0053954,
+  // F⁽²⁾ = 15π/384 · 0.050805 · 0.440670 = 0.0027475; β = 2 · 43 · 0.021387 = 1.8393 cm/GW.
+  // Bristow et al. measured 2.1 ± 0.4 cm/GW at 1220 nm (text), so the fit is inside their error.
+  assertRel(indirectBeta(1220e-9), 1.8393e-11, 2e-4, "β(1220)");
+  assert.ok(Math.abs(indirectBeta(1220e-9) - TPA_MEDIA.silicon.beta) < 0.4e-11, "within 2.1 ± 0.4");
+  // 1000 nm: 2x = 2.21404, sum 0.022495, β = 1.9345 cm/GW (the plateau of Fig. 2).
+  assertRel(indirectBeta(1000e-9), 1.9345e-11, 3e-4, "β(1000)");
+  // No 2PA once 2ħω ≤ E_gi: λ ≥ 2·1239.842/1.12 = 2214.0 nm.
+  assert.equal(indirectBeta(2215e-9), 0);
+  assert.equal(mediumRegime(TPA_MEDIA.silicon, 2215e-9), "transparent");
+  assert.equal(mediumRegime(TPA_MEDIA.silicon, 1000e-9), "two-photon");
+  assert.equal(mediumRegime(TPA_MEDIA.silicon, 800e-9), "outside-fit");
+  assert.ok(Number.isNaN(mediumBeta(TPA_MEDIA.silicon, 800e-9)), "below Bristow's 850 nm");
+});
+
+test("DeSalvo 1996 wide-gap rows: effective gaps, measured β and the near-edge divergence", () => {
+  // Table I: fused silica 0.05 cm/GW at 266 nm with E′_g = 9.0 eV; β ≈ 0 at 355 nm is consistent: 2ħω = 6.99 eV < 9.0 eV.
+  const fs = TPA_MEDIA["fused-silica"];
+  assertRel(mediumBeta(fs, 266e-9), 0.05e-11, 1e-12, "FS at 266");
+  assert.equal(mediumRegime(fs, 355e-9), "transparent");
+  assert.equal(mediumBeta(fs, 355e-9), 0);
+  // BBO: 0.9 cm/GW at 266 nm, E′_g = 6.8 eV. F₂(x) at 266 nm: x = 9.32212/6.8 = 1.370900, F₂ = 0.225884/4.842046 = 0.046651;
+  // at 355 nm: x = 6.985026/6.8 = 1.027210, F₂ = 0.0044884/1.143657 = 0.0039246; β = 0.9 · 0.084127 = 0.075714 cm/GW,
+  // against 0.010 ± 0.002 measured (Table I): the divergence near the 2PA edge that DeSalvo et al. report.
+  const bbo = TPA_MEDIA.bbo;
+  assertRel(mediumBeta(bbo, 355e-9), 0.075714e-11, 1e-4, "BBO 355");
+  // KTP 0.10 cm/GW at 532 nm, LiNbO₃ 0.38 cm/GW at 532 nm.
+  assertRel(TPA_MEDIA.ktp.beta, 0.10e-11, 1e-12, "KTP");
+  assertRel(TPA_MEDIA.linbo3.beta, 0.38e-11, 1e-12, "LiNbO₃");
+  assert.equal(mediumRegime(TPA_MEDIA.ktp, 1064e-9), "transparent");
+  // Linear absorption starts at Table I's E_g = 3.8 eV (326.3 nm), below E′_g = 4.6 eV: KTP at 300 nm is not 2PA.
+  assert.equal(mediumRegime(TPA_MEDIA.ktp, 300e-9), "linear");
+  assert.ok(Number.isNaN(mediumBeta(TPA_MEDIA.ktp, 300e-9)), "no 2PA β above the edge");
+  assert.equal(mediumRegime(TPA_MEDIA.ktp, 340e-9), "two-photon");
 });
 
 test("plane-wave 2PA transmission T = 1/(1 + βI₀L) (materials audit golden, PR #155)", () => {

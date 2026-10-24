@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { KERR_MEDIA, kerrIndexChange, piPhaseIntensity } from "../src/physics/materials/kerr-index";
+import { KERR_MEDIA, kerrIndexChange, n2FromEsu, piPhaseIntensity } from "../src/physics/materials/kerr-index";
 import {
   BBO_THETA, SHG_CRYSTALS, SHG_LAMBDA, focusedShg, shgPrefactor, typeIPhaseMatchingAngle, uniaxialWalkOff, waistForXi,
   xyPlaneIndex,
@@ -36,6 +36,20 @@ test("Dubietis Table 1 n₂ in m²/W and the fused-silica critical power at 800 
   // 3.77 · (800e-9)² / (8π · 1.45 · 2.4e-20) = 2.4128e-12 / 8.7462e-19 = 2.7587 MW.
   const fs = KERR_MEDIA["fused-silica"];
   assertRel(criticalPower(fs.lambda, fs.n0, fs.n2), 2.7587e6, 1e-4, "P_cr");
+});
+
+test("DeSalvo 1996 n₂ from esu (Tables I–II) and Bristow 2007 silicon", () => {
+  // DeSalvo et al. Sec. III: fused silica (7.5 ± 1.5) × 10⁻¹⁴ esu = (2.1 ± 0.4) × 10⁻¹⁶ cm²/W with n₀ = 1.48.
+  assertRel(n2FromEsu(7.5e-14, 1.48), 2.1e-20, 0.02, "FS esu");
+  // KTP 100 × 10⁻¹⁴ esu, n₀ 1.77: 40π · 1e-12 / (299792458 · 1.77) = 1.25664e-10 / 5.30633e8 = 2.36819e-19 m²/W.
+  assertRel(KERR_MEDIA.ktp.n2, 2.36819e-19, 1e-5, "KTP");
+  // MgF₂ 1.9 × 10⁻¹⁴ esu, n₀ 1.4: 2.38761e-12 / 4.19709e8 = 5.68872e-21 m²/W.
+  assertRel(KERR_MEDIA.mgf2.n2, 5.68872e-21, 1e-5, "MgF₂");
+  assert.equal(KERR_MEDIA.ktp.lambda, 1064e-9);
+  // Bristow et al. abstract: peak n₂ = 1.2e-13 cm²/W at 1800 nm.
+  assertRel(KERR_MEDIA.silicon.n2, 1.2e-17, 1e-12, "Si");
+  assert.equal(KERR_MEDIA.silicon.lambda, 1800e-9);
+  assert.ok(Number.isNaN(n2FromEsu(1e-13, 0)), "n₀ = 0 guarded");
 });
 
 test("Kerr index change, π-phase intensity and their domain guards", () => {
