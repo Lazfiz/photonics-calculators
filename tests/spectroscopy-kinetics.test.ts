@@ -50,6 +50,28 @@ test("TCSPC incomplete decay and transform-limited bandwidth", () => {
   close(bw.lambda, 9.4211e-9, 1e-4);
 });
 
+test("TCSPC pulse train is periodic (Codex review 2026-10-24)", () => {
+  // 100 MHz, τ 1 ns, IRF FWHM 200 ps, t₀ 0: the old sum from n = −1 gave 0.4679 at 0 and 10 ns but 4.6e-5 at 20 ns.
+  // Reference: the brute-force Σₙ y(t + nT) over n = −60…60 of the exact EMG terms.
+  const T = 10 * ns, tau = ns, sigma = 0.2 * ns / (2 * Math.sqrt(2 * Math.LN2)), comp = [{ amplitude: 1, lifetime: tau }];
+  const brute = (t: number) => {
+    let s = 0;
+    for (let n = -60; n <= 60; n++) s += emgDecay(t + n * T, tau, sigma, 0);
+    return s;
+  };
+  for (const t of [0, 0.3 * ns, 4 * ns, 9.95 * ns]) {
+    const ref = brute(t);
+    for (const k of [-3, 0, 1, 2, 7]) close(periodicDecay(comp, t + k * T, sigma, 0, T), ref, 1e-12);
+  }
+  close(periodicDecay(comp, 20 * ns, sigma, 0, T), 0.4679, 1e-3);
+  // σ comparable to T: pulses more than one period ahead still count (σ 4 ns, T 10 ns)
+  for (const t of [0, 5 * ns]) {
+    let s = 0;
+    for (let n = -60; n <= 60; n++) s += emgDecay(t + n * T, tau, 4 * ns, 0);
+    close(periodicDecay(comp, t + 30 * ns, 4 * ns, 0, T), s, 1e-12);
+  }
+});
+
 test("pump-probe: sequential A → B → GS populations", () => {
   // part 0 audit golden: τ₁ 0.5 ps, τ₂ 5 ps, t 2 ps → bleach n_A + n_B = e^(−4) + (10/9)(e^(−0.4) − e^(−4)) = 0.7428
   const p = sequentialPopulations(2 * ps, 0.5 * ps, 5 * ps);
