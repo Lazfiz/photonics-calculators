@@ -43,6 +43,8 @@ export interface DecoyBb84Result {
   q1: number;
   /** Single-photon error rate e₁. */
   e1: number;
+  /** Rate R before clipping; negative when the errors outweigh the single-photon key. */
+  rawRate: number;
   /** Secure key per pulse, max(0, R). */
   keyPerPulse: number;
 }
@@ -58,7 +60,7 @@ export function decoyBb84(p: DecoyBb84Params): DecoyBb84Result {
   const q1 = y1 * mu * Math.exp(-mu);
   const e1 = y1 > 0 ? Math.min(0.5, (0.5 * y0 + eDetector * eta) / y1) : 0.5;
   const r = q * (-gain * fEc * binaryEntropy(Math.min(0.5, qber)) + q1 * (1 - binaryEntropy(e1)));
-  return { gain, qber, y1, q1, e1, keyPerPulse: Math.max(0, r) };
+  return { gain, qber, y1, q1, e1, rawRate: r, keyPerPulse: Math.max(0, r) };
 }
 
 /** PLOB repeaterless bound −log₂(1 − η), secret bits per channel use for transmittance η. */
@@ -84,9 +86,12 @@ export function maxChannelLossDb(p: Omit<DecoyBb84Params, "eta">, etaBob: number
   return lo;
 }
 
-/** μ in [0.01, 1] that maximises the key rate per pulse (golden-section search; the rate is unimodal in μ). */
+/**
+ * μ in [0.01, 1] that maximises the key rate per pulse (golden-section search; the rate is unimodal in μ). It searches
+ * the unclipped rate R: near the cutoff max(0, R) is flat (zero) over part of the interval and misleads the search.
+ */
 export function optimalMu(p: Omit<DecoyBb84Params, "mu">): number {
-  const f = (mu: number) => decoyBb84({ ...p, mu }).keyPerPulse;
+  const f = (mu: number) => decoyBb84({ ...p, mu }).rawRate;
   const g = (Math.sqrt(5) - 1) / 2;
   let a = 0.01, b = 1;
   let x1 = b - g * (b - a), x2 = a + g * (b - a);

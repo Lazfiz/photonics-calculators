@@ -63,6 +63,13 @@ test("decoy BB84 (Ma, Qi, Zhao, Lo 2005): GYS, μ = 0.48 → key up to 142.05 km
   // §3.1, from eq. (12): μ_opt ≈ 0.48 for f = 1.22 and ≈ 0.54 for f = 1 (low-loss, low-background limit).
   assert.ok(Math.abs(optimalMu({ ...GYS, eta: etaAt(50) }) - 0.48) < 0.01);
   assert.ok(Math.abs(optimalMu({ ...GYS, fEc: 1, eta: etaAt(50) }) - 0.54) < 0.01);
+  // Near the cutoff (29.86 dB) max(0, R) is zero over most of [0.01, 1]; a 1e-4 scan of μ peaks at 0.4264 with
+  // 2.0400e-9 per pulse (2.04 bit/s at 1 GHz), above μ = 0.43 (1.937e-9). The search must use the unclipped rate.
+  const etaEdge = 0.045 * 10 ** (-29.86 / 10);
+  const muEdge = optimalMu({ ...GYS, eta: etaEdge });
+  close(muEdge, 0.4264, 5e-4);
+  close(decoyBb84({ ...GYS, mu: muEdge, eta: etaEdge }).keyPerPulse, 2.0400e-9, 1e-4);
+  assert.ok(decoyBb84({ ...GYS, mu: 0.48, eta: etaAt(200) }).rawRate < 0);
   // QBER → e_d when the background is negligible; the key falls ≈ 0.21 dB/km in the linear regime.
   const r0 = decoyBb84({ ...GYS, mu: 0.48, eta: etaAt(0) });
   close(r0.qber, 0.033, 0.002);
