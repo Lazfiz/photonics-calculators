@@ -609,13 +609,16 @@ export const waveOptics: CalculatorEntry[] = [
     description: "Yb:YAG thin-disk laser: quasi-three-level threshold inversion, multipass pump absorption with bleaching, threshold pump power, slope efficiency, output power and temperature rise through the disk.",
     keywords: ["Yb:YAG", "thin disk laser", "quasi-three-level laser", "multipass pumping", "reabsorption", "pump bleaching"],
     tier: "textbook",
-    modelNote: "Quasi-three-level rate equations with a top-hat pump and mode of equal area, inversion uniform through the disk and clamped above threshold; reabsorption and pump bleaching included, ASE and temperature-dependent cross-sections not. One-dimensional heat flow to the back face. Cross-section defaults are typical room-temperature Yb:YAG values: check them against your crystal.",
+    modelNote: "Quasi-three-level rate equations with a top-hat pump and mode of equal area, inversion uniform through the disk and clamped above threshold; reabsorption and pump bleaching included, ASE and temperature-dependent cross-sections not. One-dimensional heat flow to the back face. Defaults: 300 K Yb:YAG cross sections (Chanteloup 2014 Table 1), τ 0.951 ms (Sumida & Fan), heat fraction 1 − λ_p/λ (lasing), κ 7 W/(m K) of 8 at.% Yb:YAG (Chénais 2006); check them against your crystal.",
     references: [
       { citation: "Giesen A., Hügel H., Voss A., Wittig K., Brauch U., Opower H. (1994). Scalable concept for diode-pumped high-power solid-state lasers. Appl. Phys. B 58, 365–372.", url: "https://doi.org/10.1007/BF01081875" },
       { citation: "Fan T. Y., Byer R. L. (1987). Modeling and CW operation of a quasi-three-level 946 nm Nd:YAG laser. IEEE J. Quantum Electron. 23, 605–612.", url: "https://doi.org/10.1109/JQE.1987.1073371" },
       { citation: "Taira T., Tulloch W. M., Byer R. L. (1997). Modeling of quasi-three-level lasers and operation of cw Yb:YAG lasers. Appl. Opt. 36, 1867.", url: "https://doi.org/10.1364/AO.36.001867" },
       { citation: "DeLoach L. D., Payne S. A., Chase L. L. et al. (1993). Evaluation of absorption and emission properties of Yb³⁺ doped crystals for laser applications. IEEE J. Quantum Electron. 29, 1179.", url: "https://doi.org/10.1109/3.214504" },
       { citation: "Fan T. Y. (1993). Heat generation in Nd:YAG and Yb:YAG. IEEE J. Quantum Electron. 29, 1457–1459.", url: "https://doi.org/10.1109/3.234394" },
+      { citation: "Sumida D. S., Fan T. Y. (1994). Effect of radiation trapping on fluorescence lifetime and emission cross section measurements in solid-state laser media. Opt. Lett. 19, 1343. Yb:YAG τ = 0.951 ms.", url: "https://doi.org/10.1364/OL.19.001343" },
+      { citation: "Chénais S., Druon F., Forget S., Balembois F., Georges P. (2006). On thermal effects in solid-state lasers: the case of ytterbium-doped materials. Prog. Quantum Electron. 30, 89–153. Thermal load (Eq. V.1); κ 7 W/(m K) at 8 at.% Yb, 11 undoped (§II).", url: "https://arxiv.org/abs/0704.0701" },
+      { citation: "Chanteloup J.-C., Arzakantsyan M., Marrazzo S. (2014). Defining the optimal gradient doped Yb:YAG disk for room and low temperature diode pumped solid-state laser operations. High Power Laser Sci. Eng. 2, e35, Table 1. Cross sections at 940 and 1030 nm, 300 K.", url: "https://doi.org/10.1017/hpl.2014.38" },
     ],
   },
 ];

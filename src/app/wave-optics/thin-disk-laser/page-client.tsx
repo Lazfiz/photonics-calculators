@@ -28,13 +28,13 @@ export default function ThinDiskLaserPage() {
   const [lossRaw, setLoss] = useURLState("loss", 1); // % per round trip
   const [wavelengthRaw, setWavelength] = useURLState("wavelength", 1030); // nm
   const [pumpWavelengthRaw, setPumpWavelength] = useURLState("pumpWavelength", 940); // nm
-  const [sigmaERaw, setSigmaE] = useURLState("sigmaE", 2.0); // 1e-20 cm² at λ
-  const [sigmaARaw, setSigmaA] = useURLState("sigmaA", 0.11); // at λ
-  const [sigmaAPRaw, setSigmaAP] = useURLState("sigmaAP", 0.75); // at λ_p
-  const [sigmaEPRaw, setSigmaEP] = useURLState("sigmaEP", 0.16); // at λ_p
-  const [tauRaw, setTau] = useURLState("tau", 0.95); // ms
-  const [heatRaw, setHeat] = useURLState("heatFraction", 0.11);
-  const [kappaRaw, setKappa] = useURLState("kappa", 14); // W/(m K)
+  const [sigmaERaw, setSigmaE] = useURLState("sigmaE", 2.4); // 1e-20 cm² at λ; σ defaults: Chanteloup 2014 Table 1, 300 K
+  const [sigmaARaw, setSigmaA] = useURLState("sigmaA", 0.16); // at λ
+  const [sigmaAPRaw, setSigmaAP] = useURLState("sigmaAP", 0.76); // at λ_p
+  const [sigmaEPRaw, setSigmaEP] = useURLState("sigmaEP", 0.22); // at λ_p
+  const [tauRaw, setTau] = useURLState("tau", 0.951); // ms, Sumida & Fan 1994
+  const [heatRaw, setHeat] = useURLState("heatFraction", 0.087); // 1 − 940/1030 (lasing, Chénais 2006 Eq. V.1)
+  const [kappaRaw, setKappa] = useURLState("kappa", 7); // W/(m K), 8 at.% Yb:YAG (Chénais 2006 §II)
 
   const d = clamp(thicknessRaw, 10, 5000, 200) * 1e-6;
   const diskD = clamp(diameterRaw, 0.1, 1000, 10) * 1e-3;
@@ -47,13 +47,13 @@ export default function ThinDiskLaserPage() {
   const otherLoss = -Math.log(1 - clamp(lossRaw, 0, 50, 1) / 100); // nepers per round trip
   const lambda = clamp(wavelengthRaw, 300, 5000, 1030) * 1e-9;
   const lambdaP = clamp(pumpWavelengthRaw, 200, 5000, 940) * 1e-9;
-  const sigmaE = clamp(sigmaERaw, 1e-4, 1e4, 2.0) * 1e-24; // m²
-  const sigmaA = clamp(sigmaARaw, 0, 1e4, 0.11) * 1e-24;
-  const sigmaAP = clamp(sigmaAPRaw, 1e-4, 1e4, 0.75) * 1e-24;
-  const sigmaEP = clamp(sigmaEPRaw, 0, 1e4, 0.16) * 1e-24;
-  const tau = clamp(tauRaw, 1e-4, 1e4, 0.95) * 1e-3;
-  const heat = clamp(heatRaw, 0, 1, 0.11);
-  const kappa = clamp(kappaRaw, 0.1, 2000, 14);
+  const sigmaE = clamp(sigmaERaw, 1e-4, 1e4, 2.4) * 1e-24; // m²
+  const sigmaA = clamp(sigmaARaw, 0, 1e4, 0.16) * 1e-24;
+  const sigmaAP = clamp(sigmaAPRaw, 1e-4, 1e4, 0.76) * 1e-24;
+  const sigmaEP = clamp(sigmaEPRaw, 0, 1e4, 0.22) * 1e-24;
+  const tau = clamp(tauRaw, 1e-4, 1e4, 0.951) * 1e-3;
+  const heat = clamp(heatRaw, 0, 1, 0.087);
+  const kappa = clamp(kappaRaw, 0.1, 2000, 7);
 
   const area = Math.PI * (spotD / 2) ** 2;
   const delta = roundTripLoss(1, R_oc, otherLoss / 2);
@@ -106,7 +106,7 @@ export default function ThinDiskLaserPage() {
         <ValidatedNumberInput label="Output coupler reflectance" value={rOcRaw} onChange={setROc} min={0.01} max={0.9999} step="any" />
         <ValidatedNumberInput label="Other loss per round trip (%)" value={lossRaw} onChange={setLoss} min={0} max={50} step="any" />
       </div>
-      <h2 className="text-lg font-semibold mb-3">Gain medium (defaults: Yb:YAG at room temperature; check them for your crystal)</h2>
+      <h2 className="text-lg font-semibold mb-3">Gain medium (defaults: Yb:YAG at 300 K, sources below; check them for your crystal)</h2>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Laser wavelength λ (nm)" value={wavelengthRaw} onChange={setWavelength} min={300} max={5000} step="any" />
         <ValidatedNumberInput label="Pump wavelength λ_p (nm)" value={pumpWavelengthRaw} onChange={setPumpWavelength} min={200} max={5000} step="any" />
@@ -146,6 +146,10 @@ export default function ThinDiskLaserPage() {
           above threshold: η_abs = 1 − e^(−M α_p d).</p>
         <p>P_th = h c N d β_th A/(λ_p τ η_abs); P_out = η_abs(λ_p/λ)(−ln R_oc/δ)(P − P_th) for a top-hat pump and mode of equal area.
           ΔT = η_h I_abs d/(2κ) for uniform heating with the back face cooled.</p>
+        <p>Defaults: cross sections at 300 K from Chanteloup et al. 2014, Table 1 (σ_a measured; σ_e from Fan 2007 and Brown 2005);
+          τ = 0.951 ms (Sumida &amp; Fan 1994, radiation trapping suppressed); heat fraction 1 − λ_p/λ = 0.087, Fan&apos;s thermal load
+          with every excited ion extracted by the laser (Chénais et al. 2006, Eq. V.1; higher below threshold); κ = 7 W/(m K) measured
+          on 8 at.% Yb:YAG (11 W/(m K) undoped; Chénais et al. 2006, §II). κ falls further with doping.</p>
       </div>
 
       <div className="space-y-6">
