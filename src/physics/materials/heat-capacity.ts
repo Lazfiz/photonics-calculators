@@ -16,7 +16,14 @@
  * Sources of the presets:
  * - θ_D: experimental values from Landolt–Börnstein (O. Madelung, U. Rössler, M. Schulz), as tabulated in
  *   M. Råsander, M. A. Moram, J. Chem. Phys. 143, 144104 (2015), doi:10.1063/1.4932334 (arXiv:1505.02379), Table VII.
- * - Si c_p: Desai 1986 Table 4, 20.007 J/(mol·K) at 298.15 K. The others and all densities: Crystran data sheets.
+ *   Sapphire: 990 K, the Debye temperature of D. G. Archer's fit, J. Phys. Chem. Ref. Data 22, 1441 (1993),
+ *   doi:10.1063/1.555931, §2. Against Archer's Table 2 the scaled curve is within 3.1 % from 250 to 1000 K, 9 % low
+ *   at 200 K and 37 % low at 100 K. MgO with its 945 K runs high instead: against NIST-JANAF (M. W. Chase, J. Phys.
+ *   Chem. Ref. Data Monograph 9, 1998, table Mg-008) it is 12 % low at 200 K, 8 % high at 500 K and 9 % at 1000 K.
+ * - GaAs has no preset: Crystran's 360 J/(kg·K) is above the Dulong–Petit limit 6R/M = 345 J/(kg·K).
+ * - Si c_p: Desai 1986 Table 4, 20.007 J/(mol·K) at 298.15 K. Sapphire: Archer Table 2, 81.56 J/(mol·K) at 300 K
+ *   (Crystran's 763 J/(kg·K) at 293 K is 2.9 % below Archer's 785 there). MgO: JANAF, 37.106 J/(mol·K) at 298.15 K
+ *   (Crystran: 877 J/(kg·K)). The others and all densities: Crystran data sheets.
  */
 
 import { R_gas } from "../constants";
@@ -68,7 +75,7 @@ export function heatInput(cRef: number, tRef: number, thetaD: number, mass: numb
   return (mass * sum * dT) / 3;
 }
 
-export type HeatCapacityMaterialId = "si" | "ge" | "caf2" | "lif";
+export type HeatCapacityMaterialId = "si" | "ge" | "caf2" | "lif" | "mgo" | "sapphire";
 
 export interface HeatCapacityMaterial {
   readonly name: string;
@@ -87,4 +94,6 @@ export const HEAT_CAPACITY_MATERIALS: Record<HeatCapacityMaterialId, HeatCapacit
   ge: { name: "Germanium", cRef: 310, tRef: 298.15, thetaD: 373, density: 5330 },
   caf2: { name: "CaF₂", cRef: 854, tRef: 298.15, thetaD: 510, density: 3180 },
   lif: { name: "LiF", cRef: 1562, tRef: 298.15, thetaD: 732, density: 2639 },
+  mgo: { name: "MgO", cRef: 37.106 / 40.304e-3, tRef: 298.15, thetaD: 945, density: 3580 },
+  sapphire: { name: "Sapphire (Al₂O₃)", cRef: 81.56 / 101.9613e-3, tRef: 300, thetaD: 990, density: 3970 },
 };

@@ -231,24 +231,32 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "heat-capacity",
     title: "Heat Capacity of Optical Materials",
-    description: "Specific heat c_p(T) of Si, Ge, CaF₂ and LiF from the Debye model scaled to the measured room-temperature value, volumetric heat capacity, and the heat to warm a part from T₁ to T₂.",
+    description: "Specific heat c_p(T) of Si, Ge, CaF₂, LiF, MgO and sapphire from the Debye model scaled to the measured room-temperature value, volumetric heat capacity, and the heat to warm a part from T₁ to T₂.",
     tier: "textbook",
-    modelNote: "c_p(T) = c_p(T_ref)·D(θ_D/T)/D(θ_D/T_ref) with the Debye function D and one Debye temperature; Q = m∫c_p dT. Harmonic, so it runs low above room temperature (Si at 1000 K: 8 % below Desai's value) and misses the dip of θ_D near 40 K. No presets for glasses or diamond.",
+    modelNote: "c_p(T) = c_p(T_ref)·D(θ_D/T)/D(θ_D/T_ref) with the Debye function D and one Debye temperature; Q = m∫c_p dT. Harmonic, so it runs low above room temperature (Si at 1000 K: 8 % below Desai's value) and misses the dip of θ_D near 40 K; sapphire is within 3.1 % of Archer's table from 250 to 1000 K, MgO 8–9 % above JANAF from 500 to 1000 K. No presets for glasses, diamond or GaAs.",
     references: [
       {
         citation: "Debye P. (1912). Zur Theorie der spezifischen Wärmen. Ann. Phys. 344, 789–839.",
         url: "https://doi.org/10.1002/andp.19123441404",
       },
       {
-        citation: "Råsander M., Moram M. A. (2015). On the accuracy of commonly used density functional approximations in determining the elastic constants of insulators and semiconductors. J. Chem. Phys. 143, 144104. Table VII: experimental Debye temperatures (Landolt–Börnstein): Si 645, Ge 373, LiF 732, CaF₂ 510 K.",
+        citation: "Råsander M., Moram M. A. (2015). On the accuracy of commonly used density functional approximations in determining the elastic constants of insulators and semiconductors. J. Chem. Phys. 143, 144104. Table VII: experimental Debye temperatures (Landolt–Börnstein): Si 645, Ge 373, LiF 732, CaF₂ 510, MgO 945 K.",
         url: "https://doi.org/10.1063/1.4932334",
+      },
+      {
+        citation: "Archer D. G. (1993). Thermodynamic properties of synthetic sapphire (α-Al₂O₃), Standard Reference Material 720, and the effect of temperature-scale differences on thermodynamic properties. J. Phys. Chem. Ref. Data 22, 1441–1453. Debye temperature 990 K (§2); c_p 81.56 J/(mol·K) at 300 K (Table 2).",
+        url: "https://doi.org/10.1063/1.555931",
+      },
+      {
+        citation: "Chase M. W. (1998). NIST-JANAF Thermochemical Tables, 4th ed. J. Phys. Chem. Ref. Data Monograph 9. MgO (cr), table Mg-008: c_p 37.106 J/(mol·K) at 298.15 K, 45.544 at 500 K.",
+        url: "https://janaf.nist.gov/tables/Mg-008.txt",
       },
       {
         citation: "Desai P. D. (1986). Thermodynamic properties of iron and silicon. J. Phys. Chem. Ref. Data 15, 967–983. Si c_p 20.007 J/(mol·K) at 298.15 K (Table 4), 26.569 at 1000 K (Table 5).",
         url: "https://doi.org/10.1063/1.555761",
       },
       {
-        citation: "Crystran. Handbook of Infrared and Ultraviolet Optical Materials, data sheets: specific heat and density of Ge, CaF₂ and LiF; density of Si.",
+        citation: "Crystran. Handbook of Infrared and Ultraviolet Optical Materials, data sheets: specific heat and density of Ge, CaF₂ and LiF; density of Si, MgO and sapphire.",
         url: "https://www.crystran.com/optical-materials",
       },
     ],
@@ -256,11 +264,11 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "infrared-glass",
     title: "Infrared Optical Materials",
-    description: "Compare IR materials (Ge, Si, ZnSe, ZnS, fluorides, alkali halides, KRS-5, As₂S₃ and ZBLAN glass): refractive index at any wavelength and temperature, Fresnel-limited transmission, transmission band, dn/dT, thermal conductivity and hardness.",
+    description: "Compare IR materials (Ge, Si, ZnSe, ZnS, fluorides, alkali halides, KRS-5, As₂S₃, AMTIR-1 and ZBLAN glass): refractive index at any wavelength and temperature, Fresnel-limited transmission, transmission band, dn/dT, thermal conductivity and hardness.",
     lede: "Compare IR transmitting materials and glasses. n(λ, T) = n(λ, T₀) + (dn/dT)(T − T₀), with n(λ, T₀) from each material's published Sellmeier formula.",
     keywords: ["Infrared Materials", "Chalcogenide Glass Properties", "Fluoride Glass (ZBLAN)"],
     tier: "textbook",
-    modelNote: "Index from published Sellmeier fits inside their ranges, shifted linearly by one room-temperature dn/dT; transmission is the lossless two-surface Fresnel limit 2n/(n² + 1). Bands, dn/dT, conductivity and hardness are Crystran data-sheet values; none are sourced yet for As₂S₃, ZBLAN and AMTIR-1.",
+    modelNote: "Index from published Sellmeier fits inside their ranges, shifted linearly by one room-temperature dn/dT; transmission is the lossless two-surface Fresnel limit 2n/(n² + 1). Bands, dn/dT, conductivity and hardness are Crystran data-sheet values, and Amorphous Materials' for AMTIR-1 and As₂S₃ (AMTIR-6: band and hardness only, its dn/dT changes sign across the band); none are sourced for ZBLAN.",
     references: [
       {
         citation: "refractiveindex.info database (CC0). Sellmeier data sets, each with its original reference shown on the page. Used for Ge, Si, ZnSe, ZnS, CaF₂, BaF₂, MgF₂, NaCl, KBr, CsI, As₂S₃ and ZBLAN.",
@@ -281,7 +289,18 @@ export const materials: CalculatorEntry[] = [
         citation: "Crystran. Handbook of Infrared and Ultraviolet Optical Materials, data sheets: transmission range, dn/dT, thermal conductivity, Knoop hardness; KRS-5 index at 10 µm.",
         url: "https://www.crystran.com/optical-materials",
       },
-      { citation: "Amorphous Materials AMTIR-1 data sheet. Index at 10 µm." },
+      {
+        citation: "Amorphous Materials Inc. (2024). AMTIR-1 data sheet: Sellmeier fit at 22 °C, index and dn/dT table 1–14 µm at 20 °C (2.49701 and 71 ×10⁻⁶/K at 10 µm), thermal conductivity 0.25 W/(m·K), Knoop hardness 170.",
+        url: "https://web.archive.org/web/20241204053433/https://www.amorphousmaterials.com/app/download/6552854504/AMTIR-1+Datasheet+%282024-11-21%29.pdf",
+      },
+      {
+        citation: "Amorphous Materials Inc. Comparison of IR transmitting glasses produced by AMI, ver. 5: transmission ranges AMTIR-1 0.7–12 µm, AMTIR-6 (As₂S₃) 0.6–8 µm; Knoop 170 and 109.",
+        url: "https://web.archive.org/web/20231207100003/https://www.amorphousmaterials.com/app/download/6541860504/Comparison+of+IR+Materials+ver+5.pdf",
+      },
+      {
+        citation: "Amorphous Materials Inc. (2020). AMTIR-6 data sheet: As₂S₃ index 2.4994, 2.4202, 2.4070, 2.3976 and dn/dT 20.7, 4.19, −2.65, −3.54 ×10⁻⁶/K at 0.9, 3, 6, 8 µm (22 °C).",
+        url: "https://web.archive.org/web/20200922065735/http://www.amorphousmaterials.com/app/download/6552919404/AMTIR-6+Datasheet.pdf",
+      },
       { citation: "Born M., Wolf E. (1999). Principles of Optics, 7th ed. Cambridge University Press. Fresnel formulae at normal incidence." },
     ],
   },
@@ -374,13 +393,17 @@ export const materials: CalculatorEntry[] = [
     lede: "Interactive glass map and dispersion curves. Sellmeier: n²(λ) = 1 + Σ Bᵢλ²/(λ² − Cᵢ), with SCHOTT catalog coefficients.",
     keywords: ["Schott Glass Catalog", "Abbe Number (Vd)", "Thermo-Optic Coefficient (dn/dT)"],
     tier: "exact",
-    modelNote: "SCHOTT catalog values: Sellmeier fits that reproduce each glass's catalog n_d to 1e-5 and V_d to 0.01. V_d of the crystals and fused silica comes from their published formulas. dn/dT and Δn are TIE-19's absolute (vacuum) values for −100 to +140 °C; values relative to air are larger by about n × 0.9e-6 /K. Valid inside each fit's wavelength range.",
+    modelNote: "SCHOTT catalog values: Sellmeier fits that reproduce each glass's catalog n_d to 1e-5 and V_d to 0.01. V_d of the crystals and fused silica comes from their published formulas. dn/dT and Δn are TIE-19's absolute (vacuum) values for −100 to +140 °C and 365–1014 nm (SCHOTT's stated range); values relative to air are larger by about n × 0.9e-6 /K. Valid inside each fit's wavelength range.",
     references: [
       {
         citation: "SCHOTT optical glass catalog (Zemax AGF 2017-01-20). Sellmeier coefficients, n_d, V_d and density.",
       },
       {
         citation: "SCHOTT (2016). TIE-19, temperature coefficient of the absolute refractive index (D₀, D₁, D₂, E₀, E₁, λ_TK).",
+      },
+      {
+        citation: "SCHOTT optical glass data sheets (2017-01-20), Explanations: the dn/dT constants are valid from −100 to +140 °C and 0.365 to 1.014 µm. N-BK7 sheet: Δn_abs/ΔT at 1060 nm, e and g of 0.3, 0.8, 1.2 (−40/−20 °C) and 1.1, 1.6, 2.1 ×10⁻⁶/K (+20/+40 °C).",
+        url: "https://refractiveindex.info/download/data/2017/schott_2017-01-20.pdf",
       },
       {
         citation: "Malitson I. H. (1965). Interspecimen comparison of the refractive index of fused silica. J. Opt. Soc. Am. 55, 1205. Fused silica V_d 67.82.",
@@ -447,6 +470,10 @@ export const materials: CalculatorEntry[] = [
       {
         citation: "Polyanskiy M. N. refractiveindex.info database: Sellmeier fits of Sultanova's data; Norland NOA 61 and MicroChem SU-8 2000 (uncured) Cauchy coefficients.",
         url: "https://refractiveindex.info",
+      },
+      {
+        citation: "Norland Products. NOA 61 technical data sheet: cured-polymer index 1.56 and 1.5562, 1.5594, 1.5634, 1.5691, 1.5754 at 643.8, 589.6, 546.1, 480.0, 435.8 nm.",
+        url: "https://web.archive.org/web/20220326214528/https://norlandprod.com/literature/61tds.pdf",
       },
     ],
   },
@@ -575,7 +602,7 @@ export const materials: CalculatorEntry[] = [
     description: "Length change ΔL = α·L·ΔT, strain and the change in 633 nm waves, with room-temperature expansion coefficients of optical glasses, crystals and mount metals.",
     keywords: ["Coefficient of Thermal Expansion"],
     tier: "textbook",
-    modelNote: "ΔL = αLΔT with one room-temperature α, good over tens of kelvin; α rises with temperature (Si: 2.6 to about 4.6 ×10⁻⁶/K from 300 to 1500 K). Crystal and glass values checked against Crystran; ULE, Zerodur, Pyrex, SF11 and the metals are typical values, not checked.",
+    modelNote: "ΔL = αLΔT with one room-temperature α, good over tens of kelvin; α rises with temperature (Si: 2.6 to about 4.6 ×10⁻⁶/K from 300 to 1500 K). Crystals from Crystran; glasses from SCHOTT, Corning (ULE and Zerodur: the specified limit) and Kaye & Laby; metals at 293 K from Kaye & Laby or the slope of NIST's fits. Alloys vary with heat treatment (Invar 0.13–1.2).",
     references: [
       {
         citation: "Okada Y., Tokumaru Y. (1984). Precise determination of lattice parameter and thermal expansion coefficient of silicon between 300 and 1500 K. J. Appl. Phys. 56, 314–320.",
@@ -584,6 +611,26 @@ export const materials: CalculatorEntry[] = [
       {
         citation: "Crystran. Handbook of Infrared and Ultraviolet Optical Materials, data sheets: thermal expansion of fused silica, N-BK7, sapphire, CaF₂, MgF₂, Si, Ge, ZnSe and diamond.",
         url: "https://www.crystran.com/optical-materials",
+      },
+      {
+        citation: "SCHOTT optical glass data sheets (2017-01-20): SF11 α 6.1, N-SF11 8.5 ×10⁻⁶/K (−30 to +70 °C).",
+        url: "https://refractiveindex.info/download/data/2017/schott_2017-01-20.pdf",
+      },
+      {
+        citation: "SCHOTT. ZERODUR technical details: CTE grades, mean α (0 to 50 °C) 0 ± 0.100 (class 2), 0.050 (class 1), 0.020 (class 0), 0.010, 0.007 ×10⁻⁶/K.",
+        url: "https://www.schott.com/en-cz/products/zerodur-p1000269/technical-details",
+      },
+      {
+        citation: "Corning (2016). ULE Corning Code 7972 Ultra Low Expansion Glass, product information: mean CTE 0 ± 30 ppb/°C, 5 to 35 °C.",
+        url: "https://web.archive.org/web/20251216175218/https://www.corning.com/media/worldwide/csm/documents/7972%20ULE%20Product%20Information%20Jan%202016.pdf",
+      },
+      {
+        citation: "Kaye & Laby Tables of Physical and Chemical Constants, §2.3.5 Thermal expansion (NPL, archived web edition): α at 293 K of Cu 16.5, borosilicate (Pyrex) 2.8, Invar 0.13, austenitic stainless 14.1 ×10⁻⁶/K.",
+        url: "https://web.archive.org/web/2019/http://www.kayelaby.npl.co.uk/general_physics/2_3/2_3_5.html",
+      },
+      {
+        citation: "NIST Cryogenic Technologies Group. Material properties of 6061-T6 aluminum, Invar (Fe-36Ni) and 304 stainless: fits of (L − L₂₉₃)/L₂₉₃ over 4–300 K, whose slopes at 293 K give 22.6, 0.9 and 15.4 ×10⁻⁶/K.",
+        url: "https://trc.nist.gov/cryogenics/materials/materialproperties.htm",
       },
     ],
   },

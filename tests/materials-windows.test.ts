@@ -22,6 +22,21 @@ test("As₂S₃ (Rodney 1958): the materials audit's table values", () => {
   }
 });
 
+test("AMTIR-1: the data sheet's Sellmeier (22 °C) against its 20 °C table", () => {
+  // Amorphous Materials AMTIR-1 data sheet (2024): n at 20 °C, 1–14 µm, dn/dT ≈ 7.1e-5 /K from 8 to 14 µm. The fit is
+  // at 22 °C, so it should sit 2 K × dn/dT above the table: 1.4e-4 (3.4e-4 at 1 µm, where dn/dT is 1.66e-4).
+  const table: [number, number, number][] = [
+    [1, 2.59744, 1.66e-4], [3, 2.51841, 7.6e-5], [5, 2.5106, 7.4e-5], [8, 2.50301, 7.2e-5], [10, 2.49701, 7.1e-5], [14, 2.48019, 7.1e-5],
+  ];
+  for (const [l, n20, dndt] of table) {
+    assertAbs(refractiveIndex(MATERIALS.amtir1.model, l * um), n20 + 2 * dndt, 3e-5, `AMTIR-1 ${l} µm`);
+  }
+  // The comparison sheet's n(10 µm) = 2.49715 is the fit's value.
+  assertAbs(refractiveIndex(MATERIALS.amtir1.model, 10 * um), 2.49715, 1e-5, "AMTIR-1 10 µm");
+  assert.equal(transmits(WINDOW_MATERIALS.amtir1, 10 * um), true);
+  assert.equal(transmits(WINDOW_MATERIALS.as2s3, 10 * um), false);
+});
+
 test("ZBLAN (Gan 1995): hand evaluation of the formula and no pole inside the range", () => {
   // n² − 1 = 1.22514 λ²/(λ² − 0.08969²) + 1.52898 λ²/(λ² − 21.3825²), λ = 0.5875618 µm:
   // λ² = 0.345229; terms 1.254368 and −0.0011554 → n² = 2.253213, n = 1.501071.

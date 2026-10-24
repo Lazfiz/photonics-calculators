@@ -137,6 +137,18 @@ test("SCHOTT dn/dT: hand value at 20 °C and the derivative of the TIE-19 Δn", 
   assert.equal(schottDeltaN(g.model, g.thermal, l, 20), 0);
 });
 
+test("SCHOTT dn/dT: N-BK7 data-sheet table (SCHOTT data sheets 2017)", () => {
+  const g = SCHOTT_GLASSES["N-BK7"];
+  // Δn_abs/ΔT (×10⁻⁶/K) at 1060 nm, e (546.07 nm) and g (435.83 nm), as printed to 0.1 on the N-BK7 sheet.
+  const table: [number, number, number[]][] = [[-40, -20, [0.3, 0.8, 1.2]], [20, 40, [1.1, 1.6, 2.1]]];
+  for (const [a, b, row] of table) {
+    [1060e-9, 546.07e-9, 435.83e-9].forEach((l, i) => {
+      const mean = (schottDeltaN(g.model, g.thermal, l, b) - schottDeltaN(g.model, g.thermal, l, a)) / (b - a);
+      assertAbs(mean * 1e6, row[i], 0.05, `${a}/${b} °C, ${l * 1e9} nm`);
+    });
+  }
+});
+
 test("domain: outside the fit range and inside an absorption band", () => {
   assert.equal(inRange(MATERIALS.ge.model, 1 * um), false);
   assert.equal(inRange(MATERIALS.ge.model, 10 * um), true);
