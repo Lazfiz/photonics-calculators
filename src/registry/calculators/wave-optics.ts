@@ -429,6 +429,10 @@ export const waveOptics: CalculatorEntry[] = [
         citation: "Myers L. E. et al. (1995). Quasi-phase-matched optical parametric oscillators in bulk periodically poled LiNbO₃. J. Opt. Soc. Am. B 12, 2102. Wavelength form of the gain coefficient, equal to Boyd's.",
         url: "https://doi.org/10.1364/josab.12.002102",
       },
+      {
+        citation: "Tamošauskas G., Beresnevičius G., Gadonas D., Dubietis A. (2018). Transmittance and phase matching of BBO crystal in the 3−5 μm range and its application for the characterization of mid-infrared laser pulses. Opt. Mater. Express 8, 1410. BBO Sellmeier fits (0.188–5.2 µm) for the type I cut and the defaults.",
+        url: "https://doi.org/10.1364/OME.8.001410",
+      },
     ],
   },
   {

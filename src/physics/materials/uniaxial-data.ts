@@ -91,6 +91,20 @@ export const UNIAXIAL_CRYSTALS = {
   },
 } as const satisfies Record<string, UniaxialCrystal>;
 
+/**
+ * β-BBO o and e fits over 0.188–5.2 µm (G. Tamošauskas, G. Beresnevičius, D. Gadonas, A. Dubietis, Opt. Mater. Express 8,
+ * 1410 (2018), doi:10.1364/OME.8.001410), n² − 1 = Σ Bλ²/(λ² − C), λ in µm; coefficients as in the author's code in
+ * arXiv:2111.01212 (Supplement, Section 2) and refractiveindex.info. Kept out of the table above: Eimerl's set already
+ * represents BBO there, and this one is for infrared idlers past Eimerl's 1.06 µm.
+ */
+export const BBO_TAMOSAUSKAS: UniaxialCrystal = {
+  name: "β-barium borate (BBO), Tamošauskas 2018",
+  o: fromSquaredForm(1, [0.90291, 0.83155, 0.76536], [0.003926, 0.018786, 60.01], [0.188, 5.2]),
+  e: fromSquaredForm(1, [1.151075, 0.21803, 0.656], [0.007142, 0.02259, 263], [0.188, 5.2]),
+  reference: "G. Tamošauskas et al., Opt. Mater. Express 8, 1410 (2018), doi:10.1364/OME.8.001410",
+  temperature_C: null,
+};
+
 export type CrystalId = keyof typeof UNIAXIAL_CRYSTALS;
 
 export const CRYSTAL_IDS = Object.keys(UNIAXIAL_CRYSTALS) as CrystalId[];
