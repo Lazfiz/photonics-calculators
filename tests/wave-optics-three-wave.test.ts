@@ -70,6 +70,15 @@ test("low-gain OPA idler equals the DFG law: (λ_s/λ_i)(G − 1)I_s = η I_p I_
   assertRel(opa, dfg, 1e-4, "low gain");
 });
 
+test("OPA idler when the signal is the longer wave (Manley–Rowe): 1064 → 3000 nm, G 1047.15, P_s 1 W → 1903.5 W", () => {
+  // λ_i = 1648.76 nm; λ_s/λ_i = λ_s/λ_p − 1 = 1936/1064 = 1.819549, × (G − 1) = 1046.15 → 1903.52 W.
+  const lambdaI = idlerWavelength(1064e-9, 3000e-9);
+  assertRel(lambdaI, 1648.76e-9, 1e-5, "λ_i");
+  assertRel(idlerPower(1047.15, 1, 3000e-9, lambdaI), (1936 / 1064) * 1046.15, 1e-12, "P_i");
+  assertRel(idlerPower(1047.15, 1, 3000e-9, lambdaI), 1903.52, 1e-5, "P_i");
+  assert.ok(Number.isNaN(idlerPower(1047.15, 1, 3000e-9, 0)));
+});
+
 test("OPA page default (PPLN, 50 kW, w 300 µm, 20 mm): Γ = 202.18 /m, G = 813.7 (29.10 dB)", () => {
   // Hand calculation: I₀ = 2P/(πw²) = 3.5368e11 W/m²; Γ² = 2ω_sω_i d²I₀/(n_pn_sn_i ε₀c³) = 4.0878e4 m⁻²;
   // G = cosh²(4.0436) = 813.7.

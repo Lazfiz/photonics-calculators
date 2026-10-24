@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 145, 2026-10-24)
+## Status (session 146, 2026-10-24)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4: every page is tiered; open findings and the top-50 tests remain.
@@ -41,8 +41,8 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   sapphire (Archer, θ_D 990 K) and MgO (JANAF) presets; AMTIR-1 Sellmeier, band, dn/dT; NOA 61 within 5e-4 of Norland.
 - [x] **Findings 4g-a** (session 145, `phase-4/findings-4g-a`, PR #176): TCSPC train periodic; square lock-in 3f → 0.2122 µV;
   scrambler `combinationLock` + Fourier lattice sum (13/17/30 kHz DOP 0.080756 = brute force).
-- [ ] **Findings 4g-b, Codex review 2026-10-24 (rest):** QKD `optimalMu`, OPA signal > idler, graded-index sublayer cap,
-  SERS max over θ; `ui-check` boxcar label.
+- [x] **Findings 4g-b** (session 146, `phase-4/findings-4g-b`, PR #177): QKD μ_opt 0.4264 at 29.86 dB; OPA idler 1903.5 W at 3000 nm;
+  graded index 10/wave up to 4000 steps (89 µm R 0.2268 %); SERS true max (320 nm equator 4.72); ui-check label.
 - [ ] **Findings 4d-c, nonlinear and scattering media:** `nonlinear-index`, `two-photon-absorption`, `brillouin-scattering`,
   `raman-scattering`, rare-earth σ, `acousto-optic`.
 - [ ] **Findings 4e, wave-optics defaults from memory** (diode/dye laser, injection locking, d_eff).
@@ -175,16 +175,8 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - Re-check the classes when IEC 60825-1 Ed. 4 is published (only a BSI draft in 2026).
 
 **Codex review 2026-10-24** (each reproduced in session 144 with the repo's functions; golden cases for the tests)
-- QKD `optimalMu`: golden section on the clipped rate. 0 dB/km, fixed 29.86 dB, defaults: μ 0.43 gives 1.94 bit/s, scan max
-  2.04 bit/s at 0.426, `optimalMu` 0.01 → 0. Optimise the unclipped rate.
-- `optical-parametric-amplifier`: `idlerPower` needs λ_i > λ_s and the spectrum filter needs ν_s > ν_i; signal 3000 nm gives
-  no idler (Manley–Rowe 1903.5 W at G 1047.15, P_s 1 W). Bound only 0 < ν_s + dν < ν_p.
-- `gradient-index`: 400-sublayer cap; 89 µm cosine (defaults) R 0.3846 % vs converged 0.2268 % (= Fresnel 1 → 1.1) from 1600
-  sublayers. Raise the cap or warn above ≈ 7 µm.
-- `surface-enhanced-raman`: "max" is the pole. 320 nm, 1000 cm⁻¹, a 10 nm, d 0, n 1: max 0.835 < average 3.25; true max 4.72 at
-  the equator. EF(θ) is quadratic in cos²θ: take the max of the ends and the vertex.
-- `scripts/ui-check.mjs:148` looks for "Pulse Width (ns)"; the boxcar label is now "Pulse Width FWHM (ns)".
-
+- Fixed in 4g-b (session 146). Leftovers: the OPA page's linear-GVM spectrum can run past degeneracy ν_p/2 when |δ_si| is tiny,
+  and its default δ_si (−97.7 fs/mm) is for 1550/3393 nm; graded-index spectra take ≈ 0.35 s at the 4000-step cap.
 - Leftovers of 4g-a (session 145 review): scrambler relations above order 12 count as incommensurate (11/13/24 kHz at
   Γm 10: 4.4e-3 off; negligible at the J₀ zero); lock-in f_s = 2f_r ties the 1f and 3f beats at one Δf (coherent sum
   0.6–1.2× the shown envelope); `periodicDecay` takes up to ≈ 7e4 terms per chart point when σ ≫ T (could return Σαᵢτᵢ/T).

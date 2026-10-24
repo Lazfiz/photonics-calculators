@@ -78,9 +78,9 @@ export function parametricGain(gamma: number, deltaK: number, length: number): n
   return 1 + Math.exp(2 * (Math.log(gamma) + logGainAmplitude(gamma, deltaK, length)));
 }
 
-/** Idler power (λ_s/λ_i)(G − 1)P_s, W. */
+/** Idler power (λ_s/λ_i)(G − 1)P_s, W. Either beam may be the longer wavelength: signal and idler are labels. */
 export function idlerPower(gain: number, signalPower: number, lambdaSignal: number, lambdaIdler: number): number {
-  if (!(gain >= 1 && signalPower >= 0 && lambdaSignal > 0 && lambdaIdler > lambdaSignal)) return NaN;
+  if (!(gain >= 1 && signalPower >= 0 && lambdaSignal > 0 && lambdaIdler > 0)) return NaN;
   return (lambdaSignal / lambdaIdler) * (gain - 1) * signalPower;
 }
 

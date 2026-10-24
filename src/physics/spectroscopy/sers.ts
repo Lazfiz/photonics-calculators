@@ -9,7 +9,9 @@
  * and B = |1 − gs|² (equator). The SERS enhancement factor in the |E|⁴ approximation multiplies the enhancements at
  * the laser and the Raman (Stokes) wavelength (E. C. Le Ru, P. G. Etchegoin, Chem. Phys. Lett. 423, 63 (2006),
  * doi:10.1016/j.cplett.2006.03.042):
- *   EF_max = A_L A_R (molecule at the pole),
+ *   EF(θ) = (A_L cos²θ + B_L sin²θ)(A_R cos²θ + B_R sin²θ), A_L A_R at the pole (along E₀), B_L B_R at the equator;
+ *   EF_max = max over θ: a quadratic in u = cos²θ, so the larger end value or, when it is concave, its vertex in (0, 1).
+ *            It is the pole near the resonance; off resonance (e.g. 320 nm, where |1 − g|² > |1 + 2g|²) the equator,
  *   ⟨EF⟩   = A_L A_R/5 + 8 B_L B_R/15 + 2(A_L B_R + B_L A_R)/15 (averaged over the sphere's surface, using
  *            ⟨cos⁴θ⟩ = 1/5, ⟨sin⁴θ⟩ = 8/15, ⟨cos²θ sin²θ⟩ = 2/15).
  * E. C. Le Ru et al., J. Phys. Chem. C 111, 13794 (2007), doi:10.1021/jp0687908, compare these definitions.
@@ -43,12 +45,29 @@ export function sphereFieldEnhancement(eps: Complex, epsMedium: number, radius: 
   return { pole: abs2(add(complex(1), scale(gs, 2))), equator: abs2(sub(complex(1), gs)) };
 }
 
-/** |E|⁴ SERS enhancement factor at the pole (max) and averaged over the surface (average); see the header. */
-export function sersEnhancement(epsLaser: Complex, epsRaman: Complex, epsMedium: number, radius: number, distance: number): { max: number; average: number } {
+/**
+ * |E|⁴ SERS enhancement factor at the pole, its maximum over the surface (max, at polar angle maxAngle in rad from the
+ * field axis) and averaged over the surface (average); see the header.
+ */
+export function sersEnhancement(
+  epsLaser: Complex, epsRaman: Complex, epsMedium: number, radius: number, distance: number,
+): { pole: number; max: number; maxAngle: number; average: number } {
   const L = sphereFieldEnhancement(epsLaser, epsMedium, radius, distance);
   const R = sphereFieldEnhancement(epsRaman, epsMedium, radius, distance);
+  // EF(u) = (B_L + ΔL u)(B_R + ΔR u), u = cos²θ ∈ [0, 1].
+  const dL = L.pole - L.equator, dR = R.pole - R.equator;
+  const ef = (u: number) => (L.equator + dL * u) * (R.equator + dR * u);
+  const candidates = [0, 1];
+  if (dL * dR < 0) {
+    const vertex = -(dL * R.equator + dR * L.equator) / (2 * dL * dR);
+    if (vertex > 0 && vertex < 1) candidates.push(vertex);
+  }
+  let uMax = 1;
+  for (const u of candidates) if (ef(u) > ef(uMax)) uMax = u;
   return {
-    max: L.pole * R.pole,
+    pole: L.pole * R.pole,
+    max: ef(uMax),
+    maxAngle: Math.acos(Math.sqrt(uMax)),
     average: (L.pole * R.pole) / 5 + (8 * L.equator * R.equator) / 15 + (2 * (L.pole * R.equator + L.equator * R.pole)) / 15,
   };
 }

@@ -5,6 +5,7 @@ import {
   gradedIndexAt,
   gradedIndexLayers,
   gradedSublayerCount,
+  gradedSublayersResolved,
   type GradedProfile,
 } from "../src/physics/thin-film/graded-index";
 import { stackResponse, type Layer } from "../src/physics/thin-film/transfer-matrix";
@@ -38,10 +39,13 @@ test("graded index: profiles and sublayer count", () => {
   }
   close(gradedIndexAt("cosine", 1.52, 1.1, 0.5), 1.31, 1e-15, "cosine midpoint");
   close(gradedIndexAt("exponential", 1.52, 1.1, 0.5), Math.sqrt(1.52 * 1.1), 1e-15, "exponential midpoint");
-  // 10 sublayers per λ_min/n_max: 5 µm × 1.52 × 10 / 275 nm = 276.4 → 277; at least 50, at most 400.
+  // 10 sublayers per λ_min/n_max: 5 µm × 1.52 × 10 / 275 nm = 276.4 → 277; at least 50, at most 4000.
   assert.equal(gradedSublayerCount(5000 * NM, 275 * NM, 1.52), 277);
   assert.equal(gradedSublayerCount(500 * NM, 275 * NM, 1.52), 50);
-  assert.equal(gradedSublayerCount(20000 * NM, 275 * NM, 1.52), 400);
+  assert.equal(gradedSublayerCount(89000 * NM, 275 * NM, 1.52), 4000);
+  // Bragg artefacts need fewer than 2 per λ_min/n_max: 4000 steps cover 2000 × 275 nm / 1.52 = 361.8 µm.
+  assert.ok(gradedSublayersResolved(361e-6, 275 * NM, 1.52));
+  assert.ok(!gradedSublayersResolved(362e-6, 275 * NM, 1.52));
 });
 
 // Limits that don't depend on the staircase: no index change, or no thickness, leaves the bare substrate.
@@ -68,4 +72,13 @@ test("graded index: staircase converges", () => {
     const fine = reflectance(fineStaircase(p, 1.52, 1.38, 500 * NM, 4000), 550 * NM);
     close(coarse, fine, 1e-5, p);
   }
+});
+
+// Codex review 2026-10-24: an 89 µm cosine layer (1.52 → 1.1, page defaults otherwise) is far thicker than λ, so R tends
+// to the surface step's Fresnel value ((1 − 1.1)/2.1)² = 0.2268 %. 400 equal steps (222.5 nm, optical 338 nm > λ/2)
+// Bragg-reflected: 0.3846 %.
+test("graded index: thick layer avoids the staircase's Bragg reflection", () => {
+  const R = reflectance(gradedIndexLayers("cosine", 1.52, 1.1, 89000 * NM, 275 * NM), 550 * NM);
+  close(R, (0.1 / 2.1) ** 2, 2e-6, "89 µm cosine");
+  close(reflectance(fineStaircase("cosine", 1.52, 1.1, 89000 * NM, 400), 550 * NM), 0.003846, 1e-6, "400 steps");
 });

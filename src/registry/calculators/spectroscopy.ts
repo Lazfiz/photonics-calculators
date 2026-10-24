@@ -602,11 +602,11 @@ export const spectroscopy: CalculatorEntry[] = [
   {
     slug: "surface-enhanced-raman",
     title: "Surface-Enhanced Raman Spectroscopy (SERS)",
-    description: "Electromagnetic SERS enhancement factor of a silver nanosphere: local field, |E|⁴ enhancement at the pole and over the surface, resonance and distance decay.",
+    description: "Electromagnetic SERS enhancement factor of a silver nanosphere: local field, maximum and surface-averaged |E|⁴ enhancement, resonance and distance decay.",
     keywords: ["SERS Enhancement Factor", "Plasmonic Enhancement", "Localized Surface Plasmon"],
     related: [{ href: "/spectroscopy/raman-shift" }],
     tier: "textbook",
-    modelNote: "Quasistatic (dipole) silver sphere with measured silver permittivity (Yang et al. 2015) and the |E|⁴ approximation, at the pole and averaged over the surface. Not modelled: retardation and radiation damping (spheres above about λ/10), surface damping in very small spheres, particle gaps (hot spots) and chemical enhancement.",
+    modelNote: "Quasistatic (dipole) silver sphere with measured silver permittivity (Yang et al. 2015) and the |E|⁴ approximation, maximised over the polar angle and averaged over the surface. Not modelled: retardation and radiation damping (spheres above about λ/10), surface damping in very small spheres, particle gaps (hot spots) and chemical enhancement.",
     references: [
       {
         citation: "Bohren C. F., Huffman D. R. (1983). Absorption and Scattering of Light by Small Particles, ch. 5. Wiley. Field of a sphere small compared with the wavelength.",
