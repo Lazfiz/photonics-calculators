@@ -47,6 +47,16 @@ export function recombinationRate(N: number, A: number, B: number, C: number): n
   return N * (A + N * (B + N * C));
 }
 
+/**
+ * Radiative share BN²/(AN + BN² + CN³) of the recombination at carrier density N; NaN when nothing recombines.
+ * Tsvid et al. measured 40–54 % of the injected current as spontaneous emission in 0.98 µm InGaAs/GaAs QW lasers
+ * (IEEE J. Quantum Electron. 44, 732 (2008), doi 10.1109/JQE.2008.924242); compare η_i times this share with that.
+ */
+export function radiativeShare(N: number, A: number, B: number, C: number): number {
+  const total = recombinationRate(N, A, B, C);
+  return total > 0 ? (B * N * N) / total : NaN;
+}
+
 /** Threshold current q V R(N_th)/η_i, A, for an active volume V (m³). */
 export function thresholdCurrent(volume: number, nTh: number, A: number, B: number, C: number, etaI: number): number {
   if (!(volume > 0 && etaI > 0 && etaI <= 1)) return NaN;

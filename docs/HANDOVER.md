@@ -1,38 +1,41 @@
-# Handover — 2026-10-24 (session 148 → session 149)
+# Handover — 2026-10-24 (session 149 → session 150)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 148: **Findings 4d-c-b** done on `phase-4/findings-4d-c-b`: primary sources for scattering media, rare-earth σ, acousto-optic.
-Next: **Findings 4e** (wave-optics defaults from memory: diode/dye laser, injection locking, d_eff).
+Session 149: merged PR #179; **Findings 4e-a** done on `phase-4/findings-4e` (PR #180 to open): sourced χ⁽²⁾ d_eff, diode laser, injection locking.
+Next: **Findings 4e-b** (thin-disk Yb:YAG, dye Rh6G, OPO BBO-like defaults), then 4f (cross-cutting).
 
 ## State
-- `doped-fiber-gain.ts`: `DopantPreset.source`; Er Barnes 1991 (980 1.7e-25; 1480 1.7/0.5; 1550 2.2/3.0e-25; τ 10.2 ms), Yb Melkumov
-  2004 (976 2.69/2.97e-24; 1064 4.6e-27/3.0e-25; τ 0.83 ms). Fibre page defaults now 1.7, 2.2, 3.0, 10.2 ms.
-- `brillouin.ts`: `BRILLOUIN_MEDIA` (fused silica, As₂Se₃ Abedin 2005, As₂S₃ Pant 2011, diamond Bai 2020) with `measured`; the page's
-  `choose()` loads the measured λ/Δν_B, or 1550 nm / 20 MHz.
-- `raman-gain.ts`: KGW/Ba(NO₃)₂ at 532 nm (Markevich 2016) + 1064 nm (EKSMA); As₂S₃ (Stegeman 2006) with `absorbsBelow` 650 nm.
-- `acousto-optic.ts`: `source` field; TeO₂ shear/long and new LiNbO₃ from US 3,661,441; PbMoO₄, silica Isomet AN4820.
-- Tests: 1093 pass.
+- `three-wave.ts`: `LINBO3_D33_1313` (19.5 pm/V, Shoji 1997 Table 10, congruent), `qpmDeff` = 2d/π. SFG/DFG/OPA default d_eff 14 → 12.4 pm/V.
+- `diode-laser.ts`: `radiativeShare` BN²/R. Page defaults g₀ 1200/cm, N_tr 1.8, B 1e-10, C 3.5e-30 (De Koninck 2025 Suppl. Table 1),
+  A 4e8/s, n_g 3.9 (Wenzel 2021 Table I): N_th 3.505e18 cm⁻³, I_th 12.031 mA, share 44.17 %.
+- `injection-locking.ts`: `facetCouplingRate` (1 − R)c/(2n_gL√R); page has L/R/n_g inputs and a "Use this k_c" button; k_c/2π 24.51 GHz,
+  α 1; range −3.466 … +2.451 GHz at ρ = 0.01.
+- Tests: 1096 pass. Build green; ui-check load of the 5 pages: 0 console errors.
 
 ## Next actions
-1. `/ship` this branch. Post-merge-check e.g. `materials/brillouin-scattering?material=as2se3&wavelength=1560&linewidth=13.2`
-   (g_B 6.08e-9), `materials/rare-earth-absorption` Yb976 (89.48 dB/m at 1000 wt-ppm). No release unless asked.
-2. Findings 4e, then 4f (cross-cutting).
+1. `/ship` this branch. Post-merge-check (only after a release the user asks for): `wave-optics/diode-laser-resonator=12.03`
+   `wave-optics/injection-locking=24.51` `wave-optics/sum-frequency=72.07`. No release unless asked.
+2. Findings 4e-b: thin-disk (Koerner 2012 JOSA B is paywalled; try open Opt. Express Yb:YAG papers or theses), dye laser (Webb 1970
+   paywalled), OPO page (n 1.65/1.53, d_eff 2.0, walk-off 0.5° are BBO-like guesses: compute from BBO Sellmeier + tensor, as in materials).
+3. Findings 4f (cross-cutting).
 
 ## Non-obvious facts
+- **Session 149:** Optica abstract pages (`opg.optica.org/josab/abstract.cfm?uri=josab-14-9-2268`) show the tables of paywalled papers to
+  WebFetch (Shoji Tables 6, 10, 12). OpenAlex gives abstracts of paywalled IEEE papers: `api.openalex.org/works/doi:<doi>`,
+  `abstract_inverted_index`. A subagent's numbers needed checking: it read Wenzel's g′N_tr (a modal gain, m⁻¹) as 3170 cm⁻¹ and the
+  nano-ridge "4 × 10⁷ s" A as a lifetime. pdftotext scrambles Wenzel's Table I: render it. Chrome `--dump-dom` exits 75 when devctl
+  queues behind another project's cargo job: rerun with `run_in_background`. Stop a background check before editing (stale).
 - **Session 148:** patents.google.com holds full text of old patents (US 3,661,441 tables of TeO₂/LiNbO₃ M₂); Isomet app notes are PDFs
   at `isomet.com/App-Manual_pdf/`. Melkumov 2004 is arXiv:1502.02885 (Appendix 2, pm²); its pdftotext rows are shifted by one, so
   render the page. Markevich & Chulkov 2016 is CC BY at vestifm.belnauka.by. 2005 Opt. Express DOIs use `OPEX` (10.1364/OPEX.13.010266):
-  check with `crossref.mjs -q`. pdftotext scrambles Opt. Express table rows: render them. Physics-reviewer flagged diamond Brillouin
-  p² 0.0153 (Bai, convention unstated): the page now says ±40 %.
+  check with `crossref.mjs -q`. pdftotext scrambles Opt. Express table rows: render them.
 - **Session 147:** CREOL papers download as `api.creol.ucf.edu/Publications/<n>.pdf` (DeSalvo 1996 = 1814, Sheik-Bahae PRL 1990 = 1805;
   find numbers by web search); van Driel's papers at `physics.utoronto.ca/~vandriel/papers/`. No pdftoppm here, so the Read tool can't
   render PDFs: render a page with `uv run -q --with pymupdf python <script>` (fitz `page.get_pixmap(dpi, clip).save(png)`) and Read the PNG.
   Scanned IEEE tables OCR to garbage with pdftotext. The DTIC copy returned HTML.
-- **Session 146:** editing files while a background `npm run check` runs leaves its result stale: `TaskStop` it and rerun.
 - **Session 145:** devctl queues commands when another project's cargo job holds the CPU and can skip a whole `&&` chain
   ("not started after 61 s", exit 75): heredoc writes and edits in that chain never ran. Keep edits and test runs in
   separate calls; run tests with `run_in_background`. Scratchpad probes import the repo with 9 `../` (`../../../../../../../../../dev/…`).
-  Sine-drive Fourier coefficients: J_−m = (−1)^m J_m must also apply when m = j·n_k is negative.
 - **Session 144:** web.archive.org holds vendor PDFs that block scripts: list captures with `web.archive.org/cdx/search/cdx?url=<url>&output=txt`,
   fetch `/web/<ts>id_/<url>` (a capture can be truncated at 1 MiB: take an older one). Amorphous Materials sheets (AMTIR-1 2024,
   AMTIR-6 = As₂S₃, comparison ver 5: `pdftotext -table` unscrambles it), Norland NOA sheets, Corning ULE and Kaye & Laby

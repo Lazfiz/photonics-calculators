@@ -2,8 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  LOW_GAIN_BANDWIDTH_FACTOR, detunedMismatch, gainBandwidth, gaussianMixingPower, idlerPower, idlerWavelength,
-  mixingEfficiency, parametricGain, sumFrequencyWavelength,
+  LINBO3_D33_1313, LOW_GAIN_BANDWIDTH_FACTOR, detunedMismatch, gainBandwidth, gaussianMixingPower, idlerPower, idlerWavelength,
+  mixingEfficiency, parametricGain, qpmDeff, sumFrequencyWavelength,
 } from "../src/physics/wave-optics/three-wave";
 import { parametricGainCoefficient } from "../src/physics/wave-optics/optical-parametric-oscillator";
 import { sfgCoefficient } from "../src/physics/imaging/second-harmonic-generation";
@@ -20,7 +20,7 @@ test("SFG 1064 + 1550 nm: P₃ = 9.064 µW at n 1.8, d 2 pm/V, L 10 mm, w 30 µm
   assertRel(gaussianMixingPower(eta, 0.1, 0.05, 30e-6, 30e-6), 9.0637e-6, 1e-4, "P₃");
 });
 
-test("SFG page default (PPLN, Zelmon indices, d 14 pm/V, w 50 µm): η = 1.4431e-10 m²/W, P₃ = 91.87 µW", () => {
+test("SFG case (PPLN, Zelmon indices, d 14 pm/V, w 50 µm): η = 1.4431e-10 m²/W, P₃ = 91.87 µW", () => {
   // Hand calculation: 8π²(14e-12)²(0.01)² = 1.5476e-24; ε₀c·2.1555·2.1376·2.2027·(630.91e-9)² = 1.0724e-14.
   const eta = mixingEfficiency({ lambdaOut: 630.9105e-9, length: 0.01, deff: 14e-12, n1: 2.1555, n2: 2.1376, nOut: 2.2027, deltaK: 0 });
   assertRel(eta, 1.4431e-10, 1e-4, "η");
@@ -79,7 +79,7 @@ test("OPA idler when the signal is the longer wave (Manley–Rowe): 1064 → 300
   assert.ok(Number.isNaN(idlerPower(1047.15, 1, 3000e-9, 0)));
 });
 
-test("OPA page default (PPLN, 50 kW, w 300 µm, 20 mm): Γ = 202.18 /m, G = 813.7 (29.10 dB)", () => {
+test("OPA case (PPLN, d 14 pm/V, 50 kW, w 300 µm, 20 mm): Γ = 202.18 /m, G = 813.7 (29.10 dB)", () => {
   // Hand calculation: I₀ = 2P/(πw²) = 3.5368e11 W/m²; Γ² = 2ω_sω_i d²I₀/(n_pn_sn_i ε₀c³) = 4.0878e4 m⁻²;
   // G = cosh²(4.0436) = 813.7.
   const p = { lambdaPump: 1064e-9, lambdaSignal: 1550e-9, dEff: 14e-12, nPump: 2.1555, nSignal: 2.1376, nIdler: 2.0814 };
@@ -105,4 +105,11 @@ test("gain bandwidth: 0.886/(|δ|L) at low gain, (2√ln2/π)√(Γ/L)/|δ| at h
   assertRel(parametricGain(202.18, edge, L) - 1, (parametricGain(202.18, 0, L) - 1) / 2, 1e-9, "half max");
   assertRel(bw, 616.16e9, 1e-4, "default bandwidth");
   assert.equal(gainBandwidth(202.18, L, 0), Infinity, "δ = 0");
+});
+
+test("PPLN default d_eff = 2d₃₃/π from Shoji et al. 1997 (Table 10, congruent LiNbO₃)", () => {
+  // 2 × 19.5/π = 12.4141 pm/V at 1.313 µm; 2 × 25.2/π = 16.0428 pm/V at 1.064 µm.
+  assertRel(qpmDeff(LINBO3_D33_1313), 12.4141e-12, 1e-5, "1313 nm");
+  assertRel(qpmDeff(25.2e-12), 16.0428e-12, 1e-5, "1064 nm");
+  assert.equal(qpmDeff(0), 0, "no nonlinearity");
 });

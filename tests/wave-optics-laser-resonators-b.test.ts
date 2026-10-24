@@ -5,8 +5,8 @@ import { c, h, q } from "../src/physics/constants";
 import { vNumber } from "../src/physics/fiber-optics/macro-bending-loss";
 import { guidedModeCount } from "../src/physics/fiber-optics/step-index-modes";
 import {
-  differentialEfficiency, facetShare, gaussianFarField, logGainCarrierDensity, mirrorLoss, modeSpacing, recombinationRate,
-  slopeEfficiency, thresholdCurrent, thresholdModalGain,
+  differentialEfficiency, facetShare, gaussianFarField, logGainCarrierDensity, mirrorLoss, modeSpacing, radiativeShare,
+  recombinationRate, slopeEfficiency, thresholdCurrent, thresholdModalGain,
 } from "../src/physics/wave-optics/diode-laser";
 import { fourLevelSlopeEfficiency, fourLevelThreshold, laserOutput, roundTripLoss, saturationIntensity } from "../src/physics/wave-optics/laser-resonator";
 import {
@@ -48,6 +48,20 @@ test("diode laser: threshold carrier density and current, logarithmic gain and A
   // At transparency gain the density is N_tr; beyond g/g₀ = 20 the fit is refused.
   assert.equal(logGainCarrierDensity(0, 1800e2, 1.8e24), 1.8e24);
   assert.ok(Number.isNaN(logGainCarrierDensity(21 * 1800e2, 1800e2, 1.8e24)));
+});
+
+test("diode laser: sourced defaults (De Koninck et al. 2025 Table S1, Wenzel et al. 2021 Table I) and radiative share", () => {
+  // g₀ 1200/cm, N_tr 1.8e18 cm⁻³, B 1e-10 cm³/s, C 3.5e-30 cm⁶/s (De Koninck, Nature 637, 63, Suppl. Table 1); A 4e8/s
+  // (Wenzel, Appl. Sci. 11, 6004, Table I). N_th = 1.8e18·e^(799.686/1200) = 3.50500e18 cm⁻³.
+  const nTh = logGainCarrierDensity(4798.114 / 0.06, 1200e2, 1.8e24);
+  assertRel(nTh, 3.50500e24, 1e-5, "N_th (1/m³)");
+  // R = 1.40200e27 + 1.22850e27 + 1.50715e26 cm⁻³s⁻¹ = 2.78122e27; I_th = qVR/η_i with V = 2.16e-17 m³: 12.0312 mA.
+  assertRel(thresholdCurrent(2.16e-17, nTh, 4e8, 1e-16, 3.5e-42, 0.8), 12.0312e-3, 1e-4, "I_th (A)");
+  // Radiative share 1.22850/2.78122 = 0.44172; η_i times it, 0.353, is below the 40–54 % Tsvid et al. 2008 measured at 0.98 µm.
+  assertRel(radiativeShare(nTh, 4e8, 1e-16, 3.5e-42), 0.441715, 1e-4, "radiative share");
+  // Hand case: A N = B N² at N = 1e24 with A 1e8, B 1e-16, C 0 → 1/2; with no recombination at all, NaN.
+  assert.equal(radiativeShare(1e24, 1e8, 1e-16, 0), 0.5);
+  assert.ok(Number.isNaN(radiativeShare(0, 1e8, 1e-16, 3.5e-42)));
 });
 
 test("diode laser: facet split, Gaussian far field and mode spacing", () => {
