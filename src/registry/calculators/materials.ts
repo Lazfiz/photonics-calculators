@@ -359,10 +359,10 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "nonlinear-index",
     title: "Nonlinear Refractive Index (n₂)",
-    description: "Kerr effect n = n₀ + n₂I: index change, nonlinear phase over a length, fibre nonlinear coefficient γ = 2πn₂/(λA_eff) and the self-focusing critical power, with n₂ of silica fibre and 12 crystals, glasses and water.",
+    description: "Kerr effect n = n₀ + n₂I: index change, nonlinear phase over a length, fibre nonlinear coefficient γ = 2πn₂/(λA_eff) and the self-focusing critical power, with n₂ of silica fibre, silicon and 17 crystals, glasses and water.",
     keywords: ["Kerr Effect", "Nonlinear Refractive Index", "B-Integral", "Self-Phase Modulation", "Critical Power"],
     tier: "textbook",
-    modelNote: "Instantaneous electronic Kerr effect for linear polarization and uniform intensity over L. n₂ is fixed at the wavelength it was measured at (800 nm for the Dubietis table, 1550 nm for silica fibre); its dispersion is not modelled. P_cr is the Gaussian-beam value 3.77 λ²/(8π n₀ n₂).",
+    modelNote: "Instantaneous electronic Kerr effect for linear polarization and uniform intensity over L. n₂ is fixed at the wavelength it was measured at (800 nm for the Dubietis table, 1064 nm for DeSalvo's, 1800 nm for silicon, 1550 nm for silica fibre); its dispersion is not modelled. DeSalvo's esu values are converted with n₂(m²/W) = 40π n₂(esu)/(c n₀). P_cr is the Gaussian-beam value 3.77 λ²/(8π n₀ n₂).",
     references: [
       {
         citation: "Dubietis A., Tamošauskas G., Šuminas R., Jukna V., Couairon A. (2017). Ultrafast supercontinuum generation in bulk condensed media. Lith. J. Phys. 57(3). Table 1: n₂ and n₀ at 800 nm.",
@@ -375,6 +375,18 @@ export const materials: CalculatorEntry[] = [
       {
         citation: "Fibich G., Gaeta A. L. (2000). Critical power for self-focusing in bulk media and in hollow waveguides. Opt. Lett. 25, 335–337.",
         url: "https://doi.org/10.1364/OL.25.000335",
+      },
+      {
+        citation: "DeSalvo R., Said A. A., Hagan D. J., Van Stryland E. W., Sheik-Bahae M. (1996). Infrared to ultraviolet measurements of two-photon absorption and n₂ in wide bandgap solids. IEEE J. Quantum Electron. 32, 1324–1333. Tables I–II: n₂ and n₀ at 1064 nm.",
+        url: "https://doi.org/10.1109/3.511545",
+      },
+      {
+        citation: "Bristow A. D., Rotenberg N., van Driel H. M. (2007). Two-photon absorption and Kerr coefficients of silicon for 850–2200 nm. Appl. Phys. Lett. 90, 191104. Peak n₂ = 1.2e-13 cm²/W at 1800 nm.",
+        url: "https://doi.org/10.1063/1.2737359",
+      },
+      {
+        citation: "Salzberg C. D., Villa J. J. (1957). Infrared refractive indexes of silicon, germanium, and modified selenium glass. J. Opt. Soc. Am. 47, 244. n₀ of silicon.",
+        url: "https://doi.org/10.1364/JOSA.47.000244",
       },
       {
         citation: "Malitson I. H. (1965). Interspecimen comparison of the refractive index of fused silica. J. Opt. Soc. Am. 55, 1205.",
@@ -667,10 +679,10 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "two-photon-absorption",
     title: "Two-Photon Absorption",
-    description: "Two-photon absorption of GaAs, CdTe, CdSe, ZnTe, ZnSe, CdS and ZnO: measured β scaled across the 2PA window by F₂(2ħω/E_g), induced absorption βI and slab transmission 1/(1 + βI₀L).",
+    description: "Two-photon absorption of semiconductors (GaAs, CdTe, ZnSe and others), silicon, fused silica, sapphire, BaF₂, BBO, LiNbO₃ and KTP: measured β scaled across the 2PA window, induced absorption βI and slab transmission 1/(1 + βI₀L).",
     keywords: ["Two-Photon Absorption Coefficient", "Nonlinear Absorption", "Optical Limiting", "Band-Gap Scaling"],
     tier: "textbook",
-    modelNote: "Degenerate 2PA between two parabolic bands, valid for E_g/2 < ħω < E_g. A measured β is moved to another wavelength by the ratio of F₂(x) = (x − 1)^(3/2)/x⁵, with n held constant. Transmission is for a plane wave of constant intensity, without linear, free-carrier or reflection losses. Measured β carry about ±40 % error.",
+    modelNote: "Degenerate 2PA between two parabolic bands, valid for E_g/2 < ħω < E_g. A measured β is moved to another wavelength by the ratio of F₂(x) = (x − 1)^(3/2)/x⁵, with n held constant. Wide-gap solids use DeSalvo's fitted effective gap E′_g; away from their measured wavelength the scaling is order-of-magnitude (the two-band model diverges near the 2PA edge). Indirect-gap silicon uses Bristow's phonon-assisted fit β = Σₙ 2C F₂⁽ⁿ⁾(ħω/E_gi), C = 43 cm/GW, 850–2214 nm. Transmission is for a plane wave of constant intensity, without linear, free-carrier or reflection losses. Measured β carry about ±20–40 % error.",
     references: [
       {
         citation: "Van Stryland E. W., Woodall M. A., Vanherzeele H., Soileau M. J. (1985). Energy band-gap dependence of two-photon absorption. Opt. Lett. 10, 490–492. Eq. 1–2 and Table 1.",
@@ -679,6 +691,14 @@ export const materials: CalculatorEntry[] = [
       {
         citation: "Sheik-Bahae M., Hagan D. J., Van Stryland E. W. (1990). Dispersion and band-gap scaling of the electronic Kerr effect in solids associated with two-photon absorption. Phys. Rev. Lett. 65, 96–99.",
         url: "https://doi.org/10.1103/PhysRevLett.65.96",
+      },
+      {
+        citation: "DeSalvo R., Said A. A., Hagan D. J., Van Stryland E. W., Sheik-Bahae M. (1996). Infrared to ultraviolet measurements of two-photon absorption and n₂ in wide bandgap solids. IEEE J. Quantum Electron. 32, 1324–1333. Tables I–II: β, E′_g and n.",
+        url: "https://doi.org/10.1109/3.511545",
+      },
+      {
+        citation: "Bristow A. D., Rotenberg N., van Driel H. M. (2007). Two-photon absorption and Kerr coefficients of silicon for 850–2200 nm. Appl. Phys. Lett. 90, 191104. β = 2.1 cm/GW at 1220 nm; indirect-gap fit C = 43 cm/GW.",
+        url: "https://doi.org/10.1063/1.2737359",
       },
     ],
   },

@@ -143,7 +143,13 @@ export default function NonlinearIndexPage() {
           <p>
             The electronic Kerr effect is instantaneous and the intensity uniform over L, so φ is the on-axis phase (the
             B-integral of a slab). In a fibre the same n₂ sets γ through the mode&apos;s effective area. n₂ falls slowly
-            towards the infrared below the band gap, so a value measured at one wavelength holds only near it.
+            towards the infrared below the band gap, so a value measured at one wavelength holds only near it (fused silica:
+            2.4 × 10⁻¹⁶ cm²/W at 800 nm in Dubietis et al.&apos;s table, 2.1 × 10⁻¹⁶ at 1064 nm in DeSalvo et al.&apos;s
+            picosecond Z-scans, ±20 %).
+          </p>
+          <p>
+            Silicon&apos;s n₂ changes fourfold between 1000 and 2200 nm (4.7 × 10⁻¹⁴ cm²/W at 1220 nm, peak 1.2 × 10⁻¹³ at
+            1800 nm), and silicon also absorbs two photons up to 2200 nm, which limits the usable nonlinear phase.
           </p>
           <p>
             Values are for linear polarization; circular polarization gives ⅔ of n₂ in isotropic media. Pulses of a few

@@ -15,24 +15,46 @@
  * on the same two-band 2PA scaling.
  * `scaledBeta` moves a measured β to another wavelength by the ratio of F₂, so K, E_p and n cancel (n taken constant).
  * Plane-wave slab transmission without linear loss: T = 1/(1 + βI₀L).
+ *
+ * Wide-gap solids: R. DeSalvo, A. A. Said, D. J. Hagan, E. W. Van Stryland, M. Sheik-Bahae, IEEE J. Quantum Electron.
+ * 32, 1324 (1996), doi:10.1109/3.511545, Table I: β at 532, 355 and 266 nm (Z-scan, picosecond pulses) with the
+ * effective direct gap E′_g they fit to the two-band model, and n from Table II. They find the two-band dispersion
+ * diverges near the 2PA edge, so F₂ scaling of these rows away from the measured wavelength is order-of-magnitude
+ * (BBO: 0.9 cm/GW at 266 nm scales to 0.076 at 355 nm, measured 0.010). Their E′_g lies above the linear absorption edge
+ * E_g of Table I (KTP 3.8, LiNbO₃ 3.9 eV), so one-photon absorption is taken to start at min(E_g, E′_g).
+ *
+ * Indirect-gap silicon: A. D. Bristow, N. Rotenberg, H. M. van Driel, Appl. Phys. Lett. 90, 191104 (2007),
+ * doi:10.1063/1.2737359: β = Σₙ β⁽ⁿ⁾, β⁽ⁿ⁾ = 2C F₂⁽ⁿ⁾(ħω/E_gi) for allowed-allowed, allowed-forbidden and
+ * forbidden-forbidden phonon-assisted transitions (n = 0, 1, 2; Garcia & Kalyanaraman 2006),
+ * F₂⁽ⁿ⁾(x) = [π(2n + 1)!!/(2ⁿ⁺²(n + 2)!)] (2x)⁻⁵ (2x − 1)ⁿ⁺², phonon energies ≪ E_gi = 1.12 eV; their fit to
+ * 850–2200 nm gives C = 43 cm/GW (measured β = 2.1 ± 0.4 cm/GW at 1220 nm).
  */
 
 import { c, h, q } from "../constants";
 
-export type TpaMediumId = "gaas" | "cdte" | "cdse" | "znte" | "znse" | "cds" | "zno";
+export type TpaMediumId = "gaas" | "cdte" | "cdse" | "znte" | "znse" | "cds" | "zno"
+  | "silicon" | "fused-silica" | "sapphire" | "baf2" | "bbo" | "linbo3" | "ktp";
 
 export interface TpaMedium {
   name: string;
-  /** Linear index at `lambda`. */
-  n: number;
-  /** Direct band gap, eV. */
+  /** Linear index at `lambda`; null where the source gives none (only Eq. 1 uses it). */
+  n: number | null;
+  /** Band gap, eV: direct (Van Stryland), effective direct E′_g (DeSalvo) or indirect (silicon). */
   bandGap_eV: number;
-  /** Kane energy E_p, eV. */
-  Ep_eV: number;
+  /**
+   * "direct": β scales by F₂(2ħω/E_g); "effective": the same with DeSalvo's fitted E′_g (order-of-magnitude away from
+   * the measured wavelength); "indirect": Bristow's phonon-assisted fit.
+   */
+  gap: "direct" | "effective" | "indirect";
+  /** Linear absorption edge where it differs from `bandGap_eV` (DeSalvo Table I E_g), eV; else null. */
+  absorptionEdge_eV: number | null;
+  /** Kane energy E_p, eV, for the Eq. 1 prediction; null where it is not given. */
+  Ep_eV: number | null;
   /** Measured 2PA coefficient, m/W. */
   beta: number;
   /** Wavelength of the measurement, m. */
   lambda: number;
+  source: string;
 }
 
 /** Fitted scaling constant K of Eq. 1, cm/GW · eV^(5/2). */
@@ -40,8 +62,19 @@ export const TPA_SCALING_K = 3100;
 const CM_PER_GW = 1e-11; // 1 cm/GW in m/W
 
 const row = (name: string, lambda_um: number, n: number, bandGap_eV: number, Ep_eV: number, beta_cmGW: number): TpaMedium => ({
-  name, n, bandGap_eV, Ep_eV, beta: beta_cmGW * CM_PER_GW, lambda: lambda_um === 1.06 ? 1064e-9 : 532e-9,
+  name, n, bandGap_eV, gap: "direct", absorptionEdge_eV: null, Ep_eV, beta: beta_cmGW * CM_PER_GW, lambda: lambda_um === 1.06 ? 1064e-9 : 532e-9,
+  source: "Van Stryland et al. 1985, Table 1",
 });
+const desalvo = (name: string, lambda_nm: number, n: number, edge_eV: number, effectiveGap_eV: number, beta_cmGW: number): TpaMedium => ({
+  name, n, bandGap_eV: effectiveGap_eV, gap: "effective", absorptionEdge_eV: edge_eV, Ep_eV: null, beta: beta_cmGW * CM_PER_GW, lambda: lambda_nm * 1e-9,
+  source: "DeSalvo et al. 1996, Tables I–II; E_g is their effective direct gap E′_g",
+});
+
+/** Silicon indirect gap E_gi, eV, and Bristow's fitted constant C, cm/GW. */
+export const SI_INDIRECT_GAP_EV = 1.12;
+export const SI_INDIRECT_C = 43;
+/** Shortest wavelength of Bristow's measurements (and of the fit's use here), m. */
+export const SI_FIT_MIN_LAMBDA = 850e-9;
 
 /** Van Stryland et al. 1985, Table 1 (single crystals; the 1.06 µm rows at 1064 nm, the 0.53 µm rows at 532 nm). */
 export const TPA_MEDIA: Record<TpaMediumId, TpaMedium> = {
@@ -52,6 +85,16 @@ export const TPA_MEDIA: Record<TpaMediumId, TpaMedium> = {
   znse: row("ZnSe", 0.53, 2.70, 2.67, 24.2, 5.5),
   cds: row("CdS", 0.53, 2.60, 2.42, 21, 5.5),
   zno: row("ZnO", 0.53, 2.05, 3.20, 21, 5.0),
+  silicon: {
+    name: "Silicon (indirect)", n: null, bandGap_eV: SI_INDIRECT_GAP_EV, gap: "indirect", absorptionEdge_eV: null, Ep_eV: null, beta: 2.1 * CM_PER_GW,
+    lambda: 1220e-9, source: "Bristow et al. 2007: measured at 1220 nm, fit C = 43 cm/GW",
+  },
+  "fused-silica": desalvo("Fused silica", 266, 1.5, 7.8, 9.0, 0.05),
+  sapphire: desalvo("Sapphire", 266, 1.82, 7.3, 8.7, 0.09),
+  baf2: desalvo("BaF₂", 266, 1.5, 9.2, 9.0, 0.06),
+  bbo: desalvo("β-BBO", 266, 1.66, 6.2, 6.8, 0.9),
+  linbo3: desalvo("LiNbO₃ (E ∥ c)", 532, 2.23, 3.9, 4.4, 0.38),
+  ktp: desalvo("KTP (E ∥ z)", 532, 1.78, 3.8, 4.6, 0.10),
 };
 
 /** Photon energy ħω in eV at wavelength λ (m). */
@@ -93,6 +136,57 @@ export function scaledBeta(betaRef: number, lambdaRef: number, lambda: number, b
   const Fref = tpaF2(twoPhotonRatio(lambdaRef, bandGap_eV));
   if (!(betaRef >= 0) || !(Fref > 0)) return NaN;
   return (betaRef * tpaF2(twoPhotonRatio(lambda, bandGap_eV))) / Fref;
+}
+
+/** (2n + 1)!! for n = 0, 1, 2. */
+const DOUBLE_FACTORIAL = [1, 3, 15] as const;
+const FACTORIAL_N_PLUS_2 = [2, 6, 24] as const;
+
+/** F₂⁽ⁿ⁾(x) = [π(2n + 1)!!/(2ⁿ⁺²(n + 2)!)] (2x)⁻⁵ (2x − 1)ⁿ⁺², x = ħω/E_gi; 0 for 2x ≤ 1 (Bristow et al. 2007). */
+export function indirectF2(n: 0 | 1 | 2, x: number): number {
+  if (!Number.isFinite(x) || x < 0) return NaN;
+  if (2 * x <= 1) return 0;
+  return ((Math.PI * DOUBLE_FACTORIAL[n]) / (2 ** (n + 2) * FACTORIAL_N_PLUS_2[n])) * (2 * x) ** -5 * (2 * x - 1) ** (n + 2);
+}
+
+/** Indirect-gap 2PA β = Σₙ 2C F₂⁽ⁿ⁾(ħω/E_gi), n = 0, 1, 2, m/W (C in cm/GW; silicon defaults). */
+export function indirectBeta(lambda: number, bandGap_eV = SI_INDIRECT_GAP_EV, C_cmGW = SI_INDIRECT_C): number {
+  if (!(bandGap_eV > 0) || !(C_cmGW >= 0)) return NaN;
+  const x = photonEnergy_eV(lambda) / bandGap_eV;
+  const sum = indirectF2(0, x) + indirectF2(1, x) + indirectF2(2, x);
+  return 2 * C_cmGW * sum * CM_PER_GW;
+}
+
+/**
+ * β of a preset at λ, m/W: F₂ scaling from its measurement (direct or effective gap), or Bristow's fit for silicon
+ * (NaN below 850 nm, outside the measured range).
+ */
+export function mediumBeta(m: TpaMedium, lambda: number): number {
+  if (m.gap === "indirect") return lambda >= SI_FIT_MIN_LAMBDA ? indirectBeta(lambda, m.bandGap_eV) : NaN;
+  if (mediumRegime(m, lambda) === "linear") return NaN;
+  return scaledBeta(m.beta, m.lambda, lambda, m.bandGap_eV);
+}
+
+/** Photon energy at which one-photon absorption starts: min(E_g, E′_g) for DeSalvo rows, else the band gap, eV. */
+export function linearEdge_eV(m: TpaMedium): number {
+  return m.absorptionEdge_eV !== null ? Math.min(m.absorptionEdge_eV, m.bandGap_eV) : m.bandGap_eV;
+}
+
+export type MediumRegime = TpaRegime | "outside-fit";
+
+/**
+ * Regime of a preset at λ. DeSalvo rows: "linear" from ħω ≥ min(E_g, E′_g). Silicon: no 2PA for 2ħω ≤ E_gi, Bristow's
+ * fit from 850 nm up (above E_gi phonon-assisted linear absorption adds to it, α = 5e2 cm⁻¹ at 850 nm per Bristow),
+ * "outside-fit" below 850 nm.
+ */
+export function mediumRegime(m: TpaMedium, lambda: number): MediumRegime | null {
+  if (m.gap !== "indirect") {
+    const regime = tpaRegime(lambda, m.bandGap_eV);
+    return regime === "two-photon" && photonEnergy_eV(lambda) >= linearEdge_eV(m) ? "linear" : regime;
+  }
+  const x = twoPhotonRatio(lambda, m.bandGap_eV);
+  if (!Number.isFinite(x)) return null;
+  return x <= 1 ? "transparent" : lambda >= SI_FIT_MIN_LAMBDA ? "two-photon" : "outside-fit";
 }
 
 /** Plane-wave 2PA transmission of a slab, T = 1/(1 + βI₀L) (no linear absorption or reflection). */
