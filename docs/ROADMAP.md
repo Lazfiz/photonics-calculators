@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 146, 2026-10-24)
+## Status (session 147, 2026-10-24)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4: every page is tiered; open findings and the top-50 tests remain.
@@ -43,8 +43,9 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   scrambler `combinationLock` + Fourier lattice sum (13/17/30 kHz DOP 0.080756 = brute force).
 - [x] **Findings 4g-b** (session 146, `phase-4/findings-4g-b`, PR #177): QKD μ_opt 0.4264 at 29.86 dB; OPA idler 1903.5 W at 3000 nm;
   graded index 10/wave up to 4000 steps (89 µm R 0.2268 %); SERS true max (320 nm equator 4.72); ui-check label.
-- [ ] **Findings 4d-c, nonlinear and scattering media:** `nonlinear-index`, `two-photon-absorption`, `brillouin-scattering`,
-  `raman-scattering`, rare-earth σ, `acousto-optic`.
+- [x] **Findings 4d-c-a** (session 147, `phase-4/findings-4d-c-a`, PR #178): DeSalvo 1996 n₂ (5 media, KTP 2.37e-19 m²/W) and β (6 wide-gap,
+  edge min(E_g, E′_g)); Si Bristow 2007 (n₂ 1.2e-17 at 1800 nm; indirect 2PA fit 1.839 cm/GW at 1220 nm vs 2.1 ± 0.4).
+- [ ] **Findings 4d-c-b, scattering media:** `brillouin-scattering`, `raman-scattering`, rare-earth σ, `acousto-optic`.
 - [ ] **Findings 4e, wave-optics defaults from memory** (diode/dye laser, injection locking, d_eff).
 - [ ] **Findings 4f, cross-cutting:** URL clamping (codemod), `erf`/`sinc` copies, search relevance floor.
 - [x] Detectors part 9b (session 77, `phase-4/detectors-mtf-cosmic`): `sensor-mtf.ts` (Seib diffusion, column shares),
@@ -92,7 +93,8 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   "typical" values (Barnes 1991, Miniscalco 1991 and Desurvire are closed; Southampton eprints blocks scripts); Yb 976 nm is
   2.5e-24 vs Paschotta's 2.6e-24 m². Nd, Tm, Ho dropped. `color-centers`: F(KCl), Ti:sapphire, ruby and SiV⁻ dropped (no open
   source read); LiF F₂/F₂⁺ have no cited σ.
-- `nonlinear-index`: Si, GaAs, AlGaAs, CS₂, air, chalcogenide and SF glasses were dropped (n₂ unsourced; audit: As₂S₃ 7× high).
+- `nonlinear-index` (session 147: + DeSalvo 1064 nm rows, Si at 1800 nm): GaAs, AlGaAs, CS₂, air, chalcogenide and SF glasses still out
+  (Sheik-Bahae 1991 JQE has no open copy; CREOL hosts only the 1990 PRL, figures only). DeSalvo calcite dropped: Table II n 1.59 fits neither axis.
   Candidates: Dinu 2003 / Bristow 2007 (Si), Sheik-Bahae 1991 (semiconductors), Milam 1998 (silica 1064 nm).
 - `brillouin-scattering` (session 131): SMF-28, Ge-doped, As₂S₃, Bi₂O₃, tellurite, PMMA and diamond were dropped (n, ρ, v_A,
   p₁₂ unsourced); fused silica (Agrawal) + custom remain. Candidates: Ogusu 2004 JOSA B (chalcogenides), Kobyakov 2010 (fibres).
@@ -101,8 +103,8 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - `low-water-peak` (session 132): the 1246 and 2212 nm OH combination bands are listed without a strength and not
   modelled (Humbach 1996 Table is paywalled; no open source found). Band widths are assumed (30 nm at 1383 nm, same in
   wavenumber elsewhere). The 1383 nm 62.7 dB/km/ppm is Humbach as quoted by arXiv:2303.17814.
-- `two-photon-absorption` (session 131): fused silica, BK7, CS₂, Si, water and BBO were dropped (no wide-gap or indirect-gap
-  scaling). Candidates: Bristow 2007 (Si 850–2200 nm), DeSalvo 1996 JQE (wide-gap crystals), arXiv:2301.06138 data tables.
+- `two-photon-absorption` (session 147: + DeSalvo wide-gap rows, Si indirect fit): BK7, CS₂, water still out. DeSalvo E′_g scaling
+  is order-of-magnitude off the measured λ (BBO 355 nm 0.076 vs 0.010); KTP at 520 nm gives 4× its 532 nm β (x_ref at the edge).
 - `infrared-glass` (session 144: AMTIR-1, As₂S₃ from AMI's archived sheets): ZBLAN has no sourced band, dn/dT, conductivity or
   hardness (only reseller pages found); AMTIR-1's single dn/dT is 2× low below 1.5 µm. Gan's ZBLAN formula gives n_d 1.5011, the audit's
   1.499 is unverified (Gan 1995 is paywalled). Crystran's fused-silica "1.47012 at 4 µm" is n at 0.4 µm (Malitson).

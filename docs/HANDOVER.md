@@ -1,27 +1,26 @@
-# Handover — 2026-10-24 (session 146 → session 147)
+# Handover — 2026-10-24 (session 147 → session 148)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 146: **Findings 4g-b** done on `phase-4/findings-4g-b` (PR #177): the rest of the Codex review, physics-reviewed.
-Next: **Findings 4d-c** (nonlinear and scattering media: `nonlinear-index`, `two-photon-absorption`, Brillouin, Raman, …).
+Session 147: **Findings 4d-c-a** done on `phase-4/findings-4d-c-a` (PR #178): sourced n₂ and β presets (DeSalvo 1996, Bristow 2007).
+Next: **Findings 4d-c-b** (`brillouin-scattering`, `raman-scattering`, rare-earth σ, `acousto-optic`).
 
 ## State
-- `qkd.ts`: `DecoyBb84Result.rawRate` (unclipped R); `optimalMu` golden-sections it (unimodal over all page limits).
-- `three-wave.ts` `idlerPower` takes either ordering of λ_s, λ_i; OPA spectrum filter 0 < ν_s + Δν < ν_p.
-- `graded-index.ts`: 10 sublayers per λ_min/n_max, `GRADED_MAX_SUBLAYERS` 4000; `gradedSublayersResolved` (≥ 2 per
-  λ_min/n_max, else Bragg artefacts) drives a page warning (> 361.8 µm at the defaults).
-- `sers.ts` `sersEnhancement` → {pole, max, maxAngle, average}; max over u = cos²θ (ends or concave vertex).
-- Tests: 1086 pass.
+- `kerr-index.ts`: `n2FromEsu` (40π n₂/(c n₀)); + MgF₂, KBr, LiNbO₃, KTP, tellurite (1064 nm), silicon (1800 nm): 19 media.
+- `two-photon.ts`: `TpaMedium.gap` direct | effective (DeSalvo E′_g) | indirect; `absorptionEdge_eV`, `linearEdge_eV`,
+  `indirectF2`, `indirectBeta` (Bristow C = 43 cm/GW), `mediumBeta`, `mediumRegime` ("outside-fit" < 850 nm); 14 media.
+- Tests: 1089 pass.
 
 ## Next actions
-1. `/ship` this branch. Defaults unchanged; post-merge-check e.g. `thin-film/gradient-index?thickness=89000` (R 0.23%),
-   `spectroscopy/surface-enhanced-raman?laserWavelength=320&mediumIndex=1` (max 4.72, at the equator),
-   `free-space-comms/quantum-key-distribution?range=0&fixedLoss=29.86` (optimal μ 0.426),
-   `wave-optics/optical-parametric-amplifier?signalWavelength=3000` (idler 1.90 kW). No release unless asked.
-2. Findings 4d-c, then 4e (wave-optics defaults from memory), then 4f (cross-cutting).
+1. `/ship` this branch. Defaults unchanged; post-merge-check e.g. `materials/two-photon-absorption?material=silicon&wavelength=1220`
+   (β 1.839), `materials/nonlinear-index?material=ktp&wavelength=1064` (2.37e-15 cm²/W). No release unless asked.
+2. Findings 4d-c-b, then 4e (wave-optics defaults from memory), then 4f (cross-cutting).
 
 ## Non-obvious facts
+- **Session 147:** CREOL papers download as `api.creol.ucf.edu/Publications/<n>.pdf` (DeSalvo 1996 = 1814, Sheik-Bahae PRL 1990 = 1805;
+  find numbers by web search); van Driel's papers at `physics.utoronto.ca/~vandriel/papers/`. No pdftoppm here, so the Read tool can't
+  render PDFs: render a page with `uv run -q --with pymupdf python <script>` (fitz `page.get_pixmap(dpi, clip).save(png)`) and Read the PNG.
+  Scanned IEEE tables OCR to garbage with pdftotext. The DTIC copy returned HTML.
 - **Session 146:** editing files while a background `npm run check` runs leaves its result stale: `TaskStop` it and rerun.
-  An equal-step staircase is a grating: Bragg at λ = 2·n·step, so check sublayer counts against λ_min/(2n), not only convergence.
 - **Session 145:** devctl queues commands when another project's cargo job holds the CPU and can skip a whole `&&` chain
   ("not started after 61 s", exit 75): heredoc writes and edits in that chain never ran. Keep edits and test runs in
   separate calls; run tests with `run_in_background`. Scratchpad probes import the repo with 9 `../` (`../../../../../../../../../dev/…`).
