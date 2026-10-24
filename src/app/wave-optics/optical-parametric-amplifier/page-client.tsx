@@ -75,7 +75,7 @@ export default function OPACalculator() {
   const spectrum = valid && Number.isFinite(G) && Number.isFinite(bandwidth) && bandwidth > 0 ? [{
     name: "Gain spectrum", color: "#76ff03",
     points: Array.from({ length: 301 }, (_, i) => peakDetuning + ((i - 150) / 75) * bandwidth)
-      .filter((dnu) => nuS + dnu > c / lambdaI && nuS + dnu < c / lambdaP)
+      .filter((dnu) => nuS + dnu > 0 && nuS + dnu < c / lambdaP)
       .map((dnu) => ({ x: round6((c / (nuS + dnu)) * 1e9), y: round6(dB(parametricGain(gamma, detunedMismatch(deltaK0, dnu, gvm), L))) }))
       .reverse(),
   }] : [];
