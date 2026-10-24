@@ -24,6 +24,7 @@
  * which this first-order model omits.
  */
 import { epsilon_0, c } from "../constants";
+import { sinc } from "../math";
 import { sumFrequencyWavelength } from "../imaging/second-harmonic-generation";
 import { idlerWavelength } from "./optical-parametric-oscillator";
 
@@ -57,7 +58,6 @@ export interface MixingInput {
   deltaK: number;
 }
 
-const sinc = (x: number) => (x === 0 ? 1 : Math.sin(x) / x);
 
 /** η in I_g = η I₁ I₂ (low conversion, plane waves), m²/W. NaN outside the domain. */
 export function mixingEfficiency({ lambdaOut, length, deff, n1, n2, nOut, deltaK }: MixingInput): number {

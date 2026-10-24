@@ -19,7 +19,7 @@
  *   Blackman–Harris 3- and 4-term Σ aₖ cos(πku) (F. J. Harris, Proc. IEEE 66, 51 (1978), −67 dB and −92 dB).
  */
 import { nextPow2, fftRadix2 } from "../fft";
-import { firstCrossing, integrateSimpson } from "../math";
+import { firstCrossing, integrateSimpson, sinc } from "../math";
 
 export type FtirApodization =
   | "boxcar" | "triangular" | "happ-genzel" | "nb-weak" | "nb-medium" | "nb-strong" | "bh3" | "bh4";
@@ -55,7 +55,7 @@ export function apodization(name: FtirApodization, u: number): number {
 const PANELS = 200;
 const AREA = new Map<FtirApodization, number>();
 
-const sincPi = (y: number) => (y === 0 ? 1 : Math.sin(Math.PI * y) / (Math.PI * y));
+const sincPi = (y: number) => sinc(Math.PI * y);
 
 /** ILS normalized to 1 at the line centre, at s = (σ − σ₀)·L (dimensionless). */
 export function instrumentLineShape(name: FtirApodization, s: number): number {

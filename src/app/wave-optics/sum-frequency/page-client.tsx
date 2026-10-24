@@ -4,6 +4,7 @@ import SimpleLineChart from "../../../components/simple-line-chart";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { sinc } from "../../../physics/math";
 import { gaussianMixingPower, mixingEfficiency, sumFrequencyWavelength } from "../../../physics/wave-optics/three-wave";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -43,7 +44,7 @@ export default function SumFrequencyPage() {
     gaussianMixingPower(mixingEfficiency({ lambdaOut: lambda3, length, deff, n1, n2, nOut: n3, deltaK: dk }), P1, P2, w, w);
   const P3 = power(L, deltaK);
   const phase = (deltaK * L) / 2;
-  const sinc2 = phase === 0 ? 1 : (Math.sin(phase) / phase) ** 2;
+  const sinc2 = sinc(phase) ** 2;
   const normalized = P1 > 0 && P2 > 0 ? P3 / (P1 * P2) : NaN;
   // Index mismatch without phase matching: Δk = 2π(n₃/λ₃ − n₁/λ₁ − n₂/λ₂); first-order QPM period 2π/|Δk|.
   const deltaKMaterial = 2 * Math.PI * (n3 / lambda3 - n1 / lambda1 - n2 / lambda2);

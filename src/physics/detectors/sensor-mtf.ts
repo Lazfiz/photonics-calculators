@@ -4,10 +4,7 @@
  * and Camera Systems, 2nd ed., SPIE 2011, ch. 10 "MTF", doi:10.1117/3.2524677.ch10).
  */
 
-/** sin(x)/x with the limit 1 at x = 0. */
-function sinc(x: number): number {
-  return Math.abs(x) < 1e-8 ? 1 : Math.sin(x) / x;
-}
+import { sinc } from "../math";
 
 /** Pixel aperture of width a: |sinc(π f a)|, which is 2/π at the Nyquist frequency 1/(2p) when a = p. */
 export function pixelApertureMtf(f: number, width: number): number {

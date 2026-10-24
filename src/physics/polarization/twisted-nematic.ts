@@ -14,12 +14,8 @@
  * doi:10.1088/0022-3727/8/13/020). Φ = 0 is a plain retarder: T = cos²(Γ/2) between parallel polarizers at 45°.
  */
 import { complex } from "../complex";
+import { sinc } from "../math";
 import { apply, linearState, matMul, rotation, type JonesMatrix } from "./jones";
-
-/** sin(x)/x, 1 at x = 0. */
-function sinc(x: number): number {
-  return Math.abs(x) < 1e-8 ? 1 - (x * x) / 6 : Math.sin(x) / x;
-}
 
 /** Jones matrix of a twisted-nematic layer with twist Φ and retardance Γ = 2πΔn d/λ. */
 export function twistedNematicJones(twist: number, retardance: number): JonesMatrix {

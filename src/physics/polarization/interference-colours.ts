@@ -18,7 +18,7 @@
  * Eur. J. Mineral. 25, 5–10 (2013), doi:10.1127/0935-1221/2013/0025-2252.
  */
 import { type RGB, type XYZ, COLOUR_WAVELENGTHS, srgbFromXyz, xyzFromSamples } from "../cie-colour";
-import { sinc } from "./spectral-depolarization";
+import { sinc } from "../math";
 
 /** Wavelength step of the colour grid, m. */
 const BIN = 5e-9;

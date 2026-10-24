@@ -2,9 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { crystalIndices } from "../src/physics/materials/uniaxial-data";
+import { sinc } from "../src/physics/math";
 import { applyMueller } from "../src/physics/polarization/mueller";
 import {
-  bandMeanRetardance, muellerRetarderSpectral, plateRetardances, retardanceForVisibility, sinc, spectralVisibility,
+  bandMeanRetardance, muellerRetarderSpectral, plateRetardances, retardanceForVisibility, spectralVisibility,
   wavenumberBand,
 } from "../src/physics/polarization/spectral-depolarization";
 import { degreeOfPolarization } from "../src/physics/polarization/stokes";
