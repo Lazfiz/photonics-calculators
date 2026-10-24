@@ -9,12 +9,12 @@ import { GRADED_MAX_SUBLAYERS, gradedIndexAt, gradedIndexLayers, gradedSublayers
 import { stackResponse } from "../../../physics/thin-film/transfer-matrix";
 
 export default function GradientIndexPage() {
-  const [nSub, setNSub] = useURLState("nSub", 1.52);
-  const [nInc, setNInc] = useURLState("nInc", 1.0);
-  const [nSurface, setNSurface] = useURLState("nSurface", 1.1);
-  const [thickness, setThickness] = useURLState("thickness", 500);
+  const [nSub, setNSub] = useURLState("nSub", 1.52, { min: 0.1 });
+  const [nInc, setNInc] = useURLState("nInc", 1.0, { min: 0.1 });
+  const [nSurface, setNSurface] = useURLState("nSurface", 1.1, { min: 0.1 });
+  const [thickness, setThickness] = useURLState("thickness", 500, { min: 1 });
   const [profile, setProfile] = useState<GradedProfile>("cosine");
-  const [designWl, setDesignWl] = useURLState("designWl", 550);
+  const [designWl, setDesignWl] = useURLState("designWl", 550, { min: 1 });
 
   const tmm = useMemo(() => {
     // Staircase of homogeneous sublayers, sized for the shortest plotted wavelength (0.5 λ).

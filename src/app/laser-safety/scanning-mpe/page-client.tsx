@@ -16,16 +16,16 @@ const RULE_NAMES = { 1: "single pass", 2: "groups of passes (average)", 3: "C_P 
 const selectClass = "mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white";
 
 export default function ScanningMPEPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 532); // nm
-  const [powerRaw, setPower] = useURLState("power", 5); // mW
-  const [beamDiamRaw, setBeamDiam] = useURLState("beamDiam", 1); // mm, 1/e² at the scanner
-  const [divergenceRaw, setDivergence] = useURLState("divergence", 1); // mrad, 1/e² full angle
-  const [distanceRaw, setDistance] = useURLState("workingDistance", 100); // cm from the scan's pivot
-  const [scanAngleRaw, setScanAngle] = useURLState("scanAngle", 30); // °, full angle
-  const [scanRateRaw, setScanRate] = useURLState("scanRate", 100); // Hz
+  const [wavelength, setWavelength] = useURLState("wavelength", 532, { min: 180, max: 1000000 }); // nm
+  const [powerRaw, setPower] = useURLState("power", 5, { min: 0 }); // mW
+  const [beamDiamRaw, setBeamDiam] = useURLState("beamDiam", 1, { min: 0 }); // mm, 1/e² at the scanner
+  const [divergenceRaw, setDivergence] = useURLState("divergence", 1, { min: 0 }); // mrad, 1/e² full angle
+  const [distanceRaw, setDistance] = useURLState("workingDistance", 100, { min: 0.1 }); // cm from the scan's pivot
+  const [scanAngleRaw, setScanAngle] = useURLState("scanAngle", 30, { min: 0.01, max: 360 }); // °, full angle
+  const [scanRateRaw, setScanRate] = useURLState("scanRate", 100, { min: 0.001 }); // Hz
   const [direction, setDirection] = useURLState("scanDirection", "both");
-  const [exposureRaw, setExposure] = useURLState("exposureTime", 0.25); // s
-  const [alphaRaw, setAlpha] = useURLState("alpha", 1.5); // mrad
+  const [exposureRaw, setExposure] = useURLState("exposureTime", 0.25, { min: 1e-9, max: 30000 }); // s
+  const [alphaRaw, setAlpha] = useURLState("alpha", 1.5, { min: 0 }); // mrad
 
   // URL values aren't range-checked: clamp them here. SI inside; physics in src/physics/laser-safety/scanned-beam.ts.
   const lambda = wavelength * 1e-9;

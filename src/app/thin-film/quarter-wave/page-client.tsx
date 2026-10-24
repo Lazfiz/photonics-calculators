@@ -8,10 +8,10 @@ import { useURLState } from "../../../hooks/use-url-state";
 import { quarterWaveLayers, quarterWaveStackReflectance, stackResponse } from "../../../physics/thin-film/transfer-matrix";
 
 export default function QuarterWavePage() {
-  const [nFilm, setNFilm] = useURLState("nFilm", 1.38);
-  const [nSub, setNSub] = useURLState("nSub", 1.52);
-  const [nInc, setNInc] = useURLState("nInc", 1.0);
-  const [designWl, setDesignWl] = useURLState("designWl", 550);
+  const [nFilm, setNFilm] = useURLState("nFilm", 1.38, { min: 0.1 });
+  const [nSub, setNSub] = useURLState("nSub", 1.52, { min: 0.1 });
+  const [nInc, setNInc] = useURLState("nInc", 1.0, { min: 0.1 });
+  const [designWl, setDesignWl] = useURLState("designWl", 550, { min: 1 });
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 300 }, (_, i) => 300 + i * 500 / 300);

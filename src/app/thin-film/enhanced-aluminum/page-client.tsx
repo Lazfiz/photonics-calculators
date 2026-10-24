@@ -14,13 +14,13 @@ const NM = 1e-9;
 const pct = (x: number, digits = 2) => (Number.isFinite(x) ? `${(x * 100).toFixed(digits)} %` : "—");
 
 export default function EnhancedAluminumPage() {
-  const [designWl, setDesignWl] = useURLState("designWl", 550);
+  const [designWl, setDesignWl] = useURLState("designWl", 550, { min: 250, max: 1200 });
   const [pairsRaw, setPairs] = useURLState("pairs", 1);
-  const [nL, setNL] = useURLState("nL", 1.46);
-  const [nH, setNH] = useURLState("nH", 2.35);
-  const [alThick, setAlThick] = useURLState("alThick", 80);
-  const [adhesionThick, setAdhesionThick] = useURLState("adhesionThick", 0);
-  const [nSub, setNSub] = useURLState("nSub", 1.52);
+  const [nL, setNL] = useURLState("nL", 1.46, { min: 1, max: 5 });
+  const [nH, setNH] = useURLState("nH", 2.35, { min: 1, max: 5 });
+  const [alThick, setAlThick] = useURLState("alThick", 80, { min: 0, max: 1000 });
+  const [adhesionThick, setAdhesionThick] = useURLState("adhesionThick", 0, { min: 0, max: 100 });
+  const [nSub, setNSub] = useURLState("nSub", 1.52, { min: 1, max: 5 });
 
   // The URL isn't range-checked: an integer number of pairs in 0–6.
   const pairs = Math.round(clampToRange(pairsRaw, 0, 6));

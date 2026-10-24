@@ -30,10 +30,10 @@ const presets: Record<Preset, { I: number; Q: number; U: number; V: number; labe
 };
 
 export default function StokesPage() {
-  const [I, setI] = useURLState("I", 1);
-  const [Q, setQ] = useURLState("Q", 0.5);
-  const [U, setU] = useURLState("U", 0.3);
-  const [V, setV] = useURLState("V", 0.2);
+  const [I, setI] = useURLState("I", 1, { min: 0.1, max: 2 });
+  const [Q, setQ] = useURLState("Q", 0.5, { min: -1, max: 1 });
+  const [U, setU] = useURLState("U", 0.3, { min: -1, max: 1 });
+  const [V, setV] = useURLState("V", 0.2, { min: -1, max: 1 });
 
   const wireframe = useMemo(() => poincareWireframeTraces(), []);
 

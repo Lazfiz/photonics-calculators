@@ -11,12 +11,12 @@ const NM = 1e-9;
 const pct = (x: number, digits = 2) => (Number.isFinite(x) ? `${(x * 100).toFixed(digits)} %` : "—");
 
 export default function ProtectedSilverPage() {
-  const [nSub, setNSub] = useURLState("nSub", 1.52);
-  const [agThickness, setAgThickness] = useURLState("agThickness", 80);
-  const [nProtect, setNProtect] = useURLState("nProtect", 1.38);
-  const [protectThick, setProtectThick] = useURLState("protectThick", 50);
-  const [nAdhesion, setNAdhesion] = useURLState("nAdhesion", 2.35);
-  const [adhesionThick, setAdhesionThick] = useURLState("adhesionThick", 10);
+  const [nSub, setNSub] = useURLState("nSub", 1.52, { min: 1, max: 5 });
+  const [agThickness, setAgThickness] = useURLState("agThickness", 80, { min: 0, max: 1000 });
+  const [nProtect, setNProtect] = useURLState("nProtect", 1.38, { min: 1, max: 5 });
+  const [protectThick, setProtectThick] = useURLState("protectThick", 50, { min: 0, max: 2000 });
+  const [nAdhesion, setNAdhesion] = useURLState("nAdhesion", 2.35, { min: 1, max: 5 });
+  const [adhesionThick, setAdhesionThick] = useURLState("adhesionThick", 10, { min: 0, max: 500 });
 
   const valid = nSub > 0 && nProtect > 0 && nAdhesion > 0 && agThickness >= 0 && protectThick >= 0 && adhesionThick >= 0;
   const substrate = useMemo<Substrate>(() => ({ material: "dielectric", n: nSub }), [nSub]);

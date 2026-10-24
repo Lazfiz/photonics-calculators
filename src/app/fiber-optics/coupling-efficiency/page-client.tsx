@@ -11,12 +11,12 @@ const wavelengthPresets = [850, 1310, 1550];
 const UM = 1e-6;
 
 export default function CouplingEfficiencyCalculator() {
-  const [sourceNa, setSourceNa] = useURLState("sourceNa", 0.22);
-  const [mfd, setMfd] = useURLState("mfd", 10.4);
-  const [lateralOffset, setLateralOffset] = useURLState("lateralOffset", 0);
-  const [angularMisalign, setAngularMisalign] = useURLState("angularMisalign", 0);
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
-  const [mediumIndex, setMediumIndex] = useURLState("mediumIndex", 1.0);
+  const [sourceNa, setSourceNa] = useURLState("sourceNa", 0.22, { min: 0.02, max: 0.5 });
+  const [mfd, setMfd] = useURLState("mfd", 10.4, { min: 2, max: 30 });
+  const [lateralOffset, setLateralOffset] = useURLState("lateralOffset", 0, { min: 0, max: 20 });
+  const [angularMisalign, setAngularMisalign] = useURLState("angularMisalign", 0, { min: 0, max: 5 });
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 400, max: 2000 });
+  const [mediumIndex, setMediumIndex] = useURLState("mediumIndex", 1.0, { min: 1.0, max: 1.5 });
 
   const calc = useMemo(() => {
     const lambda = wavelength * 1e-9;

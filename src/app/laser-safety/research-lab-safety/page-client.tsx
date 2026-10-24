@@ -15,13 +15,13 @@ import { classifyCw } from "../../../physics/laser-safety/laser-classes";
 import { peakIrradiance } from "../../../physics/laser-safety/visual-interference";
 
 export default function ResearchLabSafetyPage() {
-  const [power, setPower] = useURLState("power", 500); // mW
-  const [wavelength, setWavelength] = useURLState("wavelength", 780); // nm
-  const [beamDia, setBeamDia] = useURLState("beamDia", 1.5); // mm, 1/e² at the output
-  const [divergence, setDivergence] = useURLState("divergence", 1.5); // mrad, 1/e² full angle
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 10); // s
-  const [labLength, setLabLength] = useURLState("labLength", 5); // m
-  const [labWidth, setLabWidth] = useURLState("labWidth", 4); // m
+  const [power, setPower] = useURLState("power", 500, { min: 0 }); // mW
+  const [wavelength, setWavelength] = useURLState("wavelength", 780, { min: 180, max: 1000000 }); // nm
+  const [beamDia, setBeamDia] = useURLState("beamDia", 1.5, { min: 0.001 }); // mm, 1/e² at the output
+  const [divergence, setDivergence] = useURLState("divergence", 1.5, { min: 0 }); // mrad, 1/e² full angle
+  const [exposureTime, setExposureTime] = useURLState("exposureTime", 10, { min: 1e-9, max: 30000 }); // s
+  const [labLength, setLabLength] = useURLState("labLength", 5, { min: 0 }); // m
+  const [labWidth, setLabWidth] = useURLState("labWidth", 4, { min: 0 }); // m
 
   // SI inside. Class: laser-classes.ts; NOHD, OD, diffuse reflection: hazard-distance.ts (ICNIRP 2013 eye limits).
   const lambda = wavelength * 1e-9;

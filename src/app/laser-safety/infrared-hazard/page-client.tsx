@@ -12,10 +12,10 @@ import {
 } from "../../../physics/laser-safety/eye-exposure-limits";
 
 export default function InfraredHazardPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 10600); // nm
-  const [power, setPower] = useURLState("power", 10); // W
-  const [beamDiameter, setBeamDiameter] = useURLState("beamDiameter", 5); // mm, 1/e²
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 10); // s
+  const [wavelength, setWavelength] = useURLState("wavelength", 10600, { min: 180, max: 1000000 }); // nm
+  const [power, setPower] = useURLState("power", 10, { min: 0 }); // W
+  const [beamDiameter, setBeamDiameter] = useURLState("beamDiameter", 5, { min: 0.01 }); // mm, 1/e²
+  const [exposureTime, setExposureTime] = useURLState("exposureTime", 10, { min: 1e-9, max: 30000 }); // s
 
   // ICNIRP 2013 eye limits: src/physics/laser-safety/eye-exposure-limits.ts. SI inside.
   const lambda = wavelength * 1e-9;

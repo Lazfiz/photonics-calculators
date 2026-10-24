@@ -8,9 +8,9 @@ import { useURLState } from "../../../hooks/use-url-state";
 import { gtiGdd, gtiGroupDelay, gtiPhase, gtiRoundTripPhase } from "../../../physics/wave-optics/gires-tournois";
 
 export default function GiresTournoisPage() {
-  const [reflectivity, setReflectivity] = useURLState("reflectivity", 0.7);
-  const [thickness, setThickness] = useURLState("thickness", 500); // nm
-  const [n, setN] = useURLState("n", 2.3); // refractive index of coating
+  const [reflectivity, setReflectivity] = useURLState("reflectivity", 0.7, { min: 0.01, max: 0.99 });
+  const [thickness, setThickness] = useURLState("thickness", 500, { min: 0 }); // nm
+  const [n, setN] = useURLState("n", 2.3, { min: 1 }); // refractive index of coating
   const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm center
   const [bandwidth, setBandwidth] = useURLState("bandwidth", 100); // nm range to plot
 

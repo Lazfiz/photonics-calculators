@@ -16,7 +16,7 @@ import { requiredOpticalDensity } from "../../../physics/laser-safety/hazard-dis
 const linkClass = "underline hover:text-white";
 
 export default function OpticalDensityPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 532); // nm
+  const [wavelength, setWavelength] = useURLState("wavelength", 532, { min: 180, max: 1000000 }); // nm
   const [powerRaw, setPower] = useURLState("power", 500); // mW
   const [beamDiamRaw, setBeamDiam] = useURLState("beamDiam", 3); // mm
   const [exposureRaw, setExposure] = useURLState("exposure", 0.25); // s

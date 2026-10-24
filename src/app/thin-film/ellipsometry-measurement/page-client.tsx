@@ -9,9 +9,9 @@ import { pseudoOpticalConstants } from "../../../physics/thin-film/ellipsometry"
 import { stackResponse } from "../../../physics/thin-film/transfer-matrix";
 
 export default function EllipsometryMeasurementPage() {
-  const [psiDeg, setPsiDeg] = useURLState("psiDeg", 10.573);
-  const [deltaDeg, setDeltaDeg] = useURLState("deltaDeg", 179.230);
-  const [aoiDeg, setAoiDeg] = useURLState("aoiDeg", 70);
+  const [psiDeg, setPsiDeg] = useURLState("psiDeg", 10.573, { min: 0, max: 90 });
+  const [deltaDeg, setDeltaDeg] = useURLState("deltaDeg", 179.230, { min: 0, max: 360 });
+  const [aoiDeg, setAoiDeg] = useURLState("aoiDeg", 70, { min: 0, max: 90 });
 
   const results = useMemo(() => {
     const theta = aoiDeg * Math.PI / 180;

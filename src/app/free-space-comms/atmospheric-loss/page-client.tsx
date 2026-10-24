@@ -30,9 +30,9 @@ function alphaDbPerKm(wavelengthNm: number, visibilityKm: number) {
 }
 
 export default function AtmosphericLossPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [visibility, setVisibility] = useURLState("visibility", 23); // km
-  const [linkLength, setLinkLength] = useURLState("linkLength", 1); // km
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 400, max: 2500 }); // nm
+  const [visibility, setVisibility] = useURLState("visibility", 23, { min: 0.01, max: 300 }); // km
+  const [linkLength, setLinkLength] = useURLState("linkLength", 1, { min: 0.001, max: 1000 }); // km
 
   const calc = useMemo(() => {
     const a = alphaDbPerKm(wavelength, visibility);

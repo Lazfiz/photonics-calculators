@@ -25,15 +25,15 @@ const fmtPenalty = (dB: number) => (dB === Infinity ? "eye closed" : `${fmt(dB)}
 const penaltyTone = (dB: number) => (!(dB < 3) ? "red" : dB > TOLERANCE_PENALTY_DB ? "yellow" : "green");
 
 export default function DispersionCompPage() {
-  const [dispersion, setDispersion] = useURLState("dispersion", 17); // ps/(nm·km), G.652 at 1550 nm
-  const [slope, setSlope] = useURLState("slope", 0.058); // ps/(nm²·km)
-  const [fiberLength, setFiberLength] = useURLState("fiberLength", 80); // km
-  const [bwNm, setBwNm] = useURLState("bwNm", 0.5); // rms source width, nm
-  const [bitRate, setBitRate] = useURLState("bitRate", 10); // Gb/s
-  const [compDispersion, setCompDispersion] = useURLState("compDispersion", -100); // ps/(nm·km)
-  const [compSlope, setCompSlope] = useURLState("compSlope", -0.2); // ps/(nm²·km)
-  const [refWavelength, setRefWavelength] = useURLState("refWavelength", 1550); // nm
-  const [channelWavelength, setChannelWavelength] = useURLState("channelWavelength", 1550); // nm
+  const [dispersion, setDispersion] = useURLState("dispersion", 17, { min: -500, max: 500 }); // ps/(nm·km), G.652 at 1550 nm
+  const [slope, setSlope] = useURLState("slope", 0.058, { min: -5, max: 5 }); // ps/(nm²·km)
+  const [fiberLength, setFiberLength] = useURLState("fiberLength", 80, { min: 0.001, max: 20000 }); // km
+  const [bwNm, setBwNm] = useURLState("bwNm", 0.5, { min: 0, max: 100 }); // rms source width, nm
+  const [bitRate, setBitRate] = useURLState("bitRate", 10, { min: 0.001, max: 1000 }); // Gb/s
+  const [compDispersion, setCompDispersion] = useURLState("compDispersion", -100, { min: -1000, max: 1000 }); // ps/(nm·km)
+  const [compSlope, setCompSlope] = useURLState("compSlope", -0.2, { min: -20, max: 20 }); // ps/(nm²·km)
+  const [refWavelength, setRefWavelength] = useURLState("refWavelength", 1550, { min: 800, max: 2000 }); // nm
+  const [channelWavelength, setChannelWavelength] = useURLState("channelWavelength", 1550, { min: 800, max: 2000 }); // nm
 
   const calc = useMemo(() => {
     const span = { D: dispersion * PS_NM_KM, S: slope * PS_NM2_KM };

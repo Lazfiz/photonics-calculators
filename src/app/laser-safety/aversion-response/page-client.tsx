@@ -15,7 +15,7 @@ const CLASS_2_MW = 1;
 const fmt = (x: number | undefined, digits: number) => (x !== undefined && Number.isFinite(x) ? x.toFixed(digits) : "—");
 
 export default function AversionResponsePage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 632); // nm
+  const [wavelength, setWavelength] = useURLState("wavelength", 632, { min: 400, max: 700 }); // nm
 
   // ICNIRP 2013 retinal limit at the blink time: src/physics/laser-safety/aversion-response.ts. SI inside.
   const lambda = wavelength * 1e-9;

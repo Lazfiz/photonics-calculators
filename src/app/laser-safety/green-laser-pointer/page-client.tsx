@@ -13,11 +13,11 @@ import { classifyCw } from "../../../physics/laser-safety/laser-classes";
 import { ICAO_LEVELS, peakIrradiance, rangeToIrradiance } from "../../../physics/laser-safety/visual-interference";
 
 export default function GreenLaserPointerPage() {
-  const [power, setPower] = useURLState("power", 5); // mW
-  const [wavelength, setWavelength] = useURLState("wavelength", 532); // nm
-  const [beamDia, setBeamDia] = useURLState("beamDia", 1.5); // mm, 1/e² at the output
-  const [divergence, setDivergence] = useURLState("divergence", 1.2); // mrad, 1/e² full angle
-  const [distance, setDistance] = useURLState("distance", 10); // m
+  const [power, setPower] = useURLState("power", 5, { min: 0 }); // mW
+  const [wavelength, setWavelength] = useURLState("wavelength", 532, { min: 180, max: 1000000 }); // nm
+  const [beamDia, setBeamDia] = useURLState("beamDia", 1.5, { min: 0.001 }); // mm, 1/e² at the output
+  const [divergence, setDivergence] = useURLState("divergence", 1.2, { min: 0 }); // mrad, 1/e² full angle
+  const [distance, setDistance] = useURLState("distance", 10, { min: 0 }); // m
 
   // SI inside. Class: laser-classes.ts (IEC 60825-1:2014); NOHD: hazard-distance.ts (ICNIRP 2013); dazzle: ICAO levels.
   const lambda = wavelength * 1e-9;

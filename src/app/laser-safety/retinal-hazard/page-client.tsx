@@ -13,11 +13,11 @@ import {
 } from "../../../physics/laser-safety/retinal-image";
 
 export default function RetinalHazardPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 532); // nm
-  const [power, setPower] = useURLState("power", 10); // mW
-  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 2); // mm, 1/e²
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 0.25); // s
-  const [pupil, setPupil] = useURLState("pupil", 7); // mm
+  const [wavelength, setWavelength] = useURLState("wavelength", 532, { min: 400, max: 1399 }); // nm
+  const [power, setPower] = useURLState("power", 10, { min: 0 }); // mW
+  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 2, { min: 0.01 }); // mm, 1/e²
+  const [exposureTime, setExposureTime] = useURLState("exposureTime", 0.25, { min: 1e-9, max: 30000 }); // s
+  const [pupil, setPupil] = useURLState("pupil", 7, { min: 1, max: 9 }); // mm
 
   // Retinal image: src/physics/laser-safety/retinal-image.ts; ICNIRP 2013 limits: eye-exposure-limits.ts. SI inside.
   const lambda = Math.min(Math.max(wavelength, 400), 1399.999) * 1e-9;

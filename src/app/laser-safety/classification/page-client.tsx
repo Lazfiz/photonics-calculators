@@ -16,11 +16,11 @@ const NAMES: Record<AelClass, string> = { "1": "Class 1 (1M)", "2": "Class 2 (2M
 const COLORS: Record<AelClass, string> = { "1": "#4ade80", "2": "#facc15", "3R": "#fb923c", "3B": "#f87171" };
 
 export default function ClassificationPage() {
-  const [power, setPower] = useURLState("power", 10); // mW
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [beamDia, setBeamDia] = useURLState("beamDia", 1); // mm, 1/e² at the output (waist)
-  const [divergence, setDivergence] = useURLState("divergence", 1); // mrad, 1/e² full angle
-  const [alphaMrad, setAlphaMrad] = useURLState("alpha", 1.5); // mrad
+  const [power, setPower] = useURLState("power", 10, { min: 0 }); // mW
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 180, max: 1000000 }); // nm
+  const [beamDia, setBeamDia] = useURLState("beamDia", 1, { min: 0.001 }); // mm, 1/e² at the output (waist)
+  const [divergence, setDivergence] = useURLState("divergence", 1, { min: 0 }); // mrad, 1/e² full angle
+  const [alphaMrad, setAlphaMrad] = useURLState("alpha", 1.5, { min: 0, max: 100 }); // mrad
   const [longTerm, setLongTerm] = useURLState("longTerm", 0);
   const [telescopes, setTelescopes] = useURLState("telescopes", 1); // 1: Condition 1 applies
   const [euA11, setEuA11] = useURLState("euA11", 0);

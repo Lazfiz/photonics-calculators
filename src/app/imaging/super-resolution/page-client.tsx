@@ -11,11 +11,11 @@ import {
 const fmtNm = (x: number) => (Number.isFinite(x) ? `${(x * 1e9).toFixed(1)} nm` : "—");
 
 export default function SuperResolutionPage() {
-  const [na, setNa] = useURLState("na", 1.4);
-  const [wavelength, setWavelength] = useURLState("wavelength", 580); // nm
-  const [n, setN] = useURLState("n", 1.52);
-  const [stedDepletion, setStedDepletion] = useURLState("stedDepletion", 30); // I_STED / I_sat
-  const [palmPhotons, setPalmPhotons] = useURLState("palmPhotons", 5000);
+  const [na, setNa] = useURLState("na", 1.4, { min: 0.1, max: 1.7 });
+  const [wavelength, setWavelength] = useURLState("wavelength", 580, { min: 300, max: 1000 }); // nm
+  const [n, setN] = useURLState("n", 1.52, { min: 1, max: 1.8 });
+  const [stedDepletion, setStedDepletion] = useURLState("stedDepletion", 30, { min: 0, max: 200 }); // I_STED / I_sat
+  const [palmPhotons, setPalmPhotons] = useURLState("palmPhotons", 5000, { min: 1, max: 1000000 });
 
   const results = useMemo(() => {
     const lam = wavelength * 1e-9;

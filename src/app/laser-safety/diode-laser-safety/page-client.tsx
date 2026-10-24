@@ -14,13 +14,13 @@ import {
 } from "../../../physics/laser-safety/hazard-distance";
 
 export default function DiodeLaserSafetyPage() {
-  const [power, setPower] = useURLState("power", 500); // mW
-  const [wavelength, setWavelength] = useURLState("wavelength", 808); // nm
-  const [beamDia, setBeamDia] = useURLState("beamDia", 1); // mm, 1/e² at the emitting aperture, both axes
-  const [divergenceH, setDivergenceH] = useURLState("divergenceH", 10); // mrad, slow axis
-  const [divergenceV, setDivergenceV] = useURLState("divergenceV", 30); // mrad, fast axis
+  const [power, setPower] = useURLState("power", 500, { min: 0 }); // mW
+  const [wavelength, setWavelength] = useURLState("wavelength", 808, { min: 180, max: 1000000 }); // nm
+  const [beamDia, setBeamDia] = useURLState("beamDia", 1, { min: 0.001 }); // mm, 1/e² at the emitting aperture, both axes
+  const [divergenceH, setDivergenceH] = useURLState("divergenceH", 10, { min: 0 }); // mrad, slow axis
+  const [divergenceV, setDivergenceV] = useURLState("divergenceV", 30, { min: 0 }); // mrad, fast axis
   const [angleDefinition, setAngleDefinition] = useURLState("angleDefinition", "1/e2"); // "1/e2" | "fwhm"
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 10); // s
+  const [exposureTime, setExposureTime] = useURLState("exposureTime", 10, { min: 1e-9, max: 30000 }); // s
 
   // ICNIRP 2013 eye limits and the beam model: src/physics/laser-safety/hazard-distance.ts. SI inside.
   const fwhm = angleDefinition === "fwhm";

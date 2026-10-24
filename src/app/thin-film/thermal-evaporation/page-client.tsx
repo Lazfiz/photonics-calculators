@@ -28,11 +28,11 @@ const SWEEP_P_MAX = 10;
 export default function ThermalEvaporationPage() {
   const [materialParam, setMaterial] = useURLState("material", "Al");
   const [sourceTemp, setSourceTemp] = useURLState("sourceTemp", 1200); // °C
-  const [sourceSubstrateDist, setSourceSubstrateDist] = useURLState("sourceSubstrateDist", 30); // cm
-  const [sourceDiameter, setSourceDiameter] = useURLState("sourceDiameter", 2); // cm
-  const [substrateRadius, setSubstrateRadius] = useURLState("substrateRadius", 5); // cm
-  const [alpha, setAlpha] = useURLState("alpha", 1);
-  const [chamberPressure, setChamberPressure] = useURLState("chamberPressure", 1e-6); // Torr
+  const [sourceSubstrateDist, setSourceSubstrateDist] = useURLState("sourceSubstrateDist", 30, { min: 0.1 }); // cm
+  const [sourceDiameter, setSourceDiameter] = useURLState("sourceDiameter", 2, { min: 0.01 }); // cm
+  const [substrateRadius, setSubstrateRadius] = useURLState("substrateRadius", 5, { min: 0 }); // cm
+  const [alpha, setAlpha] = useURLState("alpha", 1, { min: 0.001, max: 1 });
+  const [chamberPressure, setChamberPressure] = useURLState("chamberPressure", 1e-6, { min: 0 }); // Torr
   const [substrateTemp, setSubstrateTemp] = useURLState("substrateTemp", 100); // °C
 
   const id: EvaporantId = isId(materialParam) ? materialParam : "Al";

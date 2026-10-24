@@ -14,10 +14,10 @@ const R_MIN = 1e-3; // m, chart range
 const R_MAX = 100;
 
 export default function RetinalImageSizePage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 808); // nm
-  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 0.4); // mm, 1/e² at the waist
-  const [beamDivergence, setBeamDivergence] = useURLState("beamDivergence", 200); // mrad, 1/e² full angle
-  const [viewingDistance, setViewingDistance] = useURLState("viewingDistance", 10); // cm from the waist to the eye
+  const [wavelength, setWavelength] = useURLState("wavelength", 808, { min: 180, max: 1400 }); // nm
+  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 0.4, { min: 0.001 }); // mm, 1/e² at the waist
+  const [beamDivergence, setBeamDivergence] = useURLState("beamDivergence", 200, { min: 0 }); // mrad, 1/e² full angle
+  const [viewingDistance, setViewingDistance] = useURLState("viewingDistance", 10, { min: 0 }); // cm from the waist to the eye
 
   // Embedded-Gaussian beam and an accommodating 17 mm eye: src/physics/laser-safety/retinal-image.ts. SI inside.
   const lambda = Math.max(wavelength, 1) * 1e-9;

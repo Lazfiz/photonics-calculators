@@ -8,12 +8,12 @@ import { useURLState } from "../../../hooks/use-url-state";
 import { stackResponse, type Stack } from "../../../physics/thin-film/transfer-matrix";
 
 export default function MetalDielectricPage() {
-  const [nMetal, setNMetal] = useURLState("nMetal", 0.5);
-  const [kMetal, setKMetal] = useURLState("kMetal", 3.0);
-  const [nDielectric, setNDielectric] = useURLState("nDielectric", 2.1);
-  const [dDielectric, setDDielectric] = useURLState("dDielectric", 50);
-  const [dMetal, setDMetal] = useURLState("dMetal", 10);
-  const [nSub, setNSub] = useURLState("nSub", 1.52);
+  const [nMetal, setNMetal] = useURLState("nMetal", 0.5, { min: 0 });
+  const [kMetal, setKMetal] = useURLState("kMetal", 3.0, { min: 0.001 });
+  const [nDielectric, setNDielectric] = useURLState("nDielectric", 2.1, { min: 0.1 });
+  const [dDielectric, setDDielectric] = useURLState("dDielectric", 50, { min: 0 });
+  const [dMetal, setDMetal] = useURLState("dMetal", 10, { min: 1 });
+  const [nSub, setNSub] = useURLState("nSub", 1.52, { min: 0.1 });
 
   // Air | dielectric overcoat | metal (n + ik) | substrate
   const stack = useMemo<Stack>(() => ({

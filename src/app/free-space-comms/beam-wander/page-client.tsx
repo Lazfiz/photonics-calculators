@@ -18,10 +18,10 @@ const chartLayout = (xTitle: string, yTitle: string, logX = false) => ({
 });
 
 export default function BeamWanderPage() {
-  const [cn2, setCn2] = useURLState("cn2", 1e-15); // m^(−2/3)
-  const [pathLength, setPathLength] = useURLState("pathLength", 1); // km
-  const [w0Cm, setW0Cm] = useURLState("beamRadius", 2); // transmit beam radius W₀, cm
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [cn2, setCn2] = useURLState("cn2", 1e-15, { min: 1e-18, max: 1e-11 }); // m^(−2/3)
+  const [pathLength, setPathLength] = useURLState("pathLength", 1, { min: 0.001, max: 1000 }); // km
+  const [w0Cm, setW0Cm] = useURLState("beamRadius", 2, { min: 0.01, max: 100 }); // transmit beam radius W₀, cm
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 200, max: 20000 }); // nm
 
   const results = useMemo(() => {
     const L = pathLength * 1e3;

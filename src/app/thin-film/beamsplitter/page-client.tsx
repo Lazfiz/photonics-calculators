@@ -18,11 +18,11 @@ const pct = (x: number, digits = 2) => (Number.isFinite(x) ? `${(x * 100).toFixe
 const STACK_NAMES = ["H", "HLH", "HLHLH", "HLHLHLH"];
 
 export default function BeamsplitterPage() {
-  const [nH, setNH] = useURLState("nH", 2.35);
-  const [nL, setNL] = useURLState("nL", 1.45);
-  const [nSub, setNSub] = useURLState("nSub", 1.52);
-  const [nInc, setNInc] = useURLState("nInc", 1.0);
-  const [designWl, setDesignWl] = useURLState("designWl", 550);
+  const [nH, setNH] = useURLState("nH", 2.35, { min: 1, max: 5 });
+  const [nL, setNL] = useURLState("nL", 1.45, { min: 1, max: 5 });
+  const [nSub, setNSub] = useURLState("nSub", 1.52, { min: 1, max: 5 });
+  const [nInc, setNInc] = useURLState("nInc", 1.0, { min: 1, max: 5 });
+  const [designWl, setDesignWl] = useURLState("designWl", 550, { min: 100, max: 20000 });
   const [targetRaw, setTargetR] = useURLState("targetR", 50);
 
   // The URL isn't range-checked: a target reflectance of 1–99 %.

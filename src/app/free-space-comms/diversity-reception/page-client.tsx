@@ -27,13 +27,13 @@ const combiners: { id: Combiner; label: string; color: string }[] = [
 const marginDb = (t: number) => -10 * Math.log10(t);
 
 export default function DiversityReceptionPage() {
-  const [numRx, setNumRx] = useURLState("numRx", 2);
-  const [separation, setSeparation] = useURLState("separation", 5); // cm
-  const [c2n, setC2n] = useURLState("c2n", 1e-14); // m^(−2/3)
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [range, setRange] = useURLState("range", 1); // km
+  const [numRx, setNumRx] = useURLState("numRx", 2, { min: 1, max: 8 });
+  const [separation, setSeparation] = useURLState("separation", 5, { min: 0, max: 1000 }); // cm
+  const [c2n, setC2n] = useURLState("c2n", 1e-14, { min: 1e-18, max: 1e-11 }); // m^(−2/3)
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 200, max: 20000 }); // nm
+  const [range, setRange] = useURLState("range", 1, { min: 0.001, max: 1000 }); // km
   const [combiner, setCombiner] = useURLState("combiner", "egc");
-  const [pOut, setPOut] = useURLState("pOut", 1e-6);
+  const [pOut, setPOut] = useURLState("pOut", 1e-6, { min: 1e-12, max: 0.1 });
 
   const n = Math.min(8, Math.max(1, Math.round(numRx)));
   const selected: Combiner = combiner === "sc" || combiner === "mrc" ? combiner : "egc";

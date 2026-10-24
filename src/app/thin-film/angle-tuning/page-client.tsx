@@ -15,7 +15,7 @@ export default function AngleTuningPage() {
   const [nSub, setNSub] = useURLState("nSub", 1.52);
   const [nInc, setNInc] = useURLState("nInc", 1.0);
   const [numPairsRaw, setNumPairs] = useURLState("numPairs", 5);
-  const [designWl, setDesignWl] = useURLState("designWl", 550);
+  const [designWl, setDesignWl] = useURLState("designWl", 550, { min: 1 });
 
   // The URL isn't range-checked: use an integer number of pairs in 1–30 everywhere.
   const numPairs = Math.round(clampToRange(numPairsRaw, 1, 30));

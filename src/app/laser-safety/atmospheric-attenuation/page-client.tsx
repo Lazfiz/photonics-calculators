@@ -14,9 +14,9 @@ const fmt = (x: number, digits = 3) =>
   !Number.isFinite(x) ? "—" : x === 0 ? "0" : Math.abs(x) >= 0.01 && Math.abs(x) < 1e5 ? x.toPrecision(digits) : x.toExponential(2);
 
 export default function AtmosphericAttenuationPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 10600); // nm (CO₂ laser)
-  const [distance, setDistance] = useURLState("distance", 1000); // m
-  const [visibility, setVisibility] = useURLState("visibility", 23); // km
+  const [wavelength, setWavelength] = useURLState("wavelength", 10600, { min: 200, max: 20000 }); // nm (CO₂ laser)
+  const [distance, setDistance] = useURLState("distance", 1000, { min: 1, max: 1e7 }); // m
+  const [visibility, setVisibility] = useURLState("visibility", 23, { min: 0.01, max: 300 }); // km
 
   const results = useMemo(() => {
     const lambda = wavelength * 1e-9;

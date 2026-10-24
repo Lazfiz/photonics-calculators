@@ -12,9 +12,9 @@ import {
 } from "../../../physics/laser-safety/eye-exposure-limits";
 
 export default function ThermalVsPhotochemicalPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 450); // nm
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 100); // s
-  const [alphaMrad, setAlphaMrad] = useURLState("alpha", 1.5); // mrad, apparent source
+  const [wavelength, setWavelength] = useURLState("wavelength", 450, { min: 400, max: 600 }); // nm
+  const [exposureTime, setExposureTime] = useURLState("exposureTime", 100, { min: 1e-6, max: 30000 }); // s
+  const [alphaMrad, setAlphaMrad] = useURLState("alpha", 1.5, { min: 0, max: 1000 }); // mrad, apparent source
 
   // ICNIRP 2013 retinal limits: src/physics/laser-safety/eye-exposure-limits.ts. SI inside.
   const lambda = Math.min(Math.max(wavelength, 400), 600) * 1e-9;

@@ -16,11 +16,11 @@ const PS_NM_KM = 1e-6, PS_NM2_KM = 1e3;
 const BAND_MIN = 1460, BAND_MAX = 1625;
 
 export default function NonzeroDispersionPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [length, setLength] = useURLState("length", 80); // km
-  const [dispSlope, setDispSlope] = useURLState("dispSlope", 0.05); // ps/(nm²·km)
-  const [dispAt1550, setDispAt1550] = useURLState("dispAt1550", 4.5); // ps/(nm·km), typical NZ-DSF+
-  const [channelSpacing, setChannelSpacing] = useURLState("channelSpacing", 100); // GHz
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: BAND_MIN, max: BAND_MAX }); // nm
+  const [length, setLength] = useURLState("length", 80, { min: 0.001 }); // km
+  const [dispSlope, setDispSlope] = useURLState("dispSlope", 0.05, { min: -0.2, max: 0.2 }); // ps/(nm²·km)
+  const [dispAt1550, setDispAt1550] = useURLState("dispAt1550", 4.5, { min: -20, max: 20 }); // ps/(nm·km), typical NZ-DSF+
+  const [channelSpacing, setChannelSpacing] = useURLState("channelSpacing", 100, { min: 1 }); // GHz
 
   const valid = wavelength >= BAND_MIN && wavelength <= BAND_MAX && length > 0 && channelSpacing > 0;
 

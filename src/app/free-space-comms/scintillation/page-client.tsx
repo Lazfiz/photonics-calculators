@@ -24,10 +24,10 @@ const chartLayout = (xTitle: string, yTitle: string, logY = false) => ({
 });
 
 export default function ScintillationPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [distance, setDistance] = useURLState("distance", 1); // km
-  const [cz, setCz] = useURLState("cz", 1.7e-14); // Cn², m^(−2/3)
-  const [apertureDiameter, setApertureDiameter] = useURLState("apertureDiameter", 0.1); // m
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 200, max: 20000 }); // nm
+  const [distance, setDistance] = useURLState("distance", 1, { min: 0.001, max: 1000 }); // km
+  const [cz, setCz] = useURLState("cz", 1.7e-14, { min: 1e-18, max: 1e-11 }); // Cn², m^(−2/3)
+  const [apertureDiameter, setApertureDiameter] = useURLState("apertureDiameter", 0.1, { min: 0, max: 10 }); // m
 
   const results = useMemo(() => {
     const lambda = wavelength * 1e-9;

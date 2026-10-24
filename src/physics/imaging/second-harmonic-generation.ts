@@ -28,6 +28,7 @@
  */
 
 import { epsilon_0, c } from "../constants";
+import { sinc } from "../math";
 
 /** ⟨P²⟩/(⟨P⟩²/(fτ)) for Gaussian pulses of FWHM τ at repetition rate f. */
 export const GAUSSIAN_PULSE_G2 = Math.sqrt((2 * Math.LN2) / Math.PI);
@@ -100,9 +101,9 @@ export function shgCoefficient({ lambda, length, deff, nOmega, deltaN, w0 }: Shg
   const sigma = (b * deltaK) / 2;
   const h = boydKleinmanH(sigma, xi);
   const phase = (deltaK * length) / 2;
-  const sinc = phase === 0 ? 1 : Math.sin(phase) / phase;
+  const s = sinc(phase);
   const prefactor = (16 * Math.PI ** 2 * deff * deff * length) / (epsilon_0 * c * nOmega * n2 * lambda ** 3);
-  return { K: prefactor * h, KNearField: prefactor * xi * sinc * sinc, h, xi, sigma, b, deltaK };
+  return { K: prefactor * h, KNearField: prefactor * xi * s * s, h, xi, sigma, b, deltaK };
 }
 
 /** Average SH power from Gaussian pulses: K g ⟨P⟩²/(f τ), W. */
@@ -165,8 +166,8 @@ export function sfgCoefficient({ lambda1, lambda2, length, deff, n, deltaN, w1, 
   if (!ok) return { K: NaN, lambda3: NaN, deltaK: NaN, xi: NaN };
   const deltaK = deltaN === 0 ? 0 : (-2 * Math.PI * deltaN) / lambda3;
   const phase = (deltaK * length) / 2;
-  const sinc = phase === 0 ? 1 : Math.sin(phase) / phase;
-  const planeWave = (8 * Math.PI ** 2 * deff * deff * length * length * sinc * sinc) / (epsilon_0 * c * n * n * n3 * lambda3 ** 2);
+  const s = sinc(phase);
+  const planeWave = (8 * Math.PI ** 2 * deff * deff * length * length * s * s) / (epsilon_0 * c * n * n * n3 * lambda3 ** 2);
   const bMin = Math.min(confocalParameter(lambda1, n, w1), confocalParameter(lambda2, n, w2));
   return { K: (planeWave * 2) / (Math.PI * (w1 * w1 + w2 * w2)), lambda3, deltaK, xi: length / bMin };
 }

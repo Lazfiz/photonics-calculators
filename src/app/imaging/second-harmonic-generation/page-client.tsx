@@ -15,15 +15,15 @@ const fmt = (x: number, digits: number, unit: string) => (Number.isFinite(x) ? `
 const sci = (x: number, unit: string) => (Number.isFinite(x) ? `${x.toExponential(2)} ${unit}` : "—");
 
 export default function SecondHarmonicGenerationPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 800); // nm
-  const [na, setNa] = useURLState("na", 0.8);
-  const [n, setN] = useURLState("n", 1.33);
-  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 100); // fs
-  const [avgPower, setAvgPower] = useURLState("avgPower", 50); // mW
-  const [repRate, setRepRate] = useURLState("repRate", 80); // MHz
-  const [chi2, setChi2] = useURLState("chi2", 1); // d_eff, pm/V
-  const [crystalLength, setCrystalLength] = useURLState("crystalLength", 10); // µm
-  const [dn, setDn] = useURLState("dn", 0.01); // n(2ω) − n(ω)
+  const [wavelength, setWavelength] = useURLState("wavelength", 800, { min: 400, max: 2000 }); // nm
+  const [na, setNa] = useURLState("na", 0.8, { min: 0.05, max: 1.5 });
+  const [n, setN] = useURLState("n", 1.33, { min: 1, max: 3 });
+  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 100, { min: 10, max: 1000 }); // fs
+  const [avgPower, setAvgPower] = useURLState("avgPower", 50, { min: 0, max: 500 }); // mW
+  const [repRate, setRepRate] = useURLState("repRate", 80, { min: 0.01, max: 250 }); // MHz
+  const [chi2, setChi2] = useURLState("chi2", 1, { min: 0.01, max: 100 }); // d_eff, pm/V
+  const [crystalLength, setCrystalLength] = useURLState("crystalLength", 10, { min: 0.1, max: 1000 }); // µm
+  const [dn, setDn] = useURLState("dn", 0.01, { min: -0.5, max: 0.5 }); // n(2ω) − n(ω)
 
   const results = useMemo(() => {
     const lam = wavelength * 1e-9;

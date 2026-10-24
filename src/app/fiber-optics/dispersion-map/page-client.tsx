@@ -6,8 +6,8 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 export default function DispersionMapPage() {
-  const [lengthSMF, setLengthSMF] = useURLState("lengthSMF", 80);
-  const [lengthDCF, setLengthDCF] = useURLState("lengthDCF", 15);
+  const [lengthSMF, setLengthSMF] = useURLState("lengthSMF", 80, { min: 0, max: 500 });
+  const [lengthDCF, setLengthDCF] = useURLState("lengthDCF", 15, { min: 0, max: 100 });
   const [dispSMF, setDispSMF] = useURLState("dispSMF", 17);
   const [dispDCF, setDispDCF] = useState(-100);
   const [slopeSMF, setSlopeSMF] = useURLState("slopeSMF", 0.056);

@@ -20,13 +20,13 @@ const PERTURBATION_FRACTION = 0.1;
 const NEAR_LEAK_FRACTION = 0.5;
 
 export default function DShapedFiberPage() {
-  const [cladDia, setCladDia] = useURLState("cladDia", 125); // µm
-  const [coreDia, setCoreDia] = useURLState("coreDia", 9); // µm
-  const [flatDepth, setFlatDepth] = useURLState("flatDepth", 8); // µm, core centre to flat
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [n_core, setN_core] = useURLState("n_core", 1.4494);
-  const [n_clad, setN_clad] = useURLState("n_clad", 1.444);
-  const [n_ext, setN_ext] = useURLState("n_ext", 1.333); // medium on the flat (water)
+  const [cladDia, setCladDia] = useURLState("cladDia", 125, { min: 10, max: 1000 }); // µm
+  const [coreDia, setCoreDia] = useURLState("coreDia", 9, { min: 1, max: 60 }); // µm
+  const [flatDepth, setFlatDepth] = useURLState("flatDepth", 8, { min: 0, max: 500 }); // µm, core centre to flat
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 400, max: 2500 }); // nm
+  const [n_core, setN_core] = useURLState("n_core", 1.4494, { min: 1, max: 4 });
+  const [n_clad, setN_clad] = useURLState("n_clad", 1.444, { min: 1, max: 4 });
+  const [n_ext, setN_ext] = useURLState("n_ext", 1.333, { min: 1, max: 2 }); // medium on the flat (water)
 
   const a_um = coreDia / 2;
   const fiber = useMemo(

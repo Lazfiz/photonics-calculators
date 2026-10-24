@@ -18,7 +18,7 @@
  *   not what a corrected lens does.
  */
 
-import { besselJ } from "../math";
+import { besselJ, sinc } from "../math";
 
 /** First zero of J₁, j₁,₁ (Abramowitz & Stegun Table 9.5). */
 export const BESSEL_J1_FIRST_ZERO = 3.8317059702075123;
@@ -34,11 +34,6 @@ const validMedium = (lambda: number, n: number, NA: number) =>
 /** n − √(n² − NA²), written as NA²/(n + √(n² − NA²)) to avoid cancellation at low NA. */
 function axialDenominator(n: number, NA: number): number {
   return (NA * NA) / (n + Math.sqrt(n * n - NA * NA));
-}
-
-/** sin(x)/x, with the series near 0. */
-function sinc(x: number): number {
-  return Math.abs(x) < 1e-4 ? 1 - (x * x) / 6 : Math.sin(x) / x;
 }
 
 /** Normalised Airy intensity [2J₁(v)/v]² at the optical coordinate v = 2π NA r/λ. */

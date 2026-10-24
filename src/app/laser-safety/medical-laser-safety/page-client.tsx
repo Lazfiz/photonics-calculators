@@ -20,15 +20,15 @@ const SHAPES: Record<TargetShape, string> = {
 };
 
 export default function MedicalLaserSafetyPage() {
-  const [power, setPower] = useURLState("power", 10000); // mW
-  const [wavelength, setWavelength] = useURLState("wavelength", 10600); // nm
-  const [beamDia, setBeamDia] = useURLState("beamDia", 8); // mm, 1/e² on the focusing lens
-  const [focalLength, setFocalLength] = useURLState("focalLength", 100); // mm
-  const [spotSize, setSpotSize] = useURLState("spotSize", 0.2); // mm, 1/e² at the focus
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 0.1); // s, pulse or dwell on tissue
-  const [targetSize, setTargetSize] = useURLState("targetSize", 100); // µm
+  const [power, setPower] = useURLState("power", 10000, { min: 0 }); // mW
+  const [wavelength, setWavelength] = useURLState("wavelength", 10600, { min: 180, max: 1000000 }); // nm
+  const [beamDia, setBeamDia] = useURLState("beamDia", 8, { min: 0.001 }); // mm, 1/e² on the focusing lens
+  const [focalLength, setFocalLength] = useURLState("focalLength", 100, { min: 1 }); // mm
+  const [spotSize, setSpotSize] = useURLState("spotSize", 0.2, { min: 0.0001 }); // mm, 1/e² at the focus
+  const [exposureTime, setExposureTime] = useURLState("exposureTime", 0.1, { min: 0 }); // s, pulse or dwell on tissue
+  const [targetSize, setTargetSize] = useURLState("targetSize", 100, { min: 0 }); // µm
   const [targetShape, setTargetShape] = useURLState("targetShape", "cylinder");
-  const [eyeExposure, setEyeExposure] = useURLState("eyeExposure", 10); // s
+  const [eyeExposure, setEyeExposure] = useURLState("eyeExposure", 10, { min: 1e-9, max: 30000 }); // s
 
   // SI inside. Eye limits: ICNIRP 2013 (eye-exposure-limits.ts); beam: surgical-laser.ts and hazard-distance.ts.
   const lambda = wavelength * 1e-9;

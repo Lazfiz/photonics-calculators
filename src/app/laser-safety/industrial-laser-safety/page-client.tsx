@@ -13,14 +13,14 @@ import {
 } from "../../../physics/laser-safety/hazard-distance";
 
 export default function IndustrialLaserSafetyPage() {
-  const [power, setPower] = useURLState("power", 4000); // W
-  const [wavelength, setWavelength] = useURLState("wavelength", 1070); // nm
-  const [beamDia, setBeamDia] = useURLState("beamDia", 5); // mm, 1/e² at the exit
-  const [divergence, setDivergence] = useURLState("divergence", 2); // mrad, 1/e² full angle
-  const [materialReflectivity, setMaterialReflectivity] = useURLState("materialReflectivity", 30); // %, diffuse
-  const [workingDistance, setWorkingDistance] = useURLState("workingDistance", 0.3); // m, viewer to the spot
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 10); // s
-  const [spotDia, setSpotDia] = useURLState("spotDia", 0.3); // mm, 1/e² focused spot on the workpiece
+  const [power, setPower] = useURLState("power", 4000, { min: 0 }); // W
+  const [wavelength, setWavelength] = useURLState("wavelength", 1070, { min: 180, max: 1000000 }); // nm
+  const [beamDia, setBeamDia] = useURLState("beamDia", 5, { min: 0.001 }); // mm, 1/e² at the exit
+  const [divergence, setDivergence] = useURLState("divergence", 2, { min: 0 }); // mrad, 1/e² full angle
+  const [materialReflectivity, setMaterialReflectivity] = useURLState("materialReflectivity", 30, { min: 0, max: 100 }); // %, diffuse
+  const [workingDistance, setWorkingDistance] = useURLState("workingDistance", 0.3, { min: 0.01 }); // m, viewer to the spot
+  const [exposureTime, setExposureTime] = useURLState("exposureTime", 10, { min: 1e-9, max: 30000 }); // s
+  const [spotDia, setSpotDia] = useURLState("spotDia", 0.3, { min: 0.001 }); // mm, 1/e² focused spot on the workpiece
 
   // ICNIRP 2013 eye limits and the beam model: src/physics/laser-safety/hazard-distance.ts. SI inside.
   const lambda = wavelength * 1e-9;

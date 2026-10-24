@@ -11,14 +11,14 @@ import {
 const fmt = (x: number, digits: number, unit: string) => (Number.isFinite(x) ? `${x.toFixed(digits)} ${unit}` : "—");
 
 export default function MultiphotonDepthPage() {
-  const [na, setNa] = useURLState("na", 0.8);
-  const [wavelength, setWavelength] = useURLState("wavelength", 800); // nm
-  const [n, setN] = useURLState("n", 1.33);
-  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 100); // fs
-  const [repRate, setRepRate] = useURLState("repRate", 80); // MHz
-  const [avgPower, setAvgPower] = useURLState("avgPower", 20); // mW
-  const [absorption, setAbsorption] = useURLState("absorption", 0.02); // mm⁻¹
-  const [scattering, setScattering] = useURLState("scattering", 6); // mm⁻¹
+  const [na, setNa] = useURLState("na", 0.8, { min: 0.2, max: 1.5 });
+  const [wavelength, setWavelength] = useURLState("wavelength", 800, { min: 680, max: 1300 }); // nm
+  const [n, setN] = useURLState("n", 1.33, { min: 1, max: 1.8 });
+  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 100, { min: 10, max: 1000 }); // fs
+  const [repRate, setRepRate] = useURLState("repRate", 80, { min: 0.01, max: 250 }); // MHz
+  const [avgPower, setAvgPower] = useURLState("avgPower", 20, { min: 0, max: 500 }); // mW
+  const [absorption, setAbsorption] = useURLState("absorption", 0.02, { min: 0, max: 10 }); // mm⁻¹
+  const [scattering, setScattering] = useURLState("scattering", 6, { min: 0, max: 50 }); // mm⁻¹
 
   const results = useMemo(() => {
     const lam = wavelength * 1e-9;

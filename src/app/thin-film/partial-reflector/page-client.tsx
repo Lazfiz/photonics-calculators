@@ -8,11 +8,11 @@ import { useURLState } from "../../../hooks/use-url-state";
 import { quarterWaveStackReflectance, quarterWaveThickness, reflectanceSpectrum, stackResponse } from "../../../physics/thin-film/transfer-matrix";
 
 export default function PartialReflectorPage() {
-  const [nFilm, setNFilm] = useURLState("nFilm", 1.7);
-  const [nSub, setNSub] = useURLState("nSub", 1.52);
-  const [nInc, setNInc] = useURLState("nInc", 1.0);
-  const [thicknessRatio, setThicknessRatio] = useURLState("thicknessRatio", 1.0); // ratio to QWL
-  const [designWl, setDesignWl] = useURLState("designWl", 550);
+  const [nFilm, setNFilm] = useURLState("nFilm", 1.7, { min: 0.1 });
+  const [nSub, setNSub] = useURLState("nSub", 1.52, { min: 0.1 });
+  const [nInc, setNInc] = useURLState("nInc", 1.0, { min: 0.1 });
+  const [thicknessRatio, setThicknessRatio] = useURLState("thicknessRatio", 1.0, { min: 0.1, max: 3 }); // ratio to QWL
+  const [designWl, setDesignWl] = useURLState("designWl", 550, { min: 1 });
 
   const chartData = useMemo(() => {
     // Window 0.5–1.5 λ₀ (501 points, so λ₀ is a grid point)

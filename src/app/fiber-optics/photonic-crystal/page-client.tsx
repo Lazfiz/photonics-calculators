@@ -17,9 +17,9 @@ const ESM_LIMIT = endlesslySingleModeLimit();
 const PLOT_NM: readonly [number, number] = [500, 2000];
 
 export default function PhotonicCrystalFiberCalculator() {
-  const [pitch, setPitch] = useURLState("pitch", 4.5); // µm, Λ
-  const [holeDiameter, setHoleDiameter] = useURLState("holeDiameter", 2.7); // µm, d
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [pitch, setPitch] = useURLState("pitch", 4.5, { min: 0.5, max: 50 }); // µm, Λ
+  const [holeDiameter, setHoleDiameter] = useURLState("holeDiameter", 2.7, { min: 0.05 }); // µm, d
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 300, max: 3000 }); // nm
 
   const geometryBad = !(pitch > 0 && holeDiameter > 0 && holeDiameter < pitch);
   const r = holeDiameter / pitch;

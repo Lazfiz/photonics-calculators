@@ -27,10 +27,10 @@ function finitePairs(xs: number[], ys: number[], floor = -Infinity) {
 }
 
 export default function ModeFieldDiameterPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [coreRadius, setCoreRadius] = useURLState("coreRadius", SMF_PRESET.coreRadius); // µm
-  const [na, setNa] = useURLState("na", SMF_PRESET.na);
-  const [coreIndex, setCoreIndex] = useURLState("coreIndex", SMF_PRESET.coreIndex);
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 200, max: 5000 }); // nm
+  const [coreRadius, setCoreRadius] = useURLState("coreRadius", SMF_PRESET.coreRadius, { min: 0.5, max: 100 }); // µm
+  const [na, setNa] = useURLState("na", SMF_PRESET.na, { min: 0.01, max: 0.5 });
+  const [coreIndex, setCoreIndex] = useURLState("coreIndex", SMF_PRESET.coreIndex, { min: 1, max: 4 });
 
   const applyPreset = () => {
     setCoreRadius(SMF_PRESET.coreRadius);

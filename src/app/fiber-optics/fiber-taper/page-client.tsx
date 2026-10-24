@@ -18,15 +18,15 @@ const fmtDia = (d_um: number) => (Number.isFinite(d_um) && d_um < 1 ? `${d_um.to
 const SCALAR_LIMIT_V_CLAD = 10;
 
 export default function FiberTaperPage() {
-  const [initialDia, setInitialDia] = useURLState("initialDia", 125); // µm, cladding
-  const [coreDia, setCoreDia] = useURLState("coreDia", 8.2); // µm
-  const [na, setNa] = useURLState("na", 0.1246);
-  const [nClad, setNClad] = useURLState("nClad", 1.444);
-  const [nExt, setNExt] = useURLState("nExt", 1);
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [hotZone, setHotZone] = useURLState("heaterWidth", 5); // mm, L₀
-  const [elongation, setElongation] = useURLState("elongation", 15); // mm, x
-  const [alpha, setAlpha] = useURLState("alpha", 0);
+  const [initialDia, setInitialDia] = useURLState("initialDia", 125, { min: 10, max: 1000 }); // µm, cladding
+  const [coreDia, setCoreDia] = useURLState("coreDia", 8.2, { min: 1, max: 100 }); // µm
+  const [na, setNa] = useURLState("na", 0.1246, { min: 0.02, max: 0.4 });
+  const [nClad, setNClad] = useURLState("nClad", 1.444, { min: 1.3, max: 2 });
+  const [nExt, setNExt] = useURLState("nExt", 1, { min: 1, max: 1.9 });
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 400, max: 2500 }); // nm
+  const [hotZone, setHotZone] = useURLState("heaterWidth", 5, { min: 0.1, max: 200 }); // mm, L₀
+  const [elongation, setElongation] = useURLState("elongation", 15, { min: 0, max: 500 }); // mm, x
+  const [alpha, setAlpha] = useURLState("alpha", 0, { min: -0.9, max: 0.9 });
 
   const calc = useMemo(() => {
     const lambda = wavelength * 1e-9;

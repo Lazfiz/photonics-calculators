@@ -11,8 +11,8 @@ import { T_MAX, T_MIN } from "../../../physics/laser-safety/eye-exposure-limits"
 import { aelEnergy, cwClassLimit, exposureLimitEnergy } from "../../../physics/laser-safety/laser-classes";
 
 export default function AnsiIecComparisonPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 355); // nm
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 100); // s
+  const [wavelength, setWavelength] = useURLState("wavelength", 355, { min: 180, max: 1000000 }); // nm
+  const [exposureTime, setExposureTime] = useURLState("exposureTime", 100, { min: 1e-9, max: 30000 }); // s
 
   // SI inside. Exposure limit: ICNIRP 2013; Class 1 AEL: IEC 60825-1:2014 rebuilt (laser-classes.ts).
   const lambda = wavelength * 1e-9;

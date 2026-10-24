@@ -21,7 +21,7 @@ const colors: Record<WindowName, string> = {
 
 export default function ApodizationComparisonPage() {
   const [selected, setSelected] = useState<Set<WindowName>>(new Set(["boxcar", "hanning", "blackman", "blackman-harris", "gaussian"]));
-  const [nPoints, setNPoints] = useURLState("nPoints", 512);
+  const [nPoints, setNPoints] = useURLState("nPoints", 512, { min: 16, max: 2048 });
   const [viewDb, setViewDb] = useState(-120);
 
   const toggle = (w: WindowName) => {

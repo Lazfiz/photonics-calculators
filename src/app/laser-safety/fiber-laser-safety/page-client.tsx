@@ -13,15 +13,15 @@ import {
 } from "../../../physics/laser-safety/hazard-distance";
 
 export default function FiberLaserSafetyPage() {
-  const [power, setPower] = useURLState("power", 1000); // mW launched into the fiber
-  const [wavelength, setWavelength] = useURLState("wavelength", 1064); // nm
-  const [fiberCoreDia, setFiberCoreDia] = useURLState("fiberCoreDia", 10); // µm, 1/e² beam diameter at the fiber end
-  const [fiberLength, setFiberLength] = useURLState("fiberLength", 10); // m
-  const [attenuation, setAttenuation] = useURLState("attenuation", 0.2); // dB/km
-  const [na, setNa] = useURLState("na", 0.12); // multimode
+  const [power, setPower] = useURLState("power", 1000, { min: 0 }); // mW launched into the fiber
+  const [wavelength, setWavelength] = useURLState("wavelength", 1064, { min: 180, max: 1000000 }); // nm
+  const [fiberCoreDia, setFiberCoreDia] = useURLState("fiberCoreDia", 10, { min: 1 }); // µm, 1/e² beam diameter at the fiber end
+  const [fiberLength, setFiberLength] = useURLState("fiberLength", 10, { min: 0 }); // m
+  const [attenuation, setAttenuation] = useURLState("attenuation", 0.2, { min: 0 }); // dB/km
+  const [na, setNa] = useURLState("na", 0.12, { min: 0, max: 0.99 }); // multimode
   const [fiberType, setFiberType] = useURLState("fiberType", "single"); // "single" | "multi"
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 10); // s
-  const [viewingDistance, setViewingDistance] = useURLState("viewingDistance", 0.1); // m
+  const [exposureTime, setExposureTime] = useURLState("exposureTime", 10, { min: 1e-9, max: 30000 }); // s
+  const [viewingDistance, setViewingDistance] = useURLState("viewingDistance", 0.1, { min: 0 }); // m
 
   // ICNIRP 2013 eye limits and the beam model: src/physics/laser-safety/hazard-distance.ts. SI inside.
   const multimode = fiberType === "multi";

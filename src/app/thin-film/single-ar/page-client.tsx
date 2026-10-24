@@ -16,11 +16,11 @@ function snellAngle(nFrom: number, nTo: number, thetaFrom: number) {
 const substratePresets = [1.45, 1.52, 1.76];
 
 export default function SingleARPage() {
-  const [nSubstrate, setNSubstrate] = useURLState("nSubstrate", 1.52);
-  const [nFilm, setNFilm] = useURLState("nFilm", 1.38);
-  const [nIncident, setNIncident] = useURLState("nIncident", 1.0);
-  const [designWavelength, setDesignWavelength] = useURLState("designWavelength", 550);
-  const [angle, setAngle] = useURLState("angle", 0);
+  const [nSubstrate, setNSubstrate] = useURLState("nSubstrate", 1.52, { min: 1.3, max: 2.4 });
+  const [nFilm, setNFilm] = useURLState("nFilm", 1.38, { min: 1.1, max: 2.4 });
+  const [nIncident, setNIncident] = useURLState("nIncident", 1.0, { min: 1, max: 1.6 });
+  const [designWavelength, setDesignWavelength] = useURLState("designWavelength", 550, { min: 350, max: 1100 });
+  const [angle, setAngle] = useURLState("angle", 0, { min: 0, max: 75 });
 
   const theta0 = (angle * Math.PI) / 180;
   const theta1 = snellAngle(nIncident, nFilm, theta0);

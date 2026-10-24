@@ -12,19 +12,19 @@ const NM = 1e-9;
 const pct = (x: number, digits = 2) => (Number.isFinite(x) ? `${(x * 100).toFixed(digits)} %` : "—");
 
 export default function HardCoatingPage() {
-  const [nCoat, setNCoat] = useURLState("nCoat", 2.1);
-  const [nSub, setNSub] = useURLState("nSub", 1.52);
-  const [designWl, setDesignWl] = useURLState("designWl", 550);
-  const [thickness, setThickness] = useURLState("thickness", 200);
+  const [nCoat, setNCoat] = useURLState("nCoat", 2.1, { min: 1, max: 4 });
+  const [nSub, setNSub] = useURLState("nSub", 1.52, { min: 1, max: 4 });
+  const [designWl, setDesignWl] = useURLState("designWl", 550, { min: 200, max: 5000 });
+  const [thickness, setThickness] = useURLState("thickness", 200, { min: 0, max: 20000 });
   // Stress in MPa, tensile > 0 (the usual thin-film sign). New key: the old "stressGPa" had the sign the other way.
-  const [stressMPa, setStressMPa] = useURLState("stressMPa", -500);
-  const [Ef, setEf] = useURLState("Ef", 150);
-  const [nuF, setNuF] = useURLState("nuF", 0.25);
-  const [toughness, setToughness] = useURLState("toughness", 5);
-  const [Es, setEs] = useURLState("Es", 72);
-  const [nuS, setNuS] = useURLState("nuS", 0.22);
-  const [tSubMm, setTSubMm] = useURLState("tSub", 1);
-  const [diamMm, setDiamMm] = useURLState("diam", 25);
+  const [stressMPa, setStressMPa] = useURLState("stressMPa", -500, { min: -10000, max: 10000 });
+  const [Ef, setEf] = useURLState("Ef", 150, { min: 1, max: 1200 });
+  const [nuF, setNuF] = useURLState("nuF", 0.25, { min: 0, max: 0.49 });
+  const [toughness, setToughness] = useURLState("toughness", 5, { min: 0.01, max: 1000 });
+  const [Es, setEs] = useURLState("Es", 72, { min: 1, max: 1200 });
+  const [nuS, setNuS] = useURLState("nuS", 0.22, { min: 0, max: 0.49 });
+  const [tSubMm, setTSubMm] = useURLState("tSub", 1, { min: 0.01, max: 100 });
+  const [diamMm, setDiamMm] = useURLState("diam", 25, { min: 1, max: 1000 });
 
   const opticsValid = nCoat > 0 && nSub > 0 && thickness >= 0 && designWl >= 200 && designWl <= 5000;
   const mechValid = Ef > 0 && Es > 0 && nuF < 0.5 && nuF >= 0 && nuS < 0.5 && nuS >= 0 && toughness > 0 && tSubMm > 0 && diamMm > 0;

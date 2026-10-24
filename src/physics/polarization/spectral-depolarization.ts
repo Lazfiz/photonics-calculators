@@ -13,14 +13,10 @@
  * Exact for a non-dispersive retarder (R_g = R); for a dispersive crystal the error is the curvature of Δn(σ) across
  * the band, which tests/polarization-spectral-depolarization.test.ts bounds against direct integration over quartz.
  */
+import { sinc } from "../math";
 import { type MuellerMatrix, retarderFromCosSin } from "./mueller";
 
 export type SpectrumShape = "flat" | "gaussian";
-
-/** sin x / x with sinc(0) = 1. */
-export function sinc(x: number): number {
-  return Math.abs(x) < 1e-8 ? 1 - (x * x) / 6 : Math.sin(x) / x;
-}
 
 /**
  * Visibility V = |⟨e^{i2πR(σ − σ₀)}⟩| (signed for the flat spectrum) of a spectrum of width Δσ (full width, or FWHM

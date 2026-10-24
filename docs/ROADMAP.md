@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 150, 2026-10-24)
+## Status (session 151, 2026-10-25)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4: every page is tiered; open findings and the top-50 tests remain.
@@ -51,7 +51,9 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   A 4e8, n_g 3.9 (De Koninck 2025, Wenzel 2021; I_th 12.03 mA, radiative share 44 %); injection k_c (1 − R)/(τ_rt√R) 24.51 GHz, α 1.
 - [x] **Findings 4e-b** (session 150, `phase-4/findings-4e-b`, PR #181): OPO `bboTypeICut` (Tamošauskas 2018 BBO, θ 22.12°, ρ 3.114°, d_eff 2.068);
   thin-disk Chanteloup 2014 σ, τ 0.951 ms, η_h 1 − λ_p/λ, κ 7 (Chénais 2006); Rh6G Falkenstein 1978, Pavlopoulos 1988, Webb 1970.
-- [ ] **Findings 4f, cross-cutting:** URL clamping (codemod), `erf`/`sinc` copies, search relevance floor.
+- [x] **Findings 4f-a** (session 151, `phase-4/findings-4f`, PR #182): `useURLState(key, def, { min, max })` clamps; codemod gave 671
+  bindings / 127 pages their field range; one `sinc` (9 files; no `erf` copies left); search needs every word to match.
+- [ ] **Findings 4f-b:** the 185 URL values the codemod skipped (Cross-cutting, below), by hand, laser-safety first.
 - [x] Detectors part 9b (session 77, `phase-4/detectors-mtf-cosmic`): `sensor-mtf.ts` (Seib diffusion, column shares),
   `cosmic-rays.ts` (MPV 23 075 e⁻ in 300 µm vs PDG 23 000), `poissonQuantile`; detectors 54/54, 0 `knownIssue`s.
 - [x] **Imaging audit, part 0** (session 78, branch `phase-4/imaging-audit`). Eight `physics-reviewer` batches of 7
@@ -191,12 +193,12 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   0.6–1.2× the shown envelope); `periodicDecay` takes up to ≈ 7e4 terms per chart point when σ ≫ T (could return Σαᵢτᵢ/T).
 
 **Cross-cutting**
-- `erf` had three implementations. `src/physics/math.ts` replaced five pages' copies; others may remain.
-- `sinc` (sin x/x) is in `math.ts` since session 85; local copies remain in `detectors/sensor-mtf.ts`,
-  `imaging/diffraction-psf.ts`, `polarization/spectral-depolarization.ts` (exported) and `polarization/twisted-nematic.ts`.
-- `useURLState` only rejects non-finite values, so a crafted `?na=0` reaches the physics unclamped. Clamp in the page,
-  or give `useURLState` an optional range.
-- Search returns unrelated pages for nonsense queries; it needs a relevance floor (Codex review, 2026-10-13).
+- URL values the page doesn't clamp and the codemod couldn't range (session 151): 185 bindings on 70 pages. List them with
+  `CODEMOD_LIST=1 npx tsx scripts/codemods/2026-10-24-url-ranges.ts`. Kinds: 122 values with no field (inputs built in a
+  `.map` array, selects, `Math.max` guards), 52 fields with no min/max (thin-film indices, polarimetry, laser-safety
+  `blue-light-hazard`/`uv-exposure`), 2 computed bounds (`ber` MAX_PHOTONS_PER_BIT, `thermal-evaporation` T_MAX_C), 9 in
+  `lasercom-link` (not `const [x, setX] =`). Laser-safety pages first: `od-requirements`, `nohd`, `diffuse-reflection`,
+  `optical-density`, `classification`, `ael-limits`, `mpe`.
 - `ui-check` can't hydrate a page that has no `<input>` (`optical-glass-catalog`; `jones-calculus` until an element is
   added).
 

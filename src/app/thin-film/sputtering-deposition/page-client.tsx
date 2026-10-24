@@ -26,14 +26,14 @@ const ZONE = ["", "zone 1: tapered columns, voided", "zone 2: dense columns", "z
 
 export default function SputteringDepositionPage() {
   const [targetParam, setTarget] = useURLState("target", "Al");
-  const [power, setPower] = useURLState("power", 300); // W
-  const [voltage, setVoltage] = useURLState("voltage", 500); // V
-  const [gamma, setGamma] = useURLState("gamma", 0.07);
-  const [yieldParam, setYield] = useURLState("yield", 0); // atoms/ion, 0 = table value at 500 eV
-  const [targetRadius, setTargetRadius] = useURLState("targetRadius", 2); // cm
-  const [distance, setDistance] = useURLState("distance", 10); // cm
-  const [pressure, setPressure] = useURLState("pressure", 3); // mTorr
-  const [substrateTemp, setSubstrateTemp] = useURLState("substrateTemp", 200); // °C
+  const [power, setPower] = useURLState("power", 300, { min: 0 }); // W
+  const [voltage, setVoltage] = useURLState("voltage", 500, { min: 1 }); // V
+  const [gamma, setGamma] = useURLState("gamma", 0.07, { min: 0 });
+  const [yieldParam, setYield] = useURLState("yield", 0, { min: 0 }); // atoms/ion, 0 = table value at 500 eV
+  const [targetRadius, setTargetRadius] = useURLState("targetRadius", 2, { min: 0 }); // cm
+  const [distance, setDistance] = useURLState("distance", 10, { min: 0.1 }); // cm
+  const [pressure, setPressure] = useURLState("pressure", 3, { min: 0.01 }); // mTorr
+  const [substrateTemp, setSubstrateTemp] = useURLState("substrateTemp", 200, { min: -273.15 }); // °C
 
   const id: SputterTargetId = isId(targetParam) ? targetParam : "Al";
   const t = SPUTTER_TARGETS[id];

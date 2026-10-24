@@ -26,10 +26,10 @@ function fmtOutage(p: number) {
 }
 
 export default function PMDPage() {
-  const [pmdCoeff, setPmdCoeff] = useURLState("pmdCoeff", 0.5); // ps/√km
-  const [length, setLength] = useURLState("length", 100); // km
-  const [bitRate, setBitRate] = useURLState("bitRate", 10); // Gb/s
-  const [maxToMean, setMaxToMean] = useURLState("maxToMean", 3); // max DGD / mean DGD
+  const [pmdCoeff, setPmdCoeff] = useURLState("pmdCoeff", 0.5, { min: 0.001, max: 10 }); // ps/√km
+  const [length, setLength] = useURLState("length", 100, { min: 0.1, max: 50000 }); // km
+  const [bitRate, setBitRate] = useURLState("bitRate", 10, { min: 0.1, max: 1000 }); // Gb/s
+  const [maxToMean, setMaxToMean] = useURLState("maxToMean", 3, { min: 1, max: 8 }); // max DGD / mean DGD
 
   const calc = useMemo(() => {
     const mean = meanDgd(pmdCoeff * PS_SQRT_KM, length * 1e3);

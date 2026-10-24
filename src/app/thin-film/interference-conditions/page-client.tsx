@@ -9,10 +9,10 @@ import { firstReflectionExtrema, netReflectionPhase } from "../../../physics/thi
 import { reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
 
 export default function InterferenceConditionsPage() {
-  const [nFilm, setNFilm] = useURLState("nFilm", 1.38);
-  const [thickness, setThickness] = useURLState("thickness", 100);
-  const [nIncident, setNIncident] = useURLState("nIncident", 1.0);
-  const [nSubstrate, setNSubstrate] = useURLState("nSubstrate", 1.52);
+  const [nFilm, setNFilm] = useURLState("nFilm", 1.38, { min: 0.1 });
+  const [thickness, setThickness] = useURLState("thickness", 100, { min: 1 });
+  const [nIncident, setNIncident] = useURLState("nIncident", 1.0, { min: 0.1 });
+  const [nSubstrate, setNSubstrate] = useURLState("nSubstrate", 1.52, { min: 0.1 });
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 300 }, (_, i) => 300 + i * 2);

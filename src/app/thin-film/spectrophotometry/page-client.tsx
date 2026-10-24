@@ -9,7 +9,7 @@ import { clampToRange } from "../../../lib/number-input";
 import { stackResponse } from "../../../physics/thin-film/transfer-matrix";
 export default function SpectrophotometryPage() {
   const [nFilm, setNFilm] = useURLState("nFilm", 1.46);
-  const [kFilm, setKFilm] = useURLState("kFilm", 0.001);
+  const [kFilm, setKFilm] = useURLState("kFilm", 0.001, { min: 0 });
   const [nSub, setNSub] = useURLState("nSub", 1.52);
   const [thickness, setThickness] = useURLState("thickness", 100);
   const [angleDegRaw, setAngleDeg] = useURLState("angleDeg", 0);

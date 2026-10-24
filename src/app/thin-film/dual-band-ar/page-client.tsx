@@ -12,12 +12,12 @@ const pct = (x: number, digits = 3) => (Number.isFinite(x) ? `${(x * 100).toFixe
 const LEVEL = 0.01;
 
 export default function DualBandARPage() {
-  const [nSub, setNSub] = useURLState("nSub", 1.52);
-  const [wl1, setWl1] = useURLState("wl1", 450);
-  const [wl2, setWl2] = useURLState("wl2", 1064);
-  const [n1, setN1] = useURLState("n1", 1.38);
-  const [n2, setN2] = useURLState("n2", 2.1);
-  const [n3, setN3] = useURLState("n3", 1.65);
+  const [nSub, setNSub] = useURLState("nSub", 1.52, { min: 1, max: 5 });
+  const [wl1, setWl1] = useURLState("wl1", 450, { min: 200, max: 5000 });
+  const [wl2, setWl2] = useURLState("wl2", 1064, { min: 200, max: 5000 });
+  const [n1, setN1] = useURLState("n1", 1.38, { min: 1, max: 5 });
+  const [n2, setN2] = useURLState("n2", 2.1, { min: 1, max: 5 });
+  const [n3, setN3] = useURLState("n3", 1.65, { min: 1, max: 5 });
 
   const valid = nSub > 0 && n1 > 0 && n2 > 0 && n3 > 0 && wl1 >= 200 && wl1 <= 5000 && wl2 >= 200 && wl2 <= 5000;
   const problem = useMemo(

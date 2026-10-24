@@ -15,7 +15,7 @@ export default function WavelengthSeparationPage() {
   const [nSub, setNSub] = useURLState("nSub", 1.52);
   const [nInc, setNInc] = useURLState("nInc", 1.0);
   const [numPairsRaw, setNumPairs] = useURLState("numPairs", 5);
-  const [designWl, setDesignWl] = useURLState("designWl", 550);
+  const [designWl, setDesignWl] = useURLState("designWl", 550, { min: 1 });
   const [sepRatioRaw, setSepRatio] = useURLState("sepRatio", 1.4); // λ₂/λ₁
 
   // The URL isn't range-checked: use an integer number of pairs in 1–30 and λ₂/λ₁ in 1.05–3 everywhere.

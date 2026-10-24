@@ -15,13 +15,13 @@ const fmt = (x: number, digits: number, unit: string) => (Number.isFinite(x) ? `
 const MAX_CELLS_DRAWN = 4096;
 
 export default function ShackHartmannPage() {
-  const [wavelengthNm, setWavelengthNm] = useURLState("wavelengthNm", 632.8);
-  const [apertureDiameterMm, setApertureDiameterMm] = useURLState("apertureDiameterMm", 8);
-  const [lensletPitchUm, setLensletPitchUm] = useURLState("lensletPitchUm", 300);
-  const [lensletFocalMm, setLensletFocalMm] = useURLState("lensletFocalMm", 20);
-  const [detectorPixelUm, setDetectorPixelUm] = useURLState("detectorPixelUm", 5.5);
-  const [rmsWavefrontNm, setRmsWavefrontNm] = useURLState("rmsWavefrontNm", 150);
-  const [photons, setPhotons] = useURLState("photons", 1000);
+  const [wavelengthNm, setWavelengthNm] = useURLState("wavelengthNm", 632.8, { min: 200, max: 2000 });
+  const [apertureDiameterMm, setApertureDiameterMm] = useURLState("apertureDiameterMm", 8, { min: 0.5, max: 100 });
+  const [lensletPitchUm, setLensletPitchUm] = useURLState("lensletPitchUm", 300, { min: 50, max: 2000 });
+  const [lensletFocalMm, setLensletFocalMm] = useURLState("lensletFocalMm", 20, { min: 0.5, max: 200 });
+  const [detectorPixelUm, setDetectorPixelUm] = useURLState("detectorPixelUm", 5.5, { min: 1, max: 30 });
+  const [rmsWavefrontNm, setRmsWavefrontNm] = useURLState("rmsWavefrontNm", 150, { min: 0, max: 2000 });
+  const [photons, setPhotons] = useURLState("photons", 1000, { min: 1, max: 1000000 });
   const [shapeParam, setShape] = useURLState("lensletShape", "square");
   const shape: LensletShape = shapeParam === "circular" ? "circular" : "square";
 

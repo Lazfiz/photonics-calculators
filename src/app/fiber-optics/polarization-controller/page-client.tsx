@@ -28,12 +28,12 @@ export default function PolarizationControllerCalculator() {
   const [lambdaRaw, setLambda] = useURLState("wavelength", 1550); // nm
   const [dRaw, setD] = useURLState("claddingDiameter", 125); // µm
   const [DRaw, setDLoop] = useURLState("loopDiameter", 30); // mm
-  const [n1Raw, setN1] = useURLState("loops1", 2);
-  const [n2Raw, setN2] = useURLState("loops2", 4);
-  const [n3Raw, setN3] = useURLState("loops3", 2);
-  const [a1Raw, setA1] = useURLState("angle1", 0); // °
-  const [a2Raw, setA2] = useURLState("angle2", 45);
-  const [a3Raw, setA3] = useURLState("angle3", 0);
+  const [n1Raw, setN1] = useURLState("loops1", 2, { min: 0, max: 20 });
+  const [n2Raw, setN2] = useURLState("loops2", 4, { min: 0, max: 20 });
+  const [n3Raw, setN3] = useURLState("loops3", 2, { min: 0, max: 20 });
+  const [a1Raw, setA1] = useURLState("angle1", 0, { min: -180, max: 180 }); // °
+  const [a2Raw, setA2] = useURLState("angle2", 45, { min: -180, max: 180 });
+  const [a3Raw, setA3] = useURLState("angle3", 0, { min: -180, max: 180 });
   const [psiRaw, setPsi] = useURLState("inputAzimuth", 45); // °
   const [chiRaw, setChi] = useURLState("inputEllipticity", 0); // °
 

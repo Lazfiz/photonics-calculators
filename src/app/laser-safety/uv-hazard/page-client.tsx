@@ -12,9 +12,9 @@ const fmtTime = (t: number) =>
   t === Infinity || t > UV_LIMIT_PERIOD ? "> 8 hr" : t >= 3600 ? (t / 3600).toFixed(1) + " hr" : t >= 10 ? t.toFixed(0) + " s" : t.toPrecision(2) + " s";
 
 export default function UVHazardPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 254);
+  const [wavelength, setWavelength] = useURLState("wavelength", 254, { min: 180, max: 400 });
   // Irradiance at the eye, W/cm² (the URL key predates the label).
-  const [spectralIrr, setSpectralIrr] = useURLState("spectralIrr", 0.01);
+  const [spectralIrr, setSpectralIrr] = useURLState("spectralIrr", 0.01, { min: 0 });
   const [exposure, setExposure] = useState(8 * 3600);
 
   // S(λ) and the limits: src/physics/laser-safety/hazard-weighting.ts (ICNIRP 2004 Table 1). SI inside.

@@ -20,10 +20,10 @@ const BAND_MIN = 1460, BAND_MAX = 1625;
 
 export default function DispersionShiftedCalculator() {
   const [fiberKey, setFiberKey] = useURLState("fiberType", "NZDSF_PLUS");
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [fiberLength, setFiberLength] = useURLState("fiberLength", 80); // km
-  const [bitRate, setBitRate] = useURLState("bitRate", 10); // Gb/s
-  const [sigmaLambda, setSigmaLambda] = useURLState("spectralWidth", 0.1); // nm, rms
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: BAND_MIN, max: BAND_MAX }); // nm
+  const [fiberLength, setFiberLength] = useURLState("fiberLength", 80, { min: 0.001 }); // km
+  const [bitRate, setBitRate] = useURLState("bitRate", 10, { min: 0.001 }); // Gb/s
+  const [sigmaLambda, setSigmaLambda] = useURLState("spectralWidth", 0.1, { min: 0 }); // nm, rms
 
   const key: FiberPresetKey = (KEYS as string[]).includes(fiberKey) ? (fiberKey as FiberPresetKey) : "NZDSF_PLUS";
   const p = FIBER_PRESETS[key];

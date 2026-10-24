@@ -6,8 +6,8 @@ import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function PowerDensityPage() {
-  const [power, setPower] = useURLState("power", 1); // W
-  const [diameter, setDiameter] = useURLState("diameter", 1); // mm (1/e²)
+  const [power, setPower] = useURLState("power", 1, { min: 0 }); // W
+  const [diameter, setDiameter] = useURLState("diameter", 1, { min: 0.01 }); // mm (1/e²)
   const [beamProfile, setBeamProfile] = useState<"gaussian" | "tophat">("gaussian");
 
   // Power density (irradiance): E = P / A

@@ -41,12 +41,12 @@ const fmtLength = (m: number) =>
 
 export default function FiberBandwidthPage() {
   const [fiberKey, setFiberKey] = useURLState("fiberType", "SMF");
-  const [length, setLength] = useURLState("length", 10); // km
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [sigmaLambda, setSigmaLambda] = useURLState("sourceLinewidth", SMF_SOURCE_RMS_NM); // nm, rms
-  const [modalBW, setModalBW] = useURLState("modalBW", 2000); // MHz·km at 850 nm
-  const [pmdCoeff, setPmdCoeff] = useURLState("pmd", 0.1); // ps/√km
-  const [bitRate, setBitRate] = useURLState("bitRate", 10); // Gb/s
+  const [length, setLength] = useURLState("length", 10, { min: 0.001 }); // km
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 800, max: 1700 }); // nm
+  const [sigmaLambda, setSigmaLambda] = useURLState("sourceLinewidth", SMF_SOURCE_RMS_NM, { min: 0 }); // nm, rms
+  const [modalBW, setModalBW] = useURLState("modalBW", 2000, { min: 10 }); // MHz·km at 850 nm
+  const [pmdCoeff, setPmdCoeff] = useURLState("pmd", 0.1, { min: 0, max: 5 }); // ps/√km
+  const [bitRate, setBitRate] = useURLState("bitRate", 10, { min: 0.001 }); // Gb/s
 
   const key: SellmeierFiberKey = (KEYS as string[]).includes(fiberKey) ? (fiberKey as SellmeierFiberKey) : "SMF";
   const isMmf = SELLMEIER_FIBERS[key].modalBandwidthLength > 0;

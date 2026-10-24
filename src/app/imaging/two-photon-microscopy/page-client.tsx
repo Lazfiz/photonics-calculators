@@ -14,14 +14,14 @@ const fmt = (x: number, digits: number, unit: string) => (Number.isFinite(x) ? `
 const aboveFloor = (y: number) => (y >= 1e-10 ? y : NaN);
 
 export default function TwoPhotonMicroscopyPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 800); // nm
-  const [na, setNa] = useURLState("na", 0.8);
-  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 100); // fs
-  const [repRate, setRepRate] = useURLState("repRate", 80); // MHz
-  const [avgPower, setAvgPower] = useURLState("avgPower", 30); // mW
-  const [exposureDepth, setExposureDepth] = useURLState("exposureDepth", 200); // µm
-  const [refractiveIndex, setRefractiveIndex] = useURLState("refractiveIndex", 1.33);
-  const [scatteringCoeff, setScatteringCoeff] = useURLState("scatteringCoeff", 100); // cm⁻¹
+  const [wavelength, setWavelength] = useURLState("wavelength", 800, { min: 680, max: 1300 }); // nm
+  const [na, setNa] = useURLState("na", 0.8, { min: 0.1, max: 1.7 });
+  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 100, { min: 10, max: 1000 }); // fs
+  const [repRate, setRepRate] = useURLState("repRate", 80, { min: 0.1, max: 250 }); // MHz
+  const [avgPower, setAvgPower] = useURLState("avgPower", 30, { min: 0.1, max: 500 }); // mW
+  const [exposureDepth, setExposureDepth] = useURLState("exposureDepth", 200, { min: 0, max: 2000 }); // µm
+  const [refractiveIndex, setRefractiveIndex] = useURLState("refractiveIndex", 1.33, { min: 1.0, max: 1.8 });
+  const [scatteringCoeff, setScatteringCoeff] = useURLState("scatteringCoeff", 100, { min: 0, max: 500 }); // cm⁻¹
 
   const lambda = wavelength * 1e-9;
   const mu = scatteringCoeff * 100; // 1/m

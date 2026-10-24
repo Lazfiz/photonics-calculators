@@ -16,14 +16,14 @@ const RULE_NAMES = { 1: "single pulse", 2: "average power", 3: "C_P × single pu
 const presets: readonly [number, string][] = [[905, "905 nm diode"], [1550, "1550 nm fibre"]];
 
 export default function LidarSafetyPage() {
-  const [pulseEnergyRaw, setPulseEnergy] = useURLState("pulseEnergy", 10); // µJ
-  const [repRateRaw, setRepRate] = useURLState("repRate", 200); // kHz
-  const [pulseWidthRaw, setPulseWidth] = useURLState("pulseWidth", 5); // ns
-  const [wavelength, setWavelength] = useURLState("wavelength", 905); // nm
-  const [beamDiaRaw, setBeamDia] = useURLState("beamDia", 3); // mm, 1/e²
-  const [divergenceRaw, setDivergence] = useURLState("divergence", 3); // mrad, 1/e² full angle
-  const [rangeRaw, setRange] = useURLState("scanRange", 10); // m, where the eye is
-  const [exposureRaw, setExposure] = useURLState("exposureTime", 10); // s
+  const [pulseEnergyRaw, setPulseEnergy] = useURLState("pulseEnergy", 10, { min: 0 }); // µJ
+  const [repRateRaw, setRepRate] = useURLState("repRate", 200, { min: 0 }); // kHz
+  const [pulseWidthRaw, setPulseWidth] = useURLState("pulseWidth", 5, { min: 1e-4 }); // ns
+  const [wavelength, setWavelength] = useURLState("wavelength", 905, { min: 180, max: 1000000 }); // nm
+  const [beamDiaRaw, setBeamDia] = useURLState("beamDia", 3, { min: 0.001 }); // mm, 1/e²
+  const [divergenceRaw, setDivergence] = useURLState("divergence", 3, { min: 0 }); // mrad, 1/e² full angle
+  const [rangeRaw, setRange] = useURLState("scanRange", 10, { min: 0 }); // m, where the eye is
+  const [exposureRaw, setExposure] = useURLState("exposureTime", 10, { min: 1e-13, max: 30000 }); // s
 
   // URL values aren't range-checked: clamp them here. SI inside; physics in src/physics/laser-safety/pulse-train.ts.
   const lambda = wavelength * 1e-9;
