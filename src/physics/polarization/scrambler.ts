@@ -16,7 +16,11 @@
  * their phases are not independent: the joint drive repeats with the common period T (f_k T a whole number for each
  * locked stage), and the long-time average is the average over one T, which depends on the drive phases. That average
  * is integrated numerically; unlocked stages enter it through their closed-form means (the stages are independent, so
- * E[M₃M₂M₁] = E_T[M₃ E[M₂] M₁] when stage 2 is free). A finite averaging window is integrated numerically.
+ * E[M₃M₂M₁] = E_T[M₃ E[M₂] M₁] when stage 2 is free). Three stages can also be tied by a combination relation
+ * n₁f₁ + n₂f₂ + n₃f₃ = 0 (e.g. f₁ + f₂ = f₃) with no low-order pairwise lock: the joint phase then stays on a 2-torus.
+ * Writing each stage matrix as a Fourier series in its phase, M_k = Σ_m A_k,m e^(2πi m θ_k), only the terms with
+ * (m₁, m₂, m₃) = j·n survive the long-time average, since ⟨e^(2πi (m·f) t)⟩ = 0 unless m·f = 0:
+ * ⟨M₃M₂M₁⟩ = Σ_j A₃,jn₃ A₂,jn₂ A₁,jn₁ e^(i j n·φ). A finite averaging window is integrated numerically.
  */
 import { besselJ, largestSymmetricEigenvalue } from "../math";
 import { type MuellerMatrix, applyMueller, chainMueller, muellerRetarder, retarderFromCosSin } from "./mueller";
@@ -79,6 +83,28 @@ function lockRatio(fi: number, fj: number): [number, number] | null {
   return null;
 }
 
+/**
+ * Lowest-order relation n₁f₁ + n₂f₂ + n₃f₃ = 0 among exactly three stages with every n_k ≠ 0 and |n_k| ≤
+ * LOCK_MAX_ORDER, to 1e-9 relative (n₁ > 0, coprime); null otherwise.
+ */
+export function combinationLock(stages: readonly ScramblerStage[]): [number, number, number] | null {
+  if (stages.length !== 3) return null;
+  const [f1, f2, f3] = stages.map((s) => s.frequency);
+  if (!(f1 > 0 && f2 > 0 && f3 > 0)) return null;
+  let best: [number, number, number] | null = null;
+  const M = LOCK_MAX_ORDER;
+  for (let a = 1; a <= M; a++) {
+    for (let b = -M; b <= M; b++) {
+      for (let c = -M; c <= M; c++) {
+        if (b === 0 || c === 0 || gcd(gcd(a, Math.abs(b)), Math.abs(c)) !== 1) continue;
+        if (best && a + Math.abs(b) + Math.abs(c) >= best[0] + Math.abs(best[1]) + Math.abs(best[2])) continue;
+        if (Math.abs(a * f1 + b * f2 + c * f3) <= 1e-9 * (a * f1 + Math.abs(b) * f2 + Math.abs(c) * f3)) best = [a, b, c];
+      }
+    }
+  }
+  return best;
+}
+
 export interface LockedGroup {
   /** Indices of the locked stages, ascending. */
   members: number[];
@@ -91,6 +117,7 @@ export interface LockedGroup {
 /**
  * The stages whose frequencies are locked to each other (connected through ratios with p, q ≤ LOCK_MAX_ORDER), with
  * their common period; null when no two stages are locked. With at most three stages there is at most one such set.
+ * A locked pair plus a combination relation (combinationLock) locks the third stage too.
  */
 export function lockedGroup(stages: readonly ScramblerStage[]): LockedGroup | null {
   for (let ref = 0; ref < stages.length; ref++) {
@@ -108,8 +135,21 @@ export function lockedGroup(stages: readonly ScramblerStage[]): LockedGroup | nu
         queue.push(j);
       }
     }
-    const members = ratio.flatMap((r, k) => (r ? [k] : []));
+    let members = ratio.flatMap((r, k) => (r ? [k] : []));
     if (members.length < 2) continue;
+    const rel = members.length === 2 ? combinationLock(stages) : null;
+    if (rel) {
+      // f_t = −(n_a f_a + n_b f_b)/n_t with f_a, f_b rational multiples of f_ref.
+      const t = [0, 1, 2].find((k) => !ratio[k])!, [a, b] = members;
+      const [ra, rb] = [ratio[a]!, ratio[b]!];
+      let num = -(rel[a] * ra[0] * rb[1] + rel[b] * rb[0] * ra[1]), den = rel[t] * ra[1] * rb[1];
+      if (den < 0) [num, den] = [-num, -den];
+      const g = gcd(Math.abs(num), den);
+      if (num > 0) {
+        ratio[t] = [num / g, den / g];
+        members = [0, 1, 2];
+      }
+    }
     // With L = lcm(b_k), f_k = (a_k/b_k) f_ref is the harmonic a_k L/b_k of f_ref/L.
     const L = members.reduce((l, k) => (l * ratio[k]![1]) / gcd(l, ratio[k]![1]), 1);
     const raw = members.map((k) => (ratio[k]![0] * L) / ratio[k]![1]);
@@ -131,7 +171,10 @@ export function lockedGroup(stages: readonly ScramblerStage[]): LockedGroup | nu
 export function scramblerMeanMueller(stages: readonly ScramblerStage[]): MuellerMatrix {
   const means = stages.map(stageMeanMueller);
   const group = lockedGroup(stages);
-  if (!group) return chainMueller(means);
+  if (!group) {
+    const rel = combinationLock(stages);
+    return rel ? combinationMean(stages, rel) : chainMueller(means);
+  }
   const T = group.period;
   const locked = stages.map((_, k) => group.members.includes(k));
   const at = (t: number) =>
@@ -172,6 +215,87 @@ export function scramblerMeanMueller(stages: readonly ScramblerStage[]): Mueller
     }
   }
   return acc;
+}
+
+/** Fourier coefficients E_m and E_−m of e^(iΓ(θ)) over one drive cycle θ ∈ [0, 1), as [re_m, im_m, re_−m, im_−m]. */
+function expRetardanceCoefficients(s: ScramblerStage, m: number): [number, number, number, number] {
+  const cb = Math.cos(s.bias), sb = Math.sin(s.bias);
+  if (s.waveform === "sine") {
+    // Jacobi–Anger: e^(iΓm sin 2πθ) = Σ J_m(Γm) e^(2πimθ), J_−m = (−1)^m J_m (DLMF 10.12.2).
+    const odd = m % 2 !== 0, jm = besselJ(Math.abs(m), s.amplitude) * (m < 0 && odd ? -1 : 1), jn = odd ? -jm : jm;
+    return [jm * cb, jm * sb, jn * cb, jn * sb];
+  }
+  // ∫₀¹ e^(i(Γm − 2πm)u) du = (e^(iα) − 1)/(iα), α = Γm − 2πm.
+  const coefficient = (mm: number) => {
+    const alpha = s.amplitude - 2 * Math.PI * mm;
+    const [re, im] = Math.abs(alpha) < 1e-12 ? [1, 0] : [Math.sin(alpha) / alpha, (1 - Math.cos(alpha)) / alpha];
+    return [re * cb - im * sb, re * sb + im * cb];
+  };
+  const [a, b] = coefficient(m), [c, d] = coefficient(-m);
+  return [a, b, c, d];
+}
+
+/** Terms per side of the ramp lattice sum; |A_m| ~ 1/(π|m|), so the terms fall as 1/j³ (13/17/30 kHz, Γm 5: 1e-10 from 4000). */
+const RAMP_LATTICE_TERMS = 100;
+
+/**
+ * Long-time average of three stages under the combination relation n (header): Σ_j A₃,jn₃ A₂,jn₂ A₁,jn₁ e^(i j n·φ),
+ * where A_m = δ_m0 P + C_m (Q − P) + S_m (R − P), M = retarderFromCosSin(cos Γ, sin Γ) being affine with P, Q, R its
+ * values at (0, 0), (1, 0), (0, 1), and C_m = (E_m + E*_−m)/2, S_m = (E_m − E*_−m)/2i the coefficients of cos Γ, sin Γ.
+ * The j and −j terms are conjugate. Sine stages: J_m(Γm) is negligible for |m| > Γm + 3Γm^⅓ + 10, which bounds j;
+ * all ramps: `rampTerms`.
+ */
+export function combinationMean(
+  stages: readonly ScramblerStage[], n: readonly number[], rampTerms = RAMP_LATTICE_TERMS,
+): MuellerMatrix {
+  const bounds = stages.flatMap((s, k) => {
+    const a = Math.abs(s.amplitude);
+    return s.waveform === "sine" ? [Math.ceil((a + 3 * Math.cbrt(a) + 10) / Math.abs(n[k]))] : [];
+  });
+  const J = bounds.length ? Math.min(...bounds) : rampTerms;
+  const basis = stages.map((s) => {
+    const P = retarderFromCosSin(0, 0, s.axis).flat(), Q = retarderFromCosSin(1, 0, s.axis).flat();
+    const R = retarderFromCosSin(0, 1, s.axis).flat();
+    return { P, dQ: Q.map((q, i) => q - P[i]), dR: R.map((r, i) => r - P[i]) };
+  });
+  const phase = stages.reduce((sum, s, k) => sum + n[k] * (s.phase ?? 0), 0);
+  const out = new Array<number>(16).fill(0);
+  const aRe = new Array<number>(16), aIm = new Array<number>(16);
+  let pRe = new Array<number>(16), pIm = new Array<number>(16), qRe = new Array<number>(16), qIm = new Array<number>(16);
+  for (let j = 0; j <= J; j++) {
+    for (let k = 0; k < stages.length; k++) {
+      const m = j * n[k], { P, dQ, dR } = basis[k];
+      const [ep, eq, fp, fq] = expRetardanceCoefficients(stages[k], m);
+      const cRe = (ep + fp) / 2, cIm = (eq - fq) / 2, sRe = (eq + fq) / 2, sIm = (fp - ep) / 2;
+      for (let i = 0; i < 16; i++) {
+        aRe[i] = (m === 0 ? P[i] : 0) + cRe * dQ[i] + sRe * dR[i];
+        aIm[i] = cIm * dQ[i] + sIm * dR[i];
+      }
+      if (k === 0) {
+        pRe = aRe.slice();
+        pIm = aIm.slice();
+        continue;
+      }
+      // p ← a·p (element 1 first, so later stages multiply on the left).
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+          let re = 0, im = 0;
+          for (let x = 0; x < 4; x++) {
+            const ar = aRe[4 * r + x], ai = aIm[4 * r + x], br = pRe[4 * x + c], bi = pIm[4 * x + c];
+            re += ar * br - ai * bi;
+            im += ar * bi + ai * br;
+          }
+          qRe[4 * r + c] = re;
+          qIm[4 * r + c] = im;
+        }
+      }
+      [pRe, qRe] = [qRe, pRe];
+      [pIm, qIm] = [qIm, pIm];
+    }
+    const w = j === 0 ? 1 : 2, c = Math.cos(j * phase), sn = Math.sin(j * phase);
+    for (let i = 0; i < 16; i++) out[i] += w * (pRe[i] * c - pIm[i] * sn);
+  }
+  return [0, 1, 2, 3].map((r) => out.slice(4 * r, 4 * r + 4));
 }
 
 /** Instantaneous output Stokes vector at time t. */
@@ -268,6 +392,41 @@ export function stageResonance(freqs: readonly number[], maxOrder = 4, tol = 0.0
           if (!(beat <= tol * q * Math.abs(freqs[i]))) continue;
           if (!best || p + q < best.p + best.q) best = { i, j, p, q, beatPeriod: beat > 0 ? 1 / beat : Infinity };
         }
+      }
+    }
+  }
+  return best;
+}
+
+export interface CombinationResonance {
+  /** Orders n_k, all ≠ 0, with n₁f₁ + n₂f₂ + n₃f₃ ≈ 0 (n₁ > 0). */
+  orders: [number, number, number];
+  /** 1/|n·f|, s; Infinity for an exact relation. */
+  beatPeriod: number;
+}
+
+/**
+ * Lowest-order near-relation among three stage frequencies with every order nonzero (e.g. f₁ + f₂ ≈ f₃): coprime n
+ * with Σ|n_k| ≤ maxTotalOrder and |n·f| ≤ tol·max|n_k f_k|. Its weight is a product of three harmonic amplitudes
+ * (J_|n_k|(Γm_k) for sines), so only the lowest total orders are flagged: the page defaults 1, √2, √5 kHz sit 6.6 Hz
+ * from 2f₁ − 3f₂ + f₃ = 0 (order 6), and locking them there exactly leaves their long-time DOP at 0. As for
+ * stageResonance, the long-time average (an exact relation: combinationLock) holds only for averaging times much longer
+ * than the beat period. Null when none is close.
+ */
+export function combinationResonance(freqs: readonly number[], maxTotalOrder = 5, tol = 0.01): CombinationResonance | null {
+  if (freqs.length !== 3) return null;
+  let best: CombinationResonance | null = null, bestOrder = Infinity;
+  const M = maxTotalOrder;
+  for (let a = 1; a <= M; a++) {
+    for (let b = -M; b <= M; b++) {
+      for (let c = -M; c <= M; c++) {
+        const order = a + Math.abs(b) + Math.abs(c);
+        if (b === 0 || c === 0 || order > M || order >= bestOrder || gcd(gcd(a, Math.abs(b)), Math.abs(c)) !== 1) continue;
+        const beat = Math.abs(a * freqs[0] + b * freqs[1] + c * freqs[2]);
+        const scale = Math.max(Math.abs(a * freqs[0]), Math.abs(b * freqs[1]), Math.abs(c * freqs[2]));
+        if (!(beat <= tol * scale)) continue;
+        best = { orders: [a, b, c], beatPeriod: beat > 0 ? 1 / beat : Infinity };
+        bestOrder = order;
       }
     }
   }

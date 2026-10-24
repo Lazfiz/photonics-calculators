@@ -4,7 +4,8 @@ import assert from "node:assert/strict";
 import { largestSymmetricEigenvalue } from "../src/physics/math";
 import { applyMueller, chainMueller, muellerRetarder } from "../src/physics/polarization/mueller";
 import {
-  type ScramblerStage, lockedGroup, residualDopVsTime, scramblerMeanMueller, stageMeanCosSin, stageMeanMueller,
+  type ScramblerStage, combinationLock, combinationResonance, lockedGroup, residualDopVsTime, scramblerMeanMueller,
+  stageMeanCosSin, stageMeanMueller,
   stageResonance, stageRetardance,
   worstCaseResidualDop,
 } from "../src/physics/polarization/scrambler";
@@ -140,4 +141,53 @@ test("Scrambler: locked averages match brute-force time averages (sine, ramp, dr
   // over stage 2's phase.
   const three = [sine(0, 2, 1e3), sine(45 * deg, 1.7, Math.SQRT2 * 1e3), { ...sine(10 * deg, 2.2, 2e3), phase: 0.5 }];
   assert.ok(Math.abs(dopAfter(three, S) - bruteDop(three, S, 1e-3, 400, [1], 64)) < 1e-10);
+});
+
+test("Scrambler: combination locks f₁ + f₂ = f₃ (Codex review 2026-10-24)", () => {
+  // Review case: axes 0/22.5/45°, 13/17/30 kHz, Γm at the J₀ zero, 45° input. No pair is locked to order 12, so the
+  // product of means gave DOP 1.1e-8; the joint phase stays on f₁ + f₂ = f₃ and brute force over the 1 ms period gives 0.0808.
+  const S: Stokes = [1, 0, 1, 0], Se3: Stokes = [1, 0.6, 0.48, 0.64];
+  const a = [sine(0, J0_ZERO, 13e3), sine(22.5 * deg, J0_ZERO, 17e3), sine(45 * deg, J0_ZERO, 30e3)];
+  assert.equal(lockedGroup(a), null);
+  assert.deepEqual(combinationLock(a), [1, 1, -1]);
+  const brute = bruteDop(a, S, 1e-3, 20000);
+  assert.ok(Math.abs(brute - 0.0808) < 1e-4, `brute ${brute}`);
+  assert.ok(Math.abs(dopAfter(a, S) - brute) < 1e-12, `lattice ${dopAfter(a, S)} vs ${brute}`);
+  // Biases and drive phases enter as e^(i j n·φ); 1000/1414/2414 Hz has no other relation below order ≈ 1000.
+  const mk = (waveform: "sine" | "ramp", amplitude: number): ScramblerStage[] => [
+    { axis: 0, bias: 0.2, amplitude, frequency: 1000, waveform, phase: 0.4 },
+    { axis: 22.5 * deg, bias: 0, amplitude, frequency: 1414, waveform, phase: 1.3 },
+    { axis: 45 * deg, bias: 0.1, amplitude, frequency: 2414, waveform, phase: 0.7 },
+  ];
+  const b = mk("sine", J0_ZERO);
+  assert.ok(Math.abs(dopAfter(b, S) - bruteDop(b, S, 0.5, 200000)) < 1e-9, `sine ${dopAfter(b, S)}`);
+  const r = mk("ramp", 5);
+  assert.ok(Math.abs(dopAfter(r, S) - bruteDop(r, S, 0.5, 400000)) < 1e-4, `ramp ${dopAfter(r, S)}`);
+  // 2f₁ + f₂ = f₃ (even and negative harmonic orders), Γm 4, biases and phases: 400/700/1500 Hz, no pair locked to order 12
+  // except 400:700 = 4:7, so use 400/707/1507 Hz: the lattice against brute force over the 1 s common period.
+  const d: ScramblerStage[] = [
+    { axis: 10 * deg, bias: 0.3, amplitude: 4, frequency: 400, waveform: "sine", phase: 0.5 },
+    { axis: 50 * deg, bias: -0.2, amplitude: 4, frequency: 707, waveform: "sine", phase: 2.0 },
+    { axis: 80 * deg, bias: 0.1, amplitude: 4, frequency: 1507, waveform: "sine", phase: -0.9 },
+  ];
+  assert.equal(lockedGroup(d), null);
+  assert.deepEqual(combinationLock(d), [2, 1, -1]);
+  assert.ok(Math.abs(dopAfter(d, Se3) - bruteDop(d, Se3, 1, 200000)) < 1e-10, `2f₁ + f₂ ${dopAfter(d, Se3)}`);
+  // A locked pair plus a combination relation locks all three: 1 : 2 kHz and f₁ + 6f₂ = f₃ = 13 kHz.
+  const c = [sine(0, J0_ZERO, 1e3), sine(22.5 * deg, J0_ZERO, 2e3), sine(45 * deg, J0_ZERO, 13e3)];
+  assert.deepEqual(lockedGroup(c), { members: [0, 1, 2], harmonics: [1, 2, 13], period: 1e-3 });
+  assert.ok(Math.abs(dopAfter(c, S) - bruteDop(c, S, 1e-3, 20000)) < 1e-12);
+  // Page defaults 1, √2, √5 kHz: no relation; two stages: none by definition.
+  assert.equal(combinationLock([sine(0, 1, 1e3), sine(0, 1, Math.SQRT2 * 1e3), sine(0, 1, Math.sqrt(5) * 1e3)]), null);
+  assert.equal(combinationLock(a.slice(0, 2)), null);
+});
+
+test("Scrambler: combinationResonance flags low-order near relations", () => {
+  // 13 + 17 − 30.1 = −0.1 kHz: beat period 10 ms.
+  const r = combinationResonance([13e3, 17e3, 30.1e3]);
+  assert.ok(r && r.orders.join() === "1,1,-1" && Math.abs(r.beatPeriod - 0.01) < 1e-12, JSON.stringify(r));
+  assert.equal(combinationResonance([1e3, 2e3, 3e3])?.beatPeriod, Infinity);
+  // Defaults: the nearest is 2f₁ − 3f₂ + f₃ (6.6 Hz, total order 6), beyond the order-5 cap.
+  assert.equal(combinationResonance([1e3, Math.SQRT2 * 1e3, Math.sqrt(5) * 1e3]), null);
+  assert.equal(combinationResonance([1e3, 2e3]), null);
 });
