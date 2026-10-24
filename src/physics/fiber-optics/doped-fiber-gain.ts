@@ -40,6 +40,8 @@ export interface DopantPreset {
   readonly id: "Er" | "Yb";
   readonly name: string;
   readonly host: string;
+  /** Where the cross-sections and lifetime come from. */
+  readonly source: string;
   /** Molar mass of the ion, kg/mol. */
   readonly molarMass: number;
   /** Upper-state (metastable) lifetime, s. */
@@ -49,23 +51,30 @@ export interface DopantPreset {
 }
 
 /**
- * Typical cross-sections for the two ions a two-level model describes (Er pumped at 980 nm, where the ⁴I₁₁/₂ level
+ * Measured cross-sections for the two ions a two-level model describes (Er pumped at 980 nm, where the ⁴I₁₁/₂ level
  * empties in µs, or in band at 1480 nm; Yb). Real fibres vary with the host glass by tens of percent: use the fibre's
- * own data where there is any. Er in alumino-germanosilicate, Yb in germanosilicate.
+ * own data where there is any.
+ * - Er³⁺ in GeO₂–Al₂O₃–SiO₂: W. L. Barnes, R. I. Laming, E. J. Tarbox, P. R. Morkel, IEEE J. Quantum Electron. 27, 1004
+ *   (1991), doi:10.1109/3.83335. σ_a(980) 1.7 ± 0.3e-25 m² (Table V); 1480 and 1550 nm read from Fig. 6(c), ±0.15e-25 m² reading
+ *   error on an absolute scale good to ±20 % (Table VI);
+ *   τ 10.2 ms (p. 1005: the same as their Al₂O₃–SiO₂ fibre). No σ_e is given at 980 nm, where it is negligible.
+ * - Yb³⁺ in aluminosilicate: M. A. Melkumov, I. A. Bufetov, K. S. Kravtsov, A. V. Shubin, E. M. Dianov, Quantum Electron.
+ *   34, 843 (2004), doi:10.1070/QE2004v034n09ABEH002688; values from the authors' full report, arXiv:1502.02885,
+ *   Appendix 2 (pm² = 1e-24 m²) and τ 0.83 ms (Table 1).
  */
 export const DOPANT_PRESETS: readonly DopantPreset[] = [
   {
-    id: "Er", name: "Erbium (Er³⁺)", host: "alumino-germanosilicate", molarMass: 0.167259, tau: 10e-3,
+    id: "Er", name: "Erbium (Er³⁺)", host: "alumino-germanosilicate", source: "Barnes et al. 1991", molarMass: 0.167259, tau: 10.2e-3,
     pumps: [
-      { lambda: 980e-9, sigmaA: 2.5e-25, sigmaE: 0 },
-      { lambda: 1480e-9, sigmaA: 1.5e-25, sigmaE: 0.5e-25 },
+      { lambda: 980e-9, sigmaA: 1.7e-25, sigmaE: 0 },
+      { lambda: 1480e-9, sigmaA: 1.7e-25, sigmaE: 0.5e-25 },
     ],
-    signals: [{ lambda: 1550e-9, sigmaA: 2.5e-25, sigmaE: 3.5e-25 }],
+    signals: [{ lambda: 1550e-9, sigmaA: 2.2e-25, sigmaE: 3.0e-25 }],
   },
   {
-    id: "Yb", name: "Ytterbium (Yb³⁺)", host: "germanosilicate", molarMass: 0.173045, tau: 0.85e-3,
-    pumps: [{ lambda: 976e-9, sigmaA: 2.5e-24, sigmaE: 2.5e-24 }],
-    signals: [{ lambda: 1064e-9, sigmaA: 6e-27, sigmaE: 2.5e-25 }],
+    id: "Yb", name: "Ytterbium (Yb³⁺)", host: "aluminosilicate", source: "Melkumov et al. 2004", molarMass: 0.173045, tau: 0.83e-3,
+    pumps: [{ lambda: 976e-9, sigmaA: 2.69e-24, sigmaE: 2.97e-24 }],
+    signals: [{ lambda: 1064e-9, sigmaA: 4.6e-27, sigmaE: 3.0e-25 }],
   },
 ];
 

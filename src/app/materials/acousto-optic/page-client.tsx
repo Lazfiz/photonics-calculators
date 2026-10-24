@@ -150,7 +150,7 @@ export default function AcoustoOpticPage() {
           <thead>
             <tr className="text-left text-gray-400">
               <th className="pr-4 py-1">Material</th><th className="pr-4 py-1">Mode</th><th className="pr-4 py-1">n</th>
-              <th className="pr-4 py-1">v (m/s)</th><th className="py-1">M₂ (×10⁻¹⁵ s³/kg)</th>
+              <th className="pr-4 py-1">v (m/s)</th><th className="pr-4 py-1">M₂ (×10⁻¹⁵ s³/kg)</th><th className="py-1">Source</th>
             </tr>
           </thead>
           <tbody>
@@ -160,14 +160,17 @@ export default function AcoustoOpticPage() {
                 <td className="pr-4 py-1 text-gray-300">{ACOUSTO_OPTIC[k].mode}</td>
                 <td className="pr-4 py-1">{ACOUSTO_OPTIC[k].n}</td>
                 <td className="pr-4 py-1">{ACOUSTO_OPTIC[k].v}</td>
-                <td className="py-1">{sig(ACOUSTO_OPTIC[k].M2 * 1e15, 4)}</td>
+                <td className="pr-4 py-1">{sig(ACOUSTO_OPTIC[k].M2 * 1e15, 4)}</td>
+                <td className="py-1 text-gray-400">{ACOUSTO_OPTIC[k].source}</td>
               </tr>
             ))}
           </tbody>
         </table>
         <p className="text-xs text-gray-500 mt-2">
-          M₂ = n⁶p²/(ρv³), measured at 633 nm (Uchida &amp; Niizeki 1973; Dixon 1967); using it at other wavelengths ignores the
-          dispersion of n and p.
+          M₂ = n⁶p²/(ρv³) for the light direction and polarization given (TeO₂ and LiNbO₃ measured at 632.8 nm); using it at other wavelengths
+          ignores the dispersion of n and p. TeO₂ and LiNbO₃: Uchida, Ohmachi, Niizeki &amp; Inamura, US Patent 3,661,441 (1972);
+          PbMoO₄ and fused silica: Isomet application note AN4820 (vendor table; the patent lists PbMoO₄ as 3750 m/s and 37).
+          n is the ordinary index at 632.8 nm (Uchida 1971; Malitson; Zelmon 1997).
         </p>
       </div>
 

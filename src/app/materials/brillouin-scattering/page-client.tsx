@@ -6,10 +6,12 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { brillouinShift, stokesWavelength } from "../../../physics/fiber-optics/fiber-nonlinear";
-import { FUSED_SILICA_BRILLOUIN, acousticWavelength, brillouinGain, phononLifetime } from "../../../physics/materials/brillouin";
+import {
+  BRILLOUIN_MEDIA, FUSED_SILICA_BRILLOUIN, acousticWavelength, brillouinGain, phononLifetime, type BrillouinMediumId,
+} from "../../../physics/materials/brillouin";
 
-const CHOICES = ["fused-silica", "custom"] as const;
-type Choice = (typeof CHOICES)[number];
+const CHOICES = [...(Object.keys(BRILLOUIN_MEDIA) as BrillouinMediumId[]), "custom"] as const;
+type Choice = BrillouinMediumId | "custom";
 const DEFAULT_ID: Choice = "fused-silica";
 const WAVELENGTH_MIN_NM = 200;
 const WAVELENGTH_MAX_NM = 5000;
@@ -44,7 +46,16 @@ export default function BrillouinScatteringPage() {
       rho: clamp(rhoRaw, 100, 20000, FUSED_SILICA_BRILLOUIN.rho),
       p12: clamp(p12Raw, 0.001, 1, FUSED_SILICA_BRILLOUIN.p12),
     }
-    : FUSED_SILICA_BRILLOUIN;
+    : BRILLOUIN_MEDIA[choice];
+  const measured = choice === "custom" ? undefined : BRILLOUIN_MEDIA[choice].measured;
+
+  /** Choosing a medium sets its measurement's pump wavelength and linewidth, or the silica defaults (1550 nm, 20 MHz). */
+  const choose = (id: Choice) => {
+    setMaterial(id);
+    const m = id === "custom" ? undefined : BRILLOUIN_MEDIA[id].measured;
+    setWavelength(m ? +(m.lambda * 1e9).toFixed(3) : 1550);
+    setLinewidth(m ? +(m.fwhm / 1e6).toFixed(3) : 20);
+  };
 
   const lambda = wavelength_nm * 1e-9;
   const linewidth = linewidth_MHz * 1e6;
@@ -57,11 +68,11 @@ export default function BrillouinScatteringPage() {
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-2 mb-6 max-w-md" role="group" aria-label="Medium">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-6 max-w-xl" role="group" aria-label="Medium">
         {CHOICES.map((id) => (
-          <button key={id} onClick={() => setMaterial(id)} aria-pressed={choice === id}
+          <button key={id} onClick={() => choose(id)} aria-pressed={choice === id}
             className={`px-3 py-2 rounded text-sm ${choice === id ? "bg-blue-600" : "bg-gray-800 hover:bg-gray-700"}`}>
-            {id === "custom" ? "Custom" : FUSED_SILICA_BRILLOUIN.name}
+            {id === "custom" ? "Custom" : BRILLOUIN_MEDIA[id].name}
           </button>
         ))}
       </div>
@@ -80,9 +91,10 @@ export default function BrillouinScatteringPage() {
         <ValidatedNumberInput label="Brillouin linewidth Δν_B, FWHM (MHz)" value={linewidthRaw} onChange={setLinewidth} min={LINEWIDTH_MIN_MHZ} max={LINEWIDTH_MAX_MHZ} step="any" />
       </div>
       <p className="text-xs mb-6 text-gray-500">
-        n = {sig(medium.n, 4)}, v_A = {sig(medium.vA, 4)} m/s, ρ = {sig(medium.rho, 4)} kg/m³, p₁₂ = {sig(medium.p12, 3)}
-        {choice === "fused-silica" && `; ${FUSED_SILICA_BRILLOUIN.source}`}. Δν_B is the gain bandwidth at the pump wavelength: it scales as
+        n = {sig(medium.n, 4)}, v_A = {sig(medium.vA, 4)} m/s, ρ = {sig(medium.rho, 4)} kg/m³, {choice === "diamond" ? "effective p" : "p₁₂"} = {sig(medium.p12, 3)}
+        {choice !== "custom" && `; ${BRILLOUIN_MEDIA[choice].source}`}. Δν_B is the gain bandwidth at the pump wavelength: it scales as
         λ_p⁻², so measure or scale it when you change λ.
+        {measured && ` Measured at ${sig(measured.lambda * 1e9, 6)} nm: ν_B ${sig(measured.nuB / 1e9, 4)} GHz, Δν_B ${sig(measured.fwhm / 1e6, 3)} MHz, g_B ${exp(measured.gB, 2)} m/W.`}
       </p>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-4">
@@ -115,6 +127,16 @@ export default function BrillouinScatteringPage() {
           <p>
             Δν_B grows as λ_p⁻², which cancels the λ_p⁻² in g_B: the peak gain of silica stays near 3–5e-11 m/W at all pump
             wavelengths, while a fixed Δν_B would make it look strongly wavelength dependent.
+          </p>
+          <p>
+            Each medium other than silica comes with a measurement. As₂Se₃ fibre (Abedin 2005, 1.56 µm): 6.0e-9 m/W measured,
+            6.09e-9 from the formula; its ρ, v_A and p₁₂ are the paper&apos;s Table 1, after Uchida &amp; Niizeki 1973. As₂S₃
+            waveguide (Pant et al. 2011): 0.715e-9 m/W measured, 0.78e-9 from the formula (0.74e-9 with their mode overlap 0.95).
+            Diamond (Bai et al. 2020, 532 nm; longitudinal phonons along [110], pump polarized along ⟨111⟩): 60 ± 9 cm/GW
+            measured from the laser threshold, 74 cm/GW from the formula at the measured Δν_B of 11.9 ± 4.3 MHz and 60 cm/GW at
+            14.7 MHz. Its p is the effective value √0.0153 the paper takes from Grimsditch &amp; Ramdas without stating the
+            convention, so treat the diamond gain as ±40 %. For As₂S₃ and diamond, v_A follows from the measured shift,
+            v_A = ν_Bλ/(2n).
           </p>
         </div>
       </div>

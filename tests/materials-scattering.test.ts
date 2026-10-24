@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { FUSED_SILICA_BRILLOUIN, acousticWavelength, brillouinGain, phononLifetime } from "../src/physics/materials/brillouin";
+import { BRILLOUIN_MEDIA, FUSED_SILICA_BRILLOUIN, acousticWavelength, brillouinGain, phononLifetime } from "../src/physics/materials/brillouin";
 import { RAMAN_LINES, dephasingTime, lorentzianGain, ramanGainAtPump, ramanGainExponent } from "../src/physics/materials/raman-gain";
 import {
   TPA_MEDIA, indirectBeta, indirectF2, mediumBeta, mediumRegime, scaledBeta, scalingBeta, tpaF2, tpaRegime, tpaTransmission,
@@ -28,6 +28,28 @@ test("Brillouin shift, acoustic wavelength and gain of fused silica at 1550 nm (
   // T_B = 1/(π · 20 MHz) = 15.92 ns.
   assertRel(phononLifetime(20e6), 15.915e-9, 1e-4, "T_B");
   assert.ok(Number.isNaN(brillouinGain(1550e-9, m, 0)), "Δν_B = 0 is guarded");
+});
+
+test("Brillouin presets reproduce the papers' own gains (Abedin 2005, Pant 2011, Bai 2020)", () => {
+  // Abedin 2005 Table 1, As₂Se₃ at 1.56 µm, Δν_B 13.2 MHz: calculated g_B 6.08e-9 m/W (measured 6.0e-9); ν_B from the
+  // table's n and v_A is 2·2.808·2250/1.56e-6 = 8.100 GHz against 7.95 GHz measured.
+  const se = BRILLOUIN_MEDIA.as2se3;
+  assertRel(brillouinGain(1.56e-6, se, 13.2e6), 6.08e-9, 2e-3, "As₂Se₃ g_B");
+  assertRel(brillouinShift(1.56e-6, se.vA, se.n), 8.100e9, 1e-3, "As₂Se₃ ν_B");
+  // Pant 2011: 0.74e-9 m/W calculated with mode overlap 0.95 at 1544.775 nm and 34 MHz; v_A from ν_B ≈ 7.7 GHz.
+  const s3 = BRILLOUIN_MEDIA.as2s3;
+  assertRel(0.95 * brillouinGain(1544.775e-9, s3, 34e6), 0.74e-9, 0.01, "As₂S₃ Γg_B");
+  assertRel(brillouinShift(1544.775e-9, s3.vA, s3.n), 7.7e9, 1e-3, "As₂S₃ ν_B");
+  // Bai 2020, phonon ∥ [110] at 532 nm, p² 0.0153: hand calculation 2π·2.43⁷·0.0153/(c·532e-9²·3520·18280·11.9e6)
+  // = 74.0 cm/GW (1 cm/GW = 1e-11 m/W), within the 11.9 ± 4.3 MHz linewidth error of the measured 60 ± 9; ν_B 167 GHz.
+  const d = BRILLOUIN_MEDIA.diamond;
+  assertRel(brillouinGain(532e-9, d, 11.9e6), 74.0e-11, 2e-3, "diamond g");
+  assert.ok(Math.abs(brillouinGain(532e-9, d, 11.9e6) / 60e-11 - 1) < 4.3 / 11.9, "diamond g within the Δν_B error");
+  assertRel(brillouinShift(532e-9, d.vA, d.n), 167e9, 1e-3, "diamond ν_B");
+  // Every preset's measured shift agrees with its own n and v_A to 2 %.
+  for (const m of Object.values(BRILLOUIN_MEDIA)) {
+    if (m.measured) assertRel(brillouinShift(m.measured.lambda, m.vA, m.n), m.measured.nuB, 0.02, `${m.name} ν_B`);
+  }
 });
 
 // ------------------------------------------------------------------ Raman
@@ -65,11 +87,28 @@ test("Lorentzian line, dephasing time and single-pass gain", () => {
   const b = RAMAN_LINES["barium-nitrate"];
   // Half maximum at Ω̃₀ ± Δν̃/2.
   assertRel(lorentzianGain(1, b.shift + b.fwhm / 2, b.shift, b.fwhm), 0.5, 1e-12, "HWHM");
-  // T₂ = 1/(π c · 40 m⁻¹) = 26.54 ps (Optogama lists 28 ps for Ba(NO₃)₂).
+  // T₂ = 1/(π c · 40 m⁻¹) = 26.54 ps (Markevich & Chulkov 2016 take 25 ps for Ba(NO₃)₂ from the literature).
   assertRel(dephasingTime(b.fwhm), 26.544e-12, 1e-4, "T₂");
   // Diamond at 1064 nm, 1 GW/cm², 1 cm: G = 17 cm/GW · 1 GW/cm² · 1 cm = 17.
   assertRel(ramanGainExponent(17e-11, 1e13, 0.01), 17, 1e-12, "G");
   assert.ok(Number.isNaN(lorentzianGain(1, 0, 0, NaN)), "glass line has no Lorentzian");
+});
+
+test("Raman gains at 532 nm (Markevich & Chulkov 2016) and As₂S₃ (Stegeman 2006)", () => {
+  // KGW 14 ± 3 (901 cm⁻¹, E ∥ N_m), 11 ± 3 (767 cm⁻¹, E ∥ N_g) and Ba(NO₃)₂ 43 ± 5 cm/GW at 532 nm.
+  assertRel(ramanGainAtPump(RAMAN_LINES["kgw-901"], 532e-9).g, 14e-11, 1e-12, "KGW 901");
+  assertRel(ramanGainAtPump(RAMAN_LINES["kgw-768"], 532e-9).g, 11e-11, 1e-12, "KGW 768");
+  assertRel(ramanGainAtPump(RAMAN_LINES["barium-nitrate"], 532e-9).g, 43e-11, 1e-12, "Ba(NO₃)₂");
+  // Between 532 and 1064 nm the gain is linear in 1/λ_p: at 709.33 nm (1/λ midway) KGW 901 is (14 + 3.3)/2 = 8.65 cm/GW.
+  const mid = 2 / (1 / 532e-9 + 1 / 1064e-9);
+  const r = ramanGainAtPump(RAMAN_LINES["kgw-901"], mid);
+  assert.equal(r.basis, "interpolated");
+  assertRel(r.g, 8.65e-11, 1e-9, "KGW 901 midway");
+  // Stegeman Table 1: As₂S₃ 74e-13 m/W at 10 THz = 333.56 cm⁻¹ with a 1064 nm pump, 82× silica's 0.9e-13 in the same table.
+  const a = RAMAN_LINES.as2s3;
+  assertRel(a.shift / 100, 333.564, 1e-5, "As₂S₃ Ω̃");
+  assertRel(ramanGainAtPump(a, 1064e-9).g, 74e-13, 1e-12, "As₂S₃ g");
+  assert.ok(Number.isNaN(a.fwhm), "broad glass line");
 });
 
 // ------------------------------------------------------------------ Two-photon absorption

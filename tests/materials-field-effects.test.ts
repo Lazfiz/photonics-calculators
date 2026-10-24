@@ -8,6 +8,7 @@ import {
   faradayRotation, fieldForRotation, lengthForRotation, singleTransitionVerdet, verdetConstant,
 } from "../src/physics/materials/faraday";
 import { STRESS_OPTIC, stressForRetardance } from "../src/physics/materials/stress-optic";
+import { crystalIndices } from "../src/physics/materials/uniaxial-data";
 import { photoelasticRetardance } from "../src/physics/polarization/photoelasticity";
 
 const deg = Math.PI / 180;
@@ -80,6 +81,20 @@ test("Bragg efficiency: P₁₀₀ = λ²H/(2M₂L) and η(P₁₀₀) = 1 (Yari
   assertAbs(braggEfficiency(633e-9, m.M2, 0.01, 1e-3, 0), 0, 0, "η at 0 W");
   // Small-signal limit η ≈ π² M₂ L P / (2 λ² H): at P₁₀₀ / 100 that is π²/400 = 0.024674 against sin²(π/20) = 0.024472.
   assertAbs(braggEfficiency(633e-9, m.M2, 0.01, 1e-3, P / 100), 0.024472, 1e-6, "η at P₁₀₀/100");
+});
+
+test("Acousto-optic presets: TeO₂ and LiNbO₃ from US 3,661,441, n from the ordinary-index fits at 632.8 nm", () => {
+  // US 3,661,441 Table 1: TeO₂ S[110] 0.617e5 cm/s, M 793e-18 s³/g; L[001] 4.26e5 cm/s, M 34.5 (light ⊥ [001]).
+  // Table 2: LiNbO₃ L[11̄20] 6.57e5 cm/s, M 7.0 (light along [0001]). 1e-18 s³/g = 1e-15 s³/kg.
+  const t = ACOUSTO_OPTIC;
+  assert.deepEqual([t["teo2-shear"].v, t["teo2-shear"].M2], [617, 793e-15]);
+  assert.deepEqual([t["teo2-long"].v, t["teo2-long"].M2], [4260, 34.5e-15]);
+  assert.deepEqual([t.linbo3.v, t.linbo3.M2], [6570, 7.0e-15]);
+  // Uchida 1971 nₒ² − 1 = 2.584λ²/(λ² − 0.1342²) + 1.157λ²/(λ² − 0.2638²) gives 2.2597 at 0.6328 µm; Malitson's PbMoO₄
+  // fit (Handbook of Optics) 2.3860; Zelmon 1997 LiNbO₃ 2.2865.
+  assertAbs(t["teo2-shear"].n, 2.2597, 0.005, "TeO₂ nₒ");
+  assertAbs(t.pbmoo4.n, 2.3860, 0.005, "PbMoO₄ nₒ");
+  assertAbs(t.linbo3.n, crystalIndices("linbo3", 632.8e-9).no, 0.005, "LiNbO₃ nₒ");
 });
 
 test("Klein–Cook Q of a fused silica cell, 633 nm, 20 mm, 80 MHz is 9.82 (hand calculation)", () => {

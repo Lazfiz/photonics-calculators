@@ -9,27 +9,38 @@ const assertRel = (actual: number, expected: number, tol: number, msg: string) =
   assert.ok(Math.abs(actual - expected) <= tol * Math.abs(expected), `${msg}: ${actual} vs ${expected}`);
 
 test("Yb 976 nm at 1000 wt-ppm in silica: α = σ_aN (Giles & Desurvire 1991), by hand", () => {
-  // N = 1e-3·2201·6.02214076e23/0.173045 = 7.65970e24 m⁻³; α = 2.5e-24·N = 19.1493 m⁻¹; ×10/ln 10 = 83.164 dB/m.
-  // Paschotta et al. 1997 give σ_a ≈ 2.6e-24 m² at 975 nm; the shared preset is 2.5e-24 m² (4 % lower).
+  // N = 1e-3·2201·6.02214076e23/0.173045 = 7.65970e24 m⁻³; α = 2.69e-24·N = 20.6046 m⁻¹; ×10/ln 10 = 89.4846 dB/m.
+  // σ_a(976) = 2.69 pm², σ_e 2.97 pm² in aluminosilicate: Melkumov et al. 2004, arXiv:1502.02885 Appendix 2.
   const yb976 = DOPANT_LINES.find((l) => l.id === "Yb976");
   assert.ok(yb976);
-  assert.equal(yb976.sigmaA, 2.5e-24);
+  assert.equal(yb976.sigmaA, 2.69e-24);
+  assert.equal(yb976.sigmaE, 2.97e-24);
   const N = ionDensityFromWtPpm(1000, 0.173045);
   assertRel(N, 7.6597e24, 1e-4, "N");
   const r = dopantAbsorption(yb976.sigmaA, N, 0.1);
-  assertRel(r.alpha, 19.1493, 1e-4, "α");
-  assertRel(r.dbPerM, 83.164, 1e-4, "dB/m");
-  assertRel(r.absorptionLength, 1 / 19.1493, 1e-4, "1/α");
-  // 10 cm: 8.3164 dB, T = e^(−1.91493) = 0.147353.
-  assertRel(r.lossDb, 8.3164, 1e-4, "dB over 10 cm");
-  assertRel(r.transmission, 0.147353, 1e-4, "T");
+  assertRel(r.alpha, 20.6046, 1e-4, "α");
+  assertRel(r.dbPerM, 89.4846, 1e-4, "dB/m");
+  assertRel(r.absorptionLength, 1 / 20.6046, 1e-4, "1/α");
+  // 10 cm: 8.94846 dB, T = e^(−2.06046) = 0.127395.
+  assertRel(r.lossDb, 8.94846, 1e-4, "dB over 10 cm");
+  assertRel(r.transmission, 0.127395, 1e-4, "T");
   // An overlap Γ = 0.8 (fibre core) scales α.
-  assertRel(dopantAbsorption(yb976.sigmaA, N, 0.1, 0.8).alpha, 0.8 * 19.1493, 1e-4, "Γα");
+  assertRel(dopantAbsorption(yb976.sigmaA, N, 0.1, 0.8).alpha, 0.8 * 20.6046, 1e-4, "Γα");
+});
+
+test("Er presets: Barnes et al. 1991, GeO₂–Al₂O₃–SiO₂ fibre", () => {
+  // Table V: σ_a(980) = 1.7 ± 0.3e-25 m². Fig. 6(c), read to ±0.15e-25: 1480 nm σ_a 1.7, σ_e 0.5; 1550 nm σ_a 2.2, σ_e 3.0.
+  const pick = (id: string) => DOPANT_LINES.find((l) => l.id === id);
+  assert.deepEqual([pick("Er980")?.sigmaA, pick("Er980")?.sigmaE], [1.7e-25, 0]);
+  assert.deepEqual([pick("Er1480")?.sigmaA, pick("Er1480")?.sigmaE], [1.7e-25, 0.5e-25]);
+  assert.deepEqual([pick("Er1550")?.sigmaA, pick("Er1550")?.sigmaE], [2.2e-25, 3.0e-25]);
+  // Melkumov 2004 at 1064 nm: σ_e 0.30 pm², σ_a 0.0046 pm² (65× below σ_e, 585× below σ_a at 976 nm).
+  assert.deepEqual([pick("Yb1064")?.sigmaA, pick("Yb1064")?.sigmaE], [4.6e-27, 3.0e-25]);
 });
 
 test("The five preset lines and the domain guards", () => {
   assert.deepEqual(DOPANT_LINES.map((l) => l.id), ["Er980", "Er1480", "Er1550", "Yb976", "Yb1064"]);
-  // The old page counted Nd's 1064 nm emission as absorption; σ_a of Yb at 1064 nm is 6e-27 m², 400× below 976 nm.
+  // The old page counted Nd's 1064 nm emission as absorption; σ_a of Yb at 1064 nm is 4.6e-27 m², 585× below 976 nm.
   assert.equal(DOPANT_LINES.find((l) => l.id === "Yb1064")?.role, "signal");
   const none = dopantAbsorption(2.5e-25, 0, 1);
   assert.equal(none.alpha, 0);

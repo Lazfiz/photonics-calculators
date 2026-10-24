@@ -73,6 +73,9 @@ export default function RamanScatteringPage() {
         {line.name}: Ω̃ = {sig(line.shift / 100, 5)} cm⁻¹, Δν̃ = {Number.isFinite(line.fwhm) ? `${sig(line.fwhm / 100, 3)} cm⁻¹` : "broad (glass)"};{" "}
         gain measured at {line.gains.map((p) => `${Math.round(p.lambda * 1e9)} nm`).join(", ")}; {line.source}.{" "}
         <span className={basis === "scaled" ? "text-yellow-400" : ""}>g_R at {sig(pump_nm, 5)} nm is {BASIS_LABEL[basis]}.</span>
+        {line.absorbsBelow && lambdaP < line.absorbsBelow && (
+          <span className="text-yellow-400"> {line.name} absorbs below {sig(line.absorbsBelow * 1e9, 3)} nm, so this pump is absorbed and g_R does not apply.</span>
+        )}
       </p>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-4">
