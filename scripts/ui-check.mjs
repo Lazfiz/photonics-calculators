@@ -143,9 +143,9 @@ try {
       await sleep(2000);
     }
   } else {
-    // 1. ValidatedNumberInput with min=10: typing "50" must not become 10.
+    // 1. ValidatedNumberInput: typing "50" (passing through "5") must stay 50, not clamp per keystroke.
     await open("/detectors/boxcar-integrator");
-    const pw = byLabel("Pulse Width (ns)");
+    const pw = byLabel("Pulse Width FWHM (ns)");
     check("boxcar: default", (await field(pw)).value, "500");
     check("share: hidden without params", await evaluate(shareShown), false);
     await typeInto(pw, "50");
