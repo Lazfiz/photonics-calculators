@@ -20,11 +20,11 @@ export default function DyeLaserResonatorPage() {
   const [pumpRaw, setPump] = useURLState("pump", 3); // W absorbed
   const [etaRaw, setEta] = useURLState("etaP", 1);
   const [wpRaw, setWp] = useURLState("pumpSpot", 30); // µm
-  const [sigmaRaw, setSigma] = useURLState("sigmaE", 2); // 1e-16 cm²
-  const [tauRaw, setTau] = useURLState("tau", 4); // ns
-  const [sigmaTRaw, setSigmaT] = useURLState("sigmaT", 1); // 1e-17 cm²
-  const [kstRaw, setKst] = useURLState("kST", 5); // 1e6 /s
-  const [tauTRaw, setTauT] = useURLState("tauT", 1); // µs
+  const [sigmaRaw, setSigma] = useURLState("sigmaE", 1.1); // 1e-16 cm², Rh6G in ethanol at 590 nm (Falkenstein 1978 Fig. 6)
+  const [tauRaw, setTau] = useURLState("tau", 4.2); // ns (Falkenstein 1978)
+  const [sigmaTRaw, setSigmaT] = useURLState("sigmaT", 3.7); // 1e-17 cm², ε_T(590) = 9.7e3 /(M cm) (Pavlopoulos & Golich 1988)
+  const [kstRaw, setKst] = useURLState("kST", 3.4); // 1e6 /s, air-saturated ethanol (Webb 1970)
+  const [tauTRaw, setTauT] = useURLState("tauT", 0.25); // µs, air-saturated ethanol (Webb 1970)
   const [flowRaw, setFlow] = useURLState("flowSpeed", 5); // m/s
   const [lRaw, setL] = useURLState("cavityLength", 99); // mm
   const [r1Raw, setR1] = useURLState("R1", 50); // mm
@@ -37,11 +37,11 @@ export default function DyeLaserResonatorPage() {
   const pump = clamp(pumpRaw, 0, 1e3, 3);
   const etaP = clamp(etaRaw, 0.01, 1, 1);
   const wp = clamp(wpRaw, 1, 1e4, 30) * 1e-6;
-  const sigmaE = clamp(sigmaRaw, 1e-3, 100, 2) * 1e-20; // 1e-16 cm² → m²
-  const tau = clamp(tauRaw, 0.01, 1e3, 4) * 1e-9;
-  const sigmaT = clamp(sigmaTRaw, 0, 1e3, 1) * 1e-21; // 1e-17 cm² → m²
-  const kST = clamp(kstRaw, 0, 1e4, 5) * 1e6;
-  const tauT = clamp(tauTRaw, 1e-3, 1e6, 1) * 1e-6;
+  const sigmaE = clamp(sigmaRaw, 1e-3, 100, 1.1) * 1e-20; // 1e-16 cm² → m²
+  const tau = clamp(tauRaw, 0.01, 1e3, 4.2) * 1e-9;
+  const sigmaT = clamp(sigmaTRaw, 0, 1e3, 3.7) * 1e-21; // 1e-17 cm² → m²
+  const kST = clamp(kstRaw, 0, 1e4, 3.4) * 1e6;
+  const tauT = clamp(tauTRaw, 1e-3, 1e6, 0.25) * 1e-6;
   const flow = clamp(flowRaw, 0.01, 100, 5);
   const L = clamp(lRaw, 1, 1e4, 99) * 1e-3;
   const R1_mm = clamp(r1Raw, -1e7, 1e7, 50);
@@ -164,6 +164,11 @@ export default function DyeLaserResonatorPage() {
         <p>Gain cross-section net of triplets: σₑ − σ_T k_ST τ_eff, τ_eff = (1/τ_T + v/(2wₚ))⁻¹. The pumped jet (pump fully absorbed) gives
           g₀l = ηₚ(σₑ − σ_T k_ST τ_eff)τPₚλₚ/(hcA), A = π(w₀² + wₚ²)/2, so the jet thickness cancels.</p>
         <p>Threshold g₀l = δ/2; output from Rigrod with the saturation power I_sat πw₀²/2.</p>
+        <p>Default dye: rhodamine 6G in ethanol. σₑ(590 nm) = 1.1 × 10⁻¹⁶ cm², read off Fig. 6, and τ = 4.2 ns (Falkenstein, Penzkofer &amp;
+          Kaiser 1978); σ_T(590 nm) = 3.7 × 10⁻¹⁷ cm² from ε_T = 9.7 × 10³ M⁻¹cm⁻¹, measured in a 77 K glass (Pavlopoulos &amp; Golich 1988);
+          k_ST = 3.4 × 10⁶ s⁻¹ and τ_T = 0.25 µs in air-saturated ethanol, where dissolved O₂ quenches the triplets (Webb et al. 1970;
+          degassed solutions keep them much longer). Together K_T = k_ST τ_T σ_T/σₑ = 0.29, against 0.35 ± 0.02 measured in a CW laser
+          (Phillion, Kuizenga &amp; Siegman 1974, water with Triton X-100).</p>
       </div>
 
       <div className="space-y-6">

@@ -84,6 +84,8 @@ export interface ShgCrystal {
 
 // EKSMA data-sheet values (pm/V and indices at 1064 / 532 nm).
 const BBO = { d22: 2.2, d31: 0.08, no1064: 1.6551, no532: 1.675, ne532: 1.5555 };
+/** BBO d₂₂ and d₃₁ from the EKSMA sheet, pm/V. */
+export const BBO_D = { d22: BBO.d22, d31: BBO.d31 } as const;
 const LBO = { d32: 0.98, phi: 11.6 * deg, nz1064: 1.6055, nx532: 1.5785, ny532: 1.6065 };
 const KTP = { d15: 1.95, d24: 3.9, phi: 23.5 * deg, nx1064: 1.7404, ny1064: 1.7479, nz1064: 1.8296, nx532: 1.7797, ny532: 1.7897 };
 // BiBO (Umemura 2007): the in-plane fundamental in the YZ plane is matched to n_x(532 nm), so n_ω = n_2ω = n_x(532 nm).

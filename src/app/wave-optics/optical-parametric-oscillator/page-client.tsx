@@ -4,7 +4,7 @@ import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import {
-  idlerWavelength, parametricGainCoefficient, phaseMismatch, sroThresholdGainLength, sroThresholdIntensity,
+  bboTypeICut, idlerWavelength, parametricGainCoefficient, phaseMismatch, sroThresholdGainLength, sroThresholdIntensity,
   walkOffApertureLength,
 } from "../../../physics/wave-optics/optical-parametric-oscillator";
 
@@ -16,19 +16,32 @@ export default function OPOCalculator() {
   const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 532); // nm
   const [signalWavelength, setSignalWavelength] = useURLState("signalWavelength", 800); // nm
   const [crystalLength, setCrystalLength] = useURLState("crystalLength", 20); // mm
-  const [dEff, setDEff] = useURLState("dEff", 2.0); // pm/V
-  const [nPump, setNPump] = useURLState("nPump", 1.65);
-  const [nSignal, setNSignal] = useURLState("nSignal", 1.53);
-  const [nIdler, setNIdler] = useURLState("nIdler", 1.53);
+  const [dEff, setDEff] = useURLState("dEff", 2.068); // pm/V, BBO type I at 532 → 800 nm (bboTypeICut)
+  const [nPump, setNPump] = useURLState("nPump", 1.6555);
+  const [nSignal, setNSignal] = useURLState("nSignal", 1.6604);
+  const [nIdler, setNIdler] = useURLState("nIdler", 1.64576);
   const [pumpPower, setPumpPower] = useURLState("pumpPower", 5); // W
   const [beamRadius, setBeamRadius] = useURLState("beamRadius", 50); // µm
-  const [walkOff, setWalkOff] = useURLState("walkOff", 0.5); // deg
+  const [walkOff, setWalkOff] = useURLState("walkOff", 3.114); // deg
   const [cavityLoss, setCavityLoss] = useURLState("cavityLoss", 3); // % per round trip
 
   const process = useMemo(
     () => ({ lambdaPump: pumpWavelength * 1e-9, lambdaSignal: signalWavelength * 1e-9, dEff: dEff * 1e-12, nPump, nSignal, nIdler }),
     [pumpWavelength, signalWavelength, dEff, nPump, nSignal, nIdler],
   );
+  const cut = useMemo(() => bboTypeICut(pumpWavelength * 1e-9, signalWavelength * 1e-9), [pumpWavelength, signalWavelength]);
+  // Indices to 5 decimals with n_p recomputed from the rounded n_s, n_i, so Δk stays ≈ 0 (|Δk| < 100 /m).
+  const applyBbo = () => {
+    const r5 = (x: number) => Number(x.toFixed(5));
+    const ns = r5(cut.nSignal);
+    const ni = r5(cut.nIdler);
+    const lambdaI = idlerWavelength(pumpWavelength, signalWavelength);
+    setNSignal(ns);
+    setNIdler(ni);
+    setNPump(r5(pumpWavelength * (ns / signalWavelength + ni / lambdaI)));
+    setDEff(Number((cut.dEff * 1e12).toFixed(3)));
+    setWalkOff(Number(((cut.walkOff * 180) / Math.PI).toFixed(3)));
+  };
   const w = beamRadius * 1e-6;
   const area = Math.PI * w * w;
   const apertureLength = walkOffApertureLength(w, (walkOff * Math.PI) / 180);
@@ -112,6 +125,25 @@ export default function OPOCalculator() {
             <ValidatedNumberInput label="Beam Radius (μm)" value={beamRadius} onChange={setBeamRadius} min={1} max={10000} />
             <ValidatedNumberInput label="Walk-off (deg)" value={walkOff} onChange={setWalkOff} min={0} max={10} />
             <ValidatedNumberInput label="Signal round-trip loss (%)" value={cavityLoss} onChange={setCavityLoss} min={0.01} max={99} step="0.5" />
+          </div>
+          <div className="bg-gray-900 rounded-lg p-4 mt-4 border border-gray-800 text-sm text-gray-300">
+            <h3 className="text-orange-400 font-semibold mb-2">BBO type I cut (e → o + o)</h3>
+            {Number.isFinite(cut.theta) ? (
+              <>
+                <p>
+                  θ = {fmt((cut.theta * 180) / Math.PI, 2, "°")}; nₚ = {cut.nPump.toFixed(5)} (e), nₛ = {cut.nSignal.toFixed(5)},
+                  nᵢ = {cut.nIdler.toFixed(5)} (o); pump walk-off {fmt((cut.walkOff * 180) / Math.PI, 3, "°")}; d_eff ={" "}
+                  {fmt(cut.dEff * 1e12, 3, "pm/V")}.
+                </p>
+                <button type="button" onClick={applyBbo} className="mt-2 text-blue-400 hover:text-blue-300">Use these BBO values</button>
+              </>
+            ) : (
+              <p>No type I BBO cut: a wavelength lies outside 188–5200 nm or no angle phase-matches.</p>
+            )}
+            <p className="text-gray-500 text-xs mt-2">
+              Indices from the Tamošauskas et al. 2018 Sellmeier fits (Opt. Mater. Express 8, 1410); d_eff = d₃₁ sinθ + d₂₂ cosθ with the
+              EKSMA d₂₂ = 2.2 and d₃₁ = 0.08 pm/V (1064 nm, no Miller scaling). The defaults are this cut at 532 → 800 nm.
+            </p>
           </div>
         </div>
 

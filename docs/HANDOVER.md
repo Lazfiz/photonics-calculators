@@ -1,30 +1,34 @@
-# Handover — 2026-10-24 (session 149 → session 150)
+# Handover — 2026-10-24 (session 150 → session 151)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 149: merged PR #179; **Findings 4e-a** done on `phase-4/findings-4e` (PR #180 to open): sourced χ⁽²⁾ d_eff, diode laser, injection locking.
-Next: **Findings 4e-b** (thin-disk Yb:YAG, dye Rh6G, OPO BBO-like defaults), then 4f (cross-cutting).
+Session 150: **Findings 4e-b** done on `phase-4/findings-4e-b` (PR #181): sourced OPO, thin-disk and dye-laser defaults.
+Next: **Findings 4f** (cross-cutting: URL clamping codemod, `erf`/`sinc` copies, search relevance floor).
 
 ## State
-- `three-wave.ts`: `LINBO3_D33_1313` (19.5 pm/V, Shoji 1997 Table 10, congruent), `qpmDeff` = 2d/π. SFG/DFG/OPA default d_eff 14 → 12.4 pm/V.
-- `diode-laser.ts`: `radiativeShare` BN²/R. Page defaults g₀ 1200/cm, N_tr 1.8, B 1e-10, C 3.5e-30 (De Koninck 2025 Suppl. Table 1),
-  A 4e8/s, n_g 3.9 (Wenzel 2021 Table I): N_th 3.505e18 cm⁻³, I_th 12.031 mA, share 44.17 %.
-- `injection-locking.ts`: `facetCouplingRate` (1 − R)c/(2n_gL√R); page has L/R/n_g inputs and a "Use this k_c" button; k_c/2π 24.51 GHz,
-  α 1; range −3.466 … +2.451 GHz at ρ = 0.01.
-- Tests: 1096 pass. Build green; ui-check load of the 5 pages: 0 console errors.
+- `uniaxial-data.ts`: `BBO_TAMOSAUSKAS` (Opt. Mater. Express 8, 1410 (2018)), kept out of `UNIAXIAL_CRYSTALS` so dropdowns don't change.
+  `nonlinear-crystals.ts`: `BBO_D` (EKSMA d22 2.2, d31 0.08 pm/V).
+- `optical-parametric-oscillator.ts`: `bboTypeICut(λp, λs)` → θ, n_p/n_s/n_i, walk-off, d_eff (NaN out of Sellmeier range). Page card
+  "BBO type I cut" + "Use these BBO values". Defaults 532 → 800 nm: θ 22.12°, n 1.6555/1.6604/1.64576, ρ 3.114°, d_eff 2.068 pm/V.
+- Thin-disk Yb:YAG: σ_e 2.4, σ_a 0.16, σ_ap 0.76, σ_ep 0.22 (×1e-20 cm², Chanteloup 2014 Table 1), τ 0.951 ms, η_h 0.087 = 1 − λ_p/λ,
+  κ 7 W/(m·K) (Chénais 2006): P_th 41.68 W, slope 0.6507, ΔT 33.35 K.
+- Dye Rh6G: σₑ 1.1e-16 cm², τ 4.2 ns (Falkenstein 1978), σ_T 3.7e-17 (Pavlopoulos 1988, 77 K glass), k_ST 3.4e6/s, τ_T 0.25 µs
+  (Webb 1970, air-saturated): triplet factor 0.7199, K_T 0.286 (Phillion 1974 measured 0.35 ± 0.02).
+- Tests: 1101 pass. Build green; ui-check load of the 3 pages: 0 console errors.
 
 ## Next actions
-1. `/ship` this branch. Post-merge-check (only after a release the user asks for): `wave-optics/diode-laser-resonator=12.03`
-   `wave-optics/injection-locking=24.51` `wave-optics/sum-frequency=72.07`. No release unless asked.
-2. Findings 4e-b: thin-disk (Koerner 2012 JOSA B is paywalled; try open Opt. Express Yb:YAG papers or theses), dye laser (Webb 1970
-   paywalled), OPO page (n 1.65/1.53, d_eff 2.0, walk-off 0.5° are BBO-like guesses: compute from BBO Sellmeier + tensor, as in materials).
-3. Findings 4f (cross-cutting).
+1. `/ship` this branch. Post-merge-check (only after a release the user asks for): `wave-optics/thin-disk-laser=41.68`
+   `wave-optics/optical-parametric-oscillator=2.068`. No release unless asked.
+2. Findings 4f (cross-cutting): URL clamping via codemod, merge local `erf`/`sinc` copies into `src/physics/math.ts`, search
+   relevance floor.
 
 ## Non-obvious facts
-- **Session 149:** Optica abstract pages (`opg.optica.org/josab/abstract.cfm?uri=josab-14-9-2268`) show the tables of paywalled papers to
-  WebFetch (Shoji Tables 6, 10, 12). OpenAlex gives abstracts of paywalled IEEE papers: `api.openalex.org/works/doi:<doi>`,
-  `abstract_inverted_index`. A subagent's numbers needed checking: it read Wenzel's g′N_tr (a modal gain, m⁻¹) as 3170 cm⁻¹ and the
-  nano-ridge "4 × 10⁷ s" A as a lifetime. pdftotext scrambles Wenzel's Table I: render it. Chrome `--dump-dom` exits 75 when devctl
-  queues behind another project's cargo job: rerun with `run_in_background`. Stop a background check before editing (stale).
+- **Session 150:** Chénais 2006 (Yb thermal review) is open at arXiv:0704.0701; Chanteloup 2014 (HPL) is open at researching.cn.
+  Falkenstein 1978 and Penzkofer papers are OCR PDFs at epub.uni-regensburg.de: digitize figures by pixel analysis and check the tick
+  calibration against a tabulated value. Pavlopoulos 1988 is the DTIC ADA208291 reprint on archive.org. Tamošauskas BBO coefficients
+  are in arXiv:2111.01212's supplement code. Optica abstract pages show tables of paywalled papers to WebFetch; OpenAlex
+  (`api.openalex.org/works/doi:<doi>`) gives abstracts. Subagent numbers need checking against the rendered source. Node 24 test
+  output prints `ℹ pass N`, not TAP `# pass`. A double-quoted `node -e` with backticks is shell-expanded: write a .cjs file.
+  Headless `--dump-dom` wrote empty files under devctl CPU load.
 - **Session 148:** patents.google.com holds full text of old patents (US 3,661,441 tables of TeO₂/LiNbO₃ M₂); Isomet app notes are PDFs
   at `isomet.com/App-Manual_pdf/`. Melkumov 2004 is arXiv:1502.02885 (Appendix 2, pm²); its pdftotext rows are shifted by one, so
   render the page. Markevich & Chulkov 2016 is CC BY at vestifm.belnauka.by. 2005 Opt. Express DOIs use `OPEX` (10.1364/OPEX.13.010266):
@@ -43,12 +47,6 @@ Next: **Findings 4e-b** (thin-disk Yb:YAG, dye Rh6G, OPO BBO-like defaults), the
   (Explanations: TIE-19 validity); refractiveindex.info `data/specs/schott/optical/<glass>.yml` has α and density. NIST-JANAF tables
   curl (`janaf.nist.gov/tables/Mg-008.txt` = MgO cr); NIST cryogenic pages (`trc.nist.gov/cryogenics/materials/…`) fit (L − L₂₉₃)/L₂₉₃.
   Check a data-sheet c_p against 3·atoms·R/M: Crystran's GaAs 360 J/(kg·K) exceeds Dulong–Petit.
-- **Session 143:** refractiveindex.info has KTP (Kato α/β/γ), BiBO (Umemura), BaTiO₃ (Wemple, Johnston), Bi₁₂SiO₂₀ (Gospodinov) and
-  LiTaO₃ (Bond) sets; list a folder with `gh api repos/polyanskiy/refractiveindex.info-database/contents/database/data/main/<M>/nk`.
-  Formula 4 = `fromPoleForm(A, [B…], [C…], range, K)` when the exponents are 0/1. HAL (hal-iogs) is behind Anubis (needs a
-  browser); OSTI refuses connections; git.fossee.in 502s. CASTECH's BiBO page curls (walk-off 25.6 mrad, d_eff 3.0). BaTiO₃
-  Zgonik tensors: Petraru thesis `kups.ub.uni-koeln.de/1050/1/thesis_petraru_final.pdf` Table 2.2. Biaxial YZ-plane cuts: θ and
-  180° − θ differ in d_eff (point group 2, d₁₄), so keep the source's convention.
 - **Session 138:** ITU-T PDFs download with curl: `https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-G.657-202408-I!!PDF-E&type=items`
   (the edition list at `/rec/T-REC-G.657/en`; check which is in force, 2016 is superseded). Optica full text (Opt. Express) reads in
   Chrome via `get_page_text` on `opg.optica.org/oe/fulltext.cfm?uri=oe-<vol>-<issue>-<page>`; WebFetch gets "Please wait".

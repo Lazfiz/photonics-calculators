@@ -2,8 +2,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { c, epsilon_0 } from "../src/physics/constants";
+import { BBO_THETA } from "../src/physics/materials/nonlinear-crystals";
+import { refractiveIndex } from "../src/physics/materials/sellmeier";
+import { BBO_TAMOSAUSKAS } from "../src/physics/materials/uniaxial-data";
 import {
-  idlerWavelength, parametricGainCoefficient, phaseMismatch, sroThresholdGainLength, sroThresholdIntensity,
+  bboTypeICut, idlerWavelength, parametricGainCoefficient, phaseMismatch, sroThresholdGainLength, sroThresholdIntensity,
   walkOffApertureLength,
 } from "../src/physics/wave-optics/optical-parametric-oscillator";
 
@@ -11,7 +14,7 @@ function assertRel(actual: number, expected: number, tol: number, label: string)
   assert.ok(Math.abs(actual / expected - 1) < tol, `${label}: ${actual} vs ${expected}`);
 }
 
-// The page defaults: 532 nm pump, 800 nm signal, d_eff = 2 pm/V, n = 1.65 / 1.53 / 1.53, 5 W in w = 50 µm.
+// An example process: 532 nm pump, 800 nm signal, d_eff = 2 pm/V, n = 1.65 / 1.53 / 1.53, 5 W in w = 50 µm.
 const p = { lambdaPump: 532e-9, lambdaSignal: 800e-9, dEff: 2e-12, nPump: 1.65, nSignal: 1.53, nIdler: 1.53 };
 const I = 5 / (Math.PI * 50e-6 ** 2); // 6.366198e8 W/m²
 
@@ -64,4 +67,45 @@ test("OPO domain edges", () => {
   assert.ok(Number.isNaN(sroThresholdGainLength(1)));
   assert.equal(walkOffApertureLength(50e-6, 0), Infinity);
   assert.ok(Number.isNaN(sroThresholdIntensity(p, 0, 0.03)));
+});
+
+const deg = Math.PI / 180;
+
+test("Tamošauskas 2018 BBO fits against the EKSMA sheet indices", () => {
+  // EKSMA BBO page: n_o, n_e = 1.6551, 1.5426 at 1064 nm and 1.6750, 1.5555 at 532 nm.
+  const { o, e } = BBO_TAMOSAUSKAS;
+  for (const [l, no, ne] of [[1064e-9, 1.6551, 1.5426], [532e-9, 1.675, 1.5555]]) {
+    assert.ok(Math.abs(refractiveIndex(o, l) - no) < 1e-3, `n_o(${l})`);
+    assert.ok(Math.abs(refractiveIndex(e, l) - ne) < 1e-3, `n_e(${l})`);
+  }
+  // Hand evaluation of n_o² − 1 = Σ Bλ²/(λ² − C) at 1.064 µm: 0.906054 + 0.845571 − 0.014716 → 1.654363.
+  assert.ok(Math.abs(refractiveIndex(o, 1064e-9) - 1.654363) < 2e-6);
+});
+
+test("BBO type I cut: degenerate 532 → 1064 nm is the 1064 nm SHG cut", () => {
+  const cut = bboTypeICut(532e-9, 1064e-9);
+  // θ from the EKSMA indices (nonlinear-crystals.ts) is 22.9°; this set gives 22.83°.
+  assert.ok(Math.abs(cut.theta - BBO_THETA) < 0.15 * deg, `θ ${cut.theta / deg}`);
+  // EKSMA: walk-off 55.9 mrad (type I SHG of 1064 nm).
+  assertRel(cut.walkOff, 55.9e-3, 0.01, "ρ");
+  assert.ok(Math.abs(cut.nSignal - cut.nIdler) < 1e-12 && Math.abs(cut.nPump - cut.nSignal) < 1e-12, "n_e(θ, 532) = n_o(1064)");
+});
+
+test("BBO type I cut at the page defaults (532 → 800 nm)", () => {
+  const cut = bboTypeICut(532e-9, 800e-9);
+  assert.ok(Math.abs(cut.theta / deg - 22.1202) < 1e-3, `θ ${cut.theta / deg}`);
+  assert.ok(Math.abs(cut.nSignal - 1.6604) < 5e-6 && Math.abs(cut.nIdler - 1.64576) < 5e-6, "n_s, n_i");
+  assert.ok(Math.abs(cut.walkOff / deg - 3.114) < 5e-4, `ρ ${cut.walkOff / deg}`);
+  // d₃₁ sinθ + d₂₂ cosθ = 0.08 · 0.37650 + 2.2 · 0.92642 = 2.0682 pm/V.
+  assert.ok(Math.abs(cut.dEff - 2.0682e-12) < 1e-16, `d_eff ${cut.dEff}`);
+  // The page defaults (n 1.6555 / 1.6604 / 1.64576) leave |Δk| L < π over 20 mm.
+  const dk = phaseMismatch({ lambdaPump: 532e-9, lambdaSignal: 800e-9, dEff: cut.dEff, nPump: 1.6555, nSignal: 1.6604, nIdler: 1.64576 });
+  assert.ok(Math.abs(dk) * 0.02 < Math.PI, `Δk ${dk}`);
+  assert.ok(Math.abs(phaseMismatch({ ...p, nPump: cut.nPump, nSignal: cut.nSignal, nIdler: cut.nIdler })) < 1e-6, "exact cut: Δk = 0");
+});
+
+test("BBO type I cut outside the fits", () => {
+  // 1064 → 1300 nm puts the idler at 5.86 µm, past the 5.2 µm fit.
+  assert.ok(Number.isNaN(bboTypeICut(1064e-9, 1300e-9).theta));
+  assert.ok(Number.isNaN(bboTypeICut(800e-9, 532e-9).dEff));
 });

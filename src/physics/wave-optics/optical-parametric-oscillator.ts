@@ -11,8 +11,17 @@
  *   I_th = arccosh²(1/√(1 − α)) · n_p n_s n_i ε₀ c³ / (2 ω_s ω_i d_eff² L²).
  * Walk-off aperture length l_a = √π w/ρ (G. D. Boyd & D. A. Kleinman, J. Appl. Phys. 39, 3597 (1968)).
  * Phase mismatch Δk = 2π(n_p/λ_p − n_s/λ_s − n_i/λ_i); first-order QPM period Λ = 2π/Δk.
+ *
+ * BBO type I cut (e-pump → o-signal + o-idler, negative uniaxial; Boyd §2.3): Δk = 0 needs
+ *   n_e(θ, λ_p) = λ_p (n_o(λ_s)/λ_s + n_o(λ_i)/λ_i),  1/n_e(θ)² = cos²θ/n_o² + sin²θ/n_e²,
+ * solved for θ as in type I SHG. Indices from the Tamošauskas 2018 fits (0.188–5.2 µm, `BBO_TAMOSAUSKAS`); the pump
+ * walks off by tan ρ = (n_e(θ)²/2)(n_e⁻² − n_o⁻²) sin 2θ; d_eff = d₃₁ sinθ + d₂₂ cosθ (|sin 3φ| = 1, terms adding, as in
+ * `nonlinear-crystals.ts`; EKSMA d₂₂ 2.2, d₃₁ 0.08 pm/V at 1064 nm, no Miller scaling).
  */
 import { c, epsilon_0 } from "../constants";
+import { BBO_D, typeIPhaseMatchingAngle, uniaxialWalkOff } from "../materials/nonlinear-crystals";
+import { inRange, refractiveIndex } from "../materials/sellmeier";
+import { BBO_TAMOSAUSKAS } from "../materials/uniaxial-data";
 
 export interface ParametricProcess {
   /** Pump and signal vacuum wavelengths, m, with λ_p < λ_s. */
@@ -73,4 +82,37 @@ export function phaseMismatch(p: ParametricProcess): number {
   if (!validProcess(p)) return NaN;
   const lambdaI = idlerWavelength(p.lambdaPump, p.lambdaSignal);
   return 2 * Math.PI * (p.nPump / p.lambdaPump - p.nSignal / p.lambdaSignal - p.nIdler / lambdaI);
+}
+
+export interface CrystalCut {
+  /** Phase-matching angle θ from the optic axis, rad. */
+  theta: number;
+  nPump: number;
+  nSignal: number;
+  nIdler: number;
+  /** Pump walk-off angle ρ, rad. */
+  walkOff: number;
+  /** Effective nonlinear coefficient, m/V. */
+  dEff: number;
+}
+
+const NO_CUT: CrystalCut = { theta: NaN, nPump: NaN, nSignal: NaN, nIdler: NaN, walkOff: NaN, dEff: NaN };
+
+/** Type I (e → o + o) BBO cut phase-matching λ_p → λ_s + λ_i. All fields NaN outside 0.188–5.2 µm or if no θ phase-matches. */
+export function bboTypeICut(lambdaPump: number, lambdaSignal: number): CrystalCut {
+  const lambdaIdler = idlerWavelength(lambdaPump, lambdaSignal);
+  const { o, e } = BBO_TAMOSAUSKAS;
+  if (![lambdaPump, lambdaSignal, lambdaIdler].every((l) => inRange(o, l) && inRange(e, l))) return NO_CUT;
+  const nSignal = refractiveIndex(o, lambdaSignal);
+  const nIdler = refractiveIndex(o, lambdaIdler);
+  const noP = refractiveIndex(o, lambdaPump);
+  const neP = refractiveIndex(e, lambdaPump);
+  const target = lambdaPump * (nSignal / lambdaSignal + nIdler / lambdaIdler);
+  const theta = typeIPhaseMatchingAngle(target, noP, neP);
+  if (!Number.isFinite(theta)) return NO_CUT;
+  return {
+    theta, nPump: target, nSignal, nIdler,
+    walkOff: Math.abs(uniaxialWalkOff(noP, neP, theta)),
+    dEff: (BBO_D.d31 * Math.sin(theta) + BBO_D.d22 * Math.cos(theta)) * 1e-12,
+  };
 }

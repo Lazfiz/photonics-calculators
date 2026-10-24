@@ -126,30 +126,34 @@ test("thin disk: part 0 audit pump absorption and temperature rise (Giesen 1994)
 });
 
 test("thin disk: quasi-three-level threshold and slope at the page defaults (Fan & Byer 1987)", () => {
-  // δ = −ln 0.97 − ln 0.99 = 0.040510; two laser passes through 200 µm, σ_e(1030) = 2.0e-20 cm², σ_a(1030) = 0.11e-20 cm²:
-  // β_th = (δ/(2dN) + σ_a)/(σ_e + σ_a) = (7.3387e-26 + 1.1e-25)/2.11e-24 = 0.086913.
+  // Defaults: 300 K cross sections of Chanteloup et al., HPLSE 2, e35 (2014), Table 1; τ 0.951 ms (Sumida & Fan 1994);
+  // κ 7 W/(m K) at 8 at.% Yb (Chénais et al. 2006, §II).
+  // δ = −ln 0.97 − ln 0.99 = 0.040510; two laser passes through 200 µm, σ_e(1030) = 2.4e-20 cm², σ_a(1030) = 0.16e-20 cm²:
+  // β_th = (δ/(2dN) + σ_a)/(σ_e + σ_a) = (7.3387e-26 + 1.6e-25)/2.56e-24 = 0.091167.
   const N = 1.38e27;
   const delta = -Math.log(0.97) - Math.log(0.99);
-  const beta = thresholdInversion(delta, 2, 200e-6, N, 2.0e-24, 0.11e-24);
-  assertRel(beta, 0.086913, 1e-4, "β_th");
+  const beta = thresholdInversion(delta, 2, 200e-6, N, 2.4e-24, 0.16e-24);
+  assertRel(beta, 0.091167, 1e-4, "β_th");
   // Zero loss: the transparency inversion σ_a/(σ_a + σ_e).
-  assertRel(thresholdInversion(0, 2, 200e-6, N, 2.0e-24, 0.11e-24), 0.11 / 2.11, 1e-12, "β_tr");
-  // Pump bleached at β_th: α_p = N(σ_ap − β(σ_ap + σ_ep)) = 925.85/m; η_abs = 1 − e^(−16·0.185171) = 0.94832.
-  const alpha = pumpAbsorption(N, 0.75e-24, 0.16e-24, beta);
-  assertRel(alpha, 925.85, 1e-4, "α_p(β_th)");
+  assertRel(thresholdInversion(0, 2, 200e-6, N, 2.4e-24, 0.16e-24), 0.16 / 2.56, 1e-12, "β_tr");
+  // Pump bleached at β_th: α_p = N(σ_ap − β(σ_ap + σ_ep)) = 1.38e27 · 0.670656e-24 = 925.51/m (σ_ap 0.76, σ_ep 0.22 × 1e-20 cm²);
+  // η_abs = 1 − e^(−16·0.185101) = 0.94826.
+  const alpha = pumpAbsorption(N, 0.76e-24, 0.22e-24, beta);
+  assertRel(alpha, 925.51, 1e-4, "α_p(β_th)");
   const eta = multipassAbsorption(alpha, 200e-6, 16);
-  assertRel(eta, 0.94832, 1e-4, "η_abs");
-  // P_th = h c N d β A/(λ_p τ η_abs), 3 mm pump spot, τ = 0.95 ms: 39.77 W (≈ 0.56 kW/cm²).
+  assertRel(eta, 0.94826, 1e-4, "η_abs");
+  // P_th = h c N d β A/(λ_p τ η_abs), 3 mm pump spot, τ = 0.951 ms: 41.68 W (≈ 0.59 kW/cm²).
   const A = Math.PI * 1.5e-3 ** 2;
-  const pTh = quasiThreeLevelThreshold(N, 200e-6, beta, A, 940e-9, 0.95e-3, eta);
-  assertRel(pTh, (h * c * N * 200e-6 * beta * A) / (940e-9 * 0.95e-3 * eta), 1e-12, "P_th formula");
-  assertRel(pTh, 39.774, 1e-4, "P_th (W)");
-  // Slope η_abs (λ_p/λ)(−ln R)/δ = 0.94832 · 0.91262 · 0.75190 = 0.65074.
-  assertRel(quasiThreeLevelSlope(eta, 940e-9, 1030e-9, 0.97, delta), 0.65074, 1e-4, "slope");
-  // 200 W pump, heat fraction 0.11 (Fan 1993): ΔT = 0.11·η_abs·200 W/A·d/(2κ) = 26.83 K.
-  assertRel(diskTemperatureRise((eta * 200) / A, 0.11, 200e-6, 11), 26.832, 1e-4, "ΔT (K)");
+  const pTh = quasiThreeLevelThreshold(N, 200e-6, beta, A, 940e-9, 0.951e-3, eta);
+  assertRel(pTh, (h * c * N * 200e-6 * beta * A) / (940e-9 * 0.951e-3 * eta), 1e-12, "P_th formula");
+  assertRel(pTh, 41.679, 1e-4, "P_th (W)");
+  // Slope η_abs (λ_p/λ)(−ln R)/δ = 0.94826 · 0.91262 · 0.75190 = 0.65070.
+  assertRel(quasiThreeLevelSlope(eta, 940e-9, 1030e-9, 0.97, delta), 0.65070, 1e-4, "slope");
+  // 200 W pump, heat fraction 1 − 940/1030 = 0.087 (lasing, Chénais Eq. V.1), κ = 7:
+  // ΔT = 0.087 · (0.94826 · 200 W/7.0686e-6 m²) · 200 µm/(2 · 7) = 33.35 K.
+  assertRel(diskTemperatureRise((eta * 200) / A, 0.087, 200e-6, 7), 33.346, 1e-4, "ΔT (K)");
   // No absorbed pump: no threshold.
-  assert.ok(Number.isNaN(quasiThreeLevelThreshold(N, 200e-6, beta, A, 940e-9, 0.95e-3, 0)));
+  assert.ok(Number.isNaN(quasiThreeLevelThreshold(N, 200e-6, beta, A, 940e-9, 0.951e-3, 0)));
 });
 
 test("fiber laser: V number and mode count of the merged resonator page's fibre (Gloge 1971)", () => {

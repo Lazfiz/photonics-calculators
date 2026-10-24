@@ -155,12 +155,15 @@ export const waveOptics: CalculatorEntry[] = [
     description: "CW dye jet laser in a two-mirror cavity: TEM₀₀ waist, triplet loss versus flow speed, threshold pump power, small-signal gain, output power and slope efficiency.",
     keywords: ["rhodamine 6G", "dye jet", "triplet absorption", "intersystem crossing", "CW dye laser threshold", "Rigrod"],
     tier: "textbook",
-    modelNote: "Four-level dye with the pump fully absorbed in a jet at the cavity waist; the Gaussian pump and mode overlap over π(w₀² + wₚ²)/2. Triplets reduce the gain cross-section to σₑ − σ_T k_ST τ_eff, with τ_eff set by the triplet lifetime and the flow transit across the pump spot. Output from Rigrod's homogeneous plane-wave model. The default dye constants are example values of the Rhodamine 6G order, not measured data: enter your dye's values. Ground-state reabsorption and the gain spectrum are ignored.",
+    modelNote: "Four-level dye with the pump fully absorbed in a jet at the cavity waist; the Gaussian pump and mode overlap over π(w₀² + wₚ²)/2. Triplets reduce the gain cross-section to σₑ − σ_T k_ST τ_eff, with τ_eff set by the triplet lifetime and the flow transit across the pump spot. Output from Rigrod's homogeneous plane-wave model. Default dye: rhodamine 6G in ethanol at 590 nm (Falkenstein 1978 σₑ and τ; Pavlopoulos 1988 σ_T, from a 77 K glass; Webb 1970 k_ST and τ_T, air-saturated). Ground-state reabsorption and the gain spectrum are ignored.",
     references: [
       { citation: "Peterson O. G., Tuccio S. A., Snavely B. B. (1970). CW operation of an organic dye solution laser. Appl. Phys. Lett. 17, 245–247.", url: "https://doi.org/10.1063/1.1653384" },
       { citation: "Webb J. P., McColgin W. C., Peterson O. G. et al. (1970). Intersystem crossing rate and triplet state lifetime for a lasing dye. J. Chem. Phys. 53, 4227–4229.", url: "https://doi.org/10.1063/1.1673926" },
       { citation: "Svelto O. (2010). Principles of Lasers, 5th ed., ch. 6–7. Springer.", url: "https://doi.org/10.1007/978-1-4419-1302-9" },
       { citation: "Rigrod W. W. (1965). Saturation effects in high-gain lasers. J. Appl. Phys. 36, 2487–2490.", url: "https://doi.org/10.1063/1.1714517" },
+      { citation: "Falkenstein W., Penzkofer A., Kaiser W. (1978). Amplified spontaneous emission in rhodamine dyes. Opt. Commun. 27, 151–156. Rh6G in ethanol: σₑ spectrum (Fig. 6), τ_F = 4.2 ± 0.3 ns.", url: "https://doi.org/10.1016/0030-4018(78)90196-7" },
+      { citation: "Pavlopoulos T. G., Golich D. J. (1988). Triplet extinction coefficients of some laser dyes I. J. Appl. Phys. 64, 521–527. Rh6G ε_T(590 nm) = 9.7 × 10³ M⁻¹cm⁻¹.", url: "https://doi.org/10.1063/1.341991" },
+      { citation: "Phillion D. W., Kuizenga D. J., Siegman A. E. (1974). Rotational diffusion and triplet state processes in dye laser solutions. J. Chem. Phys. 61, 3828. K_T = 0.35 ± 0.02 at 596 nm.", url: "https://doi.org/10.1063/1.1682572" },
     ],
   },
   {
@@ -429,6 +432,10 @@ export const waveOptics: CalculatorEntry[] = [
         citation: "Myers L. E. et al. (1995). Quasi-phase-matched optical parametric oscillators in bulk periodically poled LiNbO₃. J. Opt. Soc. Am. B 12, 2102. Wavelength form of the gain coefficient, equal to Boyd's.",
         url: "https://doi.org/10.1364/josab.12.002102",
       },
+      {
+        citation: "Tamošauskas G., Beresnevičius G., Gadonas D., Dubietis A. (2018). Transmittance and phase matching of BBO crystal in the 3−5 μm range and its application for the characterization of mid-infrared laser pulses. Opt. Mater. Express 8, 1410. BBO Sellmeier fits (0.188–5.2 µm) for the type I cut and the defaults.",
+        url: "https://doi.org/10.1364/OME.8.001410",
+      },
     ],
   },
   {
@@ -605,13 +612,16 @@ export const waveOptics: CalculatorEntry[] = [
     description: "Yb:YAG thin-disk laser: quasi-three-level threshold inversion, multipass pump absorption with bleaching, threshold pump power, slope efficiency, output power and temperature rise through the disk.",
     keywords: ["Yb:YAG", "thin disk laser", "quasi-three-level laser", "multipass pumping", "reabsorption", "pump bleaching"],
     tier: "textbook",
-    modelNote: "Quasi-three-level rate equations with a top-hat pump and mode of equal area, inversion uniform through the disk and clamped above threshold; reabsorption and pump bleaching included, ASE and temperature-dependent cross-sections not. One-dimensional heat flow to the back face. Cross-section defaults are typical room-temperature Yb:YAG values: check them against your crystal.",
+    modelNote: "Quasi-three-level rate equations with a top-hat pump and mode of equal area, inversion uniform through the disk and clamped above threshold; reabsorption and pump bleaching included, ASE and temperature-dependent cross-sections not. One-dimensional heat flow to the back face. Defaults: 300 K Yb:YAG cross sections (Chanteloup 2014 Table 1), τ 0.951 ms (Sumida & Fan), heat fraction 1 − λ_p/λ (lasing), κ 7 W/(m K) of 8 at.% Yb:YAG (Chénais 2006); check them against your crystal.",
     references: [
       { citation: "Giesen A., Hügel H., Voss A., Wittig K., Brauch U., Opower H. (1994). Scalable concept for diode-pumped high-power solid-state lasers. Appl. Phys. B 58, 365–372.", url: "https://doi.org/10.1007/BF01081875" },
       { citation: "Fan T. Y., Byer R. L. (1987). Modeling and CW operation of a quasi-three-level 946 nm Nd:YAG laser. IEEE J. Quantum Electron. 23, 605–612.", url: "https://doi.org/10.1109/JQE.1987.1073371" },
       { citation: "Taira T., Tulloch W. M., Byer R. L. (1997). Modeling of quasi-three-level lasers and operation of cw Yb:YAG lasers. Appl. Opt. 36, 1867.", url: "https://doi.org/10.1364/AO.36.001867" },
       { citation: "DeLoach L. D., Payne S. A., Chase L. L. et al. (1993). Evaluation of absorption and emission properties of Yb³⁺ doped crystals for laser applications. IEEE J. Quantum Electron. 29, 1179.", url: "https://doi.org/10.1109/3.214504" },
       { citation: "Fan T. Y. (1993). Heat generation in Nd:YAG and Yb:YAG. IEEE J. Quantum Electron. 29, 1457–1459.", url: "https://doi.org/10.1109/3.234394" },
+      { citation: "Sumida D. S., Fan T. Y. (1994). Effect of radiation trapping on fluorescence lifetime and emission cross section measurements in solid-state laser media. Opt. Lett. 19, 1343. Yb:YAG τ = 0.951 ms.", url: "https://doi.org/10.1364/OL.19.001343" },
+      { citation: "Chénais S., Druon F., Forget S., Balembois F., Georges P. (2006). On thermal effects in solid-state lasers: the case of ytterbium-doped materials. Prog. Quantum Electron. 30, 89–153. Thermal load (Eq. V.1); κ 7 W/(m K) at 8 at.% Yb, 11 undoped (§II).", url: "https://arxiv.org/abs/0704.0701" },
+      { citation: "Chanteloup J.-C., Arzakantsyan M., Marrazzo S. (2014). Defining the optimal gradient doped Yb:YAG disk for room and low temperature diode pumped solid-state laser operations. High Power Laser Sci. Eng. 2, e35, Table 1. Cross sections at 940 and 1030 nm, 300 K.", url: "https://doi.org/10.1017/hpl.2014.38" },
     ],
   },
 ];

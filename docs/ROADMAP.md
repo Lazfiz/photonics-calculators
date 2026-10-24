@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 149, 2026-10-24)
+## Status (session 150, 2026-10-24)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4: every page is tiered; open findings and the top-50 tests remain.
@@ -49,7 +49,8 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   (measured g beside the formula); KGW/Ba(NO₃)₂ 532 nm Markevich, As₂S₃ Raman; TeO₂/LiNbO₃ M₂ from US 3,661,441.
 - [x] **Findings 4e-a** (session 149, `phase-4/findings-4e`, PR #180): PPLN d_eff 12.4 pm/V (Shoji d₃₃ 19.5 at 1.313 µm); diode g₀ 1200,
   A 4e8, n_g 3.9 (De Koninck 2025, Wenzel 2021; I_th 12.03 mA, radiative share 44 %); injection k_c (1 − R)/(τ_rt√R) 24.51 GHz, α 1.
-- [ ] **Findings 4e-b, laser defaults from memory:** thin-disk Yb:YAG σ/τ/heat fraction/κ, dye-laser Rh6G set, OPO BBO-like defaults.
+- [x] **Findings 4e-b** (session 150, `phase-4/findings-4e-b`, PR #181): OPO `bboTypeICut` (Tamošauskas 2018 BBO, θ 22.12°, ρ 3.114°, d_eff 2.068);
+  thin-disk Chanteloup 2014 σ, τ 0.951 ms, η_h 1 − λ_p/λ, κ 7 (Chénais 2006); Rh6G Falkenstein 1978, Pavlopoulos 1988, Webb 1970.
 - [ ] **Findings 4f, cross-cutting:** URL clamping (codemod), `erf`/`sinc` copies, search relevance floor.
 - [x] Detectors part 9b (session 77, `phase-4/detectors-mtf-cosmic`): `sensor-mtf.ts` (Seib diffusion, column shares),
   `cosmic-rays.ts` (MPV 23 075 e⁻ in 300 µm vs PDG 23 000), `poissonQuantile`; detectors 54/54, 0 `knownIssue`s.
@@ -126,16 +127,16 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - `slow-light`: one isolated Lorentzian, no pulse distortion or saturation (a warning shows when the signal is wider than the line).
   Old `/wave-optics/interferometer?wavelength=633` links land on michelson-interferometer's µm input (clamped to 50 µm).
 - χ⁽²⁾ pages (session 149): d_eff 12.4 pm/V from Shoji Table 10 (read on the Optica abstract page); Miller's rule gives ×0.87 for the
-  3.39 µm idler (Shoji: Miller Δ not constant, so not applied). `optical-parametric-oscillator`: n 1.65/1.53/1.53, d_eff 2.0 pm/V and
-  walk-off 0.5° are unsourced BBO-like values (4e-b).
-- `dye-laser-resonator`: default σₑ 2e-16 cm², τ 4 ns, σ_T 1e-17 cm², k_ST 5e6 s⁻¹, τ_T 1 µs are Rh6G-order examples (page says so);
-  source them from Webb et al. 1970 (doi 10.1063/1.1673926, paywalled). `gas-laser-resonator`: g₀ 0.15 /m and I_sat 25 W/cm² come from one
+  3.39 µm idler (Shoji: Miller Δ not constant, so not applied). `optical-parametric-oscillator` (session 150): BBO type I only
+  (d_eff from EKSMA d₂₂/d₃₁ at 1064 nm, no Miller scaling; d₃₁ sign taken as adding); no KTP/LBO/PPLN presets.
+- `dye-laser-resonator`: (session 150) σₑ(590) 1.1e-16 cm² is read off Falkenstein 1978 Fig. 6 (±0.05);
+  σ_T is a 77 K-glass value (no room-temperature liquid ε_T found); τ_T 0.25 µs is air-saturated (no degassed/COT value found). `gas-laser-resonator`: g₀ 0.15 /m and I_sat 25 W/cm² come from one
   HeNe course report (Ng et al. 2015); no sourced g₀/I_sat for Ar⁺ or CO₂, so the line buttons set λ only.
 - `diode-laser-resonator` (session 149): hybrid set (De Koninck g₀/N_tr/B/C, Wenzel A/n_g); De Koninck's g₀ is Tsvid's dg/d ln J used as
   is (≈ 1750/cm in the N law); η_i·share 35 % vs Tsvid's 40–54 %. Coldren's gain tables have no open copy.
-- Defaults from memory, not yet sourced (session 116): `thin-disk-laser` Yb:YAG σ_e(1030) 2.0, σ_a(1030) 0.11,
-  σ_ap(940) 0.75, σ_ep(940) 0.16 × 10⁻²⁰ cm² (check Koerner 2012, doi 10.1364/JOSAB.29.002493); heat fractions 0.32 (Nd) and 0.11 (Yb)
-  attributed to Fan 1993 (doi 10.1109/3.234394, paywalled); κ 14 W/(m K) for YAG (Koechner), lower when heavily Yb-doped.
+- `thin-disk-laser` (session 150): Chanteloup's σ_e values are literature (Fan 2007, Brown 2005), σ_a measured; κ 7 is 8 at.%
+  while the default doping is 10 at.% (Beil 2010 via Koerner 2012 Table 4: 5.7 at 12 at.%). Nd heat fraction 0.32 (Fan 1993,
+  doi 10.1109/3.234394, paywalled) is still unsourced where it's used.
 **Free-space comms**
 - `aperture-averaging`: only the Gaussian aperture is modelled; a hard circular aperture gives a 5–11 % lower A at d² = 1–30 (reviewer quadrature, unchecked).
 - `adaptive-optics` (FSO): the actuator count is fed to Noll's fit 0.2944 J^(−√3/2) as a mode count (input up to 10⁵). The
