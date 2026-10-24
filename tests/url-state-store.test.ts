@@ -46,6 +46,16 @@ test("parseParam: invalid or non-finite numbers fall back to the default", () =>
   assert.equal(parseParam("OOK", "DPSK"), "OOK");
 });
 
+test("parseParam: a range clamps numbers and leaves strings and defaults alone", () => {
+  assert.equal(parseParam("0", 0.5, { min: 0.01, max: 1.4 }), 0.01);
+  assert.equal(parseParam("9", 0.5, { min: 0.01, max: 1.4 }), 1.4);
+  assert.equal(parseParam("-5", 3, { min: 0 }), 0);
+  assert.equal(parseParam("1e9", 3, { max: 100 }), 100);
+  assert.equal(parseParam("0.7", 0.5, { min: 0.01, max: 1.4 }), 0.7);
+  assert.equal(parseParam("abc", 0.5, { min: 0.01, max: 1.4 }), 0.5);
+  assert.equal(parseParam("OOK", "DPSK", { min: 0 }), "OOK");
+});
+
 test("applyParamWrites: null deletes the param and keeps the others", () => {
   assert.equal(applyParamWrites("?k=5&utm_source=x", new Map([["k", null]])), "utm_source=x");
   assert.equal(applyParamWrites("", new Map([["k", "7"]])), "k=7");

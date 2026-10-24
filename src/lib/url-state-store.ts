@@ -12,6 +12,8 @@
  * `window` is only read inside functions, so the module is safe to import during prerendering.
  */
 
+import { clampToRange } from "./number-input";
+
 const FLUSH_DELAY_MS = 100;
 
 /** Writes not yet in the URL, for page `pendingPath`. `null` means "delete the param". */
@@ -24,16 +26,27 @@ const listeners = new Set<() => void>();
 let cachedSearch: string | null = null;
 let cachedParams = new URLSearchParams();
 
-/** Parses a raw query value. Anything that isn't valid for the default's type gives the default. */
+/** Inclusive bounds for a numeric param, normally the min/max of the field that edits it. */
+export interface ParamRange {
+  min?: number;
+  max?: number;
+}
+
+/**
+ * Parses a raw query value. Anything that isn't valid for the default's type gives the default; a
+ * number outside `range` is clamped to it, so a crafted link can't pass what the field would refuse.
+ */
 export function parseParam<T extends number | string>(
   raw: string | null | undefined,
-  defaultValue: T
+  defaultValue: T,
+  range?: ParamRange
 ): T {
   if (raw == null) return defaultValue;
   if (typeof defaultValue !== "number") return raw as T;
   if (raw.trim() === "") return defaultValue;
   const n = Number(raw);
-  return (Number.isFinite(n) ? n : defaultValue) as T;
+  if (!Number.isFinite(n)) return defaultValue;
+  return clampToRange(n, range?.min, range?.max) as T;
 }
 
 /** Applies writes to a query string (`null` deletes the param). Returns the query without "?". */
