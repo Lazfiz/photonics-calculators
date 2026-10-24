@@ -28,10 +28,25 @@ export function gradedIndexAt(profile: GradedProfile, nSubstrate: number, nSurfa
   return nSubstrate * Math.exp(f * Math.log(nSurface / nSubstrate));
 }
 
-/** Sublayer count: at least 50, and at least 10 per λ_min/n_max of thickness, capped at 400. */
+/** Most sublayers a stack gets (≈ 0.35 s for a 401-point spectrum). */
+export const GRADED_MAX_SUBLAYERS = 4000;
+
+/** Sublayers per λ_min/n_max of thickness (5 per already errs by 6e-4 in R for a 1 µm linear 1 → 2.4 profile). */
+const SUBLAYERS_PER_WAVE = 10;
+
+/**
+ * Sublayer count: at least 50, and at least 10 per λ_min/n_max of thickness, capped at GRADED_MAX_SUBLAYERS.
+ * Equal steps form a grating: once a step's optical thickness passes λ/2 (fewer than 2 per λ_min/n_max), the
+ * staircase Bragg-reflects inside the plotted band. An 89 µm cosine layer with 400 steps gave R 0.385 % instead of 0.227 %.
+ */
 export function gradedSublayerCount(thickness: number, minWavelength: number, nMax: number): number {
   if (!(thickness > 0 && minWavelength > 0 && nMax > 0)) return 50;
-  return Math.min(400, Math.max(50, Math.ceil((10 * thickness * nMax) / minWavelength)));
+  return Math.min(GRADED_MAX_SUBLAYERS, Math.max(50, Math.ceil((SUBLAYERS_PER_WAVE * thickness * nMax) / minWavelength)));
+}
+
+/** False when the cap leaves fewer than 2 sublayers per λ_min/n_max (thickness > 2000 λ_min/n_max): Bragg artefacts. */
+export function gradedSublayersResolved(thickness: number, minWavelength: number, nMax: number): boolean {
+  return (2 * thickness * nMax) / minWavelength <= GRADED_MAX_SUBLAYERS;
 }
 
 /**

@@ -5,7 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { gradedIndexAt, gradedIndexLayers, type GradedProfile } from "../../../physics/thin-film/graded-index";
+import { GRADED_MAX_SUBLAYERS, gradedIndexAt, gradedIndexLayers, gradedSublayersResolved, type GradedProfile } from "../../../physics/thin-film/graded-index";
 import { stackResponse } from "../../../physics/thin-film/transfer-matrix";
 
 export default function GradientIndexPage() {
@@ -50,7 +50,8 @@ export default function GradientIndexPage() {
       nProfile.push(n);
     }
 
-    return { wls, R, T, designR: design.R, designT: design.T, heights, nProfile };
+    const resolved = gradedSublayersResolved(thickness * 1e-9, 0.5 * designWl * 1e-9, Math.max(nSub, nSurface));
+    return { wls, R, T, designR: design.R, designT: design.T, heights, nProfile, resolved };
   }, [nSub, nInc, nSurface, thickness, profile, designWl]);
 
   const pct = (x: number) => (Number.isFinite(x) ? `${(x * 100).toFixed(2)}%` : "—");
@@ -83,6 +84,13 @@ export default function GradientIndexPage() {
         </div>
       </div>
 
+      {!tmm.resolved && (
+        <p className="text-yellow-400 text-sm mb-4">
+          The layer is too thick for {GRADED_MAX_SUBLAYERS} sublayers: below 2 per λ_min/n_max (λ_min = λ/2) the equal
+          staircase steps act as a grating and add a false Bragg reflection to the short-wavelength end of the spectrum.
+        </p>
+      )}
+
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-4">
         <h3 className="text-sm font-semibold text-gray-300 mb-2">Formulas</h3>
         <div className="space-y-1 text-sm text-gray-300 font-mono">
@@ -90,7 +98,7 @@ export default function GradientIndexPage() {
           <p>cosine: n_s + (n_t − n_s)(1 − cos πf)/2</p>
           <p>exponential: n_s(n_t/n_s)^f</p>
           <p>f = height/thickness (n_s = n_substrate, n_t = n_surface)</p>
-          <p>Staircase of ≥ 50 sublayers, each at its mid-height index.</p>
+          <p>Staircase of ≥ 50 sublayers (10 per λ_min/n_max, at most {GRADED_MAX_SUBLAYERS}), each at its mid-height index.</p>
         </div>
       </div>
 
