@@ -4,18 +4,22 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "acousto-optic",
     title: "Acousto-Optic Bragg Cell",
-    description: "Acousto-optic Bragg cell design: Bragg and deflection angles, scan range, Klein–Cook Q, first-order diffraction efficiency from the figure of merit M₂ and acoustic power, access time and resolvable spots, for TeO₂, PbMoO₄ and fused silica.",
+    description: "Acousto-optic Bragg cell design: Bragg and deflection angles, scan range, Klein–Cook Q, first-order diffraction efficiency from the figure of merit M₂ and acoustic power, access time and resolvable spots, for TeO₂, LiNbO₃, PbMoO₄ and fused silica.",
     keywords: ["Acousto-Optic Materials", "AOM", "Acousto-Optic Deflector", "Figure of Merit M₂"],
     tier: "textbook",
-    modelNote: "Isotropic Bragg diffraction of plane waves with acoustic attenuation ignored. M₂ and the sound velocity hold for the listed acoustic mode at 633 nm. TeO₂ slow-shear deflectors use anisotropic diffraction, so their Bragg angles differ from the isotropic ones.",
+    modelNote: "Isotropic Bragg diffraction of plane waves with acoustic attenuation ignored. M₂ and the sound velocity hold for the listed acoustic mode and light polarization at 632.8 nm; the PbMoO₄ and fused-silica values are from a vendor table. TeO₂ slow-shear deflectors use anisotropic diffraction, so their Bragg angles differ from the isotropic ones.",
     references: [
       {
-        citation: "Uchida N., Niizeki N. (1973). Acoustooptic deflection materials and techniques. Proc. IEEE 61, 1073–1092.",
-        url: "https://doi.org/10.1109/PROC.1973.9212",
+        citation: "Uchida N., Ohmachi Y., Niizeki N., Inamura T. (1972). Arrangement for acousto-optical light deflection. US Patent 3,661,441, Tables 1 and 2 (TeO₂, LiNbO₃).",
+        url: "https://patents.google.com/patent/US3661441A/en",
       },
       {
-        citation: "Dixon R. W. (1967). Photoelastic properties of selected materials and their relevance for applications to acoustic light modulators and scanners. J. Appl. Phys. 38, 5149–5153.",
-        url: "https://doi.org/10.1063/1.1709293",
+        citation: "Isomet Corp. AO Scanning, application note AN4820 (PbMoO₄, fused silica; vendor table).",
+        url: "https://isomet.com/App-Manual_pdf/AO%20Scanning%20(AN4820).pdf",
+      },
+      {
+        citation: "Uchida N. (1971). Optical properties of single-crystal paratellurite (TeO₂). Phys. Rev. B 4, 3736–3745.",
+        url: "https://doi.org/10.1103/PhysRevB.4.3736",
       },
       {
         citation: "Klein W. R., Cook B. D. (1967). Unified approach to ultrasonic light diffraction. IEEE Trans. Sonics Ultrason. 14, 123–134.",
@@ -54,10 +58,10 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "brillouin-scattering",
     title: "Brillouin Scattering",
-    description: "Brillouin scattering: frequency shift ν_B = 2nv_A/λ, Stokes wavelength, acoustic wavelength, phonon lifetime and peak gain g_B = 2πn⁷p₁₂²/(cλ²ρv_AΔν_B), for fused silica or your own medium.",
+    description: "Brillouin scattering: frequency shift ν_B = 2nv_A/λ, Stokes wavelength, acoustic wavelength, phonon lifetime and peak gain g_B = 2πn⁷p₁₂²/(cλ²ρv_AΔν_B), for fused silica, As₂Se₃, As₂S₃, diamond or your own medium.",
     keywords: ["Brillouin Shift", "Brillouin Gain Coefficient", "Stimulated Brillouin Scattering", "Acoustic Phonon"],
     tier: "textbook",
-    modelNote: "Backward scattering from one longitudinal acoustic mode, with a Lorentzian gain line and a pump narrower than Δν_B. Δν_B is an input at the pump wavelength (it scales as λ⁻²). Bulk values: acoustic guiding and the overlap integral of a real fibre are not modelled. The fibre SBS threshold has its own page.",
+    modelNote: "Backward scattering from one longitudinal acoustic mode, with a Lorentzian gain line and a pump narrower than Δν_B. Δν_B is an input at the pump wavelength (it scales as λ⁻²). Bulk values: acoustic guiding and the overlap integral of a real fibre are not modelled. The As₂Se₃, As₂S₃ and diamond presets come from papers that measured ν_B, Δν_B and g_B, shown beside the result (formula within 9 % for the glasses; diamond 74 against 60 ± 9 cm/GW, inside the linewidth's ±36 %, with an effective p of unstated convention). The fibre SBS threshold has its own page.",
     references: [
       {
         citation: "Agrawal G. P. (2019). Nonlinear Fiber Optics, 6th ed. Academic Press. Brillouin shift ν_B = 2nv_A/λ_p, peak gain g_B and fused-silica n, v_A, ρ₀ and p₁₂.",
@@ -66,6 +70,18 @@ export const materials: CalculatorEntry[] = [
       {
         citation: "Kobyakov A., Sauer M., Chowdhury D. (2010). Stimulated Brillouin scattering in optical fibers. Adv. Opt. Photon. 2, 1–59.",
         url: "https://doi.org/10.1364/AOP.2.000001",
+      },
+      {
+        citation: "Abedin K. S. (2005). Observation of strong stimulated Brillouin scattering in single-mode As₂Se₃ chalcogenide fiber. Opt. Express 13, 10266–10271. Table 1.",
+        url: "https://doi.org/10.1364/OPEX.13.010266",
+      },
+      {
+        citation: "Pant R., Poulton C. G., Choi D.-Y., et al. (2011). On-chip stimulated Brillouin scattering. Opt. Express 19, 8285–8290. As₂S₃ n, ρ, p₁₂ and measured ν_B, Δν_B, g_B.",
+        url: "https://doi.org/10.1364/OE.19.008285",
+      },
+      {
+        citation: "Bai Z., Williams R. J., Kitzler O., et al. (2020). Diamond Brillouin laser in the visible. APL Photonics 5, 031301. Longitudinal phonons along [110], pump polarized along ⟨111⟩: effective p² 0.0153 (after Grimsditch & Ramdas, convention not stated), ν_B 167 GHz, Δν_B 11.9 ± 4.3 MHz, g 60 ± 9 cm/GW from the threshold at 532 nm.",
+        url: "https://doi.org/10.1063/1.5134907",
       },
     ],
     related: [
@@ -505,10 +521,10 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "raman-scattering",
     title: "Raman Scattering",
-    description: "Stimulated Raman gain of diamond, Ba(NO₃)₂, KGW and fused silica: Stokes wavelength, peak gain at your pump wavelength, Lorentzian gain line, dephasing time and single-pass gain e^(gIL).",
+    description: "Stimulated Raman gain of diamond, Ba(NO₃)₂, KGW, As₂S₃ glass and fused silica: Stokes wavelength, peak gain at your pump wavelength, Lorentzian gain line, dephasing time and single-pass gain e^(gIL).",
     keywords: ["Raman Gain Coefficient", "Stimulated Raman Scattering", "Raman Crystal", "Stokes Wavelength", "Diamond Raman Laser"],
     tier: "textbook",
-    modelNote: "Steady-state SRS (pulses much longer than T₂) of an undepleted plane-wave pump, with a homogeneous Lorentzian line. Diamond gains are interpolated in pump wavenumber between the six Savitski 2013 points; outside the measured pump range a gain is scaled as 1/λ_p and flagged as an estimate. The silica line is broad and not Lorentzian.",
+    modelNote: "Steady-state SRS (pulses much longer than T₂) of an undepleted plane-wave pump, with a homogeneous Lorentzian line. Gains are interpolated in pump wavenumber between measured points (diamond: six Savitski 2013 points; KGW and Ba(NO₃)₂: 532 nm measured, 1064 nm vendor; the two do not follow one 1/λ_p law, so between them the gain is good to about ±40 %); outside the measured pump range a gain is scaled as 1/λ_p and flagged as an estimate. The silica and As₂S₃ glass lines are broad and not Lorentzian; As₂S₃ absorbs visible pumps.",
     references: [
       {
         citation: "Savitski V. G., Reilly S., Kemp A. J. (2013). Steady-state Raman gain in diamond as a function of pump wavelength. IEEE J. Quantum Electron. 49, 218–223. Table 1.",
@@ -519,12 +535,16 @@ export const materials: CalculatorEntry[] = [
         url: "https://doi.org/10.1364/AO.38.000594",
       },
       {
-        citation: "EKSMA Optics. KGW / Ba(NO₃)₂ crystals for stimulated Raman scattering, data sheet. Raman gain at 1064 nm.",
+        citation: "EKSMA Optics. KGW / Ba(NO₃)₂ crystals for stimulated Raman scattering, data sheet. Raman gain at 1064 nm (vendor values; KGW 901 cm⁻¹ p[mm]p, 768 cm⁻¹ p[gg]p).",
         url: "https://eksmaoptics.com/out/media/EKSMA_Optics_KGW-BaNO32_Crystal.pdf",
       },
       {
-        citation: "Optogama (2023). Raman crystals, white paper. Ba(NO₃)₂ steady-state gain 47 cm/GW at 532 nm.",
-        url: "https://www.rp-photonics.com/bg/promotions/optogama/Raman%20Crystals%20White%20Papaer%20Optogama%204Lasers.pdf",
+        citation: "Markevich V. U., Chulkov R. V. (2016). Determination of the steady-state Raman gain coefficients of potassium-gadolinium tungstate at 532 nm. Vestsi NAN Belarusi, Ser. Fiz.-Mat. Navuk, no. 1, 102–106. KGW 14 ± 3 (901 cm⁻¹, E ∥ N_m) and 11 ± 3 cm/GW (767 cm⁻¹, E ∥ N_g); Ba(NO₃)₂ 43 ± 5 cm/GW.",
+        url: "https://vestifm.belnauka.by/jour/article/view/15",
+      },
+      {
+        citation: "Stegeman R., Stegeman G., Delfyett P., et al. (2006). Raman gain measurements and photo-induced transmission effects of germanium- and arsenic-based chalcogenide glasses. Opt. Express 14, 11702–11708. Table 1: As₂S₃ 74 ± 15e-13 m/W at 10 THz, 1064 nm pump.",
+        url: "https://doi.org/10.1364/OE.14.011702",
       },
       {
         citation: "Stolen R. H., Ippen E. P. (1973). Raman gain in glass optical waveguides. Appl. Phys. Lett. 22, 276–278.",
@@ -546,19 +566,19 @@ export const materials: CalculatorEntry[] = [
     keywords: ["Rare Earth Absorption Spectra"],
     description: "Absorption coefficient of Er³⁺ or Yb³⁺ in silica from the cross-section and wt-ppm concentration: α in m⁻¹ and dB/m, absorption length and transmission over a path.",
     tier: "textbook",
-    modelNote: "Small-signal absorption α = Γσ_aN of an unpumped sample (no bleaching or excited-state absorption) and T = e^(−αL) without surface reflections. N from wt-ppm in silica (2201 kg/m³). Preset cross-sections are typical values shared with the fibre amplifier pages: Yb 2.5e-24 m² at 976 nm is 4 % below Paschotta's 2.6e-24 m²; the Er values are not from one paper and vary with the host by tens of percent. Nd, Tm and Ho are not offered.",
+    modelNote: "Small-signal absorption α = Γσ_aN of an unpumped sample (no bleaching or excited-state absorption) and T = e^(−αL) without surface reflections. N from wt-ppm in silica (2201 kg/m³). Preset cross-sections, shared with the fibre amplifier pages, are measured in one fibre each: Er³⁺ in GeO₂–Al₂O₃–SiO₂ (Barnes 1991; 980 nm from Table V, 1480 and 1550 nm read from Fig. 6 to ±0.15e-25 m²) and Yb³⁺ in aluminosilicate (Melkumov 2004). They vary with the host by tens of percent. Nd, Tm and Ho are not offered.",
     references: [
       {
         citation: "Giles C. R., Desurvire E. (1991). Modeling erbium-doped fiber amplifiers. J. Lightwave Technol. 9, 271–283. Absorption α = Γσ_aN, eqs. (6)–(9).",
         url: "https://doi.org/10.1109/50.65886",
       },
       {
-        citation: "Paschotta R., Nilsson J., Tropper A. C., Hanna D. C. (1997). Ytterbium-doped fiber amplifiers. IEEE J. Quantum Electron. 33, 1049–1056. Yb³⁺ germanosilicate σ_a ≈ 2.6e-24 m² at 975 nm.",
-        url: "https://doi.org/10.1109/3.594865",
+        citation: "Barnes W. L., Laming R. I., Tarbox E. J., Morkel P. R. (1991). Absorption and emission cross section of Er³⁺ doped silica fibers. IEEE J. Quantum Electron. 27, 1004–1010. GeO₂–Al₂O₃–SiO₂: Table V, Fig. 6(c), τ 10.2 ms; absolute scale ±20 % (Table VI).",
+        url: "https://doi.org/10.1109/3.83335",
       },
       {
-        citation: "Barnes W. L., Laming R. I., Tarbox E. J., Morkel P. R. (1991). Absorption and emission cross section of Er³⁺ doped silica fibers. IEEE J. Quantum Electron. 27, 1004–1010. Measured Er³⁺ spectra in several hosts.",
-        url: "https://doi.org/10.1109/3.83335",
+        citation: "Melkumov M. A., Bufetov I. A., Kravtsov K. S., Shubin A. V., Dianov E. M. (2004). Lasing parameters of ytterbium-doped fibres doped with P₂O₅ and Al₂O₃. Quantum Electron. 34, 843–848. Full report arXiv:1502.02885, Appendix 2 (aluminosilicate), τ 0.83 ms.",
+        url: "https://arxiv.org/abs/1502.02885",
       },
     ],
     related: [

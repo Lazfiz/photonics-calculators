@@ -1,21 +1,29 @@
-# Handover — 2026-10-24 (session 147 → session 148)
+# Handover — 2026-10-24 (session 148 → session 149)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 147: **Findings 4d-c-a** done on `phase-4/findings-4d-c-a` (PR #178): sourced n₂ and β presets (DeSalvo 1996, Bristow 2007).
-Next: **Findings 4d-c-b** (`brillouin-scattering`, `raman-scattering`, rare-earth σ, `acousto-optic`).
+Session 148: **Findings 4d-c-b** done on `phase-4/findings-4d-c-b`: primary sources for scattering media, rare-earth σ, acousto-optic.
+Next: **Findings 4e** (wave-optics defaults from memory: diode/dye laser, injection locking, d_eff).
 
 ## State
-- `kerr-index.ts`: `n2FromEsu` (40π n₂/(c n₀)); + MgF₂, KBr, LiNbO₃, KTP, tellurite (1064 nm), silicon (1800 nm): 19 media.
-- `two-photon.ts`: `TpaMedium.gap` direct | effective (DeSalvo E′_g) | indirect; `absorptionEdge_eV`, `linearEdge_eV`,
-  `indirectF2`, `indirectBeta` (Bristow C = 43 cm/GW), `mediumBeta`, `mediumRegime` ("outside-fit" < 850 nm); 14 media.
-- Tests: 1089 pass.
+- `doped-fiber-gain.ts`: `DopantPreset.source`; Er Barnes 1991 (980 1.7e-25; 1480 1.7/0.5; 1550 2.2/3.0e-25; τ 10.2 ms), Yb Melkumov
+  2004 (976 2.69/2.97e-24; 1064 4.6e-27/3.0e-25; τ 0.83 ms). Fibre page defaults now 1.7, 2.2, 3.0, 10.2 ms.
+- `brillouin.ts`: `BRILLOUIN_MEDIA` (fused silica, As₂Se₃ Abedin 2005, As₂S₃ Pant 2011, diamond Bai 2020) with `measured`; the page's
+  `choose()` loads the measured λ/Δν_B, or 1550 nm / 20 MHz.
+- `raman-gain.ts`: KGW/Ba(NO₃)₂ at 532 nm (Markevich 2016) + 1064 nm (EKSMA); As₂S₃ (Stegeman 2006) with `absorbsBelow` 650 nm.
+- `acousto-optic.ts`: `source` field; TeO₂ shear/long and new LiNbO₃ from US 3,661,441; PbMoO₄, silica Isomet AN4820.
+- Tests: 1093 pass.
 
 ## Next actions
-1. `/ship` this branch. Defaults unchanged; post-merge-check e.g. `materials/two-photon-absorption?material=silicon&wavelength=1220`
-   (β 1.839), `materials/nonlinear-index?material=ktp&wavelength=1064` (2.37e-15 cm²/W). No release unless asked.
-2. Findings 4d-c-b, then 4e (wave-optics defaults from memory), then 4f (cross-cutting).
+1. `/ship` this branch. Post-merge-check e.g. `materials/brillouin-scattering?material=as2se3&wavelength=1560&linewidth=13.2`
+   (g_B 6.08e-9), `materials/rare-earth-absorption` Yb976 (89.48 dB/m at 1000 wt-ppm). No release unless asked.
+2. Findings 4e, then 4f (cross-cutting).
 
 ## Non-obvious facts
+- **Session 148:** patents.google.com holds full text of old patents (US 3,661,441 tables of TeO₂/LiNbO₃ M₂); Isomet app notes are PDFs
+  at `isomet.com/App-Manual_pdf/`. Melkumov 2004 is arXiv:1502.02885 (Appendix 2, pm²); its pdftotext rows are shifted by one, so
+  render the page. Markevich & Chulkov 2016 is CC BY at vestifm.belnauka.by. 2005 Opt. Express DOIs use `OPEX` (10.1364/OPEX.13.010266):
+  check with `crossref.mjs -q`. pdftotext scrambles Opt. Express table rows: render them. Physics-reviewer flagged diamond Brillouin
+  p² 0.0153 (Bai, convention unstated): the page now says ±40 %.
 - **Session 147:** CREOL papers download as `api.creol.ucf.edu/Publications/<n>.pdf` (DeSalvo 1996 = 1814, Sheik-Bahae PRL 1990 = 1805;
   find numbers by web search); van Driel's papers at `physics.utoronto.ca/~vandriel/papers/`. No pdftoppm here, so the Read tool can't
   render PDFs: render a page with `uv run -q --with pymupdf python <script>` (fitz `page.get_pixmap(dpi, clip).save(png)`) and Read the PNG.
@@ -50,16 +58,6 @@ Next: **Findings 4d-c-b** (`brillouin-scattering`, `raman-scattering`, rare-eart
   truncate at ≈ 1000 characters: filter lines, or use `get_page_text`. Chrome tabs freeze when devctl runs another project's
   `cargo nextest` (CPU 100 %): fall back to headless `ui-check` / `--dump-dom`. **Port 3000 can be another project** (Planet
   Incubator): run this repo on 3100 and check the page title.
-- **Session 136:** CXRO serves Henke tables (`https://henke.lbl.gov/optical_constants/sf/<el>.nff`) and its calculator by POST to
-  `/cgi-bin/getdb.pl` (Formula, Density (-1 = default), Min, Max, Npts, Output=Text+File; the reply links `/tmp/xrayNNNN.dat`). Its β
-  includes Compton, the .nff f₂ does not. refractiveindex.info YAML: `gh api -H "Accept: application/vnd.github.raw"
-  repos/polyanskiy/refractiveindex.info-database/contents/database/data/<path>` (URL-encode each path segment). Acta Phys. Pol. A PDFs
-  download (`przyrbwn.icm.edu.pl/APP/PDF/116/a116z442.pdf`). norlandprod.com refuses connections. A Crystran slug list is on
-  `/optical-materials` (e.g. sapphire-al2o3, silicon-si). `.sort()` on an array literal drops its contextual type (string-literal fields
-  fail tsc): declare the typed array, then sort a copy.
-- **Session 134:** Crystran pages fetch with curl (`https://www.crystran.com/optical-materials/<slug>`, slugs from that index page; strip
-  tags, grep "Specific Heat Capacity|Density"); no Debye temperatures there. NIST JPCRD reprints download
-  (`https://srd.nist.gov/jpcrdreprint/<doi suffix>.pdf`, e.g. 1.555761 Desai). Heredocs halve backslashes (a regex `\s` arrives as `s`): write such scripts with Write.
 - **Sessions 120–125:** registry entries end with a `  },` line. A removed page breaks tsc (TS2307 in `.next/types/validator.ts`)
   until `rm -rf .next/types .next/dev/types`. A merge lowers the page floor. The merge codemod runs after appending to
   `redirects.json`. A user `next dev` on :3000 can garble `.next/dev/types`: delete it again.

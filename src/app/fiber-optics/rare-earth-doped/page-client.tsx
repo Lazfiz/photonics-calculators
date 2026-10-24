@@ -43,11 +43,11 @@ export default function RareEarthDopedCalculator() {
   const [signalRaw, setSignal] = useURLState("signalPower", -30); // dBm
   const [lpRaw, setLp] = useURLState("pumpWavelength", 980); // nm
   const [lsRaw, setLs] = useURLState("signalWavelength", 1550); // nm
-  const [sapRaw, setSap] = useURLState("sigmaAPump", 2.5); // 1e-25 m²
+  const [sapRaw, setSap] = useURLState("sigmaAPump", 1.7); // 1e-25 m²
   const [sepRaw, setSep] = useURLState("sigmaEPump", 0);
-  const [sasRaw, setSas] = useURLState("sigmaASignal", 2.5);
-  const [sesRaw, setSes] = useURLState("sigmaESignal", 3.5);
-  const [tauRaw, setTau] = useURLState("tau", 10); // ms
+  const [sasRaw, setSas] = useURLState("sigmaASignal", 2.2);
+  const [sesRaw, setSes] = useURLState("sigmaESignal", 3.0);
+  const [tauRaw, setTau] = useURLState("tau", 10.2); // ms
 
   const ion = DOPANT_PRESETS.find((d) => d.id === dopantRaw) ?? DOPANT_PRESETS[0];
   const ppm = clamp(ppmRaw, 1, 50000);
@@ -128,7 +128,7 @@ export default function RareEarthDopedCalculator() {
   return (
     <>
       <div className="mb-6">
-        <label htmlFor="preset" className="block text-sm font-medium mb-2">Load typical values</label>
+        <label htmlFor="preset" className="block text-sm font-medium mb-2">Load measured values</label>
         <select id="preset" value="" onChange={(e) => loadPreset(e.target.value)}
           className="w-full sm:w-80 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none">
           <option value="" disabled>Choose a preset…</option>
@@ -136,7 +136,7 @@ export default function RareEarthDopedCalculator() {
         </select>
         <p className="text-xs text-gray-400 mt-2">
           Dopant: {ion.name}, M = {(ion.molarMass * 1e3).toFixed(2)} g/mol, in silica (ρ = 2201 kg/m³). Presets fill
-          typical cross-sections ({ion.host} host); they vary with the glass by tens of percent, so enter your
+          cross-sections measured in {ion.host} ({ion.source}); they vary with the glass by tens of percent, so enter your
           fibre&apos;s own data where you have it.
         </p>
       </div>

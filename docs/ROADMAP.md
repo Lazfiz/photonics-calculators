@@ -45,7 +45,8 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   graded index 10/wave up to 4000 steps (89 µm R 0.2268 %); SERS true max (320 nm equator 4.72); ui-check label.
 - [x] **Findings 4d-c-a** (session 147, `phase-4/findings-4d-c-a`, PR #178): DeSalvo 1996 n₂ (5 media, KTP 2.37e-19 m²/W) and β (6 wide-gap,
   edge min(E_g, E′_g)); Si Bristow 2007 (n₂ 1.2e-17 at 1800 nm; indirect 2PA fit 1.839 cm/GW at 1220 nm vs 2.1 ± 0.4).
-- [ ] **Findings 4d-c-b, scattering media:** `brillouin-scattering`, `raman-scattering`, rare-earth σ, `acousto-optic`.
+- [x] **Findings 4d-c-b** (session 148, `phase-4/findings-4d-c-b`, PR #179): Er Barnes 1991 / Yb Melkumov 2004 σ; Brillouin As₂Se₃, As₂S₃, diamond
+  (measured g beside the formula); KGW/Ba(NO₃)₂ 532 nm Markevich, As₂S₃ Raman; TeO₂/LiNbO₃ M₂ from US 3,661,441.
 - [ ] **Findings 4e, wave-optics defaults from memory** (diode/dye laser, injection locking, d_eff).
 - [ ] **Findings 4f, cross-cutting:** URL clamping (codemod), `erf`/`sinc` copies, search relevance floor.
 - [x] Detectors part 9b (session 77, `phase-4/detectors-mtf-cosmic`): `sensor-mtf.ts` (Seib diffusion, column shares),
@@ -89,17 +90,18 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   acceptance and damage columns were dropped (no downloadable source; CASTECH/findlight PDFs return HTML). OP-GaAs QPM
   d_eff ≈ 69 needs d₁₄ ≈ 94 pm/V (Skauli, unread). d_eff spread: KTP d₂₄ 3.9 (EKSMA) vs 3.64 (United Crystals); LN d₃₃
   25.0 (Shoji, read via WebFetch of the Optica page) vs 27–34 (vendors). BiBO n and cut now from Umemura 2007 (168.8° vs CASTECH 168.9°).
-- `rare-earth-absorption` (+ `fiber-optics/rare-earth-doped`, `fiber-amplifier`): the Er σ in `DOPANT_PRESETS` are unsourced
-  "typical" values (Barnes 1991, Miniscalco 1991 and Desurvire are closed; Southampton eprints blocks scripts); Yb 976 nm is
-  2.5e-24 vs Paschotta's 2.6e-24 m². Nd, Tm, Ho dropped. `color-centers`: F(KCl), Ti:sapphire, ruby and SiV⁻ dropped (no open
+- `rare-earth-absorption` (+ `rare-earth-doped`, `fiber-amplifier`; session 148: Er Barnes 1991 Table V/Fig. 6(c), Yb Melkumov 2004):
+  Er 1480/1550 nm σ are read off a figure (±0.15e-25 m², scale ±20 %). Nd, Tm, Ho still out. `color-centers`: F(KCl), Ti:sapphire, ruby and SiV⁻ dropped (no open
   source read); LiF F₂/F₂⁺ have no cited σ.
 - `nonlinear-index` (session 147: + DeSalvo 1064 nm rows, Si at 1800 nm): GaAs, AlGaAs, CS₂, air, chalcogenide and SF glasses still out
   (Sheik-Bahae 1991 JQE has no open copy; CREOL hosts only the 1990 PRL, figures only). DeSalvo calcite dropped: Table II n 1.59 fits neither axis.
   Candidates: Dinu 2003 / Bristow 2007 (Si), Sheik-Bahae 1991 (semiconductors), Milam 1998 (silica 1064 nm).
-- `brillouin-scattering` (session 131): SMF-28, Ge-doped, As₂S₃, Bi₂O₃, tellurite, PMMA and diamond were dropped (n, ρ, v_A,
-  p₁₂ unsourced); fused silica (Agrawal) + custom remain. Candidates: Ogusu 2004 JOSA B (chalcogenides), Kobyakov 2010 (fibres).
-- `raman-scattering` (session 131): Ge-/P-doped silica, CS₂, benzene, water and As₂S₃ were dropped. Liquids: Boyd's SRS table
-  (Kaiser & Maier 1972) wasn't readable; KY(WO₄)₂ has Basiev linewidths but no gain. Ba(NO₃)₂ gain at 532 nm is a vendor value.
+- `brillouin-scattering` (session 148: + As₂Se₃ Abedin 2005, As₂S₃ Pant 2011, diamond Bai 2020): diamond's p² 0.0153 has no stated
+  convention (standard p_eff² ≈ 0.0036 would give 4× less than measured). SMF-28/Ge-doped have only measured g (Niklès 1997);
+  tellurite only M₁; Bi₂O₃ and PMMA second-hand. Candidates: Ogusu 2004 JOSA B, Kobyakov 2010.
+- `raman-scattering` (session 148: KGW/Ba(NO₃)₂ 532 nm Markevich 2016, As₂S₃ Stegeman 2006): the 1064 nm KGW/Ba(NO₃)₂ gains are EKSMA
+  vendor values and disagree with 1/λ_p from 532 nm by ≈ 2×. CS₂/benzene have only calculated g (Grun 1969) with Clements &
+  Stoicheff linewidths; doped silica, water and KYW (no gain) still out. As₂S₃ below 650 nm is flagged, not cut.
 - `low-water-peak` (session 132): the 1246 and 2212 nm OH combination bands are listed without a strength and not
   modelled (Humbach 1996 Table is paywalled; no open source found). Band widths are assumed (30 nm at 1383 nm, same in
   wavenumber elsewhere). The 1383 nm 62.7 dB/km/ppm is Humbach as quoted by arXiv:2303.17814.
@@ -111,8 +113,8 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - `crystal-properties`: old quartz-crystal and sapphire-properties links land on the calcite default (a redirect can't add
   `?crystal=`). `birefringent-crystals`: KDP type-I SHG 41.21° at 1064 nm is checked against the Dmitriev handbook value
   (≈ 41°) from memory, not a downloaded source.
-- `acousto-optic`: the 4 presets (TeO₂ shear/long, PbMoO₄, silica) take n, v and M₂ from secondary listings; the primary
-  tables (Uchida & Niizeki 1973, Dixon 1967) didn’t download. Ge, GaP and LiNbO₃ were dropped until they can be checked.
+- `acousto-optic` (session 148: TeO₂ and LiNbO₃ from US 3,661,441 Tables 1–2): PbMoO₄ and silica are Isomet vendor values (Jog 1957
+  p₁₂ 0.237 would give silica M₂ 1.15e-15). Ge (Fox 1985 180e-15, v not given) and GaP still out.
 - `magneto-optic`: the CeF₃ fit (Vojna Table 1) stops at 700 nm (39.5 against 46.3 rad/(T·m) measured at 1064 nm); Vojna’s
   Ce:TAG, TSLAG, Ho₂O₃ and Pr/Ho:TGG fits don’t reproduce their own tabulated values, so they are left out.
 - `photoelastic`: the Schott sheet doesn’t state the wavelength of K, so the page claims none.

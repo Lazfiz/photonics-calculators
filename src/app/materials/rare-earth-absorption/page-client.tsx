@@ -65,8 +65,8 @@ export default function RareEarthAbsorptionPage() {
         </select>
         <p className="text-xs text-gray-400 mt-2">
           {ion.name} in {ion.host} glass, M = {(ion.molarMass * 1e3).toFixed(2)} g/mol, silica density{" "}
-          {SILICA_DENSITY} kg/m³. Choosing a line fills its typical cross-section; it varies with the host glass by
-          tens of percent, so enter your sample&apos;s own value where you have it.
+          {SILICA_DENSITY} kg/m³. Choosing a line fills its cross-section measured by {ion.source}; it varies with the host
+          glass by tens of percent, so enter your sample&apos;s own value where you have it.
         </p>
       </div>
 

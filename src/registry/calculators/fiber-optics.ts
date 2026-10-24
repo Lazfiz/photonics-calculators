@@ -253,7 +253,7 @@ export const fiberOptics: CalculatorEntry[] = [
     title: "Fiber Amplifier Calculator",
     description: "EDFA and YDFA signal gain, output power, residual pump and noise figure from pump power, fiber length, doping and cross-sections, with gain against pump and length.",
     tier: "textbook",
-    modelNote: "Two-level rate equations solved exactly: co-propagating pump, no ASE self-saturation (it matters above about 20–25 dB), ESA or clustering. Preset cross-sections are typical values; edit them for a fibre.",
+    modelNote: "Two-level rate equations solved exactly: co-propagating pump, no ASE self-saturation (it matters above about 20–25 dB), ESA or clustering. Preset cross-sections are measured (Er³⁺: Barnes et al. 1991, GeO₂–Al₂O₃–SiO₂; Yb³⁺: Melkumov et al. 2004, aluminosilicate); edit them for a fibre.",
     references: [
       {
         citation: "Giles C. R., Desurvire E. (1991). Modeling erbium-doped fiber amplifiers. J. Lightwave Technol. 9, 271. Two-level rate equations, eqs. (6)–(9), and the saturation power hνA/(Γ(σa + σe)τ).",
@@ -262,6 +262,14 @@ export const fiberOptics: CalculatorEntry[] = [
       {
         citation: "Saleh A. A. M., Jopson R. M., Evankow J. D., Aspell J. (1990). Modeling of gain in erbium-doped fiber amplifiers. IEEE Photon. Technol. Lett. 2, 714. Closed-form solution for co-propagating beams.",
         url: "https://doi.org/10.1109/68.60769",
+      },
+      {
+        citation: "Barnes W. L., Laming R. I., Tarbox E. J., Morkel P. R. (1991). Absorption and emission cross section of Er³⁺ doped silica fibers. IEEE J. Quantum Electron. 27, 1004–1010. Er preset (GeO₂–Al₂O₃–SiO₂).",
+        url: "https://doi.org/10.1109/3.83335",
+      },
+      {
+        citation: "Melkumov M. A., Bufetov I. A., Kravtsov K. S., Shubin A. V., Dianov E. M. (2004). Lasing parameters of ytterbium-doped fibres doped with P₂O₅ and Al₂O₃. Quantum Electron. 34, 843–848; full report arXiv:1502.02885. Yb preset (aluminosilicate).",
+        url: "https://arxiv.org/abs/1502.02885",
       },
       {
         citation: "Desurvire E. (1994). Erbium-Doped Fiber Amplifiers: Principles and Applications, ch. 2. Wiley. Noise figure (1 + 2n_ASE)/G from the inversion profile.",
@@ -858,7 +866,7 @@ export const fiberOptics: CalculatorEntry[] = [
     description: "Ion density from wt-ppm, LP01 overlap, pump and signal absorption, 90 % absorption length, saturation power, gain and noise figure of an Er- or Yb-doped fiber.",
     keywords: ["Rare-Earth Fiber Dopants"],
     tier: "textbook",
-    modelNote: "Two-level Er or Yb; Γ from the exact LP01 field for a core doped to its edge (an upper bound). Preset cross-sections are typical values. Tm, Ho, Nd and Er/Yb co-doping are not covered.",
+    modelNote: "Two-level Er or Yb; Γ from the exact LP01 field for a core doped to its edge (an upper bound). Preset cross-sections are measured (Er³⁺: Barnes et al. 1991; Yb³⁺: Melkumov et al. 2004). Tm, Ho, Nd and Er/Yb co-doping are not covered.",
     references: [
       {
         citation: "Gloge D. (1971). Weakly Guiding Fibers. Appl. Opt. 10, 2252. LP01 power fraction in the core, Γ = 1 − (U²/V²)(1 − K₀²(W)/K₁²(W)).",
@@ -871,6 +879,14 @@ export const fiberOptics: CalculatorEntry[] = [
       {
         citation: "Saleh A. A. M., Jopson R. M., Evankow J. D., Aspell J. (1990). Modeling of gain in erbium-doped fiber amplifiers. IEEE Photon. Technol. Lett. 2, 714. Closed-form solution for co-propagating beams.",
         url: "https://doi.org/10.1109/68.60769",
+      },
+      {
+        citation: "Barnes W. L., Laming R. I., Tarbox E. J., Morkel P. R. (1991). Absorption and emission cross section of Er³⁺ doped silica fibers. IEEE J. Quantum Electron. 27, 1004–1010. Er preset (GeO₂–Al₂O₃–SiO₂).",
+        url: "https://doi.org/10.1109/3.83335",
+      },
+      {
+        citation: "Melkumov M. A., Bufetov I. A., Kravtsov K. S., Shubin A. V., Dianov E. M. (2004). Lasing parameters of ytterbium-doped fibres doped with P₂O₅ and Al₂O₃. Quantum Electron. 34, 843–848; full report arXiv:1502.02885. Yb preset (aluminosilicate).",
+        url: "https://arxiv.org/abs/1502.02885",
       },
     ],
   },

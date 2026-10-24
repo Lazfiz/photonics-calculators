@@ -8,9 +8,8 @@
  * Sources:
  * - α = Γσ_a N and the dB/m form 10·log₁₀(e)·α: C. R. Giles, E. Desurvire, J. Lightwave Technol. 9, 271 (1991),
  *   doi:10.1109/50.65886 (α_k = Γ_kσ_akN, eqs. (6)–(9) with n₂ = 0).
- * - Yb³⁺ in germanosilicate at 975 nm: σ_a ≈ 2.6e-24 m² (R. Paschotta, J. Nilsson, A. C. Tropper, D. C. Hanna,
- *   IEEE J. Quantum Electron. 33, 1049 (1997), doi:10.1109/3.594865). The preset uses DOPANT_PRESETS' 2.5e-24 m²,
- *   4 % lower, as do the fibre amplifier pages; the Er values there are typical, not from one paper.
+ * - Cross-sections: DOPANT_PRESETS (fiber-optics/doped-fiber-gain.ts), Er³⁺ from Barnes et al. 1991 and Yb³⁺ from
+ *   Melkumov et al. 2004, shared with the fibre amplifier pages.
  */
 
 import { DOPANT_PRESETS, type DopantPreset } from "../fiber-optics/doped-fiber-gain";

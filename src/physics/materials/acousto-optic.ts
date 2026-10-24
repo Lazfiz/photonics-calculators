@@ -10,12 +10,19 @@
  * - First-order efficiency η = sin²[(π / (√2 λ₀)) √(M₂ L P / H)], with M₂ = n⁶p²/(ρv³), acoustic power P over a transducer
  *   of height H and interaction length L; 100 % needs P = λ₀² H / (2 M₂ L) (Yariv & Yeh, ch. 9).
  * - Access time τ = D / v for a beam of width D; a sweep Δf resolves N = τ Δf spots.
- * - M₂ and v are for one acoustic mode and propagation direction and were measured at 633 nm (Uchida & Niizeki 1973,
- *   doi:10.1109/PROC.1973.9212; Dixon 1967, doi:10.1063/1.1709293). TeO₂ slow-shear cells work by anisotropic Bragg
- *   diffraction (light near the optic axis changes polarization), so their real Bragg angles differ from the isotropic ones.
+ * - M₂ and v are for one acoustic mode, propagation direction and light polarization, at 632.8 nm. TeO₂ (both modes) and
+ *   LiNbO₃: N. Uchida, Y. Ohmachi, N. Niizeki, T. Inamura, US Patent 3,661,441 (1972), Tables 1 and 2 (LiNbO₃ M₂ 7.0, and
+ *   4.6 × silica in D. A. Pinnow, L. G. Van Uitert, US Patent 3,617,931 (1971)). PbMoO₄ and fused silica: Isomet
+ *   application note AN4820, "AO Scanning" (vendor table); US 3,661,441 Table 2 lists PbMoO₄ as 3750 m/s and 37e-15 s³/kg.
+ *   The primary tables (Uchida & Niizeki 1973, doi:10.1109/PROC.1973.9212; Dixon 1967, doi:10.1063/1.1709293) are closed.
+ * - n is the ordinary index at 632.8 nm for light polarized normal to the c axis: TeO₂ from N. Uchida, Phys. Rev. B 4,
+ *   3736 (1971), doi:10.1103/PhysRevB.4.3736 (2.2597); PbMoO₄ from Malitson's fit in the Handbook of Optics, 3rd ed.,
+ *   vol. 4 (2.386); LiNbO₃ from Zelmon 1997 (uniaxial-data.ts, 2.2865).
+ * - TeO₂ slow-shear cells work by anisotropic Bragg diffraction (light near the optic axis changes polarization), so their
+ *   real Bragg angles differ from the isotropic ones.
  */
 
-export type AcoustoOpticId = "teo2-shear" | "teo2-long" | "pbmoo4" | "silica";
+export type AcoustoOpticId = "teo2-shear" | "teo2-long" | "linbo3" | "pbmoo4" | "silica";
 
 export interface AcoustoOpticMaterial {
   name: string;
@@ -27,13 +34,28 @@ export interface AcoustoOpticMaterial {
   v: number;
   /** Figure of merit M₂ at 633 nm, s³/kg. */
   M2: number;
+  /** Where v and M₂ come from. */
+  source: string;
 }
 
 export const ACOUSTO_OPTIC: Record<AcoustoOpticId, AcoustoOpticMaterial> = {
-  "teo2-shear": { name: "TeO₂", mode: "slow shear along [110]", n: 2.26, v: 617, M2: 793e-15 },
-  "teo2-long": { name: "TeO₂", mode: "longitudinal along [001]", n: 2.26, v: 4200, M2: 34.5e-15 },
-  pbmoo4: { name: "PbMoO₄", mode: "longitudinal along [001]", n: 2.39, v: 3630, M2: 36.3e-15 },
-  silica: { name: "Fused silica", mode: "longitudinal", n: 1.46, v: 5960, M2: 1.51e-15 },
+  "teo2-shear": {
+    name: "TeO₂", mode: "slow shear along [110], light along [001]", n: 2.26, v: 617, M2: 793e-15,
+    source: "US 3,661,441 Table 1",
+  },
+  "teo2-long": {
+    name: "TeO₂", mode: "longitudinal along [001], light ⊥ [001]", n: 2.26, v: 4260, M2: 34.5e-15,
+    source: "US 3,661,441 Table 1",
+  },
+  linbo3: {
+    name: "LiNbO₃", mode: "longitudinal along [11̄20], light along [0001]", n: 2.29, v: 6570, M2: 7.0e-15,
+    source: "US 3,661,441 Table 2",
+  },
+  pbmoo4: {
+    name: "PbMoO₄", mode: "longitudinal along [001], light ⊥ [001]", n: 2.39, v: 3630, M2: 36.3e-15,
+    source: "Isomet AN4820 (vendor)",
+  },
+  silica: { name: "Fused silica", mode: "longitudinal", n: 1.46, v: 5960, M2: 1.51e-15, source: "Isomet AN4820 (vendor)" },
 };
 
 /** Bragg angle outside the cell, rad: asin(λ₀ f / 2v); NaN when λ₀ f / 2v > 1. */
