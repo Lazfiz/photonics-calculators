@@ -80,6 +80,18 @@ test("Gaussian overlap area and the triplet gain factor of a CW dye laser", () =
   assert.ok(Math.abs(tripletGainFactor(2e-20, 4e-21, 5e6, 1e-6, 1e30)) < 1e-12, "σₑ = σ_T k_ST τ_T");
 });
 
+test("dye page defaults: sourced rhodamine 6G triplet parameters", () => {
+  // σₑ(590 nm) 1.1e-16 cm² (Falkenstein et al. 1978 Fig. 6), σ_T 3.7e-17 cm² (Pavlopoulos & Golich 1988, ε_T 9.7e3 /(M cm)),
+  // k_ST 3.4e6 /s and τ_T 250 ns in air-saturated ethanol (Webb et al. 1970). Jet: 2wₚ/v = 60 µm/(5 m/s) = 12 µs.
+  // τ_eff = (4e6 + 8.3333e4)⁻¹ = 244.898 ns; 3.7e-21 · 3.4e6 · 244.898e-9/1.1e-20 = 0.280075.
+  assertRel(tripletGainFactor(1.1e-20, 3.7e-21, 3.4e6, 250e-9, 12e-6), 0.719925, 1e-5, "factor");
+  // Without flow, K_T = k_ST τ_T σ_T/σₑ = 0.2859, within 20 % of 0.35 ± 0.02 measured in a CW Rh6G laser
+  // (Phillion, Kuizenga & Siegman, J. Chem. Phys. 61, 3828 (1974); water with Triton X-100).
+  const kT = 1 - tripletGainFactor(1.1e-20, 3.7e-21, 3.4e6, 250e-9, 1e30);
+  assertRel(kT, 0.285909, 1e-5, "K_T");
+  assert.ok(Math.abs(kT / 0.35 - 1) < 0.2, `K_T ${kT}`);
+});
+
 test("mean-square radius over the cavity: closed form against a numerical average", () => {
   const L = 0.5;
   const mode = twoMirrorMode(632.8e-9, L, gParameter(L, 1), gParameter(L, 5));

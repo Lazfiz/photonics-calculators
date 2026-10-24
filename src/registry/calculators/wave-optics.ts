@@ -155,12 +155,15 @@ export const waveOptics: CalculatorEntry[] = [
     description: "CW dye jet laser in a two-mirror cavity: TEM₀₀ waist, triplet loss versus flow speed, threshold pump power, small-signal gain, output power and slope efficiency.",
     keywords: ["rhodamine 6G", "dye jet", "triplet absorption", "intersystem crossing", "CW dye laser threshold", "Rigrod"],
     tier: "textbook",
-    modelNote: "Four-level dye with the pump fully absorbed in a jet at the cavity waist; the Gaussian pump and mode overlap over π(w₀² + wₚ²)/2. Triplets reduce the gain cross-section to σₑ − σ_T k_ST τ_eff, with τ_eff set by the triplet lifetime and the flow transit across the pump spot. Output from Rigrod's homogeneous plane-wave model. The default dye constants are example values of the Rhodamine 6G order, not measured data: enter your dye's values. Ground-state reabsorption and the gain spectrum are ignored.",
+    modelNote: "Four-level dye with the pump fully absorbed in a jet at the cavity waist; the Gaussian pump and mode overlap over π(w₀² + wₚ²)/2. Triplets reduce the gain cross-section to σₑ − σ_T k_ST τ_eff, with τ_eff set by the triplet lifetime and the flow transit across the pump spot. Output from Rigrod's homogeneous plane-wave model. Default dye: rhodamine 6G in ethanol at 590 nm (Falkenstein 1978 σₑ and τ; Pavlopoulos 1988 σ_T, from a 77 K glass; Webb 1970 k_ST and τ_T, air-saturated). Ground-state reabsorption and the gain spectrum are ignored.",
     references: [
       { citation: "Peterson O. G., Tuccio S. A., Snavely B. B. (1970). CW operation of an organic dye solution laser. Appl. Phys. Lett. 17, 245–247.", url: "https://doi.org/10.1063/1.1653384" },
       { citation: "Webb J. P., McColgin W. C., Peterson O. G. et al. (1970). Intersystem crossing rate and triplet state lifetime for a lasing dye. J. Chem. Phys. 53, 4227–4229.", url: "https://doi.org/10.1063/1.1673926" },
       { citation: "Svelto O. (2010). Principles of Lasers, 5th ed., ch. 6–7. Springer.", url: "https://doi.org/10.1007/978-1-4419-1302-9" },
       { citation: "Rigrod W. W. (1965). Saturation effects in high-gain lasers. J. Appl. Phys. 36, 2487–2490.", url: "https://doi.org/10.1063/1.1714517" },
+      { citation: "Falkenstein W., Penzkofer A., Kaiser W. (1978). Amplified spontaneous emission in rhodamine dyes. Opt. Commun. 27, 151–156. Rh6G in ethanol: σₑ spectrum (Fig. 6), τ_F = 4.2 ± 0.3 ns.", url: "https://doi.org/10.1016/0030-4018(78)90196-7" },
+      { citation: "Pavlopoulos T. G., Golich D. J. (1988). Triplet extinction coefficients of some laser dyes I. J. Appl. Phys. 64, 521–527. Rh6G ε_T(590 nm) = 9.7 × 10³ M⁻¹cm⁻¹.", url: "https://doi.org/10.1063/1.341991" },
+      { citation: "Phillion D. W., Kuizenga D. J., Siegman A. E. (1974). Rotational diffusion and triplet state processes in dye laser solutions. J. Chem. Phys. 61, 3828. K_T = 0.35 ± 0.02 at 596 nm.", url: "https://doi.org/10.1063/1.1682572" },
     ],
   },
   {
