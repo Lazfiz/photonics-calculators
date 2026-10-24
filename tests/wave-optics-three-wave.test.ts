@@ -2,8 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  LOW_GAIN_BANDWIDTH_FACTOR, detunedMismatch, gainBandwidth, gaussianMixingPower, idlerPower, idlerWavelength,
-  mixingEfficiency, parametricGain, sumFrequencyWavelength,
+  LINBO3_D33_1313, LOW_GAIN_BANDWIDTH_FACTOR, detunedMismatch, gainBandwidth, gaussianMixingPower, idlerPower, idlerWavelength,
+  mixingEfficiency, parametricGain, qpmDeff, sumFrequencyWavelength,
 } from "../src/physics/wave-optics/three-wave";
 import { parametricGainCoefficient } from "../src/physics/wave-optics/optical-parametric-oscillator";
 import { sfgCoefficient } from "../src/physics/imaging/second-harmonic-generation";
@@ -105,4 +105,11 @@ test("gain bandwidth: 0.886/(|δ|L) at low gain, (2√ln2/π)√(Γ/L)/|δ| at h
   assertRel(parametricGain(202.18, edge, L) - 1, (parametricGain(202.18, 0, L) - 1) / 2, 1e-9, "half max");
   assertRel(bw, 616.16e9, 1e-4, "default bandwidth");
   assert.equal(gainBandwidth(202.18, L, 0), Infinity, "δ = 0");
+});
+
+test("PPLN default d_eff = 2d₃₃/π from Shoji et al. 1997 (Table 10, congruent LiNbO₃)", () => {
+  // 2 × 19.5/π = 12.4141 pm/V at 1.313 µm; 2 × 25.2/π = 16.0428 pm/V at 1.064 µm.
+  assertRel(qpmDeff(LINBO3_D33_1313), 12.4141e-12, 1e-5, "1313 nm");
+  assertRel(qpmDeff(25.2e-12), 16.0428e-12, 1e-5, "1064 nm");
+  assert.equal(qpmDeff(0), 0, "no nonlinearity");
 });

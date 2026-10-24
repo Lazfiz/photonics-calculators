@@ -92,7 +92,7 @@ export const waveOptics: CalculatorEntry[] = [
     title: "Difference Frequency Generation (DFG)",
     description: "Idler power, wavelength and quasi-phase-matching period of χ⁽²⁾ difference-frequency generation (ωp − ωs → ωi) from pump and signal powers, beam radius, d_eff, indices and phase mismatch.",
     tier: "textbook",
-    modelNote: "Plane waves over two Gaussian beams of equal radius, both inputs undepleted, low parametric gain (ΓL ≪ 1), no focusing, walk-off or absorption. d_eff is an input: 14 pm/V is a typical periodically poled LiNbO₃ value, not a sourced constant.",
+    modelNote: "Plane waves over two Gaussian beams of equal radius, both inputs undepleted, low parametric gain (ΓL ≪ 1), no focusing, walk-off or absorption. d_eff is an input: the default 12.4 pm/V is 2d₃₃/π of periodically poled congruent LiNbO₃ with d₃₃ measured for SHG of 1.313 µm (Shoji et al. 1997); d₃₃ falls with wavelength, so a mid-infrared idler sees somewhat less.",
     references: [
       {
         citation: "Boyd R. W. (2008). Nonlinear Optics, 3rd ed., §2.2 and §2.8. Academic Press. Coupled-amplitude equations for sum- and difference-frequency generation and parametric amplification.",
@@ -104,6 +104,10 @@ export const waveOptics: CalculatorEntry[] = [
       {
         citation: "Zelmon D. E., Small D. L., Jundt D. (1997). Infrared corrected Sellmeier coefficients for congruently grown lithium niobate and 5 mol% magnesium oxide-doped lithium niobate. J. Opt. Soc. Am. B 14, 3319. Default extraordinary indices.",
         url: "https://doi.org/10.1364/josab.14.003319",
+      },
+      {
+        citation: "Shoji I., Kondo T., Kitamoto A., Shirane M., Ito R. (1997). Absolute scale of second-order nonlinear-optical coefficients. J. Opt. Soc. Am. B 14, 2268. Table 10: congruent LiNbO₃ d₃₃ = 19.5 pm/V (SHG of 1.313 µm), 25.2 pm/V (1.064 µm); default d_eff = 2d₃₃/π.",
+        url: "https://doi.org/10.1364/JOSAB.14.002268",
       },
     ],
   },
@@ -363,7 +367,7 @@ export const waveOptics: CalculatorEntry[] = [
     title: "Optical Parametric Amplifier",
     description: "Signal gain, idler output and gain bandwidth of an optical parametric amplifier from pump power and radius, d_eff, indices, phase mismatch and signal–idler group-velocity mismatch.",
     tier: "textbook",
-    modelNote: "Plane-wave, undepleted-pump gain at the pump's on-axis intensity; the bandwidth comes from first-order group-velocity mismatch only (no group-velocity dispersion). No focusing, walk-off or pump depletion. d_eff is an input: 14 pm/V is a typical periodically poled LiNbO₃ value, not a sourced constant.",
+    modelNote: "Plane-wave, undepleted-pump gain at the pump's on-axis intensity; the bandwidth comes from first-order group-velocity mismatch only (no group-velocity dispersion). No focusing, walk-off or pump depletion. d_eff is an input: the default 12.4 pm/V is 2d₃₃/π of periodically poled congruent LiNbO₃ with d₃₃ measured for SHG of 1.313 µm (Shoji et al. 1997); d₃₃ falls with wavelength, so a mid-infrared idler sees somewhat less.",
     references: [
       {
         citation: "Boyd R. W. (2008). Nonlinear Optics, 3rd ed., §2.2 and §2.8. Academic Press. Coupled-amplitude equations for sum- and difference-frequency generation and parametric amplification.",
@@ -375,6 +379,10 @@ export const waveOptics: CalculatorEntry[] = [
       {
         citation: "Zelmon D. E., Small D. L., Jundt D. (1997). Infrared corrected Sellmeier coefficients for congruently grown lithium niobate and 5 mol% magnesium oxide-doped lithium niobate. J. Opt. Soc. Am. B 14, 3319. Default extraordinary indices.",
         url: "https://doi.org/10.1364/josab.14.003319",
+      },
+      {
+        citation: "Shoji I., Kondo T., Kitamoto A., Shirane M., Ito R. (1997). Absolute scale of second-order nonlinear-optical coefficients. J. Opt. Soc. Am. B 14, 2268. Table 10: congruent LiNbO₃ d₃₃ = 19.5 pm/V (SHG of 1.313 µm), 25.2 pm/V (1.064 µm); default d_eff = 2d₃₃/π.",
+        url: "https://doi.org/10.1364/JOSAB.14.002268",
       },
     ],
     keywords: ["OPA / OPO Design", "Parametric Amplification"],
@@ -535,7 +543,7 @@ export const waveOptics: CalculatorEntry[] = [
     title: "Sum Frequency Generation (SFG)",
     description: "Sum-frequency power, wavelength and quasi-phase-matching period of χ⁽²⁾ upconversion (ω1 + ω2 → ω3) from the input powers, beam radius, d_eff, indices and phase mismatch.",
     tier: "textbook",
-    modelNote: "Plane waves over two Gaussian beams of equal radius, both inputs undepleted, no focusing, walk-off or absorption. d_eff is an input: 14 pm/V is a typical periodically poled LiNbO₃ value, not a sourced constant.",
+    modelNote: "Plane waves over two Gaussian beams of equal radius, both inputs undepleted, no focusing, walk-off or absorption. d_eff is an input: the default 12.4 pm/V is 2d₃₃/π of periodically poled congruent LiNbO₃ with d₃₃ measured for SHG of 1.313 µm (Shoji et al. 1997); d₃₃ falls with wavelength, so a mid-infrared idler sees somewhat less.",
     references: [
       {
         citation: "Boyd R. W. (2008). Nonlinear Optics, 3rd ed., §2.2 and §2.8. Academic Press. Coupled-amplitude equations for sum- and difference-frequency generation and parametric amplification.",
@@ -547,6 +555,10 @@ export const waveOptics: CalculatorEntry[] = [
       {
         citation: "Zelmon D. E., Small D. L., Jundt D. (1997). Infrared corrected Sellmeier coefficients for congruently grown lithium niobate and 5 mol% magnesium oxide-doped lithium niobate. J. Opt. Soc. Am. B 14, 3319. Default extraordinary indices.",
         url: "https://doi.org/10.1364/josab.14.003319",
+      },
+      {
+        citation: "Shoji I., Kondo T., Kitamoto A., Shirane M., Ito R. (1997). Absolute scale of second-order nonlinear-optical coefficients. J. Opt. Soc. Am. B 14, 2268. Table 10: congruent LiNbO₃ d₃₃ = 19.5 pm/V (SHG of 1.313 µm), 25.2 pm/V (1.064 µm); default d_eff = 2d₃₃/π.",
+        url: "https://doi.org/10.1364/JOSAB.14.002268",
       },
     ],
   },

@@ -22,7 +22,7 @@ export default function OPACalculator() {
   const [pumpRaw, setPump] = useURLState("pumpWavelength", 1064); // nm
   const [signalRaw, setSignal] = useURLState("signalWavelength", 1550); // nm
   const [lengthRaw, setLength] = useURLState("crystalLength", 20); // mm
-  const [deffRaw, setDeff] = useURLState("dEff", 14); // pm/V
+  const [deffRaw, setDeff] = useURLState("dEff", 12.4); // pm/V, 2d₃₃/π of LiNbO₃ (Shoji 1997)
   const [nPumpRaw, setNPump] = useURLState("nPump", 2.1555);
   const [nSignalRaw, setNSignal] = useURLState("nSignal", 2.1376);
   const [nIdlerRaw, setNIdler] = useURLState("nIdler", 2.0814);
@@ -35,7 +35,7 @@ export default function OPACalculator() {
   const lambdaP = clamp(pumpRaw, 200, 20000, 1064) * 1e-9;
   const lambdaS = clamp(signalRaw, 200, 20000, 1550) * 1e-9;
   const L = clamp(lengthRaw, 0.01, 1000, 20) * 1e-3;
-  const deff = clamp(deffRaw, 0.001, 1000, 14) * 1e-12;
+  const deff = clamp(deffRaw, 0.001, 1000, 12.4) * 1e-12;
   const nP = clamp(nPumpRaw, 1, 5, 2.1555);
   const nS = clamp(nSignalRaw, 1, 5, 2.1376);
   const nI = clamp(nIdlerRaw, 1, 5, 2.0814);
@@ -112,7 +112,8 @@ export default function OPACalculator() {
           where δ_si is the signal–idler group-velocity mismatch. That sets the gain bandwidth: 0.886/(|δ_si|L) at low gain, narrowing
           towards (2√ln2/π)√(Γ/L)/|δ_si| at high gain (Cerullo &amp; De Silvestri 2003). The defaults are a 1064 nm-pumped PPLN
           amplifier for 1550 nm: indices and δ_si from the Zelmon Sellmeier (21 °C, extraordinary), first-order QPM period{" "}
-          {fmt(qpmPeriod * 1e6, 4)} µm, and a typical d_eff.</p>
+          {fmt(qpmPeriod * 1e6, 4)} µm, and d_eff = 2d₃₃/π = 12.4 pm/V
+          from d₃₃ = 19.5 pm/V of congruent LiNbO₃ for SHG of 1.313 µm (Shoji et al. 1997; 25.2 pm/V at 1.064 µm).</p>
         {warnings.map((msg) => <p key={msg} className="text-yellow-400">{msg}</p>)}
       </div>
 

@@ -16,7 +16,7 @@ const fmtPower = (W: number) => !Number.isFinite(W)
 export default function SumFrequencyPage() {
   const [lambda1Raw, setLambda1] = useURLState("lambda1", 1064); // nm
   const [lambda2Raw, setLambda2] = useURLState("lambda2", 1550); // nm
-  const [deffRaw, setDeff] = useURLState("deff", 14); // pm/V
+  const [deffRaw, setDeff] = useURLState("deff", 12.4); // pm/V, 2d₃₃/π of LiNbO₃ (Shoji 1997)
   const [lengthRaw, setLength] = useURLState("crystalLength", 10); // mm
   const [power1Raw, setPower1] = useURLState("power1", 100); // mW
   const [power2Raw, setPower2] = useURLState("power2", 50); // mW
@@ -28,7 +28,7 @@ export default function SumFrequencyPage() {
 
   const lambda1 = clamp(lambda1Raw, 200, 20000, 1064) * 1e-9;
   const lambda2 = clamp(lambda2Raw, 200, 20000, 1550) * 1e-9;
-  const deff = clamp(deffRaw, 0, 1000, 14) * 1e-12;
+  const deff = clamp(deffRaw, 0, 1000, 12.4) * 1e-12;
   const L = clamp(lengthRaw, 0.01, 1000, 10) * 1e-3;
   const P1 = clamp(power1Raw, 0, 1e9, 100) * 1e-3;
   const P2 = clamp(power2Raw, 0, 1e9, 50) * 1e-3;
@@ -98,7 +98,8 @@ export default function SumFrequencyPage() {
           power only oscillates over a coherence length π/|Δk|. Birefringent phase matching or a periodically poled crystal of
           period 2π/|Δk| removes it. The residual Δk input is what is left after that, from tuning or temperature. The defaults
           are a 1064 + 1550 nm → 631 nm mixer in periodically poled LiNbO₃: extraordinary indices from the Zelmon
-          Sellmeier (21 °C) and a typical d_eff.</p>
+          Sellmeier (21 °C) and d_eff = 2d₃₃/π = 12.4 pm/V
+          from d₃₃ = 19.5 pm/V of congruent LiNbO₃ for SHG of 1.313 µm (Shoji et al. 1997; 25.2 pm/V at 1.064 µm).</p>
         {warnings.map((msg) => <p key={msg} className="text-yellow-400">{msg}</p>)}
       </div>
 

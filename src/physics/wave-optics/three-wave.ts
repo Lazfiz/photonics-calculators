@@ -29,6 +29,19 @@ import { idlerWavelength } from "./optical-parametric-oscillator";
 
 export { sumFrequencyWavelength, idlerWavelength };
 
+/**
+ * d₃₃ of congruent LiNbO₃ for SHG of 1.313 µm, 19.5 pm/V (I. Shoji et al., J. Opt. Soc. Am. B 14, 2268 (1997),
+ * doi:10.1364/JOSAB.14.002268, Tables 6 and 10; 25.2 pm/V at 1.064 µm, 25.7 at 0.852 µm). It is the longest fundamental
+ * they measured, the closest to 1064 + 1550 nm mixing. Their Miller Δ₃₃ changes from 4.73 to 3.92 × 10⁻¹³ m/V between
+ * 1.064 and 1.313 µm, so it isn't scaled further; at the longer DFG idler d₃₃ is likely lower still.
+ */
+export const LINBO3_D33_1313 = 19.5e-12;
+
+/** First-order quasi-phase-matching d_eff = 2d₃₃/π (50 % duty cycle), m/V. */
+export function qpmDeff(d33: number): number {
+  return (2 * d33) / Math.PI;
+}
+
 export interface MixingInput {
   /** Vacuum wavelength of the generated wave (λ₃ for SFG, λ_i for DFG), m. */
   lambdaOut: number;

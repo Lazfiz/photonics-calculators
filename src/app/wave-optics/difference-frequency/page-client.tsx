@@ -17,7 +17,7 @@ const fmtPower = (W: number) => !Number.isFinite(W)
 export default function DifferenceFrequencyPage() {
   const [lambdaPumpRaw, setLambdaPump] = useURLState("lambdaPump", 1064); // nm
   const [lambdaSignalRaw, setLambdaSignal] = useURLState("lambdaSignal", 1550); // nm
-  const [deffRaw, setDeff] = useURLState("deff", 14); // pm/V
+  const [deffRaw, setDeff] = useURLState("deff", 12.4); // pm/V, 2d₃₃/π of LiNbO₃ (Shoji 1997)
   const [lengthRaw, setLength] = useURLState("crystalLength", 20); // mm
   const [pumpPowerRaw, setPumpPower] = useURLState("pumpPower", 500); // mW
   const [signalPowerRaw, setSignalPower] = useURLState("signalPower", 10); // mW
@@ -29,7 +29,7 @@ export default function DifferenceFrequencyPage() {
 
   const lambdaP = clamp(lambdaPumpRaw, 200, 20000, 1064) * 1e-9;
   const lambdaS = clamp(lambdaSignalRaw, 200, 20000, 1550) * 1e-9;
-  const deff = clamp(deffRaw, 0, 1000, 14) * 1e-12;
+  const deff = clamp(deffRaw, 0, 1000, 12.4) * 1e-12;
   const L = clamp(lengthRaw, 0.01, 1000, 20) * 1e-3;
   const Pp = clamp(pumpPowerRaw, 0, 1e9, 500) * 1e-3;
   const Ps = clamp(signalPowerRaw, 0, 1e9, 10) * 1e-3;
@@ -102,7 +102,9 @@ export default function DifferenceFrequencyPage() {
           the sum-frequency law with the idler wavelength. Integrated over two Gaussian beams of equal radius w it gives
           P_i = η P_pP_s/(πw²). Each idler photon also adds a signal photon. Once ΓL approaches 1 the signal grows too,
           and the process becomes parametric amplification. The defaults are a 1064 nm − 1550 nm → 3.39 µm mixer in
-          periodically poled LiNbO₃: extraordinary indices from the Zelmon Sellmeier (21 °C) and a typical d_eff.</p>
+          periodically poled LiNbO₃: extraordinary indices from the Zelmon Sellmeier (21 °C)
+          and d_eff = 2d₃₃/π = 12.4 pm/V from d₃₃ = 19.5 pm/V of congruent LiNbO₃ for SHG of 1.313 µm
+          (Shoji et al. 1997; 25.2 pm/V at 1.064 µm).</p>
         {warnings.map((msg) => <p key={msg} className="text-yellow-400">{msg}</p>)}
       </div>
 
