@@ -1,24 +1,30 @@
-# Handover — 2026-10-23 (session 144 → session 145)
+# Handover — 2026-10-24 (session 145 → session 146)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 144: **Findings 4d-b** done on `phase-4/findings-4d-b` (PR #175): glass catalog, thermal expansion, heat capacity,
-polymer and IR-glass data now sourced; a physics-reviewer pass was applied. Next: **Findings 4d-c** (nonlinear and scattering media).
+Session 145: **Findings 4g-a** done on `phase-4/findings-4g-a` (PR #176): the first three Codex review findings, fixed and
+physics-reviewed. Next: **Findings 4g-b** (QKD `optimalMu`, OPA signal > idler, graded-index cap, SERS max, ui-check label).
 
 ## State
-- `sellmeier.ts`: `SCHOTT_DNDT_RANGE_NM = [365, 1014]` (the glass catalog warns outside it). `sellmeier-data.ts`: `MATERIALS.amtir1`
-  (AMI Sellmeier, 22 °C, 1–14 µm; it also shows on `chromatic-dispersion`). `window-materials.ts`: AMTIR-1 band/dn/dT/κ/Knoop, As₂S₃ band + Knoop.
-- `heat-capacity.ts`: + `mgo` (JANAF c_p, θ_D 945) and `sapphire` (Archer 1993, θ_D 990, 81.56 J/(mol·K) at 300 K).
-- `thermal-expansion` page: `source` is now Crystran | SCHOTT | Corning | Kaye & Laby | NIST (no "typical").
-- Tests: N-BK7 dn/dT table, AMTIR-1 table, NOA 61 table, sapphire vs Archer, MgO vs JANAF.
+- `fluorescence-lifetime.ts` `periodicDecay`: t − t₀ reduced into [0, T); explicit sum from the first pulse within 8σ ahead.
+- `lockin.ts`: `referenceMatch(f_s, f_r, φ, τ, N, filter, ref)` → {harmonic, detuning_Hz, gain}; square reference g_k = 2√2/(kπ),
+  picks the largest g_k·|H| (matched within 1e-9 relative wins), then cos φ (signed). `LockinInputs` now has `signal_Hz`,
+  `reference_Hz` instead of `detuning_Hz`.
+- `scrambler.ts`: `combinationLock` (n·f = 0, all n_k ≠ 0, |n_k| ≤ 12), `lockedGroup` extends a locked pair through it,
+  `combinationMean` (Fourier lattice sum, exported; ramps 100 terms), `combinationResonance` (Σ|n| ≤ 5, 1 %). Page warns for both.
+- Tests: 1083 pass. The scrambler combination test takes ≈ 20 s under load (brute-force references).
 
 ## Next actions
-1. `/ship` this branch. No default value changed; post-merge-check e.g. `materials/heat-capacity?material=sapphire` (c_p at 300 K
-   799.9 J/(kg·K)) and `materials/infrared-glass?material=amtir1&wavelength=10` (n 2.4974 at 25 °C). No release unless asked.
-2. Findings 4g-a then 4g-b (Codex review 2026-10-24, all claims reproduced; cases and fixes in ROADMAP "Codex review").
-3. Findings 4d-c: `nonlinear-index`, `two-photon-absorption`, `brillouin-scattering`, `raman-scattering`, rare-earth σ, `acousto-optic`;
-   reviewer pass per claim first.
+1. `/ship` this branch. Defaults unchanged on all three pages; post-merge-check e.g.
+   `detectors/lockin-amplifier?signalFreq=3000&reference=square` (Output X 0.2122 µV at 1 µV) and
+   `polarization/polarization-scrambling?stages=3&frequency1=13&frequency2=17&frequency3=30&axis2=22.5&axis3=45`
+   (long-time DOP 0.0808). No release unless asked.
+2. Findings 4g-b (evidence in ROADMAP "Codex review"), then 4d-c (nonlinear and scattering media).
 
 ## Non-obvious facts
+- **Session 145:** devctl queues commands when another project's cargo job holds the CPU and can skip a whole `&&` chain
+  ("not started after 61 s", exit 75): heredoc writes and edits in that chain never ran. Keep edits and test runs in
+  separate calls; run tests with `run_in_background`. Scratchpad probes import the repo with 9 `../` (`../../../../../../../../../dev/…`).
+  Sine-drive Fourier coefficients: J_−m = (−1)^m J_m must also apply when m = j·n_k is negative.
 - **Session 144:** web.archive.org holds vendor PDFs that block scripts: list captures with `web.archive.org/cdx/search/cdx?url=<url>&output=txt`,
   fetch `/web/<ts>id_/<url>` (a capture can be truncated at 1 MiB: take an older one). Amorphous Materials sheets (AMTIR-1 2024,
   AMTIR-6 = As₂S₃, comparison ver 5: `pdftotext -table` unscrambles it), Norland NOA sheets, Corning ULE and Kaye & Laby
@@ -58,7 +64,6 @@ polymer and IR-glass data now sourced; a physics-reviewer pass was applied. Next
 - **Sessions 120–125:** registry entries end with a `  },` line. A removed page breaks tsc (TS2307 in `.next/types/validator.ts`)
   until `rm -rf .next/types .next/dev/types`. A merge lowers the page floor. The merge codemod runs after appending to
   `redirects.json`. A user `next dev` on :3000 can garble `.next/dev/types`: delete it again.
-- **Session 119:** a `useMemo` calling a heavy function makes the React Compiler skip the component: call a module-level function.
 - **Sessions 113–115:** unsourceable constants: make them inputs or drop them, cite the defaults, log the gap. Next redirects keep
   the query string. Render a SimpleLineChart only with data. `besselJ0Fast` inside quadratures.
 - **Session 107:** prefix `MSYS_NO_PATHCONV=1` for ui-check and chrome (`C:/Program Files/Google/Chrome/Application/chrome.exe`,

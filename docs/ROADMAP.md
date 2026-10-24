@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 144, 2026-10-23)
+## Status (session 145, 2026-10-24)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4: every page is tiered; open findings and the top-50 tests remain.
@@ -39,8 +39,8 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   modulator V_π 213.6 V (633 nm, 1 mm/20 mm); BiBO cut 168.8° (CASTECH 168.9°). Photorefractive crystals stay open (below).
 - [x] **Findings 4d-b** (session 144, `phase-4/findings-4d-b`, PR #175): TIE-19 365–1014 nm (N-BK7 table to 0.05); sourced α for 9 materials;
   sapphire (Archer, θ_D 990 K) and MgO (JANAF) presets; AMTIR-1 Sellmeier, band, dn/dT; NOA 61 within 5e-4 of Norland.
-- [ ] **Findings 4g-a, Codex review 2026-10-24 (first three):** `time-resolved` pulse train periodic, `polarization-scrambling`
-  combination resonances, `lockin-amplifier` odd harmonics of a square reference. Evidence under "Codex review" below.
+- [x] **Findings 4g-a** (session 145, `phase-4/findings-4g-a`, PR #176): TCSPC train periodic; square lock-in 3f → 0.2122 µV;
+  scrambler `combinationLock` + Fourier lattice sum (13/17/30 kHz DOP 0.080756 = brute force).
 - [ ] **Findings 4g-b, Codex review 2026-10-24 (rest):** QKD `optimalMu`, OPA signal > idler, graded-index sublayer cap,
   SERS max over θ; `ui-check` boxcar label.
 - [ ] **Findings 4d-c, nonlinear and scattering media:** `nonlinear-index`, `two-photon-absorption`, `brillouin-scattering`,
@@ -175,12 +175,6 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - Re-check the classes when IEC 60825-1 Ed. 4 is published (only a BSI draft in 2026).
 
 **Codex review 2026-10-24** (each reproduced in session 144 with the repo's functions; golden cases for the tests)
-- `time-resolved` (`periodicDecay`): sums pulses from n = −1 only, so 100 MHz, τ 1 ns, IRF 200 ps, t₀ 0 gives 0.4679 at 0 and
-  10 ns but 4.6e-5 at 20 ns. Reduce t into one period first; test I(t + T) = I(t).
-- `polarization-scrambling`: `lockedGroup` and `stageResonance` check pairs only. Axes 0/22.5/45°, 13/17/30 kHz, Γm 2.4048256,
-  45° input: code DOP 1.1e-8, brute force over 1 ms 0.0808 (f₁ + f₂ = f₃). Detect integer relations among all stages.
-- `lockin-amplifier`: a ±1 square reference also detects 3f, 5f…: f_s 3 kHz, f_r 1 kHz, A 1 µV → A·2/(3π) = 0.2122 µV, page
-  5.07e-5 µV. Sum the odd harmonics (amplitude 4/(kπ), detuning |f_s − k f_r|) in the output.
 - QKD `optimalMu`: golden section on the clipped rate. 0 dB/km, fixed 29.86 dB, defaults: μ 0.43 gives 1.94 bit/s, scan max
   2.04 bit/s at 0.426, `optimalMu` 0.01 → 0. Optimise the unclipped rate.
 - `optical-parametric-amplifier`: `idlerPower` needs λ_i > λ_s and the spectrum filter needs ν_s > ν_i; signal 3000 nm gives
@@ -190,6 +184,10 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - `surface-enhanced-raman`: "max" is the pole. 320 nm, 1000 cm⁻¹, a 10 nm, d 0, n 1: max 0.835 < average 3.25; true max 4.72 at
   the equator. EF(θ) is quadratic in cos²θ: take the max of the ends and the vertex.
 - `scripts/ui-check.mjs:148` looks for "Pulse Width (ns)"; the boxcar label is now "Pulse Width FWHM (ns)".
+
+- Leftovers of 4g-a (session 145 review): scrambler relations above order 12 count as incommensurate (11/13/24 kHz at
+  Γm 10: 4.4e-3 off; negligible at the J₀ zero); lock-in f_s = 2f_r ties the 1f and 3f beats at one Δf (coherent sum
+  0.6–1.2× the shown envelope); `periodicDecay` takes up to ≈ 7e4 terms per chart point when σ ≫ T (could return Σαᵢτᵢ/T).
 
 **Cross-cutting**
 - `erf` had three implementations. `src/physics/math.ts` replaced five pages' copies; others may remain.
