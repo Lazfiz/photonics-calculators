@@ -13,11 +13,11 @@ const DEG = Math.PI / 180;
 const pct = (x: number, digits = 1) => (Number.isFinite(x) ? `${(x * 100).toFixed(digits)} %` : "—");
 
 export default function AntiFogPage() {
-  const [nCoat, setNCoat] = useURLState("nCoat", 1.33);
-  const [nSub, setNSub] = useURLState("nSub", 1.52);
-  const [thickness, setThickness] = useURLState("thickness", 120);
-  const [contactAngle, setContactAngle] = useURLState("contactAngle", 15);
-  const [waterTemp, setWaterTemp] = useURLState("waterTemp", 20);
+  const [nCoat, setNCoat] = useURLState("nCoat", 1.33, { min: 1, max: 4 });
+  const [nSub, setNSub] = useURLState("nSub", 1.52, { min: 1, max: 4 });
+  const [thickness, setThickness] = useURLState("thickness", 120, { min: 0, max: 10000 });
+  const [contactAngle, setContactAngle] = useURLState("contactAngle", 15, { min: 0, max: 180 });
+  const [waterTemp, setWaterTemp] = useURLState("waterTemp", 20, { min: -25, max: 100 });
 
   const valid = nCoat > 0 && nSub > 0 && thickness >= 0 && contactAngle >= 0 && contactAngle <= 180 && waterTemp >= -25 && waterTemp <= 100;
   const coating = useMemo(() => [{ n: nCoat, thickness: thickness * NM }], [nCoat, thickness]);

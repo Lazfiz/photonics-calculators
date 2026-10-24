@@ -17,12 +17,12 @@ import {
 const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
 
 export default function FiberCharacterizationPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.44937);
-  const [claddingIndex, setCladdingIndex] = useURLState("claddingIndex", 1.444);
-  const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.1); // µm
-  const [zeroDispersion, setZeroDispersion] = useURLState("zeroDispersion", 1310); // nm
-  const [dispersionSlope, setDispersionSlope] = useURLState("dispersionSlope", 0.092); // ps/(nm²·km)
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 400, max: 2000 }); // nm
+  const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.44937, { min: 1, max: 4 });
+  const [claddingIndex, setCladdingIndex] = useURLState("claddingIndex", 1.444, { min: 1, max: 4 });
+  const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.1, { min: 0.5, max: 50 }); // µm
+  const [zeroDispersion, setZeroDispersion] = useURLState("zeroDispersion", 1310, { min: 1200, max: 1700 }); // nm
+  const [dispersionSlope, setDispersionSlope] = useURLState("dispersionSlope", 0.092, { min: 0, max: 0.2 }); // ps/(nm²·km)
 
   const fiber = useMemo(
     () => ({ a: coreRadius * 1e-6, n1: coreIndex, NA: Math.sqrt(coreIndex ** 2 - claddingIndex ** 2) }),

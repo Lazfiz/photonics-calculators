@@ -13,10 +13,10 @@ const shifted = (lambda0_nm: number, n: number, angleDeg: number) =>
   stopBandCentreAtAngle(lambda0_nm * 1e-9, n, n, angleDeg * DEG) * 1e9;
 
 export default function AngleShiftPage() {
-  const [nFilm, setNFilm] = useURLState("nFilm", 1.38);
-  const [designWl, setDesignWl] = useURLState("designWl", 550);
-  const [maxAngle, setMaxAngle] = useURLState("maxAngle", 60);
-  const [angle, setAngle] = useURLState("angle", 45);
+  const [nFilm, setNFilm] = useURLState("nFilm", 1.38, { min: 1 });
+  const [designWl, setDesignWl] = useURLState("designWl", 550, { min: 1 });
+  const [maxAngle, setMaxAngle] = useURLState("maxAngle", 60, { min: 1, max: 89 });
+  const [angle, setAngle] = useURLState("angle", 45, { min: 0, max: 89 });
 
   const valid = nFilm >= 1 && designWl > 0 && maxAngle >= 1 && maxAngle <= 89 && angle >= 0 && angle <= 89;
 

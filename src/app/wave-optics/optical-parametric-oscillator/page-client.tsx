@@ -13,17 +13,17 @@ const fmtPower = (P: number) =>
   !Number.isFinite(P) ? "—" : P < 1 ? `${(P * 1e3).toFixed(1)} mW` : P < 1000 ? `${P.toFixed(2)} W` : `${(P / 1000).toFixed(2)} kW`;
 
 export default function OPOCalculator() {
-  const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 532); // nm
-  const [signalWavelength, setSignalWavelength] = useURLState("signalWavelength", 800); // nm
-  const [crystalLength, setCrystalLength] = useURLState("crystalLength", 20); // mm
-  const [dEff, setDEff] = useURLState("dEff", 2.068); // pm/V, BBO type I at 532 → 800 nm (bboTypeICut)
-  const [nPump, setNPump] = useURLState("nPump", 1.6555);
-  const [nSignal, setNSignal] = useURLState("nSignal", 1.6604);
-  const [nIdler, setNIdler] = useURLState("nIdler", 1.64576);
-  const [pumpPower, setPumpPower] = useURLState("pumpPower", 5); // W
-  const [beamRadius, setBeamRadius] = useURLState("beamRadius", 50); // µm
-  const [walkOff, setWalkOff] = useURLState("walkOff", 3.114); // deg
-  const [cavityLoss, setCavityLoss] = useURLState("cavityLoss", 3); // % per round trip
+  const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 532, { min: 200, max: 5000 }); // nm
+  const [signalWavelength, setSignalWavelength] = useURLState("signalWavelength", 800, { min: 201, max: 20000 }); // nm
+  const [crystalLength, setCrystalLength] = useURLState("crystalLength", 20, { min: 0.1, max: 200 }); // mm
+  const [dEff, setDEff] = useURLState("dEff", 2.068, { min: 0.01, max: 100 }); // pm/V, BBO type I at 532 → 800 nm (bboTypeICut)
+  const [nPump, setNPump] = useURLState("nPump", 1.6555, { min: 1, max: 5 });
+  const [nSignal, setNSignal] = useURLState("nSignal", 1.6604, { min: 1, max: 5 });
+  const [nIdler, setNIdler] = useURLState("nIdler", 1.64576, { min: 1, max: 5 });
+  const [pumpPower, setPumpPower] = useURLState("pumpPower", 5, { min: 0, max: 1e6 }); // W
+  const [beamRadius, setBeamRadius] = useURLState("beamRadius", 50, { min: 1, max: 10000 }); // µm
+  const [walkOff, setWalkOff] = useURLState("walkOff", 3.114, { min: 0, max: 10 }); // deg
+  const [cavityLoss, setCavityLoss] = useURLState("cavityLoss", 3, { min: 0.01, max: 99 }); // % per round trip
 
   const process = useMemo(
     () => ({ lambdaPump: pumpWavelength * 1e-9, lambdaSignal: signalWavelength * 1e-9, dEff: dEff * 1e-12, nPump, nSignal, nIdler }),

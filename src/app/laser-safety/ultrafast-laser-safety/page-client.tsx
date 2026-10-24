@@ -15,13 +15,13 @@ import { pulseTrainLimits, pulseTrainSafeDiameter } from "../../../physics/laser
 const RULE_NAMES = { 1: "single pulse", 2: "average power", 3: "C_P × single pulse" } as const;
 
 export default function UltrafastLaserSafetyPage() {
-  const [pulseEnergyRaw, setPulseEnergy] = useURLState("pulseEnergy", 0.0125); // µJ
-  const [repRateRaw, setRepRate] = useURLState("repRate", 80); // MHz
-  const [pulseWidthRaw, setPulseWidth] = useURLState("pulseWidth", 100); // fs
-  const [wavelength, setWavelength] = useURLState("wavelength", 800); // nm
-  const [beamDiaRaw, setBeamDia] = useURLState("beamDia", 2); // mm, 1/e²
-  const [divergenceRaw, setDivergence] = useURLState("divergence", 1); // mrad, 1/e² full angle
-  const [exposureRaw, setExposure] = useURLState("exposureTime", 10); // s
+  const [pulseEnergyRaw, setPulseEnergy] = useURLState("pulseEnergy", 0.0125, { min: 0 }); // µJ
+  const [repRateRaw, setRepRate] = useURLState("repRate", 80, { min: 0 }); // MHz
+  const [pulseWidthRaw, setPulseWidth] = useURLState("pulseWidth", 100, { min: 1 }); // fs
+  const [wavelength, setWavelength] = useURLState("wavelength", 800, { min: 180, max: 1000000 }); // nm
+  const [beamDiaRaw, setBeamDia] = useURLState("beamDia", 2, { min: 0.001 }); // mm, 1/e²
+  const [divergenceRaw, setDivergence] = useURLState("divergence", 1, { min: 0 }); // mrad, 1/e² full angle
+  const [exposureRaw, setExposure] = useURLState("exposureTime", 10, { min: 1e-15, max: 30000 }); // s
 
   // URL values aren't range-checked: clamp them here. SI inside; physics in src/physics/laser-safety/pulse-train.ts.
   const lambda = wavelength * 1e-9;

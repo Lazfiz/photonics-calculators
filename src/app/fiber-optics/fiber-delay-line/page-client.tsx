@@ -16,13 +16,13 @@ const PS_KM_K = 1e-15; // ps/(km·K) → s/(m·K)
 const T_REF = 25; // °C
 
 export default function FiberDelayLineCalculator() {
-  const [fiberLength, setFiberLength] = useURLState("fiberLength", 100); // m
-  const [groupIndex, setGroupIndex] = useURLState("refractiveIndex", 1.468); // SMF-28 group index at 1550 nm
-  const [signalWavelength, setSignalWavelength] = useURLState("signalWavelength", 1550); // nm
-  const [inputBitRate, setInputBitRate] = useURLState("inputBitRate", 10); // Gb/s
-  const [temperature, setTemperature] = useURLState("temperature", 35); // °C
-  const [thermalCoeff, setThermalCoeff] = useURLState("thermalCoeff", SMF_THERMAL_DELAY_COEFF / PS_KM_K); // ps/(km·K)
-  const [spectralWidth, setSpectralWidth] = useURLState("spectralWidth", 0.1); // nm, rms
+  const [fiberLength, setFiberLength] = useURLState("fiberLength", 100, { min: 0.001 }); // m
+  const [groupIndex, setGroupIndex] = useURLState("refractiveIndex", 1.468, { min: 1, max: 3 }); // SMF-28 group index at 1550 nm
+  const [signalWavelength, setSignalWavelength] = useURLState("signalWavelength", 1550, { min: 1260, max: 1625 }); // nm
+  const [inputBitRate, setInputBitRate] = useURLState("inputBitRate", 10, { min: 0.001 }); // Gb/s
+  const [temperature, setTemperature] = useURLState("temperature", 35, { min: -60, max: 150 }); // °C
+  const [thermalCoeff, setThermalCoeff] = useURLState("thermalCoeff", SMF_THERMAL_DELAY_COEFF / PS_KM_K, { min: 0, max: 100 }); // ps/(km·K)
+  const [spectralWidth, setSpectralWidth] = useURLState("spectralWidth", 0.1, { min: 0 }); // nm, rms
 
   const valid = fiberLength > 0 && groupIndex >= 1 && signalWavelength > 0 && inputBitRate > 0 && spectralWidth >= 0;
 

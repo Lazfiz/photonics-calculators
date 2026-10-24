@@ -26,9 +26,9 @@ function tissueMax(limits: EyeLimit[], retina: boolean, d: number, t: number) {
 }
 
 export default function CornealVsRetinalPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1300); // nm
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 10); // s
-  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 3); // mm, 1/e²
+  const [wavelength, setWavelength] = useURLState("wavelength", 1300, { min: 180, max: 1000000 }); // nm
+  const [exposureTime, setExposureTime] = useURLState("exposureTime", 10, { min: 1e-9, max: 30000 }); // s
+  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 3, { min: 0.01 }); // mm, 1/e²
 
   // ICNIRP 2013 eye limits and the eye's retinal image: src/physics/laser-safety/. SI inside.
   const lambda = wavelength * 1e-9;

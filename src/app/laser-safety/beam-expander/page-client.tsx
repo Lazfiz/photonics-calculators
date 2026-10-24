@@ -19,9 +19,9 @@ function fmt(x: number): string {
 }
 
 export default function BeamExpanderPage() {
-  const [power, setPower] = useURLState("power", 1); // W
-  const [beamDia, setBeamDia] = useURLState("beamDia", 2); // mm
-  const [expansion, setExpansion] = useURLState("expansion", 5); // M
+  const [power, setPower] = useURLState("power", 1, { min: 0.000001, max: 100000 }); // W
+  const [beamDia, setBeamDia] = useURLState("beamDia", 2, { min: 0.01, max: 1000 }); // mm
+  const [expansion, setExpansion] = useURLState("expansion", 5, { min: 1, max: 1000 }); // M
 
   // Physics in SI: src/physics/laser-safety/beam-expander.ts. Irradiance is shown in W/cm².
   const result = useMemo(() => expandBeam(power, beamDia * 1e-3, expansion), [power, beamDia, expansion]);

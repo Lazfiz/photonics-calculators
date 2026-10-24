@@ -13,10 +13,10 @@ import {
 import { skinLimit } from "../../../physics/laser-safety/skin-exposure-limits";
 
 export default function SkinMpePage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1064); // nm
-  const [power, setPower] = useURLState("power", 1000); // mW
-  const [beamDiameter, setBeamDiameter] = useURLState("beamDiameter", 5); // mm, 1/e²
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 10); // s
+  const [wavelength, setWavelength] = useURLState("wavelength", 1064, { min: 180, max: 1000000 }); // nm
+  const [power, setPower] = useURLState("power", 1000, { min: 0 }); // mW
+  const [beamDiameter, setBeamDiameter] = useURLState("beamDiameter", 5, { min: 0.01 }); // mm, 1/e²
+  const [exposureTime, setExposureTime] = useURLState("exposureTime", 10, { min: 1e-9, max: 30000 }); // s
 
   // ICNIRP 2013 Table 7 skin limit: src/physics/laser-safety/skin-exposure-limits.ts. SI inside.
   const lambda = wavelength * 1e-9;

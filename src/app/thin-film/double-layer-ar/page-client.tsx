@@ -13,11 +13,11 @@ import {
 } from "../../../physics/thin-film/transfer-matrix";
 
 export default function DoubleLayerARPage() {
-  const [n1, setN1] = useURLState("n1", 1.38);
-  const [n2, setN2] = useURLState("n2", 1.70);
-  const [nSub, setNSub] = useURLState("nSub", 1.52);
-  const [nInc, setNInc] = useURLState("nInc", 1.0);
-  const [designWl, setDesignWl] = useURLState("designWl", 550);
+  const [n1, setN1] = useURLState("n1", 1.38, { min: 0.1 });
+  const [n2, setN2] = useURLState("n2", 1.70, { min: 0.1 });
+  const [nSub, setNSub] = useURLState("nSub", 1.52, { min: 0.1 });
+  const [nInc, setNInc] = useURLState("nInc", 1.0, { min: 0.1 });
+  const [designWl, setDesignWl] = useURLState("designWl", 550, { min: 1 });
 
   const chartData = useMemo(() => {
     // Window 0.5–1.5 λ₀ (401 points, so λ₀ is a grid point)

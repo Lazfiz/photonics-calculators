@@ -12,12 +12,12 @@ import { classifyCw, type ClassCheck } from "../../../physics/laser-safety/laser
 const classMax = (c: ClassCheck) => Math.min(c.condition3.power, c.condition1?.power ?? Infinity);
 
 export default function EnclosureClassPage() {
-  const [laserPower, setLaserPower] = useURLState("laserPower", 5000); // mW inside the enclosure
-  const [wavelength, setWavelength] = useURLState("wavelength", 1064); // nm
-  const [beamDia, setBeamDia] = useURLState("beamDia", 2); // mm, 1/e² at the opening
-  const [divergence, setDivergence] = useURLState("divergence", 1); // mrad, 1/e² full angle
-  const [apertureSize, setApertureSize] = useURLState("apertureSize", 5); // mm, opening diameter
-  const [windowOD, setWindowOD] = useURLState("windowOD", 4); // optical density over the opening
+  const [laserPower, setLaserPower] = useURLState("laserPower", 5000, { min: 0 }); // mW inside the enclosure
+  const [wavelength, setWavelength] = useURLState("wavelength", 1064, { min: 180, max: 1000000 }); // nm
+  const [beamDia, setBeamDia] = useURLState("beamDia", 2, { min: 0.001 }); // mm, 1/e² at the opening
+  const [divergence, setDivergence] = useURLState("divergence", 1, { min: 0 }); // mrad, 1/e² full angle
+  const [apertureSize, setApertureSize] = useURLState("apertureSize", 5, { min: 0 }); // mm, opening diameter
+  const [windowOD, setWindowOD] = useURLState("windowOD", 4, { min: 0 }); // optical density over the opening
 
   // SI inside; classes from src/physics/laser-safety/laser-classes.ts.
   const lambda = wavelength * 1e-9;

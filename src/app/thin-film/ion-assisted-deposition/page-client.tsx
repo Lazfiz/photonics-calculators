@@ -14,11 +14,11 @@ const fmtExp = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `
 
 export default function IonAssistedDepositionPage() {
   const [materialParam, setMaterial] = useURLState("material", "SiO2");
-  const [ionEnergy, setIonEnergy] = useURLState("ionEnergy", 300); // eV
-  const [currentDensity, setCurrentDensity] = useURLState("ionCurrentDensity", 50); // µA/cm²
-  const [depositionRate, setDepositionRate] = useURLState("depositionRate", 0.5); // nm/s
-  const [ionMass, setIonMass] = useURLState("ionMass", 40); // u
-  const [densityParam, setDensity] = useURLState("density", 0); // g/cm³, 0 = bulk value of the material
+  const [ionEnergy, setIonEnergy] = useURLState("ionEnergy", 300, { min: 0 }); // eV
+  const [currentDensity, setCurrentDensity] = useURLState("ionCurrentDensity", 50, { min: 0 }); // µA/cm²
+  const [depositionRate, setDepositionRate] = useURLState("depositionRate", 0.5, { min: 0.001 }); // nm/s
+  const [ionMass, setIonMass] = useURLState("ionMass", 40, { min: 1 }); // u
+  const [densityParam, setDensity] = useURLState("density", 0, { min: 0 }); // g/cm³, 0 = bulk value of the material
 
   const id: IadMaterialId = isId(materialParam) ? materialParam : "SiO2";
   const bulk = IAD_MATERIALS[id];

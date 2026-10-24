@@ -24,11 +24,11 @@ function maxPulseEnergy(lambda: number, d: number, train: PulseTrain): { kind: E
 }
 
 export default function EyeSafeWavelengthPage() {
-  const [pulseEnergy, setPulseEnergy] = useURLState("pulseEnergy", 100); // mJ
-  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 10); // ns
-  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 5); // mm, 1/e²
-  const [prfRaw, setPrf] = useURLState("prf", 10); // Hz, 0 = one pulse
-  const [exposureRaw, setExposure] = useURLState("exposureTime", 10); // s
+  const [pulseEnergy, setPulseEnergy] = useURLState("pulseEnergy", 100, { min: 0 }); // mJ
+  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 10, { min: 1e-4, max: 3e13 }); // ns
+  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 5, { min: 0.01 }); // mm, 1/e²
+  const [prfRaw, setPrf] = useURLState("prf", 10, { min: 0 }); // Hz, 0 = one pulse
+  const [exposureRaw, setExposure] = useURLState("exposureTime", 10, { min: 1e-13, max: 30000 }); // s
 
   // ICNIRP 2013 eye limits and repetitive-pulse rules: src/physics/laser-safety/pulse-train.ts. SI inside.
   const Q = Math.max(pulseEnergy, 0) * 1e-3;

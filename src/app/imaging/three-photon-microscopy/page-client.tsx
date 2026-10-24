@@ -14,14 +14,14 @@ const fmt = (x: number, digits: number, unit: string) => (Number.isFinite(x) ? `
 const aboveFloor = (y: number) => (y >= 1e-10 ? y : NaN);
 
 export default function ThreePhotonMicroscopyPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1300); // nm
-  const [na, setNa] = useURLState("na", 0.8);
-  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 100); // fs
-  const [repRate, setRepRate] = useURLState("repRate", 1); // MHz
-  const [avgPower, setAvgPower] = useURLState("avgPower", 100); // mW
-  const [refractiveIndex, setRefractiveIndex] = useURLState("refractiveIndex", 1.33);
-  const [scatteringCoeff, setScatteringCoeff] = useURLState("scatteringCoeff", 60); // cm⁻¹
-  const [depth, setDepth] = useURLState("depth", 500); // µm
+  const [wavelength, setWavelength] = useURLState("wavelength", 1300, { min: 1000, max: 1800 }); // nm
+  const [na, setNa] = useURLState("na", 0.8, { min: 0.1, max: 1.7 });
+  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 100, { min: 10, max: 1000 }); // fs
+  const [repRate, setRepRate] = useURLState("repRate", 1, { min: 0.01, max: 250 }); // MHz
+  const [avgPower, setAvgPower] = useURLState("avgPower", 100, { min: 0.1, max: 500 }); // mW
+  const [refractiveIndex, setRefractiveIndex] = useURLState("refractiveIndex", 1.33, { min: 1.0, max: 1.8 });
+  const [scatteringCoeff, setScatteringCoeff] = useURLState("scatteringCoeff", 60, { min: 0, max: 500 }); // cm⁻¹
+  const [depth, setDepth] = useURLState("depth", 500, { min: 0, max: 3000 }); // µm
 
   const lambda = wavelength * 1e-9;
   const fwhm3 = multiphotonFwhm(lambda, refractiveIndex, na, 3);

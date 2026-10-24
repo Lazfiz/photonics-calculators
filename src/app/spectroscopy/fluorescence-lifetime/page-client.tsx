@@ -14,13 +14,13 @@ const NS = 1e-9;
 const fmt = (x: number, digits = 3) => (!Number.isFinite(x) ? "—" : x.toPrecision(digits));
 
 export default function FluorescenceLifetimePage() {
-  const [tau, setTau] = useURLState("tau", 5); // ns
-  const [amplitude, setAmplitude] = useURLState("amplitude", 1);
+  const [tau, setTau] = useURLState("tau", 5, { min: 0.001, max: 1e6 }); // ns
+  const [amplitude, setAmplitude] = useURLState("amplitude", 1, { min: 0.01 });
   const [model, setModel] = useURLState("model", "single");
-  const [tau2, setTau2] = useURLState("tau2", 1); // ns
-  const [frac1, setFrac1] = useURLState("frac1", 0.7); // amplitude fraction α₁
-  const [tMax, setTMax] = useURLState("tMax", 30); // ns
-  const [tauRad, setTauRad] = useURLState("tauRad", 10); // ns
+  const [tau2, setTau2] = useURLState("tau2", 1, { min: 0.001, max: 1e6 }); // ns
+  const [frac1, setFrac1] = useURLState("frac1", 0.7, { min: 0, max: 1 }); // amplitude fraction α₁
+  const [tMax, setTMax] = useURLState("tMax", 30, { min: 0.01, max: 1e6 }); // ns
+  const [tauRad, setTauRad] = useURLState("tauRad", 10, { min: 0.001, max: 1e9 }); // ns
   const bi = model === "bi";
 
   const components: DecayComponent[] = useMemo(

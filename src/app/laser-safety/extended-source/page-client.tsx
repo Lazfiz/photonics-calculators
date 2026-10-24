@@ -12,9 +12,9 @@ import {
 } from "../../../physics/laser-safety/eye-exposure-limits";
 
 export default function ExtendedSourcePage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1064); // nm
-  const [alphaMrad, setAlphaMrad] = useURLState("alpha", 50); // mrad, apparent source
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 10); // s
+  const [wavelength, setWavelength] = useURLState("wavelength", 1064, { min: 400, max: 1399 }); // nm
+  const [alphaMrad, setAlphaMrad] = useURLState("alpha", 50, { min: 0, max: 1000 }); // mrad, apparent source
+  const [exposureTime, setExposureTime] = useURLState("exposureTime", 10, { min: 1e-9, max: 30000 }); // s
 
   // ICNIRP 2013 retinal thermal limit with C_E and T₂: src/physics/laser-safety/eye-exposure-limits.ts. SI inside.
   const lambda = Math.min(Math.max(wavelength, 400), 1399.999) * 1e-9;

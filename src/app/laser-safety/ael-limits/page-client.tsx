@@ -17,9 +17,9 @@ const CLASSES: { cls: AelClass; name: string; color: string }[] = [
 ];
 
 export default function AELLimitsPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 633); // nm
-  const [emissionDuration, setEmissionDuration] = useURLState("emissionDuration", 1e-8); // s
-  const [alphaMrad, setAlphaMrad] = useURLState("alpha", 1.5); // mrad
+  const [wavelength, setWavelength] = useURLState("wavelength", 633, { min: 180, max: 1000000 }); // nm
+  const [emissionDuration, setEmissionDuration] = useURLState("emissionDuration", 1e-8, { min: 1e-9, max: 30000 }); // s
+  const [alphaMrad, setAlphaMrad] = useURLState("alpha", 1.5, { min: 0, max: 100 }); // mrad
   const [longTerm, setLongTerm] = useURLState("longTerm", 0); // 1: intended long-term viewing
   const [euA11, setEuA11] = useURLState("euA11", 0); // 1: EN 60825-1 A11 skin AEL
 

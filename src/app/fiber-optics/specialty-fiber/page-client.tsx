@@ -20,8 +20,8 @@ const fmtDb = (x: number) => (!Number.isFinite(x) ? "—" : x >= 100 ? `${x.toFi
 
 export default function SpecialtyFiberPage() {
   const [fiberParam, setFiber] = useURLState("fiber", "pm");
-  const [length, setLength] = useURLState("length", 10); // m
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [length, setLength] = useURLState("length", 10, { min: 0.001 }); // m
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 300, max: 7000 }); // nm
 
   const id: SpecialtyFiberId = isId(fiberParam) ? fiberParam : "pm";
   const spec: SpecialtyFiber = SPECIALTY_FIBERS[id];

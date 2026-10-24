@@ -12,7 +12,7 @@ export default function WedgeFilmPage() {
   const [nSub, setNSub] = useURLState("nSub", 1.52);
   const [nInc, setNInc] = useURLState("nInc", 1.0);
   const [designWl, setDesignWl] = useURLState("designWl", 550);
-  const [wedgeAngleDeg, setWedgeAngleDeg] = useURLState("wedgeAngleDeg", 0.1); // degrees
+  const [wedgeAngleDeg, setWedgeAngleDeg] = useURLState("wedgeAngleDeg", 0.1, { min: 0.001, max: 2 }); // degrees
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 500 }, (_, i) => 300 + i * 600 / 500);

@@ -13,7 +13,7 @@ const fmtLen = (x: number) => (Number.isFinite(x) ? x.toPrecision(5) : "—");
 const fmtPct = (x: number) => (Number.isFinite(x) ? (100 * x).toFixed(2) + " %" : "—");
 
 export default function BeamDiameterConversionPage() {
-  const [inputValue, setInputValue] = useURLState("inputValue", 1); // mm
+  const [inputValue, setInputValue] = useURLState("inputValue", 1, { min: 0.001, max: 10000 }); // mm
   const [inputTypeParam, setInputType] = useURLState("inputType", "1e2");
   const inputType: DiameterKind = inputTypeParam === "1e" || inputTypeParam === "fwhm" ? inputTypeParam : "1e2";
 

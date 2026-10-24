@@ -22,13 +22,13 @@ const PERTURBATION_FRACTION = 0.1;
 const NEAR_LEAK_FRACTION = 0.5;
 
 export default function SidePolishedPage() {
-  const [remainingClad, setRemainingClad] = useURLState("remainingClad", 2); // µm, core boundary to polished face
-  const [coreDia, setCoreDia] = useURLState("coreDia", 8.2); // µm
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [n_core, setN_core] = useURLState("n_core", 1.4494);
-  const [n_clad, setN_clad] = useURLState("n_clad", 1.444);
-  const [n_overlay, setN_overlay] = useURLState("n_overlay", 1.444);
-  const [blockRadius, setBlockRadius] = useURLState("blockRadius", 25); // cm, radius the fibre is bent to in the block
+  const [remainingClad, setRemainingClad] = useURLState("remainingClad", 2, { min: 0, max: 30 }); // µm, core boundary to polished face
+  const [coreDia, setCoreDia] = useURLState("coreDia", 8.2, { min: 1, max: 60 }); // µm
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 400, max: 2500 }); // nm
+  const [n_core, setN_core] = useURLState("n_core", 1.4494, { min: 1, max: 4 });
+  const [n_clad, setN_clad] = useURLState("n_clad", 1.444, { min: 1, max: 4 });
+  const [n_overlay, setN_overlay] = useURLState("n_overlay", 1.444, { min: 1, max: 2 });
+  const [blockRadius, setBlockRadius] = useURLState("blockRadius", 25, { min: 1, max: 500 }); // cm, radius the fibre is bent to in the block
 
   const fiber = useMemo(
     () => ({ a: (coreDia / 2) * 1e-6, n1: n_core, NA: Math.sqrt(n_core ** 2 - n_clad ** 2) }),

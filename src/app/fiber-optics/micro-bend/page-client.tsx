@@ -19,13 +19,13 @@ const fmtDb = (x: number) =>
 const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
 
 export default function MicroBendPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [period, setPeriod] = useURLState("period", 0.5); // mm
-  const [amplitudeNm, setAmplitudeNm] = useURLState("amplitudeNm", 20); // nm
-  const [length, setLength] = useURLState("length", 1); // m
-  const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.1); // µm
-  const [na, setNa] = useURLState("na", 0.1246);
-  const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.4494);
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 600, max: 2000 }); // nm
+  const [period, setPeriod] = useURLState("period", 0.5, { min: 0.01, max: 100 }); // mm
+  const [amplitudeNm, setAmplitudeNm] = useURLState("amplitudeNm", 20, { min: 0, max: 10000 }); // nm
+  const [length, setLength] = useURLState("length", 1, { min: 0, max: 100000 }); // m
+  const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.1, { min: 0.5, max: 20 }); // µm
+  const [na, setNa] = useURLState("na", 0.1246, { min: 0.01, max: 0.5 });
+  const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.4494, { min: 1, max: 4 });
 
   const fiber = useMemo(() => ({ a: coreRadius * 1e-6, n1: coreIndex, NA: na }), [coreRadius, coreIndex, na]);
 

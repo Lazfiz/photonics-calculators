@@ -18,21 +18,21 @@ const kind = (sigma: number) => (sigma > 0 ? "tensile" : sigma < 0 ? "compressiv
 
 export default function StressMeasurementPage() {
   // Substrate
-  const [radius, setRadius] = useURLState("radius", 25); // mm, radius over which the deflection is measured
-  const [substrateThickness, setSubstrateThickness] = useURLState("substrateThickness", 0.5); // mm
-  const [youngsModulus, setYoungsModulus] = useURLState("youngsModulus", 70); // GPa
-  const [poissonRatio, setPoissonRatio] = useURLState("poissonRatio", 0.22);
-  const [alphaSub, setAlphaSub] = useURLState("alphaSub", 9); // ppm/K
+  const [radius, setRadius] = useURLState("radius", 25, { min: 0.1, max: 1000 }); // mm, radius over which the deflection is measured
+  const [substrateThickness, setSubstrateThickness] = useURLState("substrateThickness", 0.5, { min: 0.001, max: 100 }); // mm
+  const [youngsModulus, setYoungsModulus] = useURLState("youngsModulus", 70, { min: 0.1, max: 1500 }); // GPa
+  const [poissonRatio, setPoissonRatio] = useURLState("poissonRatio", 0.22, { min: 0, max: 0.5 });
+  const [alphaSub, setAlphaSub] = useURLState("alphaSub", 9, { min: -10, max: 50 }); // ppm/K
   // Film
-  const [thickness, setThickness] = useURLState("thickness", 100); // nm
-  const [filmModulus, setFilmModulus] = useURLState("filmModulus", 70); // GPa
-  const [filmPoisson, setFilmPoisson] = useURLState("filmPoisson", 0.17);
-  const [alphaFilm, setAlphaFilm] = useURLState("alphaFilm", 0.5); // ppm/K
+  const [thickness, setThickness] = useURLState("thickness", 100, { min: 0.1, max: 1e6 }); // nm
+  const [filmModulus, setFilmModulus] = useURLState("filmModulus", 70, { min: 0.1, max: 1500 }); // GPa
+  const [filmPoisson, setFilmPoisson] = useURLState("filmPoisson", 0.17, { min: 0, max: 0.5 });
+  const [alphaFilm, setAlphaFilm] = useURLState("alphaFilm", 0.5, { min: -10, max: 50 }); // ppm/K
   // Measurement
-  const [deflectionBefore, setDeflectionBefore] = useURLState("deflectionBeforeUm", 0); // µm
-  const [deflection, setDeflection] = useURLState("deflectionUm", 1); // µm, + = film side concave
-  const [depositionTemp, setDepositionTemp] = useURLState("depositionTemp", 200); // °C
-  const [temperature, setTemperature] = useURLState("temperature", 25); // °C
+  const [deflectionBefore, setDeflectionBefore] = useURLState("deflectionBeforeUm", 0, { min: -10000, max: 10000 }); // µm
+  const [deflection, setDeflection] = useURLState("deflectionUm", 1, { min: -10000, max: 10000 }); // µm, + = film side concave
+  const [depositionTemp, setDepositionTemp] = useURLState("depositionTemp", 200, { min: -273, max: 2000 }); // °C
+  const [temperature, setTemperature] = useURLState("temperature", 25, { min: -273, max: 2000 }); // °C
 
   const results = useMemo(() => {
     const a = radius * 1e-3;

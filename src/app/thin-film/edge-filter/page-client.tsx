@@ -19,11 +19,11 @@ const nm = (x: number, digits = 1) => (Number.isFinite(x) ? `${(x / NM).toFixed(
 
 export default function EdgeFilterPage() {
   const [typeKey, setTypeKey] = useURLState("type", "long");
-  const [nH, setNH] = useURLState("nH", 2.35);
-  const [nL, setNL] = useURLState("nL", 1.45);
-  const [nSub, setNSub] = useURLState("nSub", 1.52);
-  const [nInc, setNInc] = useURLState("nInc", 1.0);
-  const [edgeWl, setEdgeWl] = useURLState("edgeWl", 600);
+  const [nH, setNH] = useURLState("nH", 2.35, { min: 1, max: 5 });
+  const [nL, setNL] = useURLState("nL", 1.45, { min: 1, max: 5 });
+  const [nSub, setNSub] = useURLState("nSub", 1.52, { min: 1, max: 5 });
+  const [nInc, setNInc] = useURLState("nInc", 1.0, { min: 1, max: 5 });
+  const [edgeWl, setEdgeWl] = useURLState("edgeWl", 600, { min: 100, max: 20000 });
   const [pairsRaw, setPairs] = useURLState("pairs", 10);
 
   const type: EdgeType = typeKey === "short" ? "short-pass" : "long-pass";

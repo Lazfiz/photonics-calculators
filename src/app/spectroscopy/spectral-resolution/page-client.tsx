@@ -26,17 +26,17 @@ const chartLayout = (xTitle: string, yTitle: string, yRange?: number[]) => ({
 
 export default function SpectralResolutionPage() {
   const [mode, setMode] = useURLState("mode", "grating");
-  const [grooveDensity, setGrooveDensity] = useURLState("grooveDensity", 1200); // lines/mm
-  const [focalLength, setFocalLength] = useURLState("focalLength", 500); // mm
-  const [slitWidth, setSlitWidth] = useURLState("slitWidth", 25); // µm
-  const [order, setOrder] = useURLState("order", 1);
-  const [gratingWL, setGratingWL] = useURLState("gratingWL", 500); // nm, central wavelength in every mode
-  const [centralAngle, setCentralAngle] = useURLState("centralAngle", 10); // incidence angle, degrees
-  const [gratingWidth, setGratingWidth] = useURLState("gratingWidth", 50); // illuminated ruled width, mm
-  const [dispersion, setDispersion] = useURLState("dispersion", 1e-4); // prism angular dispersion, rad/nm
-  const [beamWidth, setBeamWidth] = useURLState("beamWidth", 25); // beam width leaving the prism, mm
-  const [finesse, setFinesse] = useURLState("finesse", 50);
-  const [fsrNm, setFsrNm] = useURLState("fsrNm", 0.05);
+  const [grooveDensity, setGrooveDensity] = useURLState("grooveDensity", 1200, { min: 10, max: 10000 }); // lines/mm
+  const [focalLength, setFocalLength] = useURLState("focalLength", 500, { min: 10, max: 10000 }); // mm
+  const [slitWidth, setSlitWidth] = useURLState("slitWidth", 25, { min: 1, max: 10000 }); // µm
+  const [order, setOrder] = useURLState("order", 1, { min: 1, max: 10 });
+  const [gratingWL, setGratingWL] = useURLState("gratingWL", 500, { min: 100, max: 100000 }); // nm, central wavelength in every mode
+  const [centralAngle, setCentralAngle] = useURLState("centralAngle", 10, { min: -80, max: 80 }); // incidence angle, degrees
+  const [gratingWidth, setGratingWidth] = useURLState("gratingWidth", 50, { min: 0.1, max: 1000 }); // illuminated ruled width, mm
+  const [dispersion, setDispersion] = useURLState("dispersion", 1e-4, { min: 1e-7, max: 1 }); // prism angular dispersion, rad/nm
+  const [beamWidth, setBeamWidth] = useURLState("beamWidth", 25, { min: 0.1, max: 1000 }); // beam width leaving the prism, mm
+  const [finesse, setFinesse] = useURLState("finesse", 50, { min: 2, max: 1e6 });
+  const [fsrNm, setFsrNm] = useURLState("fsrNm", 0.05, { min: 1e-6, max: 1000 });
 
   const lambda = gratingWL * 1e-9;
   const w = slitWidth * 1e-6;

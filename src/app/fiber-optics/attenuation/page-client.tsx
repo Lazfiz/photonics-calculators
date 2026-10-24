@@ -10,11 +10,11 @@ import { minimumLossWavelength, silicaLossDbPerKm } from "../../../physics/fiber
 const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
 
 export default function AttenuationPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [length, setLength] = useURLState("length", 50); // km
-  const [rayleighA, setRayleighA] = useURLState("rayleighA", 0.85); // dB·km⁻¹·µm⁴
-  const [geO2, setGeO2] = useURLState("geO2", 4); // mol %
-  const [ohPeak, setOhPeak] = useURLState("ohPeak", 0.05); // dB/km excess at 1383 nm
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 600, max: 2000 }); // nm
+  const [length, setLength] = useURLState("length", 50, { min: 0.001, max: 20000 }); // km
+  const [rayleighA, setRayleighA] = useURLState("rayleighA", 0.85, { min: 0.5, max: 1.5 }); // dB·km⁻¹·µm⁴
+  const [geO2, setGeO2] = useURLState("geO2", 4, { min: 0, max: 30 }); // mol %
+  const [ohPeak, setOhPeak] = useURLState("ohPeak", 0.05, { min: 0, max: 5 }); // dB/km excess at 1383 nm
 
   const params = useMemo(
     () => ({ rayleighA, geO2Fraction: geO2 / 100, ohPeakDbPerKm: ohPeak }),

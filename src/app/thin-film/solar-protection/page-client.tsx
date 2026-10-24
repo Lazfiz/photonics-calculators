@@ -18,13 +18,13 @@ type G173 = typeof import("../../../physics/astm-g173");
 const pct = (x: number) => (Number.isFinite(x) ? `${(x * 100).toFixed(1)} %` : "—");
 
 export default function SolarProtectionPage() {
-  const [nH, setNH] = useURLState("nH", 2.35);
-  const [nL, setNL] = useURLState("nL", 1.45);
-  const [nSub, setNSub] = useURLState("nSub", 1.52);
-  const [uvFrom, setUvFrom] = useURLState("uvFrom", 300);
-  const [uvTo, setUvTo] = useURLState("uvTo", 400);
-  const [irFrom, setIrFrom] = useURLState("irFrom", 720);
-  const [irTo, setIrTo] = useURLState("irTo", 1300);
+  const [nH, setNH] = useURLState("nH", 2.35, { min: 1, max: 5 });
+  const [nL, setNL] = useURLState("nL", 1.45, { min: 1, max: 5 });
+  const [nSub, setNSub] = useURLState("nSub", 1.52, { min: 1, max: 5 });
+  const [uvFrom, setUvFrom] = useURLState("uvFrom", 300, { min: 200, max: 4000 });
+  const [uvTo, setUvTo] = useURLState("uvTo", 400, { min: 200, max: 4000 });
+  const [irFrom, setIrFrom] = useURLState("irFrom", 720, { min: 200, max: 4000 });
+  const [irTo, setIrTo] = useURLState("irTo", 1300, { min: 200, max: 4000 });
   const [uvPairsRaw, setUvPairs] = useURLState("uvPairs", 8);
   const [irPairsRaw, setIrPairs] = useURLState("irPairs", 10);
 

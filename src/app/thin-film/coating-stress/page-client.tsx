@@ -15,12 +15,12 @@ const fmtRadius = (kappa: number) => {
 const fmtKappa = (kappa: number) => (!Number.isFinite(kappa) ? "—" : kappa === 0 ? "0" : kappa.toExponential(3));
 
 export default function CoatingStressPage() {
-  const [sigmaFilm, setSigmaFilm] = useURLState("sigmaFilm", 200); // MPa, film stress (tensile > 0)
-  const [dFilm, setDFilm] = useURLState("dFilm", 500); // nm, per layer
-  const [eSub, setESub] = useURLState("eSub", 70); // GPa, substrate Young's modulus
-  const [nuSub, setNuSub] = useURLState("nuSub", 0.17); // substrate Poisson's ratio
-  const [tSub, setTSub] = useURLState("tSub", 1.0); // mm, substrate thickness
-  const [numLayers, setNumLayers] = useURLState("numLayers", 10);
+  const [sigmaFilm, setSigmaFilm] = useURLState("sigmaFilm", 200, { min: -10000, max: 10000 }); // MPa, film stress (tensile > 0)
+  const [dFilm, setDFilm] = useURLState("dFilm", 500, { min: 0, max: 100000 }); // nm, per layer
+  const [eSub, setESub] = useURLState("eSub", 70, { min: 0.1, max: 1500 }); // GPa, substrate Young's modulus
+  const [nuSub, setNuSub] = useURLState("nuSub", 0.17, { min: 0, max: 0.5 }); // substrate Poisson's ratio
+  const [tSub, setTSub] = useURLState("tSub", 1.0, { min: 0.01, max: 100 }); // mm, substrate thickness
+  const [numLayers, setNumLayers] = useURLState("numLayers", 10, { min: 1, max: 100 });
 
   const curvature = useMemo(() => {
     const perLayer = (d_nm: number) => stoneyCurvature(sigmaFilm * 1e6, d_nm * 1e-9, eSub * 1e9, nuSub, tSub * 1e-3);

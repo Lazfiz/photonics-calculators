@@ -30,14 +30,14 @@ const RL_GRADES: Record<string, { rl: number; note: string }> = {
 export default function ConnectorInsertionLossPage() {
   const [ilGradeRaw, setIlGrade] = useURLState("ilGrade", "C");
   const [rlGradeRaw, setRlGrade] = useURLState("rlGrade", "2");
-  const [numConnectors, setNumConnectors] = useURLState("numConnectors", 4);
-  const [fiberCoreDiam, setFiberCoreDiam] = useURLState("fiberCoreDiam", 9); // µm MFD
-  const [lateralOffset, setLateralOffset] = useURLState("lateralOffset", 0.3); // µm
-  const [angularMisalign, setAngularMisalign] = useURLState("angularMisalign", 0.3); // degrees
-  const [gapDistance, setGapDistance] = useURLState("gapDistance", 0.05); // µm
-  const [refractiveIndex, setRefractiveIndex] = useURLState("refractiveIndex", 1.447); // fibre phase index (SMF-28 at 1550 nm; 1.4682 is its group index)
-  const [gapIndex, setGapIndex] = useURLState("gapIndex", 1); // air; ≈ 1.46 with index-matching gel
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [numConnectors, setNumConnectors] = useURLState("numConnectors", 4, { min: 1 });
+  const [fiberCoreDiam, setFiberCoreDiam] = useURLState("fiberCoreDiam", 9, { min: 1 }); // µm MFD
+  const [lateralOffset, setLateralOffset] = useURLState("lateralOffset", 0.3, { min: 0 }); // µm
+  const [angularMisalign, setAngularMisalign] = useURLState("angularMisalign", 0.3, { min: 0, max: 29 }); // degrees
+  const [gapDistance, setGapDistance] = useURLState("gapDistance", 0.05, { min: 0, max: MAX_GAP_UM }); // µm
+  const [refractiveIndex, setRefractiveIndex] = useURLState("refractiveIndex", 1.447, { min: 1, max: 2 }); // fibre phase index (SMF-28 at 1550 nm; 1.4682 is its group index)
+  const [gapIndex, setGapIndex] = useURLState("gapIndex", 1, { min: 1, max: 2 }); // air; ≈ 1.46 with index-matching gel
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 200, max: 5000 }); // nm
 
   const ilGrade = ilGradeRaw in IL_GRADES ? ilGradeRaw : "C";
   const rlGrade = rlGradeRaw in RL_GRADES ? rlGradeRaw : "2";

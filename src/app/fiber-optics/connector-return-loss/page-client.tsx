@@ -22,11 +22,11 @@ const RL_GRADES = [
 ];
 
 export default function ConnectorReturnLossPage() {
-  const [n1, setN1] = useURLState("n1", 1.447); // phase index of SMF-28 at 1550 nm (1.4682 is its group index)
-  const [n2, setN2] = useURLState("n2", 1.0);
-  const [angle, setAngle] = useURLState("angle", 0); // end-face polish angle, degrees
-  const [mfd, setMfd] = useURLState("mfd", 10.4); // µm
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [n1, setN1] = useURLState("n1", 1.447, { min: 1.0, max: 2.0 }); // phase index of SMF-28 at 1550 nm (1.4682 is its group index)
+  const [n2, setN2] = useURLState("n2", 1.0, { min: 1.0, max: 2.0 });
+  const [angle, setAngle] = useURLState("angle", 0, { min: 0, max: 20 }); // end-face polish angle, degrees
+  const [mfd, setMfd] = useURLState("mfd", 10.4, { min: 1, max: 50 }); // µm
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 400, max: 2000 }); // nm
 
   const calc = useMemo(() => {
     const valid = n1 >= 1 && n2 >= 1 && angle >= 0 && angle < 45 && mfd > 0 && wavelength > 0;

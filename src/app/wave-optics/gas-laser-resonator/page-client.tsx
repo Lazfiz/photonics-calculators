@@ -22,7 +22,7 @@ const LINES = [
 export default function GasLaserResonatorPage() {
   const [diameterRaw, setDiameter] = useURLState("tubeDiameter", 6); // mm bore
   const [lengthRaw, setLength] = useURLState("tubeLength", 500); // mm, mirror spacing
-  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 632.8); // nm
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 632.8, { min: 100, max: 20000 }); // nm
   const [r1Raw, setR1] = useURLState("R1", 1000); // mm
   const [r2Raw, setR2] = useURLState("R2", 5000); // mm
   const [rOcRaw, setROc] = useURLState("R_oc", 0.99);

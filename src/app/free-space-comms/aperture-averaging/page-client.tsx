@@ -20,10 +20,10 @@ const chartLayout = (xTitle: string, yTitle: string, logY = false, logX = false)
 });
 
 export default function ApertureAveragingPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [rxDiameter, setRxDiameter] = useURLState("rxDiameter", 10); // cm
-  const [cn2, setCn2] = useURLState("cn2", 1e-15); // m^(−2/3)
-  const [distance, setDistance] = useURLState("distance", 1); // km
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 200, max: 20000 }); // nm
+  const [rxDiameter, setRxDiameter] = useURLState("rxDiameter", 10, { min: 0, max: 100 }); // cm
+  const [cn2, setCn2] = useURLState("cn2", 1e-15, { min: 1e-18, max: 1e-11 }); // m^(−2/3)
+  const [distance, setDistance] = useURLState("distance", 1, { min: 0.001, max: 1000 }); // km
 
   const results = useMemo(() => {
     const lambda = wavelength * 1e-9;

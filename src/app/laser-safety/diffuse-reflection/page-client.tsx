@@ -13,7 +13,7 @@ import { diffuseExposure, diffuseHazardDistance } from "../../../physics/laser-s
 
 export default function DiffuseReflectionPage() {
   const [powerRaw, setPower] = useURLState("power", 5000); // mW
-  const [wavelength, setWavelength] = useURLState("wavelength", 1064); // nm
+  const [wavelength, setWavelength] = useURLState("wavelength", 1064, { min: 180, max: 1000000 }); // nm
   const [beamDiameterRaw, setBeamDiameter] = useURLState("beamDiameter", 5); // mm, 1/e² diameter of the spot on the surface
   const [reflectanceRaw, setReflectance] = useURLState("surfaceReflectance", 0.1); // fraction
   const [distanceRaw, setDistance] = useURLState("viewingDistance", 0.5); // m

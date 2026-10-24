@@ -18,11 +18,11 @@ const nm = (x: number, digits = 1) => (Number.isFinite(x) ? `${(x / NM).toFixed(
 
 export default function NotchFilterPage() {
   // A low index contrast (Al₂O₃/SiO₂-like 1.63/1.46) keeps the notch narrow; many pairs make it deep.
-  const [nH, setNH] = useURLState("nH", 1.63);
-  const [nL, setNL] = useURLState("nL", 1.46);
-  const [nSub, setNSub] = useURLState("nSub", 1.52);
-  const [nInc, setNInc] = useURLState("nInc", 1.0);
-  const [notchWl, setNotchWl] = useURLState("notchWl", 532);
+  const [nH, setNH] = useURLState("nH", 1.63, { min: 1, max: 5 });
+  const [nL, setNL] = useURLState("nL", 1.46, { min: 1, max: 5 });
+  const [nSub, setNSub] = useURLState("nSub", 1.52, { min: 1, max: 5 });
+  const [nInc, setNInc] = useURLState("nInc", 1.0, { min: 1, max: 5 });
+  const [notchWl, setNotchWl] = useURLState("notchWl", 532, { min: 100, max: 20000 });
   const [pairsRaw, setPairs] = useURLState("pairs", 40);
 
   // The URL isn't range-checked: an integer number of pairs in 1–200.

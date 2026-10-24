@@ -14,11 +14,11 @@ const NM = 1e-9;
 const nmText = (x: number) => (Number.isFinite(x) ? x.toFixed(1) : "—");
 
 export default function WideBandpassPage() {
-  const [nH, setNH] = useURLState("nH", 2.35);
-  const [nL, setNL] = useURLState("nL", 1.45);
-  const [nSub, setNSub] = useURLState("nSub", 1.52);
-  const [cutOn, setCutOn] = useURLState("cutOn", 500);
-  const [cutOff, setCutOff] = useURLState("cutOff", 700);
+  const [nH, setNH] = useURLState("nH", 2.35, { min: 1, max: 5 });
+  const [nL, setNL] = useURLState("nL", 1.45, { min: 1, max: 5 });
+  const [nSub, setNSub] = useURLState("nSub", 1.52, { min: 1, max: 5 });
+  const [cutOn, setCutOn] = useURLState("cutOn", 500, { min: 100, max: 20000 });
+  const [cutOff, setCutOff] = useURLState("cutOff", 700, { min: 100, max: 20000 });
   const [pairsRaw, setPairs] = useURLState("pairs", 8);
 
   // The URL isn't range-checked: an integer number of periods per stack in 1–40.

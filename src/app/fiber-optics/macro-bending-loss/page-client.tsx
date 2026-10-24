@@ -24,14 +24,14 @@ function plottable(xs: number[], ys: number[]) {
 }
 
 export default function MacrobendingLossPage() {
-  const [bendRadius, setBendRadius] = useURLState("bendRadius", 15); // mm
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.1); // µm
-  const [coreNA, setCoreNA] = useURLState("coreNA", 0.1246);
+  const [bendRadius, setBendRadius] = useURLState("bendRadius", 15, { min: 1, max: 1000 }); // mm
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 200, max: 5000 }); // nm
+  const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.1, { min: 0.5, max: 100 }); // µm
+  const [coreNA, setCoreNA] = useURLState("coreNA", 0.1246, { min: 0.01, max: 0.5 });
   // SMF-28-like step-index equivalent: n₂ = 1.4440 (fused silica at 1550 nm, Malitson 1965), n₁ = √(n₂² + NA²).
   // 1.4682 is SMF-28's group index, not a core index.
-  const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.4494);
-  const [numBends, setNumBends] = useURLState("numBends", 1); // turns
+  const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.4494, { min: 1, max: 4 });
+  const [numBends, setNumBends] = useURLState("numBends", 1, { min: 1, max: 10000 }); // turns
 
   const fiber = useMemo(() => ({ a: coreRadius * 1e-6, n1: coreIndex, NA: coreNA }), [coreRadius, coreIndex, coreNA]);
 

@@ -18,13 +18,13 @@ const fmt = (v: number, digits: number, unit: string) =>
   v === Infinity ? "∞" : Number.isFinite(v) ? `${v.toFixed(digits)} ${unit}` : "—";
 
 export default function ChromaticDispersionPage() {
-  const [S0, setS0] = useURLState("dispersionSlope", 0.092); // ps/(nm²·km), G.652 maximum
-  const [lambda0, setLambda0] = useURLState("zeroDispWavelength", 1310); // nm
-  const [length, setLength] = useURLState("length", 80); // km
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [sigmaLambda, setSigmaLambda] = useURLState("sourceLineWidth", 0.1); // nm, rms
-  const [pulseFwhm, setPulseFwhm] = useURLState("pulseWidth", 50); // ps
-  const [bitRate, setBitRate] = useURLState("bitRate", 1); // Gb/s
+  const [S0, setS0] = useURLState("dispersionSlope", 0.092, { min: 0.01, max: 0.2 }); // ps/(nm²·km), G.652 maximum
+  const [lambda0, setLambda0] = useURLState("zeroDispWavelength", 1310, { min: 1200, max: 1700 }); // nm
+  const [length, setLength] = useURLState("length", 80, { min: 0.001 }); // km
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 1260, max: 1625 }); // nm
+  const [sigmaLambda, setSigmaLambda] = useURLState("sourceLineWidth", 0.1, { min: 0 }); // nm, rms
+  const [pulseFwhm, setPulseFwhm] = useURLState("pulseWidth", 50, { min: 0.01 }); // ps
+  const [bitRate, setBitRate] = useURLState("bitRate", 1, { min: 0.001 }); // Gb/s
 
   const valid = S0 > 0 && lambda0 > 0 && length > 0 && wavelength >= 1260 && wavelength <= 1625 && sigmaLambda >= 0 && pulseFwhm > 0 && bitRate > 0;
 

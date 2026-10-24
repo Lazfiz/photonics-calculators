@@ -13,12 +13,12 @@ import {
 const MAX_LISTED_MODES = 12;
 
 export default function VNumberCalculator() {
-  const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.1); // µm
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.1, { min: 0.1, max: 1000 }); // µm
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 100, max: 20000 }); // nm
   const [inputMode, setInputMode] = useState<"na" | "indices">("na");
-  const [na, setNa] = useURLState("na", 0.1246);
-  const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.4494);
-  const [claddingIndex, setCladdingIndex] = useURLState("claddingIndex", 1.444);
+  const [na, setNa] = useURLState("na", 0.1246, { min: 0.001, max: 1 });
+  const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.4494, { min: 1, max: 4 });
+  const [claddingIndex, setCladdingIndex] = useURLState("claddingIndex", 1.444, { min: 1, max: 4 });
 
   const calc = useMemo(() => {
     const NA = inputMode === "na" ? na : Math.sqrt(coreIndex ** 2 - claddingIndex ** 2);

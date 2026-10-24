@@ -9,10 +9,10 @@ import { airyPeakWidth, coefficientOfFinesse } from "../../../physics/thin-film/
 import { stackResponse } from "../../../physics/thin-film/transfer-matrix";
 
 export default function AmplitudeSplittingPage() {
-  const [n1, setN1] = useURLState("n1", 1.0);
-  const [nFilm, setNFilm] = useURLState("nFilm", 1.38);
-  const [n2, setN2] = useURLState("n2", 1.52);
-  const [thickness, setThickness] = useURLState("thickness", 200);
+  const [n1, setN1] = useURLState("n1", 1.0, { min: 0.1 });
+  const [nFilm, setNFilm] = useURLState("nFilm", 1.38, { min: 0.1 });
+  const [n2, setN2] = useURLState("n2", 1.52, { min: 0.1 });
+  const [thickness, setThickness] = useURLState("thickness", 200, { min: 1 });
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 300 }, (_, i) => 300 + i * 2);

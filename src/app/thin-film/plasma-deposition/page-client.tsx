@@ -13,11 +13,11 @@ const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x
 const fmtExp = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toExponential(digits)}${unit}` : "—");
 
 export default function PlasmaDepositionPage() {
-  const [power, setPower] = useURLState("power", 500); // W absorbed
-  const [pressure, setPressure] = useURLState("pressure", 5); // mTorr
-  const [radius, setRadius] = useURLState("radius", 15); // cm
-  const [length, setLength] = useURLState("length", 30); // cm
-  const [gasTemp, setGasTemp] = useURLState("gasTemp", 300); // K
+  const [power, setPower] = useURLState("power", 500, { min: 0 }); // W absorbed
+  const [pressure, setPressure] = useURLState("pressure", 5, { min: 0.1 }); // mTorr
+  const [radius, setRadius] = useURLState("radius", 15, { min: 0.5 }); // cm
+  const [length, setLength] = useURLState("length", 30, { min: 0.5 }); // cm
+  const [gasTemp, setGasTemp] = useURLState("gasTemp", 300, { min: 1 }); // K
 
   const errors = [
     !(power >= 0) && "the absorbed power can't be negative",

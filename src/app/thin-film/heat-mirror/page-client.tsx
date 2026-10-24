@@ -13,12 +13,12 @@ const pct = (x: number, digits = 1) => (Number.isFinite(x) ? `${(x * 100).toFixe
 
 export default function HeatMirrorPage() {
   // A single-silver low-e coating: dielectric | Ag | dielectric on glass (TiO₂/Ag/TiO₂, Fan & Bachner 1976).
-  const [nD, setND] = useURLState("nD", 2.35);
-  const [dOuter, setDOuter] = useURLState("dOuter", 30);
-  const [dAg, setDAg] = useURLState("dAg", 12);
-  const [dInner, setDInner] = useURLState("dInner", 30);
-  const [nSub, setNSub] = useURLState("nSub", 1.52);
-  const [temp, setTemp] = useURLState("temp", 300);
+  const [nD, setND] = useURLState("nD", 2.35, { min: 1, max: 4 });
+  const [dOuter, setDOuter] = useURLState("dOuter", 30, { min: 0, max: 500 });
+  const [dAg, setDAg] = useURLState("dAg", 12, { min: 0, max: 100 });
+  const [dInner, setDInner] = useURLState("dInner", 30, { min: 0, max: 500 });
+  const [nSub, setNSub] = useURLState("nSub", 1.52, { min: 1, max: 4 });
+  const [temp, setTemp] = useURLState("temp", 300, { min: 50, max: 1000 });
 
   const valid = nD > 0 && nSub > 0 && dOuter >= 0 && dAg >= 0 && dInner >= 0 && temp >= 50 && temp <= 1000;
 

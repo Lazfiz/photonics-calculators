@@ -12,14 +12,14 @@ const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x
 const fmtDbm = (x: number) => (Number.isFinite(x) ? `${x.toFixed(2)} dBm` : "— (no power)");
 
 export default function FiberCouplerCalculator() {
-  const [couplingLength, setCouplingLength] = useURLState("couplingLength", 1.4); // mm
-  const [coreSpacing, setCoreSpacing] = useURLState("coreSpacing", 12); // µm, centre to centre
-  const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.1); // µm
-  const [na, setNa] = useURLState("na", 0.125);
-  const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.4494);
-  const [excessLoss, setExcessLoss] = useURLState("excessLoss", 0.1); // dB
-  const [inputPower, setInputPower] = useURLState("inputPower", 0); // dBm
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [couplingLength, setCouplingLength] = useURLState("couplingLength", 1.4, { min: 0, max: 1000 }); // mm
+  const [coreSpacing, setCoreSpacing] = useURLState("coreSpacing", 12, { min: 1, max: 100 }); // µm, centre to centre
+  const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.1, { min: 0.5, max: 30 }); // µm
+  const [na, setNa] = useURLState("na", 0.125, { min: 0.01, max: 0.5 });
+  const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.4494, { min: 1, max: 4 });
+  const [excessLoss, setExcessLoss] = useURLState("excessLoss", 0.1, { min: 0, max: 30 }); // dB
+  const [inputPower, setInputPower] = useURLState("inputPower", 0, { min: -100, max: 50 }); // dBm
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 400, max: 2500 }); // nm
 
   const fiber = useMemo(() => ({ a: coreRadius * 1e-6, n1: coreIndex, NA: na }), [coreRadius, coreIndex, na]);
   const kappaAt = useMemo(

@@ -31,11 +31,11 @@ const classText = (c: G657Category | null, mfd1310_um: number) =>
 const perTurn = (f: StepIndexFiber) => (R: number, lambda: number) => bendLossPerTurnDb(f, lambda, R);
 
 export default function BendInsensitivePage() {
-  const [radius, setRadius] = useURLState("radius", 7.5); // mm
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [designRadius, setDesignRadius] = useURLState("designRadius", 3.4); // µm
-  const [designNA, setDesignNA] = useURLState("designNA", 0.15);
-  const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.4494);
+  const [radius, setRadius] = useURLState("radius", 7.5, { min: 1, max: 100 }); // mm
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 800, max: 1700 }); // nm
+  const [designRadius, setDesignRadius] = useURLState("designRadius", 3.4, { min: 1, max: 10 }); // µm
+  const [designNA, setDesignNA] = useURLState("designNA", 0.15, { min: 0.05, max: 0.35 });
+  const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.4494, { min: 1, max: 4 });
 
   const smf = useMemo(() => ({ ...SMF, n1: coreIndex }), [coreIndex]);
   const design = useMemo(() => ({ a: designRadius * 1e-6, NA: designNA, n1: coreIndex }), [designRadius, designNA, coreIndex]);

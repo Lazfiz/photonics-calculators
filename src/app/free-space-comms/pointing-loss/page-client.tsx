@@ -19,12 +19,12 @@ const fmt = (x: number, digits = 3) =>
   !Number.isFinite(x) ? "—" : x === 0 ? "0" : Math.abs(x) >= 0.01 && Math.abs(x) < 1e5 ? x.toPrecision(digits) : x.toExponential(2);
 
 export default function PointingLossPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [txBeamWaist, setTxBeamWaist] = useURLState("txBeamWaist", 2.5); // cm, 1/e² radius at the transmitter
-  const [jitterRMS, setJitterRMS] = useURLState("jitterRMS", 1); // µrad per axis
-  const [misalign, setMisalign] = useURLState("misalign", 0); // µrad
-  const [rxAperture, setRxAperture] = useURLState("rxAperture", 10); // cm diameter
-  const [range, setRange] = useURLState("range", 1); // km
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 400, max: 11000 }); // nm
+  const [txBeamWaist, setTxBeamWaist] = useURLState("txBeamWaist", 2.5, { min: 0.1, max: 20 }); // cm, 1/e² radius at the transmitter
+  const [jitterRMS, setJitterRMS] = useURLState("jitterRMS", 1, { min: 0, max: 100 }); // µrad per axis
+  const [misalign, setMisalign] = useURLState("misalign", 0, { min: 0, max: 100 }); // µrad
+  const [rxAperture, setRxAperture] = useURLState("rxAperture", 10, { min: 0.1, max: 100 }); // cm diameter
+  const [range, setRange] = useURLState("range", 1, { min: 0.001, max: 100000 }); // km
 
   const calc = useMemo(() => {
     const r = pointingCapture(wavelength * 1e-9, txBeamWaist * 1e-2, range * 1e3, rxAperture * 1e-2, misalign * 1e-6, jitterRMS * 1e-6);

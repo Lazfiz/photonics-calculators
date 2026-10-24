@@ -22,8 +22,8 @@ export default function HigherOrderModesPage() {
   const [waistRaw, setWaist] = useURLState("waist", 50); // µm, TEM₀₀ 1/e² waist radius
   const [zRaw, setZ] = useURLState("z", 0); // mm from the waist
   const [powerRaw, setPower] = useURLState("power", 1); // mW
-  const [mRaw, setM] = useURLState("m", 0);
-  const [nRaw, setN] = useURLState("n", 0);
+  const [mRaw, setM] = useURLState("m", 0, { min: 0, max: MAX_INDEX });
+  const [nRaw, setN] = useURLState("n", 0, { min: 0, max: MAX_INDEX });
   const [pRaw, setP] = useURLState("p", NaN); // NaN when absent: a link from the old Laguerre-Gaussian page sets p or l
   const [lRaw, setL] = useURLState("l", NaN);
 

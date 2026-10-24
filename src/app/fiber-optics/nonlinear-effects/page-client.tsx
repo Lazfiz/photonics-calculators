@@ -18,15 +18,15 @@ const toDb = (x: number) => {
 
 export default function NonlinearEffectsPage() {
   const [power, setPower] = useURLState("power", 10); // dBm launch power per channel
-  const [length, setLength] = useURLState("length", 80); // km
-  const [effectiveArea, setEffectiveArea] = useURLState("effectiveArea", 80); // µm²
-  const [alpha, setAlpha] = useURLState("alpha", 0.2); // dB/km attenuation
-  const [n2, setN2] = useURLState("n2", 2.6); // ×1e-20 m²/W
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [length, setLength] = useURLState("length", 80, { min: 0 }); // km
+  const [effectiveArea, setEffectiveArea] = useURLState("effectiveArea", 80, { min: 1 }); // µm²
+  const [alpha, setAlpha] = useURLState("alpha", 0.2, { min: 0 }); // dB/km attenuation
+  const [n2, setN2] = useURLState("n2", 2.6, { min: 0 }); // ×1e-20 m²/W
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 1 }); // nm
   const [dispersion, setDispersion] = useURLState("dispersion", 17); // ps/(nm·km)
   const [slope, setSlope] = useURLState("slope", 0.058); // ps/(nm²·km)
-  const [numChannels, setNumChannels] = useURLState("numChannels", 1);
-  const [channelSpacing, setChannelSpacing] = useURLState("channelSpacing", 100); // GHz
+  const [numChannels, setNumChannels] = useURLState("numChannels", 1, { min: 1 });
+  const [channelSpacing, setChannelSpacing] = useURLState("channelSpacing", 100, { min: 0 }); // GHz
 
   const calc = useMemo(() => {
     const P = 10 ** (power / 10) * 1e-3; // W

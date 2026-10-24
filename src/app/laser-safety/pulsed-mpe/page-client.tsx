@@ -14,13 +14,13 @@ import { pulseTrainLimits, timeTi } from "../../../physics/laser-safety/pulse-tr
 const RULE_NAMES = { 1: "single pulse", 2: "pulse groups (average)", 3: "C_P × single pulse" } as const;
 
 export default function PulsedMPEPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1064); // nm
-  const [pulseEnergyRaw, setPulseEnergy] = useURLState("pulseEnergy", 1); // µJ
-  const [pulseDurationRaw, setPulseDuration] = useURLState("pulseDuration", 10); // ns
-  const [prfRaw, setPrf] = useURLState("prf", 1000); // Hz
-  const [exposureRaw, setExposure] = useURLState("exposureTime", 10); // s
-  const [beamDiamRaw, setBeamDiam] = useURLState("beamDiam", 2); // mm, 1/e² at the eye
-  const [alphaRaw, setAlpha] = useURLState("alpha", 1.5); // mrad
+  const [wavelength, setWavelength] = useURLState("wavelength", 1064, { min: 180, max: 1000000 }); // nm
+  const [pulseEnergyRaw, setPulseEnergy] = useURLState("pulseEnergy", 1, { min: 0 }); // µJ
+  const [pulseDurationRaw, setPulseDuration] = useURLState("pulseDuration", 10, { min: 1e-6, max: 3e13 }); // ns
+  const [prfRaw, setPrf] = useURLState("prf", 1000, { min: 0 }); // Hz
+  const [exposureRaw, setExposure] = useURLState("exposureTime", 10, { min: 1e-15, max: 30000 }); // s
+  const [beamDiamRaw, setBeamDiam] = useURLState("beamDiam", 2, { min: 0 }); // mm, 1/e² at the eye
+  const [alphaRaw, setAlpha] = useURLState("alpha", 1.5, { min: 0 }); // mrad
 
   // URL values aren't range-checked: clamp them here. SI inside; physics in src/physics/laser-safety/pulse-train.ts.
   const lambda = wavelength * 1e-9;

@@ -24,9 +24,9 @@ const TIME_UNITS = [[1e-15, "fs"], [1e-12, "ps"], [1e-9, "ns"], [1e-6, "µs"], [
 const POWER_UNITS = [[1e-3, "mW"], [1, "W"], [1e3, "kW"], [1e6, "MW"], [1e9, "GW"], [1e12, "TW"]] as const;
 
 export default function PeakPowerPage() {
-  const [avgPower, setAvgPower] = useURLState("avgPower", 10); // W
-  const [repRate, setRepRate] = useURLState("repRate", 80e6); // Hz
-  const [dutyCycle, setDutyCycle] = useURLState("dutyCycle", 0.1); // %
+  const [avgPower, setAvgPower] = useURLState("avgPower", 10, { min: 0.000001, max: 1000000 }); // W
+  const [repRate, setRepRate] = useURLState("repRate", 80e6, { min: 0.001, max: 1e12 }); // Hz
+  const [dutyCycle, setDutyCycle] = useURLState("dutyCycle", 0.1, { min: 0.001, max: 100 }); // %
 
   // Physics in SI: src/physics/laser-safety/peak-power.ts. The duty cycle is entered in % and used as a fraction.
   const train = useMemo(() => pulseTrain(avgPower, repRate, dutyCycle / 100), [avgPower, repRate, dutyCycle]);

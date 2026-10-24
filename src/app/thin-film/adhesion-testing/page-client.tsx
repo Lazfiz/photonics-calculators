@@ -28,22 +28,22 @@ const layoutBase = {
 export default function AdhesionTestingPage() {
   const [methodParam, setMethod] = useURLState("method", "scratch");
   // Scratch test
-  const [criticalLoad, setCriticalLoad] = useURLState("criticalLoad", 10); // N
-  const [tipRadius, setTipRadius] = useURLState("tipRadius", 200); // µm
-  const [hardness, setHardness] = useURLState("hardness", 6); // GPa
+  const [criticalLoad, setCriticalLoad] = useURLState("criticalLoad", 10, { min: 0 }); // N
+  const [tipRadius, setTipRadius] = useURLState("tipRadius", 200, { min: 1 }); // µm
+  const [hardness, setHardness] = useURLState("hardness", 6, { min: 0.01 }); // GPa
   // Peel test
-  const [peelForce, setPeelForce] = useURLState("peelForce", 100); // N/m
-  const [peelAngle, setPeelAngle] = useURLState("peelAngle", 90); // degrees
-  const [armModulus, setArmModulus] = useURLState("armModulus", 3); // GPa
-  const [armThickness, setArmThickness] = useURLState("armThickness", 50); // µm
+  const [peelForce, setPeelForce] = useURLState("peelForce", 100, { min: 0 }); // N/m
+  const [peelAngle, setPeelAngle] = useURLState("peelAngle", 90, { min: 0, max: 180 }); // degrees
+  const [armModulus, setArmModulus] = useURLState("armModulus", 3, { min: 0.001 }); // GPa
+  const [armThickness, setArmThickness] = useURLState("armThickness", 50, { min: 0.01 }); // µm
   // Tape test
-  const [removed, setRemoved] = useURLState("removed", 0); // % of the lattice
+  const [removed, setRemoved] = useURLState("removed", 0, { min: 0, max: 100 }); // % of the lattice
   // Bend test
-  const [substrateThickness, setSubstrateThickness] = useURLState("substrateThickness", 0.2); // mm
-  const [bendRadius, setBendRadius] = useURLState("bendRadius", 20); // mm
-  const [filmModulus, setFilmModulus] = useURLState("filmModulus", 70); // GPa
-  const [filmPoisson, setFilmPoisson] = useURLState("filmPoisson", 0.2);
-  const [filmThickness, setFilmThickness] = useURLState("filmThickness", 100); // nm
+  const [substrateThickness, setSubstrateThickness] = useURLState("substrateThickness", 0.2, { min: 0.001 }); // mm
+  const [bendRadius, setBendRadius] = useURLState("bendRadius", 20, { min: 0.01 }); // mm
+  const [filmModulus, setFilmModulus] = useURLState("filmModulus", 70, { min: 0.1 }); // GPa
+  const [filmPoisson, setFilmPoisson] = useURLState("filmPoisson", 0.2, { min: 0, max: 0.49 });
+  const [filmThickness, setFilmThickness] = useURLState("filmThickness", 100, { min: 1 }); // nm
   const [residualStress, setResidualStress] = useURLState("residualStress", 0); // MPa, tensile > 0
 
   const method: Method = isMethod(methodParam) ? methodParam : "scratch";

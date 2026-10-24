@@ -10,12 +10,12 @@ import { stopBandEdges } from "../../../physics/thin-film/quarter-wave-stack";
 import { quarterWaveLayers, quarterWaveStackReflectance, reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
 
 export default function DielectricStackPage() {
-  const [nH, setNH] = useURLState("nH", 2.35);
-  const [nL, setNL] = useURLState("nL", 1.38);
-  const [nSub, setNSub] = useURLState("nSub", 1.52);
-  const [nInc, setNInc] = useURLState("nInc", 1.0);
+  const [nH, setNH] = useURLState("nH", 2.35, { min: 0.1 });
+  const [nL, setNL] = useURLState("nL", 1.38, { min: 0.1 });
+  const [nSub, setNSub] = useURLState("nSub", 1.52, { min: 0.1 });
+  const [nInc, setNInc] = useURLState("nInc", 1.0, { min: 0.1 });
   const [numPairsRaw, setNumPairs] = useURLState("numPairs", 5);
-  const [designWl, setDesignWl] = useURLState("designWl", 550);
+  const [designWl, setDesignWl] = useURLState("designWl", 550, { min: 1 });
 
   // The URL isn't range-checked: use an integer 1–30 everywhere.
   const numPairs = Math.round(clampToRange(numPairsRaw, 1, 30));

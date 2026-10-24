@@ -19,12 +19,12 @@ const chartLayout = (xTitle: string, yTitle: string, logY = false) => ({
 });
 
 export default function FadeProbabilityPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [cn2, setCn2] = useURLState("cn2", 1e-15); // m^(−2/3)
-  const [distance, setDistance] = useURLState("distance", 1); // km
-  const [fadeThreshold, setFadeThreshold] = useURLState("fadeThreshold", 10); // dB below the mean
-  const [rxDiameter, setRxDiameter] = useURLState("rxDiameter", 0); // cm
-  const [numChannels, setNumChannels] = useURLState("numChannels", 1);
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 200, max: 20000 }); // nm
+  const [cn2, setCn2] = useURLState("cn2", 1e-15, { min: 1e-18, max: 1e-11 }); // m^(−2/3)
+  const [distance, setDistance] = useURLState("distance", 1, { min: 0.001, max: 1000 }); // km
+  const [fadeThreshold, setFadeThreshold] = useURLState("fadeThreshold", 10, { min: 0, max: 40 }); // dB below the mean
+  const [rxDiameter, setRxDiameter] = useURLState("rxDiameter", 0, { min: 0, max: 50 }); // cm
+  const [numChannels, setNumChannels] = useURLState("numChannels", 1, { min: 1, max: 8 });
 
   const n = Math.min(8, Math.max(1, Math.round(numChannels)));
 

@@ -23,11 +23,11 @@ const FS = 1e-15;
 const nm = (x: number, digits = 1) => (Number.isFinite(x) ? `${(x / NM).toFixed(digits)} nm` : "—");
 
 export default function DielectricHRPage() {
-  const [nH, setNH] = useURLState("nH", 2.35);
-  const [nL, setNL] = useURLState("nL", 1.45);
-  const [nSub, setNSub] = useURLState("nSub", 1.52);
-  const [nInc, setNInc] = useURLState("nInc", 1.0);
-  const [designWl, setDesignWl] = useURLState("designWl", 1064);
+  const [nH, setNH] = useURLState("nH", 2.35, { min: 1, max: 5 });
+  const [nL, setNL] = useURLState("nL", 1.45, { min: 1, max: 5 });
+  const [nSub, setNSub] = useURLState("nSub", 1.52, { min: 1, max: 5 });
+  const [nInc, setNInc] = useURLState("nInc", 1.0, { min: 1, max: 5 });
+  const [designWl, setDesignWl] = useURLState("designWl", 1064, { min: 100, max: 20000 });
   const [pairsRaw, setPairs] = useURLState("pairs", 10);
   const [outerKey, setOuterKey] = useURLState("outer", "high");
 

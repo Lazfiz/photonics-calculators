@@ -19,11 +19,11 @@ function continuousPhase(phases: number[], ref: number): number[] {
 }
 
 export default function PhaseShiftCoatingPage() {
-  const [n1, setN1] = useURLState("n1", 1.0);
-  const [nFilm, setNFilm] = useURLState("nFilm", 1.38);
-  const [nSubstrate, setNSubstrate] = useURLState("nSubstrate", 1.52);
-  const [designWl, setDesignWl] = useURLState("designWl", 550);
-  const [fractionalThickness, setFractionalThickness] = useURLState("fractionalThickness", 0.5);
+  const [n1, setN1] = useURLState("n1", 1.0, { min: 1, max: 5 });
+  const [nFilm, setNFilm] = useURLState("nFilm", 1.38, { min: 1, max: 5 });
+  const [nSubstrate, setNSubstrate] = useURLState("nSubstrate", 1.52, { min: 1, max: 5 });
+  const [designWl, setDesignWl] = useURLState("designWl", 550, { min: 100, max: 20000 });
+  const [fractionalThickness, setFractionalThickness] = useURLState("fractionalThickness", 0.5, { min: 0, max: 3 });
 
   const valid = n1 > 0 && nFilm > 0 && nSubstrate > 0 && designWl >= 100 && designWl <= 20000 && fractionalThickness >= 0;
   const lambda0 = designWl * NM;

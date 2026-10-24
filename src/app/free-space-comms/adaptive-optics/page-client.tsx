@@ -14,13 +14,13 @@ const fmt = (x: number, digits = 3) =>
   !Number.isFinite(x) ? "—" : x === 0 ? "0" : Math.abs(x) >= 0.01 && Math.abs(x) < 1e5 ? x.toPrecision(digits) : x.toExponential(2);
 
 export default function AdaptiveOpticsPage() {
-  const [c2n, setC2n] = useURLState("c2n", 1e-14); // m^(−2/3)
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [range, setRange] = useURLState("range", 1); // km
-  const [diameter, setDiameter] = useURLState("diameter", 10); // cm
-  const [aoActuators, setAoActuators] = useURLState("aoActuators", 127);
-  const [aoBandwidth, setAoBandwidth] = useURLState("aoBandwidth", 500); // Hz, closed-loop −3 dB
-  const [windSpeed, setWindSpeed] = useURLState("windSpeed", 10); // m/s
+  const [c2n, setC2n] = useURLState("c2n", 1e-14, { min: 1e-18, max: 1e-11 }); // m^(−2/3)
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 200, max: 20000 }); // nm
+  const [range, setRange] = useURLState("range", 1, { min: 0.001, max: 1000 }); // km
+  const [diameter, setDiameter] = useURLState("diameter", 10, { min: 0.1, max: 1000 }); // cm
+  const [aoActuators, setAoActuators] = useURLState("aoActuators", 127, { min: 1, max: 100000 });
+  const [aoBandwidth, setAoBandwidth] = useURLState("aoBandwidth", 500, { min: 1, max: 100000 }); // Hz, closed-loop −3 dB
+  const [windSpeed, setWindSpeed] = useURLState("windSpeed", 10, { min: 0.1, max: 100 }); // m/s
 
   const calc = useMemo(() => {
     const lambda = wavelength * 1e-9;

@@ -19,7 +19,7 @@ const exposurePresets = [1e-9, 1e-6, 1e-3, 0.25, 10, 100, 3e4]; // s
 const linkClass = "underline hover:text-white";
 
 export default function MPEPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 532); // nm
+  const [wavelength, setWavelength] = useURLState("wavelength", 532, { min: 180, max: 1000000 }); // nm
   const [exposureRaw, setExposure] = useURLState("exposure", 0.25); // s
 
   // URL values aren't range-checked: clamp the time; outside 180 nm – 1 mm there are no limits and the page says so.

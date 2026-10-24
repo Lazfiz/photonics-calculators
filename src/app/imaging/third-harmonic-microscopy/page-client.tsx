@@ -14,13 +14,13 @@ const fmt = (x: number, digits: number, unit: string) => (Number.isFinite(x) ? `
 const aboveFloor = (y: number) => (y >= 1e-10 ? y : NaN);
 
 export default function ThirdHarmonicMicroscopyPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1200); // nm
-  const [na, setNa] = useURLState("na", 0.8);
-  const [power, setPower] = useURLState("power", 100); // mW
-  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 100); // fs
-  const [repRate, setRepRate] = useURLState("repRate", 80); // MHz
-  const [refractiveIndex, setRefractiveIndex] = useURLState("refractiveIndex", 1.33);
-  const [scatteringCoeff, setScatteringCoeff] = useURLState("scatteringCoeff", 40); // cm⁻¹
+  const [wavelength, setWavelength] = useURLState("wavelength", 1200, { min: 1000, max: 1800 }); // nm
+  const [na, setNa] = useURLState("na", 0.8, { min: 0.1, max: 1.7 });
+  const [power, setPower] = useURLState("power", 100, { min: 1, max: 500 }); // mW
+  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 100, { min: 10, max: 1000 }); // fs
+  const [repRate, setRepRate] = useURLState("repRate", 80, { min: 0.1, max: 250 }); // MHz
+  const [refractiveIndex, setRefractiveIndex] = useURLState("refractiveIndex", 1.33, { min: 1.0, max: 1.8 });
+  const [scatteringCoeff, setScatteringCoeff] = useURLState("scatteringCoeff", 40, { min: 0, max: 500 }); // cm⁻¹
 
   const lambda = wavelength * 1e-9;
   const energy = pulseEnergy(power * 1e-3, repRate * 1e6);

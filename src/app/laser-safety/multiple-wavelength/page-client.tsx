@@ -21,8 +21,8 @@ const parseList = (s: string) =>
 export default function MultipleWavelengthPage() {
   const [wavelengths, setWavelengths] = useURLState("wavelengths", "450, 520, 638, 1550"); // nm
   const [powers, setPowers] = useURLState("powers", "0.4, 0.4, 0.4, 10"); // mW
-  const [beamDia, setBeamDia] = useURLState("beamDia", 1); // mm, 1/e², shared by every line
-  const [exposure, setExposure] = useURLState("exposure", 0.25); // s
+  const [beamDia, setBeamDia] = useURLState("beamDia", 1, { min: 0 }); // mm, 1/e², shared by every line
+  const [exposure, setExposure] = useURLState("exposure", 0.25, { min: 1e-9, max: 30000 }); // s
 
   // ICNIRP 2013 eye limits and its multiple-wavelength rule: src/physics/laser-safety/multiple-wavelength.ts. SI inside.
   const wls = useMemo(() => parseList(wavelengths), [wavelengths]);

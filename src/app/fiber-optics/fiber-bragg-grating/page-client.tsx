@@ -13,12 +13,12 @@ type GratingType = "uniform" | "apodized" | "chirped";
 const clamp = (x: number, lo: number, hi: number) => Math.min(Math.max(x, lo), hi);
 
 export default function FiberBraggGratingCalculator() {
-  const [braggWavelength, setBraggWavelength] = useURLState("braggWavelength", 1550); // nm
+  const [braggWavelength, setBraggWavelength] = useURLState("braggWavelength", 1550, { min: 200, max: 3000 }); // nm
   const [effectiveIndex, setEffectiveIndex] = useURLState("effectiveIndex", 1.447);
   const [gratingLength, setGratingLength] = useURLState("gratingLength", 10); // mm
   const [indexModulation, setIndexModulation] = useURLState("indexModulation", 1e-4); // Δn
   const [gratingType, setGratingType] = useURLState("gratingType", "uniform");
-  const [chirpRate, setChirpRate] = useURLState("chirpRate", 0.1); // nm/mm
+  const [chirpRate, setChirpRate] = useURLState("chirpRate", 0.1, { min: -50, max: 50 }); // nm/mm
   const type: GratingType = gratingType === "apodized" || gratingType === "chirped" ? gratingType : "uniform";
 
   const r = useMemo(() => {

@@ -28,16 +28,16 @@ const fmtExp = (x: number, unit = "") => (Number.isFinite(x) ? `${x.toExponentia
 
 export default function MultiCoreFiberCalculator() {
   const [numCores, setNumCores] = useURLState("numCores", 7);
-  const [corePitch, setCorePitch] = useURLState("corePitch", 45); // µm
-  const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.5); // µm
-  const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.468);
-  const [claddingIndex, setCladdingIndex] = useURLState("claddingIndex", 1.463);
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [fiberLength, setFiberLength] = useURLState("fiberLength", 10); // km
-  const [deltaBeta, setDeltaBeta] = useURLState("deltaBeta", 0); // rad/m, core-to-core mismatch
-  const [bendRadius, setBendRadius] = useURLState("bendRadius", 100); // mm
-  const [correlationLength, setCorrelationLength] = useURLState("correlationLength", 0.05); // m
-  const [outerCladding, setOuterCladding] = useURLState("outerCladding", 30); // µm, outer core centre to cladding edge
+  const [corePitch, setCorePitch] = useURLState("corePitch", 45, { min: 5, max: 200 }); // µm
+  const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.5, { min: 0.5, max: 30 }); // µm
+  const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.468, { min: 1, max: 4 });
+  const [claddingIndex, setCladdingIndex] = useURLState("claddingIndex", 1.463, { min: 1, max: 4 });
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 400, max: 2500 }); // nm
+  const [fiberLength, setFiberLength] = useURLState("fiberLength", 10, { min: 0, max: 10000 }); // km
+  const [deltaBeta, setDeltaBeta] = useURLState("deltaBeta", 0, { min: 0, max: 100000 }); // rad/m, core-to-core mismatch
+  const [bendRadius, setBendRadius] = useURLState("bendRadius", 100, { min: 1, max: 10000 }); // mm
+  const [correlationLength, setCorrelationLength] = useURLState("correlationLength", 0.05, { min: 0.001, max: 10 }); // m
+  const [outerCladding, setOuterCladding] = useURLState("outerCladding", 30, { min: 0, max: 200 }); // µm, outer core centre to cladding edge
 
   const layout = LAYOUTS[numCores] ?? LAYOUTS[7];
 

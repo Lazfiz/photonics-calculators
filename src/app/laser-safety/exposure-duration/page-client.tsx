@@ -10,9 +10,9 @@ import { useURLState } from "../../../hooks/use-url-state";
 import { exposureDuration } from "../../../physics/laser-safety/eye-exposure-limits";
 
 export default function ExposureDurationPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 532); // nm
-  const [power, setPower] = useURLState("power", 100); // mW
-  const [beamDiameter, setBeamDiameter] = useURLState("beamDiameter", 3); // mm, 1/e²
+  const [wavelength, setWavelength] = useURLState("wavelength", 532, { min: 180, max: 1000000 }); // nm
+  const [power, setPower] = useURLState("power", 100, { min: 0.001 }); // mW
+  const [beamDiameter, setBeamDiameter] = useURLState("beamDiameter", 3, { min: 0.01 }); // mm, 1/e²
 
   // ICNIRP 2013 point-source eye limits: src/physics/laser-safety/eye-exposure-limits.ts. SI inside.
   const lambda = wavelength * 1e-9;

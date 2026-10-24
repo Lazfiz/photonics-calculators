@@ -10,12 +10,12 @@ import { useURLState } from "../../../hooks/use-url-state";
 import { interlockTiming } from "../../../physics/laser-safety/interlock";
 
 export default function InterlockDesignPage() {
-  const [laserPower, setLaserPower] = useURLState("laserPower", 5000); // mW
-  const [wavelength, setWavelength] = useURLState("wavelength", 1064); // nm
-  const [beamDiamRaw, setBeamDiam] = useURLState("beamDiam", 5); // mm, 1/e² where the beam can be reached
-  const [stopTimeRaw, setStopTime] = useURLState("shutterTime", 50); // ms, guard opening → emission off
-  const [distanceRaw, setDistance] = useURLState("accessDistance", 50); // cm, opening → beam
-  const [speedRaw, setSpeed] = useURLState("approachSpeed", 2); // m/s
+  const [laserPower, setLaserPower] = useURLState("laserPower", 5000, { min: 0 }); // mW
+  const [wavelength, setWavelength] = useURLState("wavelength", 1064, { min: 180, max: 1000000 }); // nm
+  const [beamDiamRaw, setBeamDiam] = useURLState("beamDiam", 5, { min: 0 }); // mm, 1/e² where the beam can be reached
+  const [stopTimeRaw, setStopTime] = useURLState("shutterTime", 50, { min: 0 }); // ms, guard opening → emission off
+  const [distanceRaw, setDistance] = useURLState("accessDistance", 50, { min: 0 }); // cm, opening → beam
+  const [speedRaw, setSpeed] = useURLState("approachSpeed", 2, { min: 0.01 }); // m/s
 
   // URL values aren't range-checked: clamp them here. SI inside; physics in src/physics/laser-safety/interlock.ts.
   const lambda = wavelength * 1e-9;

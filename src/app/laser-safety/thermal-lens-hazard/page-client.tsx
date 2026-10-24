@@ -15,13 +15,13 @@ const AMBIENT_C = 25;
 const T_CHART = [1e-3, 1e3] as const; // s
 
 export default function ThermalLensHazardPage() {
-  const [power, setPower] = useURLState("power", 2000); // mW
-  const [beamDiameter, setBeamDiameter] = useURLState("beamDiameter", 5); // mm, 1/e²
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 5); // s
+  const [power, setPower] = useURLState("power", 2000, { min: 0 }); // mW
+  const [beamDiameter, setBeamDiameter] = useURLState("beamDiameter", 5, { min: 0.001 }); // mm, 1/e²
+  const [exposureTime, setExposureTime] = useURLState("exposureTime", 5, { min: 1e-9, max: 30000 }); // s
   const [materialKey, setMaterialKey] = useURLState("material", "polycarbonate");
-  const [absorption, setAbsorption] = useURLState("absorption", 0.95); // fraction of the incident power
+  const [absorption, setAbsorption] = useURLState("absorption", 0.95, { min: 0, max: 1 }); // fraction of the incident power
   const [depositionKey, setDepositionKey] = useURLState("deposition", "surface");
-  const [thickness, setThickness] = useURLState("thickness", 3); // mm
+  const [thickness, setThickness] = useURLState("thickness", 3, { min: 0.01 }); // mm
 
   // Gaussian beam heating an insulated plate: src/physics/laser-safety/filter-heating.ts. SI inside.
   const key: FilterMaterialKey = materialKey in FILTER_MATERIALS ? (materialKey as FilterMaterialKey) : "polycarbonate";

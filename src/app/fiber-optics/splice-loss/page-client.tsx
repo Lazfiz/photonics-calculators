@@ -11,13 +11,13 @@ const UM = 1e-6;
 const DEG = Math.PI / 180;
 
 export default function SpliceLossPage() {
-  const [lateralOffset, setLateralOffset] = useURLState("lateralOffset", 0.5); // µm
-  const [angularMisalign, setAngularMisalign] = useURLState("angularMisalign", 0.5); // degrees
-  const [coreDiam, setCoreDiam] = useURLState("coreDiam", 9); // µm, MFD of fibre 1 (SMF-28 ≈ 9.2 at 1310, 10.4 at 1550)
-  const [mfd2, setMfd2] = useURLState("mfd2", 9); // µm, MFD of fibre 2
-  const [gap, setGap] = useURLState("gap", 0); // µm
-  const [gapIndex, setGapIndex] = useURLState("gapIndex", 1.45); // medium the tilt and gap are in: 1 air, ≈ 1.45 fusion splice or gel
-  const [wavelength_nm, setWavelength] = useURLState("wavelength", 1550);
+  const [lateralOffset, setLateralOffset] = useURLState("lateralOffset", 0.5, { min: 0 }); // µm
+  const [angularMisalign, setAngularMisalign] = useURLState("angularMisalign", 0.5, { min: 0, max: 29 }); // degrees
+  const [coreDiam, setCoreDiam] = useURLState("coreDiam", 9, { min: 1 }); // µm, MFD of fibre 1 (SMF-28 ≈ 9.2 at 1310, 10.4 at 1550)
+  const [mfd2, setMfd2] = useURLState("mfd2", 9, { min: 1 }); // µm, MFD of fibre 2
+  const [gap, setGap] = useURLState("gap", 0, { min: 0 }); // µm
+  const [gapIndex, setGapIndex] = useURLState("gapIndex", 1.45, { min: 1, max: 2 }); // medium the tilt and gap are in: 1 air, ≈ 1.45 fusion splice or gel
+  const [wavelength_nm, setWavelength] = useURLState("wavelength", 1550, { min: 200, max: 5000 });
 
   const calc = useMemo(() => {
     const valid = lateralOffset >= 0 && angularMisalign >= 0 && angularMisalign < 30 && coreDiam > 0 && mfd2 > 0 &&

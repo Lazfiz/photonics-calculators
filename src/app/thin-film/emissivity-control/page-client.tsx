@@ -18,15 +18,15 @@ const selectClass = "mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3
 
 export default function EmissivityControlPage() {
   const [sub, setSub] = useURLState("sub", "dielectric");
-  const [nSub, setNSub] = useURLState("nSub", 1.52);
-  const [kSub, setKSub] = useURLState("kSub", 0);
+  const [nSub, setNSub] = useURLState("nSub", 1.52, { min: 0.01, max: 10 });
+  const [kSub, setKSub] = useURLState("kSub", 0, { min: 0, max: 100 });
   const [film, setFilm] = useURLState("film", "Ag");
-  const [filmThick, setFilmThick] = useURLState("filmThick", 10);
-  const [nCoat, setNCoat] = useURLState("nCoat", 2.0);
-  const [coatThick, setCoatThick] = useURLState("coatThick", 40);
-  const [temp, setTemp] = useURLState("temp", 300);
-  const [bandLo, setBandLo] = useURLState("bandLo", 2.5);
-  const [bandHi, setBandHi] = useURLState("bandHi", 50);
+  const [filmThick, setFilmThick] = useURLState("filmThick", 10, { min: 0, max: 1000 });
+  const [nCoat, setNCoat] = useURLState("nCoat", 2.0, { min: 1, max: 5 });
+  const [coatThick, setCoatThick] = useURLState("coatThick", 40, { min: 0, max: 10000 });
+  const [temp, setTemp] = useURLState("temp", 300, { min: 50, max: 3000 });
+  const [bandLo, setBandLo] = useURLState("bandLo", 2.5, { min: 0.3, max: 1000 });
+  const [bandHi, setBandHi] = useURLState("bandHi", 50, { min: 0.3, max: 1000 });
 
   const substrate = useMemo<Substrate>(() => (isMetal(sub) ? { material: sub } : { material: "dielectric", n: nSub, k: kSub }), [sub, nSub, kSub]);
   const coating = useMemo<CoatingLayer[]>(() => {

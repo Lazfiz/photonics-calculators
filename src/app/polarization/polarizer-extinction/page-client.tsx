@@ -6,10 +6,10 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 export default function PolarizerExtinctionPage() {
-  const [extinctionRatioDb, setExtinctionRatioDb] = useURLState("extinctionRatioDb", 30);
-  const [transmissionPercent, setTransmissionPercent] = useURLState("transmissionPercent", 95);
-  const [numPolarizers, setNumPolarizers] = useURLState("numPolarizers", 2);
-  const [angleDeg, setAngleDeg] = useURLState("angleDeg", 0);
+  const [extinctionRatioDb, setExtinctionRatioDb] = useURLState("extinctionRatioDb", 30, { min: 0, max: 100 });
+  const [transmissionPercent, setTransmissionPercent] = useURLState("transmissionPercent", 95, { min: 0, max: 100 });
+  const [numPolarizers, setNumPolarizers] = useURLState("numPolarizers", 2, { min: 1, max: 10 });
+  const [angleDeg, setAngleDeg] = useURLState("angleDeg", 0, { min: 0, max: 90 });
 
   const T_parallel = transmissionPercent / 100;
   const ER_linear = Math.pow(10, extinctionRatioDb / 10);

@@ -8,10 +8,10 @@ import { useURLState } from "../../../hooks/use-url-state";
 import { airyPeakNear, coefficientOfFinesse, reflectingFinesse } from "../../../physics/thin-film/interference";
 
 export default function FabryPerotFilterPage() {
-  const [nCavity, setNCavity] = useURLState("nCavity", 1.5);
-  const [spacing, setSpacing] = useURLState("spacing", 500);
-  const [reflectance, setReflectance] = useURLState("reflectance", 0.8);
-  const [wlCenter, setWlCenter] = useURLState("wlCenter", 550);
+  const [nCavity, setNCavity] = useURLState("nCavity", 1.5, { min: 0.1 });
+  const [spacing, setSpacing] = useURLState("spacing", 500, { min: 1 });
+  const [reflectance, setReflectance] = useURLState("reflectance", 0.8, { min: 0, max: 0.999 });
+  const [wlCenter, setWlCenter] = useURLState("wlCenter", 550, { min: 1 });
 
   const { chartData, peak, finesse } = useMemo(() => {
     const F = coefficientOfFinesse(reflectance);
