@@ -61,6 +61,26 @@ test("Quasistatic sphere: a perfect conductor triples the field at the pole and 
   assertRel(same.average, 1, 1e-12, "ε = ε_m average");
 });
 
+test("SERS maximum over the surface: pole, equator or interior angle (EF quadratic in cos²θ)", () => {
+  // Codex review 2026-10-24: 320 nm, 1000 cm⁻¹, a 10 nm, d 0, n_m 1. Off resonance |1 − g|² > |1 + 2g|², so the pole
+  // (0.835) is below the surface average (3.25); the maximum is at the equator, 4.72.
+  const lL = 320e-9;
+  const off = sersEnhancement(silverPermittivity(lL), silverPermittivity(stokesWavelength(lL, 1e5)), 1, 10e-9, 0);
+  assertRel(off.pole, 0.8352, 1e-4, "pole");
+  assertRel(off.average, 3.2510, 1e-4, "average");
+  assertRel(off.max, 4.7194, 1e-4, "max");
+  assertRel(off.maxAngle, Math.PI / 2, 1e-12, "equator");
+  // Hand case, ε_m = 1: ε_L = 4 → g = 0.5 (A 4, B 0.25); ε_R = 1/7 → g = −0.4 (A 0.04, B 1.96).
+  // EF(u) = (0.25 + 3.75u)(1.96 − 1.92u) peaks at u = 6.87/14.4 (θ = 46.31°) with 2.128781; the ends are 0.16 and 0.49.
+  const mid = sersEnhancement(complex(4, 0), complex(1 / 7, 0), 1, 10e-9, 0);
+  assertRel(mid.max, 2.12878125, 1e-9, "vertex max");
+  assertRel(mid.maxAngle, Math.acos(Math.sqrt(6.87 / 14.4)), 1e-9, "vertex angle");
+  assertRel(mid.pole, 0.16, 1e-9, "pole");
+  // Near the resonance the pole wins.
+  const metal = sersEnhancement(complex(-1e12, 0), complex(-1e12, 0), 1.77, 20e-9, 0);
+  assert.equal(metal.maxAngle, 0);
+});
+
 test("SERS surface average equals a quadrature of |E_L|²|E_R|² over the sphere", () => {
   // Independent check of the 1/5, 8/15, 2/15 moments: ⟨f⟩ = ½∫₀^π f(θ) sin θ dθ (midpoint rule, 20000 steps).
   const epsL = silverPermittivity(405e-9);

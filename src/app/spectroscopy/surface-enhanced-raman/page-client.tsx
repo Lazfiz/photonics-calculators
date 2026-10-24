@@ -37,6 +37,11 @@ export default function SurfaceEnhancedRamanPage() {
   const field = sphereFieldEnhancement(epsL, epsM, a, d);
   const ef = sersEnhancement(epsL, epsR, epsM, a, d);
   const resonanceNm = silverSphereResonance(epsM) * 1e9;
+  const maxDeg = (ef.maxAngle * 180) / Math.PI;
+  const maxWhere = !Number.isFinite(ef.max) ? "|E_L/E₀|² · |E_R/E₀|²"
+    : maxDeg < 1e-6 ? "At the pole (along the field)"
+    : Math.abs(maxDeg - 90) < 1e-6 ? `At the equator; ${sci(ef.pole)} at the pole`
+    : `At ${fix(maxDeg, 1)}° from the field axis; ${sci(ef.pole)} at the pole`;
   const sizeParameter = (2 * Math.PI * nm * a) / lambdaL;
   const quasistaticOk = sizeParameter <= Math.PI / 10; // diameter ≤ λ/(10 n)
 
@@ -46,14 +51,14 @@ export default function SurfaceEnhancedRamanPage() {
   const wls = Array.from({ length: 301 }, (_, i) => 300 + 2 * i);
   const spectrum = wls.map((w) => ({ w, e: efAt(w * 1e-9, d) }));
   const spectrumSeries = [
-    { name: "EF at the pole (max)", color: "#60a5fa", points: spectrum.map(({ w, e }) => ({ x: w, y: round(e.max) })) },
+    { name: "EF, maximum over the surface", color: "#60a5fa", points: spectrum.map(({ w, e }) => ({ x: w, y: round(e.max) })) },
     { name: "EF averaged over the surface", color: "#34d399", points: spectrum.map(({ w, e }) => ({ x: w, y: round(e.average) })) },
     ...(laserNm <= 900 ? [{ name: "Current", color: "#fbbf24", showPoints: true, points: [{ x: laserNm, y: round(ef.max) }, { x: laserNm, y: round(ef.average) }] }] : []),
   ];
   const dists = Array.from({ length: 101 }, (_, i) => 0.2 * i);
   const decay = dists.map((x) => ({ x, e: efAt(lambdaL, x * 1e-9) }));
   const decaySeries = [
-    { name: "EF at the pole (max)", color: "#60a5fa", points: decay.map(({ x, e }) => ({ x, y: round(e.max) })) },
+    { name: "EF, maximum over the surface", color: "#60a5fa", points: decay.map(({ x, e }) => ({ x, y: round(e.max) })) },
     { name: "EF averaged over the surface", color: "#34d399", points: decay.map(({ x, e }) => ({ x, y: round(e.average) })) },
   ];
 
@@ -68,7 +73,7 @@ export default function SurfaceEnhancedRamanPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-4">
-        <ResultCard label="SERS EF, molecule at the pole" value={sci(ef.max)} tone="blue" subtext="|E_L/E₀|² · |E_R/E₀|², maximum on the sphere" />
+        <ResultCard label="SERS EF, maximum on the sphere" value={sci(ef.max)} tone="blue" subtext={maxWhere} />
         <ResultCard label="SERS EF, surface average" value={sci(ef.average)} tone="green" subtext="Molecules spread evenly over the sphere" />
         <ResultCard label="Local intensity |E/E₀|² at λ_L" value={`${sci(field.pole)} (pole)`} tone="yellow" subtext={`${sci(field.equator)} at the equator`} />
         <ResultCard label="Raman (Stokes) wavelength λ_R" value={`${fix(lambdaR * 1e9, 2)} nm`} tone="purple" />
