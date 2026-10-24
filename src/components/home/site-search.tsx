@@ -3,48 +3,12 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-
-interface SearchItem {
-  title: string;
-  href: string;
-  description: string;
-  kind: "page" | "category";
-  category: string;
-  tags: string[];
-  priority: number;
-}
-
-function scoreItem(item: SearchItem, terms: string[]) {
-  const title = item.title.toLowerCase();
-  const desc = item.description.toLowerCase();
-  const href = item.href.toLowerCase();
-  const category = item.category.toLowerCase();
-  const tags = item.tags.map((tag) => tag.toLowerCase());
-  const titleWords = title.split(/[^a-z0-9]+/).filter(Boolean);
-  let score = item.priority;
-
-  for (const term of terms) {
-    if (title === term) score += 400;
-    if (title.startsWith(term)) score += 220;
-    if (title.includes(term)) score += 120;
-    if (titleWords.some((word) => word === term)) score += 120;
-    if (titleWords.some((word) => word.startsWith(term))) score += 80;
-    if (category.includes(term)) score += 70;
-    if (tags.some((tag) => tag === term)) score += 110;
-    if (tags.some((tag) => tag.includes(term))) score += 70;
-    if (href.includes(term)) score += 60;
-    if (desc.includes(term)) score += 50;
-  }
-
-  return score;
-}
+import { searchItems, type SearchItem } from "../../lib/site-search";
 
 export default function SiteSearch({ total }: { total: number }) {
   const [query, setQuery] = useState("");
-  const [items, setItems] = useState<SearchItem[]>([]);
+  const [items, setItems] = useState<SearchItem[] | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const q = query.trim().toLowerCase();
-  const terms = q.length > 0 ? q.split(/\s+/).filter(Boolean) : [];
 
   useEffect(() => {
     fetch("/search-index.json")
@@ -68,14 +32,8 @@ export default function SiteSearch({ total }: { total: number }) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  const results = terms.length > 0
-    ? items
-        .map((item) => ({ item, score: scoreItem(item, terms) }))
-        .filter(({ score }) => score > 0)
-        .sort((a, b) => b.score - a.score)
-        .map(({ item }) => item)
-        .slice(0, 12)
-    : [];
+  const results = items ? searchItems(items, query) : [];
+  const noMatch = items !== null && query.trim() !== "" && results.length === 0;
 
   const categoryColor: Record<string, string> = {
     "wave-optics": "text-blue-400",
@@ -132,6 +90,11 @@ export default function SiteSearch({ total }: { total: number }) {
           <div className="border-t border-white/5 px-4 py-2 text-xs text-gray-600">
             {results.length} result{results.length !== 1 ? "s" : ""}
           </div>
+        </div>
+      )}
+      {noMatch && (
+        <div className="absolute z-50 mt-2 w-full rounded-xl border border-white/8 bg-white/[0.02] backdrop-blur-xl shadow-2xl shadow-black/50 px-4 py-3 text-sm text-gray-400">
+          No calculator matches every word of &ldquo;{query.trim()}&rdquo;.
         </div>
       )}
     </div>
