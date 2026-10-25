@@ -5,10 +5,10 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 153, 2026-10-25)
+## Status (session 154, 2026-10-25)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
-- Phase 3 hasn't started. Phase 4: every page is tiered; open findings and the top-50 tests remain.
+- Phase 3 hasn't started. Phase 4: every page is tiered; every page imports a tested physics module (some still keep part of their physics inline); the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -71,7 +71,9 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   `light-sheet`, `working-distance` → `image-distance`, `strehl-ratio` + `wavefront-error` into one page, `sensor-ccm` +
   `sensor-cmos` into one page with CCD/CMOS presets. Not decided, so keep separate: dynamic-range vs
   detectors/well-capacity, stimulated-raman-microscopy vs coherent-raman, resolution vs airy-disk.
-- [ ] Golden-value tests for the top 50 calculators by traffic (needs traffic data, e.g. Vercel Analytics).
+- [x] **Golden tests for every page** (session 154, `phase-4/golden-inline`): traffic (31 days, Hobby limit) was 6 visitors, too
+  thin to rank, and 408/411 pages already ran on tested modules. The last 3 moved to modules: `dispersion-map` (on
+  `dispersion-comp`), `power-density` (new `laser-safety/power-density`), `polarizer-extinction` (new; Mueller cross-check).
 - [ ] Rewrite each heuristic model, or label it illustrative, during its category's audit. Macro-bend and
   second-harmonic are done.
 
