@@ -5,6 +5,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { gParameter, resonatorStability, twoMirrorMode } from "../../../physics/wave-optics/two-mirror-resonator";
+import { radiusAtDistance } from "../../../physics/wave-optics/gaussian-beam";
 import {
   fourLevelGain, fourLevelSlopeEfficiency, fourLevelThreshold, laserOutput, roundTripLoss, saturationIntensity,
 } from "../../../physics/wave-optics/laser-resonator";
@@ -58,7 +59,7 @@ export default function SolidStateLaserResonatorPage() {
   const lambda = lambda_nm * 1e-9;
   const lambdaP = lambdaP_nm * 1e-9;
   const mode = twoMirrorMode(lambda, Leff, g1, g2);
-  const radiusAt = (u: number) => mode.w0 * Math.sqrt(1 + ((u - mode.z1) / mode.zR) ** 2); // u: reduced position
+  const radiusAt = (u: number) => radiusAtDistance(mode.w0, mode.zR, u - mode.z1); // u: reduced position
   const toPhysical = (u: number) => (u <= l / n ? u * n : u + l * (1 - 1 / n));
   const waistPos = toPhysical(mode.z1);
   const rodSpot = Math.max(radiusAt(0), radiusAt(l / n)); // w(u) is convex: the largest spot in the rod is at a face

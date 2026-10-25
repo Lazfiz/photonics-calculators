@@ -7,7 +7,7 @@ goes in the PR description.
 
 ## Status (session 156, 2026-10-25)
 - Phases 0–1 are done.
-- Phase 2: registry, trust data, duplicate merge and lint rules are done; left: formulas inside page component bodies (2-inline-b3…b6; b1, b2 done).
+- Phase 2: registry, trust data, duplicate merge and lint rules are done; left: formulas inside page component bodies (2-inline-b3b…b6; b1, b2, b3a done).
 - Then Phase 3, then Phase 5 (spot-check review, Gemini hero). Phase 3 hasn't started. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
@@ -206,9 +206,10 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   module outputs, π multiples for display, demo signals, circle areas, 2^bits. The rest are 6 repeated families:
   - [x] b1 (session 156, PR #187): see Done.
   - [x] b2 (session 156, PR #188): see Done.
-  - [ ] b3: Gaussian beam z_R = πw²/λ, w(z), θ = λ/(πw₀), peak 2P/(πw²) = 8P/(πd²) → `wave-optics/gaussian-beam`:
-    bessel-beam, mode-matching, dye/gas/solid-state-laser-resonator, spatial-filter, OPA; free-space-comms pointing-loss,
-    security; laser-safety retinal-image-size, fiber-laser-safety, diode-laser-safety, skin-mpe.
+  - [x] b3a (session 156, PR #189): see Done.
+  - [ ] b3b: Gaussian beam on free-space-comms pointing-loss (θ = λ/(πw₀)), security (2λ/(πw)); laser-safety
+    retinal-image-size (4λ/(πd₀)), fiber-laser-safety (2λ/(πr)), diode-laser-safety and skin-mpe (peak 8P/(πd²)) → `gaussian-beam`,
+    `kerr.gaussianPeakIntensity` or `visual-interference.peakIrradiance`.
   - [ ] b4: phase matching Δk = 2π(n₃/λ₃ − n₁/λ₁ − n₂/λ₂), Λ = 2π/|Δk|, confocal b = 2πnw²/λ → `optical-parametric-oscillator`:
     sum-frequency, difference-frequency, OPA, OPO.
   - [ ] b5: Δλ = λ²Δν/c and FSR λ²/(2nL); retardance 2πΔn d/λ; α = 4πk/λ → existing `retardance`, `absorptionCoefficient`:
@@ -259,6 +260,8 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Phase 2 inline-b3a (session 156, `phase-2/inline-b3a`, PR #189): `gaussian-beam.radiusAtDistance` (w₀√2 at z_R),
+    `mode-matching.beamRadiusFromQ`; `rayleighRange`, `divergenceHalfAngle`, `gaussianPeakIntensity` on 7 wave-optics pages.
   - Phase 2 inline-b2 (session 156, `phase-2/inline-b2`, PR #188): `fresnel.normalIncidenceReflectance` (0.04 glass, 0.2 for 2 − i)
     replaces 4 module copies and 5 page formulas; `quarterWaveArIndex` √(n₀n_s) on quarter-wave, single-ar, double-layer-ar.
   - Phase 2 inline-b1 (session 156, `phase-2/inline-b1`, PR #187): inventory (`scripts/inline-inventory.ts`, 6 families b1–b6);

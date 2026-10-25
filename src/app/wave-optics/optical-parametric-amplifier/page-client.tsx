@@ -9,6 +9,7 @@ import { parametricGainCoefficient, phaseMismatch } from "../../../physics/wave-
 import {
   LOW_GAIN_BANDWIDTH_FACTOR, detunedMismatch, gainBandwidth, idlerPower, idlerWavelength, parametricGain,
 } from "../../../physics/wave-optics/three-wave";
+import { gaussianPeakIntensity } from "../../../physics/wave-optics/kerr";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
@@ -48,7 +49,7 @@ export default function OPACalculator() {
   const process = { lambdaPump: lambdaP, lambdaSignal: lambdaS, dEff: deff, nPump: nP, nSignal: nS, nIdler: nI };
   const lambdaI = idlerWavelength(lambdaP, lambdaS);
   const valid = Number.isFinite(lambdaI);
-  const I0 = (2 * Pp) / (Math.PI * w * w); // on-axis intensity of a Gaussian pump
+  const I0 = gaussianPeakIntensity(Pp, w); // on-axis intensity of a Gaussian pump
   const gamma = parametricGainCoefficient(process, I0);
   const G = parametricGain(gamma, deltaK0, L);
   const signalOut = G * Ps;

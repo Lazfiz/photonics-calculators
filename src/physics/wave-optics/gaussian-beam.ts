@@ -47,9 +47,16 @@ export function beamParameterProduct(b: GaussianBeam): number {
 
 /** Beam radius w(z) = w₀ √(1 + (z/z_R)²), m. */
 export function beamRadius(b: GaussianBeam, z: number): number {
-  const zR = rayleighRange(b);
-  if (!Number.isFinite(z)) return NaN;
-  return b.w0 * Math.hypot(1, z / zR);
+  return radiusAtDistance(b.w0, rayleighRange(b), z);
+}
+
+/**
+ * Beam radius w = w₀ √(1 + (z/z_R)²) a distance z from a waist w₀ with a known Rayleigh range z_R (e.g. a resonator
+ * eigenmode), m. NaN unless w₀, z_R > 0 and z is finite.
+ */
+export function radiusAtDistance(w0: number, zR: number, z: number): number {
+  if (!(w0 > 0 && zR > 0 && Number.isFinite(w0 * zR * z))) return NaN;
+  return w0 * Math.hypot(1, z / zR);
 }
 
 /** Wavefront radius of curvature R(z) = z + z_R²/z, m; ±∞ at the waist (flat wavefront), sign of z. */
