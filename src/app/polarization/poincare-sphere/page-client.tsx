@@ -20,7 +20,7 @@ function cfmt(c: Complex): string {
 }
 
 export default function PoincareSpherePage() {
-  const [thetaDeg, setThetaDeg] = useURLState("thetaDeg", 45);
+  const [thetaDeg, setThetaDeg] = useURLState("thetaDeg", 45, { min: 0, max: 180 });
   const [chiDeg, setChiDeg] = useURLState("chiDeg", 15);
   const [amplitude, setAmplitude] = useURLState("amplitude", 1);
 

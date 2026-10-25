@@ -10,10 +10,10 @@ import { stopBandCentreAtAngle } from "../../../physics/thin-film/quarter-wave-s
 import { quarterWaveLayers, reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
 
 export default function AngleTuningPage() {
-  const [nH, setNH] = useURLState("nH", 2.35);
-  const [nL, setNL] = useURLState("nL", 1.45);
-  const [nSub, setNSub] = useURLState("nSub", 1.52);
-  const [nInc, setNInc] = useURLState("nInc", 1.0);
+  const [nH, setNH] = useURLState("nH", 2.35, { min: 1, max: 5 });
+  const [nL, setNL] = useURLState("nL", 1.45, { min: 1, max: 5 });
+  const [nSub, setNSub] = useURLState("nSub", 1.52, { min: 1, max: 5 });
+  const [nInc, setNInc] = useURLState("nInc", 1.0, { min: 1, max: 5 });
   const [numPairsRaw, setNumPairs] = useURLState("numPairs", 5);
   const [designWl, setDesignWl] = useURLState("designWl", 550, { min: 1 });
 
@@ -64,10 +64,10 @@ export default function AngleTuningPage() {
     <>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label={<>n<sub>H</sub></>} value={nH} onChange={setNH} step="0.01" />
-        <ValidatedNumberInput label={<>n<sub>L</sub></>} value={nL} onChange={setNL} step="0.01" />
-        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} step="0.01" />
-        <ValidatedNumberInput label={<>n<sub>incident</sub></>} value={nInc} onChange={setNInc} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>H</sub></>} value={nH} onChange={setNH} min={1} max={5} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>L</sub></>} value={nL} onChange={setNL} min={1} max={5} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} min={1} max={5} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>incident</sub></>} value={nInc} onChange={setNInc} min={1} max={5} step="0.01" />
         <ValidatedNumberInput label="Number of pairs (N)" value={numPairs} onChange={setNumPairs} min={1} max={30} step="1" />
         <ValidatedNumberInput label="Design λ₀ (nm)" value={designWl} onChange={setDesignWl} min={1} step="10" />
       </div>

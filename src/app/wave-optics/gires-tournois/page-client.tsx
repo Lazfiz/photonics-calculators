@@ -11,14 +11,16 @@ export default function GiresTournoisPage() {
   const [reflectivity, setReflectivity] = useURLState("reflectivity", 0.7, { min: 0.01, max: 0.99 });
   const [thickness, setThickness] = useURLState("thickness", 500, { min: 0 }); // nm
   const [n, setN] = useURLState("n", 2.3, { min: 1 }); // refractive index of coating
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm center
-  const [bandwidth, setBandwidth] = useURLState("bandwidth", 100); // nm range to plot
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 100, max: 20000 }); // nm center
+  const [bandwidth, setBandwidth] = useURLState("bandwidth", 100, { min: 0.1, max: 20000 }); // nm range to plot
 
   // Lossless GTI: front reflector R₁, 100 % back mirror (src/physics/wave-optics/gires-tournois.ts).
   const gti = useMemo(() => ({ R: reflectivity, n, d: thickness * 1e-9 }), [reflectivity, n, thickness]);
+  // The plotted span is capped at λ, so the window never starts below λ/2.
+  const span = Math.min(bandwidth, wavelength);
   const lambdas = useMemo(
-    () => Array.from({ length: 400 }, (_, i) => wavelength - bandwidth / 2 + i * bandwidth / 400),
-    [wavelength, bandwidth],
+    () => Array.from({ length: 400 }, (_, i) => wavelength - span / 2 + i * span / 400),
+    [wavelength, span],
   );
 
   // The phase is wrapped to (−π, π], so it jumps by about 2π at each branch cut and a plain line would draw a vertical
@@ -93,8 +95,8 @@ export default function GiresTournoisPage() {
         <ValidatedNumberInput label="Front Surface R₁" value={reflectivity} onChange={setReflectivity} min={0.01} max={0.99} step="0.01" />
         <ValidatedNumberInput label="Coating Thickness (nm)" value={thickness} onChange={setThickness} min={0} />
         <ValidatedNumberInput label="Refractive Index n" value={n} onChange={setN} min={1} step="0.01" />
-        <ValidatedNumberInput label="Center λ (nm)" value={wavelength} onChange={setWavelength} />
-        <ValidatedNumberInput label="Plot Bandwidth (nm)" value={bandwidth} onChange={setBandwidth} />
+        <ValidatedNumberInput label="Center λ (nm)" value={wavelength} onChange={setWavelength} min={100} max={20000} />
+        <ValidatedNumberInput label="Plot Bandwidth (nm)" value={bandwidth} onChange={setBandwidth} min={0.1} max={20000} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">

@@ -10,10 +10,10 @@ import { nonOverlappingRatio } from "../../../physics/thin-film/quarter-wave-sta
 import { quarterWaveLayers, reflectanceSpectrum, stackResponse, type Layer } from "../../../physics/thin-film/transfer-matrix";
 
 export default function WavelengthSeparationPage() {
-  const [nH, setNH] = useURLState("nH", 2.35);
-  const [nL, setNL] = useURLState("nL", 1.45);
-  const [nSub, setNSub] = useURLState("nSub", 1.52);
-  const [nInc, setNInc] = useURLState("nInc", 1.0);
+  const [nH, setNH] = useURLState("nH", 2.35, { min: 1, max: 5 });
+  const [nL, setNL] = useURLState("nL", 1.45, { min: 1, max: 5 });
+  const [nSub, setNSub] = useURLState("nSub", 1.52, { min: 1, max: 5 });
+  const [nInc, setNInc] = useURLState("nInc", 1.0, { min: 1, max: 5 });
   const [numPairsRaw, setNumPairs] = useURLState("numPairs", 5);
   const [designWl, setDesignWl] = useURLState("designWl", 550, { min: 1 });
   const [sepRatioRaw, setSepRatio] = useURLState("sepRatio", 1.4); // λ₂/λ₁
@@ -67,10 +67,10 @@ export default function WavelengthSeparationPage() {
     <>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label={<>n<sub>H</sub></>} value={nH} onChange={setNH} step="0.01" />
-        <ValidatedNumberInput label={<>n<sub>L</sub></>} value={nL} onChange={setNL} step="0.01" />
-        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} step="0.01" />
-        <ValidatedNumberInput label={<>n<sub>incident</sub></>} value={nInc} onChange={setNInc} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>H</sub></>} value={nH} onChange={setNH} min={1} max={5} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>L</sub></>} value={nL} onChange={setNL} min={1} max={5} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} min={1} max={5} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>incident</sub></>} value={nInc} onChange={setNInc} min={1} max={5} step="0.01" />
         <ValidatedNumberInput label="Pairs per stack (N)" value={numPairs} onChange={setNumPairs} min={1} max={30} step="1" />
         <ValidatedNumberInput label="λ₁ center (nm)" value={designWl} onChange={setDesignWl} min={1} step="10" />
         <ValidatedNumberInput label="λ₂/λ₁" value={sepRatio} onChange={setSepRatio} min={1.05} max={3} step="0.05" />

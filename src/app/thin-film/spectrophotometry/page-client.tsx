@@ -8,12 +8,12 @@ import { useURLState } from "../../../hooks/use-url-state";
 import { clampToRange } from "../../../lib/number-input";
 import { stackResponse } from "../../../physics/thin-film/transfer-matrix";
 export default function SpectrophotometryPage() {
-  const [nFilm, setNFilm] = useURLState("nFilm", 1.46);
+  const [nFilm, setNFilm] = useURLState("nFilm", 1.46, { min: 1, max: 5 });
   const [kFilm, setKFilm] = useURLState("kFilm", 0.001, { min: 0 });
-  const [nSub, setNSub] = useURLState("nSub", 1.52);
-  const [thickness, setThickness] = useURLState("thickness", 100);
+  const [nSub, setNSub] = useURLState("nSub", 1.52, { min: 1, max: 5 });
+  const [thickness, setThickness] = useURLState("thickness", 100, { min: 0, max: 20000 });
   const [angleDegRaw, setAngleDeg] = useURLState("angleDeg", 0);
-  const [nInc, setNInc] = useURLState("nInc", 1.0);
+  const [nInc, setNInc] = useURLState("nInc", 1.0, { min: 1, max: 5 });
 
   // The URL isn't range-checked: 90° and above give NaN, so clamp here and use this value everywhere.
   const angleDeg = clampToRange(angleDegRaw, 0, 89);
@@ -55,11 +55,11 @@ export default function SpectrophotometryPage() {
     <>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label={<>n<sub>film</sub></>} value={nFilm} onChange={setNFilm} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>film</sub></>} value={nFilm} onChange={setNFilm} min={1} max={5} step="0.01" />
         <ValidatedNumberInput label={<>k<sub>film</sub> (extinction)</>} value={kFilm} onChange={setKFilm} min={0} step="0.001" />
-        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} step="0.01" />
-        <ValidatedNumberInput label={<>n<sub>incident</sub></>} value={nInc} onChange={setNInc} step="0.01" />
-        <ValidatedNumberInput label="Thickness (nm)" value={thickness} onChange={setThickness} step="1" />
+        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} min={1} max={5} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>incident</sub></>} value={nInc} onChange={setNInc} min={1} max={5} step="0.01" />
+        <ValidatedNumberInput label="Thickness (nm)" value={thickness} onChange={setThickness} min={0} max={20000} step="1" />
         <ValidatedNumberInput label="Angle of Incidence (°)" value={angleDeg} onChange={setAngleDeg} min={0} max={89} step="1" />
       </div>
 

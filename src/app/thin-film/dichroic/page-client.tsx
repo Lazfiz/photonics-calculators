@@ -9,12 +9,12 @@ import { stopBandCentreAtAngle } from "../../../physics/thin-film/quarter-wave-s
 import { quarterWaveLayers, reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
 
 export default function DichroicPage() {
-  const [nH, setNH] = useURLState("nH", 2.35);
-  const [nL, setNL] = useURLState("nL", 1.45);
-  const [nSub, setNSub] = useURLState("nSub", 1.52);
-  const [nInc, setNInc] = useURLState("nInc", 1.0);
+  const [nH, setNH] = useURLState("nH", 2.35, { min: 1, max: 5 });
+  const [nL, setNL] = useURLState("nL", 1.45, { min: 1, max: 5 });
+  const [nSub, setNSub] = useURLState("nSub", 1.52, { min: 1, max: 5 });
+  const [nInc, setNInc] = useURLState("nInc", 1.0, { min: 1, max: 5 });
   const [numPairsRaw, setNumPairs] = useURLState("numPairs", 7);
-  const [designWl, setDesignWl] = useURLState("designWl", 550);
+  const [designWl, setDesignWl] = useURLState("designWl", 550, { min: 100, max: 20000 });
   const [aoiRaw, setAoi] = useURLState("aoi", 45);
   // useURLState does not clamp URL values, so clamp here and use these everywhere.
   const numPairs = Math.min(30, Math.max(1, Math.round(numPairsRaw)));
@@ -50,12 +50,12 @@ export default function DichroicPage() {
     <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label={<>n<sub>H</sub></>} value={nH} onChange={setNH} step="0.01" />
-        <ValidatedNumberInput label={<>n<sub>L</sub></>} value={nL} onChange={setNL} step="0.01" />
-        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} step="0.01" />
-        <ValidatedNumberInput label={<>n<sub>incident</sub></>} value={nInc} onChange={setNInc} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>H</sub></>} value={nH} onChange={setNH} min={1} max={5} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>L</sub></>} value={nL} onChange={setNL} min={1} max={5} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} min={1} max={5} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>incident</sub></>} value={nInc} onChange={setNInc} min={1} max={5} step="0.01" />
         <ValidatedNumberInput label="Pairs (N)" value={numPairs} onChange={setNumPairs} min={1} max={30} />
-        <ValidatedNumberInput label="Design λ₀ (nm)" value={designWl} onChange={setDesignWl} />
+        <ValidatedNumberInput label="Design λ₀ (nm)" value={designWl} onChange={setDesignWl} min={100} max={20000} />
         <ValidatedNumberInput label="Angle of incidence (°)" value={aoi} onChange={setAoi} min={0} max={89} step="1" />
       </div>
 
