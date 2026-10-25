@@ -48,13 +48,11 @@ export default function ResearchLabSafetyPage() {
     (r: number) => limits.map((limit) => ({ kind: limit.kind, ratio: P / limitMaxPower(limit, effectiveDiameterAt(beam, r), t) })),
     [limits, P, beam, t],
   );
-  const markers = useMemo(() => {
-    const atWall = diagonal > 0 ? Math.max(...ratios(diagonal).map((x) => x.ratio)) : NaN;
-    return [
-      ...(nohdFinite ? [{ r: nohd.distance, label: "NOHD" }] : []),
-      ...(Number.isFinite(atWall) && atWall > 0 ? [{ r: diagonal, y: atWall, label: "Room diagonal" }] : []),
-    ];
-  }, [nohdFinite, nohd.distance, diagonal, ratios]);
+  const atWall = diagonal > 0 ? Math.max(...ratios(diagonal).map((x) => x.ratio)) : NaN;
+  const markers = [
+    ...(nohdFinite ? [{ r: nohd.distance, label: "NOHD" }] : []),
+    ...(Number.isFinite(atWall) && atWall > 0 ? [{ r: diagonal, y: atWall, label: "Room diagonal" }] : []),
+  ];
 
   return (
     <>

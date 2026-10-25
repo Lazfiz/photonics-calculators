@@ -27,24 +27,22 @@ export default function PolarizerExtinctionPage() {
 
   const { erDb: cascadedERdb, tPar: cascadedT } = cascade(T_parallel, extinctionRatioDb, numPolarizers);
 
-  const chartData = useMemo(() => {
-    const angles = Array.from({ length: 361 }, (_, i) => i);
-    return [
-      {
-        x: angles,
-        y: angles.map(a => analyzerTransmission(T_parallel, T_perp, a * DEG) * 100),
-        type: "scatter" as const, mode: "lines" as const,
-        name: "Transmission",
-        line: { color: "#60a5fa", width: 2 },
-      },
-      {
-        x: [angleDeg], y: [transmitted * 100],
-        type: "scatter" as const, mode: "markers" as const,
-        name: "Current Angle",
-        marker: { color: "#f87171", size: 10 },
-      },
-    ];
-  }, [T_parallel, T_perp, angleDeg, transmitted]);
+  const angles = Array.from({ length: 361 }, (_, i) => i);
+  const chartData = [
+    {
+      x: angles,
+      y: angles.map(a => analyzerTransmission(T_parallel, T_perp, a * DEG) * 100),
+      type: "scatter" as const, mode: "lines" as const,
+      name: "Transmission",
+      line: { color: "#60a5fa", width: 2 },
+    },
+    {
+      x: [angleDeg], y: [transmitted * 100],
+      type: "scatter" as const, mode: "markers" as const,
+      name: "Current Angle",
+      marker: { color: "#f87171", size: 10 },
+    },
+  ];
 
   const cascadedChart = useMemo(() => {
     const ns = Array.from({ length: 10 }, (_, i) => i + 1);

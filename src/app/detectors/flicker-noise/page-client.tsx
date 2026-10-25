@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -29,16 +28,14 @@ export default function FlickerNoisePage() {
   const shotRms = fHigh > fLow ? shotNoiseCurrent(current, fHigh - fLow) : NaN;
   const totalRms = Math.hypot(flickerNoiseRms, shotRms);
 
-  const chartData = useMemo(() => {
-    // Span the band and the corner, at most 16 decades.
-    const hi = Math.log10(Math.max(fHigh, fLow) * 10);
-    const lo = Math.max(hi - 16, Math.log10(Math.min(fLow, cornerFreq > 0 ? cornerFreq : fLow) / 10));
-    const freqs = Array.from({ length: 200 }, (_, i) => 10 ** (lo + ((hi - lo) * i) / 199));
-    return [
-      { x: freqs, y: freqs.map(f => flickerPsd(kf, current, alpha, f)), type: "scatter" as const, mode: "lines" as const, name: "1/f PSD", line: { color: "#f87171" } },
-      { x: freqs, y: freqs.map(() => shotPsd), type: "scatter" as const, mode: "lines" as const, name: "Shot noise 2qI", line: { color: "#60a5fa", dash: "dash" } },
-    ];
-  }, [kf, current, alpha, fLow, fHigh, cornerFreq, shotPsd]);
+  // Span the band and the corner, at most 16 decades.
+  const hi = Math.log10(Math.max(fHigh, fLow) * 10);
+  const lo = Math.max(hi - 16, Math.log10(Math.min(fLow, cornerFreq > 0 ? cornerFreq : fLow) / 10));
+  const freqs = Array.from({ length: 200 }, (_, i) => 10 ** (lo + ((hi - lo) * i) / 199));
+  const chartData = [
+    { x: freqs, y: freqs.map(f => flickerPsd(kf, current, alpha, f)), type: "scatter" as const, mode: "lines" as const, name: "1/f PSD", line: { color: "#f87171" } },
+    { x: freqs, y: freqs.map(() => shotPsd), type: "scatter" as const, mode: "lines" as const, name: "Shot noise 2qI", line: { color: "#60a5fa", dash: "dash" } },
+  ];
 
   return (
     <>

@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
@@ -51,15 +50,13 @@ export default function StrehlRatioPage() {
   const sigma08Nm = marechalRms(0.8, wavelengthNm * nm) / nm;
   const lambda14Nm = wavelengthNm / 14;
 
-  const curves = useMemo(() => {
-    const ws = Array.from({ length: 61 }, (_, k) => (0.3 * k) / 60);
-    return [
-      { x: ws, y: ws.map((w) => marechalStrehl(w, 1)), type: "scatter" as const, mode: "lines" as const, name: "Maréchal exp(−(2πσ/λ)²)", line: { color: "#60a5fa" } },
-      { x: ws, y: ws.map((w) => 1 - (2 * Math.PI * w) ** 2), type: "scatter" as const, mode: "lines" as const, name: "First order 1 − (2πσ/λ)²", line: { color: "#9ca3af", dash: "dot" } },
-      { x: ws, y: ws.map((w) => zernikeStrehl(mode, w)), type: "scatter" as const, mode: "lines" as const, name: `Exact, ${mode}`, line: { color: "#f87171" } },
-      { x: [0, 0.3], y: [0.8, 0.8], type: "scatter" as const, mode: "lines" as const, name: "S = 0.8", line: { color: "#34d399", dash: "dash" } },
-    ];
-  }, [mode]);
+  const ws = Array.from({ length: 61 }, (_, k) => (0.3 * k) / 60);
+  const curves = [
+    { x: ws, y: ws.map((w) => marechalStrehl(w, 1)), type: "scatter" as const, mode: "lines" as const, name: "Maréchal exp(−(2πσ/λ)²)", line: { color: "#60a5fa" } },
+    { x: ws, y: ws.map((w) => 1 - (2 * Math.PI * w) ** 2), type: "scatter" as const, mode: "lines" as const, name: "First order 1 − (2πσ/λ)²", line: { color: "#9ca3af", dash: "dot" } },
+    { x: ws, y: ws.map((w) => zernikeStrehl(mode, w)), type: "scatter" as const, mode: "lines" as const, name: `Exact, ${mode}`, line: { color: "#f87171" } },
+    { x: [0, 0.3], y: [0.8, 0.8], type: "scatter" as const, mode: "lines" as const, name: "S = 0.8", line: { color: "#34d399", dash: "dash" } },
+  ];
   const chart = [
     ...curves,
     { x: [waves], y: [exact], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#facc15", size: 10 } },

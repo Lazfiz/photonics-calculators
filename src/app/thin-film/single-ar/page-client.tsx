@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import SimpleLineChart from "../../../components/simple-line-chart";
 import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";

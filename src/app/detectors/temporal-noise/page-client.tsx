@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
@@ -30,30 +29,26 @@ export default function TemporalNoisePage() {
   const totalNoise = sensorNoiseElectrons({ signal: 0, read: readNoise, dark: darkCurrent * exposureTime });
   const totalNoiseWithF = Math.hypot(totalNoise, oneOverFNoise);
 
-  const chartData = useMemo(() => {
-    // Read-noise density in e⁻²/Hz: white σ_r²/B plus 1/f (σ_r²/B)·f_c/f, from f_L to B.
-    const lo = Math.log10(Math.min(fLow, bandwidth));
-    const hi = Math.log10(bandwidth);
-    const freq = Array.from({ length: 300 }, (_, i) => 10 ** (lo + ((hi - lo) * i) / 299));
-    const white = (readNoise * readNoise) / bandwidth;
-    return [
-      { x: freq, y: freq.map(f => white * (kneeFreq / f)), type: "scatter" as const, mode: "lines" as const, name: "1/f noise", line: { color: "#f87171", width: 2 } },
-      { x: freq, y: freq.map(() => white), type: "scatter" as const, mode: "lines" as const, name: "White noise", line: { color: "#60a5fa", width: 2, dash: "dash" } },
-      { x: freq, y: freq.map(f => white * (1 + kneeFreq / f)), type: "scatter" as const, mode: "lines" as const, name: "Total PSD", line: { color: "#fbbf24", width: 2.5 } },
-    ];
-  }, [readNoise, kneeFreq, bandwidth, fLow]);
+  // Read-noise density in e⁻²/Hz: white σ_r²/B plus 1/f (σ_r²/B)·f_c/f, from f_L to B.
+  const lo = Math.log10(Math.min(fLow, bandwidth));
+  const hi = Math.log10(bandwidth);
+  const freq = Array.from({ length: 300 }, (_, i) => 10 ** (lo + ((hi - lo) * i) / 299));
+  const white = (readNoise * readNoise) / bandwidth;
+  const chartData = [
+    { x: freq, y: freq.map(f => white * (kneeFreq / f)), type: "scatter" as const, mode: "lines" as const, name: "1/f noise", line: { color: "#f87171", width: 2 } },
+    { x: freq, y: freq.map(() => white), type: "scatter" as const, mode: "lines" as const, name: "White noise", line: { color: "#60a5fa", width: 2, dash: "dash" } },
+    { x: freq, y: freq.map(f => white * (1 + kneeFreq / f)), type: "scatter" as const, mode: "lines" as const, name: "Total PSD", line: { color: "#fbbf24", width: 2.5 } },
+  ];
 
   // Noise vs integration time, with the 1/f band fixed by the f_L input.
-  const noiseVsTime = useMemo(() => {
-    const times = Array.from({ length: 200 }, (_, i) => 1e-6 * Math.pow(1e7, i / 199)); // 1 μs to 10 s
-    const darkN = times.map(t => Math.sqrt(darkCurrent * t));
-    return [
-      { x: times, y: times.map(() => readNoise), type: "scatter" as const, mode: "lines" as const, name: "Read noise", line: { color: "#60a5fa", width: 2 } },
-      { x: times, y: darkN, type: "scatter" as const, mode: "lines" as const, name: "Dark shot noise", line: { color: "#f87171", width: 2 } },
-      { x: times, y: times.map(() => oneOverFNoise), type: "scatter" as const, mode: "lines" as const, name: "1/f noise", line: { color: "#a78bfa", width: 2, dash: "dot" } },
-      { x: times, y: darkN.map(d => Math.hypot(readNoise, d, oneOverFNoise)), type: "scatter" as const, mode: "lines" as const, name: "Total noise", line: { color: "#fbbf24", width: 2.5 } },
-    ];
-  }, [readNoise, darkCurrent, oneOverFNoise]);
+  const times = Array.from({ length: 200 }, (_, i) => 1e-6 * Math.pow(1e7, i / 199)); // 1 μs to 10 s
+  const darkN = times.map(t => Math.sqrt(darkCurrent * t));
+  const noiseVsTime = [
+    { x: times, y: times.map(() => readNoise), type: "scatter" as const, mode: "lines" as const, name: "Read noise", line: { color: "#60a5fa", width: 2 } },
+    { x: times, y: darkN, type: "scatter" as const, mode: "lines" as const, name: "Dark shot noise", line: { color: "#f87171", width: 2 } },
+    { x: times, y: times.map(() => oneOverFNoise), type: "scatter" as const, mode: "lines" as const, name: "1/f noise", line: { color: "#a78bfa", width: 2, dash: "dot" } },
+    { x: times, y: darkN.map(d => Math.hypot(readNoise, d, oneOverFNoise)), type: "scatter" as const, mode: "lines" as const, name: "Total noise", line: { color: "#fbbf24", width: 2.5 } },
+  ];
 
   return (
     <>
