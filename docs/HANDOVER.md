@@ -1,27 +1,26 @@
-# Handover — 2026-10-25 (session 151 → session 152)
+# Handover — 2026-10-25 (session 152 → session 153)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 151: **Findings 4f-a** done on `phase-4/findings-4f` (PR #182): URL ranges, one `sinc`, search relevance floor.
-Next: **Findings 4f-b**, the 185 URL values the codemod skipped (laser-safety pages first).
+Session 152: **Findings 4f-b** done on `phase-4/findings-4f-b` (PR #183): skipped URL values in laser-safety, fiber, comms.
+Next: **Findings 4f-c** (materials, imaging, detectors, spectroscopy); the page list is in ROADMAP Cross-cutting.
 
 ## State
-- `parseParam(raw, def, range?)` / `useURLState(key, def, { min?, max? })` clamp a numeric URL value to the range; the hook
-  passes `min`/`max` as primitives so the setter stays stable. Tests in `tests/url-state-store.test.ts`.
-- `scripts/codemods/2026-10-24-url-ranges.ts`: copies the literal or module-constant min/max of the `ValidatedNumberInput` /
-  `InputSlider` that shows a URL value into its `useURLState` call, for values the page doesn't clamp. 671 bindings in 127
-  pages; idempotent. `CODEMOD_LIST=1` lists the 185 skipped (with reason), `CODEMOD_ALL=1` the changes too.
-- `src/lib/site-search.ts` (`searchTerms`, `scoreItem`, `searchItems`): every term must match title/tags/category/URL/
-  description, priority only breaks ties; `site-search.tsx` shows "No calculator matches…". Tests on the real index.
-- `sinc` only in `src/physics/math.ts` (9 files); no `erf` copies remain. 1105 tests pass; build green.
+- 20 bindings on 7 pages got ranges (`useURLState(key, def, { min, max })` plus the field's `min`/`max`): `blue-light-hazard`
+  (λ 300–700 nm), `uv-exposure` (180–400 nm, 1e-6–8 h), `wdm-coupler` (1–96 channels rounded, 0.05–20 nm), `nonlinear-effects`,
+  `dispersion-map` (new reference-λ field, 1530–1629 nm), `bpsk-qpsk`, `multi-core` (shows the 7-core fallback). The other 50
+  flagged bindings in those categories were already guarded. No default value changed. 1105 tests pass.
 
 ## Next actions
-1. `/ship` this branch. No default value changed: after a release the user asks for, post-merge-check only needs page loads
-   (`fiber-optics/attenuation`, `wave-optics/sum-frequency`). No release unless asked.
-2. Findings 4f-b: per page, clamp in the page (`x = clamp(xRaw, lo, hi, default)`) or pass a range to `useURLState`; give the
-   52 bound-less fields real min/max. Laser-safety first (`od-requirements`, `nohd`, `diffuse-reflection`, `optical-density`,
-   `classification`, `ael-limits`, `mpe`, `blue-light-hazard`, `uv-exposure`). 70 pages: split by category if needed.
+1. `/ship` this branch. No default changed: after a release the user asks for, post-merge-check only needs page loads
+   (`fiber-optics/wdm-coupler`, `laser-safety/uv-exposure`). No release unless asked.
+2. Findings 4f-c, then 4f-d. Check each flagged page before editing: about two thirds are false positives (`Math.max(xRaw, …)`,
+   local `clamp`, `=== 1` flags, `LAYOUTS[x] ? … : default`, `find(…) ?? default` selects). Give real fields min/max.
 
 ## Non-obvious facts
+- **Session 152:** triage the codemod's skip list with a read-only script: for each `page "key"`, find
+  `const [name, …] = useURLState("key"` and grep the page for `Math.max(name` / `clamp(name` / `name ===`. Write such scripts
+  with the Write tool: a quoted bash heredoc here still drops doubled backslashes. devctl runs gated jobs at BelowNormal priority:
+  under another project's Rust build `npm test` took 15 min (idle-looking test children are starved, not hung).
 - **Session 151:** ts-morph `sf.insertText` forgets every node: record positions (numbers) first, insert last-to-first.
   ts-morph scripts must live under `scripts/` (a scratchpad script can't resolve `ts-morph`). A `next start -p 3100` left
   from an earlier session serves the old build (EADDRINUSE for the new one): check the PID's command line with
