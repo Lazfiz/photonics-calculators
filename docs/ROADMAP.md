@@ -5,10 +5,10 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 154, 2026-10-25)
+## Status (session 155, 2026-10-25)
 - Phases 0–1 are done.
-- Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
-- Phase 3 hasn't started. Phase 4: every page is tiered; every page imports a tested physics module (some still keep part of their physics inline); the open findings remain.
+- Phase 2: registry, trust data, duplicate merge and lint rules are done; left: formulas inside page component bodies (2-inline-b).
+- Phase 3 hasn't started. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -74,8 +74,6 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - [x] **Golden tests for every page** (session 154, `phase-4/golden-inline`): traffic (31 days, Hobby limit) was 6 visitors, too
   thin to rank, and 408/411 pages already ran on tested modules. The last 3 moved to modules: `dispersion-map` (on
   `dispersion-comp`), `power-density` (new `laser-safety/power-density`), `polarizer-extinction` (new; Mueller cross-check).
-- [ ] Rewrite each heuristic model, or label it illustrative, during its category's audit. Macro-bend and
-  second-harmonic are done.
 
 ## Open findings (evidence; fix during that category's audit)
 **Fiber optics**
@@ -203,9 +201,8 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   added).
 
 ## Phase 2 — architecture (open)
-- [ ] Pure SI physics functions in `src/physics/<category>/`, with golden tests. They grow with each Phase 4 stage.
-- [ ] Set `preserve-manual-memoization` and `no-explicit-any` back to `error` once the pages are on modules
-  (`eslint.config.mjs`).
+- [ ] 2-inline-b: physics formulas still written inside page component bodies (top-level helpers are clean since 2-inline-a).
+  Inventory first (send to `checker`), e.g. the `retarder-types` TIR reflection count; then batches of ≈ 4–6 pages.
 
 ## Phase 3 — graphics & performance
 - [ ] Chart rewrite:
@@ -243,6 +240,9 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Phase 2 inline-a + lint (session 155, `phase-2/inline-a`, PR #186): heuristic-model box closed by the audits (10 illustrative
+    pages, heuristic parts labelled); 7 page helpers with a raw formula moved (`refractionAngle`, `waistFromDivergence`,
+    `demoSingleBeam`; reuse `diffractionMtf`, `cutoffWavelength`); memoization and explicit-any rules back to error (16 + 3 sites).
   - Findings 4a (session 138, `phase-4/fiber-smf-consistency`, PR #169): macro-bending n₁ 1.4494 (2.62 dB/turn at 10 mm), G.657 (08/2024)
     re-read (no A3, B2 withdrawn, MFD ≥ 8.2 µm for B3), MFD fit range, R_eq 1.27 stated; fibre open findings cleared.
   - Polarizer types (session 137, `phase-4/polarizer-types`, PR #168): `polarizer-types.ts`, Thorlabs specs for 8 families read in Chrome
