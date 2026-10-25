@@ -13,6 +13,7 @@
 import { inRange, refractiveIndex } from "./sellmeier";
 import { MATERIALS, SCHOTT_GLASSES, type DispersionMaterial } from "./sellmeier-data";
 import { UNIAXIAL_CRYSTALS } from "./uniaxial-data";
+import { normalIncidenceReflectance } from "../polarization/fresnel";
 
 /** A single data-sheet index where no verified dispersion formula is included. λ in m. */
 export interface DataSheetIndex {
@@ -124,8 +125,7 @@ export function transmits(m: WindowMaterial, lambda: number): boolean {
 
 /** Normal-incidence reflectance of one surface into air; NaN unless n > 0. */
 export function surfaceReflectance(n: number): number {
-  if (!(n > 0) || !Number.isFinite(n)) return NaN;
-  return ((n - 1) / (n + 1)) ** 2;
+  return normalIncidenceReflectance(1, n);
 }
 
 /** Fresnel-limited transmission of a lossless window, 2n/(n² + 1); NaN unless n > 0. */

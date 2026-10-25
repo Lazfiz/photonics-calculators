@@ -11,6 +11,8 @@
  * The substrate is semi-infinite and recombination at the back surface is ignored.
  */
 
+import { normalIncidenceReflectance } from "../polarization/fresnel";
+
 export interface PhotodiodeQeInputs {
   /** Absorption coefficient α, 1/m. */
   alpha: number;
@@ -37,6 +39,5 @@ export function photodiodeQe({ alpha, reflectance, depletionWidth, diffusionLeng
 
 /** Normal-incidence reflectance ((n − 1)² + k²)/((n + 1)² + k²) of a bare surface n + ik in air (Fresnel). */
 export function normalReflectance(n: number, k = 0): number {
-  if (!(n > 0) || !(k >= 0)) return NaN;
-  return ((n - 1) ** 2 + k * k) / ((n + 1) ** 2 + k * k);
+  return normalIncidenceReflectance(1, n, k);
 }

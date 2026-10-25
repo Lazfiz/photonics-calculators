@@ -1,7 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { brewsterAngle, criticalAngle, fresnel, phaseDifference, phaseOf, refractionAngle } from "../src/physics/polarization/fresnel";
+import {
+  brewsterAngle, criticalAngle, fresnel, normalIncidenceReflectance, phaseDifference, phaseOf, refractionAngle,
+} from "../src/physics/polarization/fresnel";
 import { tirPhaseDifference } from "../src/physics/polarization/retarders";
 import { pseudoOpticalConstants } from "../src/physics/thin-film/ellipsometry";
 import { stackResponse } from "../src/physics/thin-film/transfer-matrix";
@@ -110,4 +112,16 @@ test("refractionAngle: Snell's law, NaN past the critical angle", () => {
   assert.equal(refractionAngle(1.33, 1.5, 0), 0);
   assert.ok(Number.isNaN(refractionAngle(1.5, 1, 42 * deg)), "TIR");
   assert.ok(Number.isNaN(refractionAngle(0, 1.5, 0.1)), "n ≤ 0");
+});
+
+// Hecht eq. 4.67: glass n = 1.5 in air reflects ((1.5 − 1)/(1.5 + 1))² = 0.04; absorbing N = 2 − i gives
+// ((1 − 2)² + 1)/((1 + 2)² + 1) = 0.2 by hand. Both match the θ = 0 limit of the full Fresnel solution.
+test("normal-incidence reflectance: closed form, absorbing medium and edges", () => {
+  assertAbs(normalIncidenceReflectance(1, 1.5), 0.04, 1e-15, "air → glass");
+  assertAbs(normalIncidenceReflectance(1.5, 1), 0.04, 1e-15, "glass → air (reciprocal)");
+  assertAbs(normalIncidenceReflectance(1, 2, 1), 0.2, 1e-15, "N = 2 − i");
+  assertAbs(normalIncidenceReflectance(1.33, 3.5, 0.01), fresnel(1.33, 3.5, 0, 0.01).Rs, 1e-14, "= fresnel at θ = 0");
+  assert.equal(normalIncidenceReflectance(1.45, 1.45), 0);
+  assert.ok(Number.isNaN(normalIncidenceReflectance(0, 1.5)), "n₁ = 0");
+  assert.ok(Number.isNaN(normalIncidenceReflectance(1, 1.5, -0.1)), "κ < 0");
 });

@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import TransmissionBands from "../../../components/transmission-bands";
@@ -8,7 +7,7 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { CRYSTAL_SHEETS, DIAMOND_IR_SOURCE, DIAMOND_RANGE, diamondIndex } from "../../../physics/materials/crystal-properties";
 import { MATERIALS } from "../../../physics/materials/sellmeier-data";
-import { WINDOW_MATERIALS, fresnelLimitTransmission, transmits } from "../../../physics/materials/window-materials";
+import { WINDOW_MATERIALS, fresnelLimitTransmission, surfaceReflectance, transmits } from "../../../physics/materials/window-materials";
 
 const WAVELENGTH_MIN_NM = 226;
 const WAVELENGTH_MAX_NM = 20000;
@@ -38,10 +37,10 @@ export default function DiamondOpticsPage() {
   const lambda = wavelength * 1e-9;
   const { n, source } = diamondIndex(lambda);
   const T = fresnelLimitTransmission(n);
-  const R = ((n - 1) / (n + 1)) ** 2;
+  const R = surfaceReflectance(n);
   const inBand = transmits(diamond, lambda);
 
-  const chart = useMemo(() => indexChart(wavelength / 1000, n), [wavelength, n]);
+  const chart = indexChart(wavelength / 1000, n);
   const bandRows = [{ key: "diamond", name: "Diamond", selected: true, bands: sheet.bands.map(([a, b]) => [a * 1e6, b * 1e6] as const) }];
   const properties: [string, string][] = [
     ["Indirect band gap", `${BAND_GAP_EV} eV (absorption edge ≈ 227 nm)`],

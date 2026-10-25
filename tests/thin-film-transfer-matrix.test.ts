@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import * as cx from "../src/physics/complex";
 import {
   quarterQuarterArInnerIndex,
+  quarterWaveArIndex,
   quarterWaveLayers,
   quarterWaveStackReflectance,
   quarterWaveThickness,
@@ -283,4 +284,16 @@ test("transfer matrix: T = Re(η_sub)/η₀ |t|² for s and p, absorbing layer a
   }
   // Invalid input: t is NaN like the other fields.
   assert.ok(Number.isNaN(stackResponse(stack, -1).t.re));
+});
+
+// Macleod, ch. 4: one quarter-wave layer cancels R at λ₀ when n = √(n₀ n_s); on 1.52 glass n = √1.52 = 1.23288.
+// Equal-step quarter-quarter pair: n₁ = n₀^¾ n_s^¼, n₂ = n₁ √(n_s/n₀); n_s = 1.5⁴ gives n₁ = 1.5, n₂ = 1.5³ by hand.
+test("transfer matrix: single-layer AR index √(n₀ n_s) and the equal-step pair", () => {
+  const n = quarterWaveArIndex(1, 1.52);
+  close(n, 1.2328828, 1e-7, "√1.52");
+  close(quarterWaveStackReflectance(1, [n], 1.52), 0, 1e-30, "R = 0");
+  const n1 = quarterWaveArIndex(1, quarterWaveArIndex(1, 1.5 ** 4));
+  close(n1, 1.5, 1e-14, "n₁");
+  close(quarterQuarterArInnerIndex(1, n1, 1.5 ** 4), 3.375, 1e-14, "n₂");
+  assert.ok(Number.isNaN(quarterWaveArIndex(1, -1.5)), "n_s < 0");
 });

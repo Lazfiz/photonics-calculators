@@ -7,6 +7,7 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
   quarterQuarterArInnerIndex,
+  quarterWaveArIndex,
   quarterWaveLayers,
   quarterWaveStackReflectance,
   reflectanceSpectrum,
@@ -36,8 +37,8 @@ export default function DoubleLayerARPage() {
   const d1 = designWl / (4 * n1);
   const d2 = designWl / (4 * n2);
   // Equal-step pair (one of many R = 0 pairs); n₂ for R = 0 given the entered n₁ from the closed form.
-  const optN1 = Math.pow(nInc * nInc * nInc * nSub, 0.25);
-  const optN2 = Math.pow(nInc * nSub * nSub * nSub, 0.25);
+  const optN1 = quarterWaveArIndex(nInc, quarterWaveArIndex(nInc, nSub)); // n₀^¾ n_s^¼
+  const optN2 = quarterQuarterArInnerIndex(nInc, optN1, nSub); // n₀^¼ n_s^¾
   const n2ForZero = quarterQuarterArInnerIndex(nInc, n1, nSub);
   const R0 = quarterWaveStackReflectance(nInc, [n1, n2], nSub);
   const fixed = (x: number, digits: number) => (Number.isFinite(x) ? x.toFixed(digits) : "—");

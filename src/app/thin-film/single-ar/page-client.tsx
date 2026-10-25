@@ -6,7 +6,7 @@ import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
 import { useURLState } from "../../../hooks/use-url-state";
 import { refractionAngle } from "../../../physics/polarization/fresnel";
-import { stackResponse } from "../../../physics/thin-film/transfer-matrix";
+import { quarterWaveArIndex, stackResponse } from "../../../physics/thin-film/transfer-matrix";
 
 const substratePresets = [1.45, 1.52, 1.76];
 
@@ -21,7 +21,7 @@ export default function SingleARPage() {
   const theta1 = refractionAngle(nIncident, nFilm, theta0);
   const tir = Number.isNaN(theta1);
   const designThickness = tir ? 0 : designWavelength / (4 * nFilm * Math.cos(theta1));
-  const optimalNFilm = Math.sqrt(nSubstrate * nIncident);
+  const optimalNFilm = quarterWaveArIndex(nIncident, nSubstrate);
 
   const series = useMemo(() => {
     const wls = Array.from({ length: 220 }, (_, i) => 350 + i * 4);
