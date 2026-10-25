@@ -5,13 +5,8 @@ import SimpleLineChart from "../../../components/simple-line-chart";
 import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
 import { useURLState } from "../../../hooks/use-url-state";
+import { refractionAngle } from "../../../physics/polarization/fresnel";
 import { stackResponse } from "../../../physics/thin-film/transfer-matrix";
-
-function snellAngle(nFrom: number, nTo: number, thetaFrom: number) {
-  const sinTheta = (nFrom / nTo) * Math.sin(thetaFrom);
-  if (Math.abs(sinTheta) > 1) return null;
-  return Math.asin(sinTheta);
-}
 
 const substratePresets = [1.45, 1.52, 1.76];
 
@@ -23,8 +18,9 @@ export default function SingleARPage() {
   const [angle, setAngle] = useURLState("angle", 0, { min: 0, max: 75 });
 
   const theta0 = (angle * Math.PI) / 180;
-  const theta1 = snellAngle(nIncident, nFilm, theta0);
-  const designThickness = theta1 === null ? 0 : designWavelength / (4 * nFilm * Math.cos(theta1));
+  const theta1 = refractionAngle(nIncident, nFilm, theta0);
+  const tir = Number.isNaN(theta1);
+  const designThickness = tir ? 0 : designWavelength / (4 * nFilm * Math.cos(theta1));
   const optimalNFilm = Math.sqrt(nSubstrate * nIncident);
 
   const series = useMemo(() => {
@@ -64,9 +60,9 @@ export default function SingleARPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-8">
         <ResultCard label="Optimal n_film" value={optimalNFilm.toFixed(3)} tone="green" subtext="Normal-incidence target" />
-        <ResultCard label="Quarter-wave thickness" value={theta1 === null ? "— (TIR in film)" : `${designThickness.toFixed(1)} nm`} tone="blue" subtext="Uses θ₁ inside film" />
+        <ResultCard label="Quarter-wave thickness" value={tir ? "— (TIR in film)" : `${designThickness.toFixed(1)} nm`} tone="blue" subtext="Uses θ₁ inside film" />
         <ResultCard label="R @ design λ" value={`${(100 * averageDesignR).toFixed(2)} %`} tone="yellow" subtext="Unpolarized average" />
-        <ResultCard label="Film angle θ₁" value={theta1 === null ? "TIR" : `${(theta1 * 180 / Math.PI).toFixed(2)}°`} tone="purple" subtext="Snell’s law" />
+        <ResultCard label="Film angle θ₁" value={tir ? "TIR" : `${(theta1 * 180 / Math.PI).toFixed(2)}°`} tone="purple" subtext="Snell’s law" />
       </div>
 
       <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6">

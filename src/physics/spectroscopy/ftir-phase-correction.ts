@@ -169,3 +169,19 @@ export function relativeRmsError(est: Spectrum, truth: (sigma: number) => number
   });
   return count > 0 && peak > 0 ? Math.sqrt(sum / count) / peak : NaN;
 }
+
+/** Gaussian line exp(−4 ln 2 ((σ − σ₀)/w)²) of unit peak and full width at half maximum w (cm⁻¹). */
+export function gaussianLine(sigma: number, centre: number, fwhm: number): number {
+  return fwhm > 0 ? Math.exp(-4 * Math.LN2 * ((sigma - centre) / fwhm) ** 2) : NaN;
+}
+
+/** Absorption bands of the demo sample: centre and FWHM (cm⁻¹), peak absorbance. Illustrative, not a real compound. */
+export const DEMO_BANDS: readonly (readonly [number, number, number])[] = [
+  [1450, 20, 0.3], [1700, 25, 0.5], [2350, 30, 0.8], [2900, 40, 0.4],
+];
+
+/** Demo single-beam spectrum: a Gaussian source envelope (centre 2000, FWHM 1600 cm⁻¹) times the transmittance 10^(−Σ A g). */
+export function demoSingleBeam(sigma: number, bands = DEMO_BANDS): number {
+  const absorbance = bands.reduce((a, [c, w, A]) => a + A * gaussianLine(sigma, c, w), 0);
+  return gaussianLine(sigma, 2000, 1600) * 10 ** -absorbance;
+}

@@ -8,6 +8,7 @@ import {
   POCKELS, balancedGratingPeriod, diffusionField, gratingPeriod, spaceChargeField, trapLimitedField, twoBeamCouplingGain,
   twoBeamSignalGain,
 } from "../../../physics/materials/pockels";
+import { refractionAngle } from "../../../physics/polarization/fresnel";
 
 type Choice = "linbo3" | "custom";
 const CHOICES: readonly Choice[] = ["linbo3", "custom"];
@@ -34,8 +35,7 @@ interface Grating { period: number; ED: number; Eq: number; Esc: number; gamma: 
 /** Steady-state diffusion grating and gain for two beams crossing at the full outside angle 2θ. */
 function grating(lambda: number, fullAngle: number, n: number, r: number, epsilon: number, T: number, Neff: number): Grating {
   const period = gratingPeriod(lambda, fullAngle / 2);
-  const s = Math.sin(fullAngle / 2) / n;
-  const thetaIn = s <= 1 ? Math.asin(s) : NaN;
+  const thetaIn = refractionAngle(1, n, fullAngle / 2);
   const ED = diffusionField(period, T);
   const Eq = trapLimitedField(period, Neff, epsilon);
   const Esc = spaceChargeField(ED, Eq);

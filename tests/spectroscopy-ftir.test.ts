@@ -8,7 +8,8 @@ import {
 } from "../src/physics/spectroscopy/ftir";
 import { aliasedFrequency, amplitudeSpectrum, noiseFloorRms } from "../src/physics/spectroscopy/fourier-transform";
 import {
-  findZpd, forman, magnitudeSpectrum, mertz, relativeRmsError, synthesizeInterferogram, uncorrectedSpectrum,
+  DEMO_BANDS, demoSingleBeam, findZpd, forman, gaussianLine, magnitudeSpectrum, mertz, relativeRmsError,
+  synthesizeInterferogram, uncorrectedSpectrum,
 } from "../src/physics/spectroscopy/ftir-phase-correction";
 import { equivalentNoiseBandwidth, windowSamples } from "../src/physics/spectroscopy/apodization-comparison";
 import { createRng, gaussian } from "../src/physics/random";
@@ -174,4 +175,16 @@ test("FTIR phase correction: Mertz and Forman recover the spectrum; magnitude re
   const mz = band(mertz(noisy, d.z, M));
   const sd = Math.sqrt(mean(mz.map((x) => x * x)));
   assert.ok(Math.abs(mean(mz)) < (4 * sd) / Math.sqrt(mz.length), `${mean(mz)} ${sd}`);
+});
+
+test("demoSingleBeam: Gaussian envelope times 10^(−Σ A g)", () => {
+  // gaussianLine is 1/2 at ± FWHM/2 (2000 ± 800 cm⁻¹) by definition.
+  close(gaussianLine(2800, 2000, 1600), 0.5, 1e-12);
+  close(gaussianLine(1200, 2000, 1600), 0.5, 1e-12);
+  assert.ok(Number.isNaN(gaussianLine(1, 1, 0)));
+  // Hand calculation at the 1700 cm⁻¹ band (A = 0.5; the others are > 10 FWHM away):
+  // exp(−4 ln 2 (300/1600)²) = 0.9071261, × 10^−0.5 = 0.2868585.
+  close(demoSingleBeam(1700), 0.2868584562, 1e-9);
+  close(demoSingleBeam(2000), 1, 1e-12);
+  assert.equal(DEMO_BANDS.length, 4);
 });

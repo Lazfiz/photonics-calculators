@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   beamParameterProduct, beamRadius, divergenceHalfAngle, gouyPhase, m2FromWaistDivergence, rayleighRange,
-  wavefrontRadius,
+  waistFromDivergence, wavefrontRadius,
 } from "../src/physics/wave-optics/gaussian-beam";
 import {
   determinant, elementMatrix, expectedDeterminant, systemMatrix, traceRay, type AbcdElement,
@@ -81,4 +81,13 @@ test("ABCD: element matrices and systems (Kogelnik & Li 1966, table I)", () => {
   assert.ok(Number.isNaN(elementMatrix({ kind: "lens", f: 0 }).C));
   assert.ok(Number.isNaN(elementMatrix({ kind: "space", d: -1 }).B));
   assert.ok(Number.isNaN(elementMatrix({ kind: "interface", n1: 1, n2: 0 }).D));
+});
+
+test("waistFromDivergence: w₀ = M² λ/(π θ), the inverse of divergenceHalfAngle", () => {
+  // Hand calculation: 1550e-9/(π·1e-3) = 4.933803e-4 m; × 1.3 = 6.413944e-4 m.
+  assertRel(waistFromDivergence(1550e-9, 1e-3), 4.933803236e-4, 1e-9, "TEM00");
+  assertRel(waistFromDivergence(1550e-9, 1e-3, 1.3), 6.413944207e-4, 1e-9, "M² 1.3");
+  const b = { lambda: 1064e-9, w0: 0.8e-3, m2: 1.7 };
+  assertRel(waistFromDivergence(b.lambda, divergenceHalfAngle(b), b.m2), b.w0, 1e-12, "round trip");
+  assert.ok(Number.isNaN(waistFromDivergence(1550e-9, 0)), "θ = 0");
 });

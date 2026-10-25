@@ -10,6 +10,7 @@ import {
   apertureGain, freeSpacePathLoss, friisReceivedPower, gaussianTxGain, toDb,
 } from "../../../physics/free-space-comms/link-budget";
 import { pointingCapture } from "../../../physics/free-space-comms/pointing-loss";
+import { waistFromDivergence } from "../../../physics/wave-optics/gaussian-beam";
 
 const presets = [
   { label: "Short urban", txPower: 10, divergence: 3, rxAperture: 8, range: 0.5, wavelength: 1550, atmosphere: 3, misc: 3 },
@@ -26,7 +27,7 @@ function budget(txPower: number, divergence: number, rxAperture: number, range: 
   const lambda = wavelength * 1e-9, R = range * 1e3;
   const gt = gaussianTxGain(divergence * 1e-3 / 2), gr = apertureGain(rxAperture * 1e-2, lambda);
   const friis = friisReceivedPower(1e-3 * 10 ** (txPower / 10), gt, gr, R, lambda);
-  const exact = pointingCapture(lambda, lambda / (Math.PI * (divergence * 1e-3 / 2)), R, rxAperture * 1e-2, 0, 0).alignedFraction;
+  const exact = pointingCapture(lambda, waistFromDivergence(lambda, divergence * 1e-3 / 2), R, rxAperture * 1e-2, 0, 0).alignedFraction;
   const other = atmosphere * range + misc;
   return {
     txGain: toDb(gt), rxGain: toDb(gr), fspl: toDb(freeSpacePathLoss(R, lambda)), atmos: atmosphere * range,
