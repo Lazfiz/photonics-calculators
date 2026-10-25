@@ -39,7 +39,8 @@ export default function MultiCoreFiberCalculator() {
   const [correlationLength, setCorrelationLength] = useURLState("correlationLength", 0.05, { min: 0.001, max: 10 }); // m
   const [outerCladding, setOuterCladding] = useURLState("outerCladding", 30, { min: 0, max: 200 }); // µm, outer core centre to cladding edge
 
-  const layout = LAYOUTS[numCores] ?? LAYOUTS[7];
+  const cores = LAYOUTS[numCores] ? numCores : 7; // a URL value that isn't a layout falls back to 7
+  const layout = LAYOUTS[cores];
 
   const fiber = useMemo(
     () => ({ a: coreRadius * 1e-6, n1: coreIndex, NA: Math.sqrt(coreIndex ** 2 - claddingIndex ** 2) }),
@@ -108,7 +109,7 @@ export default function MultiCoreFiberCalculator() {
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <div>
           <label className="block text-sm font-medium mb-2" htmlFor="numCores">Number of cores</label>
-          <select id="numCores" value={numCores} onChange={(e) => setNumCores(Number(e.target.value))}
+          <select id="numCores" value={cores} onChange={(e) => setNumCores(Number(e.target.value))}
             className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none">
             {Object.entries(LAYOUTS).map(([n, l]) => (
               <option key={n} value={n}>{n} ({l.name})</option>
@@ -154,7 +155,7 @@ export default function MultiCoreFiberCalculator() {
           subtext={layout.neighbours === 0 ? "single core" : `${layout.neighbours} nearest neighbours, first-order sum`}
         />
         <ResultCard label="Critical bend radius R_pk" value={Number.isFinite(calc.rpk) ? `${(calc.rpk * 1e3).toPrecision(3)} mm` : "∞ (Δβ = 0)"} tone="orange" subtext="βΛ/Δβ: bends tighter than this phase-match the cores" />
-        <ResultCard label="Cladding diameter" value={fmt(calc.claddingDiameter, 0, " µm")} tone="cyan" subtext={`${numCores} cores, ${layout.name}`} />
+        <ResultCard label="Cladding diameter" value={fmt(calc.claddingDiameter, 0, " µm")} tone="cyan" subtext={`${cores} cores, ${layout.name}`} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">

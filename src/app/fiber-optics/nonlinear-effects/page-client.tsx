@@ -17,14 +17,14 @@ const toDb = (x: number) => {
 };
 
 export default function NonlinearEffectsPage() {
-  const [power, setPower] = useURLState("power", 10); // dBm launch power per channel
+  const [power, setPower] = useURLState("power", 10, { min: -30, max: 40 }); // dBm launch power per channel
   const [length, setLength] = useURLState("length", 80, { min: 0 }); // km
   const [effectiveArea, setEffectiveArea] = useURLState("effectiveArea", 80, { min: 1 }); // µm²
   const [alpha, setAlpha] = useURLState("alpha", 0.2, { min: 0 }); // dB/km attenuation
   const [n2, setN2] = useURLState("n2", 2.6, { min: 0 }); // ×1e-20 m²/W
   const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 1 }); // nm
-  const [dispersion, setDispersion] = useURLState("dispersion", 17); // ps/(nm·km)
-  const [slope, setSlope] = useURLState("slope", 0.058); // ps/(nm²·km)
+  const [dispersion, setDispersion] = useURLState("dispersion", 17, { min: -200, max: 200 }); // ps/(nm·km)
+  const [slope, setSlope] = useURLState("slope", 0.058, { min: -1, max: 1 }); // ps/(nm²·km)
   const [numChannels, setNumChannels] = useURLState("numChannels", 1, { min: 1 });
   const [channelSpacing, setChannelSpacing] = useURLState("channelSpacing", 100, { min: 0 }); // GHz
 
@@ -93,14 +93,14 @@ export default function NonlinearEffectsPage() {
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <ValidatedNumberInput label="Launch Power per Channel (dBm)" value={power} onChange={setPower} step="0.5" />
+        <ValidatedNumberInput label="Launch Power per Channel (dBm)" value={power} onChange={setPower} min={-30} max={40} step="0.5" />
         <ValidatedNumberInput label="Fiber Length (km)" value={length} onChange={setLength} min={0} step="1" />
         <ValidatedNumberInput label="Effective Area A_eff (µm²)" value={effectiveArea} onChange={setEffectiveArea} min={1} step="1" />
         <ValidatedNumberInput label="Attenuation (dB/km)" value={alpha} onChange={setAlpha} min={0} step="0.01" />
         <ValidatedNumberInput label="n₂ (×10⁻²⁰ m²/W)" value={n2} onChange={setN2} min={0} step="0.1" />
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={1} step="1" />
-        <ValidatedNumberInput label="Dispersion D (ps/(nm·km))" value={dispersion} onChange={setDispersion} step="0.5" />
-        <ValidatedNumberInput label="Dispersion Slope S (ps/(nm²·km))" value={slope} onChange={setSlope} step="0.001" />
+        <ValidatedNumberInput label="Dispersion D (ps/(nm·km))" value={dispersion} onChange={setDispersion} min={-200} max={200} step="0.5" />
+        <ValidatedNumberInput label="Dispersion Slope S (ps/(nm²·km))" value={slope} onChange={setSlope} min={-1} max={1} step="0.001" />
         <ValidatedNumberInput label="WDM Channels" value={numChannels} onChange={setNumChannels} min={1} step="1" />
         <ValidatedNumberInput label="Channel Spacing (GHz)" value={channelSpacing} onChange={setChannelSpacing} min={0} step="10" />
       </div>

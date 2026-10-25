@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 151, 2026-10-25)
+## Status (session 152, 2026-10-25)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4: every page is tiered; open findings and the top-50 tests remain.
@@ -53,7 +53,10 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   thin-disk Chanteloup 2014 σ, τ 0.951 ms, η_h 1 − λ_p/λ, κ 7 (Chénais 2006); Rh6G Falkenstein 1978, Pavlopoulos 1988, Webb 1970.
 - [x] **Findings 4f-a** (session 151, `phase-4/findings-4f`, PR #182): `useURLState(key, def, { min, max })` clamps; codemod gave 671
   bindings / 127 pages their field range; one `sinc` (9 files; no `erf` copies left); search needs every word to match.
-- [ ] **Findings 4f-b:** the 185 URL values the codemod skipped (Cross-cutting, below), by hand, laser-safety first.
+- [x] **Findings 4f-b** (session 152, `phase-4/findings-4f-b`, PR #183): ranges on `blue-light-hazard`, `uv-exposure` (8 h), `wdm-coupler`
+  (≤ 96 channels, ≤ 20 nm), `nonlinear-effects`, `dispersion-map` (λ field), `bpsk-qpsk`, `multi-core` (20 bindings); the other 50 were already guarded.
+- [ ] **Findings 4f-c:** skipped URL values in materials, imaging, detectors, spectroscopy.
+- [ ] **Findings 4f-d:** skipped URL values in polarization, thin-film, wave-optics.
 - [x] Detectors part 9b (session 77, `phase-4/detectors-mtf-cosmic`): `sensor-mtf.ts` (Seib diffusion, column shares),
   `cosmic-rays.ts` (MPV 23 075 e⁻ in 300 µm vs PDG 23 000), `poissonQuantile`; detectors 54/54, 0 `knownIssue`s.
 - [x] **Imaging audit, part 0** (session 78, branch `phase-4/imaging-audit`). Eight `physics-reviewer` batches of 7
@@ -194,11 +197,16 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 
 **Cross-cutting**
 - URL values the page doesn't clamp and the codemod couldn't range (session 151): 185 bindings on 70 pages. List them with
-  `CODEMOD_LIST=1 npx tsx scripts/codemods/2026-10-24-url-ranges.ts`. Kinds: 122 values with no field (inputs built in a
-  `.map` array, selects, `Math.max` guards), 52 fields with no min/max (thin-film indices, polarimetry, laser-safety
-  `blue-light-hazard`/`uv-exposure`), 2 computed bounds (`ber` MAX_PHOTONS_PER_BIT, `thermal-evaporation` T_MAX_C), 9 in
-  `lasercom-link` (not `const [x, setX] =`). Laser-safety pages first: `od-requirements`, `nohd`, `diffuse-reflection`,
-  `optical-density`, `classification`, `ael-limits`, `mpe`.
+  `CODEMOD_LIST=1 npx tsx scripts/codemods/2026-10-24-url-ranges.ts`. About half are false positives: the page guards the
+  value (`x = Math.max(xRaw, …)`, a local `clamp`, `=== 1` flags, `LAYOUTS[x] ?? …`, `find(…) ?? default` for selects), so
+  check the page before editing. Laser-safety, fiber-optics and free-space-comms are done (4f-b). Still to check: 4f-c `detectors/saturation`; imaging
+  `computer-generated-holography`, `denoising-algorithms`, `hyperspectral-microscopy`, `simultaneous-multicolor`,
+  `spectral-unmixing`; materials: 11 `material`/`crystal` selects, `optical-glass-catalog`, the "0 = preset" overrides
+  (`color-centers`, `heat-capacity`, `rare-earth-absorption`, `thermal-conductivity-optics`, `x-ray-optics`); spectroscopy
+  `infrared-spectroscopy`, `spectral-calibration`, `spectral-deconvolution` peaks. 4f-d: polarization `degree-polarization`,
+  `mueller-polarimetry`, `optical-activity`, `poincare-sphere`, `polarimetry`, `retarder`; thin-film indices (`angle-tuning`,
+  `dichroic`, `spectrophotometry`, `wavelength-separation`, `wedge-film`), `adhesion-testing`, `thermal-evaporation`;
+  wave-optics `abcd-matrix`, `cavity-mode-spacing`, `gires-tournois`, `hermite-gaussian` p/l.
 - `ui-check` can't hydrate a page that has no `<input>` (`optical-glass-catalog`; `jones-calculus` until an element is
   added).
 

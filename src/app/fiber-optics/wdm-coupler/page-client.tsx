@@ -2,15 +2,18 @@
 
 import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 import { c } from "../../../physics/constants";
 
 export default function WDMCouplerCalculator() {
-  const [channelCount, setChannelCount] = useURLState("channelCount", 8);
-  const [channelSpacing, setChannelSpacing] = useURLState("channelSpacing", 0.8); // nm
-  const [centerWavelength, setCenterWavelength] = useURLState("centerWavelength", 1550); // nm
-  const [passbandWidth, setPassbandWidth] = useURLState("passbandWidth", 0.4); // nm
-  const [insertionLoss, setInsertionLoss] = useURLState("insertionLoss", 0.5); // dB
+  // Ranges keep the spectrum (0.05 nm steps × channels) small: up to 96 channels, CWDM's 20 nm spacing.
+  const [channelCountRaw, setChannelCount] = useURLState("channelCount", 8, { min: 1, max: 96 });
+  const [channelSpacing, setChannelSpacing] = useURLState("channelSpacing", 0.8, { min: 0.05, max: 20 }); // nm
+  const [centerWavelength, setCenterWavelength] = useURLState("centerWavelength", 1550, { min: 800, max: 1700 }); // nm
+  const [passbandWidth, setPassbandWidth] = useURLState("passbandWidth", 0.4, { min: 0.01, max: 20 }); // nm
+  const [insertionLoss, setInsertionLoss] = useURLState("insertionLoss", 0.5, { min: 0, max: 30 }); // dB
+  const channelCount = Math.round(channelCountRaw);
   const [isolation, setIsolation] = useState<number>(25); // dB
   const [couplerType, setCouplerType] = useState<"thinFilm" | "fbg" | "awg" | "mzi">("thinFilm");
 
@@ -105,19 +108,19 @@ export default function WDMCouplerCalculator() {
               </select>
             </div>
             <div>
-              <ValidatedNumberInput label="Number of Channels" value={channelCount} onChange={setChannelCount} />
+              <ValidatedNumberInput label="Number of Channels" value={channelCountRaw} onChange={setChannelCount} min={1} max={96} step="1" />
             </div>
             <div>
-              <ValidatedNumberInput label="Channel Spacing (nm)" value={channelSpacing} onChange={setChannelSpacing} step="0.1" />
+              <ValidatedNumberInput label="Channel Spacing (nm)" value={channelSpacing} onChange={setChannelSpacing} min={0.05} max={20} step="0.1" />
             </div>
             <div>
-              <ValidatedNumberInput label="Center Wavelength (nm)" value={centerWavelength} onChange={setCenterWavelength} />
+              <ValidatedNumberInput label="Center Wavelength (nm)" value={centerWavelength} onChange={setCenterWavelength} min={800} max={1700} />
             </div>
             <div>
-              <ValidatedNumberInput label="Passband Width (nm)" value={passbandWidth} onChange={setPassbandWidth} step="0.05" />
+              <ValidatedNumberInput label="Passband Width (nm)" value={passbandWidth} onChange={setPassbandWidth} min={0.01} max={20} step="0.05" />
             </div>
             <div>
-              <ValidatedNumberInput label="Insertion Loss (dB)" value={insertionLoss} onChange={setInsertionLoss} step="0.1" />
+              <ValidatedNumberInput label="Insertion Loss (dB)" value={insertionLoss} onChange={setInsertionLoss} min={0} max={30} step="0.1" />
             </div>
             <div>
               <ValidatedNumberInput label="Isolation (dB)" value={isolation} onChange={setIsolation} step="1" />
