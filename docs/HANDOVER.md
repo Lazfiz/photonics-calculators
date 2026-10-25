@@ -1,26 +1,27 @@
-# Handover — 2026-10-25 (session 152 → session 153)
+# Handover — 2026-10-25 (session 153 → session 154)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 152: **Findings 4f-b** done on `phase-4/findings-4f-b` (PR #183): skipped URL values in laser-safety, fiber, comms.
-Next: **Findings 4f-c** (materials, imaging, detectors, spectroscopy); the page list is in ROADMAP Cross-cutting.
+Session 153: **Findings 4f-c and 4f-d** done on `phase-4/findings-4f-cd`: the last of the codemod's 185 skipped URL values.
+Next: **golden-value tests for the top 50 calculators by traffic**; get traffic data first (Vercel MCP `aggregate_pageviews`).
 
 ## State
-- 20 bindings on 7 pages got ranges (`useURLState(key, def, { min, max })` plus the field's `min`/`max`): `blue-light-hazard`
-  (λ 300–700 nm), `uv-exposure` (180–400 nm, 1e-6–8 h), `wdm-coupler` (1–96 channels rounded, 0.05–20 nm), `nonlinear-effects`,
-  `dispersion-map` (new reference-λ field, 1530–1629 nm), `bpsk-qpsk`, `multi-core` (shows the 7-core fallback). The other 50
-  flagged bindings in those categories were already guarded. No default value changed. 1105 tests pass.
+- 4f-c: all 56 flagged bindings in materials, imaging, detectors, spectroscopy were already guarded (selects use
+  `includes`/`find ?? default`; "0 = preset" overrides are clamped after the swap; text parsers filter and clamp).
+- 4f-d: 24 bindings on 7 pages got `useURLState(key, def, { min, max })` plus the field's min/max: nH/nL/nSub/nInc/nFilm
+  1–5 on `angle-tuning`, `dichroic`, `spectrophotometry`, `wavelength-separation`, `wedge-film` (the beamsplitter
+  convention); design λ 100–20000 nm (`dichroic`, `wedge-film`); film thickness 0–20000 nm (`spectrophotometry`);
+  Poincaré θ 0–180°; Gires–Tournois λ 100–20000 nm, plot bandwidth 0.1–20000 nm with the span capped at λ. The other 35
+  (Stokes validation, periodic angles, validated adhesion/evaporation lists, ABCD/HG/cavity clamps) were already guarded.
+  No default changed. The ROADMAP Cross-cutting bullet for this list is gone.
 
 ## Next actions
 1. `/ship` this branch. No default changed: after a release the user asks for, post-merge-check only needs page loads
-   (`fiber-optics/wdm-coupler`, `laser-safety/uv-exposure`). No release unless asked.
-2. Findings 4f-c, then 4f-d. Check each flagged page before editing: about two thirds are false positives (`Math.max(xRaw, …)`,
-   local `clamp`, `=== 1` flags, `LAYOUTS[x] ? … : default`, `find(…) ?? default` selects). Give real fields min/max.
+   (`thin-film/dichroic`, `wave-optics/gires-tournois`). No release unless asked.
+2. Top-50 golden tests (needs traffic data), then the heuristic-model box and the Phase 2/3 boxes further down.
 
 ## Non-obvious facts
-- **Session 152:** triage the codemod's skip list with a read-only script: for each `page "key"`, find
-  `const [name, …] = useURLState("key"` and grep the page for `Math.max(name` / `clamp(name` / `name ===`. Write such scripts
-  with the Write tool: a quoted bash heredoc here still drops doubled backslashes. devctl runs gated jobs at BelowNormal priority:
-  under another project's Rust build `npm test` took 15 min (idle-looking test children are starved, not hung).
+- **Sessions 152–153:** write regex-heavy scripts with the Write tool (a quoted bash heredoc drops doubled backslashes). devctl
+  runs gated jobs at BelowNormal priority: under another project's Rust build `npm test` took 15 min (starved, not hung).
 - **Session 151:** ts-morph `sf.insertText` forgets every node: record positions (numbers) first, insert last-to-first.
   ts-morph scripts must live under `scripts/` (a scratchpad script can't resolve `ts-morph`). A `next start -p 3100` left
   from an earlier session serves the old build (EADDRINUSE for the new one): check the PID's command line with
