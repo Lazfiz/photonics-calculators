@@ -4,7 +4,8 @@ import SimpleLineChart from "../../../components/simple-line-chart";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { bestLensPosition, qAfterLens, singleLensModeMatch } from "../../../physics/wave-optics/mode-matching";
+import { radiusAtDistance, rayleighRange } from "../../../physics/wave-optics/gaussian-beam";
+import { beamRadiusFromQ, bestLensPosition, qAfterLens, singleLensModeMatch } from "../../../physics/wave-optics/mode-matching";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
@@ -26,8 +27,8 @@ export default function ModeMatchingPage() {
   const lambda = wavelength * 1e-9;
   const p = { lambda, w1: w1_um * 1e-6, w2: w2_um * 1e-6, d: d_mm * 1e-3 };
   const sol = singleLensModeMatch(p);
-  const zR1_mm = ((Math.PI * p.w1 * p.w1) / lambda) * 1e3;
-  const zR2_mm = ((Math.PI * p.w2 * p.w2) / lambda) * 1e3;
+  const zR1_mm = rayleighRange({ lambda, w0: p.w1 }) * 1e3;
+  const zR2_mm = rayleighRange({ lambda, w0: p.w2 }) * 1e3;
   const stock = bestLensPosition(p, fStock_mm * 1e-3);
 
   // Best coupling over lens position for each focal length.
@@ -44,9 +45,9 @@ export default function ModeMatchingPage() {
   // Beam radius along the axis: input beam up to the lens, then the beam the lens makes.
   const radiusAfter = (f_mm: number, s_mm: number, z_mm: number) => {
     const q = qAfterLens(lambda, p.w1, s_mm * 1e-3, f_mm * 1e-3, (z_mm - s_mm) * 1e-3);
-    return Math.sqrt((lambda * (q.re * q.re + q.im * q.im)) / (Math.PI * q.im)) * 1e6; // w² = λ|q|²/(π Im q)
+    return beamRadiusFromQ(q, lambda) * 1e6;
   };
-  const inputRadius = (z_mm: number) => w1_um * Math.hypot(1, z_mm / zR1_mm);
+  const inputRadius = (z_mm: number) => radiusAtDistance(w1_um, zR1_mm, z_mm); // µm; z, z_R both in mm
   const zLo = Math.min(0, sol.s1 * 1e3);
   const zHi = Math.max(d_mm, sol.s1 * 1e3);
   const zs = Array.from({ length: 241 }, (_, i) => zLo + (i * (zHi - zLo)) / 240);

@@ -8,6 +8,7 @@ import { useURLState } from "../../../hooks/use-url-state";
 import {
   besselBeamIntensity, coreFwhm, coreRadius, maxPropagationDistance, radialWavenumber,
 } from "../../../physics/wave-optics/bessel-beam";
+import { rayleighRange } from "../../../physics/wave-optics/gaussian-beam";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
@@ -29,7 +30,7 @@ export default function BesselBeamPage() {
   const r0_um = coreRadius(kr) * 1e6;
   const fwhm_um = coreFwhm(kr) * 1e6;
   const zMax_mm = maxPropagationDistance(R_mm * 1e-3, alpha) * 1e3;
-  const zRGauss_mm = ((Math.PI * (r0_um * 1e-6) ** 2) / lambda) * 1e3; // a Gaussian with waist r₀
+  const zRGauss_mm = rayleighRange({ lambda, w0: r0_um * 1e-6 }) * 1e3; // a Gaussian with waist r₀
   const rings = (kr * R_mm * 1e-3) / Math.PI; // J₀ zeros are π/k_r apart
 
   const maxRCap_um = Math.max(1, ((MAX_RINGS * Math.PI) / kr) * 1e6);

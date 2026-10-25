@@ -76,6 +76,15 @@ export function qAfterLens(lambda: number, w1: number, s: number, f: number, L: 
   return { re: q1.re + L, im: q1.im };
 }
 
+/**
+ * Beam radius from the complex beam parameter: 1/q = 1/R − iλ/(πw²) gives w² = λ|q|²/(π Im q) (Kogelnik & Li 1966,
+ * eq. 17), m. NaN unless Im q > 0 and λ > 0.
+ */
+export function beamRadiusFromQ(q: Complex, lambda: number): number {
+  if (!(q.im > 0 && lambda > 0) || !Number.isFinite(q.re)) return NaN;
+  return Math.sqrt((lambda * (q.re * q.re + q.im * q.im)) / (Math.PI * q.im));
+}
+
 /** Power coupling η = 4 Im q₁ Im q₂ / |q₁ − q₂*|² of two coaxial Gaussian beams at one plane (same λ); 0…1. */
 export function gaussianOverlap(q1: Complex, q2: Complex): number {
   if (!(q1.im > 0 && q2.im > 0)) return NaN;

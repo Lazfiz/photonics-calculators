@@ -5,6 +5,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { gParameter, resonatorStability, twoMirrorMode } from "../../../physics/wave-optics/two-mirror-resonator";
+import { radiusAtDistance } from "../../../physics/wave-optics/gaussian-beam";
 import {
   fourLevelGain, fourLevelSlopeEfficiency, fourLevelThreshold, gaussianOverlapArea, laserOutput, roundTripLoss,
   saturationIntensity, tripletGainFactor,
@@ -107,7 +108,7 @@ export default function DyeLaserResonatorPage() {
       points: Number.isFinite(mode.w0)
         ? Array.from({ length: 201 }, (_, i) => {
             const z = (L * i) / 200;
-            return { x: round6(z * 1e3), y: round6(mode.w0 * Math.sqrt(1 + ((z - mode.z1) / mode.zR) ** 2) * 1e6) };
+            return { x: round6(z * 1e3), y: round6(radiusAtDistance(mode.w0, mode.zR, z - mode.z1) * 1e6) };
           })
         : [],
     },

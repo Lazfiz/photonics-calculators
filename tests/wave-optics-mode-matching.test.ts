@@ -2,12 +2,13 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  bestLensPosition, couplingAtLensPosition, gaussianOverlap, qAfterLens, singleLensModeMatch,
+  beamRadiusFromQ, bestLensPosition, couplingAtLensPosition, gaussianOverlap, qAfterLens, singleLensModeMatch,
 } from "../src/physics/wave-optics/mode-matching";
 import {
   airyDiskDiameter, focusedSpotRadius, pinholeFarFieldIntensity, pinholeRadiusForTransmission, pinholeTransmission,
 } from "../src/physics/wave-optics/spatial-filter";
 import { regularizedGammaP } from "../src/physics/math";
+import { beamRadius, rayleighRange } from "../src/physics/wave-optics/gaussian-beam";
 
 function assertRel(actual: number, expected: number, tol: number, label: string) {
   assert.ok(Math.abs(actual / expected - 1) < tol, `${label}: ${actual} vs ${expected}`);
@@ -104,4 +105,15 @@ test("Spatial filter: focal spot, pinhole throughput, far field (Uehara & Kikuch
   }
   assertRel(pinholeFarFieldIntensity(1064e-9, wf, 1.5 * wf, 0.1, W), series * series, 1e-6, "cut beam at ρ = W");
   assert.ok(Math.abs(series * series - 0.16302) < 1e-5, `series ${series * series}`);
+});
+
+// Kogelnik & Li 1966 eq. 17: w² = λ|q|²/(π Im q). At the waist q = i z_R gives w₀; at q = z_R(1 + i), w₀√2.
+test("mode matching: beam radius from q", () => {
+  const b = { lambda: 1064e-9, w0: 100e-6 };
+  const zR = rayleighRange(b);
+  assertRel(beamRadiusFromQ({ re: 0, im: zR }, b.lambda), b.w0, 1e-14, "waist");
+  assertRel(beamRadiusFromQ({ re: zR, im: zR }, b.lambda), b.w0 * Math.SQRT2, 1e-14, "z = z_R");
+  // A lens of huge f leaves free propagation: q = s + L + i z_R.
+  assertRel(beamRadiusFromQ(qAfterLens(b.lambda, b.w0, 0.03, 1e30, 0.02), b.lambda), beamRadius(b, 0.05), 1e-12, "free space");
+  assert.ok(Number.isNaN(beamRadiusFromQ({ re: 0.1, im: 0 }, b.lambda)), "Im q = 0");
 });

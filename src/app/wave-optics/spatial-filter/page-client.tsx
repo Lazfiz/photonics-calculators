@@ -7,6 +7,7 @@ import { useURLState } from "../../../hooks/use-url-state";
 import {
   airyDiskDiameter, focusedSpotRadius, pinholeFarFieldIntensity, pinholeRadiusForTransmission, pinholeTransmission,
 } from "../../../physics/wave-optics/spatial-filter";
+import { divergenceHalfAngle } from "../../../physics/wave-optics/gaussian-beam";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
@@ -52,7 +53,7 @@ export default function SpatialFilterPage() {
   ];
 
   // Beam at the collimating lens (far field of the pinhole), relative to the peak of the uncut beam.
-  const W_mm = ((lambda * f2_mm * 1e-3) / (Math.PI * w)) * 1e3;
+  const W_mm = divergenceHalfAngle({ lambda, w0: w }) * f2_mm;
   const rhos = Array.from({ length: 121 }, (_, i) => (i * 2.5 * W_mm) / 120);
   const keep = (y: number) => (Number.isFinite(y) && y > 1e-12 ? round6(y) : null);
   const farField = [

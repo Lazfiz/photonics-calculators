@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  beamParameterProduct, beamRadius, divergenceHalfAngle, gouyPhase, m2FromWaistDivergence, rayleighRange,
+  beamParameterProduct, beamRadius, divergenceHalfAngle, gouyPhase, m2FromWaistDivergence, radiusAtDistance, rayleighRange,
   waistFromDivergence, wavefrontRadius,
 } from "../src/physics/wave-optics/gaussian-beam";
 import {
@@ -90,4 +90,14 @@ test("waistFromDivergence: w₀ = M² λ/(π θ), the inverse of divergenceHalfA
   const b = { lambda: 1064e-9, w0: 0.8e-3, m2: 1.7 };
   assertRel(waistFromDivergence(b.lambda, divergenceHalfAngle(b), b.m2), b.w0, 1e-12, "round trip");
   assert.ok(Number.isNaN(waistFromDivergence(1550e-9, 0)), "θ = 0");
+});
+
+// Kogelnik & Li 1966: w(z) = w₀ √(1 + (z/z_R)²), so w = w₀√2 at z = z_R and 2w₀ at z = √3 z_R (by hand).
+test("gaussian beam: radius from a known waist and Rayleigh range", () => {
+  assertRel(radiusAtDistance(1e-3, 2, 2), 1e-3 * Math.SQRT2, 1e-15, "z = z_R");
+  assertRel(radiusAtDistance(1e-3, 2, -2 * Math.sqrt(3)), 2e-3, 1e-15, "z = −√3 z_R");
+  assert.equal(radiusAtDistance(1e-3, 2, 0), 1e-3);
+  const b = { lambda: 1064e-9, w0: 100e-6 };
+  assertRel(radiusAtDistance(b.w0, rayleighRange(b), 0.05), beamRadius(b, 0.05), 1e-15, "matches beamRadius");
+  assert.ok(Number.isNaN(radiusAtDistance(1e-3, 0, 1)), "z_R = 0");
 });
