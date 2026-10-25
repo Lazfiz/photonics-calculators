@@ -9,6 +9,7 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { ALPHA_MIN, correctionCE } from "../../../physics/laser-safety/eye-exposure-limits";
 import { gaussianApparentSource, MAX_ACCOMMODATION } from "../../../physics/laser-safety/retinal-image";
+import { divergenceHalfAngle } from "../../../physics/wave-optics/gaussian-beam";
 
 const R_MIN = 1e-3; // m, chart range
 const R_MAX = 100;
@@ -29,7 +30,9 @@ export default function RetinalImageSizePage() {
   const valid = !Number.isNaN(s.alpha);
   const point = s.alpha <= ALPHA_MIN;
   const ce = correctionCE(s.alpha, 10);
-  const belowDiffraction = (theta * Math.PI * d0) / (4 * lambda) < 1;
+  // Diffraction-limited full angle 4λ/(πd₀) of a TEM₀₀ waist of diameter d₀.
+  const thetaDiffraction = 2 * divergenceHalfAngle({ lambda, w0: d0 / 2 });
+  const belowDiffraction = theta < thetaDiffraction;
 
   const chartData = useMemo(() => {
     const rs = Array.from({ length: 201 }, (_, i) => R_MIN * Math.pow(R_MAX / R_MIN, i / 200));
@@ -55,7 +58,7 @@ export default function RetinalImageSizePage() {
       </div>
       {belowDiffraction ? (
         <p className="text-amber-300 text-sm mb-4">
-          That divergence is below the diffraction limit 4λ/(πd₀) = {fmtNum((4 * lambda) / (Math.PI * d0) * 1e3)} mrad
+          That divergence is below the diffraction limit 4λ/(πd₀) = {fmtNum(thetaDiffraction * 1e3)} mrad
           of a TEM₀₀ beam with this waist; it is taken as M² = 1.
         </p>
       ) : null}

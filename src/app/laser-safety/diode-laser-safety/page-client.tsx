@@ -12,6 +12,7 @@ import { exposureLimit, eyeLimits, limitingAperture, limitMaxPower, T_MAX, T_MIN
 import {
   axisDiameterAt, effectiveDiameterAt, nominalOcularHazardDistance, requiredOpticalDensity, type BeamGeometry,
 } from "../../../physics/laser-safety/hazard-distance";
+import { peakIrradiance as tem00PeakIrradiance } from "../../../physics/laser-safety/visual-interference";
 
 export default function DiodeLaserSafetyPage() {
   const [power, setPower] = useURLState("power", 500, { min: 0 }); // mW
@@ -53,7 +54,7 @@ export default function DiodeLaserSafetyPage() {
   const sizeAtNohd = Number.isFinite(nohd.distance)
     ? `${fmtNum(axisDiameterAt(a, phiSlow, nohd.distance, "linear") * 100)} × ${fmtNum(axisDiameterAt(a, phiFast, nohd.distance, "linear") * 100)} cm`
     : "—";
-  const peakIrradiance = (8 * P) / (Math.PI * a * a) / 1e4; // W/cm² at the aperture
+  const peakIrradiance = tem00PeakIrradiance(P, a) / 1e4; // W/cm² at the aperture
 
   const nohdFinite = Number.isFinite(nohd.distance) && nohd.distance > 0;
   const rMin = nohdFinite ? Math.max(nohd.distance * 1e-3, 0.01) : 0.01;

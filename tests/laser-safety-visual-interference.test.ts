@@ -34,4 +34,6 @@ test("edges", () => {
   assert.equal(rangeToIrradiance(0, beam, 1), 0, "no power");
   assert.equal(rangeToIrradiance(1e-3, roundBeam(1e-3, 0), 1), Infinity, "collimated beam never drops");
   assert.ok(Number.isNaN(rangeToIrradiance(1e-3, beam, 0)), "E = 0");
+  assert.ok(Number.isNaN(peakIrradiance(1e-3, 0)), "peak, d = 0");
+  assert.ok(Number.isNaN(peakIrradiance(-1e-3, 1e-3)), "peak, P < 0");
 });

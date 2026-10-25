@@ -11,6 +11,7 @@ import {
   apertureIrradiance, exposureLimit, limitingAperture, limitMaxPower, T_MAX, T_MIN,
 } from "../../../physics/laser-safety/eye-exposure-limits";
 import { skinLimit } from "../../../physics/laser-safety/skin-exposure-limits";
+import { peakIrradiance } from "../../../physics/laser-safety/visual-interference";
 
 export default function SkinMpePage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1064, { min: 180, max: 1000000 }); // nm
@@ -56,7 +57,7 @@ export default function SkinMpePage() {
   }, [exposedArea, t, P, d, r, wavelength]);
 
   const narrow = d > 0 && d < 1e-3;
-  const peak = (8 * P) / (Math.PI * d * d);
+  const peak = peakIrradiance(P, d);
 
   return (
     <>
