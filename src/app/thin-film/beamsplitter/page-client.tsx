@@ -12,6 +12,7 @@ import {
   tunedSplitterLayers,
 } from "../../../physics/thin-film/beamsplitter";
 import { quarterWaveLayers, quarterWaveStackReflectance, reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
+import { normalIncidenceReflectance } from "../../../physics/polarization/fresnel";
 
 const NM = 1e-9;
 const pct = (x: number, digits = 2) => (Number.isFinite(x) ? `${(x * 100).toFixed(digits)} %` : "—");
@@ -33,7 +34,7 @@ export default function BeamsplitterPage() {
 
   const singleIndex = valid ? singleLayerIndexForReflectance(target, nInc, nSub) : NaN;
   const middleIndex = valid ? middleIndexForReflectance(target, nH, nInc, nSub) : NaN;
-  const bare = ((nInc - nSub) / (nInc + nSub)) ** 2;
+  const bare = normalIncidenceReflectance(nInc, nSub);
   // Quarter-wave stacks H(LH)^m, m = 0…3.
   const ladder = STACK_NAMES.map((name, m) => ({
     name,

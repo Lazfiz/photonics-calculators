@@ -19,6 +19,7 @@
  * coherent fading and the non-Gaussian LP01 tail.
  */
 import { c } from "../constants";
+import { normalIncidenceReflectance } from "../polarization/fresnel";
 
 /** dB/km → power attenuation coefficient in 1/m. */
 export const dbPerKmToPerM = (dbPerKm: number) => (dbPerKm * Math.LN10) / 10 / 1000;
@@ -61,8 +62,7 @@ export function dynamicRangeDb(backscatterPower: number, noise: number): number 
 
 /** Normal-incidence Fresnel power reflectance between indices n₁ and n₂. */
 export function fresnelReflectance(n1: number, n2: number): number {
-  if (!(n1 > 0) || !(n2 > 0)) return NaN;
-  return ((n1 - n2) / (n1 + n2)) ** 2;
+  return normalIncidenceReflectance(n1, n2);
 }
 
 /** Height of a reflective event above the local backscatter, one-way dB: 5 log₁₀(1 + R/η). */

@@ -5,7 +5,9 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { quarterWaveLayers, quarterWaveStackReflectance, stackResponse } from "../../../physics/thin-film/transfer-matrix";
+import {
+  quarterWaveArIndex, quarterWaveLayers, quarterWaveStackReflectance, quarterWaveThickness, stackResponse,
+} from "../../../physics/thin-film/transfer-matrix";
 
 export default function QuarterWavePage() {
   const [nFilm, setNFilm] = useURLState("nFilm", 1.38, { min: 0.1 });
@@ -25,8 +27,8 @@ export default function QuarterWavePage() {
     ];
   }, [nFilm, nSub, nInc, designWl]);
 
-  const thickness = designWl / (4 * nFilm);
-  const optimalN = Math.sqrt(nInc * nSub);
+  const thickness = quarterWaveThickness(nFilm, designWl);
+  const optimalN = quarterWaveArIndex(nInc, nSub);
   const designR = quarterWaveStackReflectance(nInc, [nFilm], nSub);
 
   return (

@@ -13,6 +13,7 @@
  * which the fits do not cover; NaN outside the range.
  */
 
+import { normalIncidenceReflectance } from "../polarization/fresnel";
 import {
   LAMBDA_C, LAMBDA_D, LAMBDA_F, fromSquaredForm,
   dnDlambda as sellmeierDnDlambda, refractiveIndex as sellmeierIndex, type SellmeierModel,
@@ -119,7 +120,7 @@ export function polymerAbbe(d: PolymerDispersion): number {
 }
 
 /** Normal-incidence reflectance of one surface between media n₀ and n. */
-export const normalReflectance = (n: number, n0 = 1) => ((n - n0) / (n + n0)) ** 2;
+export const normalReflectance = (n: number, n0 = 1) => normalIncidenceReflectance(n0, n);
 
 /** Numerical aperture √(n₁² − n₂²) of a core n₁ in a cladding n₂ (launch from air); NaN if n₂ ≥ n₁. */
 export function corecladNA(n1: number, n2: number): number {

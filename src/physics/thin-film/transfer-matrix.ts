@@ -279,6 +279,14 @@ export function quarterWaveStackReflectance(incident: number, indices: readonly 
 }
 
 /**
+ * Index of the single quarter-wave layer that cancels the reflection at λ₀ and normal incidence: the admittance
+ * n²/n_sub equals n₀ when n = √(n₀ n_sub) (Macleod, ch. 4, single-layer AR coatings). NaN unless both indices are > 0.
+ */
+export function quarterWaveArIndex(incident: number, substrate: number): number {
+  return incident > 0 && substrate > 0 ? Math.sqrt(incident * substrate) : NaN;
+}
+
+/**
  * Inner-layer index that makes a two-layer quarter-quarter AR coating reflectionless at λ₀ and normal
  * incidence. The admittance Y = n_outer²·n_sub/n_inner² equals n₀ when n_inner = n_outer·√(n_sub/n₀)
  * (Macleod, ch. 4, double-layer quarter-quarter coatings). NaN unless every index is > 0.

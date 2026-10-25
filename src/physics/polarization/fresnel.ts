@@ -74,6 +74,15 @@ export function fresnel(n1: number, n2: number, theta: number, k2 = 0): FresnelR
   return { rs, rp, ts, tp, Rs: abs2(rs), Rp: abs2(rp), Ts, Tp, thetaT, tir };
 }
 
+/**
+ * Normal-incidence power reflectance |(n₁ − N₂)/(n₁ + N₂)|² = ((n₁ − n₂)² + κ₂²)/((n₁ + n₂)² + κ₂²) from a lossless n₁
+ * onto N₂ = n₂ − iκ₂ (Born & Wolf §1.5.3; Hecht eq. 4.67), the θ = 0 limit of `fresnel`. NaN unless n₁, n₂ > 0, κ₂ ≥ 0.
+ */
+export function normalIncidenceReflectance(n1: number, n2: number, k2 = 0): number {
+  if (!(n1 > 0 && n2 > 0 && k2 >= 0 && Number.isFinite(n1 + n2 + k2))) return NaN;
+  return ((n1 - n2) ** 2 + k2 * k2) / ((n1 + n2) ** 2 + k2 * k2);
+}
+
 /** Brewster angle atan(n₂/n₁) for lossless media, rad. */
 export function brewsterAngle(n1: number, n2: number): number {
   return n1 > 0 && n2 > 0 ? Math.atan(n2 / n1) : NaN;

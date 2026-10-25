@@ -5,6 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { intervalStats } from "../../../physics/math";
+import { normalIncidenceReflectance } from "../../../physics/polarization/fresnel";
 import { biaxialStrainEnergy, deflectionFromCurvature, delaminationThickness, stoneyCurvature } from "../../../physics/thin-film/stoney";
 import { quarterWaveStackReflectance, stackResponse } from "../../../physics/thin-film/transfer-matrix";
 
@@ -34,7 +35,7 @@ export default function HardCoatingPage() {
   const optics = useMemo(() => {
     if (!opticsValid) return null;
     const coated = (lam: number) => stackResponse({ incident: 1, layers: [{ n: nCoat, thickness: d }], substrate: { n: nSub } }, lam).R;
-    const bare = ((nSub - 1) / (nSub + 1)) ** 2;
+    const bare = normalIncidenceReflectance(1, nSub);
     const halfWave = designWl / (2 * nCoat);
     const order = Math.max(1, Math.round(thickness / halfWave));
     return {

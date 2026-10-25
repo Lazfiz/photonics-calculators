@@ -5,6 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { firstCrossing } from "../../../physics/math";
+import { normalIncidenceReflectance } from "../../../physics/polarization/fresnel";
 import { dualBandReflectance, fitDualBandAr } from "../../../physics/thin-film/dual-band-ar";
 
 const NM = 1e-9;
@@ -47,7 +48,7 @@ export default function DualBandARPage() {
     return { x, R: x.map((w) => 100 * dualBandReflectance(problem, fit.thicknesses, w * NM)) };
   }, [fit, problem, wl1, wl2]);
 
-  const bare = ((nSub - 1) / (nSub + 1)) ** 2;
+  const bare = normalIncidenceReflectance(1, nSub);
   const bandText = (b: { lo: number; hi: number; open: boolean[] } | null) =>
     b ? `${b.open[0] ? "≤ " : ""}${(b.lo / NM).toFixed(0)} – ${b.open[1] ? "≥ " : ""}${(b.hi / NM).toFixed(0)} nm` : "R ≥ 1 % at the centre";
 

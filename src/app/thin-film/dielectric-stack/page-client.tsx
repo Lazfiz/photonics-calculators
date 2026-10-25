@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { clampToRange } from "../../../lib/number-input";
+import { normalIncidenceReflectance } from "../../../physics/polarization/fresnel";
 import { stopBandEdges } from "../../../physics/thin-film/quarter-wave-stack";
 import { quarterWaveLayers, quarterWaveStackReflectance, reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
 
@@ -27,7 +28,7 @@ export default function DielectricStackPage() {
     const layers = quarterWaveLayers(Array.from({ length: 2 * numPairs }, (_, j) => (j % 2 === 0 ? nH : nL)), designWl * 1e-9);
     const R = reflectanceSpectrum({ incident: nInc, layers, substrate: { n: nSub } }, wls.map((wl) => wl * 1e-9));
     // Bare substrate: a single Fresnel step, R = ((n₀ − n_s)/(n₀ + n_s))²
-    const bareR = ((nInc - nSub) / (nInc + nSub)) ** 2;
+    const bareR = normalIncidenceReflectance(nInc, nSub);
     return [
       { x: wls, y: R, type: "scatter" as const, mode: "lines" as const, name: "Reflectance", line: { color: "#60a5fa" } },
       { x: wls, y: wls.map(() => bareR), type: "scatter" as const, mode: "lines" as const, name: "Bare substrate R", line: { color: "#4b5563", dash: "dash" } },
