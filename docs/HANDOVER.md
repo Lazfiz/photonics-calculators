@@ -1,22 +1,23 @@
 # Handover — 2026-10-25 (session 156 → session 157)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 156 on `phase-2/inline-b1` (PR #187): inventoried formulas inside page components, split 2-inline-b into b1–b6,
-and did b1 (fibre index contrast). Next: **b2** (normal-incidence reflectance, AR indices; 8 pages). User plan: b2–b6, then
-Phase 3, then Phase 5 (spot-check review of ≈ 20 pages, then the user's Gemini home hero, last).
+Session 156 split 2-inline-b into b1–b6, did b1 (PR #187, merged) and b2 (`phase-2/inline-b2`, PR #188). Next: **b3** (Gaussian
+beam, ≈ 14 pages: split b3a/b3b). User plan: b3–b6, Phase 3, Phase 5 (spot-check review ≈ 20 pages; Gemini home hero last).
 
 ## State
 - `scripts/inline-inventory.ts` (ts-morph) prints each math line inside a component body. Filter deg↔rad and log10 lines, then
   judge: chart axes, √N or quadrature sums of module outputs, π multiples for display and demo signals stay inline.
 - `fiber-optics/step-index-modes`: `numericalAperture(n1, n2)` (NaN unless n₁ ≥ n₂ > 0), `coreIndexFromNA`,
   `relativeIndexDifference(fiber)`. 10 fibre pages use them; birefringence-fiber keeps its own n₁ > n₂ guard (NaN at equal).
-  fiber-characterization Δ now shows "—" for n₂ > n₁ (was negative). Tests 1118 pass.
+  fiber-characterization Δ now shows "—" for n₂ > n₁ (was negative).
+- `polarization/fresnel.normalIncidenceReflectance(n1, n2, k2 = 0)` is the one normal-incidence R; `otdr.fresnelReflectance`,
+  `window-materials.surfaceReflectance`, `polymer-optics.normalReflectance`, `photodiode-qe.normalReflectance` delegate to it.
+  `thin-film/transfer-matrix.quarterWaveArIndex` = √(n₀n_s).
 
 ## Next actions
-1. `/ship` this branch (no page value changes; post-merge-check only on a release the user asks for:
-   `fiber-optics/v-number` V ≈ 2.077, `fiber-optics/fiber-characterization` NA 0.1246 at the defaults).
-2. b2 → b6 per ROADMAP, one PR each. Reuse existing module functions first (`git grep -n "export function <name>" -- src/physics`):
-   `normalReflectance` exists twice (detectors/photodiode-qe with k, materials/polymer-optics with n₀); pick one, don't add a third.
+1. `/ship`. No value changes; on a release: post-merge-check `fiber-optics/v-number` V ≈ 2.077, `fiber-characterization` NA 0.1246.
+2. b3 → b6 per ROADMAP, one PR each. Reuse module functions first (`git grep -n "export function <name>" -- src/physics`);
+   when a module already has copies, make them delegate rather than add another (b2 did this for reflectance).
 
 ## Non-obvious facts
 - **Session 155:** React Compiler is off, so a `preserve-manual-memoization` error is fixed by dropping the `useMemo`. Plotly data:

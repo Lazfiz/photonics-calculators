@@ -7,7 +7,7 @@ goes in the PR description.
 
 ## Status (session 156, 2026-10-25)
 - Phases 0–1 are done.
-- Phase 2: registry, trust data, duplicate merge and lint rules are done; left: formulas inside page component bodies (2-inline-b2…b6; b1 done).
+- Phase 2: registry, trust data, duplicate merge and lint rules are done; left: formulas inside page component bodies (2-inline-b3…b6; b1, b2 done).
 - Then Phase 3, then Phase 5 (spot-check review, Gemini hero). Phase 3 hasn't started. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
@@ -205,9 +205,7 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   (after deg↔rad and log10 lines); ≈ 80 % are wiring and stay inline: log-spaced chart axes, √N or quadrature sums of
   module outputs, π multiples for display, demo signals, circle areas, 2^bits. The rest are 6 repeated families:
   - [x] b1 (session 156, PR #187): see Done.
-  - [ ] b2: normal-incidence R = ((n₁−n₂)/(n₁+n₂))² and quarter-wave AR indices √(n₀n_s) → existing `normalReflectance`:
-    thin-film beamsplitter, dielectric-stack, dual-band-ar, hard-coating, quarter-wave, single-ar, double-layer-ar;
-    materials/diamond-optics.
+  - [x] b2 (session 156, PR #188): see Done.
   - [ ] b3: Gaussian beam z_R = πw²/λ, w(z), θ = λ/(πw₀), peak 2P/(πw²) = 8P/(πd²) → `wave-optics/gaussian-beam`:
     bessel-beam, mode-matching, dye/gas/solid-state-laser-resonator, spatial-filter, OPA; free-space-comms pointing-loss,
     security; laser-safety retinal-image-size, fiber-laser-safety, diode-laser-safety, skin-mpe.
@@ -261,6 +259,8 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Phase 2 inline-b2 (session 156, `phase-2/inline-b2`, PR #188): `fresnel.normalIncidenceReflectance` (0.04 glass, 0.2 for 2 − i)
+    replaces 4 module copies and 5 page formulas; `quarterWaveArIndex` √(n₀n_s) on quarter-wave, single-ar, double-layer-ar.
   - Phase 2 inline-b1 (session 156, `phase-2/inline-b1`, PR #187): inventory (`scripts/inline-inventory.ts`, 6 families b1–b6);
     `numericalAperture`, `coreIndexFromNA`, `relativeIndexDifference` on 10 fibre pages (NA 0.9 / Δ 0.18 at 1.5/1.2).
   - Phase 2 inline-a + lint (session 155, `phase-2/inline-a`, PR #186): heuristic-model box closed by the audits (10 illustrative
