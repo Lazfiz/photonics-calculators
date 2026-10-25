@@ -5,10 +5,10 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 155, 2026-10-25)
+## Status (session 156, 2026-10-25)
 - Phases 0–1 are done.
-- Phase 2: registry, trust data, duplicate merge and lint rules are done; left: formulas inside page component bodies (2-inline-b).
-- Phase 3 hasn't started. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+- Phase 2: registry, trust data, duplicate merge and lint rules are done; left: formulas inside page component bodies (2-inline-b2…b6; b1 done).
+- Then Phase 3, then Phase 5 (spot-check review, Gemini hero). Phase 3 hasn't started. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -201,8 +201,24 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   added).
 
 ## Phase 2 — architecture (open)
-- [ ] 2-inline-b: physics formulas still written inside page component bodies (top-level helpers are clean since 2-inline-a).
-  Inventory first (send to `checker`), e.g. the `retarder-types` TIR reflection count; then batches of ≈ 4–6 pages.
+- 2-inline-b: formulas inside page component bodies. `scripts/inline-inventory.ts` lists ≈ 550 math lines on 248 pages
+  (after deg↔rad and log10 lines); ≈ 80 % are wiring and stay inline: log-spaced chart axes, √N or quadrature sums of
+  module outputs, π multiples for display, demo signals, circle areas, 2^bits. The rest are 6 repeated families:
+  - [x] b1 (session 156, PR #187): see Done.
+  - [ ] b2: normal-incidence R = ((n₁−n₂)/(n₁+n₂))² and quarter-wave AR indices √(n₀n_s) → existing `normalReflectance`:
+    thin-film beamsplitter, dielectric-stack, dual-band-ar, hard-coating, quarter-wave, single-ar, double-layer-ar;
+    materials/diamond-optics.
+  - [ ] b3: Gaussian beam z_R = πw²/λ, w(z), θ = λ/(πw₀), peak 2P/(πw²) = 8P/(πd²) → `wave-optics/gaussian-beam`:
+    bessel-beam, mode-matching, dye/gas/solid-state-laser-resonator, spatial-filter, OPA; free-space-comms pointing-loss,
+    security; laser-safety retinal-image-size, fiber-laser-safety, diode-laser-safety, skin-mpe.
+  - [ ] b4: phase matching Δk = 2π(n₃/λ₃ − n₁/λ₁ − n₂/λ₂), Λ = 2π/|Δk|, confocal b = 2πnw²/λ → `optical-parametric-oscillator`:
+    sum-frequency, difference-frequency, OPA, OPO.
+  - [ ] b5: Δλ = λ²Δν/c and FSR λ²/(2nL); retardance 2πΔn d/λ; α = 4πk/λ → existing `retardance`, `absorptionCoefficient`:
+    nonzero-dispersion, self-phase-modulation, wdm-coupler, cavity-mode-spacing, liquid-crystal-polarizer, orthoconoscopic,
+    photoelastic, waveplate-order, dichroic-polarizer, spectrophotometry, metal-dielectric.
+  - [ ] b6: leftovers: loss −ln(1−L) (dye, gas, thin-disk), `FWHM_TO_SIGMA` (boxcar, pump-probe, time-resolved, infrared),
+    σT⁴ (blackbody, emissivity-control), detector noise densities (bandwidth kT/C and 2qIR², photodiode-speed NEP),
+    Rayleigh α = A/λ⁴ (otdr-analysis), plasmon E_p (electron-spectroscopy), slab NA (wave-optics/optical-waveguide).
 
 ## Phase 3 — graphics & performance
 - [ ] Chart rewrite:
@@ -223,6 +239,11 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   - Read URL state before first paint: today the defaults render first, then the URL values (a flash).
 - [ ] Vercel Speed Insights and a JS budget in CI.
 
+## Phase 5 — after Phase 3 (user plan, session 156)
+- [ ] Spot-check review: adversarial `physics-reviewer` pass on ≈ 20 pages (the riskiest plus a random sample) against
+  primary literature. Nothing serious → the audits held; real bugs → plan a wider pass.
+- [ ] Last: replace the home-page hero with the one the user made in Gemini, and wire it in (ask the user for the files).
+
 ## Decisions (keep)
 - **Polarization:** Goldstein/Collett convention site-wide.
   - e^{i(ωt − kz)}; RCP = [1, i]/√2, and S3 = 2 Im(Ex* Ey) > 0 for RCP.
@@ -240,6 +261,8 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Phase 2 inline-b1 (session 156, `phase-2/inline-b1`, PR #187): inventory (`scripts/inline-inventory.ts`, 6 families b1–b6);
+    `numericalAperture`, `coreIndexFromNA`, `relativeIndexDifference` on 10 fibre pages (NA 0.9 / Δ 0.18 at 1.5/1.2).
   - Phase 2 inline-a + lint (session 155, `phase-2/inline-a`, PR #186): heuristic-model box closed by the audits (10 illustrative
     pages, heuristic parts labelled); 7 page helpers with a raw formula moved (`refractionAngle`, `waistFromDivergence`,
     `demoSingleBeam`; reuse `diffractionMtf`, `cutoffWavelength`); memoization and explicit-any rules back to error (16 + 3 sites).

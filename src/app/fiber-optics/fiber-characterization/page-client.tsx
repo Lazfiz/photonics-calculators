@@ -11,7 +11,7 @@ import {
   LP11_CUTOFF_V, MIN_V, lp01Mode, lp11CutoffWavelength, modeFieldRadius, vNumber,
 } from "../../../physics/fiber-optics/macro-bending-loss";
 import {
-  coreConfinement, effectiveIndex, normalizedB, petermannIIRadius,
+  coreConfinement, effectiveIndex, normalizedB, numericalAperture, petermannIIRadius, relativeIndexDifference,
 } from "../../../physics/fiber-optics/step-index-modes";
 
 const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
@@ -25,7 +25,7 @@ export default function FiberCharacterizationPage() {
   const [dispersionSlope, setDispersionSlope] = useURLState("dispersionSlope", 0.092, { min: 0, max: 0.2 }); // ps/(nm²·km)
 
   const fiber = useMemo(
-    () => ({ a: coreRadius * 1e-6, n1: coreIndex, NA: Math.sqrt(coreIndex ** 2 - claddingIndex ** 2) }),
+    () => ({ a: coreRadius * 1e-6, n1: coreIndex, NA: numericalAperture(coreIndex, claddingIndex) }),
     [coreRadius, coreIndex, claddingIndex],
   );
 
@@ -38,7 +38,7 @@ export default function FiberCharacterizationPage() {
     return {
       V,
       NA: fiber.NA,
-      delta: (coreIndex ** 2 - claddingIndex ** 2) / (2 * coreIndex ** 2),
+      delta: relativeIndexDifference(fiber),
       acceptance_deg: fiber.NA <= 1 ? (Math.asin(fiber.NA) * 180) / Math.PI : NaN,
       cutoff_nm: lp11CutoffWavelength(fiber) * 1e9,
       b: normalizedB(mode),
@@ -51,7 +51,7 @@ export default function FiberCharacterizationPage() {
       // s/m² → ps/(nm·km): × 1e6. S₀ in ps/(nm²·km) → s/m³: × 1e3.
       D: sellmeierDispersion(lambda, zeroDispersion * 1e-9, dispersionSlope * 1e3) * 1e6,
     };
-  }, [fiber, wavelength, coreIndex, claddingIndex, zeroDispersion, dispersionSlope]);
+  }, [fiber, wavelength, zeroDispersion, dispersionSlope]);
 
   const valid = Number.isFinite(calc.mfd_um) && Number.isFinite(calc.b);
 

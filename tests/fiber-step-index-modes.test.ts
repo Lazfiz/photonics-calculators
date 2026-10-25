@@ -4,8 +4,8 @@ import assert from "node:assert/strict";
 import { lp01Mode, modeFieldRadius, vNumber } from "../src/physics/fiber-optics/macro-bending-loss";
 import { claddingMismatch } from "../src/physics/fiber-optics/microbend";
 import {
-  asymptoticModeCount, besselJZeros, coreConfinement, effectiveIndex, guidedLpModes, guidedModeCount, lp01Field,
-  normalizedB, petermannIIRadius,
+  asymptoticModeCount, besselJZeros, claddingIndex, coreConfinement, coreIndexFromNA, effectiveIndex, guidedLpModes,
+  guidedModeCount, lp01Field, normalizedB, numericalAperture, petermannIIRadius, relativeIndexDifference,
 } from "../src/physics/fiber-optics/step-index-modes";
 import { besselJ, besselK } from "../src/physics/math";
 
@@ -107,4 +107,18 @@ test("weak guidance and very large V", () => {
   assertRel(lp01Field(m, 1 + 1e-12), lp01Field(m, 1), 1e-8, "field continuous at r = a");
   // Cladding tail K₀(Wρ)/K₀(W) ≈ e^(−W(ρ−1))/√ρ (DLMF 10.40.2).
   assertRel(lp01Field(m, 1.01), (lp01Field(m, 1) * Math.exp(-m.W * 0.01)) / Math.sqrt(1.01), 1e-5, "tail at ρ = 1.01");
+});
+
+test("index contrast: NA, core index and Δ (Saleh & Teich eq. 9.1-4; Gloge 1971)", () => {
+  // n₁ = 1.5, n₂ = 1.2: NA = √(2.25 − 1.44) = 0.9 and Δ = 0.81/(2 · 2.25) = 0.18 by hand.
+  assertRel(numericalAperture(1.5, 1.2), 0.9, 1e-14, "NA");
+  assertRel(coreIndexFromNA(1.2, 0.9), 1.5, 1e-14, "n₁ from n₂ and NA");
+  assertRel(relativeIndexDifference({ a: 1e-6, n1: 1.5, NA: 0.9 }), 0.18, 1e-14, "Δ");
+  // SMF-28-like: n₂ round-trips through claddingIndex, and NA = n₁√(2Δ).
+  assertRel(numericalAperture(smf.n1, claddingIndex(smf)), smf.NA, 1e-12, "NA from n₁, n₂");
+  assertRel(smf.n1 * Math.sqrt(2 * relativeIndexDifference(smf)), smf.NA, 1e-12, "NA = n₁√(2Δ)");
+  // Edges: equal indices guide nothing (NA 0); n₂ > n₁ has no NA.
+  assert.equal(numericalAperture(1.45, 1.45), 0);
+  assert.ok(Number.isNaN(numericalAperture(1.44, 1.45)));
+  assert.ok(Number.isNaN(coreIndexFromNA(0, 0.1)));
 });

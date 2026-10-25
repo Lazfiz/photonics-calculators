@@ -5,6 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { beatLength, dgdPerLength, geometricBirefringence } from "../../../physics/fiber-optics/fiber-birefringence";
+import { numericalAperture } from "../../../physics/fiber-optics/step-index-modes";
 
 const clamp = (x: number, lo: number, hi: number) => Math.min(Math.max(x, lo), hi);
 // Text for a result, or a dash when the model has no finite value.
@@ -42,7 +43,7 @@ export default function BirefringenceCalculator() {
     const B = geo.B + Bs;
     // Stress birefringence is nearly independent of λ, so its group value equals the phase value.
     const groupB = geo.groupB + Bs;
-    const NA = n1 > n2 ? Math.sqrt(n1 * n1 - n2 * n2) : NaN;
+    const NA = n1 > n2 ? numericalAperture(n1, n2) : NaN;
 
     // Sweep V from 0.8 to 3 by wavelength at fixed geometry.
     const lambdas: number[] = [], phase: (number | null)[] = [], group: (number | null)[] = [];

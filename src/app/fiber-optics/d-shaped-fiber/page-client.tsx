@@ -7,7 +7,7 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { evanescentIntensityRatio, lp01PowerBeyondPlane } from "../../../physics/fiber-optics/coupled-mode";
 import { LP11_CUTOFF_V, MIN_V, lp01Mode, vNumber } from "../../../physics/fiber-optics/macro-bending-loss";
-import { effectiveIndex, petermannIIRadius } from "../../../physics/fiber-optics/step-index-modes";
+import { effectiveIndex, numericalAperture, petermannIIRadius } from "../../../physics/fiber-optics/step-index-modes";
 
 const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
 const fmtPct = (x: number) =>
@@ -30,7 +30,7 @@ export default function DShapedFiberPage() {
 
   const a_um = coreDia / 2;
   const fiber = useMemo(
-    () => ({ a: a_um * 1e-6, n1: n_core, NA: Math.sqrt(n_core ** 2 - n_clad ** 2) }),
+    () => ({ a: a_um * 1e-6, n1: n_core, NA: numericalAperture(n_core, n_clad) }),
     [a_um, n_core, n_clad],
   );
 

@@ -8,6 +8,7 @@ import { useURLState } from "../../../hooks/use-url-state";
 import {
   adiabaticityScan, coreCladdingTransitionRatio, lp0Modes, taperRadiusAt, taperShape, transitionVEstimate,
 } from "../../../physics/fiber-optics/fiber-taper";
+import { coreIndexFromNA, numericalAperture } from "../../../physics/fiber-optics/step-index-modes";
 
 const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
 /** TE01/TM01 cut off at V = 2.405 for any index contrast, so below it the cladding–surround guide carries only HE11. */
@@ -32,7 +33,7 @@ export default function FiberTaperPage() {
     const lambda = wavelength * 1e-9;
     const pull = { r0: (initialDia / 2) * 1e-6, L0: hotZone * 1e-3, x: elongation * 1e-3, alpha };
     const fibre0 = {
-      a: (coreDia / 2) * 1e-6, rho: pull.r0, n1: Math.sqrt(nClad ** 2 + na ** 2), n2: nClad, n3: nExt,
+      a: (coreDia / 2) * 1e-6, rho: pull.r0, n1: coreIndexFromNA(nClad, na), n2: nClad, n3: nExt,
     };
     const shape = taperShape(pull);
     const ratio = shape.waistRadius / pull.r0;
@@ -41,7 +42,7 @@ export default function FiberTaperPage() {
     const tcc = coreCladdingTransitionRatio(fibre0, lambda);
     const waist = { ...fibre0, a: fibre0.a * ratio, rho: shape.waistRadius };
     const [nEffWaist] = lp0Modes(waist, lambda, 1);
-    const cladNA = Math.sqrt(nClad ** 2 - nExt ** 2);
+    const cladNA = numericalAperture(nClad, nExt);
     const scan = adiabaticityScan(pull, fibre0, lambda, 40);
     // Ω_d is NaN where no LP01 is found (waists far below the wavelength); count those points instead of hiding them.
     let worst: (typeof scan)[number] | undefined;

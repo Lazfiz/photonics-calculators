@@ -44,9 +44,25 @@ export function normalizedB({ V, W }: Lp01Mode): number {
   return (W * W) / (V * V);
 }
 
+/** Numerical aperture NA = √(n₁² − n₂²) of a step-index guide (Saleh & Teich eq. 9.1-4). NaN unless n₁ ≥ n₂ > 0. */
+export function numericalAperture(n1: number, n2: number): number {
+  // (n₁ − n₂)(n₁ + n₂): no cancellation when n₁ ≈ n₂.
+  return n2 > 0 && n1 >= n2 ? Math.sqrt((n1 - n2) * (n1 + n2)) : NaN;
+}
+
 /** Cladding index n₂ = √(n₁² − NA²). */
 export function claddingIndex({ n1, NA }: StepIndexFiber): number {
   return Math.sqrt(n1 * n1 - NA * NA);
+}
+
+/** Core index n₁ = √(n₂² + NA²) from the cladding index and NA. NaN unless n₂ > 0 and NA ≥ 0. */
+export function coreIndexFromNA(n2: number, NA: number): number {
+  return n2 > 0 && NA >= 0 ? Math.sqrt(n2 * n2 + NA * NA) : NaN;
+}
+
+/** Relative index difference Δ = (n₁² − n₂²)/(2n₁²) = NA²/(2n₁²) (Gloge 1971); ≈ (n₁ − n₂)/n₁ for weak guidance. */
+export function relativeIndexDifference({ n1, NA }: StepIndexFiber): number {
+  return n1 > 0 ? (NA * NA) / (2 * n1 * n1) : NaN;
 }
 
 /** Effective (phase) index of LP01: n_eff² = n₂² + b NA². NaN outside the domain. */

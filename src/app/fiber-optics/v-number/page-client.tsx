@@ -6,6 +6,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { LP11_CUTOFF_V, lp11CutoffWavelength, vNumber } from "../../../physics/fiber-optics/macro-bending-loss";
+import { numericalAperture } from "../../../physics/fiber-optics/step-index-modes";
 import {
   MAX_EXACT_MODE_V, asymptoticModeCount, countModes, guidedLpModes,
 } from "../../../physics/fiber-optics/step-index-modes";
@@ -21,13 +22,14 @@ export default function VNumberCalculator() {
   const [claddingIndex, setCladdingIndex] = useURLState("claddingIndex", 1.444, { min: 1, max: 4 });
 
   const calc = useMemo(() => {
-    const NA = inputMode === "na" ? na : Math.sqrt(coreIndex ** 2 - claddingIndex ** 2);
+    const NA = inputMode === "na" ? na : numericalAperture(coreIndex, claddingIndex);
     // n₁ only enters the NA; any n₁ > NA is valid when NA is entered directly.
     const fiber = { a: coreRadius * 1e-6, n1: inputMode === "na" ? Math.max(1, 2 * NA) : coreIndex, NA };
     const V = vNumber(fiber, wavelength * 1e-9);
     const lpModes = guidedLpModes(V);
     return {
       NA,
+      fiber,
       V,
       cutoff_nm: lp11CutoffWavelength(fiber) * 1e9,
       modes: countModes(lpModes),
@@ -51,7 +53,7 @@ export default function VNumberCalculator() {
     const lo = Math.min(600, 0.8 * wavelength);
     const hi = Math.max(2000, 1.2 * wavelength);
     const wl = Array.from({ length: 141 }, (_, i) => lo + ((hi - lo) * i) / 140);
-    const v = wl.map((w) => (2 * Math.PI * coreRadius * 1e-6 * calc.NA) / (w * 1e-9));
+    const v = wl.map((w) => vNumber(calc.fiber, w * 1e-9));
     const traces: Record<string, unknown>[] = [
       { x: wl, y: v, type: "scatter" as const, mode: "lines" as const, name: "V-number", line: { color: "#3b82f6", width: 2 } },
       { x: [lo, hi], y: [LP11_CUTOFF_V, LP11_CUTOFF_V], type: "scatter" as const, mode: "lines" as const, name: "LP11 cutoff (V = 2.405)", line: { color: "#ef4444", width: 2, dash: "dash" as const } },
@@ -60,7 +62,7 @@ export default function VNumberCalculator() {
       traces.push({ x: [wavelength], y: [calc.V], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#22c55e", size: 10 } });
     }
     return traces;
-  }, [calc.NA, calc.V, coreRadius, wavelength]);
+  }, [calc.NA, calc.V, calc.fiber, wavelength]);
 
   const modeList = calc.lpModes.slice(0, MAX_LISTED_MODES).map(({ l, m }) => `LP${l}${m}`).join(", ");
 
