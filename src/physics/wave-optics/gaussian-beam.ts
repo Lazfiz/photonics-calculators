@@ -33,6 +33,12 @@ export function divergenceHalfAngle(b: GaussianBeam): number {
   return ((b.m2 ?? 1) * b.lambda) / (Math.PI * b.w0);
 }
 
+/** Waist radius w₀ = M² λ / (π θ) of a beam with far-field divergence half angle θ (rad), m: the inverse of the above. */
+export function waistFromDivergence(lambda: number, halfAngle: number, m2 = 1): number {
+  if (!(lambda > 0 && halfAngle > 0 && m2 > 0) || !Number.isFinite(lambda * halfAngle * m2)) return NaN;
+  return (m2 * lambda) / (Math.PI * halfAngle);
+}
+
 /** Beam parameter product w₀ θ = M² λ / π, m·rad. */
 export function beamParameterProduct(b: GaussianBeam): number {
   if (!valid(b)) return NaN;

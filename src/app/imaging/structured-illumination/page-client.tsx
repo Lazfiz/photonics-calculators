@@ -3,6 +3,7 @@
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { diffractionMtf } from "../../../physics/imaging/diffraction-mtf";
 import { abbeLateralFwhm, simCutoff, simLateralFwhm, simRawImageCount } from "../../../physics/imaging/super-resolution";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -16,8 +17,6 @@ const row = (label: string, value: string, color = "") => (
 );
 const fmt = (x: number, digits: number, unit: string) => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
 
-// Incoherent OTF of a circular pupil at f = |k|/k_c; zero outside the support.
-const otf = (f: number) => (f < 1 ? (2 / Math.PI) * (Math.acos(f) - f * Math.sqrt(1 - f * f)) : 0);
 const COLORS = ["#f87171", "#60a5fa", "#4ade80", "#facc15"];
 
 export default function StructuredIlluminationPage() {
@@ -55,7 +54,8 @@ export default function StructuredIlluminationPage() {
   const ks = Array.from({ length: 601 }, (_, i) => -kMax + (2 * kMax * i) / 600);
   const supportChart = Array.from({ length: orders + 1 }, (_, j) => ({
     x: ks.map((k) => k * perUm),
-    y: ks.map((k) => Math.max(otf(Math.abs(k - j * k0) / kc), otf(Math.abs(k + j * k0) / kc))),
+    // Incoherent OTF of a circular pupil, shifted to ±j·k₀ (zero outside the support).
+    y: ks.map((k) => Math.max(diffractionMtf(Math.abs(k - j * k0) / kc), diffractionMtf(Math.abs(k + j * k0) / kc))),
     type: "scatter" as const, mode: "lines" as const,
     name: j === 0 ? "Widefield OTF" : `Shifted by ±${j}·k₀`,
     line: { color: COLORS[j % COLORS.length] },

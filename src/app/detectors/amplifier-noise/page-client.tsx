@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -23,14 +22,12 @@ export default function AmplifierNoisePage() {
   const snrTotal = signal / totalNoise;
   const minDetectable = minDetectableSignal(en, 3);
 
-  const chartData = useMemo(() => {
-    const enVals = Array.from({ length: 200 }, (_, i) => 0.5 + (i / 199) * 49.5);
-    return [
-      { x: enVals, y: enVals.map(e => e / gain), type: "scatter" as const, mode: "lines" as const, name: "Noise (DN)", line: { color: "#f87171" }, yaxis: "y" },
-      { x: enVals, y: enVals.map(e => signal / e), type: "scatter" as const, mode: "lines" as const, name: `Amp-limited SNR`, line: { color: "#60a5fa", width: 2 }, yaxis: "y2" },
-      { x: enVals, y: enVals.map(e => signal / sensorNoiseElectrons({ signal, read: e })), type: "scatter" as const, mode: "lines" as const, name: `Total SNR (shot+amp)`, line: { color: "#34d399", width: 2, dash: "dash" as const }, yaxis: "y2" },
-    ];
-  }, [gain, signal]);
+  const enVals = Array.from({ length: 200 }, (_, i) => 0.5 + (i / 199) * 49.5);
+  const chartData = [
+    { x: enVals, y: enVals.map(e => e / gain), type: "scatter" as const, mode: "lines" as const, name: "Noise (DN)", line: { color: "#f87171" }, yaxis: "y" },
+    { x: enVals, y: enVals.map(e => signal / e), type: "scatter" as const, mode: "lines" as const, name: `Amp-limited SNR`, line: { color: "#60a5fa", width: 2 }, yaxis: "y2" },
+    { x: enVals, y: enVals.map(e => signal / sensorNoiseElectrons({ signal, read: e })), type: "scatter" as const, mode: "lines" as const, name: `Total SNR (shot+amp)`, line: { color: "#34d399", width: 2, dash: "dash" as const }, yaxis: "y2" },
+  ];
 
   return (
     <>

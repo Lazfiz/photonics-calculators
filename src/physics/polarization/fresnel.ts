@@ -84,6 +84,16 @@ export function criticalAngle(n1: number, n2: number): number {
   return n1 > 0 && n2 > 0 && n2 < n1 ? Math.asin(n2 / n1) : NaN;
 }
 
+/**
+ * Refraction angle from Snell's law n₁ sin θ₁ = n₂ sin θ₂ for lossless media (Born & Wolf §1.5.1), rad. NaN beyond
+ * the critical angle (total internal reflection) and for n ≤ 0 or θ₁ outside [0, π/2].
+ */
+export function refractionAngle(n1: number, n2: number, theta1: number): number {
+  if (!(n1 > 0 && n2 > 0 && theta1 >= 0 && theta1 <= Math.PI / 2)) return NaN;
+  const s = (n1 / n2) * Math.sin(theta1);
+  return s <= 1 ? Math.asin(s) : NaN;
+}
+
 /** arg z in (−π, π], with a rounding-level imaginary part read as zero (so a negative real number gives +π). */
 export function phaseOf(z: Complex): number {
   const im = Math.abs(z.im) <= 1e-14 * Math.abs(z.re) ? 0 : z.im;

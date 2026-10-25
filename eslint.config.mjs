@@ -5,13 +5,11 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
-  // TEMPORARY (Phase 0): pre-existing, site-wide violations downgraded to warnings so that
-  // `npm run check` can gate CI. Each one is tracked in docs/ROADMAP.md and goes back to "error"
-  // once fixed (Phase 2: memoization, explicit-any). `react-hooks/purity` is back to error (Phase 1).
+  // Downgraded to warnings in Phase 0 while site-wide violations were fixed; back to error since Phase 2.
   {
     rules: {
-      "react-hooks/preserve-manual-memoization": "warn", // 153 sites, page-client useMemo deps
-      "@typescript-eslint/no-explicit-any": "warn", // 116 sites
+      "react-hooks/preserve-manual-memoization": "error",
+      "@typescript-eslint/no-explicit-any": "error",
     },
   },
   // Override default ignores of eslint-config-next.

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { brewsterAngle, criticalAngle, fresnel, phaseDifference, phaseOf } from "../src/physics/polarization/fresnel";
+import { brewsterAngle, criticalAngle, fresnel, phaseDifference, phaseOf, refractionAngle } from "../src/physics/polarization/fresnel";
 import { tirPhaseDifference } from "../src/physics/polarization/retarders";
 import { pseudoOpticalConstants } from "../src/physics/thin-film/ellipsometry";
 import { stackResponse } from "../src/physics/thin-film/transfer-matrix";
@@ -101,4 +101,13 @@ test("invalid input gives NaN", () => {
   assert.ok(Number.isNaN(fresnel(1, 1.5, Math.PI / 2).Rs));
   assert.ok(Number.isNaN(fresnel(0, 1.5, 0).Rs));
   assert.ok(Number.isNaN(fresnel(1, 1.5, 0, -1).Rs));
+});
+
+test("refractionAngle: Snell's law, NaN past the critical angle", () => {
+  // Hand calculation: asin(sin 30°/1.5) = 19.4712206°; from glass, 41.8° (just under asin(1/1.5) = 41.8103°) leaves at 88.850°.
+  assertAbs(refractionAngle(1, 1.5, 30 * deg) / deg, 19.4712206, 1e-6, "air → glass");
+  assertAbs(refractionAngle(1.5, 1, 41.8 * deg) / deg, 88.8503623, 1e-6, "glass → air");
+  assert.equal(refractionAngle(1.33, 1.5, 0), 0);
+  assert.ok(Number.isNaN(refractionAngle(1.5, 1, 42 * deg)), "TIR");
+  assert.ok(Number.isNaN(refractionAngle(0, 1.5, 0.1)), "n ≤ 0");
 });

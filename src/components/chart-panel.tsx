@@ -2,6 +2,7 @@
 
 import React from "react";
 import dynamic from "next/dynamic";
+import type { PlotParams } from "react-plotly.js";
 import { PlotlyChart } from "./plotly-chart";
 
 interface ChartPanelProps {
@@ -27,7 +28,7 @@ class ChartErrorBoundary extends React.Component<
         <div className={`bg-gray-900 border border-gray-800 rounded-lg p-4 ${className ?? ""}`.trim()}>
           {title ? <h3 className="text-lg font-semibold mb-3">{title}</h3> : null}
           <PlotlyChart
-            data={data as any[]}
+            data={data as PlotParams["data"]}
             layout={{
               paper_bgcolor: "transparent",
               plot_bgcolor: "transparent",
@@ -46,7 +47,7 @@ class ChartErrorBoundary extends React.Component<
   }
 }
 
-function needsPlotly(data: Record<string, unknown>[], layout: Record<string, unknown>): boolean {
+function needsPlotly(data: Record<string, unknown>[]): boolean {
   if (!data || data.length === 0) return false;
   // Only route to Plotly for truly complex chart types that SVG can't handle
   return data.some(t => {
@@ -60,12 +61,12 @@ function needsPlotly(data: Record<string, unknown>[], layout: Record<string, unk
 const SimpleChart = dynamic(() => import("./simple-chart").then(m => ({ default: m.default })), { ssr: false });
 
 export default function ChartPanel({ data, layout = {}, config = {}, title, className = "" }: ChartPanelProps) {
-  if (needsPlotly(data, layout)) {
+  if (needsPlotly(data)) {
     return (
       <div className={`bg-gray-900 border border-gray-800 rounded-lg p-4 ${className}`.trim()}>
         {title ? <h3 className="text-lg font-semibold mb-3">{title}</h3> : null}
         <PlotlyChart
-          data={data as any[]}
+          data={data as PlotParams["data"]}
           layout={{
             paper_bgcolor: "transparent",
             plot_bgcolor: "transparent",

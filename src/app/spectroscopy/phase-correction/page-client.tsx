@@ -7,7 +7,7 @@ import { useURLState } from "../../../hooks/use-url-state";
 import { unwrapPhase } from "../../../physics/math";
 import { createRng, gaussian } from "../../../physics/random";
 import {
-  findZpd, forman, lowResolutionPhase, magnitudeSpectrum, mertz, phaseAt, relativeRmsError, synthesizeInterferogram,
+  demoSingleBeam, findZpd, forman, lowResolutionPhase, magnitudeSpectrum, mertz, phaseAt, relativeRmsError, synthesizeInterferogram,
   uncorrectedSpectrum, type Spectrum,
 } from "../../../physics/spectroscopy/ftir-phase-correction";
 
@@ -16,10 +16,8 @@ const fmt = (v: number, d = 3) => (Number.isFinite(v) ? Number(v.toPrecision(d))
 const round6 = (v: number) => Math.round(v * 1e6) / 1e6;
 
 const DX = 632.8e-7; // cm: one HeNe wavelength per sample, Nyquist 7901 cm⁻¹
-const BANDS = [[1450, 20, 0.3], [1700, 25, 0.5], [2350, 30, 0.8], [2900, 40, 0.4]]; // centre, FWHM (cm⁻¹), absorbance
-const g = (s: number, c: number, w: number) => Math.exp(-4 * Math.LN2 * ((s - c) / w) ** 2);
 /** Single-beam spectrum: a broad source envelope times the transmittance of four Gaussian absorption bands. */
-const trueSpectrum = (s: number) => g(s, 2000, 1600) * 10 ** -BANDS.reduce((a, [c, w, A]) => a + A * g(s, c, w), 0);
+const trueSpectrum = (s: number) => demoSingleBeam(s);
 const METHODS = { mertz: "Mertz", forman: "Forman", magnitude: "Magnitude" } as const;
 type Method = keyof typeof METHODS;
 const PLOT_LO = 400, PLOT_HI = 4000;

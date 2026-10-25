@@ -1,25 +1,28 @@
-# Handover — 2026-10-25 (session 154 → session 155)
+# Handover — 2026-10-25 (session 155 → session 156)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 154: closed the **top-50 golden tests** box on `phase-4/golden-inline`. The traffic data couldn't rank pages, so
-the 3 pages without a physics module got one. Next: the **heuristic-model box**, then Phase 2/3.
+Session 155 on `phase-2/inline-a` (PR #186): closed the heuristic-model box (the audits already covered it), moved the 7 page
+helpers that held a raw formula onto modules, and set two lint rules back to `error`. Next: **2-inline-b** (ROADMAP Phase 2).
 
 ## State
-- Vercel Analytics (Hobby: only the last 31 days) showed 6 visitors and ~30 page views on 2026-09-25 → 10-25, too few to rank.
-- Coverage: 237/238 physics modules have a test (`materials/henke-data.ts` is data). All 411 pages import a module, either
-  directly or through `cavity-bandpass-calculator` / `blocking-filter-calculator`. Some pages still keep part of their physics inline.
-- New: `laser-safety/power-density.ts` (`beamIrradiance`, `irradianceAt`) and `polarization/polarizer-extinction.ts`
-  (`analyzerTransmission`, `contrastDb`, `cascade`, `extinctionRatioFromDb`). `dispersion-map` now uses `dispersion-comp`.
-  Tests are hand calculations, plus a quadrature (Gaussian ∫ = P, 86.47 % inside w) and a Mueller-product cross-check.
-  No displayed value changed, except that `polarizer-extinction` now shows "—" instead of −∞ dB when T∥ = 0, and the
-  cascade count is rounded.
+- Triage of 310 top-level page-client helpers: 7 held a formula, the rest format, build charts or wire module calls. New
+  tested functions: `polarization/fresnel.refractionAngle` (Snell, NaN on TIR), `wave-optics/gaussian-beam.waistFromDivergence`
+  (M²λ/(πθ)), `spectroscopy/ftir-phase-correction.gaussianLine` / `demoSingleBeam` / `DEMO_BANDS`. structured-illumination and
+  semiconductor-bandgap reuse `diffractionMtf` and `detectors/ingaas.cutoffWavelength`. No displayed value changed.
+- `react-hooks/preserve-manual-memoization` and `@typescript-eslint/no-explicit-any` are `error` now (only 16 + 3 sites were
+  left, not the 153 + 116 the config comment said). 6 old warnings remain: unused `useState` in 5 thin-film pages, one unused
+  expression in `peak-model.ts:185`.
 
 ## Next actions
 1. `/ship` this branch. After a release the user asks for, run post-merge-check on page loads plus
    `laser-safety/power-density` (peak 254.65 W/cm² at the defaults). No release unless asked.
-2. Heuristic-model box (ROADMAP Phase 4), then the Phase 2 box (move the remaining inline physics into modules), then Phase 3.
+2. 2-inline-b: inventory formulas inside component bodies (send it to `checker` with a RAW/WIRING rule like session 155's),
+   then batches of 4–6 pages. Then Phase 3 (charts, Plotly bundle, JS budget).
 
 ## Non-obvious facts
+- **Session 155:** React Compiler is off, so a `preserve-manual-memoization` error is fixed by dropping the `useMemo`. Plotly data:
+  cast to `PlotParams["data"]` (`src/types/plotly.d.ts`), never `any[]`. `refractionAngle` at exactly the critical angle can
+  round to NaN (n·sin(asin(1/n)) > 1): don't test it there.
 - **Sessions 152–153:** write regex-heavy scripts with the Write tool (a quoted bash heredoc drops doubled backslashes). devctl
   runs gated jobs at BelowNormal priority: under another project's Rust build `npm test` took 15 min (starved, not hung).
 - **Session 151:** ts-morph `sf.insertText` forgets every node: record positions (numbers) first, insert last-to-first.
@@ -34,10 +37,8 @@ the 3 pages without a physics module got one. Next: the **heuristic-model box**,
   (`api.openalex.org/works/doi:<doi>`) gives abstracts. Subagent numbers need checking against the rendered source. Node 24 test
   output prints `ℹ pass N`, not TAP `# pass`. A double-quoted `node -e` with backticks is shell-expanded: write a .cjs file.
   Headless `--dump-dom` wrote empty files under devctl CPU load.
-- **Session 148:** patents.google.com holds full text of old patents (US 3,661,441 tables of TeO₂/LiNbO₃ M₂); Isomet app notes are PDFs
-  at `isomet.com/App-Manual_pdf/`. Melkumov 2004 is arXiv:1502.02885 (Appendix 2, pm²); its pdftotext rows are shifted by one, so
-  render the page. Markevich & Chulkov 2016 is CC BY at vestifm.belnauka.by. 2005 Opt. Express DOIs use `OPEX` (10.1364/OPEX.13.010266):
-  check with `crossref.mjs -q`. pdftotext scrambles Opt. Express table rows: render them.
+- **Session 148:** patents.google.com has old patents' full text; Isomet app notes at `isomet.com/App-Manual_pdf/`. Melkumov 2004 is
+  arXiv:1502.02885 (pdftotext rows shifted by one: render). 2005 Opt. Express DOIs use `OPEX` (check with `crossref.mjs -q`).
 - **Session 147:** CREOL papers download as `api.creol.ucf.edu/Publications/<n>.pdf` (DeSalvo 1996 = 1814, Sheik-Bahae PRL 1990 = 1805;
   find numbers by web search); van Driel's papers at `physics.utoronto.ca/~vandriel/papers/`. No pdftoppm here, so the Read tool can't
   render PDFs: render a page with `uv run -q --with pymupdf python <script>` (fitz `page.get_pixmap(dpi, clip).save(png)`) and Read the PNG.
@@ -64,8 +65,7 @@ the 3 pages without a physics module got one. Next: the **heuristic-model box**,
   truncate at ≈ 1000 characters: filter lines, or use `get_page_text`. Chrome tabs freeze when devctl runs another project's
   `cargo nextest` (CPU 100 %): fall back to headless `ui-check` / `--dump-dom`. **Port 3000 can be another project** (Planet
   Incubator): run this repo on 3100 and check the page title.
-- **Sessions 113–115:** unsourceable constants: make them inputs or drop them, cite the defaults, log the gap. Next redirects keep
-  the query string. Render a SimpleLineChart only with data. `besselJ0Fast` inside quadratures.
+- **Sessions 113–115:** unsourceable constants become inputs or go (cite defaults, log the gap). `besselJ0Fast` in quadratures.
 - **Session 107:** prefix `MSYS_NO_PATHCONV=1` for ui-check and chrome (`C:/Program Files/Google/Chrome/Application/chrome.exe`,
   `--dump-dom` reads hydrated values). Registry/JSX text can't hold `{…}`. `npm run dev` touches `next-env.d.ts`: `git checkout` it.
 - **Charts:** axis minimum at the data minimum, so round plotted values (6 decimals). ChartPanel sends scatter and bar traces to SVG
@@ -73,7 +73,7 @@ the 3 pages without a physics module got one. Next: the **heuristic-model box**,
   `line.color` too. `SimpleLineChart` has no y2.
 - **Pages:** `useURLState` in `.map` breaks hooks; per page `xRaw` from `useURLState`, `x = clamp(xRaw, lo, hi, default)`, pass
   `xRaw` to the input. `detectors.ts`, `imaging.ts`, `materials.ts` registries are LF. NaN/∞ show as "—" with a reason. eslint:
-  ≈ 85 old warnings, lint only changed files; JSX text needs `&apos;`. Prerendered HTML shows defaults.
+  6 old warnings; JSX text needs `&apos;`. Prerendered HTML shows defaults.
 - **Sources:** arXiv, TI notes, PDG, JACoW, APS PRAB, Europe PMC XML download; Appl. Opt., IEEE, Elsevier, nature.com don't (Opt. Express: Chrome).
 - **Shell:** probes are scratchpad `.ts` files run from the repo (`node --import tsx <abs path>`). `python -` hangs. `git grep`
   skips untracked files. CI ≈ 2–3 min. Wrap chrome/ui-check/server commands in `timeout <s>`; port 3100: `netstat -ano | grep :3100`,

@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
-import { hc_eV_nm } from "../../../physics/constants";
+import { cutoffWavelength } from "../../../physics/detectors/ingaas";
 import { INGAAS_LATTICE_MATCHED_X, VARSHNI, ingaasBandGap, varshniBandGap } from "../../../physics/materials/bandgap";
 
 interface Semiconductor {
@@ -29,9 +29,8 @@ const SEMICONDUCTORS: Record<string, Semiconductor> = {
   InGaAs: { name: "In₀.₅₃Ga₀.₄₇As", direct: true, color: "#e879f9", bandGap: T => ingaasBandGap(INGAAS_LATTICE_MATCHED_X, T) },
 };
 
-function egToWavelength(eg: number) {
-  return hc_eV_nm / eg; // nm
-}
+/** Absorption edge hc/E_g in nm for E_g in eV. */
+const egToWavelength = (eg: number) => cutoffWavelength(eg) * 1e9;
 
 export default function SemiconductorBandgapPage() {
   const [selected, setSelected] = useState<string[]>(["GaAs", "InP", "Si", "GaN", "InGaAs"]);

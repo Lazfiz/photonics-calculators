@@ -7,6 +7,7 @@ import { useURLState } from "../../../hooks/use-url-state";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { toDb, topHatGeometricLoss } from "../../../physics/free-space-comms/link-budget";
 import { pointingCapture } from "../../../physics/free-space-comms/pointing-loss";
+import { waistFromDivergence } from "../../../physics/wave-optics/gaussian-beam";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 3) => (!Number.isFinite(x) ? "—" : x === 0 ? "0" : Math.abs(x) >= 0.01 && Math.abs(x) < 1e5 ? x.toPrecision(digits) : x.toExponential(2));
@@ -14,7 +15,7 @@ const fmt = (x: number, digits = 3) => (!Number.isFinite(x) ? "—" : x === 0 ? 
 /** Both models at one range: top-hat d_t + θR and a Gaussian beam of far-field half-angle θ/2. */
 function geometry(divergence: number, range: number, txAperture: number, rxAperture: number, wavelength: number) {
   const theta = divergence * 1e-3, R = range * 1e3, dTx = txAperture * 1e-3, dRx = rxAperture * 1e-2, lambda = wavelength * 1e-9;
-  const waist = lambda / (Math.PI * (theta / 2));
+  const waist = waistFromDivergence(lambda, theta / 2);
   const gauss = pointingCapture(lambda, waist, R, dRx, 0, 0);
   const topHat = topHatGeometricLoss(dTx, theta, R, dRx);
   return {
