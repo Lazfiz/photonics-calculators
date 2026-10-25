@@ -8,10 +8,10 @@ import { useURLState } from "../../../hooks/use-url-state";
 import { stackResponse } from "../../../physics/thin-film/transfer-matrix";
 
 export default function WedgeFilmPage() {
-  const [nFilm, setNFilm] = useURLState("nFilm", 1.5);
-  const [nSub, setNSub] = useURLState("nSub", 1.52);
-  const [nInc, setNInc] = useURLState("nInc", 1.0);
-  const [designWl, setDesignWl] = useURLState("designWl", 550);
+  const [nFilm, setNFilm] = useURLState("nFilm", 1.5, { min: 1, max: 5 });
+  const [nSub, setNSub] = useURLState("nSub", 1.52, { min: 1, max: 5 });
+  const [nInc, setNInc] = useURLState("nInc", 1.0, { min: 1, max: 5 });
+  const [designWl, setDesignWl] = useURLState("designWl", 550, { min: 100, max: 20000 });
   const [wedgeAngleDeg, setWedgeAngleDeg] = useURLState("wedgeAngleDeg", 0.1, { min: 0.001, max: 2 }); // degrees
 
   const chartData = useMemo(() => {
@@ -54,10 +54,10 @@ export default function WedgeFilmPage() {
     <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label={<>n<sub>film</sub></>} value={nFilm} onChange={setNFilm} step="0.01" />
-        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} step="0.01" />
-        <ValidatedNumberInput label={<>n<sub>incident</sub></>} value={nInc} onChange={setNInc} step="0.01" />
-        <ValidatedNumberInput label="Design λ₀ (nm)" value={designWl} onChange={setDesignWl} step="10" />
+        <ValidatedNumberInput label={<>n<sub>film</sub></>} value={nFilm} onChange={setNFilm} min={1} max={5} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} min={1} max={5} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>incident</sub></>} value={nInc} onChange={setNInc} min={1} max={5} step="0.01" />
+        <ValidatedNumberInput label="Design λ₀ (nm)" value={designWl} onChange={setDesignWl} min={100} max={20000} step="10" />
         <ValidatedNumberInput label="Wedge angle α (degrees)" value={wedgeAngleDeg} onChange={setWedgeAngleDeg} min={0.001} max={2} step="0.001" />
       </div>
 
