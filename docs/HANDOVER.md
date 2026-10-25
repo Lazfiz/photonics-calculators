@@ -1,23 +1,22 @@
-# Handover — 2026-10-25 (session 155 → session 156)
+# Handover — 2026-10-25 (session 156 → session 157)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 155 on `phase-2/inline-a` (PR #186): closed the heuristic-model box (the audits already covered it), moved the 7 page
-helpers that held a raw formula onto modules, and set two lint rules back to `error`. Next: **2-inline-b** (ROADMAP Phase 2).
+Session 156 on `phase-2/inline-b1` (PR #187): inventoried formulas inside page components, split 2-inline-b into b1–b6,
+and did b1 (fibre index contrast). Next: **b2** (normal-incidence reflectance, AR indices; 8 pages). User plan: b2–b6, then
+Phase 3, then Phase 5 (spot-check review of ≈ 20 pages, then the user's Gemini home hero, last).
 
 ## State
-- Triage of 310 top-level page-client helpers: 7 held a formula, the rest format, build charts or wire module calls. New
-  tested functions: `polarization/fresnel.refractionAngle` (Snell, NaN on TIR), `wave-optics/gaussian-beam.waistFromDivergence`
-  (M²λ/(πθ)), `spectroscopy/ftir-phase-correction.gaussianLine` / `demoSingleBeam` / `DEMO_BANDS`. structured-illumination and
-  semiconductor-bandgap reuse `diffractionMtf` and `detectors/ingaas.cutoffWavelength`. No displayed value changed.
-- `react-hooks/preserve-manual-memoization` and `@typescript-eslint/no-explicit-any` are `error` now (only 16 + 3 sites were
-  left, not the 153 + 116 the config comment said). 6 old warnings remain: unused `useState` in 5 thin-film pages, one unused
-  expression in `peak-model.ts:185`.
+- `scripts/inline-inventory.ts` (ts-morph) prints each math line inside a component body. Filter deg↔rad and log10 lines, then
+  judge: chart axes, √N or quadrature sums of module outputs, π multiples for display and demo signals stay inline.
+- `fiber-optics/step-index-modes`: `numericalAperture(n1, n2)` (NaN unless n₁ ≥ n₂ > 0), `coreIndexFromNA`,
+  `relativeIndexDifference(fiber)`. 10 fibre pages use them; birefringence-fiber keeps its own n₁ > n₂ guard (NaN at equal).
+  fiber-characterization Δ now shows "—" for n₂ > n₁ (was negative). Tests 1118 pass.
 
 ## Next actions
-1. `/ship` this branch. After a release the user asks for, run post-merge-check on page loads plus
-   `laser-safety/power-density` (peak 254.65 W/cm² at the defaults). No release unless asked.
-2. 2-inline-b: inventory formulas inside component bodies (send it to `checker` with a RAW/WIRING rule like session 155's),
-   then batches of 4–6 pages. Then Phase 3 (charts, Plotly bundle, JS budget).
+1. `/ship` this branch (no page value changes; post-merge-check only on a release the user asks for:
+   `fiber-optics/v-number` V ≈ 2.077, `fiber-optics/fiber-characterization` NA 0.1246 at the defaults).
+2. b2 → b6 per ROADMAP, one PR each. Reuse existing module functions first (`git grep -n "export function <name>" -- src/physics`):
+   `normalReflectance` exists twice (detectors/photodiode-qe with k, materials/polymer-optics with n₀); pick one, don't add a third.
 
 ## Non-obvious facts
 - **Session 155:** React Compiler is off, so a `preserve-manual-memoization` error is fixed by dropping the `useMemo`. Plotly data:
