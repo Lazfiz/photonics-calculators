@@ -9,6 +9,7 @@ import {
   DB_PER_NEPER, LP11_CUTOFF_V, MFD_FIT_V_RANGE, MIN_V, bendLossCoefficient, bendLossPerTurnDb, lp01Mode, lp11CutoffWavelength,
   modeFieldRadius, vNumber,
 } from "../../../physics/fiber-optics/macro-bending-loss";
+import { claddingIndex } from "../../../physics/fiber-optics/step-index-modes";
 
 const CHART_WAVELENGTHS_NM = [1310, 1550, 1625];
 // Log-axis floor for the charts: smaller losses are below any measurement and would only stretch the axis.
@@ -43,14 +44,14 @@ export default function MacrobendingLossPage() {
     const perTurn = bendLossPerTurnDb(fiber, lambda, R, mode);
     return {
       V,
-      n2: Math.sqrt(coreIndex ** 2 - coreNA ** 2),
+      n2: claddingIndex(fiber),
       dBPerMetre: DB_PER_NEPER * bendLossCoefficient(fiber, lambda, R, mode),
       perTurn,
       total: perTurn * numBends,
       mfd_um: 2 * modeFieldRadius(fiber, lambda) * 1e6,
       cutoff_nm: lp11CutoffWavelength(fiber) * 1e9,
     };
-  }, [fiber, wavelength, bendRadius, numBends, coreIndex, coreNA]);
+  }, [fiber, wavelength, bendRadius, numBends]);
 
   const radiusData = useMemo(() => {
     const radii_mm = Array.from({ length: 126 }, (_, i) => 5 + i * 0.2);

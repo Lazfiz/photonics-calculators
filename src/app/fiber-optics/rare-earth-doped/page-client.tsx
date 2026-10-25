@@ -9,6 +9,7 @@ import {
   ionDensityFromWtPpm, twoLevelAt, type Beam, type DopedFiber,
 } from "../../../physics/fiber-optics/doped-fiber-gain";
 import { lp11CutoffWavelength, vNumber, type StepIndexFiber } from "../../../physics/fiber-optics/macro-bending-loss";
+import { numericalAperture } from "../../../physics/fiber-optics/step-index-modes";
 
 const clamp = (x: number, lo: number, hi: number) => Math.min(Math.max(x, lo), hi);
 const SIGMA_UNIT = 1e-25; // m², the unit of the cross-section inputs
@@ -83,7 +84,7 @@ export default function RareEarthDopedCalculator() {
 
   const calc = useMemo(() => {
     const N = ionDensityFromWtPpm(ppm, ion.molarMass);
-    const NA = Math.sqrt(n1 * n1 - n2 * n2);
+    const NA = numericalAperture(n1, n2);
     const guide: StepIndexFiber = { a: r_um * 1e-6, n1, NA };
     const lp = lp_nm * 1e-9;
     const ls = ls_nm * 1e-9;

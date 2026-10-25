@@ -9,7 +9,7 @@ import {
   couplingCoefficient, evanescentIntensityRatio, lp01PowerBeyondPlane, polishedCouplerPhase,
 } from "../../../physics/fiber-optics/coupled-mode";
 import { LP11_CUTOFF_V, MIN_V, lp01Mode, vNumber } from "../../../physics/fiber-optics/macro-bending-loss";
-import { effectiveIndex } from "../../../physics/fiber-optics/step-index-modes";
+import { effectiveIndex, numericalAperture } from "../../../physics/fiber-optics/step-index-modes";
 
 const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
 const fmtPct = (x: number) =>
@@ -31,7 +31,7 @@ export default function SidePolishedPage() {
   const [blockRadius, setBlockRadius] = useURLState("blockRadius", 25, { min: 1, max: 500 }); // cm, radius the fibre is bent to in the block
 
   const fiber = useMemo(
-    () => ({ a: (coreDia / 2) * 1e-6, n1: n_core, NA: Math.sqrt(n_core ** 2 - n_clad ** 2) }),
+    () => ({ a: (coreDia / 2) * 1e-6, n1: n_core, NA: numericalAperture(n_core, n_clad) }),
     [coreDia, n_core, n_clad],
   );
 

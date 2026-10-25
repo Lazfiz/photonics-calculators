@@ -9,7 +9,7 @@ import {
   averagePowerCoupling, couplingCoefficient, criticalBendRadius, pairCrosstalk,
 } from "../../../physics/fiber-optics/coupled-mode";
 import { LP11_CUTOFF_V, MIN_V, lp01Mode, vNumber } from "../../../physics/fiber-optics/macro-bending-loss";
-import { effectiveIndex } from "../../../physics/fiber-optics/step-index-modes";
+import { effectiveIndex, numericalAperture } from "../../../physics/fiber-optics/step-index-modes";
 
 /** Core layouts: nearest neighbours of the worst core, and the outer-core centre radius in pitches. */
 const LAYOUTS: Record<number, { neighbours: number; outerRadius: number; name: string }> = {
@@ -43,7 +43,7 @@ export default function MultiCoreFiberCalculator() {
   const layout = LAYOUTS[cores];
 
   const fiber = useMemo(
-    () => ({ a: coreRadius * 1e-6, n1: coreIndex, NA: Math.sqrt(coreIndex ** 2 - claddingIndex ** 2) }),
+    () => ({ a: coreRadius * 1e-6, n1: coreIndex, NA: numericalAperture(coreIndex, claddingIndex) }),
     [coreRadius, coreIndex, claddingIndex],
   );
 

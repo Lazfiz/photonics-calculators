@@ -9,7 +9,7 @@ import {
   LP11_CUTOFF_V, MFD_FIT_V_RANGE, MIN_V, bendLossPerTurnDb, lp01Mode, lp11CutoffWavelength, modeFieldRadius, vNumber,
 } from "../../../physics/fiber-optics/macro-bending-loss";
 import {
-  claddingIndex, coreConfinement, effectiveIndex, lp01Field, normalizedB, petermannIIRadius,
+  claddingIndex, coreConfinement, effectiveIndex, lp01Field, normalizedB, petermannIIRadius, relativeIndexDifference,
 } from "../../../physics/fiber-optics/step-index-modes";
 
 // SMF-28-like step-index equivalent: a = 4.1 µm, NA 0.1246, pure-silica cladding (n₂ = 1.4440 at 1550 nm).
@@ -49,7 +49,7 @@ export default function ModeFieldDiameterPage() {
     return {
       V,
       mode,
-      delta: na ** 2 / (2 * coreIndex ** 2),
+      delta: relativeIndexDifference(fiber),
       n2: claddingIndex(fiber),
       wFit_um: wFit * 1e6,
       mfdFit_um: 2 * wFit * 1e6,
@@ -60,7 +60,7 @@ export default function ModeFieldDiameterPage() {
       nEff: effectiveIndex(fiber, lambda, mode),
       gamma: coreConfinement(mode),
     };
-  }, [fiber, wavelength, na, coreIndex]);
+  }, [fiber, wavelength]);
 
   const valid = Number.isFinite(calc.mode.U);
 
