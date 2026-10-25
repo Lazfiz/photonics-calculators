@@ -3,13 +3,14 @@
 import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 import { actinicUvWeight, uvMaxIrradiance, UV_LIMIT_PERIOD } from "../../../physics/laser-safety/hazard-weighting";
 
 export default function UVExposurePage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 254); // nm (UV-C, mercury line)
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 8); // hours
-  const [beamArea, setBeamArea] = useURLState("beamArea", 1); // cm²
+  const [wavelength, setWavelength] = useURLState("wavelength", 254, { min: 180, max: 400 }); // nm (UV-C, mercury line), the S(λ) table
+  const [exposureTime, setExposureTime] = useURLState("exposureTime", 8, { min: 1e-6, max: 8 }); // hours, within the 8 h limit period
+  const [beamArea, setBeamArea] = useURLState("beamArea", 1, { min: 0 }); // cm²
 
   // S(λ) and the limits: src/physics/laser-safety/hazard-weighting.ts (ICNIRP 2004 Table 1). SI inside.
   const results = useMemo(() => {
@@ -48,13 +49,13 @@ export default function UVExposurePage() {
           <h2 className="text-lg font-semibold mb-4">Input</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="1" />
+              <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={180} max={400} step="1" />
             </div>
             <div>
-              <ValidatedNumberInput label="Exposure Time (hours)" value={exposureTime} onChange={setExposureTime} step="0.5" />
+              <ValidatedNumberInput label="Exposure Time (hours)" value={exposureTime} onChange={setExposureTime} min={1e-6} max={8} step="0.5" />
             </div>
             <div>
-              <ValidatedNumberInput label="Beam/Source Area (cm²)" value={beamArea} onChange={setBeamArea} step="0.1" />
+              <ValidatedNumberInput label="Beam/Source Area (cm²)" value={beamArea} onChange={setBeamArea} min={0} step="0.1" />
             </div>
           </div>
         </div>

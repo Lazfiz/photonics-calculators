@@ -8,11 +8,11 @@ import { useURLState } from "../../../hooks/use-url-state";
 export default function DispersionMapPage() {
   const [lengthSMF, setLengthSMF] = useURLState("lengthSMF", 80, { min: 0, max: 500 });
   const [lengthDCF, setLengthDCF] = useURLState("lengthDCF", 15, { min: 0, max: 100 });
-  const [dispSMF, setDispSMF] = useURLState("dispSMF", 17);
+  const [dispSMF, setDispSMF] = useURLState("dispSMF", 17, { min: -30, max: 30 });
   const [dispDCF, setDispDCF] = useState(-100);
-  const [slopeSMF, setSlopeSMF] = useURLState("slopeSMF", 0.056);
+  const [slopeSMF, setSlopeSMF] = useURLState("slopeSMF", 0.056, { min: -1, max: 1 });
   const [slopeDCF, setSlopeDCF] = useState(-0.2);
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 1530, max: 1629 }); // nm, inside the plotted band
 
   const totalDispSMF = lengthSMF * dispSMF;
   const totalDispDCF = lengthDCF * dispDCF;
@@ -39,11 +39,12 @@ export default function DispersionMapPage() {
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="SMF Length (km)" value={lengthSMF} onChange={setLengthSMF} min={0} max={500} />
-        <ValidatedNumberInput label="SMF Dispersion (ps/nm/km)" value={dispSMF} onChange={setDispSMF} step="0.1" />
-        <ValidatedNumberInput label="SMF Slope (ps/nm²/km)" value={slopeSMF} onChange={setSlopeSMF} step="0.001" />
+        <ValidatedNumberInput label="SMF Dispersion (ps/nm/km)" value={dispSMF} onChange={setDispSMF} min={-30} max={30} step="0.1" />
+        <ValidatedNumberInput label="SMF Slope (ps/nm²/km)" value={slopeSMF} onChange={setSlopeSMF} min={-1} max={1} step="0.001" />
         <ValidatedNumberInput label="DCF Length (km)" value={lengthDCF} onChange={setLengthDCF} min={0} max={100} />
         <ValidatedNumberInput label="DCF Dispersion (ps/nm/km)" value={dispDCF} onChange={setDispDCF} step="1" />
         <ValidatedNumberInput label="DCF Slope (ps/nm²/km)" value={slopeDCF} onChange={setSlopeDCF} step="0.01" />
+        <ValidatedNumberInput label="Reference Wavelength (nm)" value={wavelength} onChange={setWavelength} min={1530} max={1629} step="1" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

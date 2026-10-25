@@ -13,10 +13,10 @@ const clamp = (x: number, lo: number, hi: number, fallback: number) =>
 const dBm = (watts: number) => 10 * Math.log10(watts / 1e-3);
 
 export default function BpskQpskPage() {
-  const [ebn0dB, setEbn0dB] = useURLState("ebn0dB", 10);
+  const [ebn0dB, setEbn0dB] = useURLState("ebn0dB", 10, { min: -10, max: 30 });
   const [modulation, setModulation] = useState<"BPSK" | "QPSK" | "OQPSK">("BPSK");
   const [dataRateRaw, setDataRate] = useURLState("dataRate", 1); // Gbps
-  const [rxPower, setRxPower] = useURLState("rxPower", -50); // dBm
+  const [rxPower, setRxPower] = useURLState("rxPower", -50, { min: -100, max: 30 }); // dBm
   const [wavelengthRaw, setWavelength] = useURLState("wavelength", 1550); // nm
   const [etaRaw, setEta] = useURLState("eta", 1);
   const [receiver, setReceiver] = useState<CoherentReceiver>("heterodyne");
@@ -80,7 +80,7 @@ export default function BpskQpskPage() {
               <option>BPSK</option><option>QPSK</option><option>OQPSK</option>
             </select>
           </div>
-          <ValidatedNumberInput label="Eb/N0 (dB)" value={ebn0dB} onChange={setEbn0dB} />
+          <ValidatedNumberInput label="Eb/N0 (dB)" value={ebn0dB} onChange={setEbn0dB} min={-10} max={30} />
           <ValidatedNumberInput label="Data Rate (Gbps)" value={dataRateRaw} onChange={setDataRate} min={1e-6} max={1e4} step="any" />
           <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthRaw} onChange={setWavelength} min={200} max={20000} step="any" />
           <ValidatedNumberInput label="Photodiode Quantum Efficiency η" value={etaRaw} onChange={setEta} min={0.01} max={1} step="any" />
@@ -95,7 +95,7 @@ export default function BpskQpskPage() {
               <p className="mt-1 text-xs text-yellow-300">QPSK and OQPSK need both quadratures: N₀ is the two-quadrature value.</p>
             )}
           </div>
-          <ValidatedNumberInput label="RX Power (dBm)" value={rxPower} onChange={setRxPower} />
+          <ValidatedNumberInput label="RX Power (dBm)" value={rxPower} onChange={setRxPower} min={-100} max={30} />
         </div>
 
         <div className="space-y-4">

@@ -3,7 +3,8 @@
 import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 import {
   blueLightSmallSourceMaxDuration, blueLightSmallSourceRiskGroup, blueLightWeight, type RiskGroup,
 } from "../../../physics/laser-safety/hazard-weighting";
@@ -15,9 +16,9 @@ const riskGroupLabel: Record<RiskGroup, string> = {
 const fmt = (v: number) => (v !== 0 && (Math.abs(v) < 0.01 || Math.abs(v) >= 1e5) ? v.toExponential(2) : v.toPrecision(3));
 
 export default function BlueLightHazardPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 450); // nm
-  const [power, setPower] = useURLState("power", 1); // W
-  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 2); // mm
+  const [wavelength, setWavelength] = useURLState("wavelength", 450, { min: 300, max: 700 }); // nm, the B(λ) table
+  const [power, setPower] = useURLState("power", 1, { min: 0 }); // W
+  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 2, { min: 0.001 }); // mm
 
   // B(λ), the small-source limits and the risk groups: src/physics/laser-safety/hazard-weighting.ts
   // (ICNIRP 2013, IEC 62471:2006). A laser beam viewed directly is a small source (α < 11 mrad).
@@ -61,13 +62,13 @@ export default function BlueLightHazardPage() {
           <h2 className="text-lg font-semibold mb-4">Input</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="1" />
+              <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={300} max={700} step="1" />
             </div>
             <div>
-              <ValidatedNumberInput label="Power (W)" value={power} onChange={setPower} step="0.1" />
+              <ValidatedNumberInput label="Power (W)" value={power} onChange={setPower} min={0} step="0.1" />
             </div>
             <div>
-              <ValidatedNumberInput label="Beam Diameter (mm)" value={beamDiam} onChange={setBeamDiam} step="0.1" />
+              <ValidatedNumberInput label="Beam Diameter (mm)" value={beamDiam} onChange={setBeamDiam} min={0.001} step="0.1" />
             </div>
           </div>
         </div>
