@@ -1,23 +1,23 @@
-# Handover — 2026-10-25 (session 153 → session 154)
+# Handover — 2026-10-25 (session 154 → session 155)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 153: **Findings 4f-c and 4f-d** done on `phase-4/findings-4f-cd`: the last of the codemod's 185 skipped URL values.
-Next: **golden-value tests for the top 50 calculators by traffic**; get traffic data first (Vercel MCP `aggregate_pageviews`).
+Session 154: closed the **top-50 golden tests** box on `phase-4/golden-inline`. The traffic data couldn't rank pages, so
+the 3 pages without a physics module got one. Next: the **heuristic-model box**, then Phase 2/3.
 
 ## State
-- 4f-c: all 56 flagged bindings in materials, imaging, detectors, spectroscopy were already guarded (selects use
-  `includes`/`find ?? default`; "0 = preset" overrides are clamped after the swap; text parsers filter and clamp).
-- 4f-d: 24 bindings on 7 pages got `useURLState(key, def, { min, max })` plus the field's min/max: nH/nL/nSub/nInc/nFilm
-  1–5 on `angle-tuning`, `dichroic`, `spectrophotometry`, `wavelength-separation`, `wedge-film` (the beamsplitter
-  convention); design λ 100–20000 nm (`dichroic`, `wedge-film`); film thickness 0–20000 nm (`spectrophotometry`);
-  Poincaré θ 0–180°; Gires–Tournois λ 100–20000 nm, plot bandwidth 0.1–20000 nm with the span capped at λ. The other 35
-  (Stokes validation, periodic angles, validated adhesion/evaporation lists, ABCD/HG/cavity clamps) were already guarded.
-  No default changed. The ROADMAP Cross-cutting bullet for this list is gone.
+- Vercel Analytics (Hobby: only the last 31 days) showed 6 visitors and ~30 page views on 2026-09-25 → 10-25, too few to rank.
+- Coverage: 237/238 physics modules have a test (`materials/henke-data.ts` is data). All 411 pages import a module, either
+  directly or through `cavity-bandpass-calculator` / `blocking-filter-calculator`. Some pages still keep part of their physics inline.
+- New: `laser-safety/power-density.ts` (`beamIrradiance`, `irradianceAt`) and `polarization/polarizer-extinction.ts`
+  (`analyzerTransmission`, `contrastDb`, `cascade`, `extinctionRatioFromDb`). `dispersion-map` now uses `dispersion-comp`.
+  Tests are hand calculations, plus a quadrature (Gaussian ∫ = P, 86.47 % inside w) and a Mueller-product cross-check.
+  No displayed value changed, except that `polarizer-extinction` now shows "—" instead of −∞ dB when T∥ = 0, and the
+  cascade count is rounded.
 
 ## Next actions
-1. `/ship` this branch. No default changed: after a release the user asks for, post-merge-check only needs page loads
-   (`thin-film/dichroic`, `wave-optics/gires-tournois`). No release unless asked.
-2. Top-50 golden tests (needs traffic data), then the heuristic-model box and the Phase 2/3 boxes further down.
+1. `/ship` this branch. After a release the user asks for, run post-merge-check on page loads plus
+   `laser-safety/power-density` (peak 254.65 W/cm² at the defaults). No release unless asked.
+2. Heuristic-model box (ROADMAP Phase 4), then the Phase 2 box (move the remaining inline physics into modules), then Phase 3.
 
 ## Non-obvious facts
 - **Sessions 152–153:** write regex-heavy scripts with the Write tool (a quoted bash heredoc drops doubled backslashes). devctl

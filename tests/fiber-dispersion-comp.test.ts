@@ -104,3 +104,20 @@ test("usable band of the compensated link ends at the 1 dB penalty", () => {
   assert.equal(usableHalfBandwidth(0, sigmaLambda, toleratedBroadening(B)), Infinity);
   assert.equal(usableHalfBandwidth(1e6 * PS_NM2, sigmaLambda, toleratedBroadening(B)), 0);
 });
+
+test("dispersion-map page defaults: 80 km SMF + 15 km DCF, net −140 ps/nm, residual slope 1.48 ps/nm²", () => {
+  // Hand calculation (Agrawal, dispersion-management chapter: D_net = L_s D_s + L_c D_c, S_res = L_s S_s + L_c S_c):
+  // 80·17 = 1360 ps/nm, 15·(−100) = −1500 ps/nm → −140 ps/nm; 80·0.056 − 15·0.2 = 4.48 − 3 = 1.48 ps/nm².
+  // At 1560 nm (δλ = +10 nm): 80·(17 + 0.56) + 15·(−100 − 2) = 1404.8 − 1530 = −125.2 ps/nm.
+  const s = { D: 17 * PS_NM_KM, S: 0.056 * PS_NM2_KM };
+  const c = { D: -100 * PS_NM_KM, S: -0.2 * PS_NM2_KM };
+  const PS_NM = 1e-3; // ps/nm → s/m
+  assertRel(accumulatedDispersion(s, 80 * km), 1360 * PS_NM, 1e-12, "SMF");
+  assertRel(accumulatedDispersion(c, 15 * km), -1500 * PS_NM, 1e-12, "DCF");
+  assertRel(accumulatedDispersion(s, 80 * km) + accumulatedDispersion(c, 15 * km), -140 * PS_NM, 1e-12, "net");
+  assertRel(residualSlope(s, 80 * km, c, 15 * km), 1.48 * PS_NM2, 1e-12, "S_res");
+  const net1560 = accumulatedDispersion(s, 80 * km, 10 * nm) + accumulatedDispersion(c, 15 * km, 10 * nm);
+  assertRel(net1560, -125.2 * PS_NM, 1e-12, "net at 1560 nm");
+  // Edge: zero lengths accumulate nothing.
+  assert.equal(accumulatedDispersion(s, 0, 10 * nm) + accumulatedDispersion(c, 0, 10 * nm), 0);
+});

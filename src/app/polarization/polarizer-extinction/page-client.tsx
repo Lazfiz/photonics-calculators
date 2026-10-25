@@ -5,37 +5,34 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import {
+  analyzerTransmission, cascade, contrastDb as contrastDbOf, extinctionRatioFromDb,
+} from "../../../physics/polarization/polarizer-extinction";
+
+const DEG = Math.PI / 180;
+
 export default function PolarizerExtinctionPage() {
   const [extinctionRatioDb, setExtinctionRatioDb] = useURLState("extinctionRatioDb", 30, { min: 0, max: 100 });
   const [transmissionPercent, setTransmissionPercent] = useURLState("transmissionPercent", 95, { min: 0, max: 100 });
-  const [numPolarizers, setNumPolarizers] = useURLState("numPolarizers", 2, { min: 1, max: 10 });
+  const [numPolarizersRaw, setNumPolarizers] = useURLState("numPolarizers", 2, { min: 1, max: 10 });
+  const numPolarizers = Math.round(numPolarizersRaw);
   const [angleDeg, setAngleDeg] = useURLState("angleDeg", 0, { min: 0, max: 90 });
 
   const T_parallel = transmissionPercent / 100;
-  const ER_linear = Math.pow(10, extinctionRatioDb / 10);
+  const ER_linear = extinctionRatioFromDb(extinctionRatioDb);
   const T_perp = T_parallel / ER_linear;
 
-  // Malus&apos;s law for two crossed polarizers with imperfect extinction
-  const cosTheta = Math.cos(angleDeg * Math.PI / 180);
-  const transmitted = T_parallel * Math.pow(cosTheta, 2) + T_perp * Math.pow(Math.sin(angleDeg * Math.PI / 180), 2);
-  const contrastRatio = T_parallel / Math.max(transmitted, 1e-15);
-  const contrastDb = 10 * Math.log10(contrastRatio);
+  const transmitted = analyzerTransmission(T_parallel, T_perp, angleDeg * DEG);
+  const contrastDb = contrastDbOf(T_parallel, transmitted);
 
-  // Cascade: n polarizers in series
-  const cascadedER = Math.pow(ER_linear, numPolarizers);
-  const cascadedERdb = 10 * Math.log10(cascadedER);
-  const cascadedT = Math.pow(T_parallel, numPolarizers);
+  const { erDb: cascadedERdb, tPar: cascadedT } = cascade(T_parallel, extinctionRatioDb, numPolarizers);
 
   const chartData = useMemo(() => {
     const angles = Array.from({ length: 361 }, (_, i) => i);
     return [
       {
         x: angles,
-        y: angles.map(a => {
-          const c = Math.cos(a * Math.PI / 180);
-          const s = Math.sin(a * Math.PI / 180);
-          return (T_parallel * c * c + T_perp * s * s) * 100;
-        }),
+        y: angles.map(a => analyzerTransmission(T_parallel, T_perp, a * DEG) * 100),
         type: "scatter" as const, mode: "lines" as const,
         name: "Transmission",
         line: { color: "#60a5fa", width: 2 },
@@ -53,12 +50,12 @@ export default function PolarizerExtinctionPage() {
     const ns = Array.from({ length: 10 }, (_, i) => i + 1);
     return [
       {
-        x: ns, y: ns.map(n => 10 * Math.log10(Math.pow(ER_linear, n))),
+        x: ns, y: ns.map(n => cascade(T_parallel, extinctionRatioDb, n).erDb),
         type: "bar" as const, name: "Cascaded ER (dB)",
         marker: { color: "#34d399" },
       },
     ];
-  }, [ER_linear]);
+  }, [T_parallel, extinctionRatioDb]);
 
   return (
     <>
@@ -73,7 +70,7 @@ export default function PolarizerExtinctionPage() {
         <ValidatedNumberInput label="Extinction Ratio (dB)" value={extinctionRatioDb} onChange={setExtinctionRatioDb} min={0} max={100} step="0.1" />
         <ValidatedNumberInput label="Max Transmission (%)" value={transmissionPercent} onChange={setTransmissionPercent} min={0} max={100} step="0.1" />
         <ValidatedNumberInput label="Analyzer Angle (°)" value={angleDeg} onChange={setAngleDeg} min={0} max={90} step="0.1" />
-        <ValidatedNumberInput label="Cascade Count" value={numPolarizers} onChange={setNumPolarizers} min={1} max={10} />
+        <ValidatedNumberInput label="Cascade Count" value={numPolarizersRaw} onChange={setNumPolarizers} min={1} max={10} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
@@ -87,7 +84,8 @@ export default function PolarizerExtinctionPage() {
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Contrast at {angleDeg}°</p>
-          <p className="text-2xl font-bold text-yellow-400">{contrastDb.toFixed(1)} dB</p>
+          <p className="text-2xl font-bold text-yellow-400">{Number.isFinite(contrastDb) ? `${contrastDb.toFixed(1)} dB` : "—"}</p>
+          {!Number.isFinite(contrastDb) && <p className="text-xs text-gray-500">no transmission (T∥ = 0)</p>}
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Cascaded ER</p>
