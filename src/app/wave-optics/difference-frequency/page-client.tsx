@@ -5,7 +5,10 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { parametricGainCoefficient } from "../../../physics/wave-optics/optical-parametric-oscillator";
-import { gaussianMixingPower, idlerWavelength, mixingEfficiency } from "../../../physics/wave-optics/three-wave";
+import { confocalParameter } from "../../../physics/imaging/second-harmonic-generation";
+import {
+  gaussianMixingPower, idlerWavelength, mixingEfficiency, qpmPeriod as qpmPeriodOf, threeWaveMismatch,
+} from "../../../physics/wave-optics/three-wave";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
@@ -46,15 +49,15 @@ export default function DifferenceFrequencyPage() {
   const Pi = power(L, deltaK);
   const normalized = Pp > 0 && Ps > 0 ? Pi / (Pp * Ps) : NaN;
   // Δk = 2π(n_p/λ_p − n_s/λ_s − n_i/λ_i) without phase matching; first-order QPM period 2π/|Δk|.
-  const deltaKMaterial = 2 * Math.PI * (nP / lambdaP - nS / lambdaS - nI / lambdaI);
-  const qpmPeriod = (2 * Math.PI) / Math.abs(deltaKMaterial);
+  const deltaKMaterial = threeWaveMismatch(nS, lambdaS, nI, lambdaI, nP, lambdaP);
+  const qpmPeriod = qpmPeriodOf(deltaKMaterial);
   // On-axis parametric gain ΓL at the Gaussian peak intensity 2P_p/(πw²): the low-gain law needs ΓL ≪ 1.
   const gamma = parametricGainCoefficient(
     { lambdaPump: lambdaP, lambdaSignal: lambdaS, dEff: Math.max(deff, 1e-30), nPump: nP, nSignal: nS, nIdler: nI },
     (2 * Pp) / (Math.PI * w * w),
   );
   const gammaL = gamma * L;
-  const bMin = Math.min((2 * Math.PI * nP * w * w) / lambdaP, (2 * Math.PI * nS * w * w) / lambdaS);
+  const bMin = Math.min(confocalParameter(lambdaP, nP, w), confocalParameter(lambdaS, nS, w));
   const xi = L / bMin;
 
   const warnings = [

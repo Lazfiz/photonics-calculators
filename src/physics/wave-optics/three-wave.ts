@@ -26,9 +26,9 @@
 import { epsilon_0, c } from "../constants";
 import { sinc } from "../math";
 import { sumFrequencyWavelength } from "../imaging/second-harmonic-generation";
-import { idlerWavelength } from "./optical-parametric-oscillator";
+import { idlerWavelength, qpmPeriod, threeWaveMismatch } from "./optical-parametric-oscillator";
 
-export { sumFrequencyWavelength, idlerWavelength };
+export { sumFrequencyWavelength, idlerWavelength, qpmPeriod, threeWaveMismatch };
 
 /**
  * d₃₃ of congruent LiNbO₃ for SHG of 1.313 µm, 19.5 pm/V (I. Shoji et al., J. Opt. Soc. Am. B 14, 2268 (1997),

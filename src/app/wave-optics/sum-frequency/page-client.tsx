@@ -5,7 +5,10 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { sinc } from "../../../physics/math";
-import { gaussianMixingPower, mixingEfficiency, sumFrequencyWavelength } from "../../../physics/wave-optics/three-wave";
+import { confocalParameter } from "../../../physics/imaging/second-harmonic-generation";
+import {
+  gaussianMixingPower, mixingEfficiency, qpmPeriod as qpmPeriodOf, sumFrequencyWavelength, threeWaveMismatch,
+} from "../../../physics/wave-optics/three-wave";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
@@ -47,9 +50,9 @@ export default function SumFrequencyPage() {
   const sinc2 = sinc(phase) ** 2;
   const normalized = P1 > 0 && P2 > 0 ? P3 / (P1 * P2) : NaN;
   // Index mismatch without phase matching: Δk = 2π(n₃/λ₃ − n₁/λ₁ − n₂/λ₂); first-order QPM period 2π/|Δk|.
-  const deltaKMaterial = 2 * Math.PI * (n3 / lambda3 - n1 / lambda1 - n2 / lambda2);
-  const qpmPeriod = (2 * Math.PI) / Math.abs(deltaKMaterial);
-  const bMin = Math.min((2 * Math.PI * n1 * w * w) / lambda1, (2 * Math.PI * n2 * w * w) / lambda2);
+  const deltaKMaterial = threeWaveMismatch(n1, lambda1, n2, lambda2, n3, lambda3);
+  const qpmPeriod = qpmPeriodOf(deltaKMaterial);
+  const bMin = Math.min(confocalParameter(lambda1, n1, w), confocalParameter(lambda2, n2, w));
   const xi = L / bMin;
   // Fraction of the weaker input's photons converted: (P₃/hν₃) / min(P₁/hν₁, P₂/hν₂).
   const photonFraction = P3 * lambda3 / Math.min(P1 * lambda1, P2 * lambda2);

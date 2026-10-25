@@ -5,7 +5,9 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { c } from "../../../physics/constants";
-import { parametricGainCoefficient, phaseMismatch } from "../../../physics/wave-optics/optical-parametric-oscillator";
+import {
+  parametricGainCoefficient, phaseMismatch, qpmPeriod as qpmPeriodOf,
+} from "../../../physics/wave-optics/optical-parametric-oscillator";
 import {
   LOW_GAIN_BANDWIDTH_FACTOR, detunedMismatch, gainBandwidth, idlerPower, idlerWavelength, parametricGain,
 } from "../../../physics/wave-optics/three-wave";
@@ -57,7 +59,7 @@ export default function OPACalculator() {
   const pumpDrawn = (G - 1) * Ps * (lambdaS / lambdaP); // one pump photon per signal photon gained
   const bandwidth = gainBandwidth(gamma, L, gvm);
   const bandwidthNm = (lambdaS ** 2 * bandwidth) / c;
-  const qpmPeriod = (2 * Math.PI) / Math.abs(phaseMismatch(process));
+  const qpmPeriod = qpmPeriodOf(phaseMismatch(process));
 
   const warnings = [
     !valid && "The signal wavelength must be longer than the pump wavelength: the idler is at 1/λ_i = 1/λ_p − 1/λ_s.",
