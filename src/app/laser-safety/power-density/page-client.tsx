@@ -3,49 +3,31 @@
 import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { beamIrradiance, irradianceAt, type BeamProfile } from "../../../physics/laser-safety/power-density";
+
+const W_PER_M2_TO_W_PER_CM2 = 1e-4;
 
 export default function PowerDensityPage() {
   const [power, setPower] = useURLState("power", 1, { min: 0 }); // W
   const [diameter, setDiameter] = useURLState("diameter", 1, { min: 0.01 }); // mm (1/e²)
-  const [beamProfile, setBeamProfile] = useState<"gaussian" | "tophat">("gaussian");
+  const [beamProfile, setBeamProfile] = useState<BeamProfile>("gaussian");
 
-  // Power density (irradiance): E = P / A
-  // Gaussian: peak irradiance = 2P / (π w₀²) = 8P / (π d²)
-  // Top-hat: E = P / (π r²) = 4P / (π d²)
   const results = useMemo(() => {
-    const d_cm = diameter / 10; // cm
-    const area = Math.PI * Math.pow(d_cm / 2, 2); // cm²
-    const r_mm = diameter / 2; // mm
-    const w0 = r_mm; // 1/e² radius = w₀
-
-    let peakIrradiance: number; // W/cm²
-    let avgIrradiance: number;
-
-    if (beamProfile === "gaussian") {
-      // For Gaussian: I_peak = 2P / (π w₀²)
-      peakIrradiance = (2 * power) / (Math.PI * Math.pow(w0 / 10, 2));
-      avgIrradiance = power / area;
-    } else {
-      // Top-hat: uniform
-      peakIrradiance = power / area;
-      avgIrradiance = power / area;
-    }
-
-    return { peakIrradiance, avgIrradiance, area, w0 };
+    const r = beamIrradiance(power, diameter * 1e-3, beamProfile);
+    return {
+      peakIrradiance: r.peak * W_PER_M2_TO_W_PER_CM2,
+      avgIrradiance: r.mean * W_PER_M2_TO_W_PER_CM2,
+      area: r.area * 1e4, // cm²
+    };
   }, [power, diameter, beamProfile]);
 
   const chartData = useMemo(() => {
-    const r = Array.from({ length: 200 }, (_, i) => (i / 200) * diameter * 1.5);
-    const intensity = r.map(ri => {
-      if (beamProfile === "gaussian") {
-        return (2 * power) / (Math.PI * Math.pow(results.w0 / 10, 2)) * Math.exp(-2 * Math.pow(ri / results.w0, 2));
-      } else {
-        return ri <= diameter / 2 ? results.peakIrradiance : 0;
-      }
-    });
+    const r = Array.from({ length: 200 }, (_, i) => (i / 200) * diameter * 1.5); // mm
+    const intensity = r.map(ri => irradianceAt(ri * 1e-3, power, diameter * 1e-3, beamProfile) * W_PER_M2_TO_W_PER_CM2);
     return { r, intensity };
-  }, [power, diameter, beamProfile, results]);
+  }, [power, diameter, beamProfile]);
 
   const fmt = (v: number) => {
     if (v >= 1e6) return v.toExponential(2);
@@ -80,7 +62,7 @@ export default function PowerDensityPage() {
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-1">Beam Profile</label>
-              <select value={beamProfile} onChange={e => setBeamProfile(e.target.value as any)}
+              <select value={beamProfile} onChange={e => setBeamProfile(e.target.value === "tophat" ? "tophat" : "gaussian")}
                 className="w-full bg-[#1a1a2e] border border-gray-700 rounded-lg p-2 text-white">
                 <option value="gaussian">Gaussian</option>
                 <option value="tophat">Top-hat</option>

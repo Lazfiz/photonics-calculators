@@ -5,6 +5,17 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { accumulatedDispersion, residualSlope as residualSlopeOf } from "../../../physics/fiber-optics/dispersion-comp";
+
+// UI units ↔ SI: D 1 ps/(nm·km) = 1e-6 s/m², S 1 ps/(nm²·km) = 1e3 s/m³, D·L 1 ps/nm = 1e-3 s/m, S·L 1 ps/nm² = 1e6 s/m².
+const PS_NM_KM = 1e-6;
+const PS_NM2_KM = 1e3;
+const KM = 1e3;
+const NM = 1e-9;
+const S_PER_M_TO_PS_NM = 1e3;
+const S_PER_M2_TO_PS_NM2 = 1e-6;
+const toSI = (D_ps_nm_km: number, S_ps_nm2_km: number) => ({ D: D_ps_nm_km * PS_NM_KM, S: S_ps_nm2_km * PS_NM2_KM });
+
 export default function DispersionMapPage() {
   const [lengthSMF, setLengthSMF] = useURLState("lengthSMF", 80, { min: 0, max: 500 });
   const [lengthDCF, setLengthDCF] = useURLState("lengthDCF", 15, { min: 0, max: 100 });
@@ -14,19 +25,21 @@ export default function DispersionMapPage() {
   const [slopeDCF, setSlopeDCF] = useState(-0.2);
   const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 1530, max: 1629 }); // nm, inside the plotted band
 
-  const totalDispSMF = lengthSMF * dispSMF;
-  const totalDispDCF = lengthDCF * dispDCF;
+  const smf = toSI(dispSMF, slopeSMF);
+  const dcf = toSI(dispDCF, slopeDCF);
+  const totalDispSMF = accumulatedDispersion(smf, lengthSMF * KM) * S_PER_M_TO_PS_NM;
+  const totalDispDCF = accumulatedDispersion(dcf, lengthDCF * KM) * S_PER_M_TO_PS_NM;
   const netDispersion = totalDispSMF + totalDispDCF;
-  const totalLength = lengthSMF + lengthDCF;
-
-  const slopeCompensation = (lengthSMF * slopeSMF + lengthDCF * slopeDCF) / (lengthSMF + lengthDCF);
-  const residualSlope = lengthSMF * slopeSMF + lengthDCF * slopeDCF;
+  const residualSlope = residualSlopeOf(smf, lengthSMF * KM, dcf, lengthDCF * KM) * S_PER_M2_TO_PS_NM2;
 
   const chartData = useMemo(() => {
+    const s = toSI(dispSMF, slopeSMF);
+    const c = toSI(dispDCF, slopeDCF);
     const wls = Array.from({ length: 100 }, (_, i) => 1530 + i);
     const dispVsWl = wls.map(wl => {
-      const deltaWl = wl - wavelength;
-      return lengthSMF * (dispSMF + slopeSMF * deltaWl) + lengthDCF * (dispDCF + slopeDCF * deltaWl);
+      const detuning = (wl - wavelength) * NM;
+      const net = accumulatedDispersion(s, lengthSMF * KM, detuning) + accumulatedDispersion(c, lengthDCF * KM, detuning);
+      return Math.round(net * S_PER_M_TO_PS_NM * 1e6) / 1e6;
     });
     return [
       { x: wls, y: dispVsWl, type: "scatter" as const, mode: "lines" as const, name: "Net Dispersion", line: { color: "#60a5fa" } },
