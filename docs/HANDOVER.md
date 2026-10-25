@@ -1,8 +1,8 @@
 # Handover — 2026-10-25 (session 156 → session 157)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 156 split 2-inline-b into b1–b6, did b1, b2, b3a (PRs #187–#189, merged), b3b (`phase-2/inline-b3b`, PR #190).
-Next: **b4** (phase matching on 4 nonlinear pages). User plan: b4–b6, Phase 3, Phase 5 (spot-check review ≈ 20 pages; Gemini home hero last).
+Session 156 split 2-inline-b into b1–b6, did b1–b3b (PRs #187–#190), b4 (`phase-2/inline-b4`, PR #191).
+Next: **b5** (Δλ, FSR, retardance, α on ≈ 11 pages). User plan: b5, b6, Phase 3, Phase 5 (spot-check review ≈ 20 pages; Gemini home hero last).
 
 ## State
 - `scripts/inline-inventory.ts` lists math inside component bodies; axes, √N/quadrature sums, display π and demo signals stay inline.
@@ -15,11 +15,11 @@ Next: **b4** (phase matching on 4 nonlinear pages). User plan: b4–b6, Phase 3,
 - `gaussian-beam.radiusAtDistance(w0, zR, z)` (resonator eigenmodes give w₀ and z_R) and `mode-matching.beamRadiusFromQ(q, λ)`.
 - Laser-safety pages work in 1/e² diameter: peak irradiance is `visual-interference.peakIrradiance(P, d)` (NaN for d ≤ 0),
   not `kerr.gaussianPeakIntensity(P, w)`; full-angle divergence is `2 * divergenceHalfAngle({ lambda, w0: d / 2 })`.
+- `optical-parametric-oscillator.threeWaveMismatch(n1, λ1, n2, λ2, n3, λ3)` (wave 3 = sum or pump) and `qpmPeriod(Δk)` (∞ at 0), re-exported by `three-wave`.
 
 ## Next actions
 1. `/ship`. No value changes; on a release: post-merge-check `fiber-optics/v-number` V ≈ 2.077, `fiber-characterization` NA 0.1246.
-2. b4 → b6 per ROADMAP, one PR each. Reuse module functions first (`git grep -n "export function <name>" -- src/physics`);
-   when a module already has copies, make them delegate rather than add another (b2 did this for reflectance).
+2. b5, b6 per ROADMAP, one PR each. Reuse module functions first (`git grep -n "export function <name>" -- src/physics`); make module copies delegate (b2).
 
 ## Non-obvious facts
 - **Session 155:** React Compiler is off, so a `preserve-manual-memoization` error is fixed by dropping the `useMemo`. Plotly data:
