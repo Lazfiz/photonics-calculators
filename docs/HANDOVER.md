@@ -1,14 +1,13 @@
 # Handover — 2026-10-25 (session 156 → session 157)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 156 split 2-inline-b into b1–b6, did b1–b3b (PRs #187–#190), b4 (`phase-2/inline-b4`, PR #191).
-Next: **b5** (Δλ, FSR, retardance, α on ≈ 11 pages). User plan: b5, b6, Phase 3, Phase 5 (spot-check review ≈ 20 pages; Gemini home hero last).
+Session 156 split 2-inline-b into b1–b6, did b1–b4 (PRs #187–#191), b5 (`phase-2/inline-b5`, PR #192).
+Next: **b6** (leftovers, last inline box). User plan: b6, Phase 3, Phase 5 (spot-check review ≈ 20 pages; Gemini home hero last).
 
 ## State
 - `scripts/inline-inventory.ts` lists math inside component bodies; axes, √N/quadrature sums, display π and demo signals stay inline.
 - `fiber-optics/step-index-modes`: `numericalAperture(n1, n2)` (NaN unless n₁ ≥ n₂ > 0), `coreIndexFromNA`,
   `relativeIndexDifference(fiber)`. 10 fibre pages use them; birefringence-fiber keeps its own n₁ > n₂ guard (NaN at equal).
-  fiber-characterization Δ now shows "—" for n₂ > n₁ (was negative).
 - `polarization/fresnel.normalIncidenceReflectance(n1, n2, k2 = 0)` is the one normal-incidence R; `otdr.fresnelReflectance`,
   `window-materials.surfaceReflectance`, `polymer-optics.normalReflectance`, `photodiode-qe.normalReflectance` delegate to it.
   `thin-film/transfer-matrix.quarterWaveArIndex` = √(n₀n_s).
@@ -16,10 +15,12 @@ Next: **b5** (Δλ, FSR, retardance, α on ≈ 11 pages). User plan: b5, b6, Pha
 - Laser-safety pages work in 1/e² diameter: peak irradiance is `visual-interference.peakIrradiance(P, d)` (NaN for d ≤ 0),
   not `kerr.gaussianPeakIntensity(P, w)`; full-angle divergence is `2 * divergenceHalfAngle({ lambda, w0: d / 2 })`.
 - `optical-parametric-oscillator.threeWaveMismatch(n1, λ1, n2, λ2, n3, λ3)` (wave 3 = sum or pump) and `qpmPeriod(Δk)` (∞ at 0), re-exported by `three-wave`.
+- `spectroscopy/wavenumber.wavelengthWidth(λ, Δν)` / `frequencyWidth(λ, Δλ)`; `retarders.retardanceFromPath(R, λ)` (`retardance` delegates,
+  now NaN for λ ≤ 0); `fiber-sensors.freeSpectralRange` delegates to `etalon.fsrWavelength`; α via `spectroscopy/depth`.
 
 ## Next actions
 1. `/ship`. No value changes; on a release: post-merge-check `fiber-optics/v-number` V ≈ 2.077, `fiber-characterization` NA 0.1246.
-2. b5, b6 per ROADMAP, one PR each. Reuse module functions first (`git grep -n "export function <name>" -- src/physics`); make module copies delegate (b2).
+2. b6 per ROADMAP, then rerun `scripts/inline-inventory.ts` to confirm what is left is display-only; then Phase 3. Reuse module functions first (`git grep -n "export function <name>" -- src/physics`); make module copies delegate (b2).
 
 ## Non-obvious facts
 - **Session 155:** React Compiler is off, so a `preserve-manual-memoization` error is fixed by dropping the `useMemo`. Plotly data:
@@ -39,7 +40,6 @@ Next: **b5** (Δλ, FSR, retardance, α on ≈ 11 pages). User plan: b5, b6, Pha
   (`api.openalex.org/works/doi:<doi>`) gives abstracts. Subagent numbers need checking against the rendered source. Node 24 test
   output prints `ℹ pass N`, not TAP `# pass`. A double-quoted `node -e` with backticks is shell-expanded: write a .cjs file.
   Headless `--dump-dom` wrote empty files under devctl CPU load.
-- **Session 148:** patents.google.com has old patents' full text; Isomet app notes at `isomet.com/App-Manual_pdf/`.
 - **Session 147:** CREOL papers download as `api.creol.ucf.edu/Publications/<n>.pdf` (DeSalvo 1996 = 1814, Sheik-Bahae PRL 1990 = 1805;
   find numbers by web search); van Driel's papers at `physics.utoronto.ca/~vandriel/papers/`. No pdftoppm here, so the Read tool can't
   render PDFs: render a page with `uv run -q --with pymupdf python <script>` (fitz `page.get_pixmap(dpi, clip).save(png)`) and Read the PNG.
