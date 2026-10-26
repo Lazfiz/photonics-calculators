@@ -1,10 +1,11 @@
 "use client";
 
-import { useId } from "react";
+import { useId, useRef } from "react";
 
 import { useElementWidth } from "@/hooks/use-element-width";
 import ChartLegend from "./chart-legend";
-import { TICK_FONT, formatTick, labelStride, labelWidth, niceTicks, plotValue, splitAtGaps, tickCount } from "./chart-axes";
+import { ChartActions, ChartHover, type HoverSeries, type PlotBox } from "./chart-hover";
+import { TICK_FONT, formatTick, formatValue, labelStride, labelWidth, niceTicks, plotValue, splitAtGaps, tickCount } from "./chart-axes";
 
 /** A point; `y: null` is a gap, where the line breaks. */
 type Point = { x: number; y: number | null };
@@ -56,6 +57,7 @@ export default function SimpleLineChart({
 }) {
   const id = useId();
   const [ref, measured] = useElementWidth<HTMLDivElement>();
+  const svgRef = useRef<SVGSVGElement>(null);
   const width = measured ?? DEFAULT_WIDTH;
 
   const plotted = series.map((s) =>
@@ -67,6 +69,7 @@ export default function SimpleLineChart({
   const all = plotted.flat().filter((p) => p !== null);
 
   let body = null;
+  let hover: { series: HoverSeries[]; box: PlotBox } | null = null;
   if (all.length > 0) {
     const [xMin, xMax] = extent(all.map((p) => p.x), xScale);
     const [yMin, yMax] = extent(all.map((p) => p.y), yScale);
@@ -84,6 +87,14 @@ export default function SimpleLineChart({
     const xTicks = niceTicks(raw(xMin, xScale), raw(xMax, xScale), tickCount(innerW, 100), xScale === "log");
     const xText = xTicks.map((v) => formatTick(v, xTicks));
     const xStride = labelStride(xTicks.map(xAt), xText.map((s) => labelWidth(s, 12)));
+    hover = {
+      box: { left, top, width: innerW, height: innerH },
+      series: series.map((s, si) => ({
+        name: s.name,
+        color: s.color,
+        points: plotted[si].flatMap((p) => (p ? [{ x: xAt(p.x), y: yAt(p.y), xText: formatValue(p.x), yText: formatValue(p.y) }] : [])),
+      })),
+    };
 
     body = (
       <>
@@ -131,17 +142,24 @@ export default function SimpleLineChart({
     );
   }
 
+  const legend = series.map((s) => ({ name: s.name, color: s.color, kind: "line" as const, dash: s.dashed ? "5 3" : undefined }));
+  const csv = () => ({ series: series.map((s) => ({ name: s.name, x: s.points.map((p) => p.x), y: s.points.map((p) => p.y) })), xLabel, yLabel });
+
   return (
     <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4">
-      {title && <p className="mb-3 text-sm font-medium text-gray-200">{title}</p>}
-      <div ref={ref}>
+      <div className={`mb-2 flex items-start gap-3 ${title ? "justify-between" : "justify-end"}`}>
+        {title && <p className="text-sm font-medium text-gray-200">{title}</p>}
+        <ChartActions svgRef={svgRef} title={title} legend={legend} csv={csv} />
+      </div>
+      <div ref={ref} className="relative">
         {/* Fixed pixel height: the server render (DEFAULT_WIDTH, scaled to fit) and the measured one take the same space. */}
-        <svg viewBox={`0 0 ${width} ${height}`} width="100%" height={height} className="block overflow-visible" role="img"
+        <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} width="100%" height={height} className="block overflow-visible" role="img"
           aria-label={title || `${yLabel} versus ${xLabel}`}>
           {body ?? <text x={width / 2} y={height / 2} textAnchor="middle" fill="#9ca3af" fontSize={TICK_FONT}>No finite values to plot</text>}
         </svg>
+        {hover && <ChartHover series={hover.series} box={hover.box} w={width} h={height} xLabel={xLabel} />}
       </div>
-      <ChartLegend items={series.map((s) => ({ name: s.name, color: s.color, kind: "line", dash: s.dashed ? "5 3" : undefined }))} />
+      <ChartLegend items={legend} />
     </div>
   );
 }
