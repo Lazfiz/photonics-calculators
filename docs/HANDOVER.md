@@ -1,30 +1,33 @@
-# Handover — 2026-10-26 (session 160 → session 161)
+# Handover — 2026-10-26 (session 161 → session 162)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 160 did 3d (chart interaction) on branch `phase-3/chart-interaction`, PR #197. PR #196 (3c) is merged.
-Next: **3e** (Vercel Speed Insights and a JS budget in CI), then Phase 5.
+Session 161 did 3e (Speed Insights, JS budget, chart placeholder) on branch `phase-3/speed-insights`, PR #198. Phase 3 is
+done; PR #197 (3d) is merged. Next: **Phase 5** spot-check review (≈ 20 pages, `physics-reviewer`), then the Gemini hero.
 
 ## State
-- `src/components/chart-hover.tsx`: `ChartHover` (transparent SVG over the chart, same viewBox, so pointer moves re-render
-  only it; crosshair snaps to the nearest data x; readout = each series' nearest point within 24 px, `hoverRows`; touch scrub
-  with `touch-pan-y`; ←/→ (Shift ×10), Home/End, Esc; sr-only live region for keyboard use) and `ChartActions` (PNG/CSV).
-- `src/components/chart-export.ts`: `downloadPng` (SVG → canvas 2×, gray-900 background, title and legend drawn on the
-  canvas) and `downloadCsv` (UTF-8 BOM). Loaded by `import()` on click, out of the initial JS.
-- `chart-axes.ts` gained `formatValue` (5 significant digits, exponent outside [1e-3, 1e5)), `chartCsv` (wide when x is shared,
-  a shorter series allowed; else long `series,x,y`), `fileStem`. Tests in `tests/simple-chart.test.ts` (1145 total).
-- `SimpleChart` now renders its own title row (title + buttons); a grouped bar's dot sits on its bar (`HoverPoint.cx`).
-  Readout skips `fill: "toself"`, `mode: "text"` and `hoverinfo` skip/none traces.
-- Probed headless at 1200 and 360 px: gires-tournois (dual y), quantum-efficiency (SimpleLineChart), mueller-matrix (grouped
-  category bars). Readout, PNG and CSV correct; no console errors.
+- `src/app/layout.tsx`: `<SpeedInsights />` (`@vercel/speed-insights/next` 2.0.0) after `<Analytics />`; a 3.5 KB gz chunk on
+  every page. **The user must enable Speed Insights** in the Vercel dashboard (project → Speed Insights → Enable); the
+  MCP `get_project` doesn't show whether it's on. It reports only from `release` deployments.
+- `scripts/initial-js.mjs --max-shared <KB> --max-page <KB>` exits 1 over budget; CI runs it after the build with 150 / 32
+  (now 145.4 KB shared, page-specific median 11.9 KB, max 27.9 KB thin-film/enhanced-aluminum). `_global-error.html` is
+  skipped (no root layout).
+- `src/components/chart-placeholder.tsx`: `ChartReserve` (title row + a box at `aspect-ratio 700/height`, min 280 px, max
+  `layout.height`) and `ChartPlaceholder` (the same in SimpleChart's bordered box). `ChartPanel` loads SimpleChart with its
+  own `import()` in an effect (`LazySimpleChart`, inside `ChartErrorBoundary`) instead of `next/dynamic`, whose `loading`
+  gets no props; `SimpleChart` shows `ChartReserve` until measured. CLS at 1200 px, 3000 px tall viewport: gires-tournois
+  0.095 → 0.002, mueller-matrix 0.018 → 0.001, heat-mirror 0.006 (legend). No console errors.
 
 ## Next actions
-1. `/ship` PR #197 (build was started at the end of session 160: check it's green). Site-wide chart UI change, no values change.
-   On a release: post-merge-check (load only) `wave-optics/gires-tournois`, `detectors/quantum-efficiency`,
-   `polarization/mueller-matrix`; hover one chart on a phone.
-2. 3e: Speed Insights + a JS budget in CI (`node scripts/initial-js.mjs` prints initial JS per page after a build). The
-   ChartPanel CLS finding (ROADMAP open findings) matters here: `ssr: false`, no placeholder.
+1. `/ship` PR #198. Site-wide chart change, no values change. On a release: post-merge-check (load only)
+   `wave-optics/gires-tournois`, `polarization/mueller-matrix`, `thin-film/heat-mirror`; ask the user to enable Speed
+   Insights, and to read its numbers after a few weeks (traffic is low: ~6 visitors a month).
+2. Phase 5: spot-check review (ROADMAP). Then the Gemini hero (ask the user for the files).
 
 ## Non-obvious facts
+- **Session 161:** CLS probe = scratchpad CDP script: `Page.addScriptToEvaluateOnNewDocument` with a `layout-shift`
+  PerformanceObserver (skip `hadRecentInput`), read `window.__cls` 5 s after navigate. Shifts below the fold don't count, so
+  use a 3000 px tall viewport to see chart shifts. Production is the baseline. Git Bash rewrites `/cat/slug` args even for
+  node scripts: `export MSYS_NO_PATHCONV=1`.
 - **Session 160:** the Chrome extension's screenshots time out on this site; use a headless CDP script instead (pattern in
   `scripts/ui-check.mjs`): `Emulation.setDeviceMetricsOverride` gives a true 360 px viewport, `Input.dispatchMouseEvent`
   triggers React hover, and `Page.captureScreenshot` clips are in page coordinates (add `scrollY`). Capture a download by
