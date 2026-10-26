@@ -5,6 +5,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { c } from "../../../physics/constants";
+import { wavelengthWidth } from "../../../physics/spectroscopy/wavenumber";
 import {
   parametricGainCoefficient, phaseMismatch, qpmPeriod as qpmPeriodOf,
 } from "../../../physics/wave-optics/optical-parametric-oscillator";
@@ -58,7 +59,7 @@ export default function OPACalculator() {
   const idlerOut = idlerPower(G, Ps, lambdaS, lambdaI);
   const pumpDrawn = (G - 1) * Ps * (lambdaS / lambdaP); // one pump photon per signal photon gained
   const bandwidth = gainBandwidth(gamma, L, gvm);
-  const bandwidthNm = (lambdaS ** 2 * bandwidth) / c;
+  const bandwidthNm = wavelengthWidth(lambdaS, bandwidth);
   const qpmPeriod = qpmPeriodOf(phaseMismatch(process));
 
   const warnings = [

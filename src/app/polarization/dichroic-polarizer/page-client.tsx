@@ -5,6 +5,7 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { fix, fromLog10 } from "../../../components/polarization-format";
 import { faceReflectance, sheetMetrics, slabLogTransmittance } from "../../../physics/polarization/sheet-polarizer";
+import { absorptionCoefficient } from "../../../physics/spectroscopy/depth";
 
 const clamp = (v: number, lo: number, hi: number) => (Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : lo);
 const pct = (v: number, digits = 2) => (Number.isFinite(v) ? `${fix(v * 100, digits)} %` : "—");
@@ -45,7 +46,7 @@ export default function DichroicPolarizerPage() {
   const lnK1 = slabLogTransmittance(nPass, kPass, d, lambda);
   const lnK2 = slabLogTransmittance(nBlock, kBlock, d, lambda);
   const m = sheetMetrics(lnK1, lnK2);
-  const alpha = (k: number) => (4 * Math.PI * k) / lambda;
+  const alpha = (k: number) => absorptionCoefficient(k, lambda);
   const swapped = lnK2 > lnK1;
 
   const thicknessChart = thicknessCharts(nPass, kPass, nBlock, kBlock, lambda, d);

@@ -5,6 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { absorptionCoefficient, absorptionDepth } from "../../../physics/spectroscopy/depth";
 import { stackResponse, type Stack } from "../../../physics/thin-film/transfer-matrix";
 
 export default function MetalDielectricPage() {
@@ -42,8 +43,9 @@ export default function MetalDielectricPage() {
   const absorptance550 = stackResponse(stack, wavelength_nm * 1e-9).A;
   const nEff = nMetal * nMetal - kMetal * kMetal;
   // 1/α = λ/(4πk) is the depth at which the INTENSITY falls to 1/e; the field amplitude falls to 1/e at λ/(2πk).
-  const intensityDepth_nm = wavelength_nm / (4 * Math.PI * kMetal);
-  const fieldDepth_nm = wavelength_nm / (2 * Math.PI * kMetal);
+  // Intensity falls 1/e in 1/α = λ/(4πk); the field (∝ √I) in twice that.
+  const intensityDepth_nm = absorptionDepth(absorptionCoefficient(kMetal, wavelength_nm * 1e-9)) * 1e9;
+  const fieldDepth_nm = 2 * intensityDepth_nm;
   const fixed = (x: number, digits: number) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
 
   return (

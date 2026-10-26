@@ -7,6 +7,7 @@ import { useURLState } from "../../../hooks/use-url-state";
 import {
   gParameter, oneWayGouyPhase, resonatorFsr, resonatorStability, transverseModeSpacing, twoMirrorMode,
 } from "../../../physics/wave-optics/two-mirror-resonator";
+import { fsrWavelength } from "../../../physics/spectroscopy/etalon";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
@@ -47,7 +48,7 @@ export default function CavityModeSpacingPage() {
   const fsr = resonatorFsr(L, n);
   const theta = oneWayGouyPhase(g1, g2);
   const dNuT = transverseModeSpacing(fsr, g1, g2);
-  const lambdaFsr_pm = ((wavelength * 1e-9) ** 2 / (2 * n * L)) * 1e12;
+  const lambdaFsr_pm = fsrWavelength(wavelength * 1e-9, n, L, 1) * 1e12;
   const statusTone = stability === "stable" ? "green" : stability === "marginal" ? "yellow" : "red";
   const statusText = { stable: "Stable", marginal: "On the boundary", unstable: "Unstable" }[stability];
 

@@ -1,11 +1,11 @@
 "use client";
 
-import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { fix } from "../../../components/polarization-format";
 import { goochTarryMinimum, lcTransmission } from "../../../physics/polarization/twisted-nematic";
+import { retardance } from "../../../physics/polarization/retarders";
 import { extraordinaryIndex } from "../../../physics/polarization/uniaxial";
 
 const DEG = Math.PI / 180;
@@ -44,7 +44,7 @@ export default function LiquidCrystalPolarizerPage() {
 
   // VA: the director leans `tilt` from the cell normal; at normal incidence the wave sees n(tilt) − n_o.
   const dnE = va ? extraordinaryIndex(no, no + dn, tilt) - no : dn;
-  const gamma = (2 * Math.PI * dnE * d) / lambda;
+  const gamma = retardance(dnE, d, lambda);
   const T = lcTransmission(twist, gamma, pol, ana);
   const firstMin = (goochTarryMinimum(1) * lambda) / dn;
 
@@ -56,19 +56,17 @@ export default function LiquidCrystalPolarizerPage() {
     if (p.cell === "va") setTilt(0);
   };
 
-  const spectral = useMemo(() => {
-    const l = Array.from({ length: 300 }, (_, i) => 380 + (i * 400) / 299);
-    return [{
-      x: l, y: l.map((x) => lcTransmission(twist, (2 * Math.PI * dnE * d) / (x * 1e-9), pol, ana)),
-      type: "scatter" as const, mode: "lines" as const, name: "Transmission", line: { color: "#60a5fa", width: 2 },
-    }];
-  }, [twist, pol, ana, dnE, d]);
+  const spectralNm = Array.from({ length: 300 }, (_, i) => 380 + (i * 400) / 299);
+  const spectral = [{
+    x: spectralNm, y: spectralNm.map((x) => lcTransmission(twist, retardance(dnE, d, x * 1e-9), pol, ana)),
+    type: "scatter" as const, mode: "lines" as const, name: "Transmission", line: { color: "#60a5fa", width: 2 },
+  }];
 
-  const second = useMemo(() => {
+  const second = (() => {
     if (va) {
       const t = Array.from({ length: 181 }, (_, i) => i * 0.5);
       const y = t.map((x) => {
-        const g = (2 * Math.PI * (extraordinaryIndex(no, no + dn, x * DEG) - no) * d) / lambda;
+        const g = retardance(extraordinaryIndex(no, no + dn, x * DEG) - no, d, lambda);
         return lcTransmission(0, g, pol, ana);
       });
       return { x: t, y, title: "Director tilt from the normal (°)", minima: [] as number[] };
@@ -77,7 +75,7 @@ export default function LiquidCrystalPolarizerPage() {
     const y = r.map((x) => lcTransmission(twist, 2 * Math.PI * x, pol, ana));
     const minima = Math.abs(Math.abs(twist) - Math.PI / 2) < 1e-9 ? [1, 2, 3].map(goochTarryMinimum) : [];
     return { x: r, y, title: "Δn·d/λ", minima };
-  }, [va, no, dn, d, lambda, pol, ana, twist]);
+  })();
 
   const layout = (x: string) => ({
     paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },

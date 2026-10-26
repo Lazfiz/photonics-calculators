@@ -4,7 +4,7 @@ import SimpleLineChart from "../../../components/simple-line-chart";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { c } from "../../../physics/constants";
+import { wavelengthWidth } from "../../../physics/spectroscopy/wavenumber";
 import {
   SPM_SPECTRUM_MAX_PHASE, criticalPower, gaussianPeakIntensity, nonlinearPhase, pulseHalfWidth, pulsePeakPower,
   rayleighRangeInMedium, selfFocusingDistance, spmMaxFrequencyShift, spmRmsBroadening, spmSpectrum, type PulseShape,
@@ -54,7 +54,7 @@ export default function SelfPhaseModulationPage() {
   const broadening = spmRmsBroadening(phiMax, shape);
   const dOmega = spmMaxFrequencyShift(phiMax, t0, shape);
   const dNu = dOmega / (2 * Math.PI);
-  const dLambda = (lambda ** 2 / c) * dNu;
+  const dLambda = wavelengthWidth(lambda, dNu);
   const Pcr = criticalPower(lambda, n0, n2);
   const zsf = selfFocusingDistance(P0 / Pcr, rayleighRangeInMedium(lambda, n0, w));
 
