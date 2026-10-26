@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { totalCalculatorCount } from "@/lib/home-categories";
 import { URL_STATE_PENDING_SCRIPT } from "@/lib/url-state-pending";
 import "./globals.css";
@@ -77,6 +78,7 @@ export default function RootLayout({
         />
         {children}
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

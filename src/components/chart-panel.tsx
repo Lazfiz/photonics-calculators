@@ -1,10 +1,10 @@
 "use client";
 
-import React from "react";
-import dynamic from "next/dynamic";
+import React, { useEffect, useState } from "react";
 import type { PlotParams } from "react-plotly.js";
 import { PlotlyChart } from "./plotly-chart";
 import { PLOTLY_TRACE_TYPES } from "./plotly-traces";
+import ChartPlaceholder from "./chart-placeholder";
 
 interface ChartPanelProps {
   data: Record<string, unknown>[];
@@ -54,8 +54,23 @@ function needsPlotly(data: Record<string, unknown>[]): boolean {
   return data.some(t => PLOTLY_TRACE_TYPES.includes(t.type as string));
 }
 
-// Lazy import SimpleChart so Plotly fallback can work
-const SimpleChart = dynamic(() => import("./simple-chart").then(m => ({ default: m.default })), { ssr: false });
+type SimpleChartType = typeof import("./simple-chart").default;
+let loadedSimpleChart: SimpleChartType | null = null;
+
+// SimpleChart loads after hydration, out of the initial JS; until then a placeholder of the chart's size holds its
+// place (no layout shift). The server and the hydration render both draw the placeholder; a page reached by client
+// navigation, with the chunk already loaded, draws the chart at once. A failed load throws into ChartErrorBoundary.
+function LazySimpleChart(props: ChartPanelProps) {
+  const [SimpleChart, setSimpleChart] = useState<SimpleChartType | null>(loadedSimpleChart);
+  useEffect(() => {
+    if (SimpleChart) return;
+    import("./simple-chart").then(
+      (m) => { loadedSimpleChart = m.default; setSimpleChart(() => m.default); },
+      (error: unknown) => setSimpleChart(() => { throw error; }),
+    );
+  }, [SimpleChart]);
+  return SimpleChart ? <SimpleChart {...props} /> : <ChartPlaceholder layout={props.layout} title={props.title} className={props.className} />;
+}
 
 export default function ChartPanel({ data, layout = {}, config = {}, title, className = "" }: ChartPanelProps) {
   if (needsPlotly(data)) {
@@ -81,7 +96,7 @@ export default function ChartPanel({ data, layout = {}, config = {}, title, clas
 
   return (
     <ChartErrorBoundary data={data} layout={layout} config={config} title={title} className={className}>
-      <SimpleChart data={data} layout={layout} config={config} title={title} className={className} />
+      <LazySimpleChart data={data} layout={layout} config={config} title={title} className={className} />
     </ChartErrorBoundary>
   );
 }

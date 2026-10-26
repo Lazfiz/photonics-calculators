@@ -5,10 +5,10 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 160, 2026-10-26)
+## Status (session 161, 2026-10-26)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
-- Phase 3: 3a–3d done (sessions 157–160); next 3e. Then Phase 5 (spot-check review, Gemini hero). Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+- Phase 3 done (3a–3e, sessions 157–161). Next: Phase 5 (spot-check review, Gemini hero). Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -202,8 +202,7 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   `probeWavelength` slider page doesn't write the URL as expected. Update the checks to the current pages.
 - Initial JS (session 158): thin-film metal pages (enhanced-aluminum, protected-silver, emissivity-control, heat-mirror)
   carry 24–28 KB gz of their own JS, likely n,k tables in the client chunk; the median page carries 14 KB.
-- Charts (session 159): `ChartPanel` loads `SimpleChart` with `ssr: false` and no placeholder, so every ChartPanel chart
-  shifts the layout when it appears (CLS; matters for 3e Speed Insights). Many pages wrap ChartPanel in their own bordered
+- Charts (session 159): many pages wrap ChartPanel in their own bordered
   `p-4` box: double padding leaves a 245 px plot at 360 px.
 - Charts (session 160): the PNG/CSV row adds ≈ 32 px above every SVG chart, including those whose page already prints a
   heading above the ChartPanel. Plotly-routed charts (heatmap, 3-D, polar) have Plotly's own hover but no export buttons.
@@ -228,7 +227,7 @@ One box per session, in this order.
 - [x] 3b Initial JS and URL-state flash (session 158, PR #195): see Done.
 - [x] 3c Chart layout (session 159, PR #196): see Done.
 - [x] 3d Chart interaction (session 160, PR #197): see Done.
-- [ ] 3e Vercel Speed Insights and a JS budget in CI.
+- [x] 3e Speed Insights and JS budget (session 161, PR #198): see Done.
 
 ## Phase 5 — after Phase 3 (user plan, session 156)
 - [ ] Spot-check review: adversarial `physics-reviewer` pass on ≈ 20 pages (the riskiest plus a random sample) against
@@ -252,6 +251,9 @@ One box per session, in this order.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Phase 3e (session 161, `phase-3/speed-insights`, PR #198): `<SpeedInsights />` in the root layout (+3.5 KB gz shared);
+    CI step `initial-js.mjs --max-shared 150 --max-page 32` (now 145.4 KB shared, page median 11.9, max 27.9); `ChartReserve`
+    placeholder holds a SimpleChart's size before it loads or measures: CLS at 1200 px gires-tournois 0.095 → 0.002.
   - Phase 3d (session 160, `phase-3/chart-interaction`, PR #197): hover crosshair and readout on both SVG charts
     (`chart-hover.tsx`: snaps to the nearest x, touch scrub, ←/→ keys with a live region), PNG (2×, title + legend) and CSV
     download buttons (`chart-export.ts`, loaded on click); `formatValue`, `chartCsv`, `fileStem` in `chart-axes.ts`; 1145 tests.

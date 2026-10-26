@@ -12,6 +12,7 @@ import {
 } from "./chart-axes";
 // Shared Plotly wrapper to prevent double-bundling
 import { PlotlyChart } from "./plotly-chart";
+import { ChartReserve } from "./chart-placeholder";
 
 interface Trace {
   x?: (number | string | null)[];
@@ -355,7 +356,7 @@ export default function SimpleChart({ data, layout = {}, config = {}, title, cla
   const w = typeof layout.width === "number" ? layout.width : measured;
   return (
     <div className={`bg-gray-900 border border-gray-800 rounded-lg p-4 ${className}`.trim()}>
-      <div ref={ref}>{w !== null && <ChartBody data={data} layout={layout} w={w} title={title} />}</div>
+      <div ref={ref}>{w !== null ? <ChartBody data={data} layout={layout} w={w} title={title} /> : <ChartReserve layout={layout} title={title} />}</div>
     </div>
   );
 }
