@@ -1,28 +1,30 @@
-# Handover — 2026-10-26 (session 157 → session 158)
+# Handover — 2026-10-26 (session 158 → session 159)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 157 split Phase 3 into 3a–3e and did 3a (Plotly partial bundle, branch `phase-3/plotly-bundle`, PR #194).
-Next: **3b** (bundle check of initial JS per page; read URL state before first paint), then 3c–3e, then Phase 5.
+Session 158 did 3b (initial JS check, URL-state flash fix) on branch `phase-3/initial-js`, PR #195.
+Next: **3c** (chart layout rewrite: real pixel width, legend, null breaks), then 3d–3e, then Phase 5.
 
 ## State
-- `src/components/plotly-bundle.ts` registers bar, heatmap, scatter3d, surface, scatterpolar on `plotly.js/lib/core`;
-  `plotly-chart.tsx` builds `PlotlyChart` with `react-plotly.js/factory`. `plotly-traces.ts` lists the types ChartPanel
-  sends to Plotly; `tests/plotly-bundle.test.ts` fails on a page trace type that neither SimpleChart nor the bundle draws.
-- 12 pages draw with Plotly (uniformity, FBG sensor, wavelength-selection, psf, poincare-sphere, polarimetry, stokes,
-  2-D spectroscopy, ellipsometry, bessel-beam, diffraction-integral, hermite-gaussian). Plotly chunk 1.72 MB min / 558 KB gz
-  (was 4.85 MB / 1.47 MB). Next-largest chunks: 227 KB and 146 KB min (look at these in 3b).
-- Phase 2 shared helpers (session 156): `step-index-modes.numericalAperture`, `fresnel.normalIncidenceReflectance`,
-  `gaussian-beam.radiusAtDistance`, `visual-interference.peakIrradiance` (laser safety uses 1/e² diameter),
-  `optical-parametric-oscillator.threeWaveMismatch`/`qpmPeriod`, `math.GAUSSIAN_FWHM_PER_SIGMA`. `scripts/inline-inventory.ts`
-  lists the remaining inline math (680 lines, all stay-inline classes).
+- Initial JS (modern browsers, gzip -9): 145–172 KB per page. 141.5 KB is shared by all 425 pages (react-dom 69 KB, Next
+  runtime ≈ 70 KB, analytics 3 KB); own JS median 14 KB, max 30 KB (thin-film metals). The 110 KB `noModule` chunk is
+  polyfills modern browsers skip. `node scripts/initial-js.mjs` prints this after a build (basis for the 3e budget).
+- URL-state flash: `src/lib/url-state-pending.ts` holds an inline script (root layout, first in `<body>`) that sets
+  `html[data-url-state=pending]` when the query has a non-tracking param; `globals.css` hides `[data-url-state-target]`
+  (the shell's wrapper around the client component) with `visibility`, with a 1.5 s CSS fallback;
+  `components/url-state-reveal.tsx` clears it in a rAF after hydration. `<html>` has `suppressHydrationWarning`.
+- `ui-check` section 6 records each animation frame (CPU ×6) on a shared link: never visible with defaults. 9 older
+  checks fail on production too (stale, see ROADMAP open findings).
 
 ## Next actions
-1. `/ship` PR #194. Chart rendering only, no value changes; on a release: post-merge-check `polarization/polarimetry`,
-   `wave-optics/hermite-gaussian`, `detectors/uniformity` (load only).
-2. 3b: `npm run build`, then map chunks to routes (`.next/server/app/<cat>/<slug>/page_client-reference-manifest.js` or
-   the build's route table) and gzip-size the initial JS of 3–4 pages; then the URL-state flash.
+1. `/ship` PR #195. Site-wide shell/layout change, no value changes; on a release: post-merge-check
+   `detectors/boxcar-integrator`, `polarization/polarimetry`, `laser-safety/ael-limits` (load only); open one shared link.
+2. 3c: chart layout rewrite (`SimpleChart` / `SimpleLineChart` real pixel width; see ROADMAP 3c for the bugs).
 
 ## Non-obvious facts
+- **Session 158:** prerendered pages are `.next/server/app/<cat>/<slug>.html`; their `<script src>` tags are the initial JS.
+  Production chunks have no module paths: identify them by strings (`react.dev/errors` = react-dom, `prefetch`/`rsc` =
+  Next router, `va.vercel` = analytics). `ui-check` against production is the baseline for telling stale checks from
+  regressions.
 - **Session 157:** `plotly.js/lib/<trace>` builds under Turbopack with no loader. A new Plotly trace type goes in both
   `plotly-traces.ts` and `plotly-bundle.ts`. `ui-check <base> load /a /b` prints `plotly svg` or `svg+gl` per drawn
   chart. Measure a chunk with `gzip -c <file> | wc -c` in `.next/static/chunks` (grep a trace name to find Plotly's).
