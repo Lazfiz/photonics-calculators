@@ -1,6 +1,6 @@
 declare module "react-plotly.js" {
   import { Component } from "react";
-  import * as Plotly from "plotly.js-dist-min";
+  import * as Plotly from "plotly.js";
 
   export interface PlotParams {
     data: Plotly.Data[];
@@ -19,8 +19,20 @@ declare module "react-plotly.js" {
   export default class Plot extends Component<PlotParams> {}
 }
 
-declare module "plotly.js-dist-min" {
-  export * from "plotly.js";
+declare module "react-plotly.js/factory" {
+  import type Plot from "react-plotly.js";
+  export default function createPlotlyComponent(plotly: unknown): typeof Plot;
+}
+
+// Partial-bundle entry points (src/components/plotly-bundle.ts)
+declare module "plotly.js/lib/core" {
+  const Plotly: { register(modules: unknown[]): void };
+  export default Plotly;
+}
+
+declare module "plotly.js/lib/*" {
+  const trace: unknown;
+  export default trace;
 }
 
 // Global Plotly namespace for direct type usage (e.g. Partial<Plotly.Layout>)

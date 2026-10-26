@@ -1,32 +1,31 @@
-# Handover — 2026-10-26 (session 156 → session 157)
+# Handover — 2026-10-26 (session 157 → session 158)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 156 split 2-inline-b into b1–b6 and did all of them (PRs #187–#193; b6 = `phase-2/inline-b6`, stacked on b5).
-Next: **Phase 3** (charts, Plotly bundle, JS budget), then Phase 5 (spot-check review ≈ 20 pages; Gemini home hero last).
+Session 157 split Phase 3 into 3a–3e and did 3a (Plotly partial bundle, branch `phase-3/plotly-bundle`, PR #194).
+Next: **3b** (bundle check of initial JS per page; read URL state before first paint), then 3c–3e, then Phase 5.
 
 ## State
-- `scripts/inline-inventory.ts` lists math inside component bodies; axes, √N/quadrature sums, display π and demo signals stay inline.
-- `fiber-optics/step-index-modes`: `numericalAperture(n1, n2)` (NaN unless n₁ ≥ n₂ > 0), `coreIndexFromNA`,
-  `relativeIndexDifference(fiber)`. 10 fibre pages use them; birefringence-fiber keeps its own n₁ > n₂ guard (NaN at equal).
-- `polarization/fresnel.normalIncidenceReflectance(n1, n2, k2 = 0)` is the one normal-incidence R; `otdr.fresnelReflectance`,
-  `window-materials.surfaceReflectance`, `polymer-optics.normalReflectance`, `photodiode-qe.normalReflectance` delegate to it.
-  `thin-film/transfer-matrix.quarterWaveArIndex` = √(n₀n_s).
-- `gaussian-beam.radiusAtDistance(w0, zR, z)` (resonator eigenmodes give w₀ and z_R) and `mode-matching.beamRadiusFromQ(q, λ)`.
-- Laser-safety pages work in 1/e² diameter: peak irradiance is `visual-interference.peakIrradiance(P, d)` (NaN for d ≤ 0),
-  not `kerr.gaussianPeakIntensity(P, w)`; full-angle divergence is `2 * divergenceHalfAngle({ lambda, w0: d / 2 })`.
-- `optical-parametric-oscillator.threeWaveMismatch(n1, λ1, n2, λ2, n3, λ3)` (wave 3 = sum or pump) and `qpmPeriod(Δk)` (∞ at 0), re-exported by `three-wave`.
-- `spectroscopy/wavenumber.wavelengthWidth(λ, Δν)` / `frequencyWidth(λ, Δλ)`; `retarders.retardanceFromPath(R, λ)` (`retardance` delegates,
-  now NaN for λ ≤ 0); `fiber-sensors.freeSpectralRange` delegates to `etalon.fsrWavelength`; α via `spectroscopy/depth`.
-- b6: `laser-resonator.logarithmicLoss(f)`, `math.GAUSSIAN_FWHM_PER_SIGMA` (boxcar, electron-multiplier, chromatic-dispersion and
-  super-resolution delegate), `blackbody.totalExitance`, `silica-attenuation.rayleighScatteringDbPerKm`, `photoemission.plasmonEnergy`.
-  The inventory now lists 680 lines on 293 pages, all of them stay-inline classes.
+- `src/components/plotly-bundle.ts` registers bar, heatmap, scatter3d, surface, scatterpolar on `plotly.js/lib/core`;
+  `plotly-chart.tsx` builds `PlotlyChart` with `react-plotly.js/factory`. `plotly-traces.ts` lists the types ChartPanel
+  sends to Plotly; `tests/plotly-bundle.test.ts` fails on a page trace type that neither SimpleChart nor the bundle draws.
+- 12 pages draw with Plotly (uniformity, FBG sensor, wavelength-selection, psf, poincare-sphere, polarimetry, stokes,
+  2-D spectroscopy, ellipsometry, bessel-beam, diffraction-integral, hermite-gaussian). Plotly chunk 1.72 MB min / 558 KB gz
+  (was 4.85 MB / 1.47 MB). Next-largest chunks: 227 KB and 146 KB min (look at these in 3b).
+- Phase 2 shared helpers (session 156): `step-index-modes.numericalAperture`, `fresnel.normalIncidenceReflectance`,
+  `gaussian-beam.radiusAtDistance`, `visual-interference.peakIrradiance` (laser safety uses 1/e² diameter),
+  `optical-parametric-oscillator.threeWaveMismatch`/`qpmPeriod`, `math.GAUSSIAN_FWHM_PER_SIGMA`. `scripts/inline-inventory.ts`
+  lists the remaining inline math (680 lines, all stay-inline classes).
 
 ## Next actions
-1. `/ship` (merge #192 before #193). No value changes; on a release: post-merge-check `fiber-optics/v-number` V ≈ 2.077,
-   `spectroscopy/blackbody`, `detectors/bandwidth` (load only).
-2. Phase 3: split it into a/b boxes first (chart rewrite alone is one session; Plotly partial bundle + bundle check another).
+1. `/ship` PR #194. Chart rendering only, no value changes; on a release: post-merge-check `polarization/polarimetry`,
+   `wave-optics/hermite-gaussian`, `detectors/uniformity` (load only).
+2. 3b: `npm run build`, then map chunks to routes (`.next/server/app/<cat>/<slug>/page_client-reference-manifest.js` or
+   the build's route table) and gzip-size the initial JS of 3–4 pages; then the URL-state flash.
 
 ## Non-obvious facts
+- **Session 157:** `plotly.js/lib/<trace>` builds under Turbopack with no loader. A new Plotly trace type goes in both
+  `plotly-traces.ts` and `plotly-bundle.ts`. `ui-check <base> load /a /b` prints `plotly svg` or `svg+gl` per drawn
+  chart. Measure a chunk with `gzip -c <file> | wc -c` in `.next/static/chunks` (grep a trace name to find Plotly's).
 - **Session 155:** React Compiler is off, so a `preserve-manual-memoization` error is fixed by dropping the `useMemo`. Plotly data:
   cast to `PlotParams["data"]` (`src/types/plotly.d.ts`), never `any[]`. `refractionAngle` at exactly the critical angle can
   round to NaN (n·sin(asin(1/n)) > 1): don't test it there.
