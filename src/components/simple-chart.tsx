@@ -1,20 +1,33 @@
 "use client";
 
-import { useMemo, useId, useRef, useState, useEffect } from "react";
+import { useId } from "react";
+import type { PlotParams } from "react-plotly.js";
+
+import { useElementWidth } from "@/hooks/use-element-width";
+import ChartLegend, { type LegendItem } from "./chart-legend";
+import {
+  LOG_FLOOR, PALETTE, TICK_FONT, dashArray, formatTick, labelStride, labelWidth, niceTicks, plotValue, splitAtGaps,
+  tickCount, xCategories,
+} from "./chart-axes";
+// Shared Plotly wrapper to prevent double-bundling
+import { PlotlyChart } from "./plotly-chart";
 
 interface Trace {
-  x?: (number | string)[];
-  y?: (number | string)[];
+  x?: (number | string | null)[];
+  y?: (number | string | null)[];
   z?: (number | string)[][];
   type?: string;
   mode?: string;
   name?: string;
   line?: { color?: string; width?: number; dash?: string; shape?: string };
-  marker?: { color?: string; size?: number; symbol?: string; colorscale?: string[] };
+  marker?: { color?: string | string[]; size?: number; symbol?: string; colorscale?: string[] };
   fill?: string;
   fillcolor?: string;
   opacity?: number;
-  text?: string;
+  text?: string | string[];
+  textposition?: string;
+  connectgaps?: boolean;
+  showlegend?: boolean;
   [key: string]: unknown;
 }
 
@@ -26,173 +39,88 @@ interface SimpleChartProps {
   className?: string;
 }
 
-function getDash(dash?: string): string {
-  if (!dash) return "none";
-  if (dash === "dash") return "6,3";
-  if (dash === "dot") return "2,2";
-  if (dash === "dashdot") return "6,3,2,3";
-  if (dash === "longdash") return "10,5";
-  return "none";
+/** Plotted point in SVG px; `i` is its index in the trace (per-point colours and text). */
+type Pt = { x: number; y: number; i: number };
+
+const AXIS_COLOR = "#4b5563";
+const TEXT_COLOR = "#9ca3af";
+const Y2_COLOR = "#f97316";
+
+/** Coordinates rounded to 0.01 px: smaller markup, and no 1-ulp differences between renders. */
+const px = (v: number) => Math.round(v * 100) / 100;
+
+function axisTitle(axis: Record<string, unknown> | undefined): string {
+  const t = axis?.title;
+  if (typeof t === "string") return t;
+  const text = (t as { text?: unknown } | undefined)?.text;
+  return typeof text === "string" ? text : "";
 }
 
-function hexToRgba(hex: string, alpha: number): string {
-  const h = hex.replace("#", "");
-  const r = parseInt(h.substring(0, 2), 16);
-  const g = parseInt(h.substring(2, 4), 16);
-  const b = parseInt(h.substring(4, 6), 16);
-  return `rgba(${r},${g},${b},${alpha})`;
-}
-
-/**
- * Axis ticks over [min, max]. Linear: about `count` ticks at a step of 1, 2, 5 or 10 × 10^k (the first
- * not below (max − min)/count), each computed as k·step so rounding doesn't accumulate. Log: the decades,
- * plus 2× and 5× when the axis spans at most 4 decades.
- */
-/** Smallest value a log axis maps; it only guards log10 against 0 or negatives (data ≤ 0 is skipped on log axes). */
-const LOG_FLOOR = 1e-300;
-
-export function niceTicks(min: number, max: number, count: number, log: boolean): number[] {
-  if (log) {
-    const lo = Math.ceil(Math.log10(Math.max(min, LOG_FLOOR)));
-    const hi = Math.floor(Math.log10(Math.max(max, LOG_FLOOR)));
-    const ticks: number[] = [];
-    // From the decade below lo, so a range starting mid-decade (180 → 20 000) still gets its 200 and 500.
-    for (let p = lo - 1; p <= hi; p++) {
-      if (p >= lo) ticks.push(Math.pow(10, p));
-      if (hi - lo <= 4) { ticks.push(2 * Math.pow(10, p)); ticks.push(5 * Math.pow(10, p)); }
-    }
-    return ticks.filter(t => t >= min * 0.9 && t <= max * 1.1);
+/** A Plotly marker: `size` is its diameter in px, as in Plotly. */
+function Marker({ p, size, color, symbol, opacity }: { p: Pt; size: number; color: string; symbol?: string; opacity: number }) {
+  const r = size / 2;
+  if (symbol === "square") return <rect x={px(p.x - r)} y={px(p.y - r)} width={size} height={size} fill={color} opacity={opacity} />;
+  if (symbol === "diamond") {
+    const d = r * 1.3;
+    return <path d={`M${p.x},${px(p.y - d)}L${px(p.x + d)},${p.y}L${p.x},${px(p.y + d)}L${px(p.x - d)},${p.y}Z`} fill={color} opacity={opacity} />;
   }
-  const range = max - min;
-  if (range <= 0 || !isFinite(range)) return [];
-  const rough = range / count;
-  if (rough <= 0 || !isFinite(rough)) return [];
-  const mag = Math.pow(10, Math.floor(Math.log10(rough)));
-  const step = ([1, 2, 5, 10].find(n => n * mag >= rough) ?? 10) * mag;
-  const ticks: number[] = [];
-  // 1e-9 of a step absorbs rounding at the ends (3 × 1e-15 > 3e-15).
-  const tol = step * 1e-9;
-  for (let k = Math.ceil((min - tol) / step); k * step <= max + tol && ticks.length < 100; k++) ticks.push(k * step || 0); // || 0: no −0
-  return ticks;
-}
-
-/**
- * Tick label with as many digits as the axis step needs, so neighbours never print the same: k/M only
- * when the step is ≥ 100 / 1e5 (steps are 1, 2 or 5 × 10^k, so one decimal then suffices), else the
- * decimals of the step; exponents below 0.01. `ticks` are the axis's ticks (log axes: steps vary).
- */
-export function formatTick(v: number, ticks: readonly number[]): string {
-  const step = ticks.length > 1 ? Math.abs(ticks[1] - ticks[0]) : NaN;
-  const linear = ticks.length < 3 || Math.abs(ticks[2] - ticks[1] - (ticks[1] - ticks[0])) <= 1e-9 * step;
-  if (!linear || !(step > 0)) {
-    if (Math.abs(v) >= 1e6) return (v / 1e6).toFixed(1) + "M";
-    if (Math.abs(v) >= 1e3) return (v / 1e3).toFixed(1) + "k";
-    if (Math.abs(v) < 0.01 && v !== 0) return v.toExponential(1);
-    return Number.isInteger(v) ? v.toString() : v.toFixed(2);
+  if (symbol === "x") {
+    return <path d={`M${px(p.x - r)},${px(p.y - r)}L${px(p.x + r)},${px(p.y + r)}M${px(p.x - r)},${px(p.y + r)}L${px(p.x + r)},${px(p.y - r)}`}
+      stroke={color} strokeWidth={Math.max(1.5, size / 4)} opacity={opacity} />;
   }
-  if (Math.abs(v) >= 1e6 && step >= 1e5) return (v / 1e6).toFixed(1) + "M";
-  if (Math.abs(v) >= 1e3 && step >= 100) return (v / 1e3).toFixed(1) + "k";
-  if (v === 0) return "0";
-  const decade = (x: number) => Math.floor(Math.log10(x) + 1e-9);
-  if (step < 0.01) return v.toExponential(Math.max(0, decade(Math.abs(v)) - decade(step)));
-  return v.toFixed(Math.max(0, -decade(step)));
+  return <circle cx={p.x} cy={p.y} r={r} fill={color} opacity={opacity} />;
 }
 
 /**
- * The x categories in order of first appearance, or null for a numeric axis. As in Plotly's axis autotype, the axis is
- * categorical when `xaxis.type` is "category" or an x value is a string that isn't a number ("S₁", "Germanium");
- * numeric strings such as "10" stay numeric.
+ * The chart at `w` px wide, 1 SVG unit = 1 px, so text renders at its nominal size: ticks 11 px, axis titles 13 px.
+ * Height follows Plotly's `layout.height` (400) on screens ≥ 700 px and shrinks with the width down to 280 px.
  */
-export function xCategories(data: readonly { x?: readonly (number | string)[] }[], xaxisType?: unknown): string[] | null {
-  const xs = data.flatMap((t) => (t.x ?? []).slice(0, 10000));
-  if (xaxisType !== "category" && !xs.some((v) => typeof v === "string" && !Number.isFinite(Number(v)))) return null;
-  return [...new Set(xs.map(String))];
-}
+function ChartBody({ data, layout, w, title }: { data: Trace[]; layout: Record<string, unknown>; w: number; title?: string }) {
+  const clipId = `${useId().replace(/:/g, "")}-clip`;
 
-/** Wraps children and reports container width via ResizeObserver */
-function ResponsiveContainer({ children, className }: { children: (width: number) => React.ReactNode; className: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [width, setWidth] = useState(0);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) setWidth(entry.contentRect.width);
-    });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-  return (
-    <div ref={ref} className={className}>
-      {children(width > 0 ? width : 700)}
-    </div>
-  );
-}
-
-function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: Trace[]; layout: Record<string, unknown>; title?: string; className: string }) {
-  const chartId = useId().replace(/:/g, "");
-
-  // Use fixed base dimensions for aspect ratio to prevent CLS
-  // The container width changes on mobile, but aspect ratio should stay constant
-  const baseW = 700;
+  const margin = (layout.margin ?? {}) as Record<string, number | undefined>;
   const baseH = typeof layout.height === "number" ? layout.height : 400;
-  const w = typeof layout.width === "number" ? layout.width : baseW;
-  const aspectRatio = baseH / baseW;
-  const ml = (layout.margin as Record<string, number>)?.l ?? 60;
-  const mr = (layout.margin as Record<string, number>)?.r ?? 20;
-  const mt = (layout.margin as Record<string, number>)?.t ?? 30;
+  const mt = margin.t ?? 30;
   const xaxis = layout.xaxis as Record<string, unknown> | undefined;
-  const categories = xCategories(data, xaxis?.type);
-  // Category labels wider than their slot are rotated (xaxis.tickangle, or −45° as Plotly's auto-rotation) and hang
-  // below the axis: make room for the longest one (≈ 6.5 px per character at 11 px).
-  const longestLabel = categories ? Math.max(0, ...categories.map((c) => c.length)) * 6.5 : 0;
-  const tickAngle = !categories ? 0
-    : typeof xaxis?.tickangle === "number" ? xaxis.tickangle
-    : longestLabel > 0.9 * ((w - ml - mr) / Math.max(categories.length, 1)) ? -45 : 0;
-  const labelDrop = Math.min(100, longestLabel * Math.abs(Math.sin((tickAngle * Math.PI) / 180)));
-  const mbLayout = (layout.margin as Record<string, number>)?.b ?? 50;
-  const mb = Math.max(mbLayout, 50 + labelDrop);
-  const dynamicH = Math.max(280, Math.round(w * aspectRatio)) + (mb - mbLayout); // the labels add height, not take it
-
-  const plotW = w - ml - mr;
-  const plotH = dynamicH - mt - mb;
-
   const yaxis = layout.yaxis as Record<string, unknown> | undefined;
   const yaxis2 = layout.yaxis2 as Record<string, unknown> | undefined;
   const hasDualY = !!yaxis2;
-  const showLegend = layout.showlegend !== false && data.length > 1;
-
-  const xLabel = typeof xaxis?.title === "string" ? xaxis.title : (xaxis?.title as Record<string, string>)?.text || "";
-  const yLabel = typeof yaxis?.title === "string" ? yaxis.title : (yaxis?.title as Record<string, string>)?.text || "";
-  const y2Label = typeof yaxis2?.title === "string" ? yaxis2.title : (yaxis2?.title as Record<string, string>)?.text || "";
+  const xLabel = axisTitle(xaxis);
+  const yLabel = axisTitle(yaxis);
+  const y2Label = axisTitle(yaxis2);
   const gridColor = (xaxis?.gridcolor as string) || (yaxis?.gridcolor as string) || "#1f2937";
-  const textColor = "#9ca3af";
 
-  // Determine which traces use yaxis2
-  const y2TraceIndices = new Set<number>();
-  if (hasDualY) {
-    data.forEach((t, i) => {
-      if ((t as Record<string, unknown>).yaxis === "y2") y2TraceIndices.add(i);
-    });
-    // If no traces explicitly reference y2, assign by convention:
-    // traces after the first that have a different scale
-    if (y2TraceIndices.size === 0 && data.length > 1) {
-      for (let i = 1; i < data.length; i++) y2TraceIndices.add(i);
-    }
-  }
+  const categories = xCategories(data as { x?: (number | string)[] }[], xaxis?.type);
+  // Category labels wider than their slot are rotated (xaxis.tickangle, or −45° as Plotly's auto-rotation) and hang
+  // below the axis: make room for the longest one.
+  const longestLabel = categories ? Math.max(0, ...categories.map((c) => labelWidth(c))) : 0;
+  const roughPlotW = w - (margin.l ?? 60) - (margin.r ?? 20);
+  const tickAngle = !categories ? 0
+    : typeof xaxis?.tickangle === "number" ? xaxis.tickangle
+    : longestLabel > 0.9 * (roughPlotW / Math.max(categories.length, 1)) ? -45 : 0;
+  const labelDrop = Math.min(100, longestLabel * Math.abs(Math.sin((tickAngle * Math.PI) / 180)));
+  const mbLayout = margin.b ?? 50;
+  const mb = Math.max(mbLayout, 50 + labelDrop);
+  const h = Math.min(baseH, Math.max(Math.min(280, baseH), Math.round((w * baseH) / 700))) + (mb - mbLayout); // the labels add height, not take it
+  const plotH = h - mt - mb;
+
+  // Traces on the right-hand axis: those with yaxis "y2", or by convention every trace after the first.
+  const onY2 = data.map((t) => hasDualY && t.yaxis === "y2");
+  if (hasDualY && !onY2.some(Boolean)) onY2.fill(true, 1);
 
   const xLog = !categories && xaxis?.type === "log";
   const yLog = yaxis?.type === "log";
-  const y2Log = (yaxis2?.type as string) === "log";
+  const y2Log = yaxis2?.type === "log";
   // A category's x is its index, as in Plotly.
   const categoryIndex = new Map(categories?.map((c, i) => [c, i]));
-  const xValue = (v: number | string) => (categories ? categoryIndex.get(String(v)) ?? NaN : Number(v));
-  const allX = data.flatMap(t => ((t.x ?? []) as (number | string)[]).slice(0, 10000).map(xValue)).filter(n => Number.isFinite(n) && (!xLog || n > 0));
-  const allY1 = data.flatMap((t, i) => y2TraceIndices.has(i) ? [] : ((t.y ?? []) as (number | string)[]).slice(0, 10000).map(Number)).filter(n => Number.isFinite(n) && (!yLog || n > 0));
-  const allY2 = data.flatMap((t, i) => y2TraceIndices.has(i) ? ((t.y ?? []) as (number | string)[]).slice(0, 10000).map(Number) : []).filter(n => Number.isFinite(n) && (!y2Log || n > 0));
-  const allY = hasDualY ? [...allY1, ...allY2] : allY1;
-
-  if (allX.length === 0 || allY.length === 0) return null;
+  const xValue = (v: unknown) => (categories ? categoryIndex.get(String(v)) ?? null : plotValue(v, xLog));
+  const yValue = (v: unknown, ti: number) => plotValue(v, onY2[ti] ? y2Log : yLog);
+  const values = (pick: (t: Trace, ti: number) => (number | null)[]) =>
+    data.flatMap(pick).filter((n): n is number => n !== null);
+  const allX = values((t) => (t.x ?? []).slice(0, 10000).map(xValue));
+  const allY1 = values((t, ti) => (onY2[ti] ? [] : (t.y ?? []).slice(0, 10000).map((v) => yValue(v, ti))));
+  const allY2 = values((t, ti) => (onY2[ti] ? (t.y ?? []).slice(0, 10000).map((v) => yValue(v, ti)) : []));
+  if (allX.length === 0 || allY1.length + allY2.length === 0) return null;
 
   let xMin = Math.min(...allX);
   let xMax = Math.max(...allX);
@@ -202,8 +130,8 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
   let y2Max = allY2.length > 0 ? Math.max(...allY2) : 1;
   // Bars start at zero, so a linear axis that holds bars includes it (as Plotly's autorange does).
   const barIndices = data.flatMap((t, i) => (t.type === "bar" ? [i] : []));
-  if (!yLog && allY1.length > 0 && barIndices.some((i) => !y2TraceIndices.has(i))) { yMin = Math.min(yMin, 0); yMax = Math.max(yMax, 0); }
-  if (!y2Log && allY2.length > 0 && barIndices.some((i) => y2TraceIndices.has(i))) { y2Min = Math.min(y2Min, 0); y2Max = Math.max(y2Max, 0); }
+  if (!yLog && allY1.length > 0 && barIndices.some((i) => !onY2[i])) { yMin = Math.min(yMin, 0); yMax = Math.max(yMax, 0); }
+  if (!y2Log && allY2.length > 0 && barIndices.some((i) => onY2[i])) { y2Min = Math.min(y2Min, 0); y2Max = Math.max(y2Max, 0); }
 
   const xRange = xaxis?.range as number[] | undefined;
   const yRange = yaxis?.range as number[] | undefined;
@@ -214,9 +142,10 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
 
   const rawXMin = xMin, rawXMax = xMax, rawYMin = yMin, rawYMax = yMax;
   const rawY2Min = y2Min, rawY2Max = y2Max;
-  if (xLog) { xMin = Math.log10(Math.max(xMin, LOG_FLOOR)); xMax = Math.log10(Math.max(xMax, LOG_FLOOR)); }
-  if (yLog) { yMin = Math.log10(Math.max(yMin, LOG_FLOOR)); yMax = Math.log10(Math.max(yMax, LOG_FLOOR)); }
-  if (y2Log) { y2Min = Math.log10(Math.max(y2Min, LOG_FLOOR)); y2Max = Math.log10(Math.max(y2Max, LOG_FLOOR)); }
+  const lg = (v: number) => Math.log10(Math.max(v, LOG_FLOOR));
+  if (xLog) { xMin = lg(xMin); xMax = lg(xMax); }
+  if (yLog) { yMin = lg(yMin); yMax = lg(yMax); }
+  if (y2Log) { y2Min = lg(y2Min); y2Max = lg(y2Max); }
 
   const xSpan = xMax - xMin || 1;
   const ySpan = yMax - yMin || 1;
@@ -227,252 +156,180 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
   y2Min -= y2Span * pad; y2Max += y2Span * pad;
   if (categories && !xRange) { xMin = -0.5; xMax = categories.length - 0.5; } // one slot per category
 
-  // Extra right margin for dual Y axis
-  const effectiveMr = hasDualY ? Math.max(mr, 70) : mr;
-  const effectivePlotW = w - ml - effectiveMr;
+  const toSvgY = (v: number) => px(mt + plotH - (((yLog ? lg(v) : v) - yMin) / (yMax - yMin)) * plotH);
+  const toSvgY2 = (v: number) => px(mt + plotH - (((y2Log ? lg(v) : v) - y2Min) / (y2Max - y2Min)) * plotH);
+  const yTicks = niceTicks(rawYMin, rawYMax, tickCount(plotH, 50), yLog);
+  const y2Ticks = hasDualY ? niceTicks(rawY2Min, rawY2Max, tickCount(plotH, 50), y2Log) : [];
+  const yTickText = yTicks.map((v) => formatTick(v, yTicks));
+  const y2TickText = y2Ticks.map((v) => formatTick(v, y2Ticks));
 
-  const toSvgX = (v: number) => {
-    let n = v;
-    if (xLog) n = Math.log10(Math.max(n, LOG_FLOOR));
-    return ml + ((n - xMin) / (xMax - xMin)) * effectivePlotW;
+  // Margins grow to fit the tick labels and axis titles (Plotly's automargin), never shrink below layout.margin.
+  const widest = (labels: string[]) => Math.max(0, ...labels.map((s) => labelWidth(s)));
+  const ml = Math.ceil(Math.max(margin.l ?? 60, widest(yTickText) + 8 + (yLabel ? 24 : 6)));
+  const mr = Math.ceil(Math.max(margin.r ?? 20, hasDualY ? widest(y2TickText) + 8 + (y2Label ? 24 : 6) : 0));
+  const plotW = w - ml - mr;
+
+  const toSvgX = (v: number) => px(ml + (((xLog ? lg(v) : v) - xMin) / (xMax - xMin)) * plotW);
+  const xTicks = categories ? categories.map((_, i) => i) : niceTicks(rawXMin, rawXMax, tickCount(plotW, 100), xLog);
+  const xTickText = xTicks.map((v) => (categories ? categories[v] : formatTick(v, xTicks)));
+  const xStride = tickAngle ? 1 : labelStride(xTicks.map(toSvgX), xTickText.map((s) => labelWidth(s)));
+
+  const colorOf = (t: Trace, ti: number) => t.line?.color ?? (typeof t.marker?.color === "string" ? t.marker.color : PALETTE[ti % PALETTE.length]);
+  const markerColor = (t: Trace, ti: number, i: number) => {
+    const c = t.marker?.color;
+    return (Array.isArray(c) ? c[i] : c) ?? t.line?.color ?? PALETTE[ti % PALETTE.length];
   };
-  const toSvgY = (v: number) => {
-    let n = v;
-    if (yLog) n = Math.log10(Math.max(n, LOG_FLOOR));
-    return mt + plotH - ((n - yMin) / (yMax - yMin)) * plotH;
-  };
-  const toSvgY2 = (v: number) => {
-    let n = v;
-    if (y2Log) n = Math.log10(Math.max(n, LOG_FLOOR));
-    return mt + plotH - ((n - y2Min) / (y2Max - y2Min)) * plotH;
-  };
 
-  const xTicks = categories ? categories.map((_, i) => i) : niceTicks(rawXMin, rawXMax, 6, xLog);
-  const yTicks = niceTicks(rawYMin, rawYMax, 6, yLog);
-  const y2Ticks = hasDualY ? niceTicks(rawY2Min, rawY2Max, 6, y2Log) : [];
-
-
-  const paths = data.map((trace, ti) => {
-    const tx = trace.x ?? [];
-    const ty = trace.y ?? [];
-    if (tx.length === 0 || ty.length === 0) return null;
-    const points: string[] = [];
-    const yMap = y2TraceIndices.has(ti) ? toSvgY2 : toSvgY;
-    for (let i = 0; i < Math.min(tx.length, ty.length); i++) {
-      const xv = xValue(tx[i]);
-      const yv = Number(ty[i]);
-      if (!Number.isFinite(xv) || !Number.isFinite(yv)) continue;
-      if ((xLog && !(xv > 0)) || ((y2TraceIndices.has(ti) ? y2Log : yLog) && !(yv > 0))) continue;
-      points.push(`${toSvgX(xv)},${yMap(yv)}`);
-    }
-    return points;
+  const points = data.map((t, ti): (Pt | null)[] => {
+    const tx = t.x ?? [], ty = t.y ?? [];
+    const yMap = onY2[ti] ? toSvgY2 : toSvgY;
+    return Array.from({ length: Math.min(tx.length, ty.length) }, (_, i) => {
+      const x = xValue(tx[i]), y = yValue(ty[i], ti);
+      return x === null || y === null ? null : { x: toSvgX(x), y: yMap(y), i };
+    });
   });
 
-  const lineIndices = data.flatMap((t, i) => (t.type === "bar" ? [] : [i]));
   // Plotly's default barmode "group" puts the bar traces side by side in each slot; "overlay" and "stack" draw them
   // over each other (stacking isn't drawn).
   const groupBars = layout.barmode !== "overlay" && layout.barmode !== "stack" && barIndices.length > 1;
+  const plotBottom = mt + plotH;
 
-  const legendItems = data.filter(t => t.name).map(t => ({
-    name: t.name!,
-    color: t.line?.color || t.marker?.color || "#60a5fa",
-    dash: t.line?.dash,
-  }));
-
-  const plotWRef = effectivePlotW;
-  const plotHRef = plotH;
+  const legendItems: LegendItem[] = data.flatMap((t, ti) => {
+    if (!t.name || t.showlegend === false) return [];
+    const mode = t.mode ?? "lines";
+    const kind = t.type === "bar" || (mode === "none" && t.fill) ? "bar" : mode.includes("lines") ? "line" : "marker";
+    const color = kind === "line" ? colorOf(t, ti) : markerColor(t, ti, 0);
+    return [{ name: t.name, color, kind, dash: kind === "line" ? dashArray(t.line?.dash) : undefined }];
+  });
+  const showLegend = layout.showlegend === true || (layout.showlegend !== false && data.length > 1);
 
   return (
-    <div className={`bg-gray-900 border border-gray-800 rounded-lg p-4 ${className}`.trim()}>
-      {title ? <h3 className="text-lg font-semibold mb-3">{title}</h3> : null}
-      <svg viewBox={`0 0 ${w} ${dynamicH}`} className="w-full" preserveAspectRatio="xMidYMin meet" role="img" aria-label={title || "Chart"}>
+    <>
+      <svg viewBox={`0 0 ${w} ${h}`} className="block w-full h-auto overflow-visible" role="img" aria-label={title || "Chart"}>
         <title>{title || "Chart"}</title>
         <desc>{xLabel ? `${xLabel} vs ${yLabel}` : "Data visualization"}</desc>
+        <defs>
+          <clipPath id={clipId}>
+            <rect x={ml} y={mt} width={plotW} height={plotH} />
+          </clipPath>
+        </defs>
+
         {/* Grid lines */}
-        {xTicks.map(v => (
-          <line key={`xg${v}`} x1={toSvgX(v)} y1={mt} x2={toSvgX(v)} y2={mt + plotHRef}
-            stroke={gridColor} strokeWidth={0.5} />
+        {xTicks.map((v) => (
+          <line key={`xg${v}`} x1={toSvgX(v)} y1={mt} x2={toSvgX(v)} y2={plotBottom} stroke={gridColor} strokeWidth={0.5} />
         ))}
-        {yTicks.map(v => (
-          <line key={`yg${v}`} x1={ml} y1={toSvgY(v)} x2={ml + plotWRef} y2={toSvgY(v)}
-            stroke={gridColor} strokeWidth={0.5} />
+        {yTicks.map((v) => (
+          <line key={`yg${v}`} x1={ml} y1={toSvgY(v)} x2={ml + plotW} y2={toSvgY(v)} stroke={gridColor} strokeWidth={0.5} />
         ))}
 
         {/* Axes */}
-        <line x1={ml} y1={mt} x2={ml} y2={mt + plotHRef} stroke="#4b5563" strokeWidth={1} />
-        <line x1={ml} y1={mt + plotHRef} x2={ml + plotWRef} y2={mt + plotHRef} stroke="#4b5563" strokeWidth={1} />
-        {hasDualY && (
-          <line x1={ml + plotWRef} y1={mt} x2={ml + plotWRef} y2={mt + plotHRef} stroke="#4b5563" strokeWidth={1} />
-        )}
+        <line x1={ml} y1={mt} x2={ml} y2={plotBottom} stroke={AXIS_COLOR} strokeWidth={1} />
+        <line x1={ml} y1={plotBottom} x2={ml + plotW} y2={plotBottom} stroke={AXIS_COLOR} strokeWidth={1} />
+        {hasDualY && <line x1={ml + plotW} y1={mt} x2={ml + plotW} y2={plotBottom} stroke={AXIS_COLOR} strokeWidth={1} />}
 
-        {/* X tick labels */}
-        {xTicks.map((v, _, all) => (
-          <text key={`xl${v}`} x={toSvgX(v)} y={mt + plotH + 18} textAnchor={tickAngle ? "end" : "middle"}
-            transform={tickAngle ? `rotate(${tickAngle}, ${toSvgX(v)}, ${mt + plotH + 18})` : undefined}
-            fill={textColor} fontSize={11}>{categories ? categories[v] : formatTick(v, all)}</text>
+        {/* X tick labels (thinned to every xStride-th when they would overlap) */}
+        {xTicks.map((v, k) => k % xStride !== 0 ? null : (
+          <text key={`xl${v}`} x={toSvgX(v)} y={plotBottom + 18} textAnchor={tickAngle ? "end" : "middle"}
+            transform={tickAngle ? `rotate(${tickAngle}, ${toSvgX(v)}, ${plotBottom + 18})` : undefined}
+            fill={TEXT_COLOR} fontSize={TICK_FONT}>{xTickText[k]}</text>
         ))}
 
         {/* Y tick labels */}
-        {yTicks.map((v, _, all) => (
-          <text key={`yl${v}`} x={ml - 8} y={toSvgY(v) + 4} textAnchor="end"
-            fill={textColor} fontSize={11}>{formatTick(v, all)}</text>
+        {yTicks.map((v, k) => (
+          <text key={`yl${v}`} x={ml - 8} y={toSvgY(v) + 4} textAnchor="end" fill={TEXT_COLOR} fontSize={TICK_FONT}>{yTickText[k]}</text>
         ))}
 
-        {/* X axis label */}
         {xLabel && (
-          <text x={ml + plotW / 2} y={dynamicH - 4} textAnchor="middle" fill={textColor} fontSize={13}>
-            {xLabel}
-          </text>
+          <text x={ml + plotW / 2} y={h - 4} textAnchor="middle" fill={TEXT_COLOR} fontSize={13}>{xLabel}</text>
         )}
-
-        {/* Y axis label */}
         {yLabel && (
-          <text x={14} y={mt + plotHRef / 2} textAnchor="middle" fill={textColor} fontSize={13}
-            transform={`rotate(-90, 14, ${mt + plotHRef / 2})`}>
-            {yLabel}
-          </text>
+          <text x={14} y={mt + plotH / 2} textAnchor="middle" fill={TEXT_COLOR} fontSize={13}
+            transform={`rotate(-90, 14, ${mt + plotH / 2})`}>{yLabel}</text>
         )}
 
         {/* Y2 axis (right) */}
-        {hasDualY && y2Ticks.map((v, _, all) => (
-          <text key={`y2l${v}`} x={ml + plotWRef + 8} y={toSvgY2(v) + 4} textAnchor="start"
-            fill="#f97316" fontSize={11}>{formatTick(v, all)}</text>
+        {y2Ticks.map((v, k) => (
+          <text key={`y2l${v}`} x={ml + plotW + 8} y={toSvgY2(v) + 4} textAnchor="start" fill={Y2_COLOR} fontSize={TICK_FONT}>{y2TickText[k]}</text>
         ))}
         {hasDualY && y2Label && (
-          <text x={w - 8} y={mt + plotHRef / 2} textAnchor="middle" fill="#f97316" fontSize={13}
-            transform={`rotate(90, ${w - 8}, ${mt + plotHRef / 2})`}>
-            {y2Label}
-          </text>
+          <text x={w - 8} y={mt + plotH / 2} textAnchor="middle" fill={Y2_COLOR} fontSize={13}
+            transform={`rotate(90, ${w - 8}, ${mt + plotH / 2})`}>{y2Label}</text>
         )}
 
         {/* Bar traces */}
-        {barIndices.map((di, ti) => {
-          const trace = data[di];
-          const tx = trace.x ?? [];
-          const ty = trace.y ?? [];
-          if (tx.length === 0 || ty.length === 0) return null;
-          const color = trace.marker?.color || ["#60a5fa", "#f97316", "#10b981", "#8b5cf6", "#ef4444", "#06b6d4"][ti % 6];
-          const onY2 = y2TraceIndices.has(di);
-          const yMap = onY2 ? toSvgY2 : toSvgY;
-          const [lo, hi, log] = onY2 ? [y2Min, y2Max, y2Log] : [yMin, yMax, yLog];
+        {barIndices.map((ti, bi) => {
+          const t = data[ti];
+          const [lo, hi, log] = onY2[ti] ? [y2Min, y2Max, y2Log] : [yMin, yMax, yLog];
+          const yMap = onY2[ti] ? toSvgY2 : toSvgY;
           // Bars grow from 0, or from the plot's edge when 0 is off the axis (log: the bottom).
-          const base = log ? Math.pow(10, lo) : Math.min(Math.max(0, lo), hi);
-          const slot = categories ? plotWRef / categories.length : plotWRef / Math.max(tx.length, 1);
+          const y0 = yMap(log ? Math.pow(10, lo) : Math.min(Math.max(0, lo), hi));
+          const slot = categories ? plotW / categories.length : plotW / Math.max(t.x?.length ?? 0, 1);
           const barW = Math.max(2, groupBars ? (slot * 0.8) / barIndices.length : slot * 0.6);
-          const offset = groupBars ? (ti - (barIndices.length - 1) / 2) * barW : 0;
-          return tx.map((xv, i) => {
-            const x = xValue(xv), y = Number(ty[i]);
-            if (!Number.isFinite(x) || !Number.isFinite(y) || (log && !(y > 0))) return null;
-            const y0 = yMap(base), y1 = yMap(y);
+          const offset = groupBars ? (bi - (barIndices.length - 1) / 2) * barW : 0;
+          return points[ti].map((p) => p && (
+            <rect key={`bar${ti}-${p.i}`} x={px(p.x + offset - barW / 2)} y={Math.min(y0, p.y)} width={px(barW)}
+              height={px(Math.abs(y0 - p.y))} fill={markerColor(t, ti, p.i)} opacity={t.opacity ?? 0.8} rx={1} />
+          ));
+        })}
+
+        {/* Line and marker traces */}
+        <g clipPath={`url(#${clipId})`}>
+          {data.map((t, ti) => {
+            if (t.type === "bar") return null;
+            const runs = splitAtGaps(points[ti], t.connectgaps === true);
+            if (runs.length === 0) return null;
+            const color = colorOf(t, ti);
+            const mode = t.mode ?? "lines";
+            const pathOf = (run: Pt[]) => run.map((p, k) => `${k ? "L" : "M"}${p.x},${p.y}`).join("");
+            // tozeroy fills down to y = 0 (the plot's bottom edge when 0 is off the axis or the axis is log).
+            const zeroY = (onY2[ti] ? y2Log : yLog) ? plotBottom : Math.min(plotBottom, Math.max(mt, (onY2[ti] ? toSvgY2 : toSvgY)(0)));
+            const fill = t.fill === "tozeroy"
+              ? runs.map((r) => `${pathOf(r)}L${r[r.length - 1].x},${zeroY}L${r[0].x},${zeroY}Z`).join("")
+              : t.fill === "toself" ? `${pathOf(runs.flat())}Z` : null;
+            const size = t.marker?.size ?? 6;
+            const texts = mode.includes("text") ? t.text : undefined;
+            const textDy = t.textposition?.startsWith("bottom") ? size / 2 + 12 : t.textposition?.startsWith("middle") ? 4 : -(size / 2 + 4);
             return (
-              <rect key={`bar${ti}-${i}`} x={toSvgX(x) + offset - barW / 2} y={Math.min(y0, y1)} width={barW}
-                height={Math.abs(y0 - y1)} fill={typeof color === "string" ? color : "#60a5fa"}
-                opacity={trace.opacity ?? 0.8} rx={1} />
-            );
-          });
-        })}
-
-        {/* Line traces with fill */}
-        {lineIndices.map((di, ti) => {
-          const trace = data[di];
-          const pts = paths[di];
-          if (!pts || pts.length === 0) return null;
-          const color = trace.line?.color || ["#60a5fa", "#f97316", "#10b981", "#8b5cf6", "#ef4444", "#06b6d4", "#eab308", "#ec4899"][ti % 8];
-          const width = trace.line?.width ?? 2;
-          const dash = getDash(trace.line?.dash);
-          const mode = trace.mode || "lines";
-          const showFill = trace.fill && trace.fill !== "none";
-          const fillDir = trace.fill;
-
-          const d = pts.join(" L");
-
-          const fillPath = showFill && fillDir === "tozeroy" && pts.length > 0
-            ? `M${pts[0]} L${pts.join(" L")} L${pts[pts.length - 1].split(",")[0]},${mt + plotHRef} L${pts[0].split(",")[0]},${mt + plotHRef} Z`
-            : showFill && fillDir === "toself" && pts.length > 0
-            ? `M${pts[0]} L${pts.join(" L")} Z`
-            : null;
-
-          const clipId = `${chartId}-clip-${ti}`;
-          return (
-            <g key={`trace${ti}`} clipPath={`url(#${clipId})`}>
-              <clipPath id={clipId}>
-                <rect x={ml} y={mt} width={plotWRef} height={plotHRef} />
-              </clipPath>
-              {fillPath && (
-                <path d={fillPath} fill={hexToRgba(typeof color === "string" ? color : "#60a5fa", 0.15)} stroke="none" />
-              )}
-              {mode.includes("lines") && (
-                <path d={`M${d}`} fill="none" stroke={color} strokeWidth={width}
-                  strokeDasharray={dash} strokeLinejoin="round" />
-              )}
-              {mode.includes("markers") && pts.map((p, i) => (
-                <circle key={i} cx={Number(p.split(",")[0])} cy={Number(p.split(",")[1])}
-                  r={trace.marker?.size || 4} fill={color} opacity={trace.opacity ?? 0.8} />
-              ))}
-            </g>
-          );
-        })}
-
-        {/* Legend */}
-        {showLegend && (
-          <g transform={`translate(${ml + plotWRef - 10}, ${mt + 5})`}>
-            {legendItems.map((item, i) => (
-              <g key={i} transform={`translate(0, ${i * 18})`}>
-                <line x1={-60} y1={0} x2={-40} y2={0} stroke={item.color} strokeWidth={2}
-                  strokeDasharray={getDash(item.dash)} />
-                <text x={-35} y={4} fill={textColor} fontSize={11}>{item.name}</text>
+              <g key={`trace${ti}`}>
+                {fill && <path d={fill} fill={t.fillcolor ?? color} fillOpacity={t.fillcolor ? undefined : 0.15} stroke="none" />}
+                {mode.includes("lines") && (
+                  <path d={runs.map(pathOf).join("")} fill="none" stroke={color} strokeWidth={t.line?.width ?? 2}
+                    strokeDasharray={dashArray(t.line?.dash)} strokeLinejoin="round" />
+                )}
+                {mode.includes("markers") && runs.flat().map((p) => (
+                  <Marker key={p.i} p={p} size={size} color={markerColor(t, ti, p.i)} symbol={t.marker?.symbol} opacity={t.opacity ?? 0.8} />
+                ))}
+                {texts !== undefined && runs.flat().map((p) => {
+                  const s = Array.isArray(texts) ? texts[p.i] : texts;
+                  return s ? <text key={`t${p.i}`} x={p.x} y={px(p.y + textDy)} textAnchor="middle" fill={TEXT_COLOR} fontSize={TICK_FONT}>{s}</text> : null;
+                })}
               </g>
-            ))}
-          </g>
-        )}
+            );
+          })}
+        </g>
       </svg>
-    </div>
+      {showLegend && <ChartLegend items={legendItems} />}
+    </>
   );
 }
 
 export default function SimpleChart({ data, layout = {}, config = {}, title, className = "" }: SimpleChartProps) {
-  const needsPlotly = useMemo(() => {
-    return data.some(t =>
-      t.type === "scatter3d" ||
-      t.type === "surface" ||
-      t.type === "heatmap" ||
-      t.type === "contour" ||
-      t.type === "scatterpolar" ||
-      t.type === "scattergl" ||
-      t.type === "pie"
-    );
-  }, [data]);
-
+  const [ref, measured] = useElementWidth<HTMLDivElement>();
+  const needsPlotly = data.some((t) =>
+    t.type === "scatter3d" || t.type === "surface" || t.type === "heatmap" || t.type === "contour" ||
+    t.type === "scatterpolar" || t.type === "scattergl" || t.type === "pie");
   if (needsPlotly) {
     return <PlotlyFallback data={data} layout={layout} config={config} title={title} className={className} />;
   }
-
-  const layoutWidth = typeof layout.width === "number" ? layout.width : undefined;
-  const wrapperClassName = `bg-gray-900 border border-gray-800 rounded-lg p-4 ${className}`.trim();
-
-  // If a fixed width is specified, render directly (no ResizeObserver needed)
-  if (layoutWidth) {
-    return <SimpleChartInner data={data} layout={layout} title={title} className={className} />;
-  }
-
-  // Responsive: measure container width and pass it as viewBox width
+  // A fixed layout.width draws at that width, scaled to fit; otherwise the chart lays out at the measured width.
+  const w = typeof layout.width === "number" ? layout.width : measured;
   return (
-    <ResponsiveContainer className={wrapperClassName}>
-      {(containerWidth) => (
-        <SimpleChartInner
-          data={data}
-          layout={{ ...layout, width: containerWidth }}
-          title={title}
-          className=""
-        />
-      )}
-    </ResponsiveContainer>
+    <div className={`bg-gray-900 border border-gray-800 rounded-lg p-4 ${className}`.trim()}>
+      {title ? <h3 className="text-lg font-semibold mb-3">{title}</h3> : null}
+      <div ref={ref}>{w !== null && <ChartBody data={data} layout={layout} w={w} title={title} />}</div>
+    </div>
   );
 }
-
-// Shared Plotly wrapper to prevent double-bundling
-import type { PlotParams } from "react-plotly.js";
-import { PlotlyChart } from "./plotly-chart";
 
 function PlotlyFallback({ data, layout, config, title, className }: SimpleChartProps) {
   return (

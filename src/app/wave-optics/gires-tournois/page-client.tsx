@@ -24,34 +24,29 @@ export default function GiresTournoisPage() {
   );
 
   // The phase is wrapped to (−π, π], so it jumps by about 2π at each branch cut and a plain line would draw a vertical
-  // stroke there. The line is broken wherever |Δφ| between neighbouring points exceeds π. SimpleChart draws one polyline
-  // per trace (and reads null as 0), so each wrap-free run is its own trace instead of a null gap in one trace.
-  const phaseTraces = useMemo(() => {
-    const runs: { x: number[]; y: number[] }[] = [];
-    let run: { x: number[]; y: number[] } = { x: [], y: [] };
+  // stroke there. A null point breaks the line wherever |Δφ| between neighbouring points exceeds π.
+  const phaseTrace = useMemo(() => {
+    const x: number[] = [];
+    const y: (number | null)[] = [];
     let prev = NaN;
     for (const l of lambdas) {
       const phi = gtiPhase(gti, l * 1e-9);
       if (!Number.isFinite(phi)) continue;
       if (Number.isFinite(prev) && Math.abs(phi - prev) > Math.PI) {
-        runs.push(run);
-        run = { x: [], y: [] };
+        x.push(l);
+        y.push(null);
       }
-      run.x.push(l);
-      run.y.push(phi);
+      x.push(l);
+      y.push(phi);
       prev = phi;
     }
-    if (run.x.length > 0) runs.push(run);
-    return runs.map((seg, i) => ({
-      x: seg.x, y: seg.y, type: "scatter", mode: "lines", line: { color: "#60a5fa", width: 2 }, yaxis: "y",
-      ...(i === 0 ? { name: "Phase φ(λ)" } : { showlegend: false }),
-    }));
+    return { x, y, type: "scatter", mode: "lines", name: "Phase φ(λ)", line: { color: "#60a5fa", width: 2 }, yaxis: "y" };
   }, [gti, lambdas]);
 
   const chartData = useMemo(() => [
-    ...phaseTraces,
+    phaseTrace,
     { x: lambdas, y: lambdas.map((l) => gtiGdd(gti, l * 1e-9) * 1e30), type: "scatter", mode: "lines", name: "GDD (fs²)", line: { color: "#f87171", width: 2 }, yaxis: "y2" },
-  ], [gti, lambdas, phaseTraces]);
+  ], [gti, lambdas, phaseTrace]);
 
   const gdData = useMemo(() => [
     { x: lambdas, y: lambdas.map((l) => gtiGroupDelay(gti, l * 1e-9) * 1e15), type: "scatter", mode: "lines", name: "Group Delay (fs)", line: { color: "#fbbf24", width: 2 } },
