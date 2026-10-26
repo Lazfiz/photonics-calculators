@@ -187,3 +187,8 @@ test("plane-wave 2PA transmission T = 1/(1 + βI₀L) (materials audit golden, P
   assertRel(tpaTransmission(26e-11, 1e13, 1e-3), 0.27778, 1e-4, "T");
   assert.equal(tpaTransmission(26e-11, 0, 1e-3), 1);
 });
+
+test("diamond absorbs pumps above its 5.47 eV indirect gap (Clark, Dean & Harris 1964)", () => {
+  // hc/E_g = 1239.842 eV·nm / 5.47 eV = 226.66 nm.
+  assert.ok(Math.abs(RAMAN_LINES.diamond.absorbsBelow! * 1e9 - hc_eV_nm / 5.47) < 0.1);
+});

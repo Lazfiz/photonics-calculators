@@ -74,7 +74,7 @@ export default function CouplingEfficiencyCalculator() {
         <ResultCard label="Total coupling" value={pct(calc.total, 2)} tone={calc.total > 0.6 ? "green" : calc.total > 0.2 ? "yellow" : "red"} />
         <ResultCard label="Insertion loss" value={Number.isFinite(calc.lossDb) ? `${calc.lossDb.toFixed(2)} dB` : calc.lossDb === Infinity ? "∞ dB" : "—"} tone="blue" />
         <ResultCard label="Mode mismatch" value={pct(calc.mismatch, 1)} tone="purple" />
-        <ResultCard label="Beam waist w₀ / fibre mode w" value={Number.isFinite(calc.w1_um) ? `${calc.w1_um.toFixed(2)} / ${calc.w2_um.toFixed(2)} µm` : "—"} tone="yellow" />
+        <ResultCard label="Beam waist w₀ / fibre mode w" value={Number.isFinite(calc.w1_um) ? `${calc.w1_um.toFixed(2)} / ${calc.w2_um.toFixed(2)} µm` : "—"} tone={sourceNa > 0.3 ? "orange" : "yellow"} subtext={sourceNa > 0.3 ? "NA > 0.3: beyond the paraxial Gaussian model" : undefined} />
         <ResultCard label="Fibre mode NA λ/(πw)" value={Number.isFinite(calc.fiberModeNa) ? calc.fiberModeNa.toFixed(3) : "—"} tone="blue" />
         <ResultCard label="Offset factor" value={pct(calc.lateral, 1)} tone="green" />
         <ResultCard label="Tilt factor" value={pct(calc.angular, 1)} tone="green" />
