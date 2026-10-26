@@ -12,7 +12,7 @@ import {
   rcFilteredNoise,
   transitBandwidth,
 } from "../src/physics/detectors/photodiode-rc";
-import { closedLoopMagnitude, singlePoleClosedLoop, tiaBandNoise, tiaBandwidth, tiaButterworthCf, tiaSpotNoise } from "../src/physics/detectors/tia";
+import { closedLoopMagnitude, singlePoleClosedLoop, tiaBandwidth, tiaFilteredNoise, tiaButterworthCf } from "../src/physics/detectors/tia";
 import { darkCurrentRatio, intrinsicDensityRatio } from "../src/physics/detectors/dark-current";
 
 const close = (actual: number, expected: number, rel: number, msg = "") =>
@@ -120,18 +120,25 @@ test("TIA: √(GBW/2πR_F·C_S) = 3.989 MHz for 1 GHz, 1 MΩ, 10 pF; the Butterw
   for (let k = 0; k <= 400; k++) assert.ok(T(1e4 * 1e4 ** (k / 400)) < 1.001, "no peaking");
 });
 
-test("TIA input noise: band average of (e_n·2πf·C_S)² is F²/3 of it (SBOA122 eq. 13)", () => {
+test("TIA input noise through the Butterworth response 1/(1 + (f/f₀)⁴) and a post-filter B", () => {
   const p = { currentNoise: 5e-15, voltageNoise: 5e-9, feedbackR: 1e6, inputC: 10e-12, temperature: 300 };
-  const F = 3.98942e6;
-  // Trapezoid integral of the spot density over 0…F equals the band-averaged density × F.
-  let sum = 0;
-  const n = 10000;
-  for (let k = 0; k <= n; k++) sum += (k === 0 || k === n ? 0.5 : 1) * tiaSpotNoise(p, (k / n) * F).total;
-  close(tiaBandNoise(p, F).total * F, sum * (F / n), 1e-7);
-  // Hand values: 4kT/R_F = 1.65678e-26 A²/Hz; (5e-9·2π·10e-12)²·F²/3 = 5.2360e-25 A²/Hz; i_rms = 1.46804 nA.
-  close(tiaBandNoise(p, F).johnson, 1.656779e-26, 1e-6);
-  close(Math.sqrt(tiaBandNoise(p, F).total * F), 1.46804e-9, 1e-5);
-  assert.ok(Number.isNaN(tiaBandNoise({ ...p, feedbackR: 0 }, F).total));
+  const f0 = tiaBandwidth(1e9, 1e6, 10e-12); // 3.98942 MHz
+  const rms = (B: number) => { const r = tiaFilteredNoise(p, f0, B); return Math.sqrt(r.terms.total * r.enbw); };
+  // Independent Simpson integral over ln f (1 Hz … B, 2e5 steps) of [i_n² + 4kT/R_F + (e_n/R_F)² + (e_n·2πf·C_S)²]/(1 + (f/f₀)⁴):
+  // B = 100 MHz → 2.604620 nA; B = 1 THz → 2.652173 nA. Brick-wall SBOA122 eq. 13 to f₀ gave 1.46804 nA.
+  close(rms(100e6), 2.604620e-9, 1e-6);
+  close(rms(1e12), 2.652173e-9, 1e-6);
+  // B → ∞, hand: ∫₀^∞ dx/(1+x⁴) = ∫₀^∞ x²/(1+x⁴) dx = π/(2√2) (G&R 3.241.2), so ENBW = 1.110721·f₀ = 4.431135 MHz and
+  // i² = 1.66178e-26 · 4.431135e6 + (5e-9·2π·10e-12)² · 1.110721 · f₀³ = 7.0340e-18 A² → 2.65218 nA.
+  close(tiaFilteredNoise(p, f0, Infinity).enbw, 4.431135e6, 1e-6);
+  close(rms(Infinity), 2.65218e-9, 1e-5);
+  // B ≪ f₀ (series branch): the brick-wall form with f² → B²/3 and ENBW → B.
+  const low = tiaFilteredNoise(p, f0, 1e3);
+  close(low.enbw, 1e3, 1e-9);
+  close(low.terms.capacitive, (5e-9 * 2 * Math.PI * 10e-12) ** 2 * 1e6 / 3, 1e-9);
+  close(low.terms.johnson, 1.656779e-26, 1e-6); // 4kT/R_F
+  assert.ok(Number.isNaN(tiaFilteredNoise({ ...p, feedbackR: 0 }, f0, 1e8).terms.total));
+  assert.ok(Number.isNaN(tiaFilteredNoise(p, 0, 1e8).enbw));
 });
 
 test("dark current: generation ∝ n_i roughly doubles from 300 to 310 K in Si (E_g = 1.12 eV); diffusion ∝ n_i²", () => {

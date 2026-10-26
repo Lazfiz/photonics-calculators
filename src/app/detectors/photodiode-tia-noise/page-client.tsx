@@ -5,7 +5,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { noiseEquivalentPower, responsivity as responsivityOf } from "../../../physics/detectors/noise";
-import { tiaBandNoise, tiaBandwidth, tiaButterworthCf, tiaSpotNoise, type TiaNoiseInputs } from "../../../physics/detectors/tia";
+import { tiaBandwidth, tiaButterworthCf, tiaFilteredNoise, tiaSpotNoise, type TiaNoiseInputs } from "../../../physics/detectors/tia";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmtHz = (f: number) => (!Number.isFinite(f) ? "—" : f >= 1e9 ? `${(f / 1e9).toFixed(2)} GHz` : f >= 1e6 ? `${(f / 1e6).toFixed(2)} MHz` : `${(f / 1e3).toFixed(2)} kHz`);
@@ -32,11 +32,10 @@ export default function PhotodiodeTiaNoisePage() {
 
   const responsivity = responsivityOf(qe, wavelength_nm * 1e-9);
   const amp = (feedbackR: number): TiaNoiseInputs => ({ currentNoise: iN, voltageNoise: eN, feedbackR, inputC, temperature });
-  // Noise integrated over a brick-wall band F = min(B, f_TIA): the TIA response is gone above f_TIA.
+  // Noise weighted by the Butterworth TIA response up to the post-filter B; F is the noise-equivalent bandwidth.
   const atRf = (feedbackR: number) => {
     const fTia = tiaBandwidth(gbw, feedbackR, inputC);
-    const F = Math.min(band, fTia);
-    const terms = tiaBandNoise(amp(feedbackR), F);
+    const { terms, enbw: F } = tiaFilteredNoise(amp(feedbackR), fTia, band);
     const iRms = Math.sqrt(terms.total * F);
     return { fTia, F, terms, iRms, nep: noiseEquivalentPower(iRms, responsivity) };
   };
@@ -65,7 +64,7 @@ export default function PhotodiodeTiaNoisePage() {
   const sweep = gains.map(atRf);
   const rfChart = [
     { x: gains, y: sweep.map(s => s.nep), type: "scatter", mode: "lines", name: "NEP (W)", line: { color: "#34d399" } },
-    { x: gains, y: sweep.map(s => s.F), type: "scatter", mode: "lines", name: "Noise band min(B, f_TIA) (Hz)", line: { color: "#60a5fa", dash: "dash" }, yaxis: "y2" },
+    { x: gains, y: sweep.map(s => s.F), type: "scatter", mode: "lines", name: "Noise bandwidth ENBW (Hz)", line: { color: "#60a5fa", dash: "dash" }, yaxis: "y2" },
   ];
 
   return (
@@ -84,14 +83,15 @@ export default function PhotodiodeTiaNoisePage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ResultCard label="Responsivity" value={`${(responsivity * 1e3).toFixed(2)} mA/W`} tone="blue" />
         <ResultCard label="TIA Bandwidth" value={fmtHz(fTia)} tone="cyan" subtext={`√(GBW/2πR_f·C_S); Butterworth C_f = ${Number.isFinite(cf) ? `${(cf * 1e12).toPrecision(3)} pF` : "—"}`} />
-        <ResultCard label="Noise Band" value={fmtHz(F)} tone={band > fTia ? "orange" : "purple"} subtext={band > fTia ? "B exceeds the TIA bandwidth: integrated to f_TIA" : "Set by the post-filter B"} />
+        <ResultCard label="Noise Bandwidth (ENBW)" value={fmtHz(F)} tone={band > fTia ? "orange" : "purple"} subtext={band > fTia ? "Set by the TIA roll-off (B > f_TIA); the e_n·C noise peaks near f_TIA" : "Set by the post-filter B"} />
         <ResultCard label="Input Noise Current" value={`${iRms.toExponential(3)} A rms`} tone="yellow" subtext={`Dominant: ${dominant.name}; ${(Math.sqrt(terms.total) * 1e15).toFixed(1)} fA/√Hz band average`} />
         <ResultCard label="NEP (in the noise band)" value={`${nep.toExponential(3)} W`} tone="green" subtext={`Output noise ${(iRms * rf * 1e3).toPrecision(3)} mV rms`} />
       </div>
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1">
         <p>f_TIA = √(GBW / (2π·R_f·C_S)) for a Butterworth (Q = 0.707) response</p>
         <p>i²(f) = i_n² + 4kT/R_f + (e_n/R_f)² + (e_n·2πf·C_S)²</p>
-        <p>i²_rms = [i_n² + 4kT/R_f + (e_n/R_f)² + (e_n·2π·C_S)²·F²/3] · F,  F = min(B, f_TIA)</p>
+        <p>i²_rms = ∫₀ᴮ i²(f) / (1 + (f/f_TIA)⁴) df  (Butterworth response, brick-wall post-filter B)</p>
+        <p>B ≫ f_TIA: ENBW = 1.11·f_TIA, and the e_n·C term weighs (e_n·2π·C_S)²·1.11·f_TIA³</p>
         <p>NEP = i_rms / ℛ. Photocurrent and dark-current shot noise are left out.</p>
       </div>
       <div className="grid gap-6 lg:grid-cols-2">

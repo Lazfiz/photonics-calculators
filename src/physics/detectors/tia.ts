@@ -6,8 +6,8 @@
  *   Amplifiers and Analog Integrated Circuits, 4th ed. (McGraw-Hill 2015), ch. 6.
  * - TIA with feedback R_F ∥ C_F and total input capacitance C_S: Butterworth (Q = 1/√2) bandwidth
  *   f₋₃dB = √(GBW/(2π·R_F·C_S)) and input-referred current noise density
- *   i² = i_n² + 4k_B·T/R_F + (e_n/R_F)² + (e_n·2π·f·C_S)², whose band average to a brick-wall limit F replaces f² by
- *   F²/3. X. Ramus, Transimpedance Considerations for High-Speed Amplifiers, TI SBOA122 (2009), eqs. 6–7, 12, 13;
+ *   i² = i_n² + 4k_B·T/R_F + (e_n/R_F)² + (e_n·2π·f·C_S)², integrated through the Butterworth response (a brick-wall
+ *   limit F, SBOA122 eq. 13, replaces f² by F²/3 and misses the e_n·C noise above f₋₃dB). X. Ramus, Transimpedance Considerations for High-Speed Amplifiers, TI SBOA122 (2009), eqs. 6–7, 12, 13;
  *   J. G. Graeme, Photodiode Amplifiers: Op Amp Solutions (McGraw-Hill 1996).
  */
 
@@ -91,7 +91,29 @@ export function tiaSpotNoise(p: TiaNoiseInputs, f: number): TiaNoiseTerms {
   return terms(p, f * f);
 }
 
-/** Input-referred noise density averaged over a brick-wall band 0…F (SBOA122 eq. 13), A²/Hz; × F gives A². */
-export function tiaBandNoise(p: TiaNoiseInputs, band: number): TiaNoiseTerms {
-  return terms(p, (band * band) / 3);
+/**
+ * ∫₀ᵘ dx/(1 + x⁴) and ∫₀ᵘ x²/(1 + x⁴) dx by partial fractions, both π/(2√2) as u → ∞ (Gradshteyn & Ryzhik 3.241.2). Series below u = 0.01, where
+ * the closed forms cancel.
+ */
+function butterworthMoments(u: number): { m0: number; m2: number } {
+  if (u === Infinity) return { m0: Math.PI / (2 * Math.SQRT2), m2: Math.PI / (2 * Math.SQRT2) };
+  if (u < 0.01) {
+    const u4 = u ** 4;
+    return { m0: u * (1 - u4 / 5 + (u4 * u4) / 9), m2: u ** 3 * (1 / 3 - u4 / 7 + (u4 * u4) / 11) };
+  }
+  const log = Math.log((u * u + Math.SQRT2 * u + 1) / (u * u - Math.SQRT2 * u + 1)) / (4 * Math.SQRT2);
+  const atan = (Math.atan(Math.SQRT2 * u + 1) + Math.atan(Math.SQRT2 * u - 1)) / (2 * Math.SQRT2);
+  return { m0: atan + log, m2: atan - log };
+}
+
+/**
+ * Input-referred noise through the Butterworth TIA response |H|² = 1/(1 + (f/f₀)⁴) and a brick-wall post-filter at B
+ * (B = ∞ for none). Returns the density averaged over the noise-equivalent bandwidth, A²/Hz, and that bandwidth
+ * f₀·∫₀^{B/f₀} dx/(1 + x⁴), Hz; total × enbw = i²_rms. The e_n·C term rises as f², so most of its power lies above f₀:
+ * with B ≫ f₀ it weighs f₀³·π/(2√2), not the brick-wall f₀³/3 of SBOA122 eq. 13.
+ */
+export function tiaFilteredNoise(p: TiaNoiseInputs, f0: number, band: number): { terms: TiaNoiseTerms; enbw: number } {
+  if (!(f0 > 0) || !(band > 0)) return { terms: terms(p, NaN), enbw: NaN };
+  const { m0, m2 } = butterworthMoments(band / f0);
+  return { terms: terms(p, f0 * f0 * (m2 / m0)), enbw: f0 * m0 };
 }
