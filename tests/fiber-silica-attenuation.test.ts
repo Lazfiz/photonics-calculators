@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   CWDM_CHANNELS, OH_BAND_FWHM, OH_BANDS, OH_PEAK_WAVELENGTH, minimumLossWavelength, ohBandFwhm, ohContentPpm, ohDbPerKmPerPpm,
-  silicaLossDbPerKm,
+  rayleighScatteringDbPerKm, silicaLossDbPerKm,
 } from "../src/physics/fiber-optics/silica-attenuation";
 
 const assertRel = (actual: number, expected: number, tol: number, msg: string) =>
@@ -76,4 +76,12 @@ test("Domain guards", () => {
   assert.ok(Number.isNaN(silicaLossDbPerKm({ ...smf, ohPeakDbPerKm: -1 }, 1550e-9).total));
   assert.ok(Number.isNaN(silicaLossDbPerKm(smf, 0).total));
   assert.ok(Number.isNaN(minimumLossWavelength({ ...smf, geO2Fraction: 1 })));
+});
+
+test("rayleighScatteringDbPerKm: A/λ⁴ with λ in µm", () => {
+  // Hand calculation: 0.8 dB·km⁻¹·µm⁴ / 1.55⁴ = 0.8 / 5.77200625 = 0.1386000 dB/km.
+  assertRel(rayleighScatteringDbPerKm(0.8, 1.55e-6), 0.1386000, 1e-6, "0.8 at 1550 nm");
+  assertRel(rayleighScatteringDbPerKm(0.8, 1e-6), 0.8, 1e-12, "0.8 at 1 µm");
+  assert.ok(Number.isNaN(rayleighScatteringDbPerKm(0.8, 0)));
+  assert.ok(Number.isNaN(rayleighScatteringDbPerKm(0, 1.55e-6)));
 });

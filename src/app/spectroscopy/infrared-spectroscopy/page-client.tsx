@@ -8,6 +8,7 @@ import { hc_eV_nm } from "../../../physics/constants";
 import {
   DIATOMICS, forceConstant, isotopologue, mostPopulatedJ, reducedMass, rotationalConstantV, rovibrationalBand, vibrationalTerm,
 } from "../../../physics/spectroscopy/diatomic";
+import { GAUSSIAN_FWHM_PER_SIGMA } from "../../../physics/math";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits) : "—");
@@ -47,7 +48,7 @@ export default function InfraredSpectroscopyPage() {
   // Gaussian instrument function of the chosen FWHM over the visible lines
   const visible = main.filter((l) => l.strength >= 1e-3 * norm);
   const lo = Math.min(...visible.map((l) => l.sigma)) - 3 * fwhm, hi = Math.max(...visible.map((l) => l.sigma)) + 3 * fwhm;
-  const N = 2000, s2 = (fwhm / (2 * Math.sqrt(2 * Math.LN2))) ** 2;
+  const N = 2000, s2 = (fwhm / GAUSSIAN_FWHM_PER_SIGMA) ** 2;
   const grid = Array.from({ length: N }, (_, i) => lo + ((hi - lo) * i) / (N - 1));
   const envelope = (lines: typeof main, w: number) => grid.map((x) => {
     let y = 0;

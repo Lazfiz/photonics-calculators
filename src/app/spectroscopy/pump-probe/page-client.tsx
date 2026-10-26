@@ -9,11 +9,12 @@ import { crossSectionFromEpsilon } from "../../../physics/spectroscopy/lambert-b
 import {
   deltaA, deltaTOverT, excitationFraction, intermediatePeakTime, photonFluence, sequentialPopulations, type TransientBands,
 } from "../../../physics/spectroscopy/pump-probe";
+import { GAUSSIAN_FWHM_PER_SIGMA } from "../../../physics/math";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const r6 = (x: number) => (Number.isFinite(x) ? Number(x.toPrecision(6)) : NaN);
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits) : "—");
-const FWHM_TO_SIGMA = 1 / (2 * Math.sqrt(2 * Math.LN2));
+const FWHM_TO_SIGMA = 1 / GAUSSIAN_FWHM_PER_SIGMA;
 const ps = 1e-12;
 const COLORS = ["#60a5fa", "#34d399", "#fbbf24", "#f87171", "#a78bfa", "#fb7185", "#38bdf8", "#4ade80"];
 

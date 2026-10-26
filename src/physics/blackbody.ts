@@ -11,7 +11,7 @@
  *   ∫₀ˣ t³/(eᵗ − 1) dt = Σₖ Bₖ x^(k+3) / (k! (k + 3))  (Bernoulli numbers Bₖ; used for x < 1),
  * and ∫₀^∞ = π⁴/15.
  */
-import { c1_radiation, c2_radiation } from "./constants";
+import { c1_radiation, c2_radiation, sigma_SB } from "./constants";
 
 const PI4_15 = Math.PI ** 4 / 15;
 
@@ -41,6 +41,11 @@ function tailIntegral(x: number): number {
     if (term < 1e-17 * sum) break;
   }
   return sum;
+}
+
+/** Total exitance M = σT⁴ of a blackbody (Stefan–Boltzmann law), W/m². NaN unless T ≥ 0 and finite. */
+export function totalExitance(temperature: number): number {
+  return temperature >= 0 && Number.isFinite(temperature) ? sigma_SB * temperature ** 4 : NaN;
 }
 
 /** Spectral exitance M_λ of a blackbody, W m⁻² m⁻¹. NaN for λ ≤ 0 or T ≤ 0. */

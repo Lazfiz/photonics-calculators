@@ -4,7 +4,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { k_B, q } from "../../../physics/constants";
+import { johnsonNoise, ktcNoise, shotNoiseCurrent } from "../../../physics/detectors/noise";
 import { rcBandwidth, rcFilteredNoise } from "../../../physics/detectors/photodiode-rc";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -23,15 +23,15 @@ export default function BandwidthPage() {
 
   // Photodiode on a load R_L: both noise currents see the impedance R_L ∥ C_j, a first-order low-pass at f_c.
   const fc = rcBandwidth(loadR, capacitance);
-  const johnsonDensity = 4 * k_B * temperature * loadR; // V²/Hz at f ≪ f_c
-  const shotDensity = 2 * q * photoCurrent * loadR ** 2; // V²/Hz at f ≪ f_c
+  const johnsonDensity = johnsonNoise(loadR, temperature, 1).v ** 2; // 4k_B·T·R, V²/Hz at f ≪ f_c
+  const shotDensity = (shotNoiseCurrent(photoCurrent, 1) * loadR) ** 2; // 2q·I·R², V²/Hz at f ≪ f_c
   const noiseAt = (B: number) => {
     const vJ = Math.sqrt(rcFilteredNoise(johnsonDensity, fc, B));
     const vS = Math.sqrt(rcFilteredNoise(shotDensity, fc, B));
     return { vJ, vS, vT: Math.hypot(vJ, vS) };
   };
   const { vJ: vJohnson, vS: vShot, vT: vTotal } = noiseAt(bandwidth);
-  const kTC = Math.sqrt((k_B * temperature) / capacitance);
+  const kTC = ktcNoise(capacitance, temperature).v;
 
   const bws = Array.from({ length: 200 }, (_, i) => 1e3 * Math.pow(1e8, i / 199)); // 1 kHz to 100 GHz
   const curves = bws.map(noiseAt);

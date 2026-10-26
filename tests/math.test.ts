@@ -13,6 +13,7 @@ import {
   erf,
   erfc,
   firstCrossing,
+  GAUSSIAN_FWHM_PER_SIGMA,
   integrateTanhSinh,
   intervalStats,
   lnFactorial,
@@ -233,4 +234,11 @@ test("regularizedGammaP for large a: Temme's expansion (a ≥ 1e5) matches the p
   }
   // DLMF 8.12: P(a, a) → ½ + 1/(3√(2πa)); the old 1000-term cap gave 0.34 at a = 1e6.
   assertRel(regularizedGammaP(1e6, 1e6), 0.5 + 1 / (3 * Math.sqrt(2 * Math.PI * 1e6)), 1e-8, "P(1e6, 1e6)");
+});
+
+test("GAUSSIAN_FWHM_PER_SIGMA = 2√(2 ln 2)", () => {
+  // Hand calculation: 2√(2 · 0.6931471806) = 2.3548200450.
+  assertRel(GAUSSIAN_FWHM_PER_SIGMA, 2.354820045, 1e-9, "FWHM/σ");
+  // Edge: a Gaussian at half the FWHM from the centre is at exactly half its peak.
+  assertRel(Math.exp(-((GAUSSIAN_FWHM_PER_SIGMA / 2) ** 2) / 2), 0.5, 1e-14, "half maximum");
 });

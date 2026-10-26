@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { blackbodyBandFraction, blackbodyFractionBelow, planckExitance, planckWeightedMean } from "../src/physics/blackbody";
+import { blackbodyBandFraction, blackbodyFractionBelow, planckExitance, planckWeightedMean, totalExitance } from "../src/physics/blackbody";
 import { b_Wien, sigma_SB } from "../src/physics/constants";
 
 // Blackbody radiation functions F(0 → λT), as tabulated in heat-transfer texts (e.g. Incropera & DeWitt,
@@ -57,4 +57,14 @@ test("blackbody: Planck-weighted mean", () => {
   const expected = blackbodyBandFraction(a, s, T) / blackbodyBandFraction(a, b, T);
   assert.ok(Math.abs(mean - expected) < 1e-4, `${mean} vs ${expected}`);
   assert.ok(Number.isNaN(planckWeightedMean(() => 1, 300, 5e-6, 2e-6)));
+});
+
+test("totalExitance: σT⁴ for the Sun matches the IAU 2015 B3 nominal values", () => {
+  // IAU 2015 Resolution B3: L☉ = 3.828e26 W, R☉ = 6.957e8 m, T_eff☉ = 5772 K, so σT⁴ = L/(4πR²) = 6.2939e7 W/m².
+  const flux = 3.828e26 / (4 * Math.PI * 6.957e8 ** 2);
+  assert.ok(Math.abs(totalExitance(5772) / flux - 1) < 1e-4, `${totalExitance(5772)} vs ${flux}`);
+  assert.equal(totalExitance(5772), sigma_SB * 5772 ** 4);
+  assert.equal(totalExitance(0), 0);
+  assert.ok(Number.isNaN(totalExitance(-1)));
+  assert.ok(Number.isNaN(totalExitance(Infinity)));
 });

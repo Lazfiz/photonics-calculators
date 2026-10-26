@@ -6,7 +6,7 @@ import {
   DIATOMICS, forceConstant, isotopologue, mostPopulatedJ, reducedMass, rotationalConstant, rotationalConstantV,
   rotationalLines, rotationalPartition, rovibrationalBand, vibrationalTerm,
 } from "../src/physics/spectroscopy/diatomic";
-import { imfpTpp2m, kineticEnergy, samplingDepth, TPP2M_MATERIALS } from "../src/physics/spectroscopy/photoemission";
+import { imfpTpp2m, kineticEnergy, plasmonEnergy, samplingDepth, TPP2M_MATERIALS } from "../src/physics/spectroscopy/photoemission";
 import {
   absorptionCoefficient, complexIndex, constantPermittivity, extractIndex, lorentzPermittivity, maxAbsorption,
   slabTransmission, slabTransmissionPolar, waterPermittivity,
@@ -146,4 +146,10 @@ test("XPS: kinetic energy, TPP-2M against the NIST SRD 71 example and the sampli
   assert.ok(Number.isNaN(imfpTpp2m(0, m)));
   assert.ok(Number.isNaN(imfpTpp2m(20, m))); // below the 50 eV fit range
   assert.ok(Number.isNaN(samplingDepth(2e-9, Math.PI / 2)));
+});
+
+test("plasmonEnergy: free-electron E_p = 28.8√(N_v ρ/M) (Tanuma, Powell & Penn 1994)", () => {
+  // Hand calculation for Au (N_v 11, ρ 19.3 g/cm³, M 196.967): 28.8·√(212.3/196.967) = 29.900 eV.
+  close(plasmonEnergy(TPP2M_MATERIALS.au), 29.89997, 1e-6);
+  assert.ok(Number.isNaN(plasmonEnergy({ ...TPP2M_MATERIALS.au, rho: 0 })));
 });

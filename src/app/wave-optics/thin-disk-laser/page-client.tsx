@@ -4,7 +4,7 @@ import SimpleLineChart from "../../../components/simple-line-chart";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { roundTripLoss } from "../../../physics/wave-optics/laser-resonator";
+import { logarithmicLoss, roundTripLoss } from "../../../physics/wave-optics/laser-resonator";
 import {
   diskTemperatureRise, multipassAbsorption, pumpAbsorption, quasiThreeLevelSlope, quasiThreeLevelThreshold, thresholdInversion,
 } from "../../../physics/wave-optics/quasi-three-level";
@@ -44,7 +44,7 @@ export default function ThinDiskLaserPage() {
   const m = Math.round(clamp(laserPassesRaw, 1, 100, 2));
   const pump = clamp(pumpRaw, 0, 1e6, 200);
   const R_oc = clamp(rOcRaw, 0.01, 0.9999, 0.97);
-  const otherLoss = -Math.log(1 - clamp(lossRaw, 0, 50, 1) / 100); // nepers per round trip
+  const otherLoss = logarithmicLoss(clamp(lossRaw, 0, 50, 1) / 100); // nepers per round trip
   const lambda = clamp(wavelengthRaw, 300, 5000, 1030) * 1e-9;
   const lambdaP = clamp(pumpWavelengthRaw, 200, 5000, 940) * 1e-9;
   const sigmaE = clamp(sigmaERaw, 1e-4, 1e4, 2.4) * 1e-24; // m²

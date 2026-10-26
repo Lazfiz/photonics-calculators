@@ -7,7 +7,7 @@ import { useURLState } from "../../../hooks/use-url-state";
 import { gParameter, resonatorStability, twoMirrorMode } from "../../../physics/wave-optics/two-mirror-resonator";
 import { radiusAtDistance } from "../../../physics/wave-optics/gaussian-beam";
 import {
-  fourLevelGain, fourLevelSlopeEfficiency, fourLevelThreshold, gaussianOverlapArea, laserOutput, roundTripLoss,
+  fourLevelGain, fourLevelSlopeEfficiency, fourLevelThreshold, gaussianOverlapArea, laserOutput, logarithmicLoss, roundTripLoss,
   saturationIntensity, tripletGainFactor,
 } from "../../../physics/wave-optics/laser-resonator";
 
@@ -48,7 +48,7 @@ export default function DyeLaserResonatorPage() {
   const R1_mm = clamp(r1Raw, -1e7, 1e7, 50);
   const R2_mm = clamp(r2Raw, -1e7, 1e7, 50);
   const R_oc = clamp(rOcRaw, 0.01, 0.9999, 0.97);
-  const internal = -Math.log(1 - clamp(lossRaw, 0, 50, 1) / 100); // single pass, nepers
+  const internal = logarithmicLoss(clamp(lossRaw, 0, 50, 1) / 100); // single pass, nepers
 
   const toRadius = (R_mm: number) => (R_mm === 0 ? Infinity : R_mm * 1e-3);
   const g1 = gParameter(L, toRadius(R1_mm));

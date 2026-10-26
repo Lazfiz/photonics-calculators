@@ -9,6 +9,9 @@
  */
 
 const SQRT_PI = Math.sqrt(Math.PI);
+
+/** FWHM of a Gaussian in units of its standard deviation, 2√(2 ln 2) ≈ 2.3548. */
+export const GAUSSIAN_FWHM_PER_SIGMA = 2 * Math.sqrt(2 * Math.LN2);
 const SERIES_LIMIT = 2;
 const CF_TERMS = 120; // backward CF depth; converged to < 1e-16 for x ≥ 2
 

@@ -5,8 +5,8 @@ import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { b_Wien, sigma_SB } from "../../../physics/constants";
-import { blackbodyBandFraction, planckExitance } from "../../../physics/blackbody";
+import { b_Wien } from "../../../physics/constants";
+import { blackbodyBandFraction, planckExitance, totalExitance } from "../../../physics/blackbody";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const T_MIN = 100;
@@ -26,7 +26,7 @@ export default function BlackbodyPage() {
   const peakNm = (b_Wien / T) * 1e9;
   // Radiance of a Lambertian emitter: L = M/π.
   const radianceNm = (nm: number) => (planckExitance(nm * 1e-9, T) / Math.PI) * 1e-9;
-  const exitance = sigma_SB * T ** 4;
+  const exitance = totalExitance(T);
   const bandFraction = blackbodyBandFraction(b1 * 1e-9, b2 * 1e-9, T);
 
   const n = 400;
