@@ -1,8 +1,8 @@
-# Handover — 2026-10-25 (session 156 → session 157)
+# Handover — 2026-10-26 (session 156 → session 157)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 156 split 2-inline-b into b1–b6, did b1–b4 (PRs #187–#191), b5 (`phase-2/inline-b5`, PR #192).
-Next: **b6** (leftovers, last inline box). User plan: b6, Phase 3, Phase 5 (spot-check review ≈ 20 pages; Gemini home hero last).
+Session 156 split 2-inline-b into b1–b6 and did all of them (PRs #187–#193; b6 = `phase-2/inline-b6`, stacked on b5).
+Next: **Phase 3** (charts, Plotly bundle, JS budget), then Phase 5 (spot-check review ≈ 20 pages; Gemini home hero last).
 
 ## State
 - `scripts/inline-inventory.ts` lists math inside component bodies; axes, √N/quadrature sums, display π and demo signals stay inline.
@@ -17,10 +17,14 @@ Next: **b6** (leftovers, last inline box). User plan: b6, Phase 3, Phase 5 (spot
 - `optical-parametric-oscillator.threeWaveMismatch(n1, λ1, n2, λ2, n3, λ3)` (wave 3 = sum or pump) and `qpmPeriod(Δk)` (∞ at 0), re-exported by `three-wave`.
 - `spectroscopy/wavenumber.wavelengthWidth(λ, Δν)` / `frequencyWidth(λ, Δλ)`; `retarders.retardanceFromPath(R, λ)` (`retardance` delegates,
   now NaN for λ ≤ 0); `fiber-sensors.freeSpectralRange` delegates to `etalon.fsrWavelength`; α via `spectroscopy/depth`.
+- b6: `laser-resonator.logarithmicLoss(f)`, `math.GAUSSIAN_FWHM_PER_SIGMA` (boxcar, electron-multiplier, chromatic-dispersion and
+  super-resolution delegate), `blackbody.totalExitance`, `silica-attenuation.rayleighScatteringDbPerKm`, `photoemission.plasmonEnergy`.
+  The inventory now lists 680 lines on 293 pages, all of them stay-inline classes.
 
 ## Next actions
-1. `/ship`. No value changes; on a release: post-merge-check `fiber-optics/v-number` V ≈ 2.077, `fiber-characterization` NA 0.1246.
-2. b6 per ROADMAP, then rerun `scripts/inline-inventory.ts` to confirm what is left is display-only; then Phase 3. Reuse module functions first (`git grep -n "export function <name>" -- src/physics`); make module copies delegate (b2).
+1. `/ship` (merge #192 before #193). No value changes; on a release: post-merge-check `fiber-optics/v-number` V ≈ 2.077,
+   `spectroscopy/blackbody`, `detectors/bandwidth` (load only).
+2. Phase 3: split it into a/b boxes first (chart rewrite alone is one session; Plotly partial bundle + bundle check another).
 
 ## Non-obvious facts
 - **Session 155:** React Compiler is off, so a `preserve-manual-memoization` error is fixed by dropping the `useMemo`. Plotly data:
@@ -40,10 +44,6 @@ Next: **b6** (leftovers, last inline box). User plan: b6, Phase 3, Phase 5 (spot
   (`api.openalex.org/works/doi:<doi>`) gives abstracts. Subagent numbers need checking against the rendered source. Node 24 test
   output prints `ℹ pass N`, not TAP `# pass`. A double-quoted `node -e` with backticks is shell-expanded: write a .cjs file.
   Headless `--dump-dom` wrote empty files under devctl CPU load.
-- **Session 147:** CREOL papers download as `api.creol.ucf.edu/Publications/<n>.pdf` (DeSalvo 1996 = 1814, Sheik-Bahae PRL 1990 = 1805;
-  find numbers by web search); van Driel's papers at `physics.utoronto.ca/~vandriel/papers/`. No pdftoppm here, so the Read tool can't
-  render PDFs: render a page with `uv run -q --with pymupdf python <script>` (fitz `page.get_pixmap(dpi, clip).save(png)`) and Read the PNG.
-  Scanned IEEE tables OCR to garbage with pdftotext. The DTIC copy returned HTML.
 - **Session 145:** devctl queues commands when another project's cargo job holds the CPU and can skip a whole `&&` chain
   ("not started after 61 s", exit 75): heredoc writes and edits in that chain never ran. Keep edits and test runs in
   separate calls; run tests with `run_in_background`. Scratchpad probes import the repo with 9 `../` (`../../../../../../../../../dev/…`).
@@ -74,7 +74,6 @@ Next: **b6** (leftovers, last inline box). User plan: b6, Phase 3, Phase 5 (spot
 - **Pages:** `useURLState` in `.map` breaks hooks; per page `xRaw` from `useURLState`, `x = clamp(xRaw, lo, hi, default)`, pass
   `xRaw` to the input. `detectors.ts`, `imaging.ts`, `materials.ts` registries are LF. NaN/∞ show as "—" with a reason. eslint:
   6 old warnings; JSX text needs `&apos;`. Prerendered HTML shows defaults.
-- **Sources:** arXiv, TI notes, PDG, JACoW, APS PRAB, Europe PMC XML download; Appl. Opt., IEEE, Elsevier, nature.com don't (Opt. Express: Chrome).
 - **Shell:** probes are scratchpad `.ts` files run from the repo (`node --import tsx <abs path>`). `python -` hangs. `git grep`
   skips untracked files. CI ≈ 2–3 min. Wrap chrome/ui-check/server commands in `timeout <s>`; port 3100: `netstat -ano | grep :3100`,
   `taskkill //PID <pid> //T //F`; never `taskkill /IM chrome.exe`.
