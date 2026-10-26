@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+/* A shared link hides the calculator until hydration applies its URL values (src/lib/url-state-pending.ts).
+   visibility keeps the layout; the animation shows the content anyway if the JS never runs. */
+html[data-url-state="pending"] [data-url-state-target] {
+  visibility: hidden;
+  animation: url-state-reveal 0s 1.5s forwards;
+}
+
+@keyframes url-state-reveal {
+  to {
+    visibility: visible;
+  }
+}
+
 /* Mobile-friendly slider thumbs (min 28px tap target) */
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;

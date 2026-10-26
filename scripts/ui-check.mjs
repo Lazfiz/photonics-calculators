@@ -248,6 +248,33 @@ try {
       await evaluate(`(() => { const nav = document.querySelector('nav[aria-label="Breadcrumb"]'); return { links: [...nav.querySelectorAll("a")].map((a) => a.textContent), current: nav.querySelector('[aria-current="page"]')?.textContent === document.querySelector("h1").textContent, stray: nav.querySelectorAll("ol > :not(li)").length }; })()`),
       { links: ["Home", "Detectors"], current: true, stray: 0 }
     );
+
+    // 6. A shared link never shows the prerendered defaults: every animation frame either hides the
+    //    calculator (src/lib/url-state-pending.ts) or shows the URL value.
+    const recorder = `(() => {
+      const frames = (window.__urlStateFrames = []);
+      const t0 = performance.now();
+      const tick = () => {
+        const target = document.querySelector("[data-url-state-target]");
+        if (target && target.querySelector("input")) frames.push({
+          pending: document.documentElement.hasAttribute("data-url-state"),
+          visible: getComputedStyle(target).visibility === "visible",
+          shared: [...target.querySelectorAll("input")].some((el) => el.value === "42"),
+        });
+        if (performance.now() - t0 < 4000) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    })()`;
+    const { identifier } = await send("Page.addScriptToEvaluateOnNewDocument", { source: recorder });
+    // Slow the CPU so that frames are drawn between parsing and hydration.
+    await send("Emulation.setCPUThrottlingRate", { rate: 6 });
+    await open(`${shared}&utm_source=flash`);
+    await send("Emulation.setCPUThrottlingRate", { rate: 1 });
+    await send("Page.removeScriptToEvaluateOnNewDocument", { identifier });
+    const frames = await evaluate("window.__urlStateFrames");
+    check("url state: hidden before hydration", frames.some((f) => f.pending && !f.visible), true);
+    check("url state: no visible frame with defaults", frames.filter((f) => f.visible && !f.shared).length, 0);
+    check("url state: shown after hydration", frames.at(-1)?.visible && !frames.at(-1).pending, true);
   }
 } catch (e) {
   failures++;
