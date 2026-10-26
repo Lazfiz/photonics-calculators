@@ -138,3 +138,50 @@ export function xCategories(data: readonly { x?: readonly (number | string)[] }[
   if (xaxisType !== "category" && !xs.some((v) => typeof v === "string" && !Number.isFinite(Number(v)))) return null;
   return [...new Set(xs.map(String))];
 }
+
+/**
+ * A data value as the hover readout shows it: 5 significant digits, trailing zeros dropped, exponent notation outside
+ * [10⁻³, 10⁵) ("1.2346e5", "3e-7"). Ticks only need the digits their step needs (`formatTick`); a readout shows the value.
+ */
+export function formatValue(v: number): string {
+  if (!Number.isFinite(v)) return "—";
+  const r = Number(v.toPrecision(5));
+  if (r !== 0 && (Math.abs(r) >= 1e5 || Math.abs(r) < 1e-3)) return r.toExponential().replace("e+", "e");
+  return String(r);
+}
+
+/** One trace as CSV columns; values are written at full precision, gaps (null, non-finite) as empty cells. */
+export type CsvSeries = { name: string; x: readonly unknown[]; y: readonly unknown[] };
+
+function csvCell(v: unknown): string {
+  if (v === null || v === undefined) return "";
+  if (typeof v === "number") return Number.isFinite(v) ? String(v) : "";
+  const s = String(v);
+  return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+/**
+ * The plotted data as CSV (RFC 4180, CRLF). Series whose x values are the same (one may stop early: a finite-difference
+ * GDD has one point fewer than its phase) give one x column and a column per series; otherwise one row per point:
+ * series, x, y.
+ */
+export function chartCsv(series: readonly CsvSeries[], xLabel: string, yLabel: string): string {
+  const rows: unknown[][] = [];
+  const n = (s: CsvSeries) => Math.min(s.x.length, s.y.length);
+  const base = series.reduce<CsvSeries | null>((a, s) => (!a || n(s) > n(a) ? s : a), null);
+  const shared = base !== null && series.every((s) => s.x.every((v, i) => i >= n(s) || v === base.x[i]));
+  if (shared) {
+    rows.push([xLabel || "x", ...series.map((s) => s.name)]);
+    for (let i = 0; i < n(base); i++) rows.push([base.x[i], ...series.map((s) => (i < n(s) ? s.y[i] : null))]);
+  } else {
+    rows.push(["series", xLabel || "x", yLabel || "y"]);
+    for (const s of series) for (let i = 0; i < n(s); i++) rows.push([s.name, s.x[i], s.y[i]]);
+  }
+  return rows.map((r) => r.map(csvCell).join(",")).join("\r\n") + "\r\n";
+}
+
+/** A download file name stem from a chart or page title: "Reflectance vs λ (nm)" → "reflectance-vs-nm". */
+export function fileStem(text: string): string {
+  const stem = text.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60).replace(/-+$/, "");
+  return stem || "chart";
+}

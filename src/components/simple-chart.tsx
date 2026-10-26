@@ -1,12 +1,13 @@
 "use client";
 
-import { useId } from "react";
+import { useId, useRef } from "react";
 import type { PlotParams } from "react-plotly.js";
 
 import { useElementWidth } from "@/hooks/use-element-width";
 import ChartLegend, { type LegendItem } from "./chart-legend";
+import { ChartActions, ChartHover, type HoverSeries } from "./chart-hover";
 import {
-  LOG_FLOOR, PALETTE, TICK_FONT, dashArray, formatTick, labelStride, labelWidth, niceTicks, plotValue, splitAtGaps,
+  LOG_FLOOR, PALETTE, TICK_FONT, dashArray, formatTick, formatValue, labelStride, labelWidth, niceTicks, plotValue, splitAtGaps,
   tickCount, xCategories,
 } from "./chart-axes";
 // Shared Plotly wrapper to prevent double-bundling
@@ -77,6 +78,7 @@ function Marker({ p, size, color, symbol, opacity }: { p: Pt; size: number; colo
  */
 function ChartBody({ data, layout, w, title }: { data: Trace[]; layout: Record<string, unknown>; w: number; title?: string }) {
   const clipId = `${useId().replace(/:/g, "")}-clip`;
+  const svgRef = useRef<SVGSVGElement>(null);
 
   const margin = (layout.margin ?? {}) as Record<string, number | undefined>;
   const baseH = typeof layout.height === "number" ? layout.height : 400;
@@ -120,7 +122,8 @@ function ChartBody({ data, layout, w, title }: { data: Trace[]; layout: Record<s
   const allX = values((t) => (t.x ?? []).slice(0, 10000).map(xValue));
   const allY1 = values((t, ti) => (onY2[ti] ? [] : (t.y ?? []).slice(0, 10000).map((v) => yValue(v, ti))));
   const allY2 = values((t, ti) => (onY2[ti] ? (t.y ?? []).slice(0, 10000).map((v) => yValue(v, ti)) : []));
-  if (allX.length === 0 || allY1.length + allY2.length === 0) return null;
+  const heading = title ? <h3 className="text-lg font-semibold">{title}</h3> : null;
+  if (allX.length === 0 || allY1.length + allY2.length === 0) return heading && <div className="mb-3">{heading}</div>;
 
   let xMin = Math.min(...allX);
   let xMax = Math.max(...allX);
@@ -192,6 +195,11 @@ function ChartBody({ data, layout, w, title }: { data: Trace[]; layout: Record<s
   // Plotly's default barmode "group" puts the bar traces side by side in each slot; "overlay" and "stack" draw them
   // over each other (stacking isn't drawn).
   const groupBars = layout.barmode !== "overlay" && layout.barmode !== "stack" && barIndices.length > 1;
+  const barGeometry = (ti: number) => {
+    const slot = categories ? plotW / categories.length : plotW / Math.max(data[ti].x?.length ?? 0, 1);
+    const barW = Math.max(2, groupBars ? (slot * 0.8) / barIndices.length : slot * 0.6);
+    return { barW, offset: groupBars ? (barIndices.indexOf(ti) - (barIndices.length - 1) / 2) * barW : 0 };
+  };
   const plotBottom = mt + plotH;
 
   const legendItems: LegendItem[] = data.flatMap((t, ti) => {
@@ -203,9 +211,31 @@ function ChartBody({ data, layout, w, title }: { data: Trace[]; layout: Record<s
   });
   const showLegend = layout.showlegend === true || (layout.showlegend !== false && data.length > 1);
 
+  const traceName = (t: Trace, ti: number) => t.name || (onY2[ti] ? y2Label : yLabel) || `Trace ${ti + 1}`;
+  // Filled shapes (toself), text-only label traces and hoverinfo "skip"/"none" aren't read out.
+  const hoverSeries: HoverSeries[] = data.flatMap((t, ti) => {
+    if (t.fill === "toself" || t.mode === "text" || t.hoverinfo === "skip" || t.hoverinfo === "none") return [];
+    const offset = t.type === "bar" ? barGeometry(ti).offset : 0;
+    const hoverPoints = points[ti].filter((p): p is Pt => p !== null).map((p) => ({
+      x: p.x, y: p.y, cx: offset ? px(p.x + offset) : undefined,
+      xText: categories ? String(t.x?.[p.i]) : formatValue(Number(t.x?.[p.i])),
+      yText: formatValue(Number(t.y?.[p.i])),
+    }));
+    return hoverPoints.length > 0 ? [{ name: traceName(t, ti), color: colorOf(t, ti), points: hoverPoints }] : [];
+  });
+  const csv = () => ({
+    series: data.flatMap((t, ti) => (t.x && t.y ? [{ name: traceName(t, ti), x: t.x, y: t.y }] : [])),
+    xLabel, yLabel: hasDualY ? "" : yLabel, // two y axes: a long-format "y" column holds both
+  });
+
   return (
     <>
-      <svg viewBox={`0 0 ${w} ${h}`} className="block w-full h-auto overflow-visible" role="img" aria-label={title || "Chart"}>
+      <div className={`mb-2 flex items-start gap-3 ${heading ? "justify-between" : "justify-end"}`}>
+        {heading}
+        <ChartActions svgRef={svgRef} title={title} legend={showLegend ? legendItems : []} csv={csv} />
+      </div>
+      <div className="relative">
+      <svg ref={svgRef} viewBox={`0 0 ${w} ${h}`} className="block w-full h-auto overflow-visible" role="img" aria-label={title || "Chart"}>
         <title>{title || "Chart"}</title>
         <desc>{xLabel ? `${xLabel} vs ${yLabel}` : "Data visualization"}</desc>
         <defs>
@@ -257,15 +287,13 @@ function ChartBody({ data, layout, w, title }: { data: Trace[]; layout: Record<s
         )}
 
         {/* Bar traces */}
-        {barIndices.map((ti, bi) => {
+        {barIndices.map((ti) => {
           const t = data[ti];
           const [lo, hi, log] = onY2[ti] ? [y2Min, y2Max, y2Log] : [yMin, yMax, yLog];
           const yMap = onY2[ti] ? toSvgY2 : toSvgY;
           // Bars grow from 0, or from the plot's edge when 0 is off the axis (log: the bottom).
           const y0 = yMap(log ? Math.pow(10, lo) : Math.min(Math.max(0, lo), hi));
-          const slot = categories ? plotW / categories.length : plotW / Math.max(t.x?.length ?? 0, 1);
-          const barW = Math.max(2, groupBars ? (slot * 0.8) / barIndices.length : slot * 0.6);
-          const offset = groupBars ? (bi - (barIndices.length - 1) / 2) * barW : 0;
+          const { barW, offset } = barGeometry(ti);
           return points[ti].map((p) => p && (
             <rect key={`bar${ti}-${p.i}`} x={px(p.x + offset - barW / 2)} y={Math.min(y0, p.y)} width={px(barW)}
               height={px(Math.abs(y0 - p.y))} fill={markerColor(t, ti, p.i)} opacity={t.opacity ?? 0.8} rx={1} />
@@ -308,6 +336,8 @@ function ChartBody({ data, layout, w, title }: { data: Trace[]; layout: Record<s
           })}
         </g>
       </svg>
+      <ChartHover series={hoverSeries} box={{ left: ml, top: mt, width: plotW, height: plotH }} w={w} h={h} xLabel={xLabel} />
+      </div>
       {showLegend && <ChartLegend items={legendItems} />}
     </>
   );
@@ -325,7 +355,6 @@ export default function SimpleChart({ data, layout = {}, config = {}, title, cla
   const w = typeof layout.width === "number" ? layout.width : measured;
   return (
     <div className={`bg-gray-900 border border-gray-800 rounded-lg p-4 ${className}`.trim()}>
-      {title ? <h3 className="text-lg font-semibold mb-3">{title}</h3> : null}
       <div ref={ref}>{w !== null && <ChartBody data={data} layout={layout} w={w} title={title} />}</div>
     </div>
   );

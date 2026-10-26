@@ -6,7 +6,10 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 import SimpleChart from "../src/components/simple-chart";
 import SimpleLineChart from "../src/components/simple-line-chart";
-import { formatTick, labelStride, niceTicks, plotValue, splitAtGaps, tickCount, xCategories } from "../src/components/chart-axes";
+import {
+  chartCsv, fileStem, formatTick, formatValue, labelStride, niceTicks, plotValue, splitAtGaps, tickCount, xCategories,
+} from "../src/components/chart-axes";
+import { hoverRows } from "../src/components/chart-hover";
 
 // The step is 1, 2, 5 or 10 × 10^k, the first ≥ range/count. Before the fix it was the bare multiplier
 // (2 instead of 200 for 270–960 nm), which crowded 100 labels onto the x axis ("1.5k5k5k…") and left a
@@ -138,4 +141,58 @@ test("SimpleLineChart: server render at the default width, fixed height, gaps at
     series: [{ name: "s", color: "#ff0000", points: [{ x: 0, y: 1e-18 }, { x: 1, y: 0 }, { x: 2, y: 1e-6 }] }],
   }));
   assert.ok(log.includes(">1.0e-18<") || log.includes(">1e-18<"), "a 1e-18 tick");
+});
+
+// Phase 3d (session 160): hover readout and PNG/CSV export.
+test("formatValue: 5 significant digits, exponent outside [1e-3, 1e5)", () => {
+  assert.equal(formatValue(1550), "1550");
+  assert.equal(formatValue(1550.123), "1550.1");
+  assert.equal(formatValue(0.123456), "0.12346");
+  assert.equal(formatValue(0.001), "0.001");
+  assert.equal(formatValue(123456), "1.2346e5");
+  assert.equal(formatValue(99999.9), "1e5"); // rounds up across the threshold
+  assert.equal(formatValue(-0.0005), "-5e-4");
+  assert.equal(formatValue(3e-7), "3e-7");
+  assert.equal(formatValue(0), "0");
+  assert.equal(formatValue(NaN), "—");
+});
+
+test("chartCsv: shared x gives one column per series, else one row per point", () => {
+  assert.equal(
+    chartCsv([{ name: "R", x: [1, 2], y: [0.5, null] }, { name: "T, total", x: [1, 2], y: [0.5, NaN] }], "λ (nm)", "y"),
+    'λ (nm),R,"T, total"\r\n1,0.5,0.5\r\n2,,\r\n',
+  );
+  // A series one point shorter (finite-difference GDD next to its phase) still shares the x column.
+  assert.equal(chartCsv([{ name: "GDD", x: [1], y: [7] }, { name: "φ", x: [1, 2], y: [3, 4] }], "x", "y"), "x,GDD,φ\r\n1,7,3\r\n2,,4\r\n");
+  assert.equal(
+    chartCsv([{ name: 'say "hi"', x: [1, 2], y: [3, 4] }, { name: "b", x: ["S₁"], y: [6] }], "", ""),
+    'series,x,y\r\n"say ""hi""",1,3\r\n"say ""hi""",2,4\r\nb,S₁,6\r\n',
+  );
+});
+
+test("fileStem: ASCII slug of a title", () => {
+  assert.equal(fileStem("Reflectance vs λ (nm)"), "reflectance-vs-nm");
+  assert.equal(fileStem("Gires–Tournois phase"), "gires-tournois-phase");
+  assert.equal(fileStem("Crème brûlée"), "creme-brulee");
+  assert.equal(fileStem("λ"), "chart");
+});
+
+test("hoverRows: each series' nearest point within 24 px of the crosshair", () => {
+  const pts = (xs: number[]) => xs.map((x) => ({ x, y: 0, xText: String(x), yText: "" }));
+  const series = [{ name: "A", color: "#f00", points: pts([0, 10, 20]) }, { name: "B", color: "#0f0", points: pts([5, 100]) }];
+  assert.deepEqual(hoverRows(series, 10).map((r) => [r.s.name, r.p.x]), [["A", 10], ["B", 5]]);
+  assert.deepEqual(hoverRows(series, 100).map((r) => [r.s.name, r.p.x]), [["B", 100]]);
+});
+
+test("Both charts render the export buttons and a focusable hover layer", () => {
+  const simple = renderToStaticMarkup(createElement(SimpleChart, {
+    data: [{ x: [1, 2], y: [1, 2], type: "scatter", mode: "lines", name: "a" }], layout: { width: 500 }, title: "T",
+  }));
+  const line = renderToStaticMarkup(createElement(SimpleLineChart, {
+    xLabel: "x", yLabel: "y", series: [{ name: "s", color: "#ff0000", points: [{ x: 1, y: 1 }, { x: 2, y: 2 }] }],
+  }));
+  for (const html of [simple, line]) {
+    assert.ok(html.includes(">PNG</button>") && html.includes(">CSV</button>"), "PNG and CSV buttons");
+    assert.ok(/<svg[^>]*data-export="skip"[^>]*tabindex="0"/.test(html), "hover layer, skipped by the PNG export");
+  }
 });
