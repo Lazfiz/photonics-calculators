@@ -112,6 +112,16 @@ export function simLateralFwhm(lambdaEx: number, lambdaEm: number, NA: number, p
   return 1 / simCutoff(lambdaEx, lambdaEm, NA, patternFraction, orders);
 }
 
+/**
+ * True when the passbands shifted by ±k₀ leave a gap around the central OTF: the widefield support |k| < 2NA/λ_em and
+ * the copy |k − k₀| < 2NA/λ_em overlap while k₀ < 2 · 2NA/λ_em (Gustafsson 2000, Fig. 1). With k₀ ≤ 2NA/λ_ex this needs
+ * λ_em > 2λ_ex.
+ */
+export function simSupportHasGap(lambdaEx: number, lambdaEm: number, NA: number, patternFraction = 1): boolean {
+  if (!positive(lambdaEx) || !positive(lambdaEm) || !positive(NA) || !(patternFraction > 0 && patternFraction <= 1)) return false;
+  return (patternFraction * 2 * NA) / lambdaEx > (2 * 2 * NA) / lambdaEm;
+}
+
 /** Raw SIM images: (2m + 1) phases per pattern angle to separate orders −m … m (Gustafsson 2000, 2005). */
 export function simRawImageCount(orders: number, angles: number): number {
   if (!(Number.isInteger(orders) && orders >= 1) || !(Number.isInteger(angles) && angles >= 1)) return NaN;

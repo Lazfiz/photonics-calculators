@@ -5,7 +5,7 @@ import { besselJ } from "../src/physics/math";
 import {
   GAUSSIAN_FWHM_PER_SIGMA, PSF_SIGMA_COEFFICIENT, abbeLateralFwhm, axialPsfFwhm, expansionEffectiveResolution,
   localizationPrecision, mortensenPrecision, nyquistResolution, rayleighDistance, simCutoff, simLateralFwhm,
-  simRawImageCount, smlmEffectiveResolution, stedLateralFwhm,
+  simRawImageCount, simSupportHasGap, smlmEffectiveResolution, stedLateralFwhm,
 } from "../src/physics/imaging/super-resolution";
 
 function assertRel(actual: number, expected: number, tol: number, label: string) {
@@ -112,6 +112,16 @@ test("SIM cut-off, resolution and raw image count (Gustafsson 2000, 2005)", () =
   assert.equal(simRawImageCount(2, 5), 25, "5 phases for orders −2 … 2");
   assert.ok(Number.isNaN(simCutoff(488 * nm, 520 * nm, 0)), "NA = 0");
   assert.ok(Number.isNaN(simCutoff(488 * nm, 520 * nm, 1.4, 1.2)), "p > 1");
+});
+
+test("SIM support gap only when k0 > 2 k_c (Gustafsson 2000, Fig. 1)", () => {
+  // NA 1.4, 488/520 nm: k0 = 2.8/488 = 5.738 µm⁻¹ > k_c = 2.8/520 = 5.385 µm⁻¹, but < 2 k_c, so the bands overlap.
+  assert.equal(simSupportHasGap(488 * nm, 520 * nm, 1.4), false, "default page: no gap");
+  // λem = 1100 nm: 2 k_c = 5.6/1100 = 5.091 µm⁻¹ < k0 = 5.738 µm⁻¹, so a gap opens.
+  assert.equal(simSupportHasGap(488 * nm, 1100 * nm, 1.4), true, "λem > 2λex");
+  // Edge: λem = 2λex, p = 1 gives k0 = 2 k_c exactly; the bands touch, no gap.
+  assert.equal(simSupportHasGap(500 * nm, 1000 * nm, 1.4), false, "touching");
+  assert.equal(simSupportHasGap(488 * nm, 1100 * nm, 0), false, "NA = 0");
 });
 
 test("expansion microscopy: linkage error is not reduced by pre-expansion labelling (Wassie et al. 2019)", () => {
