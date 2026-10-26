@@ -5,10 +5,10 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 159, 2026-10-26)
+## Status (session 160, 2026-10-26)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
-- Phase 3: 3a–3c done (sessions 157–159); next 3d. Then Phase 5 (spot-check review, Gemini hero). Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+- Phase 3: 3a–3d done (sessions 157–160); next 3e. Then Phase 5 (spot-check review, Gemini hero). Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -205,6 +205,8 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - Charts (session 159): `ChartPanel` loads `SimpleChart` with `ssr: false` and no placeholder, so every ChartPanel chart
   shifts the layout when it appears (CLS; matters for 3e Speed Insights). Many pages wrap ChartPanel in their own bordered
   `p-4` box: double padding leaves a 245 px plot at 360 px.
+- Charts (session 160): the PNG/CSV row adds ≈ 32 px above every SVG chart, including those whose page already prints a
+  heading above the ChartPanel. Plotly-routed charts (heatmap, 3-D, polar) have Plotly's own hover but no export buttons.
 - `ui-check` can't hydrate a page that has no `<input>` (`optical-glass-catalog`; `jones-calculus` until an element is
   added).
 
@@ -225,7 +227,7 @@ One box per session, in this order.
 - [x] 3a Plotly partial bundle (session 157, PR #194): see Done.
 - [x] 3b Initial JS and URL-state flash (session 158, PR #195): see Done.
 - [x] 3c Chart layout (session 159, PR #196): see Done.
-- [ ] 3d Chart rewrite, interaction: hover crosshair and readout; PNG/CSV export.
+- [x] 3d Chart interaction (session 160, PR #197): see Done.
 - [ ] 3e Vercel Speed Insights and a JS budget in CI.
 
 ## Phase 5 — after Phase 3 (user plan, session 156)
@@ -250,6 +252,9 @@ One box per session, in this order.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Phase 3d (session 160, `phase-3/chart-interaction`, PR #197): hover crosshair and readout on both SVG charts
+    (`chart-hover.tsx`: snaps to the nearest x, touch scrub, ←/→ keys with a live region), PNG (2×, title + legend) and CSV
+    download buttons (`chart-export.ts`, loaded on click); `formatValue`, `chartCsv`, `fileStem` in `chart-axes.ts`; 1145 tests.
   - Phase 3c (session 159, `phase-3/chart-layout`, PR #196): `SimpleChart` and `SimpleLineChart` lay out at the measured width
     (`useElementWidth`), 11–12 px text at 360 px; tick counts, label thinning and margins from pixels (`chart-axes.ts`); null
     and non-finite values break lines; HTML legend below the plot (`chart-legend.tsx`); marker colours/symbols/size, text labels.
