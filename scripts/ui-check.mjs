@@ -141,6 +141,11 @@ try {
     for (const path of process.argv.slice(4)) {
       await open(path);
       await sleep(2000);
+      // Plotly charts (heatmap, 3-D, polar): a drawn plot has a .main-svg layer and, for 3-D, a WebGL canvas.
+      const plotly = await evaluate(
+        `[...document.querySelectorAll(".js-plotly-plot")].map((p) => (p.querySelector(".main-svg") ? "svg" : "-") + (p.querySelector("canvas") ? "+gl" : "")).join(" ")`,
+      );
+      if (plotly) console.log(`${path}: plotly ${plotly}`);
     }
   } else {
     // 1. ValidatedNumberInput: typing "50" (passing through "5") must stay 50, not clamp per keystroke.

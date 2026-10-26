@@ -4,6 +4,7 @@ import React from "react";
 import dynamic from "next/dynamic";
 import type { PlotParams } from "react-plotly.js";
 import { PlotlyChart } from "./plotly-chart";
+import { PLOTLY_TRACE_TYPES } from "./plotly-traces";
 
 interface ChartPanelProps {
   data: Record<string, unknown>[];
@@ -50,11 +51,7 @@ class ChartErrorBoundary extends React.Component<
 function needsPlotly(data: Record<string, unknown>[]): boolean {
   if (!data || data.length === 0) return false;
   // Only route to Plotly for truly complex chart types that SVG can't handle
-  return data.some(t => {
-    const type = t.type as string | undefined;
-    return type === "scatter3d" || type === "surface" || type === "heatmap" ||
-           type === "contour" || type === "scatterpolar" || type === "scattergl" || type === "pie";
-  });
+  return data.some(t => PLOTLY_TRACE_TYPES.includes(t.type as string));
 }
 
 // Lazy import SimpleChart so Plotly fallback can work
