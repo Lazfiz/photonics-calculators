@@ -2,6 +2,11 @@
 
 import { useId } from "react";
 
+import { useElementWidth } from "@/hooks/use-element-width";
+import ChartLegend from "./chart-legend";
+import { TICK_FONT, formatTick, labelStride, labelWidth, niceTicks, plotValue, splitAtGaps, tickCount } from "./chart-axes";
+
+/** A point; `y: null` is a gap, where the line breaks. */
 type Point = { x: number; y: number | null };
 type Series = {
   name: string;
@@ -13,20 +18,25 @@ type Series = {
 
 type AxisScale = "linear" | "log";
 
-function safeLog10(v: number) {
-  return Math.log10(Math.max(v, 1e-12));
+/** Width the server render and the hydration render lay out at, before the container is measured. */
+const DEFAULT_WIDTH = 900;
+
+// Rounded to 0.01 px: Node (prerender) and Chrome can differ by 1 ulp, a hydration mismatch at full precision.
+const px = (v: number) => Math.round(v * 100) / 100;
+
+/** [min, max] of an axis in plotted units (log10 on a log axis); a single value gets ±half a decade or ±10 %. */
+function extent(values: number[], scale: AxisScale): [number, number] {
+  const s = values.map((v) => (scale === "log" ? Math.log10(v) : v));
+  const lo = Math.min(...s), hi = Math.max(...s);
+  if (hi > lo) return [lo, hi];
+  const d = scale === "log" ? 0.5 : Math.abs(lo) * 0.1 || 1;
+  return [lo - d, hi + d];
 }
 
-function toScaled(value: number, scale: AxisScale) {
-  return scale === "log" ? safeLog10(value) : value;
-}
-
-function fmt(v: number) {
-  if (!Number.isFinite(v)) return "—";
-  if (Math.abs(v) >= 1000 || Math.abs(v) < 0.01) return v.toExponential(2);
-  return v.toFixed(2);
-}
-
+/**
+ * Line chart of x–y series, laid out at the container's measured width (1 SVG unit = 1 px, so ticks render at 11 px on
+ * a phone) and `height` px tall. Values ≤ 0 on a log axis and non-finite values are gaps, like `y: null`.
+ */
 export default function SimpleLineChart({
   title,
   xLabel,
@@ -45,81 +55,93 @@ export default function SimpleLineChart({
   height?: number;
 }) {
   const id = useId();
-  const width = 900;
-  const margin = { top: 24, right: 24, bottom: 56, left: 72 };
-  const innerW = width - margin.left - margin.right;
-  const innerH = height - margin.top - margin.bottom;
+  const [ref, measured] = useElementWidth<HTMLDivElement>();
+  const width = measured ?? DEFAULT_WIDTH;
 
-  const allPoints = series.flatMap((s) => s.points).filter((p): p is { x: number; y: number } => p.y !== null && Number.isFinite(p.x) && Number.isFinite(p.y));
-  const xVals = allPoints.map((p) => toScaled(p.x, xScale));
-  const yVals = allPoints.map((p) => toScaled(p.y, yScale));
+  const plotted = series.map((s) =>
+    s.points.map((p) => {
+      const x = plotValue(p.x, xScale === "log"), y = plotValue(p.y, yScale === "log");
+      return x === null || y === null ? null : { x, y };
+    }),
+  );
+  const all = plotted.flat().filter((p) => p !== null);
 
-  const xMin = Math.min(...xVals);
-  const xMax = Math.max(...xVals);
-  const yMin = Math.min(...yVals);
-  const yMax = Math.max(...yVals);
+  let body = null;
+  if (all.length > 0) {
+    const [xMin, xMax] = extent(all.map((p) => p.x), xScale);
+    const [yMin, yMax] = extent(all.map((p) => p.y), yScale);
+    const raw = (v: number, scale: AxisScale) => (scale === "log" ? Math.pow(10, v) : v);
+    const top = 24, bottom = 56, right = 24;
+    const innerH = height - top - bottom;
+    const yTicks = niceTicks(raw(yMin, yScale), raw(yMax, yScale), tickCount(innerH, 50), yScale === "log");
+    const yText = yTicks.map((v) => formatTick(v, yTicks));
+    // Left margin fits the widest y tick label plus the axis title.
+    const left = Math.ceil(Math.max(72, Math.max(0, ...yText.map((s) => labelWidth(s, 12))) + 10 + 30));
+    const innerW = width - left - right;
+    const scaled = (v: number, scale: AxisScale) => (scale === "log" ? Math.log10(v) : v);
+    const xAt = (x: number) => px(left + ((scaled(x, xScale) - xMin) / (xMax - xMin)) * innerW);
+    const yAt = (y: number) => px(top + innerH - ((scaled(y, yScale) - yMin) / (yMax - yMin)) * innerH);
+    const xTicks = niceTicks(raw(xMin, xScale), raw(xMax, xScale), tickCount(innerW, 100), xScale === "log");
+    const xText = xTicks.map((v) => formatTick(v, xTicks));
+    const xStride = labelStride(xTicks.map(xAt), xText.map((s) => labelWidth(s, 12)));
 
-  // Rounded to 0.01 px: Node (prerender) and Chrome can differ by 1 ulp, a hydration mismatch at full precision.
-  const px = (v: number) => Math.round(v * 100) / 100;
-  const xAt = (x: number) => px(margin.left + ((toScaled(x, xScale) - xMin) / Math.max(xMax - xMin, 1e-12)) * innerW);
-  const yAt = (y: number) => px(margin.top + innerH - ((toScaled(y, yScale) - yMin) / Math.max(yMax - yMin, 1e-12)) * innerH);
-
-  const xTicks = Array.from({ length: 5 }, (_, i) => xMin + (i / 4) * (xMax - xMin)).map((v) => (xScale === "log" ? Math.pow(10, v) : v));
-  const yTicks = Array.from({ length: 5 }, (_, i) => yMin + (i / 4) * (yMax - yMin)).map((v) => (yScale === "log" ? Math.pow(10, v) : v));
-
-  return (
-    <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4">
-      {title && <p className="mb-3 text-sm font-medium text-gray-200">{title}</p>}
-      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto overflow-visible" role="img" aria-label={title || `${yLabel} versus ${xLabel}`}>
+    body = (
+      <>
         <defs>
           <clipPath id={`${id}-clip`}>
-            <rect x={margin.left} y={margin.top} width={innerW} height={innerH} />
+            <rect x={left} y={top} width={innerW} height={innerH} />
           </clipPath>
         </defs>
 
         {yTicks.map((tick, i) => (
           <g key={`y-${i}`}>
-            <line x1={margin.left} x2={width - margin.right} y1={yAt(tick)} y2={yAt(tick)} stroke="#374151" strokeWidth="1" />
-            <text x={margin.left - 10} y={yAt(tick) + 4} textAnchor="end" fill="#9ca3af" fontSize="12">{fmt(tick)}</text>
+            <line x1={left} x2={width - right} y1={yAt(tick)} y2={yAt(tick)} stroke="#374151" strokeWidth="1" />
+            <text x={left - 10} y={yAt(tick) + 4} textAnchor="end" fill="#9ca3af" fontSize="12">{yText[i]}</text>
           </g>
         ))}
         {xTicks.map((tick, i) => (
           <g key={`x-${i}`}>
-            <line x1={xAt(tick)} x2={xAt(tick)} y1={margin.top} y2={height - margin.bottom} stroke="#374151" strokeWidth="1" />
-            <text x={xAt(tick)} y={height - margin.bottom + 18} textAnchor="middle" fill="#9ca3af" fontSize="12">{fmt(tick)}</text>
+            <line x1={xAt(tick)} x2={xAt(tick)} y1={top} y2={height - bottom} stroke="#374151" strokeWidth="1" />
+            {i % xStride === 0 && (
+              <text x={xAt(tick)} y={height - bottom + 18} textAnchor="middle" fill="#9ca3af" fontSize="12">{xText[i]}</text>
+            )}
           </g>
         ))}
 
-        <line x1={margin.left} x2={margin.left} y1={margin.top} y2={height - margin.bottom} stroke="#9ca3af" />
-        <line x1={margin.left} x2={width - margin.right} y1={height - margin.bottom} y2={height - margin.bottom} stroke="#9ca3af" />
+        <line x1={left} x2={left} y1={top} y2={height - bottom} stroke="#9ca3af" />
+        <line x1={left} x2={width - right} y1={height - bottom} y2={height - bottom} stroke="#9ca3af" />
 
         <g clipPath={`url(#${id}-clip)`}>
-          {series.map((s) => {
-            const pts = s.points.filter((p): p is { x: number; y: number } => p.y !== null && Number.isFinite(p.x) && Number.isFinite(p.y));
-            const d = pts
-              .map((p, idx) => `${idx === 0 ? "M" : "L"} ${xAt(p.x)} ${yAt(p.y)}`)
-              .join(" ");
+          {series.map((s, si) => {
+            const runs = splitAtGaps(plotted[si]);
+            const d = runs.map((run) => run.map((p, k) => `${k ? "L" : "M"} ${xAt(p.x)} ${yAt(p.y)}`).join(" ")).join(" ");
+            const lone = runs.filter((run) => run.length === 1).flat();
             return (
               <g key={s.name}>
-                {pts.length >= 2 && <path d={d} fill="none" stroke={s.color} strokeWidth="3" strokeDasharray={s.dashed ? "8 6" : undefined} />}
-                {(s.showPoints || pts.length === 1) && pts.map((p, idx) => <circle key={idx} cx={xAt(p.x)} cy={yAt(p.y)} r="4.5" fill={s.color} />)}
+                <path d={d} fill="none" stroke={s.color} strokeWidth="3" strokeDasharray={s.dashed ? "8 6" : undefined} />
+                {(s.showPoints ? runs.flat() : lone).map((p, idx) => <circle key={idx} cx={xAt(p.x)} cy={yAt(p.y)} r="4.5" fill={s.color} />)}
               </g>
             );
           })}
         </g>
 
-        <text x={width / 2} y={height - 12} textAnchor="middle" fill="#cbd5e1" fontSize="13">{xLabel}</text>
-        <text x={18} y={height / 2} textAnchor="middle" fill="#cbd5e1" fontSize="13" transform={`rotate(-90 18 ${height / 2})`}>{yLabel}</text>
-      </svg>
+        <text x={left + innerW / 2} y={height - 12} textAnchor="middle" fill="#cbd5e1" fontSize="13">{xLabel}</text>
+        <text x={18} y={top + innerH / 2} textAnchor="middle" fill="#cbd5e1" fontSize="13" transform={`rotate(-90 18 ${top + innerH / 2})`}>{yLabel}</text>
+      </>
+    );
+  }
 
-      <div className="mt-3 flex flex-wrap gap-3 text-xs text-gray-300">
-        {series.map((s) => (
-          <div key={s.name} className="flex items-center gap-2">
-            <span className="inline-block h-2.5 w-5 rounded-full" style={{ backgroundColor: s.color }} />
-            <span>{s.name}</span>
-          </div>
-        ))}
+  return (
+    <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4">
+      {title && <p className="mb-3 text-sm font-medium text-gray-200">{title}</p>}
+      <div ref={ref}>
+        {/* Fixed pixel height: the server render (DEFAULT_WIDTH, scaled to fit) and the measured one take the same space. */}
+        <svg viewBox={`0 0 ${width} ${height}`} width="100%" height={height} className="block overflow-visible" role="img"
+          aria-label={title || `${yLabel} versus ${xLabel}`}>
+          {body ?? <text x={width / 2} y={height / 2} textAnchor="middle" fill="#9ca3af" fontSize={TICK_FONT}>No finite values to plot</text>}
+        </svg>
       </div>
+      <ChartLegend items={series.map((s) => ({ name: s.name, color: s.color, kind: "line", dash: s.dashed ? "5 3" : undefined }))} />
     </div>
   );
 }
