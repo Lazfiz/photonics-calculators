@@ -6,8 +6,8 @@ import { BBO_THETA } from "../src/physics/materials/nonlinear-crystals";
 import { refractiveIndex } from "../src/physics/materials/sellmeier";
 import { BBO_TAMOSAUSKAS } from "../src/physics/materials/uniaxial-data";
 import {
-  bboTypeICut, idlerWavelength, parametricGainCoefficient, phaseMismatch, sroThresholdGainLength, sroThresholdIntensity,
-  walkOffApertureLength,
+  bboTypeICut, idlerWavelength, parametricGainCoefficient, phaseMismatch, qpmPeriod, sroThresholdGainLength,
+  sroThresholdIntensity, threeWaveMismatch, walkOffApertureLength,
 } from "../src/physics/wave-optics/optical-parametric-oscillator";
 
 function assertRel(actual: number, expected: number, tol: number, label: string) {
@@ -108,4 +108,20 @@ test("BBO type I cut outside the fits", () => {
   // 1064 → 1300 nm puts the idler at 5.86 µm, past the 5.2 µm fit.
   assert.ok(Number.isNaN(bboTypeICut(1064e-9, 1300e-9).theta));
   assert.ok(Number.isNaN(bboTypeICut(800e-9, 532e-9).dEff));
+});
+
+test("three-wave mismatch and first-order QPM period", () => {
+  // SHG of 1064 nm (ω + ω → 2ω), illustrative extraordinary indices 2.1560 and 2.2340: by hand
+  // Δk = 2π(2n_2ω/λ − 2n_ω/λ) = 4π(0.078)/λ, so Λ = λ/(2(n_2ω − n_ω)) = 1064 nm / 0.156 = 6.8205 µm.
+  const dk = threeWaveMismatch(2.156, 1064e-9, 2.156, 1064e-9, 2.234, 532e-9);
+  assertRel(dk, (4 * Math.PI * 0.078) / 1064e-9, 1e-12, "Δk");
+  assertRel(qpmPeriod(dk), 1064e-9 / 0.156, 1e-12, "Λ");
+  // Same law as phaseMismatch with wave 3 = pump.
+  const lambdaI = idlerWavelength(p.lambdaPump, p.lambdaSignal);
+  assert.equal(threeWaveMismatch(p.nSignal, p.lambdaSignal, p.nIdler, lambdaI, p.nPump, p.lambdaPump), phaseMismatch(p));
+  // Vacuum (n = 1) with energy conservation is phase matched: Λ → ∞ in the limit.
+  assert.equal(qpmPeriod(0), Infinity, "Δk = 0");
+  assert.ok(Math.abs(threeWaveMismatch(1, 1064e-9, 1, 1550e-9, 1, 1 / (1 / 1064e-9 + 1 / 1550e-9))) < 1e-3, "vacuum SFG");
+  assert.ok(Number.isNaN(threeWaveMismatch(1, 0, 1, 1550e-9, 1, 630e-9)), "λ = 0");
+  assert.ok(Number.isNaN(qpmPeriod(NaN)), "NaN Δk");
 });

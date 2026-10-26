@@ -4,8 +4,8 @@ import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import {
-  bboTypeICut, idlerWavelength, parametricGainCoefficient, phaseMismatch, sroThresholdGainLength, sroThresholdIntensity,
-  walkOffApertureLength,
+  bboTypeICut, idlerWavelength, parametricGainCoefficient, phaseMismatch, qpmPeriod, sroThresholdGainLength,
+  sroThresholdIntensity, walkOffApertureLength,
 } from "../../../physics/wave-optics/optical-parametric-oscillator";
 
 const fmt = (x: number, digits: number, unit: string) => (Number.isFinite(x) ? `${x.toFixed(digits)} ${unit}` : "—");
@@ -84,7 +84,7 @@ export default function OPOCalculator() {
 
   const darkPlot = { paper_bgcolor: "#0a0a0a", plot_bgcolor: "#111", font: { color: "#ccc" } };
   const axisStyle = { gridcolor: "#333", zerolinecolor: "#444", color: "#ccc" };
-  const qpmPeriod_um = (2 * Math.PI) / Math.abs(r.dk) * 1e6;
+  const qpmPeriod_um = qpmPeriod(r.dk) * 1e6;
 
   return (
     <>

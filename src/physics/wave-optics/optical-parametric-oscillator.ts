@@ -77,11 +77,26 @@ export function sroThresholdIntensity(p: ParametricProcess, L: number, loss: num
   return (sroThresholdGainLength(loss) / L) ** 2 / gainPerIntensity(p);
 }
 
+/**
+ * Phase mismatch Δk = k₃ − k₁ − k₂ = 2π(n₃/λ₃ − n₁/λ₁ − n₂/λ₂) of three-wave mixing ω₃ = ω₁ + ω₂ (vacuum wavelengths,
+ * m; Boyd, Nonlinear Optics, 3rd ed., §2.2), 1/m. SFG: wave 3 is the sum; DFG/OPA: wave 3 is the pump. NaN unless every
+ * λ and n is positive and finite.
+ */
+export function threeWaveMismatch(n1: number, lambda1: number, n2: number, lambda2: number, n3: number, lambda3: number): number {
+  const ok = [n1, lambda1, n2, lambda2, n3, lambda3].every((x) => x > 0 && Number.isFinite(x));
+  return ok ? 2 * Math.PI * (n3 / lambda3 - n1 / lambda1 - n2 / lambda2) : NaN;
+}
+
+/** First-order quasi-phase-matching period Λ = 2π/|Δk|, m (Boyd §2.4); Infinity at Δk = 0 (already phase matched). */
+export function qpmPeriod(deltaK: number): number {
+  return Number.isFinite(deltaK) ? (2 * Math.PI) / Math.abs(deltaK) : NaN;
+}
+
 /** Phase mismatch Δk = k_p − k_s − k_i, 1/m. */
 export function phaseMismatch(p: ParametricProcess): number {
   if (!validProcess(p)) return NaN;
   const lambdaI = idlerWavelength(p.lambdaPump, p.lambdaSignal);
-  return 2 * Math.PI * (p.nPump / p.lambdaPump - p.nSignal / p.lambdaSignal - p.nIdler / lambdaI);
+  return threeWaveMismatch(p.nSignal, p.lambdaSignal, p.nIdler, lambdaI, p.nPump, p.lambdaPump);
 }
 
 export interface CrystalCut {
