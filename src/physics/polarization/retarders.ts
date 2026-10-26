@@ -22,9 +22,15 @@ const TWO_PI = 2 * Math.PI;
 const CROSS_GRID = 2000;
 const BISECT_MAX = 200;
 
-/** Retardance 2πΔn d/λ, rad (signed with Δn). */
+/** Retardance 2πΔn d/λ, rad (signed with Δn). NaN unless λ > 0 and all are finite. */
 export function retardance(dn: number, d: number, lambda: number): number {
-  return (TWO_PI * dn * d) / lambda;
+  return retardanceFromPath(dn * d, lambda);
+}
+
+/** Retardance 2πR/λ, rad, of an optical path difference R = Δn d (m) at vacuum wavelength λ (m). NaN unless λ > 0. */
+export function retardanceFromPath(pathDifference: number, lambda: number): number {
+  if (!(lambda > 0 && Number.isFinite(lambda * pathDifference))) return NaN;
+  return (TWO_PI * pathDifference) / lambda;
 }
 
 /** Thickness for |Γ| = waves·2π: waves·λ/|Δn|, m. NaN when Δn = 0 or waves < 0. */

@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { c } from "../../../physics/constants";
+import { frequencyWidth } from "../../../physics/spectroscopy/wavenumber";
 
 export default function WDMCouplerCalculator() {
   // Ranges keep the spectrum (0.05 nm steps × channels) small: up to 96 channels, CWDM's 20 nm spacing.
@@ -29,7 +29,7 @@ export default function WDMCouplerCalculator() {
 
   // Frequency spacing in GHz
   const freqSpacing = useMemo(() => {
-    return (c * channelSpacing * 1e-9) / (centerWavelength * 1e-9) ** 2 / 1e9;
+    return frequencyWidth(centerWavelength * 1e-9, channelSpacing * 1e-9) / 1e9;
   }, [channelSpacing, centerWavelength]);
 
   // ITU-T grid type estimation

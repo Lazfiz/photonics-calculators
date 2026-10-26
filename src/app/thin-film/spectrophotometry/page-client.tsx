@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { clampToRange } from "../../../lib/number-input";
+import { absorptionCoefficient } from "../../../physics/spectroscopy/depth";
 import { stackResponse } from "../../../physics/thin-film/transfer-matrix";
 export default function SpectrophotometryPage() {
   const [nFilm, setNFilm] = useURLState("nFilm", 1.46, { min: 1, max: 5 });
@@ -48,7 +49,7 @@ export default function SpectrophotometryPage() {
   const halfWaves = (2 * nFilm * thickness) / wavelength_nm;
   const qwoThickness = wavelength_nm / (4 * nFilm);
   // α = 4πk/λ in m⁻¹, shown in cm⁻¹
-  const alpha_cm = (4 * Math.PI * kFilm) / (wavelength_nm * 1e-9) / 100;
+  const alpha_cm = absorptionCoefficient(kFilm, wavelength_nm * 1e-9) / 100;
   const fixed = (x: number, digits: number) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
 
   return (

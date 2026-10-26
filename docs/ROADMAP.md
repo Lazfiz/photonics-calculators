@@ -7,7 +7,7 @@ goes in the PR description.
 
 ## Status (session 156, 2026-10-25)
 - Phases 0–1 are done.
-- Phase 2: registry, trust data, duplicate merge and lint rules are done; left: formulas inside page component bodies (2-inline-b5, b6; b1–b4 done).
+- Phase 2: registry, trust data, duplicate merge and lint rules are done; left: formulas inside page component bodies (2-inline-b6; b1–b5 done).
 - Then Phase 3, then Phase 5 (spot-check review, Gemini hero). Phase 3 hasn't started. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
@@ -209,9 +209,7 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   - [x] b3a (session 156, PR #189): see Done.
   - [x] b3b (session 156, PR #190): see Done.
   - [x] b4 (session 156, PR #191): see Done.
-  - [ ] b5: Δλ = λ²Δν/c and FSR λ²/(2nL); retardance 2πΔn d/λ; α = 4πk/λ → existing `retardance`, `absorptionCoefficient`:
-    nonzero-dispersion, self-phase-modulation, wdm-coupler, cavity-mode-spacing, liquid-crystal-polarizer, orthoconoscopic,
-    photoelastic, waveplate-order, dichroic-polarizer, spectrophotometry, metal-dielectric.
+  - [x] b5 (session 156, PR #192): see Done.
   - [ ] b6: leftovers: loss −ln(1−L) (dye, gas, thin-disk), `FWHM_TO_SIGMA` (boxcar, pump-probe, time-resolved, infrared),
     σT⁴ (blackbody, emissivity-control), detector noise densities (bandwidth kT/C and 2qIR², photodiode-speed NEP),
     Rayleigh α = A/λ⁴ (otdr-analysis), plasmon E_p (electron-spectroscopy), slab NA (wave-optics/optical-waveguide).
@@ -257,6 +255,8 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Phase 2 inline-b5 (session 156, `phase-2/inline-b5`, PR #192): `wavenumber.wavelengthWidth`/`frequencyWidth` (100 GHz =
+    0.8014 nm at 1550), `retarders.retardanceFromPath`, FSR via `etalon.fsrWavelength`, `depth.absorptionCoefficient` on 11 pages.
   - Phase 2 inline-b4 (session 156, `phase-2/inline-b4`, PR #191): `threeWaveMismatch`, `qpmPeriod` (PPLN 1064 SHG 6.82 µm) in
     `optical-parametric-oscillator` (`phaseMismatch` delegates); `confocalParameter` on sum-, difference-frequency, OPA, OPO.
   - Phase 2 inline-b3b (session 156, `phase-2/inline-b3b`, PR #190): `divergenceHalfAngle` on pointing-loss, security,

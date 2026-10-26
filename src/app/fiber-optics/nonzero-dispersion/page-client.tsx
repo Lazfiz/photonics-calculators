@@ -5,7 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { c } from "../../../physics/constants";
+import { wavelengthWidth } from "../../../physics/spectroscopy/wavenumber";
 import {
   beta2FromD, linearDispersion, linearZeroDispersionWavelength, presetDispersion,
 } from "../../../physics/fiber-optics/chromatic-dispersion";
@@ -31,7 +31,7 @@ export default function NonzeroDispersionPage() {
     const lambda0 = linearZeroDispersionWavelength(fiber);
     // Channel spacing in wavelength Δλ = λ²Δν/c; FWM phase mismatch between adjacent channels Δβ = β₂(2πΔν)².
     const dnu = channelSpacing * 1e9;
-    const deltaLambda = (lam ** 2 * dnu) / c;
+    const deltaLambda = wavelengthWidth(lam, dnu);
     const deltaBeta = Math.abs(beta2FromD(D, lam)) * (2 * Math.PI * dnu) ** 2;
     const dSMF = presetDispersion("G652", lam);
     const dDSF = presetDispersion("DSF", lam);

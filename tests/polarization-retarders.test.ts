@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 
 import { crystalIndices } from "../src/physics/materials/uniaxial-data";
 import {
-  achromaticPair, compoundRetardance, fullWaveWavelengths, plateOrder, plateThickness, retardance, tirAnglesForPhase,
-  tirMaxPhase, tirPhaseDifference,
+  achromaticPair, compoundRetardance, fullWaveWavelengths, plateOrder, plateThickness, retardance, retardanceFromPath,
+  tirAnglesForPhase, tirMaxPhase, tirPhaseDifference,
 } from "../src/physics/polarization/retarders";
 
 const deg = Math.PI / 180;
@@ -22,6 +22,15 @@ test("waveplate thickness d = (m + f)λ/|Δn|: quartz-like Δn = 0.0092 at 550 n
   // Edge: no birefringence, no plate.
   assert.ok(Number.isNaN(plateThickness(0, 550e-9, 0.25)));
   assertAbs(retardance(0.0092, plateThickness(0.0092, 550e-9, 0.25), 550e-9), Math.PI / 2, 1e-12, "Γ = π/2");
+});
+
+test("retardance from a path difference, Γ = 2πR/λ", () => {
+  // A first-order red plate (R = 550 nm) is a full wave at 550 nm and 2π·550/400 = 2.75π at 400 nm.
+  assertAbs(retardanceFromPath(550e-9, 550e-9), 2 * Math.PI, 1e-12, "full wave");
+  assertAbs(retardanceFromPath(550e-9, 400e-9), 2.75 * Math.PI, 1e-12, "400 nm");
+  assert.equal(retardanceFromPath(0.0092 * 20e-6, 633e-9), retardance(0.0092, 20e-6, 633e-9), "same as Δn d");
+  assert.ok(Number.isNaN(retardanceFromPath(550e-9, 0)), "λ = 0");
+  assert.ok(Number.isNaN(retardance(0.0092, 1e-3, -1)), "λ < 0");
 });
 
 test("waveplate order: Δn 0.009, 100 µm at 550 nm is 1.63636 waves (order 1, fraction 0.63636), either sign", () => {

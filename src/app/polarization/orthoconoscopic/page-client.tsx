@@ -13,6 +13,7 @@ import { CRYSTAL_IDS, UNIAXIAL_CRYSTALS, crystalIndices, crystalRange, type Crys
 import {
   type ChainRetarder, interferenceColour, michelLevyColour, retarderChainColour, retarderChainTransmission,
 } from "../../../physics/polarization/interference-colours";
+import { retardanceFromPath } from "../../../physics/polarization/retarders";
 import { sectionRetardance, sectionSlowAxis } from "../../../physics/polarization/uniaxial";
 
 const DEG = Math.PI / 180;
@@ -78,11 +79,11 @@ export default function OrthoscopicPage() {
   );
 
   const curve = useMemo(() => {
-    const gamma = (2 * Math.PI * retardanceAt(id, theta, d, 550e-9)) / 550e-9;
+    const gamma = retardanceFromPath(retardanceAt(id, theta, d, 550e-9), 550e-9);
     const stage = Array.from({ length: 361 }, (_, i) => i);
     const T = stage.map((deg) => {
       const chain: ChainRetarder[] = [{ gamma, axis: sectionSlowAxis(no, ne, deg * DEG) }];
-      if (red) chain.push({ gamma: (2 * Math.PI * RED_PLATE) / 550e-9, axis: Math.PI / 4 });
+      if (red) chain.push({ gamma: retardanceFromPath(RED_PLATE, 550e-9), axis: Math.PI / 4 });
       return retarderChainTransmission(0, A, chain);
     });
     return { stage, T };

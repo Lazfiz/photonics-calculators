@@ -14,6 +14,7 @@
  *   U. Grigull, J. Phys. Chem. Ref. Data 14, 933 (1985), doi:10.1063/1.555743); n ≈ 1.318 at 1550 nm
  *   (G. M. Hale, M. R. Querry, Appl. Opt. 12, 555 (1973), doi:10.1364/AO.12.000555).
  */
+import { fsrWavelength } from "../spectroscopy/etalon";
 import { coefficientOfFinesse } from "../thin-film/interference";
 
 /** Water index change with temperature near room temperature, 1/K (Thormählen et al. 1985). */
@@ -21,9 +22,9 @@ export const WATER_DN_DT = -1.0e-4;
 /** Water index at 1550 nm, 20 °C (Hale & Querry 1973). */
 export const WATER_INDEX_1550 = 1.318;
 
-/** Free spectral range λ²/(2nd) of a cavity of index n and length d. */
+/** Free spectral range λ²/(2nd) of a cavity of index n and length d at normal incidence, m (`etalon.fsrWavelength`). */
 export function freeSpectralRange(lambda: number, n: number, d: number): number {
-  return n > 0 && d > 0 ? (lambda * lambda) / (2 * n * d) : NaN;
+  return fsrWavelength(lambda, n, d, 1);
 }
 
 /** Reflectance of a lossless two-mirror cavity (mirror reflectances R₁ = R₂ = R), Born & Wolf §7.6.1. */

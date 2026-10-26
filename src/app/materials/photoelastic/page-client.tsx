@@ -6,6 +6,7 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { STRESS_OPTIC, stressForRetardance, type StressOpticId } from "../../../physics/materials/stress-optic";
 import { photoelasticRetardance } from "../../../physics/polarization/photoelasticity";
+import { retardanceFromPath } from "../../../physics/polarization/retarders";
 
 const GLASS_IDS = Object.keys(STRESS_OPTIC) as StressOpticId[];
 const CUSTOM = "custom";
@@ -60,7 +61,7 @@ export default function PhotoelasticPage() {
   const deltaN = C * sigma;
   const R_nm = photoelasticRetardance(C, d, sigma) * 1e9;
   const R_nm_per_cm = photoelasticRetardance(C, 0.01, sigma) * 1e9;
-  const phase = (2 * Math.PI * R_nm) / wavelength_nm;
+  const phase = retardanceFromPath(R_nm * 1e-9, wavelength_nm * 1e-9);
   const order = R_nm / wavelength_nm;
   const halfWave_MPa = stressForRetardance(lambda / 2, C, d) / 1e6;
   const chart = C !== 0 ? retardanceChart(C, d, stress_MPa, R_nm, wavelength_nm) : [];
