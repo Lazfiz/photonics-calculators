@@ -5,10 +5,10 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 158, 2026-10-26)
+## Status (session 159, 2026-10-26)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
-- Phase 3: 3a–3b done (sessions 157–158); next 3c. Then Phase 5 (spot-check review, Gemini hero). Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+- Phase 3: 3a–3c done (sessions 157–159); next 3d. Then Phase 5 (spot-check review, Gemini hero). Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -202,6 +202,9 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   `probeWavelength` slider page doesn't write the URL as expected. Update the checks to the current pages.
 - Initial JS (session 158): thin-film metal pages (enhanced-aluminum, protected-silver, emissivity-control, heat-mirror)
   carry 24–28 KB gz of their own JS, likely n,k tables in the client chunk; the median page carries 14 KB.
+- Charts (session 159): `ChartPanel` loads `SimpleChart` with `ssr: false` and no placeholder, so every ChartPanel chart
+  shifts the layout when it appears (CLS; matters for 3e Speed Insights). Many pages wrap ChartPanel in their own bordered
+  `p-4` box: double padding leaves a 245 px plot at 360 px.
 - `ui-check` can't hydrate a page that has no `<input>` (`optical-glass-catalog`; `jones-calculus` until an element is
   added).
 
@@ -221,12 +224,7 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 One box per session, in this order.
 - [x] 3a Plotly partial bundle (session 157, PR #194): see Done.
 - [x] 3b Initial JS and URL-state flash (session 158, PR #195): see Done.
-- [ ] 3c Chart rewrite, layout: real pixel width instead of a scaled viewBox (labels render at 4–5 px on phones), and the
-  open bugs: `SimpleChart` reads `null` as 0, so a break in a line needs separate traces. `SimpleChart` ignores
-  `layout.legend`: it pins the legend to the plot's right edge, so names over ≈ 9 characters are clipped and overlap
-  `yaxis2` ticks; `marker.color` of a markers trace is replaced by the palette. `otdr-analysis` and `link-budget`
-  use `showlegend: false` plus a caption.
-  - Done: ticks (session 26); log axes with no floor, non-finite values dropped (session 34); `SimpleLineChart` coordinates rounded to 0.01 px, no 1-ulp hydration mismatch (session 117).
+- [x] 3c Chart layout (session 159, PR #196): see Done.
 - [ ] 3d Chart rewrite, interaction: hover crosshair and readout; PNG/CSV export.
 - [ ] 3e Vercel Speed Insights and a JS budget in CI.
 
@@ -252,6 +250,9 @@ One box per session, in this order.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Phase 3c (session 159, `phase-3/chart-layout`, PR #196): `SimpleChart` and `SimpleLineChart` lay out at the measured width
+    (`useElementWidth`), 11–12 px text at 360 px; tick counts, label thinning and margins from pixels (`chart-axes.ts`); null
+    and non-finite values break lines; HTML legend below the plot (`chart-legend.tsx`); marker colours/symbols/size, text labels.
   - Phase 3b (session 158, `phase-3/initial-js`, PR #195): initial JS 145–172 KB gz per page (141.5 KB shared React/Next; the
     110 KB chunk is noModule polyfills, never loaded); related-links chunk gone. Shared links hide the calculator until
     hydration (`url-state-pending.ts`); `scripts/initial-js.mjs`; ui-check frame test.
