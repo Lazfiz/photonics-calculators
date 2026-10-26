@@ -1,9 +1,13 @@
 // Initial JS per prerendered page, after `npm run build`: node scripts/initial-js.mjs
 // gzip -9 of the <script src> chunks in each .next/server/app/**/*.html; noModule polyfills are skipped (modern
 // browsers never load them). Prints the chunks shared by every page and the pages with the most JS of their own.
+// Budget (CI): --max-shared <KB> --max-page <KB> exits 1 when the shared chunks or any page's own JS exceed them.
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { gzipSync } from "node:zlib";
 import { join } from "node:path";
+import { parseArgs } from "node:util";
+
+const { values: budget } = parseArgs({ options: { "max-shared": { type: "string" }, "max-page": { type: "string" } } });
 
 const gz = new Map();
 const size = (s) => {
@@ -15,7 +19,8 @@ const walk = (dir) => {
   for (const name of readdirSync(dir)) {
     const p = join(dir, name);
     if (statSync(p).isDirectory()) walk(p);
-    else if (name.endsWith(".html")) pages.push(p);
+    // _global-error has no root layout, so it would turn the layout's chunks (analytics) into "page-specific" ones.
+    else if (name.endsWith(".html") && name !== "_global-error.html") pages.push(p);
   }
 };
 walk(".next/server/app");
@@ -39,4 +44,14 @@ console.log(`${rows.length} pages; shared ${shared.length} chunks ${sharedKB.toF
 for (const r of rows.slice(0, 12)) {
   const big = r.own.map((s) => [s, size(s)]).sort((a, b) => b[1] - a[1])[0];
   console.log(`  ${r.ownKB.toFixed(1).padStart(5)} KB  ${r.page}  (largest ${big ? `${big[0].slice(14)} ${(big[1] / 1024).toFixed(1)} KB, on ${counts.get(big[0])} pages` : "-"})`);
+}
+
+const over = [];
+const maxShared = Number(budget["max-shared"] ?? Infinity);
+const maxPage = Number(budget["max-page"] ?? Infinity);
+if (sharedKB > maxShared) over.push(`shared ${sharedKB.toFixed(1)} KB > ${maxShared} KB`);
+for (const r of rows.filter((r) => r.ownKB > maxPage)) over.push(`${r.page} ${r.ownKB.toFixed(1)} KB > ${maxPage} KB`);
+if (over.length) {
+  console.error(`JS budget exceeded (gzip):\n  ${over.join("\n  ")}`);
+  process.exit(1);
 }

@@ -37,3 +37,7 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      # Initial JS (gzip): 145 KB shared and ≤ 28 KB per page in session 161; raise only on purpose.
+      - name: JS budget
+        run: node scripts/initial-js.mjs --max-shared 150 --max-page 32
