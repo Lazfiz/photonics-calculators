@@ -68,3 +68,13 @@ test("totalExitance: σT⁴ for the Sun matches the IAU 2015 B3 nominal values",
   assert.ok(Number.isNaN(totalExitance(-1)));
   assert.ok(Number.isNaN(totalExitance(Infinity)));
 });
+
+test("Planck spectral exitance at single points (hand: CODATA 2hc² and hc/k_B)", () => {
+  // M_λ = π·2hc²/λ⁵ / (exp(hc/(λk_B T)) − 1), 2hc² = 1.1910430e-16 W·m²/sr, hc/k_B = 1.4387769e-2 m·K.
+  // 5778 K at the Wien peak 501.518 nm: L_λ = 2.637626e4 W/(m²·sr·nm), so M_λ = 8.286345e13 W/m³.
+  const sun = planckExitance(501.518e-9, 5778);
+  assert.ok(Math.abs(sun / 8.286345e13 - 1) < 1e-6, `${sun}`);
+  // 1000 K at 1 µm (Wien tail, c₂/λT = 14.39): 2.111295e8 W/m³.
+  const tail = planckExitance(1e-6, 1000);
+  assert.ok(Math.abs(tail / 2.111295e8 - 1) < 1e-6, `${tail}`);
+});

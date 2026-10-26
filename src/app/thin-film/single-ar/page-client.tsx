@@ -61,7 +61,7 @@ export default function SingleARPage() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-8">
         <ResultCard label="Optimal n_film" value={optimalNFilm.toFixed(3)} tone="green" subtext="Normal-incidence target" />
         <ResultCard label="Quarter-wave thickness" value={tir ? "— (TIR in film)" : `${designThickness.toFixed(1)} nm`} tone="blue" subtext="Uses θ₁ inside film" />
-        <ResultCard label="R @ design λ" value={`${(100 * averageDesignR).toFixed(2)} %`} tone="yellow" subtext="Unpolarized average" />
+        <ResultCard label="R @ design λ" value={`${(100 * averageDesignR).toFixed(2)} %`} tone="yellow" subtext={tir ? "Bare substrate: no quarter-wave film under TIR" : "Unpolarized average"} />
         <ResultCard label="Film angle θ₁" value={tir ? "TIR" : `${(theta1 * 180 / Math.PI).toFixed(2)}°`} tone="purple" subtext="Snell’s law" />
       </div>
 

@@ -1,29 +1,32 @@
-# Handover — 2026-10-26 (session 161 → session 162)
+# Handover — 2026-10-26 (session 162 → session 163)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 161 did 3e (Speed Insights, JS budget, chart placeholder) on branch `phase-3/speed-insights`, PR #198. Phase 3 is
-done; PR #197 (3d) is merged. Next: **Phase 5** spot-check review (≈ 20 pages, `physics-reviewer`), then the Gemini hero.
+Session 162 released PR #198 (3e) and did the Phase 5 spot-check on `phase-5/spot-check`, PR #199: 20 pages, 2 bugs fixed.
+The user chose a **full textbook-tier pass** (5w-1 … 5w-15, ≈ 20 pages per session). Next: **5w-1 detectors 1/3**.
 
 ## State
-- `src/app/layout.tsx`: `<SpeedInsights />` (`@vercel/speed-insights/next` 2.0.0) after `<Analytics />`; a 3.5 KB gz chunk on
-  every page. **The user must enable Speed Insights** in the Vercel dashboard (project → Speed Insights → Enable); the
-  MCP `get_project` doesn't show whether it's on. It reports only from `release` deployments.
-- `scripts/initial-js.mjs --max-shared <KB> --max-page <KB>` exits 1 over budget; CI runs it after the build with 150 / 32
-  (now 145.4 KB shared, page-specific median 11.9 KB, max 27.9 KB thin-film/enhanced-aluminum). `_global-error.html` is
-  skipped (no root layout).
-- `src/components/chart-placeholder.tsx`: `ChartReserve` (title row + a box at `aspect-ratio 700/height`, min 280 px, max
-  `layout.height`) and `ChartPlaceholder` (the same in SimpleChart's bordered box). `ChartPanel` loads SimpleChart with its
-  own `import()` in an effect (`LazySimpleChart`, inside `ChartErrorBoundary`) instead of `next/dynamic`, whose `loading`
-  gets no props; `SimpleChart` shows `ChartReserve` until measured. CLS at 1200 px, 3000 px tall viewport: gires-tournois
-  0.095 → 0.002, mueller-matrix 0.018 → 0.001, heat-mirror 0.006 (legend). No console errors.
+- `src/physics/detectors/tia.ts`: `tiaFilteredNoise(p, f0, band)` → `{ terms (A²/Hz averaged), enbw (Hz) }`, noise through
+  |H|² = 1/(1+(f/f₀)⁴) up to a brick-wall B (closed-form moments; series below u = 0.01). `tiaBandNoise` removed.
+  `photodiode-tia-noise` default i_rms 2.605 nA (was 1.468), NEP 6.78 nW (was 3.82).
+- `src/physics/imaging/super-resolution.ts`: `simSupportHasGap(λex, λem, NA, p)` = k₀ > 2k_c; SIM default shows the
+  softer "pattern beyond the detection cut-off" note instead.
+- Minor: Stokes axes S₁/S₀…, single-AR TIR subtext, coupling NA > 0.3 warning, diamond `absorbsBelow` 226.7 nm, Planck test.
+- Release `20858995` (PR #198) is live; post-merge-check passed. Speed Insights still needs enabling by the user.
+- Gates on `6cda9f56`: `npm run check` 1148 pass; `npm run build` green.
 
 ## Next actions
-1. `/ship` PR #198. Site-wide chart change, no values change. On a release: post-merge-check (load only)
-   `wave-optics/gires-tournois`, `polarization/mueller-matrix`, `thin-film/heat-mirror`; ask the user to enable Speed
-   Insights, and to read its numbers after a few weeks (traffic is low: ~6 visitors a month).
-2. Phase 5: spot-check review (ROADMAP). Then the Gemini hero (ask the user for the files).
+1. `/ship` PR #199. On a release: `node scripts/post-merge-check.mjs <sha> detectors/photodiode-tia-noise=2.605e-9
+   imaging/structured-illumination` (the card prints `toExponential(3)`).
+2. 5w-1: detectors textbook slugs part 1/3 (registry order, skip photodiode-tia-noise and readout-noise). 4 parallel
+   `physics-reviewer` agents × ≈ 5 pages, ask for verdict + BUG/MINOR/UNVERIFIED with hand calculations.
+3. After 5w: the Gemini hero (ask the user for the files).
 
 ## Non-obvious facts
+- **Session 162:** reviewer claims from memory were wrong again (2 of 2 laser-safety claims; ICNIRP 2013 Table 5 has no C_A
+  below 10 ps on purpose). ICNIRP 2013 PDF: `curl -sL https://www.icnirp.org/cms/upload/publications/ICNIRPLaser180gdl_2013.pdf`
+  then `pdftotext -raw` and grep the row (`313 e l G 315`). A seeded `shuf --random-source=<(yes N)` clusters badly: draw
+  with `shuf | awk -F/ '!seen[$1]++'` for one page per category. Reviewers' real bugs were in textbook-tier models
+  (vendor app-note simplifications, warning-note conditions): read those first.
 - **Session 161:** CLS probe = scratchpad CDP script: `Page.addScriptToEvaluateOnNewDocument` with a `layout-shift`
   PerformanceObserver (skip `hadRecentInput`), read `window.__cls` 5 s after navigate. Shifts below the fold don't count, so
   use a 3000 px tall viewport to see chart shifts. Production is the baseline. Git Bash rewrites `/cat/slug` args even for

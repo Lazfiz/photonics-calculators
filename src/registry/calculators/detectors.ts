@@ -580,7 +580,7 @@ export const detectors: CalculatorEntry[] = [
     description: "Photodiode + transimpedance amplifier: Butterworth bandwidth, input-referred noise including the e_n·C term, and NEP.",
     keywords: ["Hybrid Detector Design"],
     tier: "textbook",
-    modelNote: "Single-pole op amp with a Butterworth-compensated feedback R_f ∥ C_f; noise is integrated over a brick-wall band min(B, f_TIA). Photocurrent and dark-current shot noise, 1/f noise and the noise-gain peaking near f_TIA are left out.",
+    modelNote: "Single-pole op amp with a Butterworth-compensated feedback R_f ∥ C_f; input-referred noise is weighted by the 2-pole Butterworth response 1/(1 + (f/f_TIA)⁴) up to a brick-wall post-filter B. Photocurrent and dark-current shot noise, 1/f noise and the C_f term of the noise gain are left out.",
     references: [
       {
         citation: "Ramus X. (2009). Transimpedance Considerations for High-Speed Amplifiers. Texas Instruments application report SBOA122. Butterworth TIA bandwidth √(GBP/2πR_F·C_S) (eq. 12) and input-referred noise (eq. 13).",

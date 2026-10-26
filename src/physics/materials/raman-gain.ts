@@ -60,6 +60,8 @@ export const RAMAN_LINES: Record<RamanLineId, RamanLine> = {
   diamond: {
     name: "Diamond", shift: 1332.9 * CM, fwhm: 2.7 * CM,
     gains: [at(355, 78), at(532, 42), at(670, 41), at(800, 26), at(1064, 17), at(1280, 7.6)],
+    // Indirect gap 5.47 eV (Clark, Dean & Harris, Proc. R. Soc. A 277, 312 (1964), doi:10.1098/rspa.1964.0025): hc/E_g = 226.7 nm.
+    absorbsBelow: 226.7e-9,
     source: "Ω̃, Δν̃ Basiev 1999; g Savitski 2013 Table 1",
   },
   "barium-nitrate": {

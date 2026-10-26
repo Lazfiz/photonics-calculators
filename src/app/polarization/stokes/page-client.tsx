@@ -113,7 +113,7 @@ export default function StokesPage() {
                 : []),
             ]}
             layout={{
-              scene: { xaxis: { title: "S₁/Q", range: [-1.2, 1.2], color: "#9ca3af" }, yaxis: { title: "S₂/U", range: [-1.2, 1.2], color: "#9ca3af" }, zaxis: { title: "S₃/V", range: [-1.2, 1.2], color: "#9ca3af" }, bgcolor: "#111827" },
+              scene: { xaxis: { title: "S₁/S₀", range: [-1.2, 1.2], color: "#9ca3af" }, yaxis: { title: "S₂/S₀", range: [-1.2, 1.2], color: "#9ca3af" }, zaxis: { title: "S₃/S₀", range: [-1.2, 1.2], color: "#9ca3af" }, bgcolor: "#111827" },
               margin: { l: 0, r: 0, t: 0, b: 0 }, paper_bgcolor: "#111827", font: { color: "#d1d5db" },
               showlegend: true, legend: { x: 0, y: 1, bgcolor: "rgba(0,0,0,0)" },
             }}

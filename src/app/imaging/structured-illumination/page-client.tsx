@@ -4,7 +4,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { diffractionMtf } from "../../../physics/imaging/diffraction-mtf";
-import { abbeLateralFwhm, simCutoff, simLateralFwhm, simRawImageCount } from "../../../physics/imaging/super-resolution";
+import { abbeLateralFwhm, simCutoff, simLateralFwhm, simRawImageCount, simSupportHasGap } from "../../../physics/imaging/super-resolution";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const nm = 1e-9;
@@ -45,7 +45,8 @@ export default function StructuredIlluminationPage() {
 
   const notes: string[] = [];
   if (em < ex) notes.push(`The emission (${em} nm) is shorter than the excitation (${ex} nm); fluorescence is Stokes-shifted to longer wavelengths.`);
-  if (k0 > kc) notes.push("The pattern frequency exceeds the detection cut-off, so the shifted passbands no longer overlap the central one and the support has gaps.");
+  if (simSupportHasGap(ex * nm, em * nm, na, p)) notes.push("The pattern frequency exceeds twice the detection cut-off, so the shifted passbands no longer overlap the central one and the support has gaps.");
+  else if (k0 > kc) notes.push("The pattern frequency lies beyond the detection cut-off: the stripes are not visible in the raw images, so the pattern phase and frequency are estimated from the overlap of the shifted passbands.");
   if (orders > 1) notes.push("Harmonics beyond the first need a nonlinear (saturated or photoswitched) fluorescence response; their strength depends on the saturation level, not modelled here.");
   if (angles < 3) notes.push(`${angles} pattern angle${angles > 1 ? "s" : ""} extend the support in that direction only; three or more are needed for near-isotropic resolution.`);
 
