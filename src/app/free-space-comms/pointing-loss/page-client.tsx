@@ -7,6 +7,7 @@ import InputSlider from "../../../components/input-slider";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { pointingCapture } from "../../../physics/free-space-comms/pointing-loss";
+import { divergenceHalfAngle } from "../../../physics/wave-optics/gaussian-beam";
 
 const presets = [
   { label: "Tight pointing", wavelength: 1550, txBeamWaist: 2.5, jitterRMS: 0.5, misalign: 0.2, rxAperture: 10, range: 1 },
@@ -30,7 +31,7 @@ export default function PointingLossPage() {
     const r = pointingCapture(wavelength * 1e-9, txBeamWaist * 1e-2, range * 1e3, rxAperture * 1e-2, misalign * 1e-6, jitterRMS * 1e-6);
     return {
       ...r,
-      divergenceUrad: ((wavelength * 1e-9) / (Math.PI * txBeamWaist * 1e-2)) * 1e6,
+      divergenceUrad: divergenceHalfAngle({ lambda: wavelength * 1e-9, w0: txBeamWaist * 1e-2 }) * 1e6,
       pointingLossDb: dB(r.meanFraction / r.alignedFraction),
       geometricLossDb: dB(r.alignedFraction),
       totalLossDb: dB(r.meanFraction),

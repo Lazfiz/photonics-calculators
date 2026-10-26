@@ -6,6 +6,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { secrecyCapacity } from "../../../physics/free-space-comms/channel-capacity";
+import { divergenceHalfAngle } from "../../../physics/wave-optics/gaussian-beam";
 import {
   capturedPower, linkSecurity, nepLimitedSnr, type SecurityInputs,
 } from "../../../physics/free-space-comms/physical-layer-security";
@@ -43,7 +44,7 @@ export default function SecurityPage() {
   }), [txPowerRaw, wavelengthRaw, txBeamRaw, rangeRaw, rxApertureRaw, eveDistanceRaw, eveOffsetRaw, eveApertureRaw, nepRaw, bandwidthRaw]);
 
   const r = useMemo(() => linkSecurity(inputs), [inputs]);
-  const divergence = (2 * inputs.lambda) / (Math.PI * inputs.waist); // full angle, rad
+  const divergence = 2 * divergenceHalfAngle({ lambda: inputs.lambda, w0: inputs.waist }); // full angle, rad
 
   const plotData = useMemo(() => {
     const span = Math.max(4 * r.eveBeamRadius, 2 * inputs.eveOffset, 1e-3);

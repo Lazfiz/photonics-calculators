@@ -20,8 +20,9 @@ export const ICAO_LEVELS = {
 
 export type IcaoLevel = keyof typeof ICAO_LEVELS;
 
-/** Peak irradiance, W/m², of a round TEM₀₀ beam of power P (W) and 1/e² diameter d (m): 8P/(πd²). */
+/** Peak irradiance, W/m², of a round TEM₀₀ beam of power P (W) and 1/e² diameter d (m): 8P/(πd²). NaN for P < 0 or d ≤ 0. */
 export function peakIrradiance(P: number, d: number): number {
+  if (!(P >= 0 && d > 0 && Number.isFinite(P * d))) return NaN;
   return (8 * P) / (Math.PI * d * d);
 }
 

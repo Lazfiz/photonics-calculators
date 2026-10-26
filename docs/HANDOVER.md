@@ -1,8 +1,8 @@
 # Handover — 2026-10-25 (session 156 → session 157)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 156 split 2-inline-b into b1–b6, did b1, b2 (PRs #187, #188, merged), b3a (`phase-2/inline-b3a`, PR #189).
-Next: **b3b** (Gaussian beam on 6 laser-safety/FSO pages). User plan: b3b–b6, Phase 3, Phase 5 (spot-check review ≈ 20 pages; Gemini home hero last).
+Session 156 split 2-inline-b into b1–b6, did b1, b2, b3a (PRs #187–#189, merged), b3b (`phase-2/inline-b3b`, PR #190).
+Next: **b4** (phase matching on 4 nonlinear pages). User plan: b4–b6, Phase 3, Phase 5 (spot-check review ≈ 20 pages; Gemini home hero last).
 
 ## State
 - `scripts/inline-inventory.ts` lists math inside component bodies; axes, √N/quadrature sums, display π and demo signals stay inline.
@@ -13,10 +13,12 @@ Next: **b3b** (Gaussian beam on 6 laser-safety/FSO pages). User plan: b3b–b6, 
   `window-materials.surfaceReflectance`, `polymer-optics.normalReflectance`, `photodiode-qe.normalReflectance` delegate to it.
   `thin-film/transfer-matrix.quarterWaveArIndex` = √(n₀n_s).
 - `gaussian-beam.radiusAtDistance(w0, zR, z)` (resonator eigenmodes give w₀ and z_R) and `mode-matching.beamRadiusFromQ(q, λ)`.
+- Laser-safety pages work in 1/e² diameter: peak irradiance is `visual-interference.peakIrradiance(P, d)` (NaN for d ≤ 0),
+  not `kerr.gaussianPeakIntensity(P, w)`; full-angle divergence is `2 * divergenceHalfAngle({ lambda, w0: d / 2 })`.
 
 ## Next actions
 1. `/ship`. No value changes; on a release: post-merge-check `fiber-optics/v-number` V ≈ 2.077, `fiber-characterization` NA 0.1246.
-2. b3 → b6 per ROADMAP, one PR each. Reuse module functions first (`git grep -n "export function <name>" -- src/physics`);
+2. b4 → b6 per ROADMAP, one PR each. Reuse module functions first (`git grep -n "export function <name>" -- src/physics`);
    when a module already has copies, make them delegate rather than add another (b2 did this for reflectance).
 
 ## Non-obvious facts
@@ -37,8 +39,7 @@ Next: **b3b** (Gaussian beam on 6 laser-safety/FSO pages). User plan: b3b–b6, 
   (`api.openalex.org/works/doi:<doi>`) gives abstracts. Subagent numbers need checking against the rendered source. Node 24 test
   output prints `ℹ pass N`, not TAP `# pass`. A double-quoted `node -e` with backticks is shell-expanded: write a .cjs file.
   Headless `--dump-dom` wrote empty files under devctl CPU load.
-- **Session 148:** patents.google.com has old patents' full text; Isomet app notes at `isomet.com/App-Manual_pdf/`. Melkumov 2004 is
-  arXiv:1502.02885 (pdftotext rows shifted by one: render). 2005 Opt. Express DOIs use `OPEX` (check with `crossref.mjs -q`).
+- **Session 148:** patents.google.com has old patents' full text; Isomet app notes at `isomet.com/App-Manual_pdf/`.
 - **Session 147:** CREOL papers download as `api.creol.ucf.edu/Publications/<n>.pdf` (DeSalvo 1996 = 1814, Sheik-Bahae PRL 1990 = 1805;
   find numbers by web search); van Driel's papers at `physics.utoronto.ca/~vandriel/papers/`. No pdftoppm here, so the Read tool can't
   render PDFs: render a page with `uv run -q --with pymupdf python <script>` (fitz `page.get_pixmap(dpi, clip).save(png)`) and Read the PNG.
@@ -65,7 +66,6 @@ Next: **b3b** (Gaussian beam on 6 laser-safety/FSO pages). User plan: b3b–b6, 
   truncate at ≈ 1000 characters: filter lines, or use `get_page_text`. Chrome tabs freeze when devctl runs another project's
   `cargo nextest` (CPU 100 %): fall back to headless `ui-check` / `--dump-dom`. **Port 3000 can be another project** (Planet
   Incubator): run this repo on 3100 and check the page title.
-- **Sessions 113–115:** unsourceable constants become inputs or go (cite defaults, log the gap). `besselJ0Fast` in quadratures.
 - **Session 107:** prefix `MSYS_NO_PATHCONV=1` for ui-check and chrome (`C:/Program Files/Google/Chrome/Application/chrome.exe`,
   `--dump-dom` reads hydrated values). Registry/JSX text can't hold `{…}`. `npm run dev` touches `next-env.d.ts`: `git checkout` it.
 - **Charts:** axis minimum at the data minimum, so round plotted values (6 decimals). ChartPanel sends scatter and bar traces to SVG

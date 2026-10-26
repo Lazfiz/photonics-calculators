@@ -11,6 +11,8 @@ import { exposureLimit, eyeLimits, limitingAperture, limitMaxPower, T_MAX, T_MIN
 import {
   effectiveDiameterAt, nominalOcularHazardDistance, requiredOpticalDensity, roundBeam,
 } from "../../../physics/laser-safety/hazard-distance";
+import { peakIrradiance as tem00PeakIrradiance } from "../../../physics/laser-safety/visual-interference";
+import { divergenceHalfAngle } from "../../../physics/wave-optics/gaussian-beam";
 
 export default function FiberLaserSafetyPage() {
   const [power, setPower] = useURLState("power", 1000, { min: 0 }); // mW launched into the fiber
@@ -34,7 +36,7 @@ export default function FiberLaserSafetyPage() {
   const t = Math.min(Math.max(exposureTime, T_MIN), T_MAX);
 
   // 1/e² full-angle divergence: a TEM₀₀ mode diffracting from its waist w₀ = d/2, or the output filling the NA.
-  const phi = multimode ? 2 * Math.tan(Math.asin(NA)) : (2 * lambda) / (Math.PI * (d / 2));
+  const phi = multimode ? 2 * Math.tan(Math.asin(NA)) : 2 * divergenceHalfAngle({ lambda, w0: d / 2 });
   const equivalentNA = Math.sin(Math.min(phi / 2, Math.PI / 2));
 
   const beam = useMemo(() => roundBeam(d, phi, "gaussian"), [d, phi]);
@@ -55,7 +57,7 @@ export default function FiberLaserSafetyPage() {
   );
 
   const nohdText = nohd.distance === 0 ? "0 — within the limits at the fiber end" : fmtDistance(nohd.distance);
-  const peakIrradiance = (8 * P) / (Math.PI * d * d) / 1e4; // W/cm² at the fiber end
+  const peakIrradiance = tem00PeakIrradiance(P, d) / 1e4; // W/cm² at the fiber end
 
   const nohdFinite = Number.isFinite(nohd.distance) && nohd.distance > 0;
   const rMin = nohdFinite ? Math.max(nohd.distance * 1e-3, 0.01) : 0.01;
