@@ -23,11 +23,12 @@
  */
 
 import { c } from "../constants";
+import { logarithmicLoss } from "./laser-resonator";
 
 /** Single-pass logarithmic loss γ = γ_i + (γ₁ + γ₂)/2, with γ_i = −ln(1 − internal fraction) and γ_j = −ln R_j. */
 export function singlePassLoss(R1: number, R2: number, internalFraction = 0): number {
   if (!(R1 > 0 && R1 <= 1 && R2 > 0 && R2 <= 1 && internalFraction >= 0 && internalFraction < 1)) return NaN;
-  return Math.log(1 / (1 - internalFraction)) + (Math.log(1 / R1) + Math.log(1 / R2)) / 2;
+  return logarithmicLoss(internalFraction) + (Math.log(1 / R1) + Math.log(1 / R2)) / 2;
 }
 
 /** Photon lifetime τ_c = L_e/(cγ), s, for optical length L_e (m) and single-pass loss γ. NaN for γ ≤ 0. */

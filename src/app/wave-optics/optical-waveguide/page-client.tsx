@@ -5,6 +5,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { slabEffectiveIndex, slabModeB, slabModeCount, slabTEConfinement, slabTEField, slabV } from "../../../physics/wave-optics/slab-waveguide";
+import { numericalAperture } from "../../../physics/fiber-optics/step-index-modes";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
@@ -25,7 +26,7 @@ export default function OpticalWaveguidePage() {
 
   const V = slabV(n1, n2, d, lambda);
   const guided = Number.isFinite(V);
-  const NA = guided ? Math.sqrt(n1 * n1 - n2 * n2) : NaN;
+  const NA = guided ? numericalAperture(n1, n2) : NaN;
   const modes = guided ? slabModeCount(V) : 0;
   const rTM = (n1 * n1) / (n2 * n2);
   const bTE = slabModeB(V, 0);

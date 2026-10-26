@@ -42,6 +42,7 @@
  */
 
 import { c } from "../constants";
+import { GAUSSIAN_FWHM_PER_SIGMA } from "../math";
 
 /** 1550 nm, the reference wavelength of the linear presets, m. */
 export const LAMBDA_REF = 1550e-9;
@@ -50,7 +51,7 @@ export const G652_LAMBDA0 = 1310e-9;
 /** ITU-T G.652 maximum zero-dispersion slope S₀ = 0.092 ps/(nm²·km), s/m³. */
 export const G652_S0 = 0.092e3;
 /** FWHM → rms for a Gaussian: 1/(2√(2 ln 2)). */
-export const FWHM_TO_RMS = 1 / (2 * Math.sqrt(2 * Math.LN2));
+export const FWHM_TO_RMS = 1 / GAUSSIAN_FWHM_PER_SIGMA;
 /** f₃dB·σ for a Gaussian impulse response: √(2 ln 2)/(2π) ≈ 0.1874. */
 export const GAUSSIAN_BANDWIDTH_RMS_PRODUCT = Math.sqrt(2 * Math.LN2) / (2 * Math.PI);
 

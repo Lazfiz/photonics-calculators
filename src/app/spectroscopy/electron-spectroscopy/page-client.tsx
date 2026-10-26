@@ -4,7 +4,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { imfpTpp2m, kineticEnergy, samplingDepth, TPP2M_MATERIALS, type Tpp2mMaterial } from "../../../physics/spectroscopy/photoemission";
+import { imfpTpp2m, kineticEnergy, plasmonEnergy, samplingDepth, TPP2M_MATERIALS, type Tpp2mMaterial } from "../../../physics/spectroscopy/photoemission";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits) : "—");
@@ -46,7 +46,7 @@ export default function ElectronSpectroscopyPage() {
   const depth95 = samplingDepth(lambda, theta);
   const top1nm = -Math.expm1(-nm / (lambda * Math.cos(theta)));
   const belowFit = emitted && hv - Eb < 50, aboveFit = emitted && hv - Eb > 2000;
-  const Ep = 28.8 * Math.sqrt((mat.Nv * mat.rho) / mat.M);
+  const Ep = plasmonEnergy(mat);
 
   const energies = Array.from({ length: 200 }, (_, i) => 50 * 10 ** ((i / 199) * Math.log10(200))); // above E_F
   const imfpChart = [

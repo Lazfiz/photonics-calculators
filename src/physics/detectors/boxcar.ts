@@ -11,9 +11,9 @@
  * A. Papoulis, Probability, Random Variables and Stochastic Processes). Gate NEB: ∫ sinc²(fT) df = 1/(2T).
  */
 
-import { erf } from "../math";
+import { erf, GAUSSIAN_FWHM_PER_SIGMA } from "../math";
 
-const FWHM_PER_SIGMA = 2 * Math.sqrt(2 * Math.LN2);
+const FWHM_PER_SIGMA = GAUSSIAN_FWHM_PER_SIGMA;
 
 /** Gate-averaged value of a Gaussian pulse of peak S and FWHM w, gate width T centred at offset t_g from the peak. */
 export function gaussianGateAverage(peak: number, fwhm: number, gateWidth: number, gateOffset: number): number {

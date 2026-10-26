@@ -15,14 +15,14 @@
  *   2√(2 ln 2) σ is often quoted as the resolution.
  */
 
-import { integrateTanhSinh } from "../math";
+import { GAUSSIAN_FWHM_PER_SIGMA, integrateTanhSinh } from "../math";
 
 export { axialPsfFwhm } from "./optical-sectioning-thickness";
 
 /** Gaussian standard deviation of the widefield PSF, in units of λ/NA (Zhang et al. 2007). */
 export const PSF_SIGMA_COEFFICIENT = 0.21;
-/** FWHM = 2√(2 ln 2) σ for a Gaussian. */
-export const GAUSSIAN_FWHM_PER_SIGMA = 2 * Math.sqrt(2 * Math.LN2);
+/** FWHM = 2√(2 ln 2) σ for a Gaussian (`math.ts`). */
+export { GAUSSIAN_FWHM_PER_SIGMA };
 
 const positive = (x: number) => Number.isFinite(x) && x > 0;
 

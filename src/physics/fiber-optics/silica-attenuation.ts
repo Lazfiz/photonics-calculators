@@ -89,12 +89,18 @@ export interface SilicaLoss {
 const valid = (p: SilicaLossParams, lambda: number) =>
   p.rayleighA > 0 && p.geO2Fraction >= 0 && p.geO2Fraction < 1 && p.ohPeakDbPerKm >= 0 && lambda > 0 && Number.isFinite(lambda);
 
+/** Rayleigh scattering loss α_R = A/λ⁴ (λ in µm), dB/km, for A in dB·km⁻¹·µm⁴ and vacuum λ in m. NaN unless both > 0. */
+export function rayleighScatteringDbPerKm(rayleighA: number, lambda: number): number {
+  if (!(rayleighA > 0 && lambda > 0 && Number.isFinite(rayleighA * lambda))) return NaN;
+  return rayleighA / (lambda * 1e6) ** 4;
+}
+
 /** Loss terms at vacuum wavelength λ (m), dB/km. NaN fields outside the domain. */
 export function silicaLossDbPerKm(p: SilicaLossParams, lambda: number): SilicaLoss {
   if (!valid(p, lambda)) return { rayleigh: NaN, infrared: NaN, ultraviolet: NaN, oh: NaN, total: NaN };
   const lambda_um = lambda * 1e6;
   const x = p.geO2Fraction;
-  const rayleigh = p.rayleighA / lambda_um ** 4;
+  const rayleigh = rayleighScatteringDbPerKm(p.rayleighA, lambda);
   const infrared = 7.81e11 * Math.exp(-48.48 / lambda_um);
   const ultraviolet = ((154.2 * x) / (46.6 * x + 60)) * 1e-2 * Math.exp(4.63 / lambda_um);
   const ppm = ohContentPpm(p.ohPeakDbPerKm);

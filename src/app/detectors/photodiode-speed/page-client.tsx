@@ -4,8 +4,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { k_B } from "../../../physics/constants";
-import { responsivity as responsivityOf } from "../../../physics/detectors/noise";
+import { johnsonNoise, responsivity as responsivityOf } from "../../../physics/detectors/noise";
 import { combinedBandwidth, depletionWidth, rcBandwidth, transitBandwidth } from "../../../physics/detectors/photodiode-rc";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -47,7 +46,7 @@ export default function PhotodiodeSpeedPage() {
     { x: areas, y: areas.map(a => capAt(a) * 1e12), type: "scatter" as const, mode: "lines" as const, name: "Capacitance (pF)", line: { color: "#f87171", dash: "dot" }, yaxis: "y2" },
   ];
   // Johnson noise of R_L across C_j in its noise bandwidth (π/2)·f_RC at 300 K: i² = 4kT/R_L·(π/2)·f_RC.
-  const nep = fRC.map(f => (Math.sqrt((4 * k_B * 300 / loadResistance) * (Math.PI / 2) * f) / responsivity) * 1e12); // pW
+  const nep = fRC.map(f => (johnsonNoise(loadResistance, 300, (Math.PI / 2) * f).i / responsivity) * 1e12); // pW
 
   return (
     <>

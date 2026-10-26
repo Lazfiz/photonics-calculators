@@ -5,7 +5,7 @@ import { c, h } from "../src/physics/constants";
 import { optimumOutputCoupler, rigrodOutput } from "../src/physics/fiber-optics/doped-fiber-gain";
 import { gParameter, twoMirrorMode } from "../src/physics/wave-optics/two-mirror-resonator";
 import {
-  fourLevelGain, fourLevelSlopeEfficiency, fourLevelThreshold, gaussianOverlapArea, laserOutput, meanSquareRadius,
+  fourLevelGain, fourLevelSlopeEfficiency, fourLevelThreshold, gaussianOverlapArea, laserOutput, logarithmicLoss, meanSquareRadius,
   rigrodSlope, roundTripLoss, saturationIntensity, tripletGainFactor,
 } from "../src/physics/wave-optics/laser-resonator";
 
@@ -114,4 +114,13 @@ test("domain guards", () => {
   assert.ok(Number.isNaN(rigrodSlope(1, 1)));
   assert.ok(Number.isNaN(tripletGainFactor(2e-20, 1e-21, 5e6, 1e-6, 0)));
   assert.ok(Number.isNaN(meanSquareRadius(NaN, 1, 0, 1)));
+});
+
+test("logarithmicLoss: −ln(1 − f) per pass", () => {
+  // Hand calculation: −ln 0.99 = 0.01005034; −ln 0.5 = ln 2.
+  assertRel(logarithmicLoss(0.01), 0.01005034, 1e-6, "1 %");
+  assertRel(logarithmicLoss(0.5), Math.LN2, 1e-15, "50 %");
+  assert.equal(logarithmicLoss(0), 0);
+  assert.ok(Number.isNaN(logarithmicLoss(1)));
+  assert.ok(Number.isNaN(logarithmicLoss(-0.1)));
 });

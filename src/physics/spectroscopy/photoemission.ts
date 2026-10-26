@@ -51,6 +51,12 @@ export function kineticEnergy(photonEnergy: number, bindingEnergy: number, spect
   return photonEnergy - bindingEnergy - spectrometerWorkFunction;
 }
 
+/** Free-electron plasmon energy E_p = 28.8 √(N_v ρ/M), eV (Tanuma, Powell & Penn 1994). NaN for a bad material. */
+export function plasmonEnergy(m: Tpp2mMaterial): number {
+  if (!(m.rho > 0 && m.Nv > 0 && m.M > 0)) return NaN;
+  return 28.8 * Math.sqrt((m.Nv * m.rho) / m.M);
+}
+
 /** TPP-2M inelastic mean free path in m for energy E (eV) above the Fermi level. NaN below 50 eV or for a bad material. */
 export function imfpTpp2m(E: number, m: Tpp2mMaterial): number {
   if (!(E >= 50 && m.rho > 0 && m.Nv > 0 && m.M > 0 && m.Eg >= 0)) return NaN;

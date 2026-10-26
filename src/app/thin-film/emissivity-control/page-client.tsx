@@ -4,8 +4,7 @@ import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { blackbodyBandFraction, planckExitance } from "../../../physics/blackbody";
-import { sigma_SB } from "../../../physics/constants";
+import { blackbodyBandFraction, planckExitance, totalExitance } from "../../../physics/blackbody";
 import { opaqueEmittance, totalNormalEmittance, type CoatingLayer, type Substrate } from "../../../physics/thin-film/low-emissivity";
 
 const NM = 1e-9;
@@ -45,7 +44,7 @@ export default function EmissivityControlPage() {
     const eps = totalNormalEmittance(coating, substrate, temp, bandLo * UM, bandHi * UM);
     const epsBare = totalNormalEmittance([], substrate, temp, bandLo * UM, bandHi * UM);
     const fraction = blackbodyBandFraction(bandLo * UM, bandHi * UM, temp);
-    const blackInBand = fraction * sigma_SB * temp ** 4;
+    const blackInBand = fraction * totalExitance(temp);
     return { eps, epsBare, fraction, emitted: eps * blackInBand, emittedBare: epsBare * blackInBand };
   }, [valid, coating, substrate, temp, bandLo, bandHi]);
 
@@ -116,7 +115,7 @@ export default function EmissivityControlPage() {
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
             <p className="text-sm text-gray-400">Blackbody power in the band</p>
             <p className="text-2xl font-bold text-blue-400">{(results.fraction * 100).toFixed(1)} %</p>
-            <p className="text-sm text-gray-500 mt-1">of σT⁴ = {wm2(sigma_SB * temp ** 4)} at {temp} K</p>
+            <p className="text-sm text-gray-500 mt-1">of σT⁴ = {wm2(totalExitance(temp))} at {temp} K</p>
           </div>
         </div>
       )}

@@ -8,12 +8,13 @@ import {
   amplitudeWeightedLifetime, convolvedDecay, decayIntensity, gaussianPulseBandwidth, intensityWeightedLifetime, periodicDecay,
   type DecayComponent,
 } from "../../../physics/spectroscopy/fluorescence-lifetime";
+import { GAUSSIAN_FWHM_PER_SIGMA } from "../../../physics/math";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits) : "—");
 /** Values above 1e-5 of the peak only, rounded for the log axis; others become gaps. */
 const logY = (x: number) => (Number.isFinite(x) && x > 1e-5 ? Number(x.toPrecision(6)) : NaN);
-const FWHM_TO_SIGMA = 1 / (2 * Math.sqrt(2 * Math.LN2));
+const FWHM_TO_SIGMA = 1 / GAUSSIAN_FWHM_PER_SIGMA;
 const ns = 1e-9;
 
 export default function TimeResolvedPage() {

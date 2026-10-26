@@ -18,6 +18,11 @@
 import { c, h } from "../constants";
 import { rigrodOutput } from "../fiber-optics/doped-fiber-gain";
 
+/** Logarithmic loss −ln(1 − f) = −log1p(−f), nepers, of a fractional power loss f per pass; NaN outside 0 ≤ f < 1. */
+export function logarithmicLoss(fraction: number): number {
+  return fraction >= 0 && fraction < 1 ? -Math.log1p(-fraction) : NaN;
+}
+
 /** Round-trip logarithmic loss −ln(R₁R₂) + 2L_i; NaN outside 0 < R ≤ 1 or for L_i < 0. */
 export function roundTripLoss(R1: number, R2: number, internal = 0): number {
   if (!(R1 > 0 && R1 <= 1 && R2 > 0 && R2 <= 1 && internal >= 0)) return NaN;

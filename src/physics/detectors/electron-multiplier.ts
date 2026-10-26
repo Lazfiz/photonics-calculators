@@ -15,9 +15,10 @@
  */
 
 import { c, h, q } from "../constants";
+import { GAUSSIAN_FWHM_PER_SIGMA } from "../math";
 
 /** FWHM of a Gaussian in units of its standard deviation, 2√(2 ln 2). */
-export const FWHM_PER_SIGMA = 2 * Math.sqrt(2 * Math.LN2);
+export const FWHM_PER_SIGMA = GAUSSIAN_FWHM_PER_SIGMA;
 
 /** Saturated gain of a 1 mm channel (Wiza 1979, §2.2); it scales with the channel diameter. */
 export const SATURATED_GAIN_PER_MM = 1e8;

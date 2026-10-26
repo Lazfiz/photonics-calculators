@@ -6,6 +6,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { c } from "../../../physics/constants";
+import { rayleighScatteringDbPerKm } from "../../../physics/fiber-optics/silica-attenuation";
 import {
   backscatterRatio, captureFraction, dbPerKmToPerM, dynamicRangeDb, fresnelReflectance, noisePower, otdrTrace,
   reflectivePeakDb, twoPointResolution,
@@ -49,7 +50,7 @@ export default function OTDRAnalysisPage() {
   const calc = useMemo(() => {
     const tau = pulse * 1e-9;
     const resolution = twoPointResolution(tau, nGroup);
-    const alphaS_dBkm = rayleighA / (wavelength * 1e-3) ** 4;
+    const alphaS_dBkm = rayleighScatteringDbPerKm(rayleighA, wavelength * 1e-9);
     const S = captureFraction(wavelength * 1e-9, (mfd * 1e-6) / 2, nPhase);
     const alpha = dbPerKmToPerM(loss);
     const eta1 = backscatterRatio(S, dbPerKmToPerM(alphaS_dBkm), 1e-9, nGroup, alpha);

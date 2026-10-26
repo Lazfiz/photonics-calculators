@@ -5,6 +5,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { gateNoiseBandwidth, gateNoiseRms, gaussianGateAverage, optimalGateWidthRatio } from "../../../physics/detectors/boxcar";
+import { GAUSSIAN_FWHM_PER_SIGMA } from "../../../physics/math";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 3) => (Number.isFinite(x) ? x.toPrecision(digits) : "—");
@@ -60,7 +61,7 @@ export default function BoxcarIntegratorPage() {
   // Trace: pulse and gate on a ±(2·FWHM + |delay| + gate/2) window around the pulse peak, in ns.
   const halfSpan = 2 * fwhm + Math.abs(gateDelay) + gateWidth / 2;
   const t = Array.from({ length: NOISE.length }, (_, i) => -halfSpan + (2 * halfSpan * i) / (NOISE.length - 1));
-  const sigma = fwhm / (2 * Math.sqrt(2 * Math.LN2));
+  const sigma = fwhm / GAUSSIAN_FWHM_PER_SIGMA;
   const pulse = t.map(ti => signalPeak * Math.exp(-(ti * ti) / (2 * sigma * sigma)));
   const gateLo = gateDelay - gateWidth / 2;
   const gateHi = gateDelay + gateWidth / 2;
