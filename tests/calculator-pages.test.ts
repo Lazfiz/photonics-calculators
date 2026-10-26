@@ -166,5 +166,5 @@ test("a known issue shows as a warning box above the calculator", () => {
   assert.match(html, />Known error, under repair<\/p><p[^>]*>The NOHD is 1\/a too long\.<\/p>/);
   assert.match(html, /Don&#x27;t use this page&#x27;s numbers until it is fixed\./);
   const shell = readFileSync("src/components/calculator-shell.tsx", "utf8");
-  assert.match(shell, /\{calculator\.knownIssue && <KnownIssueNotice text=\{calculator\.knownIssue\} \/>\}\s*<ErrorBoundary>/);
+  assert.match(shell, /\{calculator\.knownIssue && <KnownIssueNotice text=\{calculator\.knownIssue\} \/>\}\s*<div data-url-state-target="">\s*<ErrorBoundary>/);
 });

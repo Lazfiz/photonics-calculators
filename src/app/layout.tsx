@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/react";
 import { totalCalculatorCount } from "@/lib/home-categories";
+import { URL_STATE_PENDING_SCRIPT } from "@/lib/url-state-pending";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -55,8 +56,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    // The URL-state script sets an attribute on <html> before hydration.
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body className="bg-gray-950 text-gray-100 antialiased">
+        <script dangerouslySetInnerHTML={{ __html: URL_STATE_PENDING_SCRIPT }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

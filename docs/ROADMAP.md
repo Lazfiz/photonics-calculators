@@ -5,10 +5,10 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 157, 2026-10-26)
+## Status (session 158, 2026-10-26)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
-- Phase 3: 3a done (session 157); next 3b. Then Phase 5 (spot-check review, Gemini hero). Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+- Phase 3: 3a–3b done (sessions 157–158); next 3c. Then Phase 5 (spot-check review, Gemini hero). Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -197,6 +197,11 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   0.6–1.2× the shown envelope); `periodicDecay` takes up to ≈ 7e4 terms per chart point when σ ≫ T (could return Σαᵢτᵢ/T).
 
 **Cross-cutting**
+- `ui-check` (session 158): 9 checks fail on production too, stale since the pages changed: boxcar `pulseWidth` min is now
+  0.01 (checks want "Min: 10"); gas-laser-resonator 'Wavelength (nm)' / 'Tube Length (mm)' labels not found; the
+  `probeWavelength` slider page doesn't write the URL as expected. Update the checks to the current pages.
+- Initial JS (session 158): thin-film metal pages (enhanced-aluminum, protected-silver, emissivity-control, heat-mirror)
+  carry 24–28 KB gz of their own JS, likely n,k tables in the client chunk; the median page carries 14 KB.
 - `ui-check` can't hydrate a page that has no `<input>` (`optical-glass-catalog`; `jones-calculus` until an element is
   added).
 
@@ -215,10 +220,7 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 ## Phase 3 — graphics & performance
 One box per session, in this order.
 - [x] 3a Plotly partial bundle (session 157, PR #194): see Done.
-- [ ] 3b Initial JS was 190–240 KB gz per page (2026-10-07).
-  - The ~46 KB gz related-links chunk should be gone since stage 2b (the links are server-rendered). Confirm with a
-    bundle check.
-  - Read URL state before first paint: today the defaults render first, then the URL values (a flash).
+- [x] 3b Initial JS and URL-state flash (session 158, PR #195): see Done.
 - [ ] 3c Chart rewrite, layout: real pixel width instead of a scaled viewBox (labels render at 4–5 px on phones), and the
   open bugs: `SimpleChart` reads `null` as 0, so a break in a line needs separate traces. `SimpleChart` ignores
   `layout.legend`: it pins the legend to the plot's right edge, so names over ≈ 9 characters are clipped and overlap
@@ -250,6 +252,9 @@ One box per session, in this order.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Phase 3b (session 158, `phase-3/initial-js`, PR #195): initial JS 145–172 KB gz per page (141.5 KB shared React/Next; the
+    110 KB chunk is noModule polyfills, never loaded); related-links chunk gone. Shared links hide the calculator until
+    hydration (`url-state-pending.ts`); `scripts/initial-js.mjs`; ui-check frame test.
   - Phase 3a (session 157, `phase-3/plotly-bundle`, PR #194): `react-plotly.js/factory` over `plotly-bundle.ts` (core + bar, heatmap,
     scatter3d, surface, scatterpolar); Plotly chunk 4.85 → 1.72 MB min, 1.47 MB → 558 KB gz; `plotly.js-dist-min` dropped.
   - Phase 2 inline-b6 (session 156, `phase-2/inline-b6`, PR #193): `logarithmicLoss`, `math.GAUSSIAN_FWHM_PER_SIGMA`, `totalExitance`

@@ -4,6 +4,7 @@ import ErrorBoundary from "./error-boundary";
 import { KnownIssueNotice, ModelBadge, ModelReferences } from "./model-references";
 import RelatedCalculatorLinks, { type RelatedCalculatorItem } from "./related-calculator-links";
 import ShareButton from "./share-button";
+import UrlStateReveal from "./url-state-reveal";
 import { JsonLdScript } from "../lib/json-ld";
 import { displayName, findCalculator, getCalculator, getCategory, type Calculator } from "../registry";
 import { calculatorJsonLd } from "../registry/metadata";
@@ -64,7 +65,10 @@ export default function CalculatorShell({ href, children, maxWidthClassName = "m
             <ModelBadge tier={calculator.tier} />
           </p>
           {calculator.knownIssue && <KnownIssueNotice text={calculator.knownIssue} />}
-          <ErrorBoundary>{children}</ErrorBoundary>
+          <div data-url-state-target="">
+            <ErrorBoundary>{children}</ErrorBoundary>
+          </div>
+          <UrlStateReveal />
           <ModelReferences calculator={calculator} />
           {related.length > 0 && <RelatedCalculatorLinks currentHref={href} items={related} />}
         </div>
