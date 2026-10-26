@@ -5,10 +5,10 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 156, 2026-10-25)
+## Status (session 157, 2026-10-26)
 - Phases 0–1 are done.
-- Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156). Next: Phase 3.
-- Then Phase 5 (spot-check review, Gemini hero). Phase 3 hasn't started. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+- Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
+- Phase 3: 3a done (session 157); next 3b. Then Phase 5 (spot-check review, Gemini hero). Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -213,23 +213,20 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   - [x] b6 (session 156, PR #193): see Done. Inventory after b1–b6: 680 lines on 293 pages, all stay-inline classes.
 
 ## Phase 3 — graphics & performance
-- [ ] Chart rewrite:
-  - Real pixel width instead of a scaled viewBox; labels now render at 4–5 px on phones.
-  - Hover crosshair and readout; PNG/CSV export.
-  - Open bugs: `SimpleChart` reads `null` as 0, so a break in a line needs separate traces.
-    `SimpleChart` ignores `layout.legend`: it pins the legend to the
-    plot's right edge, so names over ≈ 9 characters are clipped and overlap `yaxis2` ticks; `marker.color` of a markers
-    trace is replaced by the palette. `otdr-analysis` and `link-budget` use `showlegend: false` plus a caption.
-  - Done: ticks (session 26); log axes with no floor, non-finite values dropped (session 34); `SimpleLineChart` coordinates rounded to 0.01 px, no 1-ulp hydration mismatch (session 117).
-- [ ] Plotly:
-  - 18 pages use it. `react-plotly.js` imports the full `plotly.js/dist/plotly` (4.8 MB min), and both `plotly.js` and
-    `plotly.js-dist-min` are dependencies.
-  - Use `react-plotly.js/factory` with a partial bundle, and drop one dependency.
-- [ ] Initial JS was 190–240 KB gz per page (2026-10-07).
+One box per session, in this order.
+- [x] 3a Plotly partial bundle (session 157, PR #194): see Done.
+- [ ] 3b Initial JS was 190–240 KB gz per page (2026-10-07).
   - The ~46 KB gz related-links chunk should be gone since stage 2b (the links are server-rendered). Confirm with a
     bundle check.
   - Read URL state before first paint: today the defaults render first, then the URL values (a flash).
-- [ ] Vercel Speed Insights and a JS budget in CI.
+- [ ] 3c Chart rewrite, layout: real pixel width instead of a scaled viewBox (labels render at 4–5 px on phones), and the
+  open bugs: `SimpleChart` reads `null` as 0, so a break in a line needs separate traces. `SimpleChart` ignores
+  `layout.legend`: it pins the legend to the plot's right edge, so names over ≈ 9 characters are clipped and overlap
+  `yaxis2` ticks; `marker.color` of a markers trace is replaced by the palette. `otdr-analysis` and `link-budget`
+  use `showlegend: false` plus a caption.
+  - Done: ticks (session 26); log axes with no floor, non-finite values dropped (session 34); `SimpleLineChart` coordinates rounded to 0.01 px, no 1-ulp hydration mismatch (session 117).
+- [ ] 3d Chart rewrite, interaction: hover crosshair and readout; PNG/CSV export.
+- [ ] 3e Vercel Speed Insights and a JS budget in CI.
 
 ## Phase 5 — after Phase 3 (user plan, session 156)
 - [ ] Spot-check review: adversarial `physics-reviewer` pass on ≈ 20 pages (the riskiest plus a random sample) against
@@ -253,6 +250,8 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Phase 3a (session 157, `phase-3/plotly-bundle`, PR #194): `react-plotly.js/factory` over `plotly-bundle.ts` (core + bar, heatmap,
+    scatter3d, surface, scatterpolar); Plotly chunk 4.85 → 1.72 MB min, 1.47 MB → 558 KB gz; `plotly.js-dist-min` dropped.
   - Phase 2 inline-b6 (session 156, `phase-2/inline-b6`, PR #193): `logarithmicLoss`, `math.GAUSSIAN_FWHM_PER_SIGMA`, `totalExitance`
     (IAU Sun 6.294e7 W/m²), `rayleighScatteringDbPerKm`, `plasmonEnergy` (Au 29.90 eV), detector `noise` helpers on 14 pages.
   - Phase 2 inline-b5 (session 156, `phase-2/inline-b5`, PR #192): `wavenumber.wavelengthWidth`/`frequencyWidth` (100 GHz =
