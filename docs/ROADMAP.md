@@ -5,10 +5,11 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 161, 2026-10-26)
+## Status (session 162, 2026-10-26)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
-- Phase 3 done (3a–3e, sessions 157–161). Next: Phase 5 (spot-check review, Gemini hero). Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+- Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Next: Phase 5w,
+  the full textbook-tier pass (user choice), then the Gemini hero. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -79,6 +80,8 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 **Fiber optics**
 - `photonic-crystal`: confinement loss isn't modelled (it needs the ring count N); an empirical fit could add it. The Saitoh–Koshiba fit is ≈ 20 % off the multipole D for Λ ≤ 1 µm.
 **Materials**
+- `raman-scattering` (session 162): no sourced UV edges for KGW, Ba(NO₃)₂ (pump input goes to 200 nm); the header calls the
+  diamond gain linear in 1/λp, but the Savitski points aren't (42/41 at 532/670 nm).
 - `x-ray-optics` (session 136): β is photoabsorption only (Henke f₂); CXRO adds Compton (Be +28 %, C +6 % at 10 keV). Hubbell's
   incoherent scattering functions could add it. Range 1–30 keV (Henke tables); Al, W, Ge filters/targets not in the presets.
 - `polymer-optics` (session 136): dropped PDMS (Schneider 2009 Sylgard 184 fit 1.431 vs Zhang 2020 1.397 at 550 nm), CYTOP, OrmoComp
@@ -128,6 +131,8 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   Ce:TAG, TSLAG, Ho₂O₃ and Pr/Ho:TGG fits don’t reproduce their own tabulated values, so they are left out.
 - `photoelastic`: the Schott sheet doesn’t state the wavelength of K, so the page claims none.
 **Wave optics**
+- `optical-parametric-oscillator` (session 162): L_eff = min(L, l_a) for walk-off; Boyd–Kleinman 1968 (doi:10.1063/1.1656831)
+  low-gain scaling ∝ L·l_a (reviewer, from memory) would cut P_th ≈ 10× at defaults. Read BK §2 h(B, ξ) before changing.
 - `injection-locking` (session 149): k_c is estimated as (1 − R)/(τ_rt√R) (Kondratiev 2023 Eq. 4; Kondratiev's B/A normalisation unread);
   α 1 is Berger et al. CLEO 1991 (conference abstract, below-threshold?); a journal α (Banerjee et al. APL 58, 2198 (1991)) unchecked. `four-wave-mixing`: no fiber loss in the gain (lossless OPA).
 - `slow-light`: one isolated Lorentzian, no pulse distortion or saturation (a warning shows when the signal is wider than the line).
@@ -170,6 +175,9 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - `quantum-key-distribution` (low): asymptotic decoy BB84 only (no finite-key or intensity fluctuations); Y₀ capped at 0.01 because eq. (10) drops −Y₀(1 − e^(−ημ)).
 - `point-ahead` (low): the LEO preset uses orbital velocity alone (as the cited chapter does); station rotation lowers it by ≈ 3 µrad.
 - `optical-antenna` (low): M² is capped at 2 (θ × M², gain / M⁴). A Gaussian Schell-model far field would cover multimode beams.
+
+**Imaging (session 162)**
+- `airy-disk`: "10–20 % wider above NA ≈ 0.9" (page + modelNote) not checked against Richards & Wolf 1959.
 
 **Imaging / spectroscopy** (found in the detectors part 0, session 63)
 - Spectroscopy part 11 (session 107): `infrared-spectroscopy` has no Herman–Wallis factor or absolute band strength; `electron-spectroscopy` graphite ρ 2.2 (SRD 71 table value) vs 2.26 g/cm³ crystal; LHM water ε₂ = 3.52 + 7.52θ kept (fits Table I with RMS 0.43, against 0.49 with −), and the page allows only −5 to 40 °C.
@@ -230,8 +238,20 @@ One box per session, in this order.
 - [x] 3e Speed Insights and JS budget (session 161, PR #198): see Done.
 
 ## Phase 5 — after Phase 3 (user plan, session 156)
-- [ ] Spot-check review: adversarial `physics-reviewer` pass on ≈ 20 pages (the riskiest plus a random sample) against
-  primary literature. Nothing serious → the audits held; real bugs → plan a wider pass.
+- [x] Spot-check (session 162, `phase-5/spot-check`, PR #199): 20 pages, 2 bugs (TIA noise, SIM note), both textbook tier.
+- [ ] **5w: full textbook-tier pass** (user choice, session 162). One box per session: adversarial `physics-reviewer`, 4 agents ×
+  ≈ 5 pages, against primary literature; check every reviewer claim against the source (session 162: both laser-safety
+  claims from memory were wrong). Fix small bugs in the session; bigger ones become boxes. Batch = the category's
+  `tier: "textbook"` slugs in registry order (`git grep -n 'tier: "textbook"' src/registry/calculators/<cat>.ts`), part k
+  of n; skip the slugs already reviewed in session 162: coupling-efficiency, airy-disk, scintillation,
+  photodiode-tia-noise, optical-parametric-oscillator, structured-illumination, readout-noise, raman-scattering,
+  connector-return-loss, fade-probability.
+  - [ ] 5w-1 detectors 1/3 · [ ] 5w-2 detectors 2/3 · [ ] 5w-3 detectors 3/3 (47 pages)
+  - [ ] 5w-4 imaging 1/3 · [ ] 5w-5 imaging 2/3 · [ ] 5w-6 imaging 3/3 (53)
+  - [ ] 5w-7 fiber-optics 1/2 · [ ] 5w-8 fiber-optics 2/2 (41)
+  - [ ] 5w-9 wave-optics 1/2 · [ ] 5w-10 wave-optics 2/2 (32)
+  - [ ] 5w-11 free-space-comms (17) · [ ] 5w-12 laser-safety (20) · [ ] 5w-13 materials (22)
+  - [ ] 5w-14 spectroscopy (21) · [ ] 5w-15 thin-film + polarization (24)
 - [ ] Last: replace the home-page hero with the one the user made in Gemini, and wire it in (ask the user for the files).
 
 ## Decisions (keep)
@@ -251,6 +271,9 @@ One box per session, in this order.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Phase 5 spot-check (session 162, `phase-5/spot-check`, PR #199): 20 pages; `photodiode-tia-noise` now weights noise by the
+    Butterworth |H|² up to B (`tiaFilteredNoise`; default 1.468 → 2.605 nA), SIM gap note at k₀ > 2k_c (`simSupportHasGap`);
+    5 minor fixes. Both laser-safety reviewer claims refuted by ICNIRP 2013 Table 5. 1148 tests.
   - Phase 3e (session 161, `phase-3/speed-insights`, PR #198): `<SpeedInsights />` in the root layout (+3.5 KB gz shared);
     CI step `initial-js.mjs --max-shared 150 --max-page 32` (now 145.4 KB shared, page median 11.9, max 27.9); `ChartReserve`
     placeholder holds a SimpleChart's size before it loads or measures: CLS at 1200 px gires-tournois 0.095 → 0.002.
