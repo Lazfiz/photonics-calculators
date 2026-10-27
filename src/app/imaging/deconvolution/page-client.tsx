@@ -60,7 +60,7 @@ export default function DeconvolutionPage() {
             The Wiener filter G = H/(H² + NSR) assumes white noise and a flat object spectrum with a noise-to-signal
             power ratio NSR = 10^(−dB/10). Tikhonov regularisation with the identity is the same filter with NSR as its
             parameter. Richardson–Lucy and blind deconvolution are iterative and nonlinear: they have no transfer
-            function to plot, and they cannot restore frequencies above f_c either.
+            function to plot, and in practice they cannot restore frequencies above f_c either; positivity-constrained extrapolation beyond it is small and noise-limited (Conchello 1998).
           </p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
@@ -74,7 +74,7 @@ export default function DeconvolutionPage() {
           {row("Largest filter gain 1/(2√NSR)", fmt(peakGain, 1, "×"))}
           <p className="text-xs text-gray-500">
             Deconvolution raises the contrast of frequencies the optics passed weakly; it does not pass anything above
-            f_c, so no method resolves a period below λ/(2NA). The filter gain peaks at H = √NSR and rolls off above it,
+            f_c, so no linear method resolves a period below λ/(2NA) in widefield imaging (SIM and STED change the imaging itself). The filter gain peaks at H = √NSR and rolls off above it,
             so the noise in the restored image is bounded.
           </p>
         </div>

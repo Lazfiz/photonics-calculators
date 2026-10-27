@@ -100,3 +100,9 @@ test("Gaussian light sheet and effective axial resolution (Engelbrecht & Stelzer
   assertRel(effectiveAxialFwhm(1, det), det, 1e-9, "thick-sheet limit");
   assert.ok(Number.isNaN(gaussianSheetWaist(488 * nm, 0)) && Number.isNaN(effectiveAxialFwhm(0, det)));
 });
+
+test("Light sheet 3D-reconstruction defaults: λ 550 nm, sheet NA 0.1, detection NA 1.0 in water", () => {
+  // Sheet 1.17741 · 550 nm/(π · 0.1) = 2061.3 nm; detection 0.88602 · 550/(1.33 − √(1.33² − 1)) = 1.33 − 0.87669 = 0.45331
+  // → 1075.1 nm; (1/2061.3² + 1/1075.1²)^(−1/2) = 948.4 nm (hand calculation).
+  assertRel(effectiveAxialFwhm(gaussianSheetFwhm(550 * nm, 0.1), axialPsfFwhm(550 * nm, 1.33, 1.0)), 948.36 * nm, 2e-4, "effective axial");
+});

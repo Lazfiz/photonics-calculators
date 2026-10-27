@@ -94,10 +94,14 @@ export function emMaxSignal(pixelWell: number, registerWell: number, gain: numbe
   return Math.min(pixelWell, registerWell / gain);
 }
 
-/** Dynamic range 20·log₁₀(S_max/σ_floor), dB. */
-export function dynamicRangeDb(maxSignal: number, noiseFloor: number): number {
-  if (!(maxSignal > 0) || !(noiseFloor > 0)) return NaN;
-  return 20 * Math.log10(maxSignal / noiseFloor);
+/**
+ * Dynamic range 20·log₁₀(S_max/σ_floor), dB. With darkCharge D (e⁻, default 0) the dark charge occupies the well,
+ * so the usable maximum signal is S_max − D; NaN when D ≥ S_max.
+ */
+export function dynamicRangeDb(maxSignal: number, noiseFloor: number, darkCharge = 0): number {
+  const usable = maxSignal - (darkCharge > 0 ? darkCharge : 0);
+  if (!(usable > 0) || !(noiseFloor > 0)) return NaN;
+  return 20 * Math.log10(usable / noiseFloor);
 }
 
 /** Sense-node capacitance N_well·q/V_swing that a full well swings by V_swing (V), F. */

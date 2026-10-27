@@ -22,7 +22,7 @@
  * The section integral takes about a second, so the pages interpolate CONFOCAL_FWHM_TABLE, which
  * `scripts/gen-confocal-table.ts` computes with confocalFwhmCoefficients; the tests recompute rows of it.
  * Wilhelm's geometric formula (optical-sectioning-thickness module) lies 40 % above this section at 1 AU, 25 % at 2 AU
- * (low NA), and up to about 140 % as the NA nears the immersion index.
+ * (low NA), about 75 % at NA 1.4 in oil and 80 % at NA 0.95 in air.
  */
 import { besselJ, firstCrossing } from "../math";
 import { airyIntensity, BESSEL_J1_FIRST_ZERO, encircledEnergyAiry } from "./diffraction-psf";

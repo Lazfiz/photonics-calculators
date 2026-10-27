@@ -56,8 +56,11 @@ export default function FCSPage() {
   if (fluctuationRatio > 0.1) warnings.push(`ε²·Δτ·τ_D = ${fluctuationRatio.toPrecision(2)}: number fluctuations add to the shot noise, so the SNR shown is an upper bound.`);
   if (bin_us * 1e-6 > tauD / 10) warnings.push("The lag channel is not much shorter than τ_D, so G has already decayed within it.");
 
-  // Lag grid 0.1 µs … 1 s, log-spaced, in ms on the chart.
-  const lags = Array.from({ length: 241 }, (_, i) => 10 ** (-7 + (i * 7) / 240));
+  // Lag grid log-spaced from min(0.1 µs, τ_T/10) to max(1 s, 1000 κ² τ_D) so the whole decay is shown; in ms on the chart.
+  const lagLo = Math.min(1e-7, (tauT_us * 1e-6) / 10);
+  const lagHi = Math.max(1, 1e3 * kappa * kappa * tauD);
+  const lagDecades = Math.log10(lagHi / lagLo);
+  const lags = Array.from({ length: 241 }, (_, i) => lagLo * 10 ** ((i * lagDecades) / 240));
   const chart = [
     { x: lags.map((t) => t * 1e3), y: lags.map((t) => fcsAutocorrelation(t, p)), type: "scatter" as const, mode: "lines" as const, name: "G(τ), diffusion + triplet", line: { color: "#60a5fa" } },
     { x: lags.map((t) => t * 1e3), y: lags.map((t) => fcsDiffusionCorrelation(t, p)), type: "scatter" as const, mode: "lines" as const, name: "Diffusion only", line: { color: "#f87171", dash: "dash" } },

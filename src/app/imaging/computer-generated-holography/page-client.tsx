@@ -47,6 +47,8 @@ export default function CGHPage() {
   const spotY = fresnelReconstructionPitch(lambda, z, Ny, dx);
   const angularRes = lambda / (Nx * dx);
   const efficiency = amplitude ? BINARY_AMPLITUDE_EFFICIENCY : phaseQuantizationEfficiency(levels);
+  const zAlias = (Nx * dx * dx) / lambda; // quadratic phase of a lensless Fresnel replay aliases below this
+  const sinMax = lambda / (2 * dx);
   const edge = pixelEnvelope(1 / (2 * dx), dx, fill);
   const memoryMB = (Nx * Ny * (amplitude ? 1 : bits)) / 8 / 1e6;
 
@@ -109,6 +111,18 @@ export default function CGHPage() {
           {row("Pixel envelope at the field edge", fmt(edge, 3), "text-blue-400")}
           {row("SLM aperture N_xΔx × N_yΔx", `${fmt(Nx * pitchUm * 1e-3, 4)} × ${fmt(Ny * pitchUm * 1e-3, 4, " mm")}`)}
           {row("Hologram frame size", fmt(memoryMB, 4, " MB"))}
+          {z < zAlias && (
+            <p className="text-sm text-amber-400">
+              Lensless Fresnel replay: the quadratic phase aliases on the SLM below z = {fmt(zAlias * 1e3, 3, " mm")}; use a
+              Fourier lens or a longer distance.
+            </p>
+          )}
+          {sinMax > 0.2 && (
+            <p className="text-sm text-amber-400">
+              λ/(2Δx) = {fmt(sinMax, 3)} is large: the field λz/Δx is paraxial. A lensless field is 2z·tan θ_max; a
+              Fourier lens obeying the sine condition gives λf/Δx exactly.
+            </p>
+          )}
         </div>
       </div>
 

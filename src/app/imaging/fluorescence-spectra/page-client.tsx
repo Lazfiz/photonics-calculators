@@ -44,11 +44,12 @@ export default function FluorescenceSpectraPage() {
     signal: relativeSignal(f, [laser], lo, hi),
   }));
   const bleed = dyes[1].signal / dyes[0].signal;
+  const bleedReverse = dyes[0].signal / dyes[1].signal;
   const J = forsterOverlap(dye1, dye2);
   const R0 = forsterRadius(J, dye1.quantumYield, kappa2, n);
   const E = fretEfficiency(r, R0);
 
-  const wl = Array.from({ length: 451 }, (_, i) => 350 + i);
+  const wl = Array.from({ length: Math.max(800, Math.ceil(center + width / 2)) - 350 + 1 }, (_, i) => 350 + i);
   const shape = (b: typeof dye1.ex) => wl.map((l) => bandAtWavelength(b, l * 1e-9));
   const integrand = wl.map((l) => bandAtWavelength(dye1.em, l * 1e-9) * bandAtWavelength(dye2.ex, l * 1e-9) * l ** 4);
   const integrandMax = Math.max(...integrand);
@@ -103,6 +104,7 @@ export default function FluorescenceSpectraPage() {
             </div>
           ))}
           {row(`${dye2.name} signal / ${dye1.name} signal in the filter`, fmt(bleed * 100, 2, " %"), "text-yellow-400")}
+          {row(`${dye1.name} signal / ${dye2.name} signal in the filter`, fmt(bleedReverse * 100, 2, " %"), "text-yellow-400")}
           {row("Förster overlap J", Number.isFinite(J) ? `${J.toExponential(3)} M⁻¹cm⁻¹nm⁴` : "—", "text-purple-400")}
           {row("Förster radius R₀", fmt(R0 * 1e9, 2, " nm"), "text-purple-400")}
           {row("FRET efficiency at r", fmt(E * 100, 1, " %"), "text-purple-400")}

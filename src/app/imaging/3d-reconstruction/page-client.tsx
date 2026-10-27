@@ -57,12 +57,13 @@ export default function Reconstruction3DPage() {
   const pixelsPerSide = Math.round(fovUm / xyPixel);
   const totalVoxels = numSlices * pixelsPerSide * pixelsPerSide;
   const volumeBytes = totalVoxels * 2; // 16-bit
-  // Two samples per FWHM (a rule of thumb, looser than Nyquist sampling of the OTF cut-off).
+  // Two samples per FWHM: a rule of thumb, near Nyquist (slightly finer) for widefield axial, looser than Nyquist for confocal.
   const xyOk = xyPixel * 1000 <= lateralNm / 2;
   const zOk = sliceSpacing * 1000 <= axialNm / 2;
 
   const naMax = Math.min(1.7, 0.99 * n);
-  const nas = Array.from({ length: 50 }, (_, i) => 0.2 + (i * (naMax - 0.2)) / 49);
+  const naMin = Math.min(0.2, na);
+  const nas = Array.from({ length: 50 }, (_, i) => naMin + (i * (naMax - naMin)) / 49);
   const resolutionVsNA = [
     { x: nas, y: nas.map((a) => airyFwhm(lambda, a) * 1e9), type: "scatter", mode: "lines" as const, name: "Lateral (widefield)", line: { color: "#60a5fa", width: 2 } },
     { x: nas, y: nas.map((a) => axialPsfFwhm(lambda, n, a) * 1e9), type: "scatter", mode: "lines" as const, name: "Axial (widefield)", line: { color: "#f87171", width: 2 } },
@@ -70,7 +71,7 @@ export default function Reconstruction3DPage() {
     { x: [na], y: [axialNm], type: "scatter", mode: "markers" as const, name: "Current axial", marker: { color: "#fbbf24", size: 10 } },
   ];
 
-  const spacings = Array.from({ length: 30 }, (_, i) => 0.1 + i * 0.1);
+  const spacings = Array.from({ length: 40 }, (_, i) => sliceSpacing * 0.2 * 15 ** (i / 39)); // log-spaced, 0.2x to 3x the step
   const stackDepth = numSlices * sliceSpacing;
   const samplingChart = [
     { x: spacings, y: spacings.map((s) => (Math.round(stackDepth / s) * pixelsPerSide ** 2) / 1e6), type: "scatter", mode: "lines" as const, name: "Voxels for the same depth (M)", line: { color: "#a78bfa", width: 2 } },
@@ -136,6 +137,13 @@ export default function Reconstruction3DPage() {
             </div>
           </div>
 
+          {method === "lightsheet" && fovUm > sheetLengthUm && (
+            <p className="text-sm text-amber-400 mb-6">
+              The FOV ({fovUm.toFixed(0)} µm) exceeds the sheet length 2z_R = {sheetLengthUm.toFixed(0)} µm: the axial FWHM holds at the
+              waist only, and the sheet is thicker toward the edge of the FOV.
+            </p>
+          )}
+
           <div className="grid gap-6 md:grid-cols-2 mb-6">
             <div className="bg-gray-900 rounded-lg p-4">
               <h3 className="text-sm font-semibold mb-2">Resolution vs NA</h3>
@@ -147,7 +155,7 @@ export default function Reconstruction3DPage() {
             <div className="bg-gray-900 rounded-lg p-4">
               <h3 className="text-sm font-semibold mb-2">Voxel Count vs Z-Step</h3>
               <ChartPanel data={samplingChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
-                xaxis: { title: "Z-Step (µm)", gridcolor: "#374151" }, yaxis: { title: "Voxels (Millions)", gridcolor: "#374151" },
+                xaxis: { title: "Z-Step (µm)", type: "log", gridcolor: "#374151" }, yaxis: { title: "Voxels (Millions)", gridcolor: "#374151" },
                 margin: { t: 30, r: 20, b: 50, l: 70 },
               }} />
             </div>

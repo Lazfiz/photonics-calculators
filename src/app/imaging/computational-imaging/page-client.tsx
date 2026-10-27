@@ -59,18 +59,20 @@ export default function ComputationalImagingPage() {
   const pIncoherent = incoherentCutoffPeriod(lambda_nm * nm, na) / nm;
   const sbp = spaceBandwidthGain(na, naIll);
 
-  const ns = Array.from({ length: 100 }, (_, i) => i + 1);
+  const nMax = Math.max(100, 2 * views);
+  const ns = Array.from(new Set(Array.from({ length: 121 }, (_, i) => Math.round(nMax ** (i / 120))))); // integers, log-spaced 1..nMax
   const snrChart = [
     { x: ns, y: ns.map((n) => fusedSnr({ ...fusion, views: n, mode: "perView" })), type: "scatter" as const, mode: "lines" as const, name: "Per view", line: { color: "#60a5fa", width: mode === "perView" ? 3 : 1.5 } },
     { x: ns, y: ns.map((n) => fusedSnr({ ...fusion, views: n, mode: "totalDose" })), type: "scatter" as const, mode: "lines" as const, name: "Total dose", line: { color: "#f87171", width: mode === "totalDose" ? 3 : 1.5 } },
-    ...(views <= 100 ? [{ x: [views], y: [snrN], type: "scatter" as const, mode: "markers" as const, name: "Current", line: { color: "#facc15" }, marker: { color: "#facc15", size: 10 } }] : []),
+    { x: [views], y: [snrN], type: "scatter" as const, mode: "markers" as const, name: "Current", line: { color: "#facc15" }, marker: { color: "#facc15", size: 10 } },
   ];
 
-  const ills = Array.from({ length: 101 }, (_, i) => i * 0.01);
+  const illMax = Math.max(1, 1.2 * naIll);
+  const ills = Array.from({ length: 101 }, (_, i) => (i * illMax) / 100);
   const resolutionChart = [
     { x: ills, y: ills.map((a) => coherentCutoffPeriod(lambda_nm * nm, syntheticNa(na, a)) / nm), type: "scatter" as const, mode: "lines" as const, name: "Synthetic", line: { color: "#34d399", width: 2 } },
-    { x: [0, 1], y: [pIncoherent, pIncoherent], type: "scatter" as const, mode: "lines" as const, name: "Incoherent", line: { color: "#a78bfa", width: 1.5, dash: "dash" } },
-    ...(naIll <= 1 ? [{ x: [naIll], y: [pSynthetic], type: "scatter" as const, mode: "markers" as const, name: "Current", line: { color: "#facc15" }, marker: { color: "#facc15", size: 10 } }] : []),
+    { x: [0, illMax], y: [pIncoherent, pIncoherent], type: "scatter" as const, mode: "lines" as const, name: "Incoherent", line: { color: "#a78bfa", width: 1.5, dash: "dash" } },
+    { x: [naIll], y: [pSynthetic], type: "scatter" as const, mode: "markers" as const, name: "Current", line: { color: "#facc15" }, marker: { color: "#facc15", size: 10 } },
   ];
 
   return (
@@ -101,7 +103,7 @@ export default function ComputationalImagingPage() {
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-2">Fused SNR vs number of views</h3>
           <ChartPanel data={snrChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
-            xaxis: { title: "Number of views N", gridcolor: "#374151" },
+            xaxis: { title: "Number of views N", type: "log", gridcolor: "#374151" },
             yaxis: { title: "SNR", gridcolor: "#374151" },
             margin: { t: 30, r: 20, b: 50, l: 60 },
           }} />

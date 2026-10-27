@@ -44,6 +44,10 @@ test("dynamic-range: PRNU in %, DSNU in e⁻ and the ADC step (EMVA 1288 Eq. 48)
   const floor = sensorNoise({ signal: 0, read: 2, dark: 0.005, dsnu: 0.5, electronsPerDn: K }).temporal;
   assertRel(floor, 2.069887, 1e-6, "temporal floor");
   assertRel(dynamicRangeDb(30000, floor), 83.22349, 1e-6, "DR");
+  // Dark charge at or above the full well leaves no usable signal.
+  assert.ok(Number.isNaN(dynamicRangeDb(30000, floor, 30000)));
+  assert.ok(Number.isNaN(dynamicRangeDb(30000, floor, 3.6e7)));
+  assertRel(dynamicRangeDb(30000, floor, 0.005), 83.22349, 1e-5, "DR with default dark charge");
   // Flat-field correction leaves the temporal noise: 15000/√(15000 + 4.005 + K²/12) = 122.457.
   const page = sensorNoise({ signal: 15000, read: 2, dark: 0.005, prnu: 0.01, dsnu: 0.5, electronsPerDn: K });
   assertRel(15000 / page.temporal, 122.457, 1e-5, "flat-fielded SNR");

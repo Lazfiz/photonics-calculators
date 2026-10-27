@@ -82,7 +82,7 @@ export default function AfocalPage() {
             <>
               {row("Afocal spacing f₁ + f₂", fmt(tAfocal, 2, " mm"), "text-green-400")}
               {row("System matrix A, B", `${fmt(abcd.A, 4)}, ${fmt(abcd.B, 2)} mm`)}
-              {row("System matrix C, D", `${fmt(abcd.C * 1000, 4)} D, ${fmt(abcd.D, 4)}`)}
+              {row("System matrix C, D", `${fmt(abcd.C * 1000, 4)} dpt, ${fmt(abcd.D, 4)}`)}
               {afocal ? (
                 <>
                   {row("Type", kind, "text-purple-400")}

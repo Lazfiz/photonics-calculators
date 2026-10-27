@@ -7,8 +7,8 @@ import { useURLState } from "../../../hooks/use-url-state";
 import {
   CONFOCAL_MAX_PINHOLE_AU, confocalAxialFwhm, confocalLateralFwhm, confocalOpticalSectionFwhm,
 } from "../../../physics/imaging/confocal";
-import { airyFwhm } from "../../../physics/imaging/diffraction-psf";
-import { airyUnit, axialPsfFwhm } from "../../../physics/imaging/optical-sectioning-thickness";
+import { airyFwhm, SINC2_HALF_MAX_X } from "../../../physics/imaging/diffraction-psf";
+import { airyUnit } from "../../../physics/imaging/optical-sectioning-thickness";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 
@@ -30,7 +30,8 @@ export default function ConfocalResolutionPage() {
   const confocalLateral = confocalLateralFwhm(lambda, na, pinholeAU) * 1e9;
   const widefieldLateral = airyFwhm(lambda, na) * 1e9;
   const confocalAxial = confocalAxialFwhm(lambda, n, na, pinholeAU) * 1e9;
-  const widefieldAxial = axialPsfFwhm(lambda, n, na) * 1e9;
+  // Exact sinc² half maximum, 2·x½/π = 0.886 (the confocal open-pinhole limit), so the curve cannot cross the widefield line.
+  const widefieldAxial = ((2 * SINC2_HALF_MAX_X) / Math.PI) * (lambda / (n - Math.sqrt(n * n - na * na))) * 1e9;
   const section = confocalOpticalSectionFwhm(lambda, n, na, pinholeAU) * 1e9;
   const pinholeUm = (pinholeAU * airyUnit(lambda, na) * magnification) * 1e6; // at the pinhole plane
 
@@ -85,14 +86,14 @@ export default function ConfocalResolutionPage() {
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
             <h3 className="text-lg font-semibold mb-2">Formulas</h3>
             <div className="text-sm text-gray-300 space-y-1 font-mono">
-              <p>Widefield: lateral 0.51 λ/NA, axial 0.88 λ/(n − √(n² − NA²))</p>
+              <p>Widefield: lateral 0.51 λ/NA, axial 0.886 λ/(n − √(n² − NA²))</p>
               <p>Confocal, pinhole → 0: lateral 0.37 λ/NA, axial 0.64 λ/(n − √(n² − NA²))</p>
               <p>Confocal PSF = illumination PSF × (detection PSF ⊗ pinhole)</p>
               <p>Pinhole diameter = AU × 1.22 λ/NA × M</p>
             </div>
             <p className="text-xs text-gray-500 mt-2">
               Scalar paraxial theory, equal excitation and emission wavelengths, uniformly filled pupil. At 1 AU the
-              lateral FWHM is within 3 % of widefield: the gain comes below about 0.5 AU, at the cost of signal. The axial
+              lateral FWHM is within 3 % of widefield: it narrows by about 15 % at 0.7 AU and 22 % at 0.5 AU, at the cost of signal. The axial
               values are for a point; the optical section is the response to a thin fluorescent plane.
             </p>
           </div>

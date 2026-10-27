@@ -80,7 +80,7 @@ export default function AdaptiveOpticsPage() {
             r₀ grows as λ^(6/5): r₀ = 10 cm at 500 nm is 11.2 cm at 550 nm and 59 cm at 2.2 µm.
           </p>
           <ValidatedNumberInput label="Zernike modes corrected J (piston = 1)" value={modesRaw} onChange={setModes} min={1} max={MAX_MODES} step="1" />
-          <ValidatedNumberInput label="DM actuators across the pupil" value={actuatorsRaw} onChange={setActuators} min={1} max={200} step="any" />
+          <ValidatedNumberInput label="Actuators (or segments) across the pupil" value={actuatorsRaw} onChange={setActuators} min={1} max={200} step="any" />
           <div role="group" aria-label="Deformable mirror type" className="flex flex-wrap gap-2">
             {DM_TYPES.map((t) => (
               <button key={t} onClick={() => setDmType(t)} className={buttonClass(dmType === t)}>{DM_LABELS[t]}</button>

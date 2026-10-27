@@ -124,7 +124,7 @@ export default function DenoisingAlgorithmsPage() {
           <h3 className="text-sm font-semibold mb-2">Transfer function along one axis</h3>
           <ChartPanel data={transferChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
             xaxis: { title: "Spatial frequency (cycles/pixel)", gridcolor: "#374151" },
-            yaxis: { title: "H(f)", gridcolor: "#374151", range: [-0.3, 1.05] },
+            yaxis: { title: "H(f)", gridcolor: "#374151", range: [-0.35, 1.05] },
             margin: { t: 30, r: 20, b: 50, l: 60 },
           }} />
         </div>
