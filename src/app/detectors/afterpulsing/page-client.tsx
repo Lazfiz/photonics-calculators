@@ -61,7 +61,7 @@ export default function AfterpulsingPage() {
         <ValidatedNumberInput label="True Count Rate (cps)" value={countRateRaw} onChange={setCountRate} min={0} max={1e10} step="10000" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ResultCard label="Afterpulse Probability" value={`${(pAp * 100).toFixed(3)}%`} tone="red" subtext="per recorded avalanche" />
+        <ResultCard label={pAp > 1 ? "Afterpulses per Avalanche" : "Afterpulse Probability"} value={pAp > 1 ? pAp.toFixed(3) : `${(pAp * 100).toFixed(3)}%`} tone="red" subtext={pAp > 1 ? "mean number per recorded avalanche, can exceed 1" : "per recorded avalanche"} />
         <ResultCard label="Afterpulse Rate" value={`${apRate.toExponential(3)} cps`} tone="yellow" subtext="recorded rate × P_ap" />
         <ResultCard label="Recorded Rate" value={`${(measured / 1e6).toFixed(4)} Mcps`} tone="blue" subtext="non-paralyzable dead time" />
         <ResultCard label={`Trap 1 Released in ${deadTime} ns`} value={`${(release1 * 100).toFixed(1)}%`} tone="green" subtext="1 − e^(−t_d/τ₁), harmless" />
@@ -69,6 +69,11 @@ export default function AfterpulsingPage() {
       {pAp > 0.1 && (
         <p className="mb-6 text-sm text-yellow-400">
           P_ap above 10 %: afterpulses then trigger afterpulses of their own and steal dead time, which this first-order rate leaves out.
+        </p>
+      )}
+      {countRate * tauMax * 1e-9 > 0.1 && (
+        <p className="mb-6 text-sm text-yellow-400">
+          First-order rate: traps still full at the next photon are partly emptied by that avalanche, so R_ap is overestimated when R·τ ≳ 0.1.
         </p>
       )}
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1">

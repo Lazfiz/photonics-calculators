@@ -80,7 +80,7 @@ export default function ChannelPMTPage() {
         <ResultCard label="Dark Anode Current" value={`${fmt(darkCurrent)} A`} tone="orange" subtext="Dark counts × e × G (photocathode emission)" />
         <ResultCard label="Photon-Counting SNR" value={Number.isFinite(countSnr) ? countSnr.toFixed(2) : "—"} tone="cyan"
           subtext={gain >= 1e7 ? `${gate} s gate; saturated single-electron peak` : `${gate} s gate; below a gain of 10⁷ single pulses sit close to the electronic noise`} />
-        <ResultCard label="Analog SNR" value={Number.isFinite(analog) ? analog.toFixed(2) : "—"} tone="purple" subtext={`Bandwidth 1/(2T); the gain spread costs √F = ${Math.sqrt(enf).toFixed(3)}`} />
+        <ResultCard label="Analog SNR" value={Number.isFinite(analog) ? analog.toFixed(2) : "—"} tone="purple" subtext={`Bandwidth 1/(2T); the gain spread costs √F = ${Math.sqrt(enf).toFixed(3)}${gain >= 1e7 ? "; saturated, analog output no longer proportional" : ""}`} />
         <ResultCard label="Pulse Resolution" value={Number.isFinite(resolution) ? `${(resolution * 100).toFixed(1)} % FWHM` : "—"} tone="red"
           subtext={linear ? `${nPe.toFixed(1)} photoelectrons, ${(pulseElectrons * q * 1e12).toPrecision(3)} pC` : `${fmt(pulseElectrons)} e⁻ exceeds the linear limit: the pulse is clipped`} />
       </div>

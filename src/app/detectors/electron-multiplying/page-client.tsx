@@ -30,7 +30,7 @@ export default function ElectronMultiplyingPage() {
   const enf2 = emExcessNoiseFactorSq(emGain, stages);
   const emccdSNR = emccdAt(signalElectrons, emGain);
   const scmosSNR = scmosAt(signalElectrons);
-  const winner = !Number.isFinite(emccdSNR) || !Number.isFinite(scmosSNR) ? "—" : emccdSNR > scmosSNR ? "EMCCD" : "sCMOS";
+  const winner = !Number.isFinite(emccdSNR) || !Number.isFinite(scmosSNR) ? "—" : Math.abs(emccdSNR - scmosSNR) < 1e-9 ? "tie" : emccdSNR > scmosSNR ? "EMCCD" : "sCMOS";
 
   const signals = Array.from({ length: 201 }, (_, i) => 10 ** (-1 + i / 50));
   const snrVsSignal = [

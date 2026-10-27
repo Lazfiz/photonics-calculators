@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { darkCurrentRatio, doublingLawRatio, localDoublingTemperature } from "../src/physics/detectors/dark-current";
 import { VARSHNI, varshniBandGap } from "../src/physics/materials/bandgap";
 import { lockinSnrGain, lowPassEnbw, lowPassMagnitude, referenceMatch } from "../src/physics/detectors/lockin";
-import { gateNoiseBandwidth, gateNoiseRms, gaussianGateAverage, optimalGateWidthRatio } from "../src/physics/detectors/boxcar";
+import { gateNoiseBandwidth, gateNoiseRms, gaussianGateAverage, optimalGateWidth, optimalGateWidthRatio } from "../src/physics/detectors/boxcar";
 
 const close = (actual: number, expected: number, rel: number, msg = "") =>
   assert.ok(Math.abs(actual - expected) <= rel * Math.abs(expected), `${msg} ${actual} vs ${expected}`);
@@ -119,4 +119,14 @@ test("boxcar gate noise: e_n/√(2T) for B ≫ 1/T, σ_in for B ≪ 1/T; optimum
   close(gateNoiseRms(1, 1, 1e-6), 1, 1e-6); // B·T ≪ 1: the gate does not average
   // Optimum: erf(u) = (4u/√π)e^(−u²) at u = 0.98994 → T = 2√2·u·σ = 1.18904·FWHM (brute-force scan agrees to 1e-5).
   close(optimalGateWidthRatio(), 1.18904, 1e-5);
+});
+
+test("boxcar optimum gate behind input bandwidth B: white-noise 1.18904·FWHM for B·FWHM ≫ 1, shorter when B·FWHM ≲ 1", () => {
+  // Brute-force log scan of ⟨s⟩/σ_gate (2e5 points on [1e-3, 10]·FWHM, FWHM 500 ns): B = 1e15 Hz → 1.18905,
+  // 100 MHz → 1.18561, 1 MHz → 0.62849, 0.3 MHz → 0.21362 (also found by the session-163 review's independent scan).
+  close(optimalGateWidth(500e-9, 1e15) / 500e-9, optimalGateWidthRatio(), 1e-5);
+  close(optimalGateWidth(500e-9, 100e6) / 500e-9, 1.18559, 1e-4);
+  close(optimalGateWidth(500e-9, 1e6) / 500e-9, 0.62848, 1e-4);
+  close(optimalGateWidth(500e-9, 0.3e6) / 500e-9, 0.21362, 1e-4);
+  assert.ok(Number.isNaN(optimalGateWidth(0, 1e6)));
 });

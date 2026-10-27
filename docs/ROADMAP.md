@@ -5,11 +5,11 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 162, 2026-10-26)
+## Status (session 163, 2026-10-27)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
-- Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Next: Phase 5w,
-  the full textbook-tier pass (user choice), then the Gemini hero. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+- Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
+  textbook-tier pass, user choice): 5w-1 done (session 163); next 5w-2, then the Gemini hero. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -188,6 +188,9 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   spec's sweep (C16910 fastest range factory-set 60–80 ps; at 80 ps it is 0.48 ps, under the 0.5 ps default).
 - `intensified-ccd` (session 141): the gain sweep holds the data-sheet K_f down to unity gain (noted on the page).
 - `imaging/fluorophores.ts` (session 84): log-normal bands are exactly 0 past their anti-Stokes cutoff (EGFP emission below 480 nm, mCherry excitation above 622 nm), so tail-only bleed-through reads 0; sampled FPbase spectra would fix it. Disclosed on the pages.
+- 5w-1 (session 163), not fixed: `cosmic-rays` `poissonQuantile` ≈ 13 ms per call at the max inputs (μ ≈ 1.7e9), ≈ 0.7 s per render;
+  `camera-snr.ts` 604 register stages are the CCD201 (iXon 888), the page models an 897 (CCD97, unverified count; F² changes < 0.2 %);
+  `detectivity` D* uses the entered I_d at any area (no current density or R₀A); `em-gain` has no conventional-amplifier read-noise input.
 - `detectors/gain-temperature` PMT branch: the −0.3 %/°C default is an entered value; source a typical dynode-gain coefficient in part 7 (Hamamatsu handbook §13.1.1 gives no number).
 **Polarization**
 - `polarization-scrambling` (session 140): near-locked (not exactly locked) stages still use the product of means; only p, q ≤ 4 get a
@@ -246,7 +249,7 @@ One box per session, in this order.
   of n; skip the slugs already reviewed in session 162: coupling-efficiency, airy-disk, scintillation,
   photodiode-tia-noise, optical-parametric-oscillator, structured-illumination, readout-noise, raman-scattering,
   connector-return-loss, fade-probability.
-  - [ ] 5w-1 detectors 1/3 · [ ] 5w-2 detectors 2/3 · [ ] 5w-3 detectors 3/3 (47 pages)
+  - [x] 5w-1 detectors 1/3 (session 163, PR #200) · [ ] 5w-2 detectors 2/3 · [ ] 5w-3 detectors 3/3 (47 pages)
   - [ ] 5w-4 imaging 1/3 · [ ] 5w-5 imaging 2/3 · [ ] 5w-6 imaging 3/3 (53)
   - [ ] 5w-7 fiber-optics 1/2 · [ ] 5w-8 fiber-optics 2/2 (41)
   - [ ] 5w-9 wave-optics 1/2 · [ ] 5w-10 wave-optics 2/2 (32)
@@ -271,6 +274,8 @@ One box per session, in this order.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - 5w-1 detectors 1/3 (session 163, `phase-5/5w-1-detectors`, PR #200): 16 pages, 0 bugs; boxcar optimum from B (`optimalGateWidth`),
+    ADC g/√12 (`quantizationNoiseElectrons`), E_g(T) default on cooling/dark-noise (fixed 1.12 eV understated Si ×1.5), 1152 tests.
   - Phase 5 spot-check (session 162, `phase-5/spot-check`, PR #199): 20 pages; `photodiode-tia-noise` now weights noise by the
     Butterworth |H|² up to B (`tiaFilteredNoise`; default 1.468 → 2.605 nA), SIM gap note at k₀ > 2k_c (`simSupportHasGap`);
     5 minor fixes. Both laser-safety reviewer claims refuted by ICNIRP 2013 Table 5. 1148 tests.

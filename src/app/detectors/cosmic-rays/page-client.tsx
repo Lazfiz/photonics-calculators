@@ -80,16 +80,16 @@ export default function CosmicRaysPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="Expected hits per frame" value={hits.toPrecision(3)} subtext={`99th percentile: ${hits99}`} tone="blue" />
         <ResultCard label="Path in the layer" value={`${(path * 1e6).toFixed(1)} µm`} subtext={`t/cos θ; cos²θ average ${(MEAN_SEC_ZENITH * thicknessUm).toFixed(1)} µm`} tone="purple" />
-        <ResultCard label="Mean charge per track" value={`${sci(meanCharge)} e⁻`} subtext={`${(SI_MEAN_PAIRS_PER_M * 1e-6).toFixed(1)} e⁻/µm × path`} tone="red" />
+        <ResultCard label="Mean charge per track" value={`${sci(meanCharge)} e⁻`} subtext={`${(SI_MEAN_PAIRS_PER_M * 1e-6).toFixed(1)} e⁻/µm × path; minimum ionizing, all δ-ray energy kept`} tone="red" />
         <ResultCard label="Most probable charge" value={`${sci(mpvCharge)} e⁻`} subtext={`${((mpvCharge / meanCharge) * 100).toFixed(0)} % of the mean`} tone="yellow" />
         <ResultCard label="Pixels per track" value={pixelsHit.toFixed(2)} subtext={`1 + 4ℓ/(πp), ℓ = t·tan θ = ${(projected * 1e6).toFixed(1)} µm`} tone="gray" />
         <ResultCard label="Pixels hit per frame" value={(hits * pixelsHit).toPrecision(3)} subtext={`${(hitFraction * 100).toPrecision(3)} % of the pixels: 1 − exp(−N·n/N_pix)`} tone="green" />
         <ResultCard label={`Hits in ${numFrames} frames`} value={(hits * numFrames).toPrecision(3)} tone="blue" />
       </div>
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
-        <p>Sea level: about 1 muon cm⁻² min⁻¹ through a horizontal surface, zenith distribution ∝ cos²θ, mean energy ≈ 4 GeV (PDG).</p>
+        <p>Sea level: about 1 muon cm⁻² min⁻¹ (± ≈ 50 % with latitude and altitude) through a horizontal surface, zenith distribution ∝ cos²θ, mean energy ≈ 4 GeV (PDG).</p>
         <p>Hits per frame: Poisson with mean N = Φ·A·t. Path in the layer L = t/cos θ.</p>
-        <p>Mean deposit: 3.876 MeV/cm ÷ 3.65 eV per pair = 106 e⁻/µm. The most probable deposit is lower and grows like ln L per µm: 23 000 e⁻ in 300 µm.</p>
+        <p>Mean deposit: 3.876 MeV/cm ÷ 3.65 eV per pair = 106 e⁻/µm, the unrestricted Bethe mean at minimum ionization. It is about 20 % higher at 4 GeV, and lower in thin layers that fast δ-rays leave; the most probable deposit is the better guide. It is lower and grows like ln L per µm: 23 000 e⁻ in 300 µm.</p>
       </div>
       <ChartPanel data={hitsChart} layout={{ xaxis: { title: "Exposure time (s)", gridcolor: "#374151" }, yaxis: { title: "Muon hits", gridcolor: "#374151" } }} />
       <h2 className="text-xl font-bold mt-8 mb-4">Charge per track vs thickness at {zenithDeg}°</h2>

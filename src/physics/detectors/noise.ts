@@ -107,6 +107,14 @@ export function minDetectableSignal(floor: number, snr = 3): number {
   return (k2 + Math.sqrt(k2 * k2 + 4 * k2 * floor * floor)) / 2;
 }
 
+/**
+ * Rms quantisation noise of an ADC with conversion gain g (e⁻/DN), in e⁻: g/√12, the standard deviation of a uniform
+ * error over one DN (Janesick, Photon Transfer, 2007: it adds in quadrature to the read noise).
+ */
+export function quantizationNoiseElectrons(conversionGain: number): number {
+  return conversionGain > 0 ? conversionGain / Math.sqrt(12) : NaN;
+}
+
 /** 10·log₁₀(2^N·√1.5)² = 6.02·N + 1.76 dB: an ideal N-bit ADC driven by a full-scale sine. */
 export function idealSqnrDb(bits: number): number {
   if (!(bits > 0)) return NaN;

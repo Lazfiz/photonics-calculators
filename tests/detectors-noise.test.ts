@@ -11,6 +11,7 @@ import {
   johnsonNoise,
   ktcNoise,
   photodiodeSnr,
+  quantizationNoiseElectrons,
   qeRatioSnrGain,
   minDetectableSignal,
   sensorNoiseElectrons,
@@ -120,4 +121,13 @@ test("photodiode SNR: 870.14 for 1 µA signal, 1 nA dark, 1 pA/√Hz, 1 MHz; QE 
   assert.equal(qeRatioSnrGain(4, "read"), 4);
   assert.ok(Number.isNaN(qeRatioSnrGain(0, "shot")));
   assert.ok(Number.isNaN(qeRatioSnrGain(Infinity, "read")));
+});
+
+test("ADC quantisation noise g/√12 e⁻ adds to the read floor (Janesick, Photon Transfer)", () => {
+  // g = 20 e⁻/DN: 20/√12 = 5.7735 e⁻, above a 5 e⁻ amplifier; floor √(25 + 33.333) = 7.6376 e⁻ → S_min(3σ) = (9 + √(81 + 36·58.333))/2 = 27.85059 e⁻.
+  close(quantizationNoiseElectrons(20), 5.773503, 1e-6);
+  const floor = Math.hypot(5, quantizationNoiseElectrons(20));
+  close(floor, 7.637626, 1e-6);
+  close(minDetectableSignal(floor), 27.85059, 1e-6);
+  assert.ok(Number.isNaN(quantizationNoiseElectrons(0)));
 });

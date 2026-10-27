@@ -7,6 +7,8 @@ import { useURLState } from "../../../hooks/use-url-state";
 import { GRADING_EXPONENT, junctionCapacitance, rcBandwidth } from "../../../physics/detectors/photodiode-rc";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmtHz = (f: number) => (!Number.isFinite(f) ? "—" : f >= 1e9 ? `${(f / 1e9).toFixed(2)} GHz` : f >= 1e6 ? `${(f / 1e6).toFixed(2)} MHz` : f >= 1e3 ? `${(f / 1e3).toFixed(2)} kHz` : `${f.toFixed(2)} Hz`);
+const fmtTau = (t: number) => (!Number.isFinite(t) ? "—" : t >= 1 ? `${t.toPrecision(3)} s` : t >= 1e-3 ? `${(t * 1e3).toPrecision(3)} ms` : t >= 1e-6 ? `${(t * 1e6).toPrecision(3)} µs` : t >= 1e-9 ? `${(t * 1e9).toPrecision(3)} ns` : `${(t * 1e12).toPrecision(3)} ps`);
 const PROFILES = ["abrupt", "graded", "custom"] as const;
 type Profile = (typeof PROFILES)[number];
 const LABELS: Record<Profile, string> = { abrupt: "Abrupt (m = 1/2)", graded: "Linearly graded (m = 1/3)", custom: "Custom m" };
@@ -31,7 +33,7 @@ export default function CapacitancePage() {
   const capacitance = junctionCapacitance(zeroBiasCap, reverseBias, builtInVoltage, m); // pF
   const totalResistance = loadResistance + seriesResistance;
   const rcBw = rcBandwidth(totalResistance, capacitance * 1e-12);
-  const rcTime = totalResistance * capacitance * 1e-12 * 1e9; // ns
+  const rcTime = totalResistance * capacitance * 1e-12; // s
 
   const vMax = Math.max(20, reverseBias);
   const vr = Array.from({ length: 201 }, (_, i) => (i * vMax) / 200);
@@ -60,8 +62,8 @@ export default function CapacitancePage() {
       </div>
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ResultCard label="Junction Capacitance" value={`${capacitance.toPrecision(4)} pF`} tone="green" />
-        <ResultCard label="RC Bandwidth" value={rcBw > 1e9 ? `${(rcBw / 1e9).toFixed(2)} GHz` : `${(rcBw / 1e6).toFixed(1)} MHz`} tone="blue" />
-        <ResultCard label="RC Time Constant" value={`${rcTime.toFixed(2)} ns`} tone="yellow" />
+        <ResultCard label="RC Bandwidth" value={fmtHz(rcBw)} tone="blue" />
+        <ResultCard label="RC Time Constant" value={fmtTau(rcTime)} tone="yellow" />
       </div>
       <div className="grid gap-6 md:grid-cols-2">
         <ChartPanel data={capVsBias} layout={{ xaxis: { title: "Reverse Bias (V)", gridcolor: "#374151" }, yaxis: { title: "C_j (pF)", gridcolor: "#374151" } }} title="Capacitance vs Bias" />

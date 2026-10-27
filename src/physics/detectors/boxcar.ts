@@ -56,3 +56,28 @@ export function optimalGateWidthRatio(): number {
   const u = (a + b) / 2;
   return (2 * Math.SQRT2 * u) / FWHM_PER_SIGMA;
 }
+
+/**
+ * Gate width T (s) that maximises the single-shot SNR of a centred gate behind input noise bandwidth B (Hz), for a pulse
+ * of the given FWHM (s). The SNR scales with S/e_n only, so the optimum depends on FWHM and B alone; it tends to
+ * optimalGateWidthRatio()·FWHM for B·FWHM ≫ 1 and shrinks when B·FWHM ≲ 1 (the noise no longer averages within the gate).
+ * Golden-section search on ln(T/FWHM) ∈ [ln 1e-3, ln 10] (80 steps, |Δ ln T| < 1e-12); a bound is returned if the
+ * maximum lies on it.
+ */
+export function optimalGateWidth(fwhm: number, inputBandwidth: number): number {
+  if (!(fwhm > 0) || !(inputBandwidth > 0)) return NaN;
+  const f = (x: number) => {
+    const T = fwhm * Math.exp(x);
+    return -gaussianGateAverage(1, fwhm, T, 0) / gateNoiseRms(1, inputBandwidth, T);
+  };
+  let a = Math.log(1e-3);
+  let b = Math.log(10);
+  const g = (Math.sqrt(5) - 1) / 2;
+  for (let i = 0; i < 80; i++) {
+    const c = b - g * (b - a);
+    const d = a + g * (b - a);
+    if (f(c) < f(d)) b = d;
+    else a = c;
+  }
+  return fwhm * Math.exp((a + b) / 2);
+}
