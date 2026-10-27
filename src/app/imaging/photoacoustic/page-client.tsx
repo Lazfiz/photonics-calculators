@@ -81,7 +81,8 @@ export default function PhotoacousticPage() {
   }, [gamma, mua, fluence, depthMm, results.muEff, results.penetrationMm, results.p0Target]);
 
   const resPlot = useMemo(() => {
-    const freqs = Array.from({ length: 61 }, (_, i) => 10 ** (-1 + (i * 3) / 60)); // 0.1–100 MHz
+    const logFmax = Math.log10(Math.max(100, 2 * f0));
+    const freqs = Array.from({ length: 61 }, (_, i) => 10 ** (-1 + (i * (logFmax + 1)) / 60)); // 0.1 … max(100, 2 f₀) MHz
     return [
       { x: freqs, y: freqs.map((f) => paAxialResolution(v, (bwPct / 100) * f * 1e6) * 1e6), name: "Axial 0.88 v/Δf", line: { color: "#4ade80" }, type: "scatter", mode: "lines" },
       { x: freqs, y: freqs.map((f) => paLateralResolution(v, na, f * 1e6) * 1e6), name: "Lateral 0.71 v/(NA f₀)", line: { color: "#c084fc" }, type: "scatter", mode: "lines" },
@@ -97,6 +98,7 @@ export default function PhotoacousticPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <h2 className="text-lg font-semibold">Laser</h2>
           <ValidatedNumberInput label="Wavelength (nm)" value={lambdaRaw} onChange={setLambda} min={400} max={1400} />
+          <p className="text-xs text-gray-500">Wavelength sets only the skin-exposure factor C_A; enter μ_a and μ_s′ for your wavelength.</p>
           <ValidatedNumberInput label="Pulse width (ns)" value={pulseRaw} onChange={setPulse} min={1} max={1000} />
           <ValidatedNumberInput label="Fluence on the skin (mJ/cm²)" value={fluenceRaw} onChange={setFluence} min={0} max={200} />
           <ValidatedNumberInput label="Repetition rate (Hz)" value={frepRaw} onChange={setFrep} min={0.1} max={10000} />
@@ -128,9 +130,10 @@ export default function PhotoacousticPage() {
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Stress confinement time (axial resolution)</span><span className={`font-mono ${pulseNs < results.tauSns ? "text-green-400" : "text-red-400"}`}>{fmt(results.tauSns, 0, "ns")} vs {pulseNs} ns pulse</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Skin limit, one pulse (ICNIRP)</span><span className={`font-mono ${flag(results.pulseRatio)}`}>{fmt(results.pulseLimit, 2, "mJ/cm²")} ({fmt(100 * results.pulseRatio, 0, "%")})</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Average irradiance vs ≥ 10 s limit</span><span className={`font-mono ${flag(results.averageRatio)}`}>{fmt(results.averageIrradiance, 0, "")}/ {fmt(results.irradianceLimit, 0, "mW/cm²")}</span></div>
+          {musp < 10 * muaBg && <p className="text-sm text-yellow-300">Diffusion theory needs μ_s′ ≫ μ_a; here the attenuation is closer to Beer–Lambert e^(−μ_a z).</p>}
           <div className="text-xs text-gray-500 mt-2 space-y-1">
             <p>p₀ = Γ μ_a F, valid when the pulse is shorter than the stress relaxation time d_c/v_s (Xu &amp; Wang, Rev. Sci. Instrum. 77, 041101, 2006). Wang &amp; Hu (2012) give about 800 Pa per mK of heating; over ρC ≈ 4.2 MJ m⁻³ K⁻¹ that is Γ ≈ 0.19.</p>
-            <p>F(z) = F₀ exp(−μ_eff z), μ_eff = √(3μ_a(μ_a + μ_s′)) in the background (diffusion theory; the build-up just below the surface is ignored).</p>
+            <p>F(z) = F₀ exp(−μ_eff z), μ_eff = √(3μ_a(μ_a + μ_s′)) in the background. Diffusion theory&apos;s fluence is k·F₀·e^(−μ_eff z) with a build-up factor k ≈ 2–5 that applies at every depth (larger with an index-mismatched surface); this page sets k = 1, so the fluence and p₀ at depth are underestimated by that factor.</p>
             <p>R_A = 0.88 v/Δf and R_L = 0.71 v/(NA f₀) for acoustic-resolution PAM and partial-view tomography; detection is one-way, so there is no pulse-echo factor 2 (Wang &amp; Hu, Science 335, 1458, 2012).</p>
             <p>Skin limits: ICNIRP 2013 Table 7 at the pulse width, and 2.0 C_A kW/m² for 10 s or more, for a beam wider than the 3.5 mm averaging aperture. The repetitive-pulse rules are not applied.</p>
           </div>

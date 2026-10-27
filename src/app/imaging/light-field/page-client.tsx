@@ -55,10 +55,16 @@ export default function LightFieldPage() {
       {naTooHigh && (
         <p className="mb-4 text-sm text-red-400">The NA must be below the medium index n ({fmt(n, 2)}): results are blank.</p>
       )}
+      {r.nu < 1 && (
+        <p className="mb-4 text-sm text-yellow-400">The lenslet is narrower than the diffraction spot (N_u &lt; 1): it samples no angle, so there is no refocused or single-view depth of field.</p>
+      )}
+      {r.pixelLimited && (
+        <p className="mb-4 text-sm text-yellow-400">Pixel limited. A refocused slice still has e = W, so its depth of field uses the diffraction count W/R_obj; a single view uses the pixel-limited N_u.</p>
+      )}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">
         {card("Lateral sample on the specimen W/M", fmt(r.lateralSample / um, 2, " µm"), `Sparrow limit without lenslets ${SPARROW_FACTOR}λ/NA = ${fmt((r.sparrowImage / magnification) / um, 2, " µm")}`, "text-blue-400")}
         {card("Resolvable spots per lenslet N_u", fmt(r.nu, 2), `diffraction W/R_obj ${fmt(r.spotsDiffraction, 2)}, pixels W/(2p) ${fmt(r.spotsPixels, 2)}: ${r.pixelLimited ? "pixel limited" : "diffraction limited"}`, "text-green-400")}
-        {card("Refocused slice depth of field", fmt(r.dofRefocused / um, 2, " µm"), `(2 + N_u)λn/(2NA²); conventional λn/NA² ${fmt(r.dofConventional / um, 2, " µm")}`, "text-yellow-400")}
+        {card("Refocused slice depth of field", fmt(r.dofRefocused / um, 2, " µm"), `(2 + W/R_obj)λn/(2NA²); conventional λn/NA² ${fmt(r.dofConventional / um, 2, " µm")}`, "text-yellow-400")}
         {card("Single-view depth of field", fmt(r.dofView / um, 1, " µm"), "(2 + N_u²)λn/(2NA²): about N_u non-overlapping refocused slices", "text-purple-400")}
         {card("Matched microlens f-number", Number.isFinite(r.lensletFNumber) ? `f/${r.lensletFNumber.toFixed(1)}` : "—", `M/(2NA); focal length ${fmt(r.lensletFocal / mm, 2, " mm")} for this pitch`, "text-pink-400")}
         {card("Sensor pixels per lenslet", fmt(pitchUm / pixelUm, 1), `R_obj = ${SPARROW_FACTOR}λM/NA = ${fmt(r.sparrowImage / um, 2, " µm")} in the image`, "text-gray-300")}
@@ -90,7 +96,7 @@ export default function LightFieldPage() {
           </p>
           <p>
             Depth of field is λn/NA² + ne/(M·NA) with e the sample spacing in the image. With e = W, a synthetically
-            refocused slice has (2 + N_u)λn/(2NA²); a single view, which uses 1/N_u² of the rays, has (2 +
+            refocused slice has (2 + W/R_obj)λn/(2NA²), using the diffraction count even when the pixels limit N_u; a single view, which uses 1/N_u² of the rays, has (2 +
             N_u²)λn/(2NA²). A focal stack holds about N_u non-overlapping slices.
           </p>
         </div>

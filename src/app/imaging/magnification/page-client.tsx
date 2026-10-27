@@ -21,12 +21,12 @@ export default function MagnificationPage() {
   const [objFocalRaw, setObjFocal] = useURLState("objFocal", 10);
   const [tubeFocalRaw, setTubeFocal] = useURLState("tubeFocal", 200);
   const [adapterRaw, setAdapter] = useURLState("adapterMag", 0.5);
-  const [eyepieceRaw, setEyepiece] = useURLState("eyepieceMag", 10);
+  const [eyepieceRaw, setEyepiece] = useURLState("eyepieceMag", 15);
   const [naRaw, setNa] = useURLState("na", 0.4);
   const fObjMm = clamp(objFocalRaw, 1, 100, 10);
   const fTubeMm = clamp(tubeFocalRaw, 50, 400, 200);
   const adapter = clamp(adapterRaw, 0.1, 5, 0.5);
-  const eyepiece = clamp(eyepieceRaw, 1, 30, 10);
+  const eyepiece = clamp(eyepieceRaw, 1, 30, 15);
   const na = clamp(naRaw, 0.01, 1.7, 0.4);
 
   const Mobj = objectiveMag(fObjMm * mm, fTubeMm * mm);
@@ -87,7 +87,7 @@ export default function MagnificationPage() {
         <p className="text-xs text-gray-500 mt-2">
           Infinity-corrected microscope: the tube lens forms the intermediate image. A C-mount camera adapter is a relay
           with its own magnification (0.35×, 0.5×, 0.63×, 1×), independent of the tube lens. An objective&apos;s marked
-          magnification assumes its maker&apos;s tube lens (Nikon and Leica 200 mm, Olympus 180 mm, Zeiss 165 mm), so its
+          magnification assumes its maker&apos;s tube lens (Nikon and Leica 200 mm, Olympus 180 mm, Zeiss 164.5 mm), so its
           focal length is that length divided by the marking; behind another tube lens it scales with f_TL. Eyepiece
           power refers to a 250 mm viewing distance. In the useful range the exit pupil is 0.5–1 mm.
         </p>

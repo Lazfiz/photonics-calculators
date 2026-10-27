@@ -5,7 +5,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  airyUnit, confocalSectionFwhm, confocalSectionFwhmPointPinhole, twoPhotonAxialFwhm, widefieldDepthOfField,
+  airyUnit, confocalSectionFwhm, confocalSectionFwhmPointPinhole, twoPhotonAxialFwhm, widefieldAxialFirstZero,
 } from "../../../physics/imaging/optical-sectioning-thickness";
 import { confocalOpticalSectionFwhm } from "../../../physics/imaging/confocal";
 
@@ -20,19 +20,19 @@ function finiteUm(xs: number[], ys: number[]) {
 
 export default function OpticalSectioningPage() {
   const [wavelengthRaw, setWavelength] = useURLState("wavelength", 550); // nm
-  const [naRaw, setNa] = useURLState("na", 0.75);
+  const [naRaw, setNa] = useURLState("na", 1.4);
   const [indexRaw, setRefractiveIndex] = useURLState("refractiveIndex", 1.518);
   const [pinholeRaw, setPinholeAU] = useURLState("pinholeAU", 1.0);
   // useURLState doesn't clamp: keep URL values inside the input ranges (the wave-optical table stops at 5 AU).
   const wavelength = clamp(wavelengthRaw, 300, 2000, 550);
-  const na = clamp(naRaw, 0.1, 1.7, 0.75);
+  const na = clamp(naRaw, 0.1, 1.7, 1.4);
   const refractiveIndex = clamp(indexRaw, 1, 1.8, 1.518);
   const pinholeAU = clamp(pinholeRaw, 0.1, 5, 1);
 
   const lambda = wavelength * 1e-9;
   const n = refractiveIndex;
   const results = {
-    widefield: widefieldDepthOfField(lambda, n, na),
+    widefield: widefieldAxialFirstZero(lambda, n, na),
     confocal: confocalSectionFwhm(lambda, n, na, pinholeAU),
     waveOptical: confocalOpticalSectionFwhm(lambda, n, na, pinholeAU),
     pointPinhole: confocalSectionFwhmPointPinhole(lambda, n, na),
@@ -42,14 +42,15 @@ export default function OpticalSectioningPage() {
   const valid = Number.isFinite(results.confocal);
 
   const chartData = (() => {
-    const nas = Array.from({ length: 80 }, (_, i) => 0.2 + i * 0.016);
+    const naMax = Math.min(1.7, 0.99 * refractiveIndex);
+    const nas = Array.from({ length: 80 }, (_, i) => 0.1 + (i * (naMax - 0.1)) / 79);
     const lam = wavelength * 1e-9;
     const n = refractiveIndex;
     return [
-      { ...finiteUm(nas, nas.map((a) => widefieldDepthOfField(lam, n, a))), type: "scatter", mode: "lines", name: "Widefield DOF", line: { color: "#60a5fa" } },
+      { ...finiteUm(nas, nas.map((a) => widefieldAxialFirstZero(lam, n, a))), type: "scatter", mode: "lines", name: "Widefield (first axial zero)", line: { color: "#60a5fa" } },
       { ...finiteUm(nas, nas.map((a) => confocalSectionFwhm(lam, n, a, pinholeAU))), type: "scatter", mode: "lines", name: `Confocal, Wilhelm (${pinholeAU} AU)`, line: { color: "#34d399" } },
       { ...finiteUm(nas, nas.map((a) => confocalOpticalSectionFwhm(lam, n, a, pinholeAU))), type: "scatter", mode: "lines", name: `Confocal, wave-optical (${pinholeAU} AU)`, line: { color: "#a78bfa", dash: "dot" } },
-      { ...finiteUm(nas, nas.map((a) => twoPhotonAxialFwhm(2 * lam, n, a))), type: "scatter", mode: "lines", name: "Two-photon (2λ)", line: { color: "#fbbf24", dash: "dash" } },
+      { ...finiteUm(nas, nas.map((a) => twoPhotonAxialFwhm(2 * lam, n, a))), type: "scatter", mode: "lines", name: "Two-photon axial FWHM (2λ)", line: { color: "#fbbf24", dash: "dash" } },
       { ...finiteUm([na], [confocalSectionFwhm(lam, n, na, pinholeAU)]), type: "scatter", mode: "markers", name: "Current", marker: { color: "#f87171", size: 12 } },
     ];
   })();
@@ -70,7 +71,7 @@ export default function OpticalSectioningPage() {
       )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <ResultCard label="Widefield depth of field" value={fmtUm(results.widefield)} tone="blue" subtext="2nλ/NA²; no true sectioning" />
+        <ResultCard label="Widefield (focus to first axial zero, λ/(n − √(n² − NA²)))" value={fmtUm(results.widefield)} tone="blue" subtext="No true sectioning: out-of-focus light is blurred, not rejected" />
         <ResultCard
           label={`Confocal section, Wilhelm (${pinholeAU} AU)`}
           value={fmtUm(results.confocal)}
@@ -83,7 +84,7 @@ export default function OpticalSectioningPage() {
           tone="purple"
           subtext={Number.isFinite(results.waveOptical) ? `Scalar paraxial theory; Wilhelm is ${((results.confocal / results.waveOptical - 1) * 100).toFixed(0)} % above it` : "—"}
         />
-        <ResultCard label="Two-photon section (at 2λ)" value={fmtUm(results.twoPhoton)} tone="yellow" subtext={`λ_exc = ${(2 * wavelength).toFixed(0)} nm${na < 0.7 ? "; fit is for NA > 0.7" : ""}`} />
+        <ResultCard label="Two-photon axial FWHM (point object, at 2λ)" value={fmtUm(results.twoPhoton)} tone="yellow" subtext={`λ_exc = ${(2 * wavelength).toFixed(0)} nm${na < 0.7 ? "; fit is for NA > 0.7" : ""}; a thin-plane section is ≈ 8 % larger (0.677 vs 0.638 in scalar theory)`} />
         <ResultCard label="Pinhole diameter (object side)" value={fmtUm(results.pinholeDiameter)} tone="purple" subtext="× magnification at the pinhole plane" />
       </div>
 
@@ -94,7 +95,7 @@ export default function OpticalSectioningPage() {
           <p className="font-mono">Point pinhole: 0.64λ / (n − √(n² − NA²))</p>
           <p className="font-mono">Wave-optical: FWHM of S(u) = ∫d²r |h(u, r)|² ∫<sub>pinhole</sub> |h(u, r − w)|² d²w, a thin fluorescent plane at defocus u</p>
           <p className="font-mono">Two-photon: 2√(ln 2) · 0.532λ / (√2 (n − √(n² − NA²)))</p>
-          <p>Confocal formulas from Zeiss, &quot;Confocal Laser Scanning Microscopy: Principles&quot; (Wilhelm et al.); the pinhole formula is the geometric-optical one, valid from 1 AU up. The wave-optical section is the scalar paraxial theory of Wilson &amp; Sheppard (equal excitation and emission wavelengths, uniformly filled pupil), with Wilhelm&apos;s high-NA axial scale; Wilhelm&apos;s geometric sum lies 23 % (low NA) to about 140 % above it, most as the NA approaches the immersion index. Two-photon from Zipfel, Williams &amp; Webb, Nat. Biotechnol. 21, 1369 (2003), excitation at twice the entered wavelength. Widefield: distance from focus to the first axial zero of the paraxial PSF (Born &amp; Wolf §8.8); out-of-focus light is blurred, not rejected.</p>
+          <p>Confocal formulas from Zeiss, &quot;Confocal Laser Scanning Microscopy: Principles&quot; (Wilhelm et al.); the pinhole formula is the geometric-optical one, valid from 1 AU up. The wave-optical section is the scalar paraxial theory of Wilson &amp; Sheppard (equal excitation and emission wavelengths, uniformly filled pupil), with Wilhelm&apos;s high-NA axial scale; Wilhelm&apos;s geometric sum lies 23 % (low NA) to about 140 % above it, most as the NA approaches the immersion index. Two-photon from Zipfel, Williams &amp; Webb, Nat. Biotechnol. 21, 1369 (2003), excitation at twice the entered wavelength. Widefield: distance from focus to the first axial zero of the sinc² axial PSF (Born &amp; Wolf §8.8); out-of-focus light is blurred, not rejected.</p>
         </div>
       </div>
 

@@ -63,7 +63,7 @@ export default function RegistrationPage() {
   const points = Math.round(clamp(pointsRaw, 1, 1000, 10));
   const fle = clamp(fleRaw, 0, 100, 1);
   const snr = clamp(snrRaw, 0.01, 1e4, 10);
-  const feature = clamp(featureRaw, 0.1, 1000, 2);
+  const feature = clamp(featureRaw, 1, 1000, 2);
 
   const a = transformMatrix(model, rotationDeg * deg, scale, shearDeg * deg);
   const rms = displacementRms(a, tx, ty, size);
@@ -133,7 +133,7 @@ export default function RegistrationPage() {
         <ValidatedNumberInput label="Control-point pairs N" value={pointsRaw} onChange={setNumControlPoints} min={1} max={1000} step="1" />
         <ValidatedNumberInput label="Fiducial localisation error FLE (px, 2-D rms)" value={fleRaw} onChange={setFle} min={0} max={100} step="any" />
         <ValidatedNumberInput label="Texture SNR σ_s/σ_noise" value={snrRaw} onChange={setSnr} min={0.01} max={1e4} step="any" />
-        <ValidatedNumberInput label="Texture correlation length ℓ (px)" value={featureRaw} onChange={setFeature} min={0.1} max={1000} step="any" />
+        <ValidatedNumberInput label="Texture correlation length ℓ (px)" value={featureRaw} onChange={setFeature} min={1} max={1000} step="any" />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
@@ -171,9 +171,9 @@ export default function RegistrationPage() {
         </div>
         <p className="mt-3 text-xs text-gray-500">
           The fiducials are spread uniformly over the image, so f² = L²/6 and the RMS target sits at d = f. The 2-D TRE and
-          FRE follow Fitzpatrick&apos;s first-order least-squares analysis with isotropic, independent localisation errors. The
+          FRE follow Fitzpatrick&apos;s first-order least-squares analysis with isotropic, independent localisation errors, for fiducials on a regular, centred, isotropic layout; random placement raises the affine TRE by ≈ 20 % at N = 10 (rigid ≈ 6 %). The
           bound assumes a noise-free reference, white Gaussian noise on the moving image, and a random texture whose gradient
-          variance is σ_s²/ℓ². Elastic (B-spline) registration has a displacement field instead of a matrix and is not modelled.
+          variance is σ_s²/ℓ². The bound assumes a noise-free reference and no interpolation bias; with two equally noisy images it is √2 larger. Elastic (B-spline) registration has a displacement field instead of a matrix and is not modelled.
         </p>
       </div>
     </>

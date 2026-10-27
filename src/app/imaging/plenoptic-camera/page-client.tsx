@@ -51,7 +51,7 @@ export default function PlenopticCameraPage() {
   const focusTooClose = !(focusM * 1000 > mainFocalMm);
   const fill = r.microImageFill;
   const fillNote = !Number.isFinite(fill) ? "—"
-    : fill > 1.02 ? "micro-images overlap: neighbouring views mix"
+    : fill > 1.02 ? "micro-images overlap"
       : fill < 0.98 ? "micro-images leave gaps: pixels go unused"
         : "matched: micro-images tile the sensor";
 
@@ -69,7 +69,10 @@ export default function PlenopticCameraPage() {
   return (
     <>
       {focusTooClose && (
-        <p className="mb-4 text-sm text-red-400">The focus distance must exceed the main-lens focal length: the refocus range is blank.</p>
+        <p className="mb-4 text-sm text-red-400">The focus distance must exceed the main-lens focal length: only the refocus distances are blank.</p>
+      )}
+      {fill > 1.02 && (
+        <p className="mb-4 text-sm text-yellow-300">Overlapping micro-images mix neighbouring views in a band D − p_µ wide; N counts only the 2p_µ − D clean pixels.</p>
       )}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">
         {card("Spatial samples (lenslets)", `${fmt(r.lensletsX, 0)} × ${fmt(r.lensletsY, 0)}`, `one sample per ${fmt(pitchUm, 0, " µm")} lenslet`, "text-blue-400")}
@@ -104,7 +107,8 @@ export default function PlenopticCameraPage() {
           <p>
             The micro-image of the aperture has diameter f_µ/N_w, so the microlens f-number f_µ/p_µ must equal the main
             lens&apos;s image-side (working) f-number N_w. A larger N_w leaves unused pixels; a smaller one makes
-            neighbouring micro-images overlap. The lenslet-to-sensor spacing must be right within p_px·f_µ/p_µ.
+            neighbouring micro-images overlap, mixing neighbouring views in a band D − p_µ wide, so N counts only the
+            2p_µ − D clean pixels. The lenslet-to-sensor spacing must be right within p_px·f_µ/p_µ.
           </p>
           <p>
             Refocusing sums shifted sub-aperture views, each seen through an aperture N times narrower, so a refocused

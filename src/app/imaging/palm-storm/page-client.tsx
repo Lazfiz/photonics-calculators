@@ -62,8 +62,9 @@ export default function PALMSTORMPage() {
     ? `A ${pixel} nm pixel is more than twice the PSF σ (${(psfSigma / nm).toFixed(0)} nm): the spot is undersampled and the a²/12 pixel correction is no longer small.`
     : "";
 
-  // σ_loc against photon count, 10 … 10⁵ (log), for both estimators and the shot-noise limit.
-  const Ns = Array.from({ length: 81 }, (_, i) => 10 ** (1 + i / 20));
+  // σ_loc against photon count, 10 … max(10⁵, 2N) (log), for both estimators and the shot-noise limit.
+  const logNmax = Math.log10(Math.max(1e5, 2 * photons));
+  const Ns = Array.from({ length: 81 }, (_, i) => 10 ** (1 + (i / 80) * (logNmax - 1)));
   const precisionChart = [
     { x: Ns, y: Ns.map((N) => precisionAt(N, "ls") / nm), type: "scatter" as const, mode: "lines" as const, name: "Least-squares fit (eq. 6)", line: { color: "#60a5fa" } },
     { x: Ns, y: Ns.map((N) => precisionAt(N, "mle") / nm), type: "scatter" as const, mode: "lines" as const, name: "Maximum likelihood (eq. 5)", line: { color: "#4ade80" } },
@@ -120,7 +121,7 @@ export default function PALMSTORMPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
           <h2 className="text-lg font-semibold">Results</h2>
           {row("PSF σ = 0.21 λ/NA", fmt(psfSigma / nm, 1, " nm"))}
-          {row("Localization precision σ_loc", fmt(sigmaLoc / nm, 2, " nm"), "text-blue-400")}
+          {row(dim === 3 ? "Lateral localization precision σ_loc" : "Localization precision σ_loc", fmt(sigmaLoc / nm, 2, " nm"), "text-blue-400")}
           {row("Shot-noise limit σ/√N", fmt(shotLimit / nm, 2, " nm"))}
           {row("Localization FWHM 2.355 σ_loc", fmt((GAUSSIAN_FWHM_PER_SIGMA * sigmaLoc) / nm, 1, " nm"))}
           {row("Mean label spacing", fmt(nyquist / 2 / nm, 1, " nm"))}
@@ -129,10 +130,12 @@ export default function PALMSTORMPage() {
           {row("Diffraction limit λ/(2NA)", fmt(diffraction / nm, 0, " nm"))}
           {row("Acquisition time", fmt(acqTime, 0, " s"), "text-purple-400")}
           {note && <p className="text-sm text-yellow-300">{note}</p>}
+          {dim === 3 && <p className="text-sm text-gray-400">Axial precision is typically 2–3× worse (astigmatic or biplane 3D).</p>}
           <div className="text-xs text-gray-500 mt-2 space-y-1">
             <p>σ_a² = σ² + a²/12. Least squares: σ_loc² = σ_a²/N · (16/9 + 8π σ_a² b²/(N a²)) (Mortensen 2010, eq. 6).</p>
             <p>Maximum likelihood: σ_loc² = σ_a²/N · [1 + ∫₀¹ ln t / (1 + N a² t/(2π σ_a² b²)) dt]⁻¹ (eq. 5). EMCCD: × 2.</p>
             <p>Effective resolution = √((2.355 σ_loc)² + (2/ρ^(1/D))²) (Legant 2016). It assumes every label is localized once.</p>
+            <p>sCMOS pixel read noise is not modelled (Mortensen et al. cover EMCCD and CCD).</p>
           </div>
         </div>
       </div>
@@ -140,7 +143,7 @@ export default function PALMSTORMPage() {
       <div className="grid gap-6 md:grid-cols-2">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-4">Localization precision vs photon count</h2>
-          <ChartPanel data={precisionChart} layout={{ ...layout, xaxis: { title: "Detected photons N", type: "log", gridcolor: "#333" }, yaxis: { title: "σ_loc (nm)", type: "log", gridcolor: "#333" } }} />
+          <ChartPanel data={precisionChart} layout={{ ...layout, xaxis: { title: "Detected photons N", type: "log", gridcolor: "#333" }, yaxis: { title: dim === 3 ? "lateral σ_loc (nm)" : "σ_loc (nm)", type: "log", gridcolor: "#333" } }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-4">Effective resolution vs label density</h2>

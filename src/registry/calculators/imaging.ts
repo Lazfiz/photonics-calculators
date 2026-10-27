@@ -477,7 +477,7 @@ export const imaging: CalculatorEntry[] = [
     description: "Light-field microscope design: lateral sample, resolvable spots per lenslet, matched microlens f-number and the depth of field of refocused slices and single views (Levoy 2006).",
     keywords: ["light field microscopy", "microlens array", "plenoptic microscope", "spatial-angular tradeoff", "synthetic refocusing"],
     tier: "textbook",
-    modelNote: "Levoy's design equations: Sparrow limit 0.47λM/NA in the image, N_u = W/R_obj (capped at two pixels per spot) and depth of field (2 + N_u)λn/(2NA²) refocused or (2 + N_u²)λn/(2NA²) per view. Aberration-free objective; no 3D deconvolution.",
+    modelNote: "Levoy's design equations: Sparrow limit 0.47λM/NA in the image, N_u = W/R_obj (capped at two pixels per spot) and depth of field (2 + W/R_obj)λn/(2NA²) refocused or (2 + N_u²)λn/(2NA²) per view, for N_u ≥ 1. Aberration-free objective; no 3D deconvolution.",
     references: [
       {
         citation: "Levoy M., Ng R., Adams A., Footer M., Horowitz M. (2006). Light field microscopy. ACM Trans. Graph. 25(3), 924–934. Eqs. 1–5 and Table 1.",
@@ -498,7 +498,7 @@ export const imaging: CalculatorEntry[] = [
     description: "Gaussian light sheet thickness, Rayleigh range and field of view, and the effective axial resolution of LSFM/SPIM.",
     keywords: ["Light Sheet Microscopy Design", "Light Sheet Thickness", "Selective Plane Illumination"],
     tier: "textbook",
-    modelNote: "Paraxial Gaussian sheet from a cylindrical lens (NA_ill ≤ 0.3). The effective axial FWHM combines the sheet and the scalar detection PSF as Gaussians; Bessel and lattice sheets are not modelled.",
+    modelNote: "Paraxial Gaussian sheet from a cylindrical lens (NA_ill ≤ 0.3, the 1/e² half-angle). The effective axial FWHM combines the sheet and the scalar detection PSF as Gaussians; Bessel and lattice sheets are not modelled.",
     references: [
       {
         citation: "Engelbrecht C. J., Stelzer E. H. K. (2006). Resolution enhancement in a light-sheet-based microscope (SPIM). Opt. Lett. 31, 1477–1479. Axial resolution of sheet × detection PSF.",
@@ -552,7 +552,7 @@ export const imaging: CalculatorEntry[] = [
     title: "Modulation Transfer Function",
     description: "Diffraction-limited incoherent MTF and cutoff 2NA/λ, and Hopkins' defocused OTF with contrast reversal, for a circular pupil.",
     tier: "textbook",
-    modelNote: "Scalar incoherent imaging with a uniform circular pupil. Defocus is the paraxial W₀₂₀ = Δz·NA²/(2n); the OTF is Hopkins' pupil-overlap integral, evaluated numerically. At high NA the paraxial W₀₂₀ under-estimates the defocus (the page shows the exact edge path difference).",
+    modelNote: "Scalar incoherent imaging with a uniform circular pupil. Defocus is the paraxial W₀₂₀ = Δz·NA²/(2n); the OTF is Hopkins' pupil-overlap integral, evaluated numerically. Above NA ≈ 0.5 the paraxial W₀₂₀ under-estimates the defocus and the page warns.",
     references: [
       {
         citation: "Goodman J. W. (2005). Introduction to Fourier Optics, 3rd ed., §6.3. Roberts & Company. Incoherent cutoff 2NA/λ and the diffraction-limited MTF of a circular pupil.",
@@ -568,15 +568,19 @@ export const imaging: CalculatorEntry[] = [
     title: "Multiphoton Imaging Depth Calculator",
     description: "Two-photon excitation depth penetration, resolution, and laser parameters.",
     tier: "textbook",
-    modelNote: "Zipfel's Gaussian focus fit plus exp(−µz) attenuation with one extinction coefficient, counting ballistic photons only. The default µ_s = 6 mm⁻¹ is in vivo mouse cortex at 800 nm.",
+    modelNote: "Zipfel's Gaussian focus fit plus exp(−µz) attenuation with one extinction coefficient, counting ballistic photons only. The default µ_s = 6 mm⁻¹ is a typical cortex value near 800 nm; µ does not follow the wavelength.",
     references: [
       {
         citation: "Zipfel W. R., Williams R. M., Webb W. W. (2003). Nonlinear magic: multiphoton microscopy in the biosciences. Nat. Biotechnol. 21, 1369–1377. Gaussian fit to the squared illumination PSF.",
         url: "https://doi.org/10.1038/nbt899",
       },
       {
-        citation: "Kobat D., Horton N. G., Xu C. (2011). In vivo two-photon microscopy to 1.6-mm depth in mouse cortex. J. Biomed. Opt. 16, 106014. Depth limit of 5–6 attenuation lengths in in vivo mouse cortex at 800 nm, behind the default µ_s.",
+        citation: "Kobat D., Horton N. G., Xu C. (2011). In vivo two-photon microscopy to 1.6-mm depth in mouse cortex. J. Biomed. Opt. 16, 106014. 1.6 mm at 1280 nm, near the fundamental depth limit.",
         url: "https://doi.org/10.1117/1.3646209",
+      },
+      {
+        citation: "Theer P., Denk W. (2006). On the fundamental imaging-depth limit in two-photon microscopy. J. Opt. Soc. Am. A 23, 3139–3149. Depth limit set by out-of-focus background.",
+        url: "https://doi.org/10.1364/JOSAA.23.003139",
       },
     ],
   },
@@ -633,7 +637,7 @@ export const imaging: CalculatorEntry[] = [
     title: "Optical Sectioning Thickness Calculator",
     description: "Compare optical sectioning capability across widefield, confocal, and multiphoton microscopy techniques.",
     tier: "textbook",
-    modelNote: "Paraxial and fitted formulas: confocal sections for a finite (≥ 1 AU) and a point-like pinhole, two-photon from Zipfel's fit. Widefield has no optical sectioning; its depth of field is the first axial zero. The scalar wave-optical plane response (0.1–5 AU, no Stokes shift) is shown next to Wilhelm's geometric sum, which lies 23 % (low NA) to about 140 % (NA near n) above it.",
+    modelNote: "Paraxial and fitted formulas: confocal sections for a finite (≥ 1 AU) and a point-like pinhole, two-photon from Zipfel's fit. Widefield has no optical sectioning; its depth of field is the first axial zero λ/(n − √(n² − NA²)). Two-photon is the point axial FWHM. The scalar wave-optical plane response (0.1–5 AU, no Stokes shift) is shown next to Wilhelm's geometric sum, which lies 23 % (low NA) to about 140 % (NA near n) above it.",
     references: [
       {
         citation: "Wilson T. (2011). Resolution and optical sectioning in the confocal microscope. J. Microsc. 244, 113–121. Lateral, axial and plane responses against pinhole size.",
@@ -656,7 +660,7 @@ export const imaging: CalculatorEntry[] = [
     title: "PALM/STORM Localization Calculator",
     description: "Localization precision from photons, background and pixel size, and effective resolution with label density, for single-molecule localization microscopy (PALM/STORM).",
     tier: "textbook",
-    modelNote: "Gaussian fit to the PSF (σ = 0.21 λ/NA), with Mortensen's pixelation and background terms, one localization per label, and the effective resolution as the localization FWHM and the Nyquist term in quadrature. Drift, label size and repeated blinking are not included.",
+    modelNote: "Gaussian fit to the PSF (σ = 0.21 λ/NA), with Mortensen's pixelation and background terms, one localization per label, and the effective resolution as the localization FWHM and the Nyquist term in quadrature. Lateral precision only; drift, label size, repeated blinking and sCMOS read noise are not included.",
     references: [
       {
         citation: "Mortensen K. I., Churchman L. S., Spudich J. A., Flyvbjerg H. (2010). Optimized localization analysis for single-molecule tracking and super-resolution microscopy. Nat. Methods 7, 377–381. Precision of maximum-likelihood (eq. 5) and least-squares (eq. 6) Gaussian fits; EMCCD excess noise doubles the variance.",
@@ -677,7 +681,7 @@ export const imaging: CalculatorEntry[] = [
     title: "Photoacoustic Imaging Calculator",
     description: "Initial pressure, diffuse light penetration, acoustic resolution and the skin exposure limit for photoacoustic microscopy and tomography.",
     tier: "textbook",
-    modelNote: "p₀ = Γμ_aF under stress confinement; fluence decays as exp(−μ_eff z) from diffusion theory, ignoring the build-up below the surface; one-way acoustic resolution of acoustic-resolution PAM and partial-view tomography. Skin limits are ICNIRP 2013 single-pulse and ≥ 10 s values, without the repetitive-pulse rules.",
+    modelNote: "p₀ = Γμ_aF under stress confinement; fluence k·F₀·exp(−μ_eff z) from diffusion theory with the build-up factor k (≈ 2–5) set to 1, so p₀ at depth is low; one-way acoustic resolution of acoustic-resolution PAM and partial-view tomography. Skin limits are ICNIRP 2013 single-pulse and ≥ 10 s values, without the repetitive-pulse rules.",
     references: [
       {
         citation: "Xu M., Wang L. V. (2006). Photoacoustic imaging in biomedicine. Rev. Sci. Instrum. 77, 041101. Thermal and stress confinement and the initial pressure p₀ = Γμ_aF.",
@@ -712,7 +716,7 @@ export const imaging: CalculatorEntry[] = [
     description: "Plenoptic (light-field) camera design: lenslets and views, microlens f-number matching, refocusable object range, data size and assembly tolerance (Ng 2005).",
     keywords: ["plenoptic camera", "light field camera", "microlens array", "digital refocusing", "Lytro"],
     tier: "textbook",
-    modelNote: "Plenoptic 1.0 with the sensor one microlens focal length behind the array. Refocus range: geometric depth of field of an f/(N·N_w) aperture with the lenslet as circle of confusion, through a thin main lens; Ng's prototype reached about half of it.",
+    modelNote: "Plenoptic 1.0 with the sensor one microlens focal length behind the array. Refocus range: geometric depth of field of an f/(N·N_w) aperture with the lenslet as circle of confusion, through a thin main lens; Ng's prototype reached about half of it. Overlapping micro-images keep only 2p_µ − D clean pixels.",
     references: [
       {
         citation: "Ng R., Levoy M., Brédif M., Duval G., Horowitz M., Hanrahan P. (2005). Light field photography with a hand-held plenoptic camera. Stanford Tech. Rep. CTSR 2005-02. Sections 3.1, 3.2 and 4.2.",
@@ -732,7 +736,7 @@ export const imaging: CalculatorEntry[] = [
     title: "Point Spread Function Calculator",
     description: "Visualize the 2D and 1D point spread function (PSF) for a diffraction-limited system.",
     tier: "textbook",
-    modelNote: "Scalar PSF of an aberration-free, uniformly filled pupil: the Airy pattern laterally, the on-axis Debye sinc² axially (the paraxial sinc²(u/4) at low NA). No polarization, coverslip or index-mismatch effects.",
+    modelNote: "Scalar PSF of an aberration-free, uniformly filled pupil: the Airy pattern laterally, the on-axis Debye sinc² axially (FWHM 0.886 λ/(n − √(n² − NA²)), the paraxial sinc²(u/4) at low NA). No polarization, coverslip or index-mismatch effects.",
     references: [
       {
         citation: "Born M., Wolf E. (2019). Principles of Optics, 7th ed., §8.5.2 and §8.8. Cambridge University Press. Airy pattern and the paraxial intensity near focus.",
@@ -740,6 +744,10 @@ export const imaging: CalculatorEntry[] = [
       },
       {
         citation: "Wilhelm R., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Axial FWHM 0.88 λ/(n − √(n² − NA²)).",
+      },
+      {
+        citation: "Richards B., Wolf E. (1959). Electromagnetic diffraction in optical systems, II. Structure of the image field in an aplanatic system. Proc. R. Soc. Lond. A 253, 358–379. Vector focus behind the polarization note.",
+        url: "https://doi.org/10.1098/rspa.1959.0200",
       },
     ],
   },
@@ -767,7 +775,7 @@ export const imaging: CalculatorEntry[] = [
     description: "Rigid, similarity and affine registration: the transform matrix, RMS displacement over the image, control-point target registration error (Fitzpatrick) and the Cramér–Rao bound for intensity-based alignment.",
     keywords: ["image registration", "target registration error", "fiducial localization error", "Cramér-Rao bound", "affine transform"],
     tier: "textbook",
-    modelNote: "First-order least squares: 2-D TRE² = (FLE²/N)(1 + m·d²/(2f²)) and FRE² = FLE²(1 − p/(2N)) for isotropic, independent fiducial errors and fiducials spread over the image. The translation bound assumes a noise-free reference and a Gaussian-correlated random texture. Elastic registration is not modelled.",
+    modelNote: "First-order least squares: 2-D TRE² = (FLE²/N)(1 + m·d²/(2f²)) and FRE² = FLE²(1 − p/(2N)) for isotropic, independent fiducial errors and fiducials on a regular layout over the image (random placement raises the affine TRE ≈ 20 %). The translation bound assumes a noise-free reference and a Gaussian-correlated random texture. Elastic registration is not modelled.",
     references: [
       {
         citation: "Fitzpatrick J. M., West J. B., Maurer C. R. (1998). Predicting error in rigid-body point-based registration. IEEE Trans. Med. Imaging 17(5), 694–702. TRE and FRE from linearised least squares (3-D; the page uses the 2-D analogue).",

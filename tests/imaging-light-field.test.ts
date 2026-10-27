@@ -37,6 +37,8 @@ test("light-field microscope reproduces Levoy et al. 2006 Table 1 (535 nm, 125 �
   const canon = lightFieldMicroscope({ na: 0.95, magnification: 40, n: 1, lensletPitch: 125 * um, pixelPitch: 8.2 * um, lambda: 535 * nm });
   assert.equal(canon.pixelLimited, true);
   assertRel(canon.nu, 7.622, 1e-3, "pixel-limited N_u");
+  // The refocused slice keeps e = W (eq. 4), so pixels do not change it: still the table's 4.09 µm.
+  assertRel(canon.dofRefocused / um, 4.09, 0.003, "pixel-limited D_tot2");
 });
 
 test("light-field page defaults: 20×/0.2, 150 µm lenslets, 6.5 µm pixels, 550 nm (hand calculation)", () => {
@@ -47,6 +49,17 @@ test("light-field page defaults: 20×/0.2, 150 µm lenslets, 6.5 µm pixels, 550
   assertRel(r.dofRefocused / um, 53.644, 1e-4, "refocused DOF");
   assertRel(r.dofView / um, 245.24, 1e-4, "single-view DOF");
   assertRel(r.lensletFocal / mm, 7.5, 1e-12, "f/50 lenslet focal length");
+  // 20 µm pixels cap N_u at 150/40 = 3.75. Eq. 4 with e = W: 13.75 + 1·150/(20·0.2) = 51.25 µm, which eq. 5.2
+  // with W/R_obj = 5.80 matches within its 0.47 ≈ 0.5 rounding; one view: (2 + 3.75²)/2 · 13.75 = 110.43 µm.
+  const coarse = lightFieldMicroscope({ na: 0.2, magnification: 20, n: 1, lensletPitch: 150 * um, pixelPitch: 20 * um, lambda: 550 * nm });
+  assert.equal(coarse.pixelLimited, true);
+  assertRel(coarse.dofRefocused / um, 53.644, 1e-4, "refocused DOF independent of pixels");
+  assertRel(coarse.dofRefocused / um, 51.25, 0.05, "eq. 4 with e = W");
+  assertRel(coarse.dofView / um, 110.43, 1e-4, "pixel-limited single view");
+  // Edge: a 15 µm lenslet is narrower than the 25.85 µm Sparrow spot (N_u = 0.58): no angular sample, no light-field DOF.
+  const narrow = lightFieldMicroscope({ na: 0.2, magnification: 20, n: 1, lensletPitch: 15 * um, pixelPitch: 6.5 * um, lambda: 550 * nm });
+  assert.ok(narrow.nu < 1 && Number.isNaN(narrow.dofRefocused) && Number.isNaN(narrow.dofView));
+  assertRel(narrow.dofConventional / um, 13.75, 1e-12, "conventional DOF still defined");
   // Domain: NA at or above the medium index gives no result.
   const bad = lightFieldMicroscope({ na: 1, magnification: 20, n: 1, lensletPitch: 150 * um, pixelPitch: 6.5 * um, lambda: 550 * nm });
   assert.ok(Number.isNaN(bad.nu) && Number.isNaN(bad.dofRefocused) && Number.isNaN(bad.lateralSample));
@@ -73,13 +86,18 @@ test("plenoptic camera: Ng et al. 2005 prototype (125 µm f/4 lenslets, 9 µm pi
   // Thin lens, f 140 mm at 1 m: s_i = 162.79 mm; 169.29 mm → 809.1 mm and 156.29 mm → 1343.1 mm.
   assertRel(r.refocusNear, 0.80915, 1e-4, "near");
   assertRel(r.refocusFar, 1.3431, 1e-4, "far");
-  // A wider main aperture (f/2.5) than the f/3.33 lenslets: micro-images 133 % of the pitch, still 27 pixels across.
+  // A wider main aperture (f/2.5) than the f/3.33 lenslets: micro-images 200 µm on a 150 µm pitch (133 %). Neighbours
+  // overlap in a 50 µm band on each side, leaving 2·150 − 200 = 100 µm clean: floor(100/5.5) = 18 pixels, not 27.
   const overlap = plenopticCamera({ ...prototype, lensletPitch: 150 * um, pixelPitch: 5.5 * um, sensorWidthPx: 4000, sensorHeightPx: 3000, mainFNumber: 2.5, mainFocal: 50 * mm });
   assertRel(overlap.microImageFill, 4 / 3, 1e-12, "fill");
-  assert.equal(overlap.pixelsAcross, 27);
+  assert.equal(overlap.pixelsAcross, 18);
+  assert.equal(overlap.views, 324);
   assertRel(overlap.angularStep * (180 * 60) / Math.PI, 37.81, 1e-4, "37.81 arcmin per pixel");
   // Edge: refocus range beyond the infinity focus puts the far limit at infinity.
   assert.equal(overlap.refocusFar, Infinity);
-  // Domain: focus at or inside the focal length gives no result.
-  assert.ok(Number.isNaN(plenopticCamera({ ...prototype, focusDistance: 0.1 }).refocusNear));
+  // Domain: focus at or inside the focal length blanks only the refocus distances.
+  const inside = plenopticCamera({ ...prototype, focusDistance: 0.1 });
+  assert.ok(Number.isNaN(inside.refocusNear) && Number.isNaN(inside.refocusFar));
+  assert.equal(inside.lensletsX, 288);
+  assert.equal(inside.views, 169);
 });
