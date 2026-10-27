@@ -46,7 +46,9 @@ export default function OpticalPowerPage() {
   const dKdL = (ocularRefraction(P1, P2, tMm * mm, n, (LMm + 0.05) * mm) - ocularRefraction(P1, P2, tMm * mm, n, (LMm - 0.05) * mm)) / 0.1;
   const state = !Number.isFinite(K) ? "" : Math.abs(K) < 0.25 ? "emmetropic" : K < 0 ? "myopic" : "hyperopic";
 
-  const Ls = Array.from({ length: 121 }, (_, k) => 20 + k * 0.1);
+  const Lo = Math.max(15, Math.min(20, LMm - 2));
+  const Hi = Math.min(35, Math.max(32, LMm + 2));
+  const Ls = Array.from({ length: 121 }, (_, k) => Lo + (k * (Hi - Lo)) / 120);
   const chart = [
     { x: Ls, y: Ls.map((L) => ocularRefraction(P1, P2, tMm * mm, n, L * mm)), type: "scatter" as const, mode: "lines" as const, name: "Refraction at the cornea K (D)", line: { color: "#60a5fa" } },
     ...(Number.isFinite(K) ? [{ x: [LMm], y: [K], type: "scatter" as const, mode: "markers" as const, name: "Current eye", marker: { color: "#f87171", size: 10 } }] : []),
@@ -107,7 +109,8 @@ export default function OpticalPowerPage() {
         <p className="text-xs text-gray-500 mt-2">
           Paraxial eye of two thin elements: the cornea at the vertex and the crystalline lens t behind it, unaccommodated.
           The defaults are Gullstrand&apos;s exact eye (43.05 D and 19.11 D, principal planes 5.73 mm apart, 58.64 D in
-          all) with a typical 24 mm axial length. K is the vergence at the cornea that focuses on the retina: negative
+          all) with a typical 24 mm axial length. This eye is emmetropic at 24.31 mm, so the 24 mm default is slightly
+          short and reads ≈ +0.8 D (hyperopic). K is the vergence at the cornea that focuses on the retina: negative
           for myopia (far point in front of the eye), positive for hyperopia, and it is the contact-lens correction.
           Thin elements put the rear focal point about 0.1 mm in front of the thick-lens eye&apos;s, so refractions read
           about 0.2 D more myopic than in the full schematic eye.

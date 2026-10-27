@@ -8,7 +8,8 @@
  *   stress relaxation time d_c/v_s of the feature size d_c. M. Xu, L. V. Wang, Rev. Sci. Instrum. 77, 041101 (2006),
  *   doi:10.1063/1.2195024.
  * - Fluence at depth z in a diffusive background: F(z) ≈ F₀ exp(−μ_eff z), μ_eff = √(3μ_a(μ_a + μ_s′)) (diffusion
- *   theory, far from the surface; the build-up of backscattered light just below the surface is not modelled).
+ *   theory). The true fluence is k F₀ exp(−μ_eff z) with a build-up factor k ≈ 2–5 at every depth (larger with an
+ *   index-mismatched surface); k = 1 is used here, so fluence and p₀ at depth are underestimated by that factor.
  *   L. V. Wang, H.-I. Wu, Biomedical Optics: Principles and Imaging (Wiley, 2007), ch. 5.
  * - Acoustic-resolution photoacoustic microscopy and partial-view tomography: axial R_A = 0.88 v_s/Δf (Δf the
  *   photoacoustic bandwidth), lateral R_L = 0.71 v_s/(NA f₀) (f₀ the centre frequency, NA the acoustic aperture).

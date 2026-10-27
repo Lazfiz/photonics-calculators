@@ -36,7 +36,9 @@ export default function ImageDistancePage() {
     else {
       ({ o, i } = conjugatesFromMag(f, M0));
       M = M0;
-      if (!(o > 0)) {
+      if (Math.abs(M0 - 1) < 1e-9) {
+        problem = "M = +1: object and image both sit at the lens (o = i = 0).";
+      } else if (!(o > 0)) {
         problem = `M = ${M0} with f = ${f} mm needs o = ${o.toFixed(2)} mm, a virtual object (light converging onto the lens). ${
           f > 0 ? "A converging lens forms M < 0 (real) or M > 1 (virtual) from a real object." : "A diverging lens forms only 0 < M < 1 from a real object."
         }`;

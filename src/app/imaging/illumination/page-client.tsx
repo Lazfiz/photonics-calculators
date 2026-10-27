@@ -51,7 +51,7 @@ export default function IlluminationPage() {
         ? "Within the usual 0.7–0.8 setting."
         : "Below 0.7: more contrast and depth of field, lower resolution and visible diffraction fringes.";
 
-  const ratios = Array.from({ length: 151 }, (_, k) => k * 0.01);
+  const ratios = Array.from({ length: 151 }, (_, k) => (k * Math.max(1.5, 1.1 * ratio)) / 150);
   const chart = [
     { x: ratios, y: ratios.map((r) => abbePeriodLimit(lambdaNm * nm, naObj, r * naObj) / nm), type: "scatter" as const, mode: "lines" as const, name: "Abbe period λ/(NA_obj + NA_c)", line: { color: "#60a5fa" } },
     { x: ratios, y: ratios.map((r) => rayleighCondenserResolution(lambdaNm * nm, naObj, r * naObj) / nm), type: "scatter" as const, mode: "lines" as const, name: "Rayleigh 1.22λ/(NA_obj + NA_c)", line: { color: "#34d399" } },

@@ -21,15 +21,15 @@ const row = (label: string, value: string, color = "") => (
 const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
 
 export default function MTFPage() {
-  const [naRaw, setNa] = useURLState("na", 0.95);
+  const [naRaw, setNa] = useURLState("na", 0.4);
   const [wavelengthRaw, setWavelength] = useURLState("wavelength", 550);
   const [indexRaw, setIndex] = useURLState("n", 1);
-  const [defocusRaw, setDefocus] = useURLState("defocus", 0.5);
+  const [defocusRaw, setDefocus] = useURLState("defocus", 3);
   const [nuRaw, setNu] = useURLState("nu", 0.5);
   const n = clamp(indexRaw, 1, 1.8, 1);
-  const na = clamp(naRaw, 0.01, n, Math.min(0.95, n));
+  const na = clamp(naRaw, 0.01, n, Math.min(0.4, n));
   const wavelengthNm = clamp(wavelengthRaw, 200, 2000, 550);
-  const defocusUm = clamp(defocusRaw, -20, 20, 0.5);
+  const defocusUm = clamp(defocusRaw, -20, 20, 3);
   const nu = clamp(nuRaw, 0, 1, 0.5);
 
   const fc = cutoffFrequency(na, wavelengthNm * nm);
@@ -73,6 +73,11 @@ export default function MTFPage() {
           {row("Paraxial W₀₂₀ = Δz·NA²/(2n)", fmt(w020, 4, " λ"))}
           {row("Defocused OTF(ν), Hopkins", fmt(defocused, 4), defocused < 0 ? "text-yellow-400" : "text-red-400")}
           {row("Strehl ratio of the defocus, sinc²(kW₀₂₀/2)", fmt(strehl, 4))}
+          {Math.abs(edgeWaves) > 1.1 * Math.abs(w020) && (
+            <p className="text-sm text-yellow-400">
+              Paraxial W₀₂₀ is {Math.round(100 * (1 - Math.abs(w020) / Math.abs(edgeWaves)))} % below the exact edge path n·Δz(1 − cos θ): at this NA the wavefront is not quadratic, and the OTF and Strehl shown are optimistic.
+            </p>
+          )}
           {defocused < 0 && <p className="text-sm text-yellow-400">Negative OTF: the pattern is imaged with reversed contrast.</p>}
           <p className="text-xs text-gray-500">
             Scalar, uniform pupil. The paraxial W₀₂₀ under-estimates high-NA defocus: the exact path difference at the

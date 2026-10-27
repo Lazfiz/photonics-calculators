@@ -106,9 +106,15 @@ export default function LowCoherencePage() {
           {row("A-scan time (one way)", fmt(aScanTime * 1e3, 4, " ms"))}
           {row("B-scan time", fmt(bScanTime, 4, " s"))}
           {row("Shot-noise SNR", Number.isFinite(snr) && snr > 0 ? `${(10 * Math.log10(snr)).toFixed(1)} dB` : "—", "text-yellow-400")}
+          {Rs > 0.1 * Rr && (
+            <p className="text-sm text-yellow-400">The SNR assumes shot noise from a much stronger reference (R_r ≫ R_s); here the sample arm adds noise and the SNR is optimistic.</p>
+          )}
+          {bwNm / lambdaNm > 0.1 && (
+            <p className="text-sm text-yellow-400">Δλ/λ₀ = {(bwNm / lambdaNm).toFixed(3)} exceeds 0.1: the Gaussian, Δλ ≪ λ₀ formulas lose accuracy.</p>
+          )}
           <p className="text-xs text-gray-500">
             SNR = ρ P_s/(2e B) with P_s = P₀R_s/4 through a 50/50 coupler and B = 2 × the signal FWHM ={" "}
-            {fmt(detectionBw * 1e-3, 3, " kHz")}; it assumes R_r ≫ R_s and a shot-noise-limited reference.
+            {fmt(detectionBw * 1e-3, 3, " kHz")}; it assumes R_r ≫ R_s and a shot-noise-limited reference. Spectral width Δλ/λ₀ = {(bwNm / lambdaNm).toFixed(3)}.
           </p>
         </div>
       </div>

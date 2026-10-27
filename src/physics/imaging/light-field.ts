@@ -8,7 +8,8 @@
  * - Sparrow limit in the image, R_obj = 0.47λM/NA (eq. 2), and N_u = W/R_obj resolvable spots behind a lenslet of
  *   width W (eq. 3); the lateral sample on the specimen is W/M;
  * - depth of field λn/NA² + ne/(M·NA) (eq. 4); with e = W this gives (2 + N_u)λn/(2NA²) for a refocused slice
- *   (eq. 5.2) and (2 + N_u²)λn/(2NA²) for a single view (eq. 5.3).
+ *   (eq. 5.2) and (2 + N_u²)λn/(2NA²) for a single view (eq. 5.3). The slice keeps e = W when pixels cap N_u, so
+ *   eq. 5.2 takes the diffraction count W/R_obj; one view uses the capped N_u. Both need N_u ≥ 1 (an angular sample).
  *
  * Plenoptic camera: R. Ng, M. Levoy, M. Brédif, G. Duval, M. Horowitz, P. Hanrahan, "Light field photography with a
  * hand-held plenoptic camera", Stanford Tech. Rep. CTSR 2005-02 (2005):
@@ -65,7 +66,10 @@ export interface LightFieldMicroscopeResult {
   /** Microlens f-number M/(2NA), and the matching focal length N·W, m. */
   lensletFNumber: number;
   lensletFocal: number;
-  /** Depth of field without microlenses λn/NA² (eq. 5.1), of a refocused slice (5.2) and of one view (5.3), m. */
+  /**
+   * Depth of field without microlenses λn/NA² (eq. 5.1), of a refocused slice (5.2, with W/R_obj since e = W) and of
+   * one view (5.3, capped N_u), m. The last two are NaN when N_u < 1: the lenslet resolves no angle.
+   */
   dofConventional: number;
   dofRefocused: number;
   dofView: number;
@@ -94,8 +98,8 @@ export function lightFieldMicroscope(p: LightFieldMicroscopeInputs): LightFieldM
     lensletFNumber: fNumber,
     lensletFocal: fNumber * p.lensletPitch,
     dofConventional: ok ? wave : NaN,
-    dofRefocused: ok ? ((2 + nu) * wave) / 2 : NaN,
-    dofView: ok ? ((2 + nu * nu) * wave) / 2 : NaN,
+    dofRefocused: ok && nu >= 1 ? ((2 + spotsDiffraction) * wave) / 2 : NaN,
+    dofView: ok && nu >= 1 ? ((2 + nu * nu) * wave) / 2 : NaN,
   };
 }
 
@@ -124,7 +128,7 @@ export interface PlenopticCameraResult {
   lensletFNumber: number;
   /** Micro-image diameter f_µ/N_w over the pitch: above 1 the micro-images overlap, below 1 pixels go unused. */
   microImageFill: number;
-  /** Whole pixels across one micro-image, N, and the N² views. */
+  /** Whole pixels across one micro-image, N, and the N² views; overlapping micro-images keep only 2p_µ − D clean. */
   pixelsAcross: number;
   views: number;
   /** Lenslets (spatial samples) across the sensor. */
@@ -151,21 +155,27 @@ function conjugate(f: number, s: number): number {
   return s > f ? (f * s) / (s - f) : Infinity;
 }
 
-/** Plenoptic 1.0 camera design (Ng 2005). NaN unless every input is positive and the focus distance exceeds f. */
+/**
+ * Plenoptic 1.0 camera design (Ng 2005). NaN unless every input is positive; the refocus distances are also NaN
+ * unless the focus distance exceeds f.
+ */
 export function plenopticCamera(p: PlenopticCameraInputs): PlenopticCameraResult {
   const ok = p.lensletPitch > 0 && p.lensletFocal > 0 && p.pixelPitch > 0 && p.sensorWidthPx >= 1
-    && p.sensorHeightPx >= 1 && p.mainFNumber > 0 && p.mainFocal > 0 && p.focusDistance > p.mainFocal && p.lambda > 0;
+    && p.sensorHeightPx >= 1 && p.mainFNumber > 0 && p.mainFocal > 0 && p.lambda > 0;
+  const focusOk = ok && p.focusDistance > p.mainFocal;
   const nan = NaN;
   const fNumber = ok ? p.lensletFocal / p.lensletPitch : nan;
   const imageDiameter = p.lensletFocal / p.mainFNumber;
+  // Overlapping micro-images (D > p_µ) mix neighbouring views in a band D − p_µ wide, leaving 2p_µ − D clean.
+  const cleanWidth = imageDiameter <= p.lensletPitch ? imageDiameter : Math.max(0, 2 * p.lensletPitch - imageDiameter);
   // Whole pixels; the 1e-9 keeps exact ratios such as 4000·9/125 = 288 from flooring to 287.
-  const pixelsAcross = ok ? Math.floor(Math.min(imageDiameter, p.lensletPitch) / p.pixelPitch + 1e-9) : nan;
+  const pixelsAcross = ok ? Math.floor(cleanWidth / p.pixelPitch + 1e-9) : nan;
   const lensletsX = ok ? Math.floor((p.sensorWidthPx * p.pixelPitch) / p.lensletPitch + 1e-9) : nan;
   const lensletsY = ok ? Math.floor((p.sensorHeightPx * p.pixelPitch) / p.lensletPitch + 1e-9) : nan;
   const views = pixelsAcross * pixelsAcross;
   const imageDofConventional = ok ? p.mainFNumber * p.lensletPitch : nan;
   const imageRefocusRange = pixelsAcross * imageDofConventional;
-  const imageDistance = ok ? conjugate(p.mainFocal, p.focusDistance) : nan;
+  const imageDistance = focusOk ? conjugate(p.mainFocal, p.focusDistance) : nan;
   return {
     lensletFNumber: fNumber,
     microImageFill: ok ? imageDiameter / p.lensletPitch : nan,
@@ -179,7 +189,7 @@ export function plenopticCamera(p: PlenopticCameraInputs): PlenopticCameraResult
     spacingTolerance: ok ? p.pixelPitch * fNumber : nan,
     imageDofConventional,
     imageRefocusRange,
-    refocusNear: ok ? conjugate(p.mainFocal, imageDistance + imageRefocusRange) : nan,
-    refocusFar: ok ? conjugate(p.mainFocal, imageDistance - imageRefocusRange) : nan,
+    refocusNear: focusOk ? conjugate(p.mainFocal, imageDistance + imageRefocusRange) : nan,
+    refocusFar: focusOk ? conjugate(p.mainFocal, imageDistance - imageRefocusRange) : nan,
   };
 }

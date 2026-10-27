@@ -52,7 +52,7 @@ export default function HyperspectralMicroscopyPage() {
   const snrFrame = snrBand(bandwidth, exposure);
   const snrSum = snrBand(bandwidth, exposure, frames);
 
-  const bandGrid = Array.from({ length: 64 }, (_, i) => 4 * (i + 1));
+  const bandGrid = (() => { const top = Math.max(256, 2 * bands); return Array.from({ length: 64 }, (_, i) => 1 + ((top - 1) * i) / 63); })();
   const range = end - start;
   const snrChart = [
     { x: bandGrid, y: bandGrid.map((n) => snrBand(range / n, exposure, frames)), type: "scatter" as const, mode: "lines" as const, name: "Same exposure per band", line: { color: "#60a5fa", width: 2 } },
@@ -66,10 +66,11 @@ export default function HyperspectralMicroscopyPage() {
 
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-4 mb-6">
+      <div className="grid gap-4 sm:grid-cols-5 mb-6">
         {[
           ["Band width Δλ", fmt(bandwidth, 2, " nm"), "text-blue-400"],
-          ["Raw data cube", fmt(sizeMiB, 1, " MiB"), "text-green-400"],
+          ["Raw data, all frames", fmt(sizeMiB, 1, " MiB"), "text-green-400"],
+          ["One cube", fmt(sizeMiB / frames, 1, " MiB"), "text-green-300"],
           ["Acquisition time", fmt(totalTime, 1, " s"), "text-yellow-400"],
           ["SNR per band, frames summed", fmt(snrSum, 1), "text-purple-400"],
         ].map(([label, value, color]) => (

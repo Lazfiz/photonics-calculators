@@ -42,17 +42,20 @@ export default function MultiphotonDepthPage() {
     const signal: number[] = [];
     const excitation: number[] = [];
     const mu = (absorption + scattering) * 1000; // 1/m
-    for (let d = 0; d <= 1000; d += 5) {
+    const xMax = Math.max(1000, Number.isFinite(results.depth1e3) ? 1.2 * results.depth1e3 : 0);
+    const floored = (y: number) => (y >= 1e-10 ? y : NaN); // keep the log axis finite
+    for (let k = 0; k <= 200; k++) {
+      const d = (xMax * k) / 200;
       depths.push(d);
       const att = ballisticFraction(d * 1e-6, mu);
-      signal.push(att * att * 100);
-      excitation.push(att * 100);
+      signal.push(floored(att * att) * 100);
+      excitation.push(floored(att) * 100);
     }
     return [
       { x: depths, y: signal, name: "2P signal (%)", line: { color: "#60a5fa" }, type: "scatter", mode: "lines" },
       { x: depths, y: excitation, name: "Excitation (%)", line: { color: "#f87171", dash: "dash" }, type: "scatter", mode: "lines" },
     ];
-  }, [absorption, scattering]);
+  }, [absorption, scattering, results.depth1e3]);
 
   const valid = Number.isFinite(results.axial);
 
@@ -98,9 +101,9 @@ export default function MultiphotonDepthPage() {
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Depth at 1% signal</span><span className="font-mono text-red-400">{fmt(results.depth1e2, 0, "µm")}</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Depth at 0.1% signal</span><span className="font-mono text-orange-400">{fmt(results.depth1e3, 0, "µm")}</span></div>
           <div className="text-xs text-gray-500 mt-2 space-y-1">
-            <p>FWHM = 2√(ln 2)·ω; ω_xy = 0.320λ/(√2 NA) (NA ≤ 0.7) or 0.325λ/(√2 NA^0.91); ω_z = 0.532λ/(√2 (n − √(n² − NA²))) (Zipfel et al., Nat. Biotechnol. 21, 1369, 2003)</p>
+            <p>FWHM = 2√(ln 2)·ω; ω_xy = 0.320λ/(√2 NA) (NA ≤ 0.7) or 0.325λ/(√2 NA^0.91); ω_z = 0.532λ/(√2 (n − √(n² − NA²))) (Zipfel et al., Nat. Biotechnol. 21, 1369, 2003); the NA = 0.7 branch switch jumps ≈ 2 %, inherent to the fit.</p>
             <p>Signal ∝ exp(−2µd) at constant surface power, µ = µ_a + µ_s | Depth = −ln(fraction)/(2µ)</p>
-            <p>Default µ_s = 6 mm⁻¹: in vivo mouse cortex at 800 nm, where the depth limit of 5–6 attenuation lengths is about 0.8–1 mm (Kobat, Horton &amp; Xu, J. Biomed. Opt. 16, 106014, 2011).</p>
+            <p>Default µ_s = 6 mm⁻¹ (attenuation length ≈ 170 µm), a typical value for cortex near 800 nm. µ does not follow the wavelength input: enter the value for your wavelength (scattering falls at longer λ). At 1280 nm Kobat, Horton &amp; Xu reached 1.6 mm in mouse cortex, near the depth limit set by out-of-focus background (J. Biomed. Opt. 16, 106014, 2011; Theer &amp; Denk, JOSA A 23, 3139, 2006).</p>
           </div>
         </div>
       </div>

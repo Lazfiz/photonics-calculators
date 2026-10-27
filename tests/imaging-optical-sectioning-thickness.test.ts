@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  airyUnit, axialPsfFwhm, confocalSectionFwhm, confocalSectionFwhmPointPinhole, twoPhotonAxialFwhm, widefieldDepthOfField,
+  airyUnit, axialPsfFwhm, confocalSectionFwhm, confocalSectionFwhmPointPinhole, twoPhotonAxialFwhm, widefieldAxialFirstZero, widefieldDepthOfField,
 } from "../src/physics/imaging/optical-sectioning-thickness";
 
 function assertRel(actual: number, expected: number, tol: number, label: string) {
@@ -35,6 +35,15 @@ test("low-NA limit matches the paraxial focal intensity (Born & Wolf §8.8)", ()
   assertRel(widefieldDepthOfField(lambda, n, NA), (2 * n * lambda) / NA ** 2, 1e-15, "DOF");
   // No cancellation in n − √(n² − NA²) at tiny NA: → NA²/(2n).
   assertRel(axialPsfFwhm(lambda, 1.5, 1e-6), (0.88 * lambda * 2 * 1.5) / 1e-12, 1e-9, "NA → 0");
+});
+
+test("widefield first axial zero λ/(n − √(n² − NA²)) (Born & Wolf §8.8, hand calculation)", () => {
+  // 550 nm, NA 1.4, n 1.518: √(1.518² − 1.4²) = 0.586791, Δ = 0.931209, λ/Δ = 0.590630 µm; paraxial 2nλ/NA² = 0.851939 µm.
+  assertRel(widefieldAxialFirstZero(550e-9, 1.518, 1.4), 0.59063 * um, 1e-5, "high NA");
+  assertRel(widefieldDepthOfField(550e-9, 1.518, 1.4) / widefieldAxialFirstZero(550e-9, 1.518, 1.4), 1.4425, 1e-3, "paraxial 44 % high");
+  // Low NA: → 2nλ/NA².
+  assertRel(widefieldAxialFirstZero(500e-9, 1, 0.05), (2 * 500e-9) / 0.05 ** 2, 1e-3, "paraxial limit");
+  assert.ok(Number.isNaN(widefieldAxialFirstZero(550e-9, 1.0, 1.0)));
 });
 
 test("two-photon axial FWHM (Zipfel, Williams & Webb 2003, hand calculation)", () => {

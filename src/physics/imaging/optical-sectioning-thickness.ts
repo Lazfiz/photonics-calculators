@@ -41,6 +41,14 @@ export function widefieldDepthOfField(lambda: number, n: number, NA: number): nu
   return valid(lambda, n, NA) ? (2 * n * lambda) / (NA * NA) : NaN;
 }
 
+/**
+ * Widefield focus-to-first-axial-zero λ/(n − √(n² − NA²)) of the sinc² axial PSF, m: the high-NA form of 2nλ/NA²
+ * (Born & Wolf §8.8; the paraxial one is 44 % larger at NA 1.4, n 1.518).
+ */
+export function widefieldAxialFirstZero(lambda: number, n: number, NA: number): number {
+  return valid(lambda, n, NA) ? lambda / axialDenominator(n, NA) : NaN;
+}
+
 /** Axial FWHM of the one-photon detection PSF, 0.88 λ/(n − √(n² − NA²)), m. */
 export function axialPsfFwhm(lambda: number, n: number, NA: number): number {
   return valid(lambda, n, NA) ? (0.88 * lambda) / axialDenominator(n, NA) : NaN;

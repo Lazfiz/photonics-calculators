@@ -38,11 +38,13 @@ export default function PupilMatchingPage() {
       ? "smaller than 0.5 mm: magnification above 1000·NA is empty"
       : "between 0.5 and 1 mm: the useful range";
 
+  const eyeStop = pupilMm > eyePupilMm;
   const nas = Array.from({ length: 171 }, (_, k) => 0.01 + k * 0.01);
   const chart = [
     { x: nas, y: nas.map((a) => exitPupilDiameter(a, M) / mm), type: "scatter" as const, mode: "lines" as const, name: `Exit pupil at ${fmt(M, 0)}×`, line: { color: "#60a5fa" } },
     { x: [0.01, 1.71], y: [1, 1], type: "scatter" as const, mode: "lines" as const, name: "1 mm (M = 500·NA)", line: { color: "#34d399", dash: "dash" } },
     { x: [0.01, 1.71], y: [0.5, 0.5], type: "scatter" as const, mode: "lines" as const, name: "0.5 mm (M = 1000·NA)", line: { color: "#fbbf24", dash: "dash" } },
+    { x: [0.01, 1.71], y: [eyePupilMm, eyePupilMm], type: "scatter" as const, mode: "lines" as const, name: "Eye pupil", line: { color: "#a78bfa", dash: "dash" } },
     { x: [na], y: [pupilMm], type: "scatter" as const, mode: "markers" as const, name: "Current objective", marker: { color: "#f87171", size: 10 } },
   ];
 
@@ -63,6 +65,7 @@ export default function PupilMatchingPage() {
           {row("Eyepieces for the useful range", `${fmt(eyepieceRange.min, 1)}–${fmt(eyepieceRange.max, 1)}×`, "text-yellow-400")}
           {row("Share of the eye pupil diameter used", fmt(100 * filled, 0, " %"))}
           <p className="text-sm text-purple-400">Exit pupil {verdict}.</p>
+          {eyeStop && <p className="text-sm text-purple-400">The eye pupil becomes the aperture stop: the effective NA drops to ≈ NA·d_eye/D = {fmt((na * eyePupilMm) / pupilMm, 3)}.</p>}
         </div>
       </div>
 

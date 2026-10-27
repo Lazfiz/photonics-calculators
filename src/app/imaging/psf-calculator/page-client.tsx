@@ -5,9 +5,8 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  airyFirstZeroRadius, airyFwhm, airyIntensity, axialFirstZero, axialIntensity, lateralOpticalCoordinate,
+  SINC2_HALF_MAX_X, airyFirstZeroRadius, airyFwhm, airyIntensity, axialFirstZero, axialIntensity, lateralOpticalCoordinate,
 } from "../../../physics/imaging/diffraction-psf";
-import { axialPsfFwhm } from "../../../physics/imaging/optical-sectioning-thickness";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 
@@ -26,7 +25,8 @@ export default function PSFCalculatorPage() {
   // Lengths in nm for display and plots.
   const airyRadiusNm = airyFirstZeroRadius(lambda, na) * 1e9;
   const fwhm = airyFwhm(lambda, na) * 1e9;
-  const axialFWHM = axialPsfFwhm(lambda, n, na) * 1e9;
+  // Half maximum of the plotted sinc² curve: 2·x½/π = 0.886 (x½ = 1.3916), times λ/(n − √(n² − NA²)).
+  const axialFWHM = ((2 * SINC2_HALF_MAX_X) / Math.PI) * (lambda / (n - Math.sqrt(n * n - na * na))) * 1e9;
   const axialZeroNm = axialFirstZero(lambda, n, na) * 1e9;
   const vOf = (rNm: number) => lateralOpticalCoordinate(rNm * 1e-9, lambda, na);
 
@@ -93,11 +93,10 @@ export default function PSFCalculatorPage() {
               <p>I(r) = [2J₁(v)/v]², v = 2π NA r/λ</p>
               <p>Airy radius r = 0.610 λ/NA; lateral FWHM = 0.514 λ/NA</p>
               <p>I(z) = sinc²(π z (n − √(n² − NA²))/λ)</p>
-              <p>Axial FWHM = 0.88 λ/(n − √(n² − NA²)) → 1.76 nλ/NA² at low NA</p>
+              <p>Axial FWHM = 0.886 λ/(n − √(n² − NA²)) → 1.77 nλ/NA² at low NA</p>
             </div>
             <p className="text-xs text-gray-500 mt-2">
-              Scalar theory, uniformly filled pupil, no aberrations, λ in vacuum. Above NA ≈ 0.9 the polarized focus is
-              up to 10–20 % wider, and a coverslip or index mismatch stretches the axial PSF further.
+              Scalar theory, uniformly filled pupil, no aberrations, λ in vacuum. Above NA ≈ 0.9 the vector focus differs: with linear polarization it is ≈ 30 % wider along the polarization and slightly narrower across it at NA 1.4 (Richards &amp; Wolf 1959); the 10–20 % average widening holds for unpolarized or circular light. A coverslip or index mismatch stretches the axial PSF further.
             </p>
           </div>
 
