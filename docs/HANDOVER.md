@@ -1,28 +1,31 @@
-# Handover — 2026-10-27 (session 163 → session 164)
+# Handover — 2026-10-27 (session 164 → session 165)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 163 did 5w-1 (detectors textbook pass 1/3) on `phase-5/5w-1-detectors`, PR #200: 16 pages, 0 bugs, minor fixes.
-PR #199 is released (`release` = `d82602ed`); its post-merge-check passed. Next: **5w-2 detectors 2/3**.
+Session 164 did 5w-2 (detectors textbook pass 2/3) on `phase-5/5w-2-detectors`, PR #201: 16 pages, 0 bugs, minor fixes.
+PR #200 is merged to `main` but not released (`release` = `d82602ed`). Next: **5w-3 detectors 3/3**.
 
 ## State
-- `boxcar.ts`: `optimalGateWidth(fwhm, B)` → optimum centred gate (s) at input bandwidth B (golden section on ln T/FWHM ∈
-  [1e-3, 10]); 1.18904·FWHM for B·FWHM ≫ 1, 0.62848 at B = 1 MHz / 500 ns. The page warns when B·FWHM < 2.
-- `noise.ts`: `quantizationNoiseElectrons(g)` = g/√12 e⁻; `amplifier-noise` read floor √(e_n² + g²/12) (defaults barely move).
-- `cooling-benefit` and `dark-noise-temperature` now default to E_g(T) (Varshni / Vurgaftman): Si −40 °C reduction ×630 → ×950.
-- `detectivity` temperature chart holds the load at the entered T; `em-gain` benefit labelled "vs G = 1".
-- Gates on `3deff943`: `npm run check` 1152 pass; build: see the PR.
+- `flicker-noise` defaults are the Hooge form (α = 2, K_f = 3e-10): corner 936 Hz at 1 µA (was 3 µHz, no 1/f in band).
+- `photodiode-speed` default velocity 8.4e4 m/s (Si holes, Jacoboni 1977 DOI 10.1016/0038-1101(77)90054-5); diffusion note.
+- `photon-transfer` read→shot crossover = σ_r² + K²/12; `quantum-efficiency` flat tops show a λ range, and switching
+  material loads that material's preset (InGaAs forces L = 0); `gainAtTemperature` returns ∞ past breakdown even when
+  V_br(T) ≤ 0; `darkCountRate` returns NaN on overflow.
+- Gates on `566cda24`: `npm run check` 1155 pass; build: see the PR.
 
 ## Next actions
-1. `/ship` PR #200. On a release: `node scripts/post-merge-check.mjs <sha> detectors/boxcar-integrator
-   detectors/cooling-benefit` (no new default value worth pinning; check that both load cleanly).
-2. 5w-2: detectors textbook slugs 17–32 in registry order, skipping photodiode-tia-noise: flicker-noise, gain-bandwidth,
-   gain-temperature, geiger-mode-avalanche, ingaas-parameters, intensified-ccd, linear-mode-avalanche, lockin-amplifier,
-   microchannel-plate, modulation-transfer, nep, photodiode-speed, photon-transfer, pixel-crosstalk, pmt, quantum-efficiency.
-   4 parallel `physics-reviewer` agents × 4 pages; ask for verdict + BUG/MINOR/UNVERIFIED with hand calculations and
-   "(from memory)" marks. 5w-3 then has the last 15 (reset-noise … well-capacity, skipping readout-noise).
+1. `/ship` PR #201. On a release (user asks): `node scripts/post-merge-check.mjs <sha> detectors/flicker-noise=9.3623e+2
+   detectors/photodiode-speed detectors/quantum-efficiency`.
+2. 5w-3: detectors textbook slugs 34–49 skipping readout-noise (15): reset-noise, saturation, shot-noise, si-vs-ingaas,
+   silicon-photodiode, single-photon-counting-module, sndr, spad, spad-dead-time, spectral-response, streak-camera,
+   thermal-noise, uniformity, vacuum-photodiode, well-capacity. 4 parallel `physics-reviewer` agents (4/4/4/3), same brief
+   as session 164 (verdict + BUG/MINOR/UNVERIFIED, hand calcs, "(from memory)", unique probe names), then one
+   `implementer` with a numbered fix list and allowed files; review its diff; `npm run check` before commit.
 3. After 5w: the Gemini hero (ask the user for the files).
 
 ## Non-obvious facts
+- **Session 164:** 16 pages, 0 bugs, ≈ 25 minor items; useful catches were defaults that hide the effect (1/f corner at
+  3 µHz, flat-top "peak" at the first sample) and an input label contradicting its default (electron v_sat as "slower carrier").
+  One implementer did all 14 fixes (≈ 8 min with the gate); check that a preset/material switch is symmetric.
 - **Session 163:** 16 textbook pages gave 0 bugs and ≈ 40 minor items; the reviewers' useful catches were stated-but-false
   conditions (optimum ignoring B, DR "at any gain", fixed-gap activation energy: n_i's slope needs E_g − T·dE_g/dT ≈ 1.20 eV
   for Si, not 1.12). Tell parallel reviewers to name scratchpad probes uniquely (they overwrote `probe.ts`). When an
@@ -59,10 +62,6 @@ PR #199 is released (`release` = `d82602ed`); its post-merge-check passed. Next:
 - **Session 151:** ts-morph `sf.insertText` forgets every node: record positions first, insert last-to-first. ts-morph scripts
   must live under `scripts/`. A `next dev`/`next start` left on 3100 survives TaskStop: confirm with `curl` (page title) and
   `tasklist //FI "PID eq <pid>"`, then `taskkill //PID <pid> //T //F`. ui-check reports "not hydrated" for a missing slug.
-- **Sessions 145–150:** Optica abstract pages show tables of paywalled papers to WebFetch; OpenAlex (`api.openalex.org/works/doi:<doi>`)
-  gives abstracts. A double-quoted `node -e` with backticks is shell-expanded. devctl can skip a whole `&&` chain (exit 75).
-- **Session 144:** web.archive.org holds vendor PDFs: list captures with `web.archive.org/cdx/search/cdx?url=<url>&output=txt`,
-  fetch `/web/<ts>id_/<url>`. SCHOTT 2017 data sheets: `refractiveindex.info/download/data/2017/schott_2017-01-20.pdf`.
 - **Session 138:** ITU-T PDFs download with curl via `https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-…!!PDF-E&type=items`.
   Optica full text reads in Chrome via `get_page_text`. Reviewer claims from memory were wrong twice: check each.
 - **Session 137:** Thorlabs uses slug URLs (`https://www.thorlabs.com/<family-slug>?tabName=Specs`), client-rendered.
