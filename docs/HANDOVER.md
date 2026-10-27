@@ -1,35 +1,36 @@
-# Handover — 2026-10-27 (session 164 → session 165)
+# Handover — 2026-10-27 (session 165 → session 166)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 164 did 5w-2 (detectors textbook pass 2/3) on `phase-5/5w-2-detectors`, PR #201: 16 pages, 0 bugs, minor fixes.
-PR #200 is merged to `main` but not released (`release` = `d82602ed`). Next: **5w-3 detectors 3/3**.
+Session 165 did 5w-3 (detectors textbook pass 3/3, the last detectors part) on `phase-5/5w-3-detectors`, PR #202:
+15 pages, 0 bugs, 11 minor fixes. PRs #200–#201 are merged to `main` but not released (`release` = `d82602ed`). Next: **5w-4 imaging 1/3**.
 
 ## State
-- `flicker-noise` defaults are the Hooge form (α = 2, K_f = 3e-10): corner 936 Hz at 1 µA (was 3 µHz, no 1/f in band).
-- `photodiode-speed` default velocity 8.4e4 m/s (Si holes, Jacoboni 1977 DOI 10.1016/0038-1101(77)90054-5); diffusion note.
-- `photon-transfer` read→shot crossover = σ_r² + K²/12; `quantum-efficiency` flat tops show a λ range, and switching
-  material loads that material's preset (InGaAs forces L = 0); `gainAtTemperature` returns ∞ past breakdown even when
-  V_br(T) ≤ 0; `darkCountRate` returns NaN on overflow.
-- Gates on `566cda24`: `npm run check` 1155 pass; build: see the PR.
+- New `sinadWithQuantizationDb(S, N, D, bits)` in `src/physics/detectors/noise.ts`; `sndr` SINAD/ENOB now include ADC
+  quantisation (ENOB can't exceed the bits), defaults N 1e-7, D 1e-8 (SINAD incl. 12-bit quantisation 68.247 dB, ENOB 11.043).
+- `saturation` default 12-bit (DR 71.709 dB); `thermal-noise` warns when B > 0.1·k_BT/h; reset-noise, silicon-photodiode and
+  thermal-noise sweeps follow the input with an operating-point marker; `reset-noise` title is "kTC".
+- Unverified (sources unreachable, in ROADMAP Open findings): Burle S-20 dark emission 0.4 fA/cm²; streak-camera 2.63 ps note.
+- Gates on `71270f25`: `npm run check` 1158 pass, 6 old eslint warnings; build: see the PR.
 
 ## Next actions
-1. `/ship` PR #201. On a release (user asks): `node scripts/post-merge-check.mjs <sha> detectors/flicker-noise=9.3623e+2
-   detectors/photodiode-speed detectors/quantum-efficiency`.
-2. 5w-3: detectors textbook slugs 34–49 skipping readout-noise (15): reset-noise, saturation, shot-noise, si-vs-ingaas,
-   silicon-photodiode, single-photon-counting-module, sndr, spad, spad-dead-time, spectral-response, streak-camera,
-   thermal-noise, uniformity, vacuum-photodiode, well-capacity. 4 parallel `physics-reviewer` agents (4/4/4/3), same brief
-   as session 164 (verdict + BUG/MINOR/UNVERIFIED, hand calcs, "(from memory)", unique probe names), then one
-   `implementer` with a numbered fix list and allowed files; review its diff; `npm run check` before commit.
-3. After 5w: the Gemini hero (ask the user for the files).
+1. `/ship` PR #202. On a release (user asks): `node scripts/post-merge-check.mjs <sha> detectors/sndr=68.247
+   detectors/saturation=71.71 detectors/thermal-noise detectors/vacuum-photodiode`.
+2. 5w-4: imaging textbook slugs 1–18 in registry order (53 after skipping airy-disk, structured-illumination): 3d-reconstruction,
+   adaptive-optics, afocal, cleared-tissue, coherent-raman, computational-imaging, computer-generated-holography,
+   confocal-pin-hole, confocal-resolution, contrast-methods, deconvolution, denoising-algorithms, digital-holography, dof,
+   dynamic-range, fcs, fluorescence-spectra, frap. 5w-5 = 19–36 (hyperspectral-microscopy … registration), 5w-6 = 37–53.
+   Four parallel `physics-reviewer` agents (5/5/4/4) with the same brief as sessions 164–165, then one `implementer` with a
+   numbered fix list and allowed files; review its diff; `npm run check` before commit.
+3. Last in Phase 5: the Gemini hero (ask the user for the files).
 
 ## Non-obvious facts
-- **Session 164:** 16 pages, 0 bugs, ≈ 25 minor items; useful catches were defaults that hide the effect (1/f corner at
-  3 µHz, flat-top "peak" at the first sample) and an input label contradicting its default (electron v_sat as "slower carrier").
-  One implementer did all 14 fixes (≈ 8 min with the gate); check that a preset/material switch is symmetric.
-- **Session 163:** 16 textbook pages gave 0 bugs and ≈ 40 minor items; the reviewers' useful catches were stated-but-false
-  conditions (optimum ignoring B, DR "at any gain", fixed-gap activation energy: n_i's slope needs E_g − T·dE_g/dT ≈ 1.20 eV
-  for Si, not 1.12). Tell parallel reviewers to name scratchpad probes uniquely (they overwrote `probe.ts`). When an
-  implementer edits `detectors.ts` in parallel, do the main session's registry edits after it finishes.
+- **Sessions 163–165 (detectors 5w, 47 pages, 0 bugs):** reviewers' useful catches are defaults that hide the page's effect
+  (1/f corner at 3 µHz, 16-bit ADC with σ_q 0.09 e⁻, a flat SINAD chart), stated-but-false conditions (optimum ignoring B,
+  fixed-gap activation energy: Si needs E_g − T·dE_g/dT ≈ 1.20 eV), results that ignore an input the chart uses (ENOB vs bits),
+  fixed chart ranges that miss the input, and classical formulas past their limit (kTB at 4 K, 1 THz is 7× high). Brief:
+  verdict + BUG/MINOR/UNVERIFIED, hand calcs, "(from memory)", unique probe prefixes (probeA-…). One implementer does ≈ 11–14
+  fixes in ≈ 7 min with the gate. When it edits `detectors.ts`, do the main session's registry edits after it finishes.
+- **Session 165:** pubs.aip.org shows a Cloudflare check (don't bypass); the MSU Burle handbook PDF is 404/bot-walled.
 - **Session 162:** reviewer claims from memory were wrong again (2 of 2 laser-safety claims; ICNIRP 2013 Table 5 has no C_A
   below 10 ps on purpose). ICNIRP 2013 PDF: `curl -sL https://www.icnirp.org/cms/upload/publications/ICNIRPLaser180gdl_2013.pdf`
   then `pdftotext -raw` and grep the row (`313 e l G 315`). A seeded `shuf --random-source=<(yes N)` clusters badly: draw
