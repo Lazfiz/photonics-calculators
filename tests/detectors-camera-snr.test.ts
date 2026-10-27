@@ -95,3 +95,13 @@ test("EMCCD dynamic range at unity gain is pixel-well limited, 20·log10(180000/
 test("dark/read crossover at the dark-current page defaults is 25 + 6·log2(250) = 72.7947 °C", () => {
   assert.ok(Math.abs(darkReadCrossoverTemperature(5, 0.1 * 1, 25, 6) - 72.7947) < 1e-3);
 });
+
+// Janesick, Photon Transfer (SPIE 2007): quantisation noise Δ/√12 adds in quadrature to the read noise.
+// Hand calculation, FWC 20000 e⁻, σ_r 5 e⁻, 12-bit: Δ = 20000/4095 = 4.8840, σ_q = 1.4099,
+// DR = 20·log10(20000/√(25 + 1.9878)) = 71.709 dB (vs 72.04 dB for read noise alone).
+test("saturation page default: 12-bit ADC DR = 71.709 dB", () => {
+  const sq = quantizationNoise(20000 / (2 ** 12 - 1));
+  close(sq, 1.4099, 1e-4);
+  close(dynamicRangeDb(20000, Math.hypot(5, sq)), 71.709, 1e-5);
+  close(dynamicRangeDb(20000, 5), 72.0412, 1e-5);
+});

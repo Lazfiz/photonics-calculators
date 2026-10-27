@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { h, k_B } from "../../../physics/constants";
 import { johnsonNoise } from "../../../physics/detectors/noise";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -17,11 +18,14 @@ export default function ThermalNoisePage() {
   const bandwidth = clamp(bandwidthRaw, 1e-3, 1e12, 1e6);
 
   const chartData = useMemo(() => {
-    const resistances = Array.from({ length: 200 }, (_, i) => 10 * Math.pow(1e5, i / 199)); // 10 Ω to 1 MΩ
-    return [{ x: resistances, y: resistances.map(R => johnsonNoise(R, temperature, bandwidth).v), type: "scatter" as const, mode: "lines" as const, name: "RMS noise voltage", line: { color: "#60a5fa" } }];
-  }, [temperature, bandwidth]);
+    const resistances = Array.from({ length: 200 }, (_, i) => (resistance / 10 ** 2.5) * Math.pow(10 ** 5, i / 199)); // R/10^2.5 to R·10^2.5
+    return [{ x: resistances, y: resistances.map(R => johnsonNoise(R, temperature, bandwidth).v), type: "scatter" as const, mode: "lines" as const, name: "RMS noise voltage", line: { color: "#60a5fa" } },
+      { x: [resistance], y: [johnsonNoise(resistance, temperature, bandwidth).v], type: "scatter" as const, mode: "markers" as const, name: "Operating point", marker: { color: "#fbbf24", size: 9 } }];
+  }, [resistance, temperature, bandwidth]);
 
   const { v: vNoise, i: iNoise, p: pNoise } = johnsonNoise(resistance, temperature, bandwidth);
+  const fQuantum = (k_B * temperature) / h; // Hz: where hf = k_B·T
+  const quantumRegime = bandwidth > 0.1 * fQuantum;
   const pNoise_dBm = 10 * Math.log10(pNoise / 1e-3);
 
   return (
@@ -37,10 +41,20 @@ export default function ThermalNoisePage() {
         <p className="text-gray-300">RMS noise current √(4k<sub>B</sub>TB/R) = <span className="text-blue-400 font-mono">{iNoise.toExponential(4)} A</span></p>
         <p className="text-gray-300">Available noise power k<sub>B</sub>TB (matched load) = <span className="text-blue-400 font-mono">{pNoise.toExponential(4)} W</span>
           {" "}(<span className="font-mono">{Number.isFinite(pNoise_dBm) ? pNoise_dBm.toFixed(2) : "—"} dBm</span>)</p>
-        <p className="text-sm text-gray-500 mt-2">Classical limit hf ≪ k<sub>B</sub>T (k<sub>B</sub>T/h = 6.25 THz at 300 K).</p>
+        <p className="text-sm text-gray-500 mt-2">Classical limit hf ≪ k<sub>B</sub>T (k<sub>B</sub>T/h = {temperature > 0 ? `${(fQuantum / 1e12).toPrecision(3)} THz` : "0 Hz"} at {temperature} K).</p>
+        {quantumRegime && (
+          <p className="text-sm text-yellow-400 mt-1">
+            B = {bandwidth.toExponential(2)} Hz exceeds 0.1·k<sub>B</sub>T/h{temperature > 0 ? ` = ${fQuantum.toExponential(2)} Hz` : " (zero at T = 0)"}: the classical k<sub>B</sub>TB overstates the noise (Planck regime).
+            The Planck-integrated available power saturates at (π²/6)(k<sub>B</sub>T)²/h = {((Math.PI ** 2 / 6) * (k_B * temperature) ** 2 / h).toExponential(2)} W, however large B is.
+          </p>
+        )}
       </div>
 
+      {temperature > 0 ? (
       <ChartPanel data={chartData} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "Resistance (Ω)", type: "log", gridcolor: "#374151" }, yaxis: { title: "Noise Voltage (V)", type: "log", gridcolor: "#374151" }, margin: { t: 20, b: 40, l: 70, r: 20 }, autosize: true }} />
+      ) : (
+        <p className="text-sm text-gray-400">Chart not drawn: at T = 0 the thermal noise is zero (— on a log axis).</p>
+      )}
     </>
   );
 }

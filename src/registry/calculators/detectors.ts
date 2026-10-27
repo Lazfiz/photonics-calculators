@@ -711,8 +711,8 @@ export const detectors: CalculatorEntry[] = [
   },
   {
     slug: "reset-noise",
-    title: "KTC Reset Noise",
-    description: "KTC reset noise voltage, noise charge, and conversion gain for image sensors.",
+    title: "kTC Reset Noise",
+    description: "kTC reset noise voltage, noise charge, and conversion gain for image sensors.",
     tier: "textbook",
     modelNote: "Thermal-equilibrium charge on a capacitor after a reset, √(k_B·T·C), for a hard reset of a linear capacitor. Soft reset and correlated double sampling lower it.",
     references: [
@@ -808,6 +808,10 @@ export const detectors: CalculatorEntry[] = [
         citation: "Saleh B. E. A., Teich M. C. (1991). Fundamentals of Photonics. Wiley. §17.5 Noise in photodetectors: shot noise 2qīB and circuit noise.",
         url: "https://doi.org/10.1002/0471213748",
       },
+      {
+        citation: "Altermatt P. P., Schenk A., Geelhaar F., Heiser G. (2003). Reassessment of the intrinsic carrier density in crystalline silicon in view of band-gap narrowing. J. Appl. Phys. 93, 1598–1604. n_i = 9.65e9 cm⁻³ at 300 K.",
+        url: "https://doi.org/10.1063/1.1529297",
+      },
     ],
   },
   {
@@ -815,7 +819,7 @@ export const detectors: CalculatorEntry[] = [
     title: "Silicon Photodiode",
     description: "Si photodiode parameters: bandgap, QE, responsivity, dark current, and spectral response.",
     tier: "textbook",
-    modelNote: "QE from Green's 300 K silicon absorption with Gärtner's depletion-plus-diffusion collection; the absorption edge does not shift with temperature. Dark current is depletion generation q·n_i·W·A/τ_g only (no diffusion or surface leakage); n_i = 9.65e9 cm⁻³ at 300 K scaled with T^(3/2) and the Varshni gap. Capacitance is a parallel plate with ε_r = 11.9.",
+    modelNote: "QE from Green's 300 K silicon absorption with Gärtner's depletion-plus-diffusion collection; the absorption edge does not shift with temperature. Dark current is depletion generation q·n_i·W·A/τ_g only (no diffusion or surface leakage); n_i = 9.65e9 cm⁻³ at 300 K scaled with T^(3/2) and the Varshni gap. Capacitance is a parallel plate with ε_r = 11.9. τ_g is an independent input, not tied to L: a midgap trap would give τ_g ≈ 2τ_r = 2L²/D, far shorter than 1 ms.",
     references: [
       {
         citation: "Green M. A. (2008). Self-consistent optical parameters of intrinsic silicon at 300 K including temperature coefficients. Sol. Energy Mater. Sol. Cells 92, 1305–1310. Table 1, n and k at 250–1450 nm (α = 4πk/λ).",
@@ -918,7 +922,7 @@ export const detectors: CalculatorEntry[] = [
     heading: "Spectral Response",
     lede: "R(λ) = η(λ) · q · λ / (h·c). Responsivity and quantum efficiency of a silicon photodiode as a function of wavelength, and the quantum efficiency a datasheet value implies.",
     tier: "textbook",
-    modelNote: "Silicon at 300 K: Green's absorption with Gärtner's depletion-plus-diffusion collection and a fixed surface reflectance. No dead layer or AR-coating spectrum, so the blue response is an upper bound. The datasheet check is exact: η = ℛ·h·c/(q·λ), and η > 1 needs internal gain.",
+    modelNote: "Silicon at 300 K: Green's absorption with Gärtner's depletion-plus-diffusion collection and a fixed surface reflectance, on a semi-infinite substrate (no back-surface recombination or reflection). No dead layer or AR-coating spectrum, so the blue response is an upper bound. The datasheet check is exact: η = ℛ·h·c/(q·λ), and η > 1 needs internal gain.",
     references: [
       {
         citation: "Green M. A. (2008). Self-consistent optical parameters of intrinsic silicon at 300 K including temperature coefficients. Sol. Energy Mater. Sol. Cells 92, 1305–1310. Table 1, n and k at 250–1450 nm (α = 4πk/λ).",
@@ -941,7 +945,7 @@ export const detectors: CalculatorEntry[] = [
     heading: "Streak Camera",
     lede: "Temporal resolution of a streak camera: the slit image, one pixel and screen blur (lengths converted to time by the sweep speed), the tube's own spread and trigger jitter, convolved; and the time window on the screen.",
     tier: "textbook",
-    modelNote: "Slit image and pixel are rectangles, tube, blur and jitter Gaussians; exact FWHM of their convolution. Blur: 5 % Gaussian MTF at the cathode limit, × M. Defaults: C16910, 60 ps sweep.",
+    modelNote: "Slit image and pixel are rectangles, tube, blur and jitter Gaussians; exact FWHM of their convolution. Blur: 5 % Gaussian MTF at the cathode limit, × M. Trigger jitter is entered as FWHM. Defaults: C16910, 60 ps sweep.",
     references: [
       {
         citation: "Hamamatsu Photonics (2008). Guide to Streak Cameras, cat. no. SHSS0006E. Temporal resolution as the FWHM of the streak image of a delta pulse; trigger jitter in summed sweeps.",
@@ -1057,9 +1061,9 @@ export const detectors: CalculatorEntry[] = [
     title: "Well Capacity & Dynamic Range Calculator",
     description: "Well capacity, dynamic range, pixel capacitance, and usable bit depth for image sensors.",
     heading: "Well Capacity & Dynamic Range",
-    lede: "DR = 20·log₁₀(Nwell/σread). C = Nwell·q/Vswing. Larger wells → more DR but slower charge transfer.",
+    lede: "DR = 20·log₁₀(Nwell/σread). C = Nwell·q/Vswing. Larger wells → more DR at a fixed read noise.",
     tier: "textbook",
-    modelNote: "Definitions: DR = 20·log₁₀(N_well/σ_read), usable bits log₂(N_well/σ_read), and a linear sense node C = N_well·q/V_swing with conversion gain q/C. Real sense-node capacitance grows with charge, so the conversion gain falls near full well. The minimum detectable signal solves S/√(S + σ²) = 3, with the signal's own shot noise.",
+    modelNote: "Definitions: DR = 20·log₁₀(N_well/σ_read), usable bits log₂(N_well/σ_read), and a linear sense node C = N_well·q/V_swing with conversion gain q/C. Real sense-node capacitance grows with charge, so the conversion gain falls near full well. σ_r is held fixed as N varies; at a fixed swing and fixed sense-node voltage noise, σ_r grows ∝ N and DR = 20·log(V_swing/v_n) does not depend on well depth. The minimum detectable signal solves S/√(S + σ²) = 3, with the signal's own shot noise.",
     references: [
       {
         citation: "Janesick J. R. (2007). Photon Transfer: DN → λ. SPIE Press. Full well, sense-node conversion gain and dynamic range.",

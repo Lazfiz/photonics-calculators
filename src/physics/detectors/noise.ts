@@ -121,6 +121,16 @@ export function idealSqnrDb(bits: number): number {
   return 20 * Math.log10(2 ** bits * Math.sqrt(1.5));
 }
 
+/**
+ * SINAD of an ideal N-bit ADC that also sees analog noise N and distortion D (powers referred to the ADC input,
+ * same units as the signal power S): 1/SINAD = 1/SQNR + (N + D)/S, so SINAD = −10·log₁₀(10^(−SQNR/10) + (N + D)/S).
+ * Quantisation, noise and distortion add as powers (IEEE Std 1241-2010, §4). NaN for S ≤ 0, N or D < 0, or bits ≤ 0.
+ */
+export function sinadWithQuantizationDb(signalPower: number, noisePower: number, distortionPower: number, bits: number): number {
+  if (!(signalPower > 0) || !(noisePower >= 0) || !(distortionPower >= 0) || !(bits > 0)) return NaN;
+  return -10 * Math.log10(10 ** (-idealSqnrDb(bits) / 10) + (noisePower + distortionPower) / signalPower);
+}
+
 /** Effective number of bits (SINAD − 1.76 dB)/6.02 dB, with the exact constants of idealSqnrDb. */
 export function enobFromSinad(sinadDb: number): number {
   return (sinadDb - 10 * Math.log10(1.5)) / (20 * Math.log10(2));

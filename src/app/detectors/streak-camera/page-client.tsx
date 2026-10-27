@@ -91,7 +91,7 @@ export default function StreakCameraPage() {
         <ValidatedNumberInput label="Pixels along the Sweep" value={pixelsRaw} onChange={setPixels} min={64} max={8192} step="1" />
         <ValidatedNumberInput label="Tube Spread FWHM (ps, transit time + deflection)" value={tubeRaw} onChange={setTemporalResolution} min={0} max={1e9} step="0.05" />
         <ValidatedNumberInput label="Screen Length along the Sweep (mm)" value={screenRaw} onChange={setScreenLength} min={1} max={100} />
-        <ValidatedNumberInput label="Trigger Jitter, Summed Sweeps (ps)" value={jitterRaw} onChange={setJitter} min={0} max={1e9} />
+        <ValidatedNumberInput label="Trigger Jitter, Summed Sweeps (ps FWHM; rms × 2.355)" value={jitterRaw} onChange={setJitter} min={0} max={1e9} />
         <ValidatedNumberInput label="Limiting Resolution at the Cathode (lp/mm)" value={lpmmRaw} onChange={setLpmm} min={1} max={1000} />
         <ValidatedNumberInput label="Data-Sheet Temporal Resolution (ps)" value={specRaw} onChange={setSpec} min={0} max={1e9} step="0.05" />
       </div>

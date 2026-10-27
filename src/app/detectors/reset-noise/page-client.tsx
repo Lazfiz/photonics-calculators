@@ -15,16 +15,20 @@ export default function ResetNoisePage() {
   const capacitance = clamp(capacitanceRaw, 1e-18, 1e-6, 10e-15);
   const temperature = clamp(temperatureRaw, 0, 1e4, 300);
 
+  const op = useMemo(() => ktcNoise(capacitance, temperature), [capacitance, temperature]);
+  const { v: noiseV, electrons: noiseElectrons } = op;
+
   const chartData = useMemo(() => {
-    const caps = Array.from({ length: 200 }, (_, i) => 1e-15 * Math.pow(100, i / 199)); // 1 fF to 100 fF
+    const caps = Array.from({ length: 200 }, (_, i) => (capacitance / 30) * Math.pow(900, i / 199)); // C/30 to 30·C
     const noise = caps.map(C => ktcNoise(C, temperature));
     return [
       { x: caps, y: noise.map(n => n.electrons), type: "scatter" as const, mode: "lines" as const, name: "Noise (e⁻)", line: { color: "#f87171" }, yaxis: "y" },
+      { x: [capacitance], y: [op.electrons], type: "scatter" as const, mode: "markers" as const, name: "Operating point (e⁻)", marker: { color: "#fbbf24", size: 9 }, yaxis: "y" },
       { x: caps, y: noise.map(n => n.v), type: "scatter" as const, mode: "lines" as const, name: "Noise voltage (V)", line: { color: "#60a5fa" }, yaxis: "y2" },
+      { x: [capacitance], y: [op.v], type: "scatter" as const, mode: "markers" as const, name: "Operating point (V)", marker: { color: "#fbbf24", size: 9, symbol: "diamond" }, yaxis: "y2" },
     ];
-  }, [temperature]);
+  }, [capacitance, temperature, op]);
 
-  const { v: noiseV, electrons: noiseElectrons } = ktcNoise(capacitance, temperature);
   const conversionGain = q / capacitance; // V/e⁻
 
   return (

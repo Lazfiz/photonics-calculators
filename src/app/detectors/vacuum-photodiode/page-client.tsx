@@ -65,6 +65,8 @@ export default function VacuumPhotodiodePage() {
   const snrDb = 20 * Math.log10(iPhoto / iNoise);
   const iChild = childLangmuirCurrentDensity(voltage, gap) * area;
   const overChild = iPhoto + iDark > iChild;
+  const loadDrop = iPhoto * load; // V dropped across the load by the DC photocurrent
+  const loadCollapse = loadDrop > 0.1 * voltage;
 
   const powers = Array.from({ length: 121 }, (_, i) => 10 ** (-12 + i / 10)); // 1 pW to 1 W
   const noiseChart = [
@@ -119,6 +121,14 @@ export default function VacuumPhotodiodePage() {
         <ResultCard label="SNR" value={`${fix(snrDb, 1)} dB`} tone={snrDb < 0 ? "red" : "green"}
           subtext={`20·log₁₀(I/σ) in B; shot ${fmt(iShot)} A, Johnson (load at 25 °C) ${fmt(iJohnson)} A rms`} />
       </div>
+
+      {loadCollapse && (
+        <p className="mb-6 text-sm text-yellow-400">
+          DC load line: I<sub>ph</sub>·R<sub>L</sub> = {fix(loadDrop, 1)} V against a {fix(voltage, 0)} V bias. The load drops that voltage out of the
+          bias, so the anode voltage collapses and the current is limited to about V/R<sub>L</sub> = {fmt(voltage / load)} A. The results
+          above assume the full bias on the gap.
+        </p>
+      )}
 
       <h2 className="text-xl font-semibold mb-2">Key Formulas</h2>
       <div className="bg-gray-900 rounded-lg p-4 mb-6 space-y-1 text-sm font-mono text-gray-400">

@@ -64,11 +64,15 @@ export default function SiliconPhotodiodePage() {
     line: { color: ["#60a5fa", "#34d399", "#fbbf24"][j], width: 2 },
   }));
 
-  const temps = Array.from({ length: 101 }, (_, i) => 220 + i);
+  const tLo = Math.min(220, temperature - 20);
+  const tHi = Math.max(320, temperature + 20);
+  const temps = Array.from({ length: 101 }, (_, i) => tLo + (i * (tHi - tLo)) / 100);
   const darkVsTemp = [{
     x: temps,
     y: temps.map((T) => generationCurrent(siliconIntrinsicDensity(T), W, A, lifetime * 1e-3) * 1e9),
     type: "scatter", mode: "lines", name: "I_dark", line: { color: "#f87171", width: 2 },
+  }, {
+    x: [temperature], y: [darkCurrent * 1e9], type: "scatter", mode: "markers", name: "Operating point", marker: { color: "#fbbf24", size: 9 },
   }];
 
   return (

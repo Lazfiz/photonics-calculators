@@ -57,6 +57,7 @@ export default function SiVsInGaAsPage() {
   const siSnr = snr(si, lambda, siDark);
   const ingaasSnr = snr(ingaas, lambda, ingaasDark);
   const edge_nm = inpWindowEdge(T) * 1e9;
+  const niRatio = ingaasIntrinsicDensity(INGAAS.x, T) / siliconIntrinsicDensity(T);
 
   const wl = Array.from({ length: 281 }, (_, i) => 400 + i * 5);
   const siSpectrum = wl.map((w) => siQe(w * 1e-9));
@@ -113,7 +114,7 @@ export default function SiVsInGaAsPage() {
           of 1.1 µm in the contact layers. The InP cap is taken as opaque above its band gap.
         </p>
         <p>
-          Dark current is generation in the depletion region only. InGaAs has n_i 65× that of Si, so its dark current is
+          Dark current is generation in the depletion region only. InGaAs has n_i {niRatio.toFixed(niRatio < 100 ? 1 : 0)}× that of Si at {T} K, so its dark current is
           higher per unit volume; above room temperature diffusion current, left out here, often dominates.
         </p>
       </div>

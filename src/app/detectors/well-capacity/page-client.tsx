@@ -47,6 +47,7 @@ export default function WellCapacityPage() {
         <p className="text-gray-300">Usable bits = <span className="text-blue-400 font-mono">{fix(usableBits, 1)} bits</span></p>
         <p className="text-gray-300">Pixel capacitance = <span className="text-blue-400 font-mono">{fix(capacitance * 1e15, 3)} fF</span></p>
         <p className="text-gray-300">Conversion gain = <span className="text-blue-400 font-mono">{fix(conversionGain_uV, 2)} µV/e⁻</span></p>
+        <p className="text-gray-300">Read noise at the sense node σ_r·q/C = <span className="text-blue-400 font-mono">{fix(readNoise * conversionGain_uV, 1)} µV</span></p>
         <p className="text-gray-300">Full well density = <span className="text-blue-400 font-mono">{fix(wellDensity, 0)} e⁻/μm²</span></p>
         <p className="text-gray-300">Min detectable (SNR = 3, read + shot noise) = <span className="text-blue-400 font-mono">{fix(minDetectable, 1)} e⁻</span></p>
         <p className="text-gray-300 text-sm mt-1">DR = 20·log₁₀(N_well/σ_read), C = N_well·q/V_swing, S_min = (9 + √(81 + 36σ²))/2</p>
