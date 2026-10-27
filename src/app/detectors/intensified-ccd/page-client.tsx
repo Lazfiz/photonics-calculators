@@ -119,6 +119,12 @@ export default function IntensifiedCCDPage() {
         <ResultCard label="Bare CCD SNR" value={fix(bareSnr)} tone="orange" subtext="Same photons at the bare QE, no gate, no background" />
       </div>
 
+      {gain > 1e7 && (
+        <p className="mb-6 text-sm text-yellow-400">
+          MCP stack gain {fmt(gain)} is above the ≈ 10⁷ chevron saturation level (Wiza 1979); the model doesn&apos;t saturate.
+        </p>
+      )}
+
       <h2 className="text-xl font-semibold mb-2">Key Formulas</h2>
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-400 font-mono space-y-1">
         <p>N<sub>pe</sub> = N<sub>ph</sub>·QE<sub>pc</sub>; phosphor g = η·qV/(hc/λ)</p>

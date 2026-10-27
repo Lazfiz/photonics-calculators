@@ -48,7 +48,7 @@ export default function QuantumEfficiencyPage() {
   const material: Material = MATERIALS.find((m) => m === materialRaw) ?? "si";
   const range = RANGE[material];
   const W = clamp(WRaw, 0.5, 500, 20);
-  const L = clamp(LRaw, 0, 1000, 100);
+  const L = material === "ingaas" ? 0 : clamp(LRaw, 0, 1000, 100); // the InP substrate is transparent: no substrate collection
   const d = clamp(dRaw, 0, 2, 0);
   // Bare-surface Fresnel needs n + ik, tabulated here for silicon only.
   const surface: Surface = material === "si" ? SURFACES.find((s) => s === surfaceRaw) ?? "ar" : "ar";
@@ -73,6 +73,11 @@ export default function QuantumEfficiencyPage() {
   const wl = Array.from({ length: 241 }, (_, i) => range.lo + (i * (range.hi - range.lo)) / 240);
   const qe = wl.map(externalQe);
   const peakIndex = qe.reduce((best, v, i) => (v > qe[best] ? i : best), 0);
+  // Contiguous run of samples within 0.1 percentage points of the maximum (a flat top).
+  let tieLo = peakIndex, tieHi = peakIndex;
+  while (tieLo > 0 && qe[peakIndex] - qe[tieLo - 1] <= 1e-3) tieLo--;
+  while (tieHi < qe.length - 1 && qe[peakIndex] - qe[tieHi + 1] <= 1e-3) tieHi++;
+  const peakWavelength = tieHi > tieLo ? `${wl[tieLo].toFixed(0)}–${wl[tieHi].toFixed(0)} nm (flat)` : `${wl[peakIndex].toFixed(0)} nm`;
   const probeQe = externalQe(probe);
 
   const chartSeries = [
@@ -90,9 +95,9 @@ export default function QuantumEfficiencyPage() {
     setMicrolensGain(p.gain);
     if (p.material !== material) setProbeWavelength(RANGE[p.material].probe);
   };
+  // Switching material loads its default structure: the silicon W, L and d mean nothing on an InP substrate.
   const selectMaterial = (m: Material) => {
-    setMaterial(m);
-    if (m !== material) setProbeWavelength(RANGE[m].probe);
+    if (m !== material) applyPreset(PRESETS.find((p) => p.id === (m === "ingaas" ? "ingaas-pin" : "pin"))!);
   };
   const active = PRESETS.find((p) => p.material === material && p.W === W && p.L === L && p.d === d && p.fill === fillFactor && p.gain === microlensGain);
   const chip = (on: boolean) => `rounded-full border px-3 py-1 transition ${on ? "border-blue-400 bg-blue-500/15 text-blue-200" : "border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500"}`;
@@ -115,7 +120,11 @@ export default function QuantumEfficiencyPage() {
 
       <div className="grid gap-4 sm:grid-cols-3 mb-4">
         <InputSlider label="Collecting thickness W" value={WRaw} onChange={setW} min={0.5} max={500} step={0.5} unit="µm" />
-        <InputSlider label="Substrate diffusion length L (0 = slab)" value={LRaw} onChange={setL} min={0} max={1000} step={5} unit="µm" />
+        {material === "ingaas" ? (
+          <div className="text-sm text-gray-400">Substrate diffusion length L: 0 (the InP substrate is transparent)</div>
+        ) : (
+          <InputSlider label="Substrate diffusion length L (0 = slab)" value={LRaw} onChange={setL} min={0} max={1000} step={5} unit="µm" />
+        )}
         <InputSlider label="Dead layer d" value={dRaw} onChange={setD} min={0} max={2} step={0.01} unit="µm" />
         <InputSlider label="Fill factor" value={fillRaw} onChange={setFillFactor} min={0.1} max={1} step={0.01} />
         <InputSlider label="Microlens gain" value={gainRaw} onChange={setMicrolensGain} min={1} max={3} step={0.05} />
@@ -139,15 +148,15 @@ export default function QuantumEfficiencyPage() {
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ResultCard label="QE at probe λ" value={pct(probeQe)} tone="blue" subtext={`ℛ = ${Number.isFinite(probeQe) ? responsivity(probeQe, probe * 1e-9).toFixed(3) : "—"} A/W; R = ${pct(reflectanceAt(probe))}`} />
         <ResultCard label="Peak QE" value={pct(qe[peakIndex])} tone="green" subtext={`Optical fill ${pct(opticalFill)}`} />
-        <ResultCard label="Peak wavelength" value={`${wl[peakIndex].toFixed(0)} nm`} tone="yellow" />
+        <ResultCard label="Peak wavelength" value={peakWavelength} tone="yellow" />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p>QE = (1 − R)·e^(−α·d)·[1 − e^(−α·W)/(1 + α·L)] × min(1, fill factor × microlens gain)</p>
         {material === "si" ? (
           <p>
-            α(λ) is crystalline silicon at 300 K (Green 2008). Blue light is lost in the dead layer (α &gt; 10⁵ cm⁻¹
-            below 400 nm), near-infrared light passes through a thin collecting layer (α(900 nm) = 303 cm⁻¹, a 33 µm
+            α(λ) is crystalline silicon at 300 K (Green 2008). Blue light is lost in the dead layer (α ≈ 10⁵ cm⁻¹
+            at 400 nm), near-infrared light passes through a thin collecting layer (α(900 nm) = 303 cm⁻¹, a 33 µm
             absorption length). The presets are illustrative structures, not a specific product; real sensors add
             AR-coating ripple, gate and colour-filter absorption, and etaloning in thin back-illuminated layers.
           </p>

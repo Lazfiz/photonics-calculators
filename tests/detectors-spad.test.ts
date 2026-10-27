@@ -42,6 +42,12 @@ test("Arrhenius dark counts: doubling step and Korzh's −50 → −110 °C drop
   assert.ok(Number.isNaN(arrheniusFactor(0.5, 0, 250)));
 });
 
+test("DCR overflow of e^(b·ΔΔV) returns NaN instead of Infinity", () => {
+  // b = 200 /V over a 10 V excess-bias step: e^2000 overflows a double.
+  const p = { dcrRef: 139, refTemperature: 298.15, temperature: 298.15, activationEnergy: 0.85, overbiasRef: 3, voltageScale: VC, fieldSlope: 200, overbias: 13 };
+  assert.ok(Number.isNaN(darkCountRate(p)));
+});
+
 test("DCR at a fixed supply: V_br drift, Arrhenius, field slope and P_t", () => {
   // 25 → 50 °C at 54 mV/K: ΔV = 3 − 1.35 = 1.65 V. Hand calculation, 139 cps at 25 °C and 3 V:
   // Arrhenius e^{(0.85/8.617333e-5)(1/298.15 − 1/323.15)} = 12.928; field e^{0.159057·(−1.35)} = 0.80676 (b = 8.43/53 V⁻¹,

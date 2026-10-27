@@ -7,7 +7,7 @@ import { useURLState } from "../../../hooks/use-url-state";
 import { closedLoopMagnitude, singlePoleClosedLoop } from "../../../physics/detectors/tia";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
-const fmtHz = (f: number) => (f >= 1e9 ? `${(f / 1e9).toFixed(2)} GHz` : f >= 1e6 ? `${(f / 1e6).toFixed(2)} MHz` : f >= 1e3 ? `${(f / 1e3).toFixed(2)} kHz` : `${f.toFixed(2)} Hz`);
+const fmtHz = (f: number) => (f >= 1e9 ? `${(f / 1e9).toFixed(2)} GHz` : f >= 1e6 ? `${(f / 1e6).toFixed(2)} MHz` : f >= 1e3 ? `${(f / 1e3).toFixed(2)} kHz` : f < 1 ? `${f.toExponential(2)} Hz` : `${f.toFixed(2)} Hz`);
 
 export default function GainBandwidthPage() {
   const [gainDCRaw, setGainDC] = useURLState("gainDC", 1000);
@@ -41,6 +41,7 @@ export default function GainBandwidthPage() {
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1">
         <p>A(f) = A₀ / (1 + j·f/f₀),  GBW = A₀·f₀</p>
         <p>A_cl(f) = A₀ / (1 + β·A₀ + j·f/f₀): gain A₀/(1 + β·A₀), bandwidth f₀·(1 + β·A₀)</p>
+        <p>The closed-loop gain shown is A₀/(1 + β·A₀), the non-inverting (noise) gain; an inverting stage has the same bandwidth but signal gain −(1 − β)/β.</p>
         <p>Single-pole op amp; higher poles, slew rate and phase margin are left out.</p>
       </div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Frequency (Hz)", type: "log", gridcolor: "#374151" }, yaxis: { title: "Gain (V/V)", type: "log", gridcolor: "#374151" } }} />

@@ -63,7 +63,7 @@ export const detectors: CalculatorEntry[] = [
         citation: "Agrawal G. P. (2010). Fiber-Optic Communication Systems, 4th ed. Wiley. §4.4 (APD receiver noise, optimum gain) and Table 4.2 (k: Si 0.02–0.05, InGaAs 0.5–0.7, Ge 0.7–1.0).",
       },
       {
-        citation: "Excelitas Technologies. C30902EH and C30921EH avalanche photodiodes, datasheet Rev. 2022.02. k_eff = 0.02; V_br = 225 V at 22 °C, 0.7 V/°C; M = 150; dark current 7 nA.",
+        citation: "Excelitas Technologies. C30902EH and C30921EH avalanche photodiodes, datasheet Rev. 2022.02. V_br = 225 V at 22 °C, 0.7 V/°C.",
         url: "https://www.excelitas.com/sites/default/files/assets/product/document/24781.pdf",
       },
     ],
@@ -331,7 +331,7 @@ export const detectors: CalculatorEntry[] = [
     description: "Flicker noise: S_I(f) = K_f · I^α / f. Noise spectral density falls as 1/f.",
     lede: "Flicker noise: S_i(f) = K_f · I^α / f. Noise spectral density falls as 1/f.",
     tier: "textbook",
-    modelNote: "Empirical K_f·I^α/f density (the SPICE KF/AF form) between sharp band edges, with the corner against the shot noise 2q·I. K_f and α are device fits, not predictions.",
+    modelNote: "Empirical K_f·I^α/f density (the SPICE KF/AF form) between sharp band edges, with the corner against the shot noise 2q·I. K_f and α are device fits, not predictions. Defaults use the Hooge form (α = 2, K_f = α_H/N, dimensionless), which puts the corner near 940 Hz at 1 µA; α = 1 is the SPICE AF = 1 form.",
     references: [
       {
         citation: "Hooge F. N. (1969). 1/f noise is no surface effect. Phys. Lett. A 29, 139. Empirical 1/f current noise S_I/I² = α_H/(N·f).",
@@ -360,7 +360,7 @@ export const detectors: CalculatorEntry[] = [
     title: "Gain vs Temperature",
     description: "APD gain drift at fixed bias from the breakdown-voltage temperature coefficient, and PMT gain drift.",
     tier: "textbook",
-    modelNote: "APD at fixed bias: Miller's law with n fitted through the entered operating point and a breakdown voltage linear in temperature. The defaults are the Excelitas C30662 InGaAs APD (M = 10 at 4 V below a 50 V breakdown, 0.14 V/°C), which reaches breakdown below −6.6 °C; the PMT branch applies an entered constant coefficient.",
+    modelNote: "APD at fixed bias: Miller's law with n fitted through the entered operating point and a breakdown voltage linear in temperature. The defaults are the Excelitas C30662 InGaAs APD (M = 10 at 4 V below a 50 V breakdown, 0.14 V/°C), which reaches breakdown below −6.6 °C; V_br(T) scales the whole Miller curve (M = 1/[1 − (V/V_br(T))^n]); a bias that tracks γ·ΔT still leaves a residual drift of order (V_br − V)/V_br. The PMT branch applies an entered constant coefficient.",
     references: [
       {
         citation: "Miller S. L. (1955). Avalanche breakdown in germanium. Phys. Rev. 99, 1234–1241. Empirical gain M = 1/[1 − (V/V_br)^n].",
@@ -388,7 +388,7 @@ export const detectors: CalculatorEntry[] = [
     title: "Geiger-Mode APD",
     description: "SPAD: breakdown voltage, overbias, temperature effects, PDE, and dark count rate.",
     tier: "textbook",
-    modelNote: "The trigger probability P_t = 1 − e^(−ΔV/V_c) is Otte's empirical fit. The dark rate is Arrhenius in T at a fixed excess bias, times Otte's e^(bΔV)·P_t bias dependence, with b held at its 20 °C value (Otte fits 10.1 at −40 °C down to 6.83 at 40 °C). The trapped charge scales with ΔV·P_t, and the trap lifetime is held fixed, though it lengthens on cooling. Defaults: one microcell of a Hamamatsu S13360-3050CS, 40.0 % PDE at 3 V. The trap and the 50 ns dead time are illustrative, since a SiPM microcell recharges through its quench resistor instead of a fixed dead time.",
+    modelNote: "The trigger probability P_t = 1 − e^(−ΔV/V_c) is Otte's empirical fit. The dark rate is Arrhenius in T at a fixed excess bias, times Otte's e^(bΔV)·P_t bias dependence, with b held at its 20 °C value (Otte fits 10.1 at −40 °C down to 6.83 at 40 °C). The trapped charge scales with ΔV·P_t, and the trap lifetime is held fixed, though it lengthens on cooling. V_c is held at its 25 °C value while V_br drifts; E_a is fixed (Webster & Henderson measured 293–343 K; at low temperature tunnelling flattens the dark rate). Defaults: one microcell of a Hamamatsu S13360-3050CS, 40.0 % PDE at 3 V. The trap and the 50 ns dead time are illustrative, since a SiPM microcell recharges through its quench resistor instead of a fixed dead time.",
     references: [
       {
         citation: "Otte A. N., Garcia D., Nguyen T., Purushotham D. (2017). Characterization of three high efficiency and blue sensitive silicon photomultipliers. Nucl. Instrum. Methods A 846, 106–125. PDE = PDE_max·(1 − e^(−ΔV/a)), eq. 3, with a = α·U_BD and α = 0.0395 at 452 nm (Hamamatsu); dark-rate fit e^(a + b·U_rel)·P_t, eq. 13, b = 8.43 at 20 °C; dark rate doubles every 5.3 °C at fixed overvoltage, −40 to 40 °C.",
@@ -413,7 +413,7 @@ export const detectors: CalculatorEntry[] = [
     title: "InGaAs Detector Parameters",
     description: "InₓGa₁₋ₓAs band gap, cutoff wavelength, QE, responsivity, generation dark current, NEP and D* for SWIR p-i-n photodiodes.",
     tier: "textbook",
-    modelNote: "Band gap from Vurgaftman's Varshni sets with bowing 0.477 eV (0.7373 eV, cutoff 1682 nm at x = 0.53, 300 K). Absorption α = A·√(E − E_g), A fitted to Adachi's model within ±12 % from 0.95 to 1.62 µm. The absorber is a fully depleted slab; dark current is space-charge generation q·n_i·d·A/τ_g with n_i scaled from 6.3e11 cm⁻³ through the gap only. Diffusion current from the neutral layers, which dominates many devices above room temperature, surface leakage and tunnelling are left out. The noise √(2q·I_gen) is the shot noise in reverse bias and the Johnson noise at zero bias.",
+    modelNote: "Band gap from Vurgaftman's Varshni sets with bowing 0.477 eV (0.7373 eV, cutoff 1682 nm at x = 0.53, 300 K). Absorption α = A·√(E − E_g), A fitted to Adachi's model within ±12 % from 0.95 to 1.62 µm. The absorber is a fully depleted slab; dark current is space-charge generation q·n_i·d·A/τ_g with n_i scaled from 6.3e11 cm⁻³ through the gap only. Diffusion current from the neutral layers, which dominates many devices above room temperature, surface leakage and tunnelling are left out. The QE chart starts at 950 nm, the lower edge of the α fit, for a bare absorber with no InP window. The noise √(2q·I_gen) is the shot noise in reverse bias and the Johnson noise at zero bias.",
     references: [
       {
         citation: "Vurgaftman I., Meyer J. R., Ram-Mohan L. R. (2001). Band parameters for III–V compound semiconductors and their alloys. J. Appl. Phys. 89, 5815–5875. Varshni sets (Tables I–X) and the Ga₁₋ₓInₓAs bowing C = 0.477 eV (Table XIII).",
@@ -476,7 +476,7 @@ export const detectors: CalculatorEntry[] = [
     title: "Linear-Mode Avalanche Photodiode",
     description: "SNR of a linear-mode APD receiver versus gain: McIntyre excess noise, shot and thermal noise, and the optimum gain for a given load resistance.",
     tier: "textbook",
-    modelNote: "Shot noise of the multiplied photocurrent and bulk dark current with McIntyre's F, plus Johnson noise of the load; surface dark current, amplifier voltage noise and background light are left out. The default 50 pA bulk dark current is about the Excelitas C30902EH's 7 nA at M = 150 divided by the gain.",
+    modelNote: "Shot noise of the multiplied photocurrent and bulk dark current with McIntyre's F, plus Johnson noise of the load; surface dark current, amplifier voltage noise and background light are left out. The default 50 pA bulk dark current is about the Excelitas C30902EH's 7 nA at M = 150 divided by the gain; the total dark current ÷ M is only an upper bound on the multiplied bulk part, because surface leakage isn't multiplied.",
     references: [
       {
         citation: "McIntyre R. J. (1966). Multiplication noise in uniform avalanche diodes. IEEE Trans. Electron Devices ED-13, 164–168. F = kM + (1 − k)(2 − 1/M).",
@@ -500,7 +500,7 @@ export const detectors: CalculatorEntry[] = [
     title: "Lock-in Amplifier",
     description: "Lock-in amplifier: demodulation gain, ENBW, noise rejection, and SNR improvement.",
     tier: "textbook",
-    modelNote: "Ideal multiplier with a unit-power sine or square reference, white input noise and an order-N output filter (cascaded RC or Butterworth). A square reference also detects odd harmonics k·f_r with gain 2√2/(kπ); the strongest harmonic is shown. A detuned signal is shown by its beat envelope. Reference phase noise, dynamic reserve, harmonic pickup and 1/f noise are left out.",
+    modelNote: "Ideal multiplier with a unit-power sine or square reference, white input noise and an order-N output filter (cascaded RC or Butterworth). A square reference also detects odd harmonics k·f_r with gain 2√2/(kπ); the strongest harmonic is shown. A detuned signal is shown by its beat envelope. The square-reference noise penalty assumes the input noise bandwidth B_in ≫ f_r (many odd harmonics in band). Reference phase noise, dynamic reserve, harmonic pickup and 1/f noise are left out.",
     references: [
       {
         citation: "Scofield J. H. (1994). Frequency-domain description of a lock-in amplifier. American Journal of Physics 62(2), 129–133. Demodulation, output filter and noise bandwidth.",
@@ -517,7 +517,7 @@ export const detectors: CalculatorEntry[] = [
     title: "Microchannel Plate",
     description: "MCP gain, spatial resolution, and effective QE for photon detectors.",
     tier: "textbook",
-    modelNote: "Schagen's model: secondaries leave the wall normally at V₀ and yield A·√V_c per strike. With A = 0.2 a 1 kV plate of L/d 50 gives 10³ where real plates give about 10⁴, so fit A to a measured curve. Stacks multiply unsaturated against the one-channel space-charge limit; chevrons saturate near 10⁷. No ion feedback.",
+    modelNote: "Schagen's model: secondaries leave the wall normally at V₀ and yield A·√V_c per strike. With A = 0.2 a 1 kV plate of L/d 50 gives 10³ where real plates give about 10⁴, so fit A to a measured curve. Stacks multiply unsaturated against the one-channel space-charge limit; chevrons saturate near 10⁷. Saturation is flagged against the one-channel limit. No ion feedback.",
     references: [
       {
         citation: "Wiza J. L. (1979). Microchannel plate detectors. Nucl. Instrum. Methods 162, 587–601, eq. (1)–(4) and §2.2. Schagen's channel-gain model (eq. 1) with A ≈ 0.2 and V₀ ≈ 1 eV, exponential pulse heights below saturation, saturated gain proportional to the channel diameter (10⁸ for 1 mm).",
@@ -530,7 +530,7 @@ export const detectors: CalculatorEntry[] = [
     title: "Modulation Transfer Function (MTF)",
     description: "Image sensor MTF: pixel aperture, charge spread, and optical blur contributions.",
     tier: "textbook",
-    modelNote: "Product of three terms along one axis: a square pixel aperture of side p·√FF (|sinc|, 2/π at Nyquist for 100 % fill), an exponential charge-spread line spread of 1/e length ℓ (Lorentzian MTF) and a Gaussian optical blur. ℓ is a fitted spread, not a diffusion length. Aliasing, wavelength dependence and the 2D pixel shape are left out.",
+    modelNote: "Product of three terms along one axis: a square pixel aperture of side p·√FF (|sinc|, 2/π at Nyquist for 100 % fill), an exponential charge-spread line spread of 1/e length ℓ (Lorentzian MTF) and a Gaussian optical blur. ℓ is a fitted spread, not a diffusion length. Aliasing is left out, and the phase-averaged sampling MTF sinc(πfp) is not included either; wavelength dependence and the 2D pixel shape are left out too.",
     references: [
       {
         citation: "Holst G. C., Lomheim T. S. (2011). CMOS/CCD Sensors and Camera Systems, 2nd ed. SPIE Press. Ch. 10 \"MTF\": the system MTF as a product of the detector aperture, diffusion and optics terms.",
@@ -563,7 +563,7 @@ export const detectors: CalculatorEntry[] = [
     title: "Photodiode Speed & Bandwidth",
     description: "RC and transit-time bandwidth, junction capacitance and thermal NEP vs photodiode area.",
     tier: "textbook",
-    modelNote: "RC limit with C ∝ area and the transit limit 0.443·v/W of one carrier crossing the full depletion width, combined as 1/f² = 1/f_RC² + 1/f_tr² (within 4 % of the exact response). Uniform generation with equal carrier speeds gives 0.553·v/W.",
+    modelNote: "RC limit with C ∝ area and the transit limit 0.443·v/W of one carrier crossing the full depletion width, combined as 1/f² = 1/f_RC² + 1/f_tr² (within 4 % of the exact response). Uniform generation with equal carrier speeds gives 0.553·v/W. Diffusion current from light absorbed outside W is not modelled; it dominates for Si near 850 nm, where 1/α ≈ 19 µm exceeds W.",
     references: [
       {
         citation: "Bowers J. E., Burrus C. A. (1987). Ultrawide-band long-wavelength p-i-n photodetectors. J. Lightwave Technol. 5, 1339. Transit-time and RC limits of p-i-n bandwidth.",
@@ -572,6 +572,10 @@ export const detectors: CalculatorEntry[] = [
       {
         citation: "Sze S. M., Ng K. K. (2007). Physics of Semiconductor Devices, 3rd ed. Wiley. p–n junction depletion capacitance (abrupt m = 1/2, linearly graded m = 1/3), n_i(T), generation and diffusion currents.",
         url: "https://doi.org/10.1002/0470068329",
+      },
+      {
+        citation: "Jacoboni C., Canali C., Ottaviani G., Alberigi Quaranta A. (1977). A review of some charge transport properties of silicon. Solid-State Electron. 20, 77–89. Hole saturation velocity v = 1.62e8·T^−0.52 cm/s, ≈ 8.4×10⁴ m/s at 300 K.",
+        url: "https://doi.org/10.1016/0038-1101(77)90054-5",
       },
     ],
   },
@@ -667,7 +671,7 @@ export const detectors: CalculatorEntry[] = [
     lede: "Detector QE from the absorption coefficient: silicon photodiode, back-illuminated and deep-depletion CCD and front-illuminated CMOS structures, and an InGaAs p-i-n, with reflection, dead-layer and fill-factor losses.",
     keywords: ["CCD quantum efficiency", "CMOS quantum efficiency", "fill factor"],
     tier: "textbook",
-    modelNote: "Silicon or In₀.₅₃Ga₀.₄₇As at 300 K. A dead layer, a fully collecting layer W and diffusion from a semi-infinite substrate (Gärtner); L = 0 is a slab. Silicon α is Green's table; InGaAs α = A·√(E − E_g) with the Vurgaftman gap, fitted to Adachi within ±12 %, behind an InP cap taken as opaque short of 916 nm. Reflection is a fixed R, or bare-silicon Fresnel for silicon; no AR-coating spectrum, etaloning, gate or colour-filter absorption. The presets are illustrative structures, not products.",
+    modelNote: "Silicon or In₀.₅₃Ga₀.₄₇As at 300 K. A dead layer, a fully collecting layer W and diffusion from a semi-infinite substrate (Gärtner); L = 0 is a slab. Silicon α is Green's table; InGaAs α = A·√(E − E_g) with the Vurgaftman gap, fitted to Adachi within ±12 %, behind an InP cap taken as opaque short of 916 nm; InGaAs sits on a transparent InP substrate (L = 0). Reflection is a fixed R, or bare-silicon Fresnel for silicon; no AR-coating spectrum, etaloning, gate or colour-filter absorption. The presets are illustrative structures, not products.",
     references: [
       {
         citation: "Green M. A. (2008). Self-consistent optical parameters of intrinsic silicon at 300 K including temperature coefficients. Sol. Energy Mater. Sol. Cells 92, 1305–1310. Table 1, n and k at 250–1450 nm (α = 4πk/λ).",

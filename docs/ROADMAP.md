@@ -5,11 +5,11 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 163, 2026-10-27)
+## Status (session 164, 2026-10-27)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
-  textbook-tier pass, user choice): 5w-1 done (session 163); next 5w-2, then the Gemini hero. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  textbook-tier pass, user choice): 5w-1 and 5w-2 done (sessions 163–164); next 5w-3, then the Gemini hero. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -191,6 +191,9 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - 5w-1 (session 163), not fixed: `cosmic-rays` `poissonQuantile` ≈ 13 ms per call at the max inputs (μ ≈ 1.7e9), ≈ 0.7 s per render;
   `camera-snr.ts` 604 register stages are the CCD201 (iXon 888), the page models an 897 (CCD97, unverified count; F² changes < 0.2 %);
   `detectivity` D* uses the entered I_d at any area (no current density or R₀A); `em-gain` has no conventional-amplifier read-noise input.
+- 5w-2 (session 164), not fixed: `linear-mode-avalanche` default bulk I_d 50 pA = total/M (upper bound; C30902EH noise-current spec
+  unchecked, ≈ 1.5 pA from memory, M_opt ±3 %); `photodiode-speed` models no diffusion tail (Si 850 nm: 1/α 19 µm > W 10.5 µm);
+  `gain-temperature` scales the Miller curve with V_br (shift model differs 8 %); `pmt` Hamamatsu eq. numbers unverified.
 - `detectors/gain-temperature` PMT branch: the −0.3 %/°C default is an entered value; source a typical dynode-gain coefficient in part 7 (Hamamatsu handbook §13.1.1 gives no number).
 **Polarization**
 - `polarization-scrambling` (session 140): near-locked (not exactly locked) stages still use the product of means; only p, q ≤ 4 get a
@@ -249,7 +252,7 @@ One box per session, in this order.
   of n; skip the slugs already reviewed in session 162: coupling-efficiency, airy-disk, scintillation,
   photodiode-tia-noise, optical-parametric-oscillator, structured-illumination, readout-noise, raman-scattering,
   connector-return-loss, fade-probability.
-  - [x] 5w-1 detectors 1/3 (session 163, PR #200) · [ ] 5w-2 detectors 2/3 · [ ] 5w-3 detectors 3/3 (47 pages)
+  - [x] 5w-1 detectors 1/3 (session 163, PR #200) · [x] 5w-2 detectors 2/3 (session 164, PR #201) · [ ] 5w-3 detectors 3/3 (47 pages)
   - [ ] 5w-4 imaging 1/3 · [ ] 5w-5 imaging 2/3 · [ ] 5w-6 imaging 3/3 (53)
   - [ ] 5w-7 fiber-optics 1/2 · [ ] 5w-8 fiber-optics 2/2 (41)
   - [ ] 5w-9 wave-optics 1/2 · [ ] 5w-10 wave-optics 2/2 (32)
@@ -274,6 +277,8 @@ One box per session, in this order.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - 5w-2 detectors 2/3 (session 164, `phase-5/5w-2-detectors`, PR #201): 16 pages, 0 bugs; Hooge flicker defaults (corner in band),
+    Si hole v_sat default (Jacoboni 1977), photon-transfer crossover with K²/12, QE flat-top range and InGaAs L = 0, 1155 tests.
   - 5w-1 detectors 1/3 (session 163, `phase-5/5w-1-detectors`, PR #200): 16 pages, 0 bugs; boxcar optimum from B (`optimalGateWidth`),
     ADC g/√12 (`quantizationNoiseElectrons`), E_g(T) default on cooling/dark-noise (fixed 1.12 eV understated Si ×1.5), 1152 tests.
   - Phase 5 spot-check (session 162, `phase-5/spot-check`, PR #199): 20 pages; `photodiode-tia-noise` now weights noise by the

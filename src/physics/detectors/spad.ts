@@ -72,7 +72,8 @@ export function darkCountRate(p: DarkCountInputs): number {
   const arr = arrheniusFactor(p.activationEnergy, p.temperature, p.refTemperature);
   if (!(p.dcrRef >= 0 && ptRef > 0 && p.fieldSlope >= 0) || Number.isNaN(pt) || Number.isNaN(arr)) return NaN;
   if (pt === 0) return 0;
-  return p.dcrRef * arr * Math.exp(p.fieldSlope * (p.overbias - p.overbiasRef)) * (pt / ptRef);
+  const rate = p.dcrRef * arr * Math.exp(p.fieldSlope * (p.overbias - p.overbiasRef)) * (pt / ptRef);
+  return Number.isFinite(rate) ? rate : NaN; // e^(b·ΔΔV) can overflow
 }
 
 /** Trap efficiency η at excess bias ΔV from η_ref at ΔV_ref: η scales with the avalanche charge and with P_t. */

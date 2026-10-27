@@ -17,6 +17,9 @@ const T_REF = 25; // °C
 // PDE 40 % at 450 nm, 54 mV/°C, 500 kcps over 3600 cells = 139 cps per cell). Otte et al. 2017: α = 0.0395 at
 // 452 nm (V_c = 0.0395 · 53 V = 2.09 V) and dark-rate slope b = 8.43 per relative overvoltage (0.159 /V).
 // Webster & Henderson 2013: E_a = 0.85 eV. The trap and dead time are the afterpulsing page's illustrative values.
+// Non-finite dark rates (overflow) become gaps in the charts.
+const finiteOrNaN = (x: number) => (Number.isFinite(x) ? x : NaN);
+
 export default function GeigerModeAPDPage() {
   const [overbiasRaw, setOverbias] = useURLState("overbias", 3); // V at 25 °C
   const [vcRaw, setVc] = useURLState("voltageScale", 2.09); // V
@@ -42,10 +45,10 @@ export default function GeigerModeAPDPage() {
   const eta = clamp(etaRaw, 0, 1, 0.05);
   const trapTau_ns = clamp(trapTauRaw, 0.1, 1e5, 20);
 
-  const dcrAt = (dv: number, t_C: number) => darkCountRate({
+  const dcrAt = (dv: number, t_C: number) => finiteOrNaN(darkCountRate({
     dcrRef, temperature: t_C + K, refTemperature: T_REF + K, activationEnergy: ea,
     overbias: dv, overbiasRef, voltageScale: vc, fieldSlope: slope,
-  });
+  }));
   const bvShift = beta * (temperature - T_REF);
   const dv = overbiasAtTemperature(overbiasRef, beta, temperature, T_REF);
   const pt = triggerProbability(dv, vc);
@@ -68,7 +71,7 @@ export default function GeigerModeAPDPage() {
   const temps = Array.from({ length: 126 }, (_, i) => tLo + (i * (Math.max(85, temperature) - tLo)) / 125);
   const tempChart = [
     { x: temps, y: temps.map((t) => dcrAt(overbiasAtTemperature(overbiasRef, beta, t, T_REF), t)), type: "scatter" as const, mode: "lines" as const, name: "DCR (cps)", line: { color: "#a78bfa" } },
-    { x: [temperature], y: [dcr], type: "scatter" as const, mode: "markers" as const, name: "Operating point", marker: { color: "#fbbf24", size: 8 } },
+    { x: Number.isFinite(dcr) ? [temperature] : [], y: Number.isFinite(dcr) ? [dcr] : [], type: "scatter" as const, mode: "markers" as const, name: "Operating point", marker: { color: "#fbbf24", size: 8 } },
     { x: temps, y: temps.map((t) => pdeMax * triggerProbability(overbiasAtTemperature(overbiasRef, beta, t, T_REF), vc) * 100), type: "scatter" as const, mode: "lines" as const, name: "PDE (%)", line: { color: "#34d399" }, yaxis: "y2" },
   ];
 
@@ -92,7 +95,7 @@ export default function GeigerModeAPDPage() {
         <ResultCard label="Excess Bias" value={`${dv.toFixed(2)} V`} tone="blue" />
         <ResultCard label="Trigger Probability" value={`${(pt * 100).toFixed(1)}%`} tone="cyan" />
         <ResultCard label="PDE" value={`${(pde * 100).toFixed(1)}%`} tone="green" />
-        <ResultCard label="Dark Count Rate" value={Number.isFinite(dcr) ? `${dcr.toExponential(2)} cps` : "—"} tone="purple" subtext={Number.isFinite(doubling) ? `doubles every ${doubling.toFixed(1)} °C at fixed bias` : undefined} />
+        <ResultCard label="Dark Count Rate" value={Number.isFinite(dcr) ? `${dcr.toExponential(2)} cps` : "—"} tone="purple" subtext={Number.isFinite(doubling) ? `doubles every ${doubling.toFixed(1)} °C at fixed excess bias` : undefined} />
         <ResultCard label="Afterpulse Probability" value={Number.isFinite(pap) ? `${(pap * 100).toFixed(3)}%` : "—"} tone="orange" />
         <ResultCard label="Afterpulse Rate (dark)" value={Number.isFinite(pap * dcr) ? `${(pap * dcr).toExponential(2)} cps` : "—"} tone="yellow" />
         <ResultCard label="Max Count Rate 1/τ" value={`${(maxRate / 1e6).toFixed(1)} Mcps`} tone="gray" />

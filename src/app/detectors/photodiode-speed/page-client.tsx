@@ -17,7 +17,7 @@ export default function PhotodiodeSpeedPage() {
   const [qeRaw, setQe] = useURLState("qe", 0.8);
   const [capacitanceDensityRaw, setCapacitanceDensity] = useURLState("capacitanceDensity", 10); // pF/mm²
   const [epsRRaw, setEpsR] = useURLState("epsR", 11.9);
-  const [velocityRaw, setVelocity] = useURLState("velocity", 1e5); // m/s
+  const [velocityRaw, setVelocity] = useURLState("velocity", 8.4e4); // m/s: Si hole saturation velocity ≈ 8.4×10⁴ m/s at 300 K (Jacoboni et al. 1977, v = 1.62e8·T^−0.52 cm/s)
   const [loadResistanceRaw, setLoadResistance] = useURLState("loadResistance", 50); // Ω
   const [areaMinRaw, setAreaMin] = useURLState("areaMin", 0.001); // mm²
   const [areaMaxRaw, setAreaMax] = useURLState("areaMax", 10); // mm²
@@ -25,7 +25,7 @@ export default function PhotodiodeSpeedPage() {
   const qe = clamp(qeRaw, 0.01, 1, 0.8);
   const capacitanceDensity = clamp(capacitanceDensityRaw, 0.01, 1e4, 10) * 1e-12 / 1e-6; // pF/mm² → F/m²
   const epsR = clamp(epsRRaw, 1, 100, 11.9);
-  const velocity = clamp(velocityRaw, 1e3, 1e6, 1e5);
+  const velocity = clamp(velocityRaw, 1e3, 1e6, 8.4e4);
   const loadResistance = clamp(loadResistanceRaw, 1, 1e9, 50);
   const areaMin = clamp(areaMinRaw, 1e-6, 1e4, 0.001);
   const areaMax = Math.max(clamp(areaMaxRaw, 1e-6, 1e4, 10), areaMin * 1.01);
