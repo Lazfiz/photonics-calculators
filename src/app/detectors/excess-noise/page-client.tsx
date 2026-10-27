@@ -58,7 +58,7 @@ export default function ExcessNoisePage() {
         <p>{APD_K_TABLE.map((m) => `${m.label}: k = ${m.k} (range ${m.range[0]}–${m.range[1]})`).join(", ")}</p>
         <p>x = ln F / ln M, so F = M^x holds exactly at the entered gain only</p>
       </div>
-      <ChartPanel data={chartData} layout={{ xaxis: { title: "Gain M", gridcolor: "#374151", type: "log" }, yaxis: { title: "F", gridcolor: "#374151" } }} />
+      <ChartPanel data={chartData} layout={{ xaxis: { title: "Gain M", gridcolor: "#374151", type: "log" }, yaxis: { title: "F", gridcolor: "#374151", type: "log" } }} />
       <ChartPanel data={snrChart} layout={{ xaxis: { title: "Incident photons N", gridcolor: "#374151", type: "log" }, yaxis: { title: "Shot-limited SNR", gridcolor: "#374151" } }} title="SNR: p-i-n vs APD (no amplifier noise)" />
     </>
   );

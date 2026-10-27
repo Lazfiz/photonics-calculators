@@ -56,8 +56,8 @@ export default function EmGainPage() {
         <ResultCard label="Output Signal" value={`${(inputSignal * emGain).toFixed(0)} e⁻`} tone="blue" />
         <ResultCard label="Effective Read Noise" value={`${(readNoise / emGain).toFixed(3)} e⁻`} tone="green" />
         <ResultCard label="SNR with EM" value={fix(snrWithEM)} tone="purple" />
-        <ResultCard label="SNR without EM" value={fix(snrWithoutEM)} tone="gray" />
-        <ResultCard label="EM Benefit" value={Number.isFinite(emBenefit) ? `×${emBenefit.toFixed(2)}` : "—"} tone="yellow" />
+        <ResultCard label="SNR at G = 1" value={fix(snrWithoutEM)} tone="gray" subtext="Same EM amplifier and read noise" />
+        <ResultCard label="EM Benefit vs G = 1" value={Number.isFinite(emBenefit) ? `×${emBenefit.toFixed(2)}` : "—"} tone="yellow" subtext="A conventional output (a few e⁻ read noise) gains less" />
         <ResultCard label="ENF² (F²)" value={fix(enf2, 4)} tone="orange" />
         <ResultCard label="Gain per Stage" value={Number.isFinite(stageProbability) ? `${(stageProbability * 100).toFixed(3)} %` : "—"} tone="red" />
       </div>
@@ -69,7 +69,7 @@ export default function EmGainPage() {
         <p>F² = 2(G − 1)·G^(−(N+1)/N) + 1/G  (Robbins &amp; Hadwen 2003)</p>
         <p>G = (1 + p)^N; F² → 2 − 1/G for N → ∞, F² = 1 at G = 1</p>
       </div>
-      <ChartPanel data={chartData} layout={{ xaxis: { title: "EM Gain", gridcolor: "#374151", type: "log" }, yaxis: { title: "SNR Ratio (EM / conv)", gridcolor: "#374151" } }} />
+      <ChartPanel data={chartData} layout={{ xaxis: { title: "EM Gain", gridcolor: "#374151", type: "log" }, yaxis: { title: "SNR ratio (G / G = 1)", gridcolor: "#374151" } }} />
     </>
   );
 }

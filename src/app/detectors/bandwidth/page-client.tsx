@@ -4,6 +4,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { h, k_B } from "../../../physics/constants";
 import { johnsonNoise, ktcNoise, shotNoiseCurrent } from "../../../physics/detectors/noise";
 import { rcBandwidth, rcFilteredNoise } from "../../../physics/detectors/photodiode-rc";
 
@@ -58,6 +59,16 @@ export default function BandwidthPage() {
         <ResultCard label="Total Noise (V rms)" value={vTotal.toExponential(3)} tone="yellow" />
         <ResultCard label="Johnson Limit √(kT/C)" value={kTC.toExponential(3) + " V"} tone="purple" subtext="Δf → ∞, independent of R_L" />
       </div>
+      {photoCurrent * loadR > 0.3 && (
+        <p className="mb-6 text-sm text-yellow-400">
+          Signal voltage I·R_L above 0.3 V: beyond the unbiased photovoltaic range; reverse bias not modelled.
+        </p>
+      )}
+      {Math.min(bandwidth, fc) > 0.1 * k_B * temperature / h && (
+        <p className="mb-6 text-sm text-yellow-400">
+          Noise band above 0.1·k_B·T/h: classical Johnson density; quantum (hf ≳ k_BT) correction not modelled.
+        </p>
+      )}
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1">
         <p>Photodiode on a load resistor R_L; the output voltage across R_L ∥ C_j is low-passed at f_c = 1/(2π·R_L·C_j)</p>
         <p>v²_Johnson = 4·k·T·R_L · f_c·atan(Δf/f_c) → k·T/C_j for Δf ≫ f_c</p>

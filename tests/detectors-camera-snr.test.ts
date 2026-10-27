@@ -5,6 +5,7 @@ import {
   cameraNoise, cameraSnr, compressiveResponse, dynamicRangeDb, emExcessNoiseFactorSq, emMaxSignal, emStageProbability,
   pixelCapacitance, quantizationNoise,
 } from "../src/physics/detectors/camera-snr";
+import { darkReadCrossoverTemperature } from "../src/physics/detectors/dark-current";
 
 const close = (actual: number, expected: number, rel: number, msg = "") =>
   assert.ok(Math.abs(actual - expected) <= rel * Math.abs(expected), `${msg} ${actual} vs ${expected}`);
@@ -85,4 +86,12 @@ test("saturation: SNR at full well, quantization noise and the compressive respo
   assert.equal(compressiveResponse(30e3, 20e3, 0.005), 19900);
   assert.equal(compressiveResponse(0, 20e3, 0.005), 0);
   assert.ok(Number.isNaN(compressiveResponse(1, 20e3, 0.6))); // not monotonic above n = 0.5
+});
+
+test("EMCCD dynamic range at unity gain is pixel-well limited, 20·log10(180000/89) = 66.11765 dB", () => {
+  assert.ok(Math.abs(dynamicRangeDb(emMaxSignal(180e3, 800e3, 1), 89) - 66.11765) < 1e-4);
+});
+
+test("dark/read crossover at the dark-current page defaults is 25 + 6·log2(250) = 72.7947 °C", () => {
+  assert.ok(Math.abs(darkReadCrossoverTemperature(5, 0.1 * 1, 25, 6) - 72.7947) < 1e-3);
 });

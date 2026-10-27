@@ -6,7 +6,7 @@ export const detectors: CalculatorEntry[] = [
     title: "Afterpulsing in APDs",
     description: "Afterpulse probability, trap dynamics, and dead time trade-offs in avalanche photodiodes.",
     tier: "textbook",
-    modelNote: "Each trap level empties exponentially, so the afterpulse probability is Σ η·e^(−t_d/τ) over up to two levels, with the recorded rate from a non-paralyzable dead time. η and τ are device fits (the defaults give 0.41 %, the order of a Si SPCM at 50 ns), and the afterpulse rate is first order: afterpulses of afterpulses are left out.",
+    modelNote: "Each trap level empties exponentially, so the afterpulse probability is Σ η·e^(−t_d/τ) over up to two levels, with the recorded rate from a non-paralyzable dead time. η and τ are device fits (the defaults give 0.41 %, the order of a Si SPCM at 50 ns), and the afterpulse rate is first order in R·τ: afterpulses of afterpulses are left out.",
     references: [
       {
         citation: "Cova S., Lacaita A., Ripamonti G. (1991). Trapping phenomena in avalanche photodiodes on nanosecond scale. IEEE Electron Device Lett. 12, 685–687. Afterpulsing from trap release, η·e^(−t/τ).",
@@ -23,7 +23,7 @@ export const detectors: CalculatorEntry[] = [
     title: "Amplifier Noise",
     description: "Input-referred noise sets the detection floor. σ_amp = e_n.",
     tier: "textbook",
-    modelNote: "Poisson shot noise √S added in quadrature to a signal-independent input noise; minimum detectable signal at SNR = 3. Dark charge, fixed-pattern noise and excess noise are left out.",
+    modelNote: "Poisson shot noise √S added in quadrature to a signal-independent input noise; ADC quantisation g/√12 adds to the read floor; minimum detectable signal at SNR = 3. Dark charge, fixed-pattern noise and excess noise are left out.",
     references: [
       {
         citation: "Janesick J. R. (2007). Photon Transfer. SPIE Press. Read-noise, shot-noise and dark-noise regimes; total noise as the quadrature sum.",
@@ -49,7 +49,7 @@ export const detectors: CalculatorEntry[] = [
     title: "Avalanche Photodiode Gain",
     description: "APD multiplication gain, excess noise factor (McIntyre), and material comparison.",
     tier: "textbook",
-    modelNote: "Miller's empirical law with an entered exponent n (a device fit, not a material constant) and McIntyre's excess noise for a uniform field and injection of the more ionising carrier. The k presets are Si 0.02 (Excelitas C30902EH), InGaAs/InP 0.5 and Ge 0.85 from Agrawal's ranges; dead-space effects in thin layers and mixed injection are not modelled.",
+    modelNote: "Miller's empirical law with an entered exponent n (a device fit, not a material constant) and McIntyre's excess noise for a uniform field and injection of the more ionising carrier. The k presets are Si 0.02 (Excelitas C30902EH), InGaAs/InP 0.5 and Ge 0.85 from Agrawal's ranges; dead-space effects in thin layers and mixed injection are not modelled, and series-resistance and space-charge gain limits near V_br are not modelled.",
     references: [
       {
         citation: "Miller S. L. (1955). Avalanche breakdown in germanium. Phys. Rev. 99, 1234–1241. Empirical gain M = 1/[1 − (V/V_br)^n].",
@@ -97,7 +97,7 @@ export const detectors: CalculatorEntry[] = [
         url: "https://doi.org/10.1002/0471213748",
       },
       {
-        citation: "Sze S. M., Ng K. K. (2007). Physics of Semiconductor Devices, 3rd ed. Wiley. p–n junction depletion capacitance (abrupt m = 1/2, linearly graded m = 1/3), n_i(T), generation and diffusion currents.",
+        citation: "Sze S. M., Ng K. K. (2007). Physics of Semiconductor Devices, 3rd ed. Wiley. p–n junction depletion capacitance (abrupt m = 1/2, linearly graded m = 1/3).",
         url: "https://doi.org/10.1002/0470068329",
       },
     ],
@@ -107,7 +107,7 @@ export const detectors: CalculatorEntry[] = [
     title: "Boxcar Integrator",
     description: "Gated signal averaging of a repetitive pulse: gate-averaged signal, gate noise e_n·√NEB, SNR after N averages and the optimum gate width.",
     tier: "textbook",
-    modelNote: "Gaussian pulse averaged over a rectangular gate; white input noise behind a single-pole input bandwidth, so the gate noise tends to e_n/√(2T) for wide gates. Shots average independently (√N). Baseline drift, gate jitter, exponential (moving) averaging and 1/f noise are left out.",
+    modelNote: "Gaussian pulse averaged over a rectangular gate; white input noise behind a single-pole input bandwidth, so the gate noise tends to e_n/√(2T) for wide gates. Shots average independently (√N). The optimum gate is found for the entered B; the pulse itself is not band-limited, so results need B·FWHM ≫ 1. Baseline drift, gate jitter, exponential (moving) averaging and 1/f noise are left out.",
     references: [
       {
         citation: "Papoulis A., Pillai S. U. (2002). Probability, Random Variables and Stochastic Processes, 4th ed. McGraw-Hill. Variance of a time average of a stationary process, (2/T)∫(1 − u/T)R(u)du.",
@@ -123,7 +123,7 @@ export const detectors: CalculatorEntry[] = [
     title: "Junction Capacitance",
     description: "Photodiode junction capacitance vs reverse bias, doping profile, and RC bandwidth impact.",
     tier: "textbook",
-    modelNote: "Depletion approximation C_j0/(1 + V_R/V_bi)^m with a single RC pole through load plus series resistance. Package and stray capacitance, the transit-time limit and forward bias are left out.",
+    modelNote: "Depletion approximation C_j0/(1 + V_R/V_bi)^m with a single RC pole through load plus series resistance. Package and stray capacitance, the transit-time limit and forward bias are left out, and so is full depletion (PIN punch-through), where C_j stops falling.",
     references: [
       {
         citation: "Sze S. M., Ng K. K. (2007). Physics of Semiconductor Devices, 3rd ed. Wiley. p–n junction depletion capacitance (abrupt m = 1/2, linearly graded m = 1/3), n_i(T), generation and diffusion currents.",
@@ -137,7 +137,7 @@ export const detectors: CalculatorEntry[] = [
     description: "Compare CCD, sCMOS, phone CMOS and EMCCD pixels: SNR from photons × QE, saturation and dynamic range.",
     keywords: ["CCD vs CMOS Comparison"],
     tier: "textbook",
-    modelNote: "Poisson signal (photons × QE) and dark charge plus Gaussian read noise; the EMCCD adds the Robbins–Hadwen excess noise of a 604-stage register and divides the read noise by the gain. Its dynamic range uses the gain-register well, so it stays near 20·log₁₀(800 000/89) = 79 dB at any gain. The sensor values are representative; the EMCCD follows the iXon Ultra 897 sheet. Clock-induced charge, fixed-pattern noise, sCMOS read-noise tails and dual-gain readout are left out.",
+    modelNote: "Poisson signal (photons × QE) and dark charge plus Gaussian read noise; the EMCCD adds the Robbins–Hadwen excess noise of a 604-stage register and divides the read noise by the gain. Its dynamic range uses the gain-register well, so for G ≳ 4.4 (= 800 000/180 000, register well limited) it stays near 20·log₁₀(800 000/89) = 79 dB, while G = 1 gives 66.1 dB. The sensor values are representative; the EMCCD follows the iXon Ultra 897 sheet. Clock-induced charge, fixed-pattern noise, sCMOS read-noise tails and dual-gain readout are left out.",
     references: [
       {
         citation: "Janesick J. R. (2007). Photon Transfer: DN → λ. SPIE Press. Shot, dark and read noise of a sensor pixel; full well and dynamic range.",
@@ -179,7 +179,7 @@ export const detectors: CalculatorEntry[] = [
     title: "Cooling Benefit Calculator",
     description: "Dark current reduction and SNR improvement from thermoelectric (TEC) or cryogenic cooling.",
     tier: "textbook",
-    modelNote: "Si dark current scales as depletion generation (∝ n_i), InGaAs as diffusion (∝ n_i²), with a fixed band gap or E_g(T): Varshni for Si, Vurgaftman's In₀.₅₃Ga₀.₄₇As gap for InGaAs. The temperature-dependent gap raises the 25 → −40 °C reduction from ×630 to ×950 for Si and from ×7158 (fixed 0.75 eV) to ×1.90e4 for InGaAs. Surface leakage and tunnelling are left out.",
+    modelNote: "Si dark current scales as depletion generation (∝ n_i), InGaAs as diffusion (∝ n_i²), with a fixed band gap or E_g(T): Varshni for Si, Vurgaftman's In₀.₅₃Ga₀.₄₇As gap for InGaAs. The temperature-dependent gap raises the 25 → −40 °C reduction from ×630 to ×950 for Si and from ×7158 (fixed 0.75 eV) to ×1.90e4 for InGaAs; E_g(T) is the default, and a fixed gap fits it best at the 0 K value (≈ 1.20 eV for Si). One mechanism per material: a generation part of the InGaAs current would fall only as n_i, so its reduction is an upper bound. Surface leakage and tunnelling are left out.",
     references: [
       {
         citation: "Sze S. M., Ng K. K. (2007). Physics of Semiconductor Devices, 3rd ed. Wiley. n_i(T), generation (∝ n_i) and diffusion (∝ n_i²) currents.",
@@ -200,7 +200,7 @@ export const detectors: CalculatorEntry[] = [
     title: "Cosmic Ray Detection",
     description: "Cosmic-ray muon hits on a silicon image sensor: hits per frame, path through the sensitive layer, mean and most probable charge per track, and pixels hit.",
     tier: "textbook",
-    modelNote: "Sea-level muons only (about 1 cm⁻² min⁻¹ on a horizontal sensor), Poisson arrivals and one straight track at the chosen zenith angle through a fully sensitive layer, path t/cos θ. Mean charge 106 e⁻/µm (minimum ionizing, 3.65 eV per pair); the most probable charge uses the Landau–Vavilov–Bichsel Fermi-plateau formula and is rough below about 10 µm. Pixels per track is the Buffon average 1 + 4ℓ/(πp). Charge diffusion, δ-ray branches, altitude, shielding and radioactivity are left out.",
+    modelNote: "Sea-level muons only (about 1 cm⁻² min⁻¹ on a horizontal sensor), Poisson arrivals and one straight track at the chosen zenith angle through a fully sensitive layer, path t/cos θ. Mean charge 106 e⁻/µm (unrestricted Bethe mean at minimum ionizing, 3.65 eV per pair; about 20 % more at 4 GeV, less where δ-rays escape a thin layer); the most probable charge uses the Landau–Vavilov–Bichsel Fermi-plateau formula and is rough below about 10 µm. Pixels per track is the Buffon average 1 + 4ℓ/(πp). Charge diffusion, δ-ray branches, altitude, shielding and radioactivity are left out.",
     references: [
       {
         citation: "Workman R. L. et al. (Particle Data Group) (2022). Review of Particle Physics. Prog. Theor. Exp. Phys. 2022, 083C01. Review \"Cosmic rays\" §30.3.1: vertical muons above 1 GeV/c ≈ 70 m⁻² s⁻¹ sr⁻¹, about 1 cm⁻² min⁻¹ on a horizontal detector, cos²θ zenith distribution, mean energy ≈ 4 GeV.",
@@ -236,9 +236,9 @@ export const detectors: CalculatorEntry[] = [
   {
     slug: "dark-noise-temperature",
     title: "Dark Noise vs Temperature",
-    description: "Temperature dependence of dark current and dark noise in photodiodes/CCDs.",
+    description: "Temperature dependence of photodiode dark current and its shot noise.",
     tier: "textbook",
-    modelNote: "Dark current ∝ n_i (generation) or n_i² (diffusion) with a fixed band gap or Varshni E_g(T) for Si and Ge, and shot noise √(2q·I·Δf). Surface leakage, tunnelling and 1/f noise are left out.",
+    modelNote: "Dark current ∝ n_i (generation) or n_i² (diffusion) with a fixed band gap or Varshni E_g(T) for Si and Ge, and shot noise √(2q·I·Δf) at reverse bias |V| ≫ k_BT/q (at zero bias a diffusion diode gives √2 more). One mechanism over the whole range, although diffusion overtakes generation in hot Si. Surface leakage, tunnelling and 1/f noise are left out.",
     references: [
       {
         citation: "Sze S. M., Ng K. K. (2007). Physics of Semiconductor Devices, 3rd ed. Wiley. n_i(T), generation (∝ n_i) and diffusion (∝ n_i²) currents.",
@@ -255,7 +255,7 @@ export const detectors: CalculatorEntry[] = [
     title: "Detectivity (D*)",
     description: "Specific detectivity from NEP, area, and bandwidth. D* = √(A·Δf) / NEP",
     tier: "textbook",
-    modelNote: "Constant quantum efficiency up to the cutoff λ_c = hc/E_g; multiplied dark-current shot noise 2q·I_d·M²·F and load Johnson noise. The temperature chart scales dark current as n_i or n_i² with a fixed band gap and constant responsivity.",
+    modelNote: "Constant quantum efficiency up to the cutoff λ_c = hc/E_g; multiplied dark-current shot noise 2q·I_d·M²·F and load Johnson noise. The temperature chart scales dark current as n_i or n_i² with a fixed band gap and constant responsivity, with the load held at the entered temperature. D* includes the load: with I_d fixed and load noise dominant it grows as √A.",
     references: [
       {
         citation: "Dereniak E. L., Boreman G. D. (1996). Infrared Detectors and Systems. Wiley. Ch. 5: responsivity, noise-equivalent power and specific detectivity D* = √(A·Δf)/NEP.",
@@ -275,7 +275,7 @@ export const detectors: CalculatorEntry[] = [
     title: "EMCCD vs sCMOS",
     description: "Compare electron-multiplying CCD with sCMOS for low-light imaging.",
     tier: "textbook",
-    modelNote: "Both pixels see Poisson signal and dark charge. The EMCCD multiplies them with the Robbins–Hadwen excess noise of an N-stage register and divides its read noise by the gain; the sCMOS adds its read noise as a Gaussian. Equal QE is assumed (enter signal in electrons), and clock-induced charge, the sCMOS read-noise tail and photon-counting readout are left out. EM gain wins only while σ_sCMOS² exceeds about (F² − 1)·S.",
+    modelNote: "Both pixels see Poisson signal and dark charge. The EMCCD multiplies them with the Robbins–Hadwen excess noise of an N-stage register and divides its read noise by the gain; the sCMOS adds its read noise as a Gaussian. Equal QE is assumed (enter signal in electrons), and clock-induced charge, the sCMOS read-noise tail and photon-counting readout are left out, and one dark-charge value is used for both sensors (a deep-cooled EMCCD is usually far lower). EM gain wins only while σ_sCMOS² exceeds about (F² − 1)·S.",
     references: [
       {
         citation: "Robbins M. S., Hadwen B. J. (2003). The noise performance of electron multiplying charge-coupled devices. IEEE Trans. Electron Devices 50, 1227–1232. F² = 2(G − 1)·G^(−(N+1)/N) + 1/G.",
@@ -292,7 +292,7 @@ export const detectors: CalculatorEntry[] = [
     title: "EMCCD Gain Calculator",
     description: "EMCCD gain: Robbins–Hadwen excess noise of an N-stage register, effective read noise and SNR with and without EM gain.",
     tier: "textbook",
-    modelNote: "Robbins–Hadwen F² for N stages that each multiply an electron with probability p, G = (1 + p)^N; it equals the Galton–Watson result for a binomial stage. Clock-induced charge is counted at the input although charge made inside the register sees less gain. Photon-counting (threshold) readout, which removes the factor F² ≈ 2 at low flux, and register saturation are not modelled. The often-quoted F² = 2 − 1/G is the N → ∞ limit; it puts a false SNR optimum at G = 2σ²/(S + CIC), 500× at the defaults.",
+    modelNote: "Robbins–Hadwen F² for N stages that each multiply an electron with probability p, G = (1 + p)^N; it equals the Galton–Watson result for a binomial stage. Clock-induced charge is counted at the input although charge made inside the register sees less gain. Photon-counting (threshold) readout, which removes the factor F² ≈ 2 at low flux, and register saturation are not modelled. The often-quoted F² = 2 − 1/G is the N → ∞ limit; it puts a false SNR optimum at G = 2σ²/(S + CIC), 500× at the defaults. \"SNR at G = 1\" uses the same EM amplifier; a conventional output with a few e⁻ of read noise gains less from EM.",
     references: [
       {
         citation: "Robbins M. S., Hadwen B. J. (2003). The noise performance of electron multiplying charge-coupled devices. IEEE Trans. Electron Devices 50, 1227–1232. F² = 2(G − 1)·G^(−(N+1)/N) + 1/G.",
@@ -309,7 +309,7 @@ export const detectors: CalculatorEntry[] = [
     title: "Excess Noise Factor",
     description: "APD excess noise vs gain — McIntyre model for different semiconductor materials.",
     tier: "textbook",
-    modelNote: "McIntyre's F for a uniform field and pure injection of the more ionising carrier, with the k presets of the avalanche-gain page. The SNR chart is shot-noise limited (no amplifier noise), and x = ln F/ln M matches the datasheet form F = M^x only at the entered gain.",
+    modelNote: "McIntyre's F for a uniform field and pure injection of the more ionising carrier, with the k presets of the avalanche-gain page. The SNR chart is shot-noise limited (no amplifier noise), and x = ln F/ln M matches the datasheet form F = M^x only at the entered gain. Local model; dead space in thin (sub-µm) multiplication layers lowers F.",
     references: [
       {
         citation: "McIntyre R. J. (1966). Multiplication noise in uniform avalanche diodes. IEEE Trans. Electron Devices ED-13, 164–168. F = kM + (1 − k)(2 − 1/M).",
@@ -317,6 +317,7 @@ export const detectors: CalculatorEntry[] = [
       },
       {
         citation: "Agrawal G. P. (2010). Fiber-Optic Communication Systems, 4th ed. Wiley. §4.4 (APD receiver noise, optimum gain) and Table 4.2 (k: Si 0.02–0.05, InGaAs 0.5–0.7, Ge 0.7–1.0).",
+        url: "https://doi.org/10.1002/9780470918524",
       },
       {
         citation: "Excelitas Technologies. C30902EH and C30921EH avalanche photodiodes, datasheet Rev. 2022.02. k_eff = 0.02; V_br = 225 V at 22 °C, 0.7 V/°C; M = 150; dark current 7 nA.",

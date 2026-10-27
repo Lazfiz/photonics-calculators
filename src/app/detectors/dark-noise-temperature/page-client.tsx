@@ -25,12 +25,12 @@ export default function DarkNoiseTemperaturePage() {
   const [darkCurrent25Raw, setDarkCurrent25] = useURLState("darkCurrent25", 0.5); // nA
   const [egRaw, setEg] = useURLState("eg", 1.12); // eV
   const [bandwidthRaw, setBandwidth] = useURLState("bandwidth", 1); // Hz
-  const [gapModelRaw, setGapModel] = useURLState("gapModel", "fixed");
+  const [gapModelRaw, setGapModel] = useURLState("gapModel", "si");
   const [mechanismRaw, setMechanism] = useURLState("mechanism", "generation");
   const darkCurrent25 = clamp(darkCurrent25Raw, 1e-6, 1e6, 0.5) * 1e-9; // A
   const eg = clamp(egRaw, 0.1, 6, 1.12);
   const bandwidth = clamp(bandwidthRaw, 1e-3, 1e10, 1);
-  const gapModel: GapModel = GAP_MODELS.find(m => m === gapModelRaw) ?? "fixed";
+  const gapModel: GapModel = GAP_MODELS.find(m => m === gapModelRaw) ?? "si";
   const mechanism: DarkCurrentMechanism = mechanismRaw === "diffusion" ? "diffusion" : "generation";
 
   const gapAt = (T: number) => (gapModel === "fixed" ? eg : varshniBandGap(T, VARSHNI[gapModel]));
@@ -59,7 +59,7 @@ export default function DarkNoiseTemperaturePage() {
         <label className="block text-sm text-gray-300">
           <span className="mb-1 block">Band gap</span>
           <select value={gapModel} onChange={e => setGapModel(e.target.value)} className="w-full rounded bg-gray-800 border border-gray-700 px-3 py-2 text-white">
-            <option value="fixed">Fixed E_g (enter below)</option>
+            <option value="fixed">Fixed E_g (enter below; Si ≈ 1.20 eV fits E_g(T))</option>
             <option value="si">Si, Varshni E_g(T)</option>
             <option value="ge">Ge, Varshni E_g(T)</option>
           </select>

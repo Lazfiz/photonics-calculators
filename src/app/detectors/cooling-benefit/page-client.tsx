@@ -15,9 +15,9 @@ const T_REF = 25 + KELVIN;
 
 export default function CoolingBenefitPage() {
   const [egSiRaw, setEgSi] = useURLState("egSi", 1.12);
-  const [siGapRaw, setSiGap] = useURLState("siGap", "fixed");
+  const [siGapRaw, setSiGap] = useURLState("siGap", "varshni");
   const [egInGaAsRaw, setEgInGaAs] = useURLState("egInGaAs", 0.75);
-  const [inGaAsGapRaw, setInGaAsGap] = useURLState("ingaasGap", "fixed");
+  const [inGaAsGapRaw, setInGaAsGap] = useURLState("ingaasGap", "vurgaftman");
   const [darkCurrent25SiRaw, setDarkCurrent25Si] = useURLState("darkCurrent25Si", 0.1);
   const [darkCurrent25InGaAsRaw, setDarkCurrent25InGaAs] = useURLState("darkCurrent25InGaAs", 1000);
   const [signalRaw, setSignal] = useURLState("signal", 1000);
@@ -63,7 +63,7 @@ export default function CoolingBenefitPage() {
         <label className="block text-sm text-gray-300">
           <span className="mb-1 block">Si band gap</span>
           <select value={siVarshni ? "varshni" : "fixed"} onChange={e => setSiGap(e.target.value)} className="w-full rounded bg-gray-800 border border-gray-700 px-3 py-2 text-white">
-            <option value="fixed">Fixed E_g (enter)</option>
+            <option value="fixed">Fixed E_g (enter; the 0 K gap fits E_g(T) best)</option>
             <option value="varshni">Varshni E_g(T)</option>
           </select>
         </label>
@@ -75,7 +75,7 @@ export default function CoolingBenefitPage() {
         <label className="block text-sm text-gray-300">
           <span className="mb-1 block">InGaAs band gap</span>
           <select value={inGaAsVurgaftman ? "vurgaftman" : "fixed"} onChange={e => setInGaAsGap(e.target.value)} className="w-full rounded bg-gray-800 border border-gray-700 px-3 py-2 text-white">
-            <option value="fixed">Fixed E_g (enter)</option>
+            <option value="fixed">Fixed E_g (enter; the 0 K gap fits E_g(T) best)</option>
             <option value="vurgaftman">In₀.₅₃Ga₀.₄₇As E_g(T) (Vurgaftman)</option>
           </select>
         </label>
@@ -93,7 +93,7 @@ export default function CoolingBenefitPage() {
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="Si Dark Reduction" value={`×${fmtE(siReduction, 1)}`} tone="blue" subtext={`${fmtE(siDark(coolTemp))} e⁻/s at ${coolTemp} °C`} />
-        <ResultCard label="InGaAs Dark Reduction" value={`×${fmtE(inGaAsReduction, 1)}`} tone="orange" subtext={`${fmtE(inGaAsDark(coolTemp))} e⁻/s at ${coolTemp} °C`} />
+        <ResultCard label="InGaAs Dark Reduction" value={`×${fmtE(inGaAsReduction, 1)}`} tone="orange" subtext={`${fmtE(inGaAsDark(coolTemp))} e⁻/s at ${coolTemp} °C; pure diffusion, an upper bound`} />
         <ResultCard label="Si SNR (25 °C → cooled)" value={`${fmtF(snr(siDark(25)))} → ${fmtF(snr(siDark(coolTemp)))}`} tone="green" />
         <ResultCard label="InGaAs SNR (25 °C → cooled)" value={`${fmtF(snr(inGaAsDark(25)))} → ${fmtF(snr(inGaAsDark(coolTemp)))}`} tone="yellow" />
       </div>

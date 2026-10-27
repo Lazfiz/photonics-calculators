@@ -4,7 +4,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { doublingLawRatio, localDoublingTemperature } from "../../../physics/detectors/dark-current";
+import { darkReadCrossoverTemperature, doublingLawRatio, localDoublingTemperature } from "../../../physics/detectors/dark-current";
 import { VARSHNI } from "../../../physics/materials/bandgap";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -30,7 +30,7 @@ export default function DarkCurrentPage() {
 
   const darkCurrentAtT = (Tc: number) => darkCurrent25 * doublingLawRatio(Tc + KELVIN, T_REF_C + KELVIN, doublingT);
   // Dark shot noise √(D·t) equals the read noise where D(T)·t = σ_r².
-  const crossoverTemp = T_REF_C + doublingT * Math.log2((readNoise * readNoise) / (darkCurrent25 * exposureTime));
+  const crossoverTemp = darkReadCrossoverTemperature(readNoise, darkCurrent25 * exposureTime, T_REF_C, doublingT);
   const dcAtMin = darkCurrentAtT(tempMin);
   const dcAtMax = darkCurrentAtT(tempMax);
   const siGenTd = localDoublingTemperature(T_REF_C + KELVIN, VARSHNI.si, "generation");

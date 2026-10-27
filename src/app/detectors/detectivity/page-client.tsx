@@ -59,8 +59,9 @@ export default function DetectivityPage() {
 
   const tempChart = (() => {
     const temps = Array.from({ length: 151 }, (_, i) => 150 + i * 2);
-    const y = temps.map(T => dStar(responsivity, noiseCurrent(darkCurrent * darkCurrentRatio(T, temperature, bandGap_eV, darkLaw), T)));
-    return [{ x: temps, y: y.map(d => (Number.isFinite(d) ? d : null)), type: "scatter", mode: "lines", name: "D*", line: { color: "#f87171", width: 2 } }];
+    // Only the detector is swept: the load stays at the entered temperature, so the curve shows the dark-current law.
+    const y = temps.map(T => dStar(responsivity, noiseCurrent(darkCurrent * darkCurrentRatio(T, temperature, bandGap_eV, darkLaw), temperature)));
+    return [{ x: temps, y: y.map(d => (Number.isFinite(d) && d > 0 ? d : null)), type: "scatter", mode: "lines", name: "D*", line: { color: "#f87171", width: 2 } }];
   })();
 
   return (
@@ -93,7 +94,7 @@ export default function DetectivityPage() {
       </div>
       <div className="grid gap-6 md:grid-cols-2">
         <ChartPanel data={spectralChart} layout={{ xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "D* (cm·Hz^½/W)", gridcolor: "#374151" } }} title="D* vs Wavelength (constant η up to λ_c)" />
-        <ChartPanel data={tempChart} layout={{ xaxis: { title: "Temperature (K)", gridcolor: "#374151" }, yaxis: { title: "D* (cm·Hz^½/W)", type: "log", gridcolor: "#374151" } }} title="D* vs Temperature" />
+        <ChartPanel data={tempChart} layout={{ xaxis: { title: "Detector temperature (K)", gridcolor: "#374151" }, yaxis: { title: "D* (cm·Hz^½/W)", type: "log", gridcolor: "#374151" } }} title="D* vs Detector Temperature (load at T)" />
       </div>
       <div className="bg-gray-900 rounded-lg p-4 mt-6 text-sm text-gray-300 font-mono space-y-1">
         <p>D* = √(A·Δf) / NEP,  NEP = i_n / (ℛ·M)</p>

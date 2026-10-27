@@ -4,13 +4,13 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { gateNoiseBandwidth, gateNoiseRms, gaussianGateAverage, optimalGateWidthRatio } from "../../../physics/detectors/boxcar";
+import { gateNoiseBandwidth, gateNoiseRms, gaussianGateAverage, optimalGateWidth, optimalGateWidthRatio } from "../../../physics/detectors/boxcar";
 import { GAUSSIAN_FWHM_PER_SIGMA } from "../../../physics/math";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 3) => (Number.isFinite(x) ? x.toPrecision(digits) : "—");
 const fmtHz = (f: number) => (!Number.isFinite(f) ? "—" : f >= 1e9 ? `${(f / 1e9).toFixed(2)} GHz` : f >= 1e6 ? `${(f / 1e6).toFixed(2)} MHz` : f >= 1e3 ? `${(f / 1e3).toFixed(2)} kHz` : `${f.toFixed(2)} Hz`);
-const fmtTime = (t: number) => (!Number.isFinite(t) ? "—" : t >= 1 ? `${t.toFixed(1)} s` : `${(t * 1e3).toFixed(1)} ms`);
+const fmtTime = (t: number) => (!Number.isFinite(t) ? "—" : t >= 1 ? `${t.toFixed(1)} s` : t >= 1e-3 ? `${(t * 1e3).toFixed(1)} ms` : `${(t * 1e6).toFixed(1)} µs`);
 const OPTIMAL_GATE_RATIO = optimalGateWidthRatio();
 
 /** Deterministic standard-normal samples (mulberry32 + Box–Muller) so the illustrative trace is stable across renders. */
@@ -56,7 +56,8 @@ export default function BoxcarIntegratorPage() {
     const noise = gateNoiseRms(noiseDensity, inputBandwidth, T);
     return noise > 0 ? gaussianGateAverage(signalPeak, fwhm, T, gateDelay) / noise : NaN;
   };
-  const optimalGate = OPTIMAL_GATE_RATIO * fwhm;
+  const optimalGate = optimalGateWidth(fwhm, inputBandwidth);
+  const bandLimited = inputBandwidth * fwhm < 2;
 
   // Trace: pulse and gate on a ±(2·FWHM + |delay| + gate/2) window around the pulse peak, in ns.
   const halfSpan = 2 * fwhm + Math.abs(gateDelay) + gateWidth / 2;
@@ -101,9 +102,15 @@ export default function BoxcarIntegratorPage() {
           label="Optimum gate (centred)"
           value={`${fmt(optimalGate * 1e9)} ns`}
           tone="green"
-          subtext={`${fmt(OPTIMAL_GATE_RATIO, 4)} × FWHM; gate NEB now ${fmtHz(neb)}`}
+          subtext={`${fmt(optimalGate / fwhm, 4)} × FWHM at this B (white-noise limit ${fmt(OPTIMAL_GATE_RATIO, 4)}); gate NEB now ${fmtHz(neb)}`}
         />
       </div>
+      {bandLimited && (
+        <p className="mb-6 text-sm text-yellow-400">
+          B·FWHM = {fmt(inputBandwidth * fwhm)} &lt; 2: a real input this slow would also smear the pulse, which this model does not
+          do (only the noise is band-limited), so the SNR and the short optimum gate are optimistic.
+        </p>
+      )}
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p>⟨s⟩ = S·σ·√(π/2)/T · [erf((t_g + T/2)/σ√2) − erf((t_g − T/2)/σ√2)], &nbsp;σ = FWHM / 2.355</p>
         <p>σ_gate = e_n · √NEB with NEB = 1/(2T) when B ≫ 1/T; the full single-pole form tends to σ_in = e_n·√B for B ≪ 1/T</p>
