@@ -10,6 +10,7 @@ import {
   idealSqnrDb,
   johnsonNoise,
   ktcNoise,
+  sinadWithQuantizationDb,
   photodiodeSnr,
   quantizationNoiseElectrons,
   qeRatioSnrGain,
@@ -135,4 +136,18 @@ test("ADC quantisation noise g/√12 e⁻ adds to the read floor (Janesick, Phot
   close(floor, 7.637626, 1e-6);
   close(minDetectableSignal(floor), 27.85059, 1e-6);
   assert.ok(Number.isNaN(quantizationNoiseElectrons(0)));
+});
+
+// IEEE Std 1241-2010 (ADC terminology and test methods): quantisation, noise and distortion add as powers,
+// 1/SINAD = 1/SQNR + (N + D)/S, SQNR = 6.02·N + 1.76 dB. Independent hand calculation, S = 1, N = 1e-7, D = 1e-8, 12 bits:
+// SQNR = 74.0 dB -> 10^(−7.4008) = 3.975e-8; + 1.1e-7 = 1.4975e-7 -> SINAD = 68.247 dB, ENOB = (68.247 − 1.76)/6.02 = 11.043.
+test("SINAD including quantisation, 12-bit with N = 1e-7, D = 1e-8", () => {
+  const sinad = sinadWithQuantizationDb(1, 1e-7, 1e-8, 12);
+  assert.ok(Math.abs(sinad - 68.247) < 1e-3, `${sinad}`);
+  assert.ok(Math.abs(enobFromSinad(sinad) - 11.043) < 1e-3);
+});
+
+test("SINAD including quantisation: N = D = 0 gives exactly the ideal ADC (ENOB = bits); S <= 0 is NaN", () => {
+  assert.ok(Math.abs(enobFromSinad(sinadWithQuantizationDb(1, 0, 0, 12)) - 12) < 1e-9);
+  assert.ok(Number.isNaN(sinadWithQuantizationDb(0, 1e-7, 0, 12)));
 });

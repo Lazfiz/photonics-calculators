@@ -12,12 +12,12 @@ const BIT_DEPTHS = [8, 10, 12, 14, 16];
 export default function SaturationPage() {
   const [wellRaw, setFullWellCapacity] = useURLState("fullWellCapacity", 20000); // e⁻
   const [readRaw, setReadNoise] = useURLState("readNoise", 5); // e⁻ rms
-  const [bitRaw, setBitDepth] = useURLState("bitDepth", 16);
+  const [bitRaw, setBitDepth] = useURLState("bitDepth", 12);
   const [nlRaw, setNonlinearityPercent] = useURLState("nonlinearityPercent", 0.5); // % of full scale at full well
 
   const fullWell = clamp(wellRaw, 100, 1e7, 20000);
   const readNoise = clamp(readRaw, 0.01, 1000, 5);
-  const bitDepth = BIT_DEPTHS.find(b => b === bitRaw) ?? 16;
+  const bitDepth = BIT_DEPTHS.find(b => b === bitRaw) ?? 12;
   const nonlinearity = clamp(nlRaw, 0, 50, 0.5) / 100;
 
   const dnMax = 2 ** bitDepth - 1;

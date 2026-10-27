@@ -63,7 +63,7 @@ export default function SpadDeadTimePage() {
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Dead Time (ns)" value={deadTimeRaw} onChange={setDeadTime} min={0.1} max={1e5} step="1" />
-        <ValidatedNumberInput label="True Incident Rate (Mcps)" value={trueRateRaw} onChange={setTrueRate} min={0.001} max={1e4} step="1" />
+        <ValidatedNumberInput label="True count rate without dead time (PDE·Φ + dark) (Mcps)" value={trueRateRaw} onChange={setTrueRate} min={0.001} max={1e4} step="1" />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 mb-8">
@@ -71,7 +71,7 @@ export default function SpadDeadTimePage() {
         <div className="grid gap-3 sm:grid-cols-2">
           <div><span className="text-gray-400 text-sm">Measured Rate ({mode})</span><div className="text-xl font-mono text-green-400">{(measured / 1e6).toFixed(3)} Mcps</div></div>
           <div><span className="text-gray-400 text-sm">Count Loss = dead fraction of the time</span><div className="text-xl font-mono text-red-400">{(loss * 100).toFixed(2)}%</div></div>
-          <div><span className="text-gray-400 text-sm">Correction Factor R/m</span><div className="text-xl font-mono">{(R / measured).toFixed(4)}</div></div>
+          <div><span className="text-gray-400 text-sm">Correction Factor R/m</span><div className="text-xl font-mono">{Number.isFinite(R / measured) ? (R / measured).toFixed(4) : "—"}</div>{!Number.isFinite(R / measured) && <div className="text-xs text-yellow-400">paralyzed: e^(Rτ) overflows, measured rate underflows to 0</div>}</div>
           <div><span className="text-gray-400 text-sm">True Rate at 10 % Loss</span><div className="text-xl font-mono">{(rateAt10 / 1e6).toFixed(2)} Mcps</div></div>
           {mode === "paralyzable" && (
             <div><span className="text-gray-400 text-sm">Peak Recorded Rate 1/(eτ), at R = 1/τ</span><div className="text-xl font-mono">{(paralyzablePeakRate(tau) / 1e6).toFixed(3)} Mcps</div></div>

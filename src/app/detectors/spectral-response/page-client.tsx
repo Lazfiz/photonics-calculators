@@ -44,6 +44,11 @@ export default function SpectralResponsePage() {
   const halfShort = crossing(wl, resp, peakIndex, -1, peak / 2);
   const halfLong = crossing(wl, resp, peakIndex, 1, peak / 2);
 
+  // A crossing that does not occur inside the wavelength grid lies beyond its end.
+  const bandEdge = (x: number, side: "short" | "long") =>
+    Number.isFinite(x) ? fmt(x, 0) : !(peak > 0) ? "—" : side === "short" ? `< ${wl[0]}` : `> ${wl[wl.length - 1]}`;
+  const halfBand = !(peak > 0) ? "—" : `${bandEdge(halfShort, "short")}–${bandEdge(halfLong, "long")} nm`;
+
   const measQe = quantumEfficiencyFromResponsivity(meas, measWl * 1e-9);
   const impossible = measQe > 1;
 
@@ -65,7 +70,7 @@ export default function SpectralResponsePage() {
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ResultCard label="Peak responsivity" value={`${fmt(peak)} A/W`} tone="blue" subtext={`at ${wl[peakIndex]} nm, QE ${fmt(qe[peakIndex] * 100, 1)}%`} />
-        <ResultCard label="Half-response band" value={`${fmt(halfShort, 0)}–${fmt(halfLong, 0)} nm`} tone="green" subtext="ℛ ≥ ℛ_peak/2" />
+        <ResultCard label="Half-response band" value={halfBand} tone="green" subtext="ℛ ≥ ℛ_peak/2" />
         <ResultCard label="Responsivity @ 650 nm" value={`${fmt(responsivity(qeAt(650), 650e-9))} A/W`} tone="yellow" subtext={`QE ${fmt(qeAt(650) * 100, 1)}%`} />
       </div>
 
