@@ -9,7 +9,7 @@ goes in the PR description.
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
-  textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 (imaging 1/3) done (sessions 163–166); next 5w-5 (imaging 2/3); the Gemini hero is last. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4/5w-5 (imaging 1–2/3) done (sessions 163–167); next 5w-6 (imaging 3/3); the Gemini hero is last. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -177,11 +177,18 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - `optical-antenna` (low): M² is capped at 2 (θ × M², gain / M⁴). A Gaussian Schell-model far field would cover multimode beams.
 
 **Imaging (session 162)**
-- `airy-disk`: "10–20 % wider above NA ≈ 0.9" (page + modelNote) not checked against Richards & Wolf 1959.
+- `airy-disk`: "10–20 % wider above NA ≈ 0.9" (page + modelNote): session 167 Richards–Wolf probe at NA 1.4 gives +31 % along a
+  linear polarization, −6 % across; 10–20 % holds only for unpolarized/circular light (psf-calculator reworded, airy-disk not yet).
 **Imaging (session 166, unverified or deferred)**
 - `adaptive-optics`: zonal κ_continuous 0.28 (Hudgin 1977); some tables give ≈ 0.23 for Gaussian influence functions (reviewer, from memory).
 - `computational-imaging`: registry "0.08 + 0.42 = 0.5" synthetic NA (Zheng 2013): the 0.42 illumination NA not checked in the paper.
 - `fcs`: SNR uses G = 1/N and ignores the triplet amplitude (≈ 9 % at defaults, within Koppel's estimate).
+**Imaging (session 167, unverified or deferred)**
+- `mtf`: high-NA defocus is only warned about; an exact-phase OTF (reviewer's scalar quadrature: Strehl 0.27 vs paraxial 0.555
+  at NA 0.95, Δz 0.5 µm) is not modelled.
+- `photoacoustic`: diffuse build-up factor k ≈ 2–5 (Jacques, from memory) is described but set to 1.
+- `low-coherence`, `optical-coherence`: SNR prefactors ρP/(2eB) and ρPΔt/(2e) not checked against Choma 2003 eqs. 9/10 (PDF unread).
+- `plenoptic-camera`: "12 usable pixels" and "prototype reached about half" (Ng 2005 tech report) unverified.
 - `sensor-cmos`: DR doesn't pass dark charge to `dynamicRangeDb(…, darkCharge)` (dynamic-range does since session 166).
 
 **Imaging / spectroscopy** (found in the detectors part 0, session 63)
@@ -261,7 +268,7 @@ One box per session, in this order.
   photodiode-tia-noise, optical-parametric-oscillator, structured-illumination, readout-noise, raman-scattering,
   connector-return-loss, fade-probability.
   - [x] 5w-1 detectors 1/3 (session 163, PR #200) · [x] 5w-2 detectors 2/3 (session 164, PR #201) · [x] 5w-3 detectors 3/3 (session 165, PR #202)
-  - [x] 5w-4 imaging 1/3 (session 166, PR #203) · [ ] 5w-5 imaging 2/3 · [ ] 5w-6 imaging 3/3 (53)
+  - [x] 5w-4 imaging 1/3 (session 166, PR #203) · [x] 5w-5 imaging 2/3 (session 167, PR #204) · [ ] 5w-6 imaging 3/3 (53)
   - [ ] 5w-7 fiber-optics 1/2 · [ ] 5w-8 fiber-optics 2/2 (41)
   - [ ] 5w-9 wave-optics 1/2 · [ ] 5w-10 wave-optics 2/2 (32)
   - [ ] 5w-11 free-space-comms (17) · [ ] 5w-12 laser-safety (20) · [ ] 5w-13 materials (22)
@@ -285,6 +292,8 @@ One box per session, in this order.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - 5w-5 imaging 2/3 (session 167, `phase-5/5w-5-imaging`, PR #204): 18 pages, 1 bug: mtf default NA 0.95 past paraxial W₀₂₀
+    (now 0.4 + warning); light-field DOF N_u ≥ 1, plenoptic overlap 2p − D, high-NA widefield first zero; 1160 tests.
   - 5w-4 imaging 1/3 (session 166, `phase-5/5w-4-imaging`, PR #203): 18 pages, 1 bug: digital-holography NA was paraxial
     NΔx/2z (6.66 at 1 mm), now sin(atan) capped at λ/(2Δx) (`hologramEffectiveNA`); DR uses FW − D; ~25 minor fixes, 1159 tests.
   - 5w-3 detectors 3/3 (session 165, `phase-5/5w-3-detectors`, PR #202): 15 pages, 0 bugs; SINAD/ENOB include ADC quantisation

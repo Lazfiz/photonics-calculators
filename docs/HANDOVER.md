@@ -1,34 +1,39 @@
-# Handover — 2026-10-27 (session 166 → session 167)
+# Handover — 2026-10-27 (session 167 → session 168)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 166 did 5w-4 (imaging textbook pass 1/3) on `phase-5/5w-4-imaging`, PR #203: 18 pages, 1 bug (digital-holography
-NA), ≈ 25 minor fixes. PRs #200–#202 are merged to `main` but not released (`release` = `d82602ed`). Next: **5w-5 imaging 2/3**.
+Session 167 did 5w-5 (imaging textbook pass 2/3) on `phase-5/5w-5-imaging`, PR #204: 18 pages, 1 bug (mtf default NA 0.95
+past the paraxial W₀₂₀), ≈ 30 minor fixes. PRs #200–#203 are merged to `main` but not released (`release` = `d82602ed`).
+Next: **5w-6 imaging 3/3**.
 
 ## State
-- `hologramNA` is now sin(atan(NΔx/2z)); new `hologramEffectiveNA` = min(NA, λ/(2Δx)) in `src/physics/imaging/holography.ts`.
-  digital-holography shows reconstruction grid λz/(NΔx) and resolution λ/(2NA_eff) separately (z 50 mm → 6.5 µm = Δx).
-- `dynamicRangeDb(maxSignal, noiseFloor, darkCharge = 0)` in `src/physics/detectors/camera-snr.ts`: (S_max − D), NaN when
-  D ≥ S_max. Only dynamic-range passes D; other callers unchanged (sensor-cmos is an open finding).
-- confocal-resolution widefield axial uses the exact 0.886 (`SINC2_HALF_MAX_X`), not `axialPsfFwhm`'s 0.88 (8 pages keep it).
-- Gates on `f62f29c4`: `npm run check` 1159 pass, 6 old eslint warnings; build: see the PR.
+- `lightFieldMicroscope`: refocused DOF uses W/R_obj (e = W) even when pixels cap N_u; dofRefocused/dofView NaN when N_u < 1.
+  `plenopticCamera`: overlapping micro-images count 2p_µ − D clean pixels; focus ≤ f blanks only refocusNear/Far.
+- New `widefieldAxialFirstZero` = λ/(n − √(n² − NA²)) in `optical-sectioning-thickness.ts` (the paraxial
+  `widefieldDepthOfField` stays for microscope DOF). psf-calculator axial FWHM is the exact 0.886 (as confocal-resolution);
+  5 pages still use `axialPsfFwhm` 0.88.
+- mtf defaults NA 0.4, Δz 3 µm; magnification eyepiece 15×; optical-sectioning-thickness NA 1.4.
+- Gates on `4c909851`: `npm run check` 1160 pass, 6 old eslint warnings; build: see the PR.
 
 ## Next actions
-1. `/ship` PR #203. On a release (user asks): `node scripts/post-merge-check.mjs <sha> imaging/digital-holography=0.03326
-   imaging/dynamic-range=83.22 imaging/confocal-pin-hole imaging/coherent-raman`.
-2. 5w-5: imaging textbook slugs 19–36 in registry order (skip airy-disk, structured-illumination): hyperspectral-microscopy,
-   illumination, image-distance, light-field, light-sheet, low-coherence, magnification, mtf, multiphoton-depth,
-   optical-coherence, optical-power, optical-sectioning-thickness, palm-storm, photoacoustic, plenoptic-camera, psf-calculator,
-   pupil-matching, registration. 5w-6 = 37–53 (resolution … end). Four `physics-reviewer` agents (5/5/4/4), then two
-   `implementer`s on disjoint file sets in parallel (main session edits the registry meanwhile); `npm run check` before commit.
+1. `/ship` PR #204. On a release (user asks): `node scripts/post-merge-check.mjs <sha> imaging/psf-calculator=523
+   imaging/optical-sectioning-thickness=0.59 imaging/light-field=53.64 imaging/digital-holography=0.03326`.
+2. 5w-6: imaging textbook slugs 38–55 in registry order, skipping structured-illumination (17): resolution,
+   second-harmonic-generation, sensor-cmos, shack-hartmann, signal-to-noise, simultaneous-multicolor, speckle-imaging,
+   spectral-unmixing, spinning-disk, stimulated-raman-microscopy, stitching, sum-frequency-microscopy, super-resolution,
+   telecentricity, third-harmonic-microscopy, three-photon-microscopy, two-photon-microscopy. Four `physics-reviewer` agents
+   (5/4/4/4), then two `implementer`s on disjoint page sets; main session does physics modules + tests + registry meanwhile.
+   Also fix the open `sensor-cmos` DR finding and the `airy-disk` polarization wording in that session.
 3. Last in Phase 5: the Gemini hero (ask the user for the files).
 
 ## Non-obvious facts
-- **Sessions 163–166 (5w, 65 pages, 1 bug):** reviewers' useful catches are defaults that hide the page's effect, stated-but-false
+- **Session 167:** reviewers' "(from memory)" source attributions need checking: the multiphoton page credited Kobat 2011 with an
+  800 nm claim; its abstract (crossref API `/works/<doi>`, field `abstract`) is about 1280 nm only. Implementers: brief
+  warning conditions with abs() when a quantity is signed (mtf edgeWaves). `npx eslint <file>` alone can take > 2 min.
+- **Sessions 163–167 (5w, 83 pages, 2 bugs):** reviewers' useful catches are defaults that hide the page's effect, stated-but-false
   conditions (a fixed "40 %" true only at low NA), results that ignore an input the chart uses or a selector that changes
   nothing, fixed chart ranges that miss the input, and paraxial/classical formulas past their limit (NA > 1). Brief: verdict +
   BUG/MINOR/UNVERIFIED, file:line, hand calcs, "(from memory)", unique probe prefixes (probeA-…), don't edit. Implementers:
   allowed files, no registry, targeted tests + eslint + one tsc; ≈ 3 min each. Check their JSX text joins ("lies lies").
-- **Session 165:** pubs.aip.org shows a Cloudflare check (don't bypass); the MSU Burle handbook PDF is 404/bot-walled.
 - **Session 162:** reviewer claims from memory were wrong again (2 of 2 laser-safety claims; ICNIRP 2013 Table 5 has no C_A
   below 10 ps on purpose). ICNIRP 2013 PDF: `curl -sL https://www.icnirp.org/cms/upload/publications/ICNIRPLaser180gdl_2013.pdf`
   then `pdftotext -raw` and grep the row (`313 e l G 315`). A seeded `shuf --random-source=<(yes N)` clusters badly: draw
@@ -46,10 +51,6 @@ NA), ≈ 25 minor fixes. PRs #200–#202 are merged to `main` but not released (
 - **Session 159:** set `document.body.style.width = '360px'` and measure the SVGs in `javascript_tool` when screenshots fail.
   The site refuses iframes. Headless Chrome's minimum *window* is 512 px (`--window-size` crops); device metrics don't.
   PIL works with plain `python -c` (not `-I`).
-- **Session 158:** prerendered pages are `.next/server/app/<cat>/<slug>.html`; their `<script src>` tags are the initial JS.
-  Production chunks have no module paths: identify them by strings (`react.dev/errors` = react-dom, `prefetch`/`rsc` =
-  Next router, `va.vercel` = analytics). `ui-check` against production is the baseline for telling stale checks from
-  regressions.
 - **Session 157:** `plotly.js/lib/<trace>` builds under Turbopack with no loader. A new Plotly trace type goes in both
   `plotly-traces.ts` and `plotly-bundle.ts`. `ui-check <base> load /a /b` prints `plotly svg` or `svg+gl` per drawn
   chart. Measure a chunk with `gzip -c <file> | wc -c` in `.next/static/chunks`.
