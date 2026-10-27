@@ -28,8 +28,8 @@ export default function LockinAmplifierPage() {
   const [filterRaw, setFilter] = useURLState("filter", "rc");
   const [referenceRaw, setReference] = useURLState("reference", "sine");
   const [inputBandwidthRaw, setInputBandwidth] = useURLState("inputBandwidth", 1e5); // Hz
-  const signalFreq = clamp(signalFreqRaw, 0, 1e9, 1000);
-  const refFreq = clamp(refFreqRaw, 0, 1e9, 1000);
+  const signalFreq = clamp(signalFreqRaw, 1e-3, 1e9, 1000);
+  const refFreq = clamp(refFreqRaw, 1e-3, 1e9, 1000);
   const phaseRad = (clamp(phaseShiftRaw, -180, 180, 0) * Math.PI) / 180;
   const signalAmp = clamp(signalAmpRaw, 0, 1e9, 1) * 1e-6; // V peak
   const noiseDensity = clamp(noiseDensityRaw, 1e-3, 1e9, 10) * 1e-9; // V/√Hz
@@ -70,8 +70,8 @@ export default function LockinAmplifierPage() {
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <ValidatedNumberInput label="Signal Frequency (Hz)" value={signalFreqRaw} onChange={setSignalFreq} min={0} max={1e9} />
-        <ValidatedNumberInput label="Reference Frequency (Hz)" value={refFreqRaw} onChange={setRefFreq} min={0} max={1e9} />
+        <ValidatedNumberInput label="Signal Frequency (Hz)" value={signalFreqRaw} onChange={setSignalFreq} min={1e-3} max={1e9} />
+        <ValidatedNumberInput label="Reference Frequency (Hz)" value={refFreqRaw} onChange={setRefFreq} min={1e-3} max={1e9} />
         <ValidatedNumberInput label="Phase Shift (°)" value={phaseShiftRaw} onChange={setPhaseShift} min={-180} max={180} />
         <ValidatedNumberInput label="Signal Amplitude (µV peak)" value={signalAmpRaw} onChange={setSignalAmp} min={0} max={1e9} step="0.1" />
         <ValidatedNumberInput label="Input Noise Density (nV/√Hz)" value={noiseDensityRaw} onChange={setNoiseDensity} min={1e-3} max={1e9} step="1" />

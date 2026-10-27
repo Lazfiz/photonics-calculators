@@ -25,6 +25,7 @@ export default function NEPPage() {
   const iThermal = johnsonNoise(loadResistor, temperature, bandwidth).i;
   const totalNoiseCurrent = Math.hypot(iShot, iThermal);
   const nep = noiseEquivalentPower(totalNoiseCurrent, responsivity); // W in the bandwidth B
+  const noiseFree = !(totalNoiseCurrent > 0); // T = 0 and I_d = 0
   const nepSpectral = nep / Math.sqrt(bandwidth); // W/√Hz
   const detectivity = specificDetectivity(detectorArea_mm2 * 1e-2, bandwidth, nep); // mm² → cm², Jones
 
@@ -40,8 +41,8 @@ export default function NEPPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-8">
-        <ResultCard label="NEP" value={`${nep.toExponential(2)} W`} tone="blue" subtext="Total for bandwidth B" />
-        <ResultCard label="NEP (spectral)" value={`${nepSpectral.toExponential(2)} W/√Hz`} tone="cyan" subtext="Per root Hz" />
+        <ResultCard label="NEP" value={noiseFree ? "—" : `${nep.toExponential(2)} W`} tone="blue" subtext={noiseFree ? "No noise current at T = 0 and I_d = 0, so NEP is undefined" : "Total for bandwidth B"} />
+        <ResultCard label="NEP (spectral)" value={noiseFree ? "—" : `${nepSpectral.toExponential(2)} W/√Hz`} tone="cyan" subtext="Per root Hz" />
         <ResultCard label="D*" value={Number.isFinite(detectivity) ? `${detectivity.toExponential(2)} Jones` : "—"} tone="green" subtext="√(A·B)/NEP" />
         <ResultCard label="Noise current (rms)" value={`${totalNoiseCurrent.toExponential(3)} A`} tone="orange" subtext={`shot ${iShot.toExponential(2)} A, Johnson ${iThermal.toExponential(2)} A`} />
       </div>

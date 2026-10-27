@@ -42,9 +42,11 @@ export default function MicrochannelPlatePage() {
   const saturated = !(stackGain <= limit); // an overflowing stack (NaN) is saturated too
   const outOfRange = strikes < 2 || yieldPerStrike > 4 || plateGain < 1;
   const phdNote = numPlates === 1
-    ? "Unsaturated, excess noise factor ≈ 2; ion feedback limits a straight-channel plate to 10³–10⁵"
+    ? saturated
+      ? "Above the one-channel space-charge limit; ion feedback limits a straight-channel plate to 10³–10⁵ first"
+      : "Unsaturated, excess noise factor ≈ 2; ion feedback limits a straight-channel plate to 10³–10⁵"
     : saturated
-      ? "The rear plate saturates; Wiza reports (1–4)×10⁷ peak gain and 60–170 % FWHM for chevrons"
+      ? "Stack product above the one-channel limit: the rear plate begins to saturate. Charge spreads over several rear channels, so Wiza reports (1–4)×10⁷ peak gain and 60–170 % FWHM for chevrons"
       : "Unsaturated, excess noise factor ≈ 2";
   const ldOpt = optimumLdRatio(voltage, A, V0);
   const gainOpt = maximumChannelGain(voltage, A);

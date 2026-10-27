@@ -85,6 +85,7 @@ export function gainAtTemperature(p: GainDriftInput, deltaT: number): number {
   const n = driftExponent(p);
   if (Number.isNaN(n) || !Number.isFinite(deltaT) || !Number.isFinite(p.breakdownCoeff)) return NaN;
   const breakdown = p.breakdownRef + p.breakdownCoeff * deltaT;
+  if (Number.isFinite(breakdown) && p.breakdownRef - p.marginRef >= breakdown) return Infinity;
   if (!(breakdown > 0)) return NaN;
   return millerGain(p.breakdownRef - p.marginRef, breakdown, n);
 }

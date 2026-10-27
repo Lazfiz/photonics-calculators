@@ -7,6 +7,12 @@ import { prnuPattern, sensorNoise, shotPrnuCrossover, shotReadCrossover } from "
 const close = (actual: number, expected: number, rel: number, msg = "") =>
   assert.ok(Math.abs(actual - expected) <= rel * Math.abs(expected), `${msg} ${actual} vs ${expected}`);
 
+test("read + quantization → shot crossover passes the full floor: S = σ_r² + K²/12", () => {
+  // K = 20 e⁻/DN, σ_r = 2 e⁻: 4 + 400/12 = 37.333 e⁻ (hand calculation; quantization K/√12, Janesick 2007 ch. 5).
+  close(shotReadCrossover(Math.hypot(2, 20 / Math.sqrt(12))), 4 + 400 / 12, 1e-12);
+  close(shotReadCrossover(Math.hypot(2, 20 / Math.sqrt(12))), 37.3333333, 1e-8);
+});
+
 test("total noise with DSNU and PRNU (EMVA 1288 R3.1 Eq. 48)", () => {
   // uniformity defaults: S = 50 000, D = 100, σ_r = 5, PRNU 1 %, DSNU 2 e⁻.
   // total² = 50 000 + 100 + 25 + 2² + 500² = 300 129 → 547.8403; temporal² = 50 125 → 223.8861; spatial² = 250 004.

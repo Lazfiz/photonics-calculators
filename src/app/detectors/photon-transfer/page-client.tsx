@@ -24,7 +24,7 @@ export default function PhotonTransferPage() {
   const noiseAt = (signal: number) => sensorNoise({ signal, read: readNoise, prnu, electronsPerDn: gain });
   const full = noiseAt(wellCapacity);
   const floor = Math.hypot(readNoise, full.quantization);
-  const readCross = shotReadCrossover(readNoise);
+  const readCross = shotReadCrossover(floor); // S = σ_r² + K²/12 (e⁻)
   const prnuCross = shotPrnuCrossover(prnu);
   const dynamicRange = dynamicRangeDb(wellCapacity, floor);
 
@@ -53,8 +53,8 @@ export default function PhotonTransferPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">
         <ResultCard label="Total noise at full well" value={`${fix(full.total)} e⁻`} subtext={`${fix(full.total / gain)} DN`} tone="red" />
         <ResultCard label="Temporal noise at full well" value={`${fix(full.temporal)} e⁻`} subtext="after flat-field correction" tone="green" />
-        <ResultCard label="Noise floor" value={`${fix(floor / gain)} DN`} subtext={`read ${fix(readNoise / gain)} DN, quantization K/√12 = ${fix(full.quantization)} e⁻`} tone="gray" />
-        <ResultCard label="Read → shot crossover" value={`${fix(readCross, 0)} e⁻`} subtext={`S = σ_r², ${fix(readCross / gain, 1)} DN`} tone="blue" />
+        <ResultCard label="Noise floor" value={`${fix(floor / gain)} DN`} subtext={`read ${fix(readNoise)} e⁻, quantization K/√12 = ${fix(full.quantization)} e⁻`} tone="gray" />
+        <ResultCard label="Read + quantization → shot" value={`${fix(readCross, 0)} e⁻`} subtext={`S = σ_r² + K²/12, ${fix(readCross / gain, 1)} DN`} tone="blue" />
         <ResultCard
           label="Shot → PRNU crossover"
           value={Number.isFinite(prnuCross) ? `${fix(prnuCross, 0)} e⁻` : "—"}
@@ -66,7 +66,7 @@ export default function PhotonTransferPage() {
 
       <p className="text-gray-400 text-sm mb-6">
         σ_total² = σ_read² + σ_q² + S + (PRNU·S)², all in e⁻; divide by K for DN. In the shot-noise regime σ²(DN) = S(DN)/K,
-        so K = S/σ² from a frame-differenced (FPN-free) pair of flats.
+        so K = S/(σ²_diff/2 − σ_read²) from the offset-subtracted mean S of a frame-differenced (FPN-free) pair of flats (Janesick 2007, ch. 5).
       </p>
 
       <ChartPanel data={chartData} layout={{

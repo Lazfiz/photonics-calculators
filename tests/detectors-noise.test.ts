@@ -65,6 +65,11 @@ test("1/f noise K_f·I^α/f: rms over 1 Hz–1 MHz and the corner against 2qI (H
   assert.ok(Number.isNaN(flickerRms(1e-24, 1e-6, 1, 0, 1e6)));
 });
 
+test("Hooge-form default: K_f = 3e-10, α = 2, I = 1 µA gives f_c = 3e-16/(2q) ≈ 936.2 Hz", () => {
+  // f_c = K_f·I^α/(2qI) = 3e-10 × 1e-12 / (2 × 1.602176634e-19 × 1e-6) = 3e-16 / 3.204353268e-19 = 936.2 Hz (hand calculation).
+  close(flickerShotCorner(3e-10, 1e-6, 2), 3e-16 / (2 * 1.602176634e-19), 1e-9);
+});
+
 test("1/f noise from a corner frequency on a white floor (Motchenbacher & Connelly)", () => {
   // 5 e⁻ of white noise over 1 MHz with a 1 kHz corner, from 50 Hz: 5·√(1e-3 · ln 2e4) = 0.4976 e⁻.
   close(cornerFlickerRms(5, 1e3, 1e6, 50), 0.49758134, 1e-7);

@@ -58,6 +58,8 @@ test("gain drift at fixed bias from V_br(T): Excelitas C30662 operating point (C
   // V_br falls to the 46 V bias at ΔT = −4/0.14 = −28.6 K: breakdown.
   assert.equal(gainAtTemperature(p, -4 / 0.14), Infinity);
   assert.equal(gainAtTemperature(p, -40), Infinity);
+  // Edge: γ = 10 V/°C, ΔT = −10 K drives V_br(T) = 50 − 100 = −50 V below the 46 V bias: breakdown, not NaN.
+  assert.equal(gainAtTemperature({ ...p, breakdownCoeff: 10 }, -10), Infinity);
   // (1/M)dM/dT = −n(M − 1)γ/V_br = −3.184 %/K, matching a central difference of the full model.
   const coeff = gainTemperatureCoefficient(p);
   close(coeff, (-n * 9 * 0.14) / 50, 1e-14);

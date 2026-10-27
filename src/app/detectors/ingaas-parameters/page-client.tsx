@@ -42,8 +42,8 @@ export default function IngaasParametersPage() {
   const nep1550 = r1550 > 0 ? noise / r1550 : NaN;
   const dStar1550 = Math.sqrt(areaMm2 * 1e-2) / nep1550; // cm·Hz^½/W
 
-  const lambdaMax = Math.min(3500, Math.max(1800, Math.ceil((cutoff_nm + 300) / 100) * 100));
-  const wl = Array.from({ length: 241 }, (_, i) => 800 + (i * (lambdaMax - 800)) / 240);
+  const lambdaMax = Math.min(4000, Math.max(1800, Math.ceil((cutoff_nm + 300) / 100) * 100));
+  const wl = Array.from({ length: 241 }, (_, i) => 950 + (i * (lambdaMax - 950)) / 240); // the α prefactor is fitted over 0.95–1.62 µm
   const spectralQE = [
     { x: wl, y: wl.map(w => qeAt(w) * 100), type: "scatter", mode: "lines", name: "QE (%)", line: { color: "#60a5fa", width: 2 } },
     { x: [cutoff_nm, cutoff_nm], y: [0, 100], type: "scatter", mode: "lines", name: `λ_c = ${cutoff_nm.toFixed(0)} nm`, line: { color: "#f87171", dash: "dash" } },
