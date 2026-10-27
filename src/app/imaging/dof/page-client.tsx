@@ -34,13 +34,15 @@ export default function DepthOfFieldPage() {
   const exact = quarterWaveDepth(lambdaNm * nm, n, na);
 
   const naMax = Math.min(1.7, 0.99 * n);
-  const nas = Array.from({ length: 150 }, (_, k) => 0.05 + (k * (naMax - 0.05)) / 149);
+  const naLo = Math.min(0.05, na);
+  const nas = Array.from({ length: 150 }, (_, k) => naLo + (k * (naMax - naLo)) / 149);
   const curves = nas.map((a) => inoueDepthOfField(lambdaNm * nm, n, a, eUm * um, M));
   const chart = [
     { x: nas, y: curves.map((c) => c.total / um), type: "scatter" as const, mode: "lines" as const, name: "Total", line: { color: "#60a5fa" } },
     { x: nas, y: curves.map((c) => c.wave / um), type: "scatter" as const, mode: "lines" as const, name: "Wave term λ₀n/NA²", line: { color: "#34d399", dash: "dash" } },
     { x: nas, y: curves.map((c) => c.detector / um), type: "scatter" as const, mode: "lines" as const, name: "Detector term ne/(M·NA)", line: { color: "#fbbf24", dash: "dash" } },
     { x: nas, y: nas.map((a) => quarterWaveDepth(lambdaNm * nm, n, a) / um), type: "scatter" as const, mode: "lines" as const, name: "Wave term, non-paraxial", line: { color: "#a78bfa", dash: "dot" } },
+    { x: [na], y: [dof.total / um], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#facc15", size: 9 } },
   ];
 
   return (
@@ -89,7 +91,7 @@ export default function DepthOfFieldPage() {
           whose geometric blur spans the detector&apos;s resolution e referred to the object, e/M. Take e as the pixel
           pitch, or twice it for Nyquist sampling. n is the index between the cover glass and the front lens, so d is the
           range of focus travel; inside a specimen of index n_s the depth is about d·n_s/n (paraxial). At high NA the paraxial wave term overstates the depth: at NA 1.4 in
-          oil it reads 0.43 µm against 0.29 µm without the approximation.
+          oil it reads 0.43 µm against 0.29 µm without the approximation. The detector term n·e/(M·NA) is also paraxial; the exact geometry e·√(n² − NA²)/(M·NA) is smaller at high NA (0.027 vs 0.070 µm at NA 1.4 oil, 100×, 6.5 µm).
         </p>
       </div>
     </>

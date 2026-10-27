@@ -7,7 +7,7 @@ import {
   OCT_GAUSSIAN_FACTOR, spectralWidthHz, tdOctSnr, tdSignalBandwidth,
 } from "../src/physics/imaging/oct";
 import {
-  BINARY_AMPLITUDE_EFFICIENCY, depthOfFocus, fresnelNumber, fresnelReconstructionPitch, hologramNA, inlineMinDistance,
+  BINARY_AMPLITUDE_EFFICIENCY, depthOfFocus, fresnelNumber, fresnelReconstructionPitch, hologramEffectiveNA, hologramNA, inlineMinDistance,
   maxInterferenceAngle, phaseQuantizationEfficiency, pixelEnvelope, replayField, slmMaxAngle,
 } from "../src/physics/imaging/holography";
 
@@ -74,7 +74,18 @@ test("Shot-noise SNR ρP_sΔt/(2e) and ρP_s/(2eB) (Choma et al. 2003, eqs. 9–
 test("Digital holography: Fresnel pixel, NA, reference angle, in-line distance (Schnars & Jüptner 2002)", () => {
   // 532 nm · 0.1 m/(2048 · 6.5 µm) = 5.32e-8/0.013312 = 3.99639 µm; NA = 13.312 mm/0.2 m = 0.06656.
   assertRel(fresnelReconstructionPitch(532 * nm, 0.1, 2048, 6.5 * um), 3.99639 * um, 1e-5, "Δξ");
-  assertRel(hologramNA(2048, 6.5 * um, 0.1), 0.06656, 1e-9, "NA");
+  // sin(atan(0.06656)) = 0.06656/sqrt(1 + 0.06656²) = 0.066413 (the paraxial value 0.06656 overestimates slightly).
+  assertRel(hologramNA(2048, 6.5 * um, 0.1), 0.066413, 1e-5, "NA");
+  // Edge case z = 1 mm: NΔx/2z = 6.656, sin(atan 6.656) = 6.656/sqrt(1 + 44.30) = 0.98890 (≤ 1; paraxial gave 6.66).
+  assertRel(hologramNA(2048, 6.5 * um, 1e-3), 0.98890, 1e-5, "NA at 1 mm");
+  assert.ok(hologramNA(2048, 6.5 * um, 1e-3) <= 1);
+  // Defaults z = 200 mm: atan(0.03328), sin = 0.033262.
+  assertRel(hologramNA(2048, 6.5 * um, 0.2), 0.033262, 3e-5, "NA defaults");
+  // Pixel limit: λ/(2Δx) = 532 nm/13 µm = 0.040923 at z = 50 mm (sensor NA there is 0.2576), resolution λ/(2NA) = Δx.
+  assertRel(hologramEffectiveNA(532 * nm, 2048, 6.5 * um, 0.05), 0.040923, 1e-5, "NA_eff pixel-limited");
+  assertRel((532 * nm) / (2 * hologramEffectiveNA(532 * nm, 2048, 6.5 * um, 0.05)), 6.5 * um, 1e-9, "res = Δx");
+  assertRel(hologramEffectiveNA(532 * nm, 2048, 6.5 * um, 0.2), 0.033262, 3e-5, "NA_eff = NA at defaults");
+  assert.ok(Number.isNaN(hologramEffectiveNA(NaN, 2048, 6.5 * um, 0.2)), "NaN guard");
   // λz/(NΔx) = λ/(2NA): the pixel is the coherent resolution of the synthetic aperture.
   assertRel(fresnelReconstructionPitch(532 * nm, 0.1, 2048, 6.5 * um), (532 * nm) / (2 * 0.06656), 1e-12, "λ/(2NA)");
   // 2 asin(532 nm/26 µm) = 2 asin(0.0204615) = 0.0409259 rad = 2.3449°.

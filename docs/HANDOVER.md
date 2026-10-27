@@ -1,35 +1,33 @@
-# Handover — 2026-10-27 (session 165 → session 166)
+# Handover — 2026-10-27 (session 166 → session 167)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 165 did 5w-3 (detectors textbook pass 3/3, the last detectors part) on `phase-5/5w-3-detectors`, PR #202:
-15 pages, 0 bugs, 11 minor fixes. PRs #200–#201 are merged to `main` but not released (`release` = `d82602ed`). Next: **5w-4 imaging 1/3**.
+Session 166 did 5w-4 (imaging textbook pass 1/3) on `phase-5/5w-4-imaging`, PR #203: 18 pages, 1 bug (digital-holography
+NA), ≈ 25 minor fixes. PRs #200–#202 are merged to `main` but not released (`release` = `d82602ed`). Next: **5w-5 imaging 2/3**.
 
 ## State
-- New `sinadWithQuantizationDb(S, N, D, bits)` in `src/physics/detectors/noise.ts`; `sndr` SINAD/ENOB now include ADC
-  quantisation (ENOB can't exceed the bits), defaults N 1e-7, D 1e-8 (SINAD incl. 12-bit quantisation 68.247 dB, ENOB 11.043).
-- `saturation` default 12-bit (DR 71.709 dB); `thermal-noise` warns when B > 0.1·k_BT/h; reset-noise, silicon-photodiode and
-  thermal-noise sweeps follow the input with an operating-point marker; `reset-noise` title is "kTC".
-- Unverified (sources unreachable, in ROADMAP Open findings): Burle S-20 dark emission 0.4 fA/cm²; streak-camera 2.63 ps note.
-- Gates on `71270f25`: `npm run check` 1158 pass, 6 old eslint warnings; build: see the PR.
+- `hologramNA` is now sin(atan(NΔx/2z)); new `hologramEffectiveNA` = min(NA, λ/(2Δx)) in `src/physics/imaging/holography.ts`.
+  digital-holography shows reconstruction grid λz/(NΔx) and resolution λ/(2NA_eff) separately (z 50 mm → 6.5 µm = Δx).
+- `dynamicRangeDb(maxSignal, noiseFloor, darkCharge = 0)` in `src/physics/detectors/camera-snr.ts`: (S_max − D), NaN when
+  D ≥ S_max. Only dynamic-range passes D; other callers unchanged (sensor-cmos is an open finding).
+- confocal-resolution widefield axial uses the exact 0.886 (`SINC2_HALF_MAX_X`), not `axialPsfFwhm`'s 0.88 (8 pages keep it).
+- Gates on `f62f29c4`: `npm run check` 1159 pass, 6 old eslint warnings; build: see the PR.
 
 ## Next actions
-1. `/ship` PR #202. On a release (user asks): `node scripts/post-merge-check.mjs <sha> detectors/sndr=68.247
-   detectors/saturation=71.71 detectors/thermal-noise detectors/vacuum-photodiode`.
-2. 5w-4: imaging textbook slugs 1–18 in registry order (53 after skipping airy-disk, structured-illumination): 3d-reconstruction,
-   adaptive-optics, afocal, cleared-tissue, coherent-raman, computational-imaging, computer-generated-holography,
-   confocal-pin-hole, confocal-resolution, contrast-methods, deconvolution, denoising-algorithms, digital-holography, dof,
-   dynamic-range, fcs, fluorescence-spectra, frap. 5w-5 = 19–36 (hyperspectral-microscopy … registration), 5w-6 = 37–53.
-   Four parallel `physics-reviewer` agents (5/5/4/4) with the same brief as sessions 164–165, then one `implementer` with a
-   numbered fix list and allowed files; review its diff; `npm run check` before commit.
+1. `/ship` PR #203. On a release (user asks): `node scripts/post-merge-check.mjs <sha> imaging/digital-holography=0.03326
+   imaging/dynamic-range=83.22 imaging/confocal-pin-hole imaging/coherent-raman`.
+2. 5w-5: imaging textbook slugs 19–36 in registry order (skip airy-disk, structured-illumination): hyperspectral-microscopy,
+   illumination, image-distance, light-field, light-sheet, low-coherence, magnification, mtf, multiphoton-depth,
+   optical-coherence, optical-power, optical-sectioning-thickness, palm-storm, photoacoustic, plenoptic-camera, psf-calculator,
+   pupil-matching, registration. 5w-6 = 37–53 (resolution … end). Four `physics-reviewer` agents (5/5/4/4), then two
+   `implementer`s on disjoint file sets in parallel (main session edits the registry meanwhile); `npm run check` before commit.
 3. Last in Phase 5: the Gemini hero (ask the user for the files).
 
 ## Non-obvious facts
-- **Sessions 163–165 (detectors 5w, 47 pages, 0 bugs):** reviewers' useful catches are defaults that hide the page's effect
-  (1/f corner at 3 µHz, 16-bit ADC with σ_q 0.09 e⁻, a flat SINAD chart), stated-but-false conditions (optimum ignoring B,
-  fixed-gap activation energy: Si needs E_g − T·dE_g/dT ≈ 1.20 eV), results that ignore an input the chart uses (ENOB vs bits),
-  fixed chart ranges that miss the input, and classical formulas past their limit (kTB at 4 K, 1 THz is 7× high). Brief:
-  verdict + BUG/MINOR/UNVERIFIED, hand calcs, "(from memory)", unique probe prefixes (probeA-…). One implementer does ≈ 11–14
-  fixes in ≈ 7 min with the gate. When it edits `detectors.ts`, do the main session's registry edits after it finishes.
+- **Sessions 163–166 (5w, 65 pages, 1 bug):** reviewers' useful catches are defaults that hide the page's effect, stated-but-false
+  conditions (a fixed "40 %" true only at low NA), results that ignore an input the chart uses or a selector that changes
+  nothing, fixed chart ranges that miss the input, and paraxial/classical formulas past their limit (NA > 1). Brief: verdict +
+  BUG/MINOR/UNVERIFIED, file:line, hand calcs, "(from memory)", unique probe prefixes (probeA-…), don't edit. Implementers:
+  allowed files, no registry, targeted tests + eslint + one tsc; ≈ 3 min each. Check their JSX text joins ("lies lies").
 - **Session 165:** pubs.aip.org shows a Cloudflare check (don't bypass); the MSU Burle handbook PDF is 404/bot-walled.
 - **Session 162:** reviewer claims from memory were wrong again (2 of 2 laser-safety claims; ICNIRP 2013 Table 5 has no C_A
   below 10 ps on purpose). ICNIRP 2013 PDF: `curl -sL https://www.icnirp.org/cms/upload/publications/ICNIRPLaser180gdl_2013.pdf`

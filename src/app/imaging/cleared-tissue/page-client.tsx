@@ -81,11 +81,11 @@ export default function ClearedTissuePage() {
           ) : (
             <>
               {row("Lateral resolution λ/(2NA)", fmt(lateral * 1e9, 0, " nm"), "text-blue-400")}
-              {row("Axial FWHM (index-matched)", fmt(axial * 1e6, 3, " µm"), "text-green-400")}
+              {row("Axial FWHM, widefield PSF (index-matched)", fmt(axial * 1e6, 3, " µm"), "text-green-400")}
             </>
           )}
-          {row("Ballistic fraction at depth", ballistic < 1e-4 ? `${(100 * ballistic).toExponential(2)} %` : fmt(100 * ballistic, ballistic < 0.01 ? 4 : 1, " %"), "text-yellow-400")}
-          {row("Ballistic loss", fmt(-10 * Math.log10(ballistic), 1, " dB"), "text-orange-400")}
+          {row("Ballistic fraction at depth", ballistic === 0 ? "< 1e-300 %" : ballistic < 1e-4 ? `${(100 * ballistic).toExponential(2)} %` : fmt(100 * ballistic, ballistic < 0.01 ? 4 : 1, " %"), "text-yellow-400")}
+          {row("Ballistic loss", fmt(10 * Math.LOG10E * (muA_m + muS_m) * depth, 1, " dB"), "text-orange-400")}
           {row("Scattering length 1/µ_s", fmtMm(1 / muS_m))}
           {row("Depth to 1/e (1/µ_t)", fmtMm(depth1e), "text-purple-400")}
           {row("Depth to 1 %", fmtMm(depth1pc), "text-purple-400")}

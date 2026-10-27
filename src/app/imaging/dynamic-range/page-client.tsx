@@ -32,7 +32,7 @@ export default function DynamicRangePage() {
   const dark = (darkRate * exposureMs) / 1000;
   const noiseAt = (signal: number) => sensorNoise({ signal, read, dark, prnu, dsnu, electronsPerDn });
   const floor = noiseAt(0).temporal;
-  const dr = dynamicRangeDb(well, floor);
+  const dr = dynamicRangeDb(well, floor, dark);
   const half = noiseAt(well / 2);
   const floorDn = floor / electronsPerDn;
 
@@ -65,7 +65,7 @@ export default function DynamicRangePage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ResultCard label="Dynamic Range" value={`${fmt(dr, 2)} dB`} subtext={`${fmt(Math.log2(well / floor), 2)} stops, FW/temporal dark noise`} tone="green" />
+        <ResultCard label="Dynamic Range" value={Number.isFinite(dr) ? `${fmt(dr, 2)} dB` : "—"} subtext={Number.isFinite(dr) ? `${fmt(Math.log2((well - dark) / floor), 2)} stops, (FW − D)/temporal dark noise` : "dark charge fills the well"} tone="green" />
         <ResultCard label="Temporal Noise Floor" value={`${fmt(floor, 3)} e⁻`} subtext={`√(σ_read² + D + σ_q²); dark charge ${fmt(dark, 4)} e⁻`} tone="red" />
         <ResultCard label="ADC Step" value={`${fmt(electronsPerDn, 3)} e⁻/DN`} subtext={`Quantization noise ${fmt(half.quantization, 3)} e⁻`} tone="yellow" />
         <ResultCard

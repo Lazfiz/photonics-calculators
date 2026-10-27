@@ -32,6 +32,7 @@ test("box filter: σ/k, 3 × 3 gives 9.54 dB; half response where sin²(πf) = 3
   // H = sin 3πf/(3 sin πf) = 1 − (4/3) sin²πf = 0.5 → f = asin(√(3/8))/π = 0.209785 cycles/pixel (hand calculation).
   close(halfResponseFrequency((f) => boxTransfer(3, f)), Math.asin(Math.sqrt(3 / 8)) / Math.PI, 1e-9);
   assert.equal(boxTransfer(3, 0), 1);
+  close(boxTransfer(3, 0.5), -1 / 3, 1e-12); // sin(1.5π)/(3 sin(0.5π))
   assert.ok(Number.isNaN(boxNoiseRatio(4)));
 });
 

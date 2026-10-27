@@ -4,7 +4,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  depthOfFocus, fresnelNumber, fresnelReconstructionPitch, hologramNA, inlineMinDistance, maxInterferenceAngle, replayField,
+  depthOfFocus, fresnelNumber, fresnelReconstructionPitch, hologramEffectiveNA, hologramNA, inlineMinDistance, maxInterferenceAngle, replayField,
 } from "../../../physics/imaging/holography";
 import { sinc } from "../../../physics/math";
 
@@ -38,7 +38,9 @@ export default function DigitalHolographyPage() {
   const NA = hologramNA(N, dx, z);
   const pitch = fresnelReconstructionPitch(lambda, z, N, dx);
   const field = replayField(lambda, z, dx);
-  const dof = depthOfFocus(lambda, NA);
+  const NAeff = hologramEffectiveNA(lambda, N, dx, z);
+  const res = lambda / (2 * NAeff);
+  const dof = depthOfFocus(lambda, NAeff);
   const thetaMax = maxInterferenceAngle(lambda, dx);
   const zMin = inlineMinDistance(lambda, N, dx, objUm * 1e-6);
   const zMatched = inlineMinDistance(lambda, N, dx, 0); // λz/(NΔx) = Δx here
@@ -53,9 +55,9 @@ export default function DigitalHolographyPage() {
     { x: [zMm], y: [pitch * 1e6], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#f87171", size: 10 } },
   ];
 
-  const xs = Array.from({ length: 241 }, (_, i) => -4 * pitch * 1e6 + (i * 8 * pitch * 1e6) / 240);
+  const xs = Array.from({ length: 241 }, (_, i) => -4 * res * 1e6 + (i * 8 * res * 1e6) / 240);
   const psfChart = [
-    { x: xs, y: xs.map((x) => sinc((Math.PI * x * 1e-6) / pitch) ** 2), type: "scatter" as const, mode: "lines" as const, name: "Point image, intensity", line: { color: "#34d399" } },
+    { x: xs, y: xs.map((x) => sinc((Math.PI * x * 1e-6) / res) ** 2), type: "scatter" as const, mode: "lines" as const, name: "Point image, intensity", line: { color: "#34d399" } },
   ];
 
   const layout = (x: string, y: string, extra: object = {}) => ({
@@ -77,10 +79,12 @@ export default function DigitalHolographyPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
           <h2 className="text-lg font-semibold">Results</h2>
           {row("Sensor size NΔx", fmt(L * 1e3, 4, " mm"))}
-          {row("Numerical aperture NΔx/(2z)", fmt(NA, 4), "text-blue-400")}
-          {row("Image pixel and resolution λz/(NΔx)", fmt(pitch * 1e6, 4, " µm"), "text-green-400")}
+          {row("Numerical aperture sin(atan(NΔx/2z))", fmt(NA, 4), "text-blue-400")}
+          {row("Effective NA (pixel limit λ/2Δx)", fmt(NAeff, 4), "text-blue-400")}
+          {row("Reconstruction grid λz/(NΔx)", fmt(pitch * 1e6, 4, " µm"))}
+          {row("Resolution λ/(2NA_eff)", fmt(res * 1e6, 4, " µm"), "text-green-400")}
           {row("Reconstructed field λz/Δx", fmt(field * 1e3, 4, " mm"))}
-          {row("Depth of focus λ/NA²", fmt(dof * 1e6, 4, " µm"), "text-green-400")}
+          {row("Depth of focus λ/NA_eff²", fmt(dof * 1e6, 4, " µm"), "text-green-400")}
           {row("Largest reference angle 2 arcsin(λ/4Δx)", fmt((thetaMax * 180) / Math.PI, 4, "°"), "text-purple-400")}
           {row("Fresnel number (D/2)²/(λz)", fmt(NF, 4))}
           {row("Shortest in-line distance Δx(NΔx + D)/λ", fmt(zMin * 1e3, 4, " mm"), "text-yellow-400")}
@@ -106,15 +110,15 @@ export default function DigitalHolographyPage() {
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold mb-2">Model</h3>
         <div className="text-sm text-gray-300 space-y-1 font-mono">
-          <p>Fresnel reconstruction: Δξ = λz/(NΔx), field NΔξ = λz/Δx, point image sinc²(πx/Δξ)</p>
-          <p>NA = NΔx/(2z), depth of focus λ/NA², θ_max = 2 arcsin(λ/(4Δx))</p>
+          <p>Fresnel reconstruction: Δξ = λz/(NΔx), field NΔξ = λz/Δx, point image sinc²(πx/r) with r = λ/(2NA_eff)</p>
+          <p>NA = sin(atan(NΔx/2z)), NA_eff = min(NA, λ/(2Δx)), resolution λ/(2NA_eff), depth of focus λ/NA_eff², θ_max = 2 arcsin(λ/(4Δx))</p>
           <p>In-line sampling: (NΔx + D)/(2z) ≤ λ/(2Δx) ⇒ z ≥ Δx(NΔx + D)/λ</p>
         </div>
         <p className="text-xs text-gray-500 mt-2">
           Scalar, paraxial Fresnel diffraction with a plane reference wave and a square sensor of N × N square pixels with
-          full fill factor (Schnars & Jüptner 2002). The reconstructed point is the Fourier transform of the sensor
-          aperture, a sinc whose first zero is one image pixel. An off-axis hologram must also separate the twin image and
-          the zero order, which needs a larger angle or distance; the pixel fill factor, noise and the object&apos;s own
+          100 % fill factor assumed (Schnars & Jüptner 2002). The reconstructed point is drawn as a sinc whose first zero is the
+          resolution λ/(2NA_eff). An off-axis hologram must also separate the twin image and
+          the zero order, which needs a larger angle or distance; noise and the object&apos;s own
           speckle are not included.
         </p>
       </div>

@@ -6,7 +6,7 @@ export const imaging: CalculatorEntry[] = [
     title: "3D Reconstruction Methods",
     description: "Compare 3D reconstruction approaches: resolution, sampling, voxel budgets, and method tradeoffs.",
     tier: "textbook",
-    modelNote: "Scalar FWHMs: Airy and sinc² for widefield, the numerical scalar confocal model for 0–5 AU pinholes, and a Gaussian light sheet multiplied with the detection PSF. Sampling uses two samples per FWHM.",
+    modelNote: "Scalar FWHMs: Airy and sinc² for widefield, the numerical scalar confocal model for 0–5 AU pinholes, and a Gaussian light sheet multiplied with the detection PSF; the light-sheet axial FWHM holds within the sheet's 2z_R, and the sheet thickens beyond it. Sampling uses two samples per FWHM.",
     references: [
       {
         citation: "Wilson T., Sheppard C. J. R. (1984). Theory and Practice of Scanning Optical Microscopy. Academic Press. Confocal PSF as the product of the illumination PSF and the pinhole-integrated detection PSF.",
@@ -122,7 +122,7 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "coherent-raman",
     title: "Coherent Raman (CARS/SRS) Calculator",
-    description: "Coherent Anti-Stokes Raman Scattering and Stimulated Raman Scattering signal estimation.",
+    description: "Coherent anti-Stokes Raman scattering (CARS) and stimulated Raman scattering (SRS): wavelengths, focal intensity, lineshapes and excitation bandwidth.",
     keywords: ["CARS Imaging", "Coherent Raman Microscopy", "Coherent Anti-Stokes Raman Scattering (CARS)"],
     tier: "textbook",
     modelNote: "Wavelengths follow from energy conservation (exact); lineshapes are a single Lorentzian Raman line; the excitation bandwidth is that of identical transform-limited Gaussian pulses; focal intensity uses Zipfel's Gaussian fit. Signal levels are relative, as they need χ⁽³⁾ and the detection chain.",
@@ -244,13 +244,17 @@ export const imaging: CalculatorEntry[] = [
     title: "Image Deconvolution",
     description: "Wiener deconvolution of a diffraction-limited image: the restored transfer H²/(H² + NSR), the largest filter gain and the finest period restored, against the passband limit λ/(2NA).",
     tier: "textbook",
-    modelNote: "Linear Wiener filter for white noise and a flat object spectrum, applied to the in-focus diffraction-limited MTF of a circular pupil. Iterative methods (Richardson–Lucy, blind) are not modelled; no method restores frequencies above 2NA/λ.",
+    modelNote: "Linear Wiener filter for white noise and a flat object spectrum, applied to the in-focus diffraction-limited MTF of a circular pupil. Iterative methods (Richardson–Lucy, blind) are not modelled; no linear method restores frequencies above 2NA/λ, and positivity-constrained maximum-likelihood extrapolation beyond it is small and noise-limited.",
     references: [
       {
         citation: "Goodman J. W. (2005). Introduction to Fourier Optics, 3rd ed., §6.3. Roberts & Company. Incoherent cutoff 2NA/λ and the diffraction-limited MTF of a circular pupil.",
       },
       {
         citation: "Gonzalez R. C., Woods R. E. (2018). Digital Image Processing, 4th ed., §5.8. Pearson. Wiener filter H*/(|H|² + K) with a constant noise-to-signal ratio K.",
+      },
+      {
+        citation: "Conchello J.-A. (1998). Superresolution and convergence properties of the expectation-maximization algorithm for maximum-likelihood deconvolution of incoherent images. J. Opt. Soc. Am. A 15, 2609.",
+        url: "https://doi.org/10.1364/JOSAA.15.002609",
       },
     ],
   },
@@ -277,9 +281,9 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "digital-holography",
     title: "Digital Holography",
-    description: "Fresnel reconstruction pixel λz/(NΔx), sensor NA, depth of focus, largest reference angle and the in-line sampling distance for a digital hologram.",
+    description: "Fresnel reconstruction grid λz/(NΔx), sensor NA and its pixel-pitch limit λ/(2Δx), resolution, depth of focus, largest reference angle and the in-line sampling distance for a digital hologram.",
     tier: "textbook",
-    modelNote: "Scalar paraxial Fresnel diffraction with a plane reference wave and an N × N sensor of square pixels with full fill factor. The reconstructed point is the sinc transform of the sensor aperture. Twin-image separation in off-axis holograms, noise and speckle are not included.",
+    modelNote: "Scalar paraxial Fresnel diffraction with a plane reference wave and an N × N sensor of square pixels, 100 % fill factor assumed. The NA is sin(atan(NΔx/2z)), capped at λ/(2Δx) where the pixel pitch, not the sensor width, limits the recorded fringes (below z ≈ NΔx²/λ). The reconstructed point is the sinc transform of the effective aperture. Twin-image separation in off-axis holograms, noise and speckle are not included.",
     references: [
       {
         citation: "Schnars U., Jüptner W. P. O. (2002). Digital recording and numerical reconstruction of holograms. Meas. Sci. Technol. 13, R85–R101. Fresnel reconstruction pixel λz/(NΔx) and the largest interference angle 2 arcsin(λ/(4Δx)).",
@@ -292,7 +296,7 @@ export const imaging: CalculatorEntry[] = [
     title: "Depth of Field",
     description: "Microscope depth of field from Inoué's formula, λ₀n/NA² plus the detector term n·e/(M·NA), with the non-paraxial wave term for high NA.",
     tier: "textbook",
-    modelNote: "Inoué's paraxial sum of a quarter-wave defocus term and a geometric detector term, n the immersion index. At high NA the paraxial wave term overstates the depth; the page also shows the term without that approximation.",
+    modelNote: "Inoué's paraxial sum of a quarter-wave defocus term and a geometric detector term, n the immersion index. At high NA both terms overstate the depth (the detector term exactly is e·√(n² − NA²)/(M·NA)); the page also shows the wave term without the paraxial approximation.",
     references: [
       {
         citation: "Inoué S., Spring K. R. (1997). Microscope Image Formation. In: Video Microscopy, 2nd ed., ch. 2, pp. 13–117. Plenum. Total depth of field d = λ₀n/NA² + n·e/(M·NA).",
@@ -310,7 +314,7 @@ export const imaging: CalculatorEntry[] = [
     description: "Imaging system dynamic range, noise floor, and ADC-limited performance analysis.",
     keywords: ["Full Well Capacity vs SNR"],
     tier: "textbook",
-    modelNote: "EMVA 1288 noise model: PRNU as a fraction of the signal, DSNU in e⁻ rms, quantization noise K/√12 with the ADC full scale matched to the full well. Dynamic range is the full well over the temporal dark noise; flat-field correction removes PRNU and DSNU. Nonlinearity near saturation is left out.",
+    modelNote: "EMVA 1288 noise model: PRNU as a fraction of the signal, DSNU in e⁻ rms, quantization noise K/√12 with the ADC full scale matched to the full well. Dynamic range is the full well over the temporal dark noise (Janesick; EMVA 1288 takes the signal at SNR = 1 as the floor, ≈ 20·log10((σ_d + ½)/σ_d) dB less), and dark charge that fills the well leaves none; flat-field correction removes PRNU and DSNU. Nonlinearity near saturation is left out.",
     references: [
       {
         citation: "EMVA Standard 1288, Release 3.1 (2016). Standard for Characterization of Image Sensors and Cameras, Eq. (45)–(48). DSNU in e⁻, PRNU relative to the signal and the total SNR with spatial noise.",

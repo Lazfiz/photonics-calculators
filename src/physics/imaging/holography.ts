@@ -24,9 +24,20 @@ export function fresnelReconstructionPitch(lambda: number, z: number, N: number,
   return (lambda * z) / (N * dx);
 }
 
-/** Paraxial numerical aperture NΔx/(2z) of an N·Δx sensor seen from an on-axis point at distance z. */
+/** Geometric numerical aperture sin(atan(NΔx/(2z))) of an N·Δx sensor seen from an on-axis point at distance z (always ≤ 1). */
 export function hologramNA(N: number, dx: number, z: number): number {
-  return positive(N) && positive(dx) && positive(z) ? (N * dx) / (2 * z) : NaN;
+  return positive(N) && positive(dx) && positive(z) ? Math.sin(Math.atan((N * dx) / (2 * z))) : NaN;
+}
+
+/**
+ * Effective numerical aperture min(hologramNA, λ/(2Δx)), the smaller of the sensor-width limit and the pixel limit.
+ * Below z ≈ NΔx²/λ the Nyquist frequency 1/(2Δx) of the pixel pitch, not the sensor width, limits the recorded fringe
+ * frequency, so sin θ ≤ λ/(2Δx).
+ */
+export function hologramEffectiveNA(lambda: number, N: number, dx: number, z: number): number {
+  if (!(positive(lambda) && positive(dx))) return NaN;
+  const na = hologramNA(N, dx, z);
+  return Number.isFinite(na) ? Math.min(na, lambda / (2 * dx)) : NaN;
 }
 
 /** Largest object–reference angle the pixel pitch resolves, 2 arcsin(λ/(4Δx)), rad (Schnars & Jüptner 2002). */
