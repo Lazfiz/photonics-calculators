@@ -6,8 +6,11 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  TOLERANCE_PENALTY_DB, accumulatedDispersion, dcfLength, dispersionLimitedBitRate, dispersionPenaltyDb,
-  residualSlope, rmsBroadening, toleratedBroadening, usableHalfBandwidth,
+  beta2FromD, beta3FromDS, optimumOutputRmsWidth, sigmaOmegaFromLambda,
+} from "../../../physics/fiber-optics/chromatic-dispersion";
+import {
+  TOLERANCE_PENALTY_DB, accumulatedDispersion, dcfLength, dispersionPenaltyDb, optimumPulseBroadening,
+  residualSlope, toleratedAccumulatedDispersion, toleratedBroadening, usableHalfBandwidth,
 } from "../../../physics/fiber-optics/dispersion-comp";
 
 // UI units → SI.
@@ -41,19 +44,22 @@ export default function DispersionCompPage() {
     const L = fiberLength * 1e3;
     const sigmaLambda = bwNm * 1e-9;
     const B = bitRate * 1e9;
-    const detuning = (channelWavelength - refWavelength) * 1e-9;
+    const lambdaCh = channelWavelength * 1e-9, lambdaRef = refWavelength * 1e-9;
+    const detuning = lambdaCh - lambdaRef;
 
     const Dacc = accumulatedDispersion(span, L, detuning);
-    const sigmaUnc = rmsBroadening(Dacc, span.S * L, sigmaLambda);
+    const sigmaUnc = optimumPulseBroadening(Dacc, span.S * L, sigmaLambda, lambdaCh);
     const Lc = dcfLength(span, L, dcf);
     const Sres = residualSlope(span, L, dcf, Lc);
     const DresAtChannel = Sres * detuning;
-    const sigmaComp = rmsBroadening(DresAtChannel, Sres, sigmaLambda);
+    const sigmaComp = optimumPulseBroadening(DresAtChannel, Sres, sigmaLambda, lambdaCh);
     const sigmaTol = toleratedBroadening(B);
     return {
       Dacc_psnm: Dacc * TO_PS_NM,
       sigmaUnc_ps: sigmaUnc * 1e12,
-      Bmax_Gbps: dispersionLimitedBitRate(sigmaUnc) / 1e9,
+      Bmax_Gbps: 1 / (4 * optimumOutputRmsWidth(
+        beta2FromD(Dacc, lambdaCh), beta3FromDS(Dacc, span.S * L, lambdaCh), 1, sigmaOmegaFromLambda(sigmaLambda, lambdaCh),
+      )) / 1e9,
       penaltyUnc: dispersionPenaltyDb(B, sigmaUnc),
       Lc_km: Lc / 1e3,
       Sres_psnm2: Sres * TO_PS_NM2,
@@ -61,16 +67,17 @@ export default function DispersionCompPage() {
       Dres_psnm: DresAtChannel * TO_PS_NM,
       sigmaComp_ps: sigmaComp * 1e12,
       penaltyComp: dispersionPenaltyDb(B, sigmaComp),
-      halfBand_nm: usableHalfBandwidth(Sres, sigmaLambda, sigmaTol) * 1e9,
+      halfBand_nm: usableHalfBandwidth(Sres, sigmaLambda, sigmaTol, lambdaRef) * 1e9,
       // |D_acc| of the compensated link at which the penalty reaches the tolerance (S_acc = S_res everywhere).
-      tolerance_psnm:
-        (Math.sqrt(Math.max(0, sigmaTol ** 2 - (Sres * sigmaLambda ** 2) ** 2 / 2)) / sigmaLambda) * TO_PS_NM,
+      tolerance_psnm: toleratedAccumulatedDispersion(Sres, sigmaLambda, sigmaTol, lambdaRef) * TO_PS_NM,
     };
   }, [dispersion, slope, fiberLength, bwNm, bitRate, compDispersion, compSlope, refWavelength, channelWavelength]);
 
   const chartData = useMemo(() => {
     if (!Number.isFinite(calc.Sres_psnm2)) return [];
-    const wavelengths = Array.from({ length: 161 }, (_, i) => refWavelength - CHART_HALF_SPAN_NM + i * 0.5);
+    const lo = Math.min(refWavelength - CHART_HALF_SPAN_NM, channelWavelength - 10);
+    const hi = Math.max(refWavelength + CHART_HALF_SPAN_NM, channelWavelength + 10);
+    const wavelengths = Array.from({ length: 161 }, (_, i) => lo + (i * (hi - lo)) / 160);
     const traces: Record<string, unknown>[] = [{
       x: wavelengths, y: wavelengths.map((wl) => calc.Sres_psnm2 * (wl - refWavelength)),
       type: "scatter", mode: "lines", name: "Residual after DCF", line: { color: "#60a5fa", width: 2 },
@@ -85,8 +92,12 @@ export default function DispersionCompPage() {
         });
       }
     }
+    traces.push({
+      x: [channelWavelength], y: [calc.Dres_psnm], type: "scatter", mode: "markers", name: "Channel",
+      marker: { color: "#fbbf24", size: 10 },
+    });
     return traces;
-  }, [calc.Sres_psnm2, calc.tolerance_psnm, refWavelength]);
+  }, [calc.Sres_psnm2, calc.tolerance_psnm, calc.Dres_psnm, refWavelength, channelWavelength]);
 
   const dcfValid = Number.isFinite(calc.Lc_km);
   const band = calc.halfBand_nm;
@@ -111,15 +122,21 @@ export default function DispersionCompPage() {
         </p>
       )}
 
+      {Math.abs(channelWavelength - refWavelength) > MAX_BAND_NM && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          The channel is more than {MAX_BAND_NM} nm from λ₀: the linear D(λ) model is extrapolated and the results are unreliable.
+        </p>
+      )}
+
       <h3 className="text-lg font-semibold mb-3">Span without compensation (at {channelWavelength} nm)</h3>
       <div className="grid gap-4 sm:grid-cols-4 mb-8">
         <ResultCard label="Accumulated dispersion" value={`${fmt(calc.Dacc_psnm, 4)} ps/nm`} tone="blue" subtext="(D + S(λ − λ₀)) · L" />
-        <ResultCard label="RMS broadening" value={`${fmt(calc.sigmaUnc_ps)} ps`} tone="purple" subtext={`4Bσ = ${fmt(4 * bitRate * 1e-3 * calc.sigmaUnc_ps)}`} />
+        <ResultCard label="RMS broadening" value={`${fmt(calc.sigmaUnc_ps)} ps`} tone="purple" subtext={`σ_b = √(σ_D² + λ²|D_acc|/4πc), optimum input pulse; 4Bσ = ${fmt(4 * bitRate * 1e-3 * calc.sigmaUnc_ps)}`} />
         <ResultCard
           label="Dispersion-limited bit rate"
           value={`${fmt(calc.Bmax_Gbps)} Gb/s`}
           tone={calc.Bmax_Gbps < bitRate ? "red" : "green"}
-          subtext={calc.Bmax_Gbps < bitRate ? `below ${bitRate} Gb/s` : `above ${bitRate} Gb/s`}
+          subtext={(calc.Bmax_Gbps < bitRate ? `below ${bitRate} Gb/s` : `above ${bitRate} Gb/s`) + "; 4Bσ ≤ 1, total width with the optimum pulse"}
         />
         <ResultCard label="Dispersion penalty" value={fmtPenalty(calc.penaltyUnc)} tone={penaltyTone(calc.penaltyUnc)} />
       </div>
@@ -140,7 +157,7 @@ export default function DispersionCompPage() {
           subtext={!dcfValid ? undefined : band > MAX_BAND_NM ? "limited by the curvature of D(λ), not modelled" : band > 0 ? `λ₀ ± ${fmt(band)} nm` : "the penalty exceeds the limit even at λ₀"}
         />
         <ResultCard label={`Residual at ${channelWavelength} nm`} value={dcfValid ? `${fmt(calc.Dres_psnm, 4)} ps/nm` : "—"} tone="blue" subtext="Sres · (λ − λ₀)" />
-        <ResultCard label="RMS broadening" value={dcfValid ? `${fmt(calc.sigmaComp_ps)} ps` : "—"} tone="purple" />
+        <ResultCard label="RMS broadening" value={dcfValid ? `${fmt(calc.sigmaComp_ps)} ps` : "—"} tone="purple" subtext="σ_b = √(σ_D² + λ²|D_acc|/4πc), optimum input pulse" />
         <ResultCard label="Dispersion penalty" value={dcfValid ? fmtPenalty(calc.penaltyComp) : "—"} tone={dcfValid ? penaltyTone(calc.penaltyComp) : "gray"} />
       </div>
 
@@ -162,17 +179,16 @@ export default function DispersionCompPage() {
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h3 className="text-lg font-semibold mb-2">Model</h3>
         <div className="text-sm text-gray-300 space-y-2">
-          <p className="font-mono">σ<sub>D</sub> = √((D<sub>acc</sub>σ<sub>λ</sub>)² + ½ (S<sub>acc</sub>σ<sub>λ</sub>²)²),   B ≤ 1/(4σ<sub>D</sub>),   δ = −5 log₁₀(1 − (4Bσ<sub>D</sub>)²) dB</p>
+          <p className="font-mono">σ<sub>D</sub> = √((D<sub>acc</sub>σ<sub>λ</sub>)² + ½ (S<sub>acc</sub>σ<sub>λ</sub>²)²),   σ<sub>b</sub> = √(σ<sub>D</sub>² + λ²|D<sub>acc</sub>|/4πc),   δ = −5 log₁₀(1 − (4Bσ<sub>b</sub>)²) dB</p>
           <p className="font-mono">L<sub>c</sub> = −D·L / D<sub>DCF</sub>,   S<sub>res</sub> = S·L + S<sub>DCF</sub>·L<sub>c</sub>,   D<sub>acc</sub>(λ) = S<sub>res</sub>(λ − λ₀)</p>
           <p>
-            Broad-source model (Agrawal, Fiber-Optic Communication Systems, §2.4.3 and §5.4.4): the source&apos;s rms
-            spectral width σ<sub>λ</sub> is much larger than the modulation bandwidth (≈ λ²B/c, 0.08 nm at 10 Gb/s and 1550 nm), and
-            D varies linearly with λ. A DCF compensates the whole band only when its relative slope S<sub>DCF</sub>/D<sub>DCF</sub> equals the
+            Agrawal, Fiber-Optic Communication Systems, §2.4.2–2.4.3 and §5.4.4: for a broad source (σ<sub>λ</sub> much larger than the
+            modulation bandwidth, ≈ λ²B/c, 0.08 nm at 10 Gb/s and 1550 nm) σ<sub>b</sub> reduces to σ<sub>D</sub>; for a narrow one the
+            transmitted Gaussian pulse is taken at its optimum width, so the λ²|D<sub>acc</sub>|/4πc term sets the limit. D varies linearly with λ. A DCF compensates the whole band only when its relative slope S<sub>DCF</sub>/D<sub>DCF</sub> equals the
             span&apos;s S/D.
           </p>
           <p>
-            Textbook approximation. Not included: narrow-linewidth (transform-limited) sources, where the limit is
-            B√(|β₂|L) ≤ 1/4; the curvature of D(λ), which is large for real DCFs away from their design band; PMD,
+            Textbook approximation. Not included: the coherent β₃ term in the usable band; the curvature of D(λ), which is large for real DCFs away from their design band; PMD,
             nonlinearity and DCF loss.
           </p>
         </div>

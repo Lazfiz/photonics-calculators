@@ -52,22 +52,28 @@ export default function FiberGyroscopePage() {
       tau: transitTime(L, nG),
       fp: properFrequency(L, nG),
       turns: L / (Math.PI * D_mm * 1e-3),
+      maxRateDegS: ((Math.PI / (2 * S)) * 180) / Math.PI, // rate at which the Sagnac phase reaches π/2
     };
   }, [D_mm, L, lambda_nm, nG, P_mW, loss_dB, qe]);
 
   const chartData = useMemo(() => {
     // ARW against coil length at the same detected power (fibre loss lumped into the loss input).
-    const lengths = Array.from({ length: 100 }, (_, i) => 50 + i * 50);
+    // Log-spaced, spanning at least 50–5000 m and always including L.
+    const lMin = Math.min(50, L), lMax = Math.max(5000, L);
+    const lengths = Array.from({ length: 100 }, (_, i) => lMin * (lMax / lMin) ** (i / 99));
     const sigma = calc.sigma;
     const arw = lengths.map(len =>
       angleRandomWalkDegPerRootHour(noiseEquivalentRate(sigma, sagnacScaleFactor(len, D_mm * 1e-3, lambda_nm * 1e-9))));
-    const rates = Array.from({ length: 101 }, (_, i) => i * 0.2); // °/s
+    const rMax = Math.min(20, 1.2 * calc.maxRateDegS); // °/s, never far past the unambiguous range
+    const rates = Array.from({ length: 101 }, (_, i) => (i * rMax) / 100);
     const phases = rates.map(r => (calc.S * r * Math.PI) / 180);
     return [
       { x: lengths, y: arw, type: "scatter" as const, mode: "lines" as const, name: "ARW (°/√h)", line: { color: "#f87171" }, xaxis: "x", yaxis: "y" },
       { x: rates, y: phases, type: "scatter" as const, mode: "lines" as const, name: "Δφ (rad)", line: { color: "#60a5fa" }, xaxis: "x2", yaxis: "y2" },
+      { x: [L], y: [calc.arw], type: "scatter" as const, mode: "markers" as const, name: "Current L", marker: { color: "#f87171", size: 11, symbol: "diamond" as const, line: { color: "#ffffff", width: 1 } }, xaxis: "x", yaxis: "y" },
+      { x: [calc.maxRateDegS], y: [Math.PI / 2], type: "scatter" as const, mode: "markers" as const, name: "Δφ = π/2", marker: { color: "#facc15", size: 10 }, xaxis: "x2", yaxis: "y2" },
     ];
-  }, [calc.sigma, calc.S, D_mm, lambda_nm]);
+  }, [calc.sigma, calc.S, calc.arw, calc.maxRateDegS, D_mm, lambda_nm, L]);
 
   return (
     <>
@@ -88,6 +94,7 @@ export default function FiberGyroscopePage() {
         <Card label="Phase Noise σ_φ" value={`${(calc.sigma * 1e9).toPrecision(4)} nrad/√Hz`} sub={`P_d = ${(calc.Pd * 1e3).toPrecision(4)} mW at ±π/2 bias`} tone="text-yellow-400" />
         <Card label="Transit Time" value={`${(calc.tau * 1e6).toPrecision(4)} µs`} sub="n_g·L/c" tone="text-purple-400" />
         <Card label="Proper Frequency" value={`${(calc.fp / 1e3).toPrecision(4)} kHz`} sub="1/(2τ): bias modulation" tone="text-purple-400" />
+        <Card label="Max unambiguous rate" value={`${calc.maxRateDegS.toPrecision(4)} °/s`} sub="Sagnac phase reaches π/2: π/(2S)" tone="text-gray-200" />
         <Card label="Turns" value={calc.turns.toFixed(0)} sub="L/(πD)" tone="text-gray-200" />
       </div>
 
@@ -110,7 +117,7 @@ export default function FiberGyroscopePage() {
       <ChartPanel data={chartData} layout={{
         paper_bgcolor: "transparent", plot_bgcolor: "transparent",
         font: { color: "#9ca3af" },
-        xaxis: { title: "Fiber Length (m)", gridcolor: "#374151", domain: [0, 0.45] },
+        xaxis: { title: "Fiber Length (m)", gridcolor: "#374151", domain: [0, 0.45], type: "log" },
         yaxis: { title: "ARW (°/√h)", gridcolor: "#374151", type: "log" },
         xaxis2: { title: "Rotation Rate (°/s)", gridcolor: "#374151", anchor: "y2", domain: [0.55, 1] },
         yaxis2: { title: "Sagnac Phase (rad)", gridcolor: "#374151", anchor: "x2" },

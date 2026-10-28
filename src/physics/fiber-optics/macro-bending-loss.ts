@@ -13,8 +13,12 @@
  * In normalized form, with β² ≈ (n₁k)² and Δ = NA²/(2n₁²), this is Snyder & Love's power attenuation
  * coefficient for the fundamental mode of a step profile (Optical Waveguide Theory, 1983, bend-loss chapter):
  *   α = (√π/2a) (a/R)^(1/2) U² / (V² W^(3/2) K₁²(W)) · exp(−(4/3)(R/a) Δ W³/V²).
- * Not included: the elasto-optic correction (silica behaves as if R were ≈ 1.27× larger, so measured loss
- * is lower; Schermer & Cole, IEEE J. Quantum Electron. 43, 899 (2007)), reflections from the
+ * Elasto-optic correction (optional): bending strains the glass, which tilts the index profile the other way and
+ * makes silica behave as if R were larger, R_eff = R/(1 − p_e), p_e = (n₁²/2)[p₁₂ − ν(p₁₁ + p₁₂)] (Nagano,
+ * Kawakami & Nishida, Appl. Opt. 17, 2080 (1978), doi:10.1364/AO.17.002080; Schermer & Cole, IEEE J. Quantum
+ * Electron. 43, 899 (2007), doi:10.1109/JQE.2007.903364, fit R_eff ≈ 1.28 R). With the Bertholds–Dändliker
+ * coefficients used for the FBG gauge factor, R_eff = 1.253 R at n₁ = 1.444.
+ * Not included: reflections from the
  * cladding/coating boundary (oscillations in R and λ), and the transition loss where a bend starts and
  * ends. Marcuse's formula is asymptotic for R ≫ a.
  *
@@ -22,6 +26,7 @@
  * (D. Marcuse, Bell Syst. Tech. J. 56, 703 (1977); within ~1 % for 1.2 < V < 2.4).
  */
 import { besselJ, besselKScaled } from "../math";
+import { effectivePhotoelastic } from "./fiber-bragg-grating";
 
 export interface StepIndexFiber {
   /** Core radius a, m, > 0. */
@@ -145,12 +150,22 @@ export function bendLossCoefficient(
 /** dB per neper of power: 10 log₁₀(e). */
 export const DB_PER_NEPER = 10 / Math.LN10;
 
-/** Loss of one full turn (length 2πR), dB. */
+/** Equivalent bend radius R/(1 − p_e) with the elasto-optic correction (see the header), m. */
+export function elastoOpticBendRadius(R: number, n1: number): number {
+  return R / (1 - effectivePhotoelastic(n1));
+}
+
+/**
+ * Loss of one full turn (length 2πR), dB. With `elastoOptic`, α is taken at R_eff = R/(1 − p_e) and the turn
+ * length stays 2πR.
+ */
 export function bendLossPerTurnDb(
   f: StepIndexFiber,
   lambda: number,
   R: number,
   mode: Lp01Mode = lp01Mode(vNumber(f, lambda)),
+  elastoOptic = false,
 ): number {
-  return DB_PER_NEPER * bendLossCoefficient(f, lambda, R, mode) * 2 * Math.PI * R;
+  const Ralpha = elastoOptic ? elastoOpticBendRadius(R, f.n1) : R;
+  return DB_PER_NEPER * bendLossCoefficient(f, lambda, Ralpha, mode) * 2 * Math.PI * R;
 }

@@ -8,7 +8,7 @@ import { useURLState } from "../../../hooks/use-url-state";
 import { sellmeierDispersion } from "../../../physics/fiber-optics/chromatic-dispersion";
 import { SILICA_N2, nonlinearCoefficient } from "../../../physics/fiber-optics/fiber-nonlinear";
 import {
-  LP11_CUTOFF_V, MIN_V, lp01Mode, lp11CutoffWavelength, modeFieldRadius, vNumber,
+  LP11_CUTOFF_V, MFD_FIT_V_RANGE, MIN_V, lp01Mode, lp11CutoffWavelength, modeFieldRadius, vNumber,
 } from "../../../physics/fiber-optics/macro-bending-loss";
 import {
   coreConfinement, effectiveIndex, normalizedB, numericalAperture, petermannIIRadius, relativeIndexDifference,
@@ -56,17 +56,22 @@ export default function FiberCharacterizationPage() {
   const valid = Number.isFinite(calc.mfd_um) && Number.isFinite(calc.b);
 
   const vNumberData = useMemo(() => {
-    const wls = Array.from({ length: 201 }, (_, i) => 800 + i * 5);
+    const lo = Math.min(800, wavelength), hi = Math.max(1800, wavelength); // nm
+    const wls = Array.from({ length: 201 }, (_, i) => lo + (i * (hi - lo)) / 200);
     const Vs = wls.map((wl) => vNumber(fiber, wl * 1e-9));
     const keep = Vs.map(Number.isFinite);
     return [
       { x: wls.filter((_, i) => keep[i]), y: Vs.filter((_, i) => keep[i]), type: "scatter" as const, mode: "lines" as const, name: "V-number", line: { color: "#60a5fa", width: 2 } },
-      { x: [800, 1800], y: [LP11_CUTOFF_V, LP11_CUTOFF_V], type: "scatter" as const, mode: "lines" as const, name: "LP11 cutoff", line: { color: "#f87171", dash: "dash" as const } },
+      { x: [lo, hi], y: [LP11_CUTOFF_V, LP11_CUTOFF_V], type: "scatter" as const, mode: "lines" as const, name: "LP11 cutoff", line: { color: "#f87171", dash: "dash" as const } },
+      ...(Number.isFinite(calc.V)
+        ? [{ x: [wavelength], y: [calc.V], type: "scatter" as const, mode: "markers" as const, name: `${wavelength} nm`, marker: { color: "#f9fafb", size: 10 } }]
+        : []),
     ];
-  }, [fiber]);
+  }, [fiber, wavelength, calc.V]);
 
   const mfdData = useMemo(() => {
-    const wls = Array.from({ length: 151 }, (_, i) => 1200 + i * 4);
+    const lo = Math.min(1200, wavelength), hi = Math.max(1800, wavelength); // nm
+    const wls = Array.from({ length: 151 }, (_, i) => lo + (i * (hi - lo)) / 150);
     const pick = (ys: number[]) => {
       const keep = ys.map(Number.isFinite);
       return { x: wls.filter((_, i) => keep[i]), y: ys.filter((_, i) => keep[i]) };
@@ -74,8 +79,11 @@ export default function FiberCharacterizationPage() {
     return [
       { ...pick(wls.map((wl) => 2e6 * petermannIIRadius(fiber, wl * 1e-9))), type: "scatter" as const, mode: "lines" as const, name: "Petermann II", line: { color: "#60a5fa", width: 2 } },
       { ...pick(wls.map((wl) => 2e6 * modeFieldRadius(fiber, wl * 1e-9))), type: "scatter" as const, mode: "lines" as const, name: "Gaussian fit", line: { color: "#34d399", width: 2, dash: "dash" as const } },
+      ...(Number.isFinite(calc.mfd_um)
+        ? [{ x: [wavelength], y: [calc.mfd_um], type: "scatter" as const, mode: "markers" as const, name: `${wavelength} nm`, marker: { color: "#f9fafb", size: 10 } }]
+        : []),
     ];
-  }, [fiber]);
+  }, [fiber, wavelength, calc.mfd_um]);
 
   return (
     <>
@@ -99,9 +107,20 @@ export default function FiberCharacterizationPage() {
         </p>
       )}
 
+      {valid && (calc.V < MFD_FIT_V_RANGE[0] || calc.V > MFD_FIT_V_RANGE[1]) && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          V = {calc.V.toFixed(2)} is outside {MFD_FIT_V_RANGE[0]}–{MFD_FIT_V_RANGE[1]}: the Marcuse MFD fit is extrapolated; A_eff and γ use it.
+        </p>
+      )}
+      {valid && calc.delta > 0.05 && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          Δ = {(calc.delta * 100).toFixed(1)} % &gt; 5 %: this is a weak-guidance (LP) model, so the mode values are approximate.
+        </p>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-4 mb-8">
-        <ResultCard label="V-number" value={fmt(calc.V, 3)} tone="blue" subtext={Number.isFinite(calc.V) ? (calc.V < LP11_CUTOFF_V ? "Single-mode" : "Multimode") : undefined} />
-        <ResultCard label="LP11 cutoff λc" value={fmt(calc.cutoff_nm, 0, " nm")} tone="purple" subtext="From a and NA (fibre cutoff, not cable cutoff)" />
+        <ResultCard label="V-number" value={fmt(calc.V, 3)} tone="blue" subtext={Number.isFinite(calc.V) ? (calc.V < LP11_CUTOFF_V ? "Single-mode" : "LP11 guided (theory)") : undefined} />
+        <ResultCard label="Theoretical LP11 cutoff" value={fmt(calc.cutoff_nm, 0, " nm")} tone="purple" subtext="λc from a and NA; measured fibre and cable cutoffs are lower" />
         <ResultCard label="MFD" value={fmt(calc.mfd_um, 2, " µm")} tone="green" subtext={`Gaussian fit; Petermann II ${fmt(calc.mfdPII_um, 2, " µm")}`} />
         <ResultCard label="Effective area" value={fmt(calc.aeff_um2, 1, " µm²")} tone="yellow" subtext="π w² (Gaussian fit)" />
         <ResultCard label="Nonlinear γ" value={fmt(calc.gamma_perWkm, 2, " /(W·km)")} tone="purple" subtext="2πn₂/(λA_eff), n₂ = 2.6e-20 m²/W" />

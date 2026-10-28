@@ -2,9 +2,13 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  accumulatedDispersion, dcfLength, dispersionLimitedBitRate, dispersionPenaltyDb, residualSlope, rmsBroadening,
-  toleratedBroadening, usableHalfBandwidth,
+  accumulatedDispersion, addedRmsBroadening, dcfLength, dispersionLimitedBitRate, dispersionPenaltyDb,
+  optimumPulseBroadening, residualSlope, rmsBroadening, toleratedAccumulatedDispersion, toleratedBroadening,
+  usableHalfBandwidth,
 } from "../src/physics/fiber-optics/dispersion-comp";
+import {
+  beta2FromD, gaussianPulseRmsWidth, optimumOutputRmsWidth, sigmaOmegaFromLambda,
+} from "../src/physics/fiber-optics/chromatic-dispersion";
 
 function assertRel(actual: number, expected: number, tol: number, label: string) {
   assert.ok(Math.abs(actual / expected - 1) < tol, `${label}: ${actual} vs ${expected}`);
@@ -96,13 +100,40 @@ test("usable band of the compensated link ends at the 1 dB penalty", () => {
   const Sres = 1.92 * PS_NM2;
   // Hand: σ_tol = √(1 − 10^−0.2)/(4B) = 15.1872 ps.
   assertRel(toleratedBroadening(B), 15.1872 * ps, 1e-5, "σ_tol");
-  // Hand: √(σ_tol² − (S_res σ_λ²)²/2)/(S_res σ_λ) = √(230.652 − 0.1152)/0.96 ps/nm = 15.8161 nm.
-  const half = usableHalfBandwidth(Sres, sigmaLambda, toleratedBroadening(B));
-  assertRel(half, 15.8161 * nm, 1e-5, "half-width");
-  assertRel(dispersionPenaltyDb(B, rmsBroadening(Sres * half, Sres, sigmaLambda)), 1, 1e-9, "penalty at the edge");
+  // Hand, x = |D_acc| in ps/nm, k = λ²/(4πc) = 0.637724 ps² per ps/nm at 1550 nm:
+  // 0.25x² + 0.637724x = 230.652 − 0.1152 → x = 29.1182 ps/nm, half-width x/S_res = 15.1657 nm
+  // (15.8161 nm with the broad-source σ_D alone).
+  const half = usableHalfBandwidth(Sres, sigmaLambda, toleratedBroadening(B), 1550 * nm);
+  assertRel(half, 15.1657 * nm, 1e-5, "half-width");
+  assertRel(dispersionPenaltyDb(B, optimumPulseBroadening(Sres * half, Sres, sigmaLambda, 1550 * nm)), 1, 1e-9, "penalty at the edge");
   // Matched slope: unlimited in this model. A slope so large that λ₀ alone exceeds the tolerance: no band.
-  assert.equal(usableHalfBandwidth(0, sigmaLambda, toleratedBroadening(B)), Infinity);
-  assert.equal(usableHalfBandwidth(1e6 * PS_NM2, sigmaLambda, toleratedBroadening(B)), 0);
+  assert.equal(usableHalfBandwidth(0, sigmaLambda, toleratedBroadening(B), 1550 * nm), Infinity);
+  assert.equal(usableHalfBandwidth(1e6 * PS_NM2, sigmaLambda, toleratedBroadening(B), 1550 * nm), 0);
+  // Edge σ_λ = 0: the band ends where λ²|D_acc|/(4πc) = σ_tol², 230.652/0.637724 = 361.68 ps/nm.
+  assertRel(toleratedAccumulatedDispersion(Sres, 0, toleratedBroadening(B), 1550 * nm), 361.68 * 1e-3, 1e-4, "σ_λ = 0");
+});
+
+test("narrow source: σ_b = √(σ_D² + λ²|D_acc|/(4πc)) closes the eye that σ_D alone leaves open", () => {
+  // Agrawal §2.4.2, β₃ = 0: σ² = σ₀² + (β₂L/2σ₀)² + σ_D², optimum σ₀² = |β₂L|/2 → σ² − σ₀² = σ_D² + |β₂L|/2.
+  // 80 km G.652, D_acc = 1360 ps/nm, 10 Gb/s, σ_λ = 0: σ_D = 0 (0 dB), but σ_b = √(0.637724·1360) = 29.450 ps,
+  // 4Bσ_b = 1.178: eye closed. The total width √|β₂L| = 41.65 ps gives Agrawal's limit 1/(4√(|β₂|L)) = 6.00 Gb/s.
+  const lambda = 1550 * nm, B = 10e9;
+  const Dacc = accumulatedDispersion(smf, L), Sacc = smf.S * L;
+  assertRel(optimumPulseBroadening(Dacc, Sacc, 0, lambda), 29.450 * ps, 1e-4, "σ_b");
+  assert.equal(dispersionPenaltyDb(B, rmsBroadening(Dacc, Sacc, 0)), 0);
+  assert.equal(dispersionPenaltyDb(B, optimumPulseBroadening(Dacc, Sacc, 0, lambda)), Infinity);
+  const beta2L = beta2FromD(Dacc, lambda);
+  assertRel(1 / (4 * optimumOutputRmsWidth(beta2L, 0, 1, 0)), 6.003e9, 1e-3, "B_max");
+  // σ_b is σ² − σ₀² of the full Agrawal formula at the optimum σ₀ (σ_ω from σ_λ = 0.5 nm).
+  const sigmaOmega = sigmaOmegaFromLambda(0.5 * nm, lambda);
+  const sigma0 = Math.sqrt(Math.abs(beta2L) / 2);
+  const out = gaussianPulseRmsWidth({ sigma0, beta2: beta2L, beta3: 0, L: 1, sigmaOmega });
+  assertRel(addedRmsBroadening(out, sigma0), optimumPulseBroadening(Dacc, 0, 0.5 * nm, lambda), 1e-12, "σ² − σ₀²");
+  // Broad source: σ_b → σ_D (680.64 vs 680.00 ps at 0.5 nm).
+  assertRel(optimumPulseBroadening(Dacc, Sacc, 0.5 * nm, lambda), 680.638 * ps, 1e-5, "broad source");
+  // Edges: no broadening when σ ≤ σ₀; negative widths are invalid.
+  assert.equal(addedRmsBroadening(1 * ps, 2 * ps), 0);
+  assert.ok(Number.isNaN(addedRmsBroadening(1 * ps, -1)));
 });
 
 test("dispersion-map page defaults: 80 km SMF + 15 km DCF, net −140 ps/nm, residual slope 1.48 ps/nm²", () => {

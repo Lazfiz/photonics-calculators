@@ -33,6 +33,7 @@ export default function FiberBraggGratingSensorPage() {
     const tempShift = braggShift(lambdaB, 0, dT, gauge, KT);
     const totalShift = strainShift + tempShift;
     return {
+      strainUe: eps * 1e6, dT,
       g, lambdaB, pe, gauge, KT, strainShift, tempShift, totalShift, shiftedLambdaB: lambdaB + totalShift,
       reflectivity: peakReflectance(couplingCoefficient(g.deltaN, lambdaB) * g.length),
       fwhm: uniformFwhm(g), zeroWidth: firstZeroBandwidth(g),
@@ -55,28 +56,52 @@ export default function FiberBraggGratingSensorPage() {
     return [trace(lambdaB, "Reference", "#6b7280"), trace(shiftedLambdaB, "Strained / heated", "#3b82f6")];
   }, [calc]);
 
+  // Axis ranges cover the default span and the current value, with 20 % margin.
+  const ranges = useMemo(() => {
+    const span = (lo: number, hi: number, v: number): [number, number] => {
+      const a = Math.min(lo, v), b = Math.max(hi, v), m = 0.2 * (b - a);
+      return [a - (a < lo ? m : 0), b + (b > hi ? m : 0)];
+    };
+    return {
+      strain: span(0, 2000, calc.strainUe), temp: span(-50, 50, calc.dT),
+      heatStrain: span(0, 500, calc.strainUe), heatTemp: span(-20, 80, calc.dT),
+    };
+  }, [calc.strainUe, calc.dT]);
+  const grid = (r: [number, number], n: number) => Array.from({ length: n + 1 }, (_, i) => r[0] + ((r[1] - r[0]) * i) / n);
+  const marker = (x: number, y: number, name: string) => ({
+    x: [x], y: [y], type: "scatter" as const, mode: "markers" as const, name,
+    marker: { color: "#ef4444", size: 10, line: { color: "#ffffff", width: 1 } },
+  });
+
   const strainData = useMemo(() => {
-    const strains = Array.from({ length: 101 }, (_, i) => i * 20); // 0–2000 µε
-    return [{ x: strains, y: strains.map((s) => s * calc.strainPm / 1000), type: "scatter" as const, mode: "lines" as const, name: "Strain shift", line: { color: "#22c55e", width: 2 } }];
-  }, [calc.strainPm]);
+    const strains = grid(ranges.strain, 100);
+    return [
+      { x: strains, y: strains.map((s) => s * calc.strainPm / 1000), type: "scatter" as const, mode: "lines" as const, name: "Strain shift", line: { color: "#22c55e", width: 2 } },
+      marker(calc.strainUe, calc.strainShift * 1e9, "Operating point"),
+    ];
+  }, [calc.strainPm, calc.strainUe, calc.strainShift, ranges.strain]);
 
   const tempData = useMemo(() => {
-    const temps = Array.from({ length: 101 }, (_, i) => -50 + i); // −50 … +50 K
-    return [{ x: temps, y: temps.map((t) => t * calc.tempPm / 1000), type: "scatter" as const, mode: "lines" as const, name: "Temperature shift", line: { color: "#f97316", width: 2 } }];
-  }, [calc.tempPm]);
+    const temps = grid(ranges.temp, 100);
+    return [
+      { x: temps, y: temps.map((t) => t * calc.tempPm / 1000), type: "scatter" as const, mode: "lines" as const, name: "Temperature shift", line: { color: "#f97316", width: 2 } },
+      marker(calc.dT, calc.tempShift * 1e9, "Operating point"),
+    ];
+  }, [calc.tempPm, calc.dT, calc.tempShift, ranges.temp]);
 
   const crossSensData = useMemo(() => {
-    const strains = [0, 100, 200, 300, 400, 500];
-    const temps = [-20, 0, 20, 40, 60, 80];
+    const strains = grid(ranges.heatStrain, 20);
+    const temps = grid(ranges.heatTemp, 20);
     const z = strains.map((s) => temps.map((t) => (s * calc.strainPm + t * calc.tempPm) / 1000));
     return [{
       z, x: temps, y: strains, type: "heatmap" as const, colorscale: "Viridis" as const,
       colorbar: { title: { text: "Δλ (nm)", side: "right" } },
-    }];
-  }, [calc.strainPm, calc.tempPm]);
+    }, marker(calc.dT, calc.strainUe, "Operating point")];
+  }, [calc.strainPm, calc.tempPm, calc.dT, calc.strainUe, ranges.heatStrain, ranges.heatTemp]);
 
   const pm = (v: number) => `${(v * 1e12).toFixed(1)} pm`;
   const chartLayout = (xTitle: string, yTitle: string, height = 250) => ({
+    showlegend: false,
     paper_bgcolor: "transparent", plot_bgcolor: "transparent",
     xaxis: { title: xTitle, gridcolor: "#374151", color: "#9ca3af" },
     yaxis: { title: yTitle, gridcolor: "#374151", color: "#9ca3af" },
@@ -89,7 +114,10 @@ export default function FiberBraggGratingSensorPage() {
         <ValidatedNumberInput label="Grating Period Λ (nm)" value={gratingPeriod} onChange={setGratingPeriod} min={100} max={1500} step="0.1" />
         <ValidatedNumberInput label="Effective Index n_eff (phase)" value={effectiveIndex} onChange={setEffectiveIndex} min={1} max={3} step="0.001" />
         <ValidatedNumberInput label="Grating Length (mm)" value={gratingLength} onChange={setGratingLength} min={0.1} max={1000} step="0.5" />
-        <ValidatedNumberInput label="Index Modulation Δn" value={indexModulation} onChange={setIndexModulation} min={1e-8} max={1e-2} />
+        <div>
+          <ValidatedNumberInput label="AC effective-index modulation δn_eff" value={indexModulation} onChange={setIndexModulation} min={1e-8} max={1e-2} />
+          <p className="text-xs text-gray-400 mt-1">≈ 0.8 × the core index change for SMF</p>
+        </div>
         <ValidatedNumberInput label="Strain (µε)" value={strain} onChange={setStrain} min={-1e4} max={1e4} step="10" />
         <ValidatedNumberInput label="Temperature Change ΔT (K)" value={tempChange} onChange={setTempChange} min={-100} max={100} step="1" />
         <ValidatedNumberInput label="Thermal Coefficient K_T (10⁻⁶/K)" value={thermalCoeff} onChange={setThermalCoeff} min={0} max={100} step="0.01" />
@@ -130,6 +158,12 @@ export default function FiberBraggGratingSensorPage() {
           <p className="text-xl font-bold text-red-400">{pm(calc.totalShift)}</p>
         </div>
       </div>
+
+      {Math.abs(calc.dT) > 50 && (
+        <div role="alert" className="bg-yellow-900/30 border border-yellow-700 text-yellow-200 rounded-lg p-3 mb-8 text-sm">
+          K_T is linear only within about ±50 K.
+        </div>
+      )}
 
       <div className="bg-gray-900 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Reflection Spectrum</h3>

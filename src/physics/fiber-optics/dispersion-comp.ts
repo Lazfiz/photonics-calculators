@@ -28,10 +28,17 @@
  * S_res = 0 when the relative dispersion slopes RDS = S/D of the two fibres are equal (Agrawal, dispersion
  * management chapter: S₁/D₁ = S₂/D₂ for broadband compensation).
  *
- * Not included: the narrow-source (transform-limited) regime, where the limit is B√(|β₂|L) ≤ 1/4; dispersion
- * curvature dS/dλ (DCFs have a strongly curved D(λ) far from their design band); PMD; nonlinear effects;
- * DCF loss.
+ * Any source width: an unchirped Gaussian pulse of input rms width σ₀ leaves with
+ *   σ² = σ₀² + (β₂L/2σ₀)² + σ_D²  (Agrawal §2.4.2 with β₃ = 0, β₂L = −λ² D_acc/(2πc)).
+ * The pulse broadens by σ_b = √(σ² − σ₀²); at the optimum input width σ₀² = |β₂L|/2 this is
+ *   σ_b = √(σ_D² + λ²|D_acc|/(4πc)),
+ * which is σ_D for a broad source and √(|β₂L|/2) for a transform-limited one (σ_λ = 0, where σ_D = 0 would claim
+ * no limit). The penalty and the usable band use σ_b. The coherent β₃ term, ~(|β₃L|/4)^(1/3) at λ₀, is left out.
+ *
+ * Not included: dispersion curvature dS/dλ (DCFs have a strongly curved D(λ) far from their design band); PMD;
+ * nonlinear effects; DCF loss.
  */
+import { c } from "../constants";
 
 /** Power penalty used for the dispersion tolerance and usable band, dB. */
 export const TOLERANCE_PENALTY_DB = 1;
@@ -52,6 +59,17 @@ export function accumulatedDispersion(fiber: FiberDispersion, L: number, detunin
 /** RMS spread of the group delay over a Gaussian source spectrum of rms width σ_λ, s. */
 export function rmsBroadening(Dacc: number, Sacc: number, sigmaLambda: number): number {
   return Math.hypot(Dacc * sigmaLambda, (Sacc * sigmaLambda ** 2) / Math.SQRT2);
+}
+
+/** Broadening √(σ² − σ₀²) of a pulse of input rms width σ₀ that leaves with rms width σ, s (0 if σ ≤ σ₀). */
+export function addedRmsBroadening(sigmaOut: number, sigma0: number): number {
+  if (!(sigma0 >= 0) || !(sigmaOut >= 0)) return NaN;
+  return Math.sqrt(Math.max(0, sigmaOut ** 2 - sigma0 ** 2));
+}
+
+/** Broadening σ_b = √(σ_D² + λ²|D_acc|/(4πc)) of an unchirped Gaussian at its optimum input width (see header), s. */
+export function optimumPulseBroadening(Dacc: number, Sacc: number, sigmaLambda: number, lambda: number): number {
+  return Math.sqrt(rmsBroadening(Dacc, Sacc, sigmaLambda) ** 2 + (lambda ** 2 * Math.abs(Dacc)) / (4 * Math.PI * c));
 }
 
 /** Largest bit rate with 4Bσ_D ≤ 1, 1/s (∞ when σ_D = 0). */
@@ -87,12 +105,22 @@ export function residualSlope(span: FiberDispersion, L: number, dcf: FiberDisper
 }
 
 /**
+ * Largest |D_acc| of a link with slope S_acc for which σ_b (optimumPulseBroadening) stays within σ_tol, s/m.
+ * σ_λ² x² + k x = σ_tol² − ½(S_acc σ_λ²)² with k = λ²/(4πc), solved as x = 2r/(k + √(k² + 4σ_λ² r)), which
+ * also holds for σ_λ = 0. 0 when the slope term alone exceeds σ_tol.
+ */
+export function toleratedAccumulatedDispersion(Sacc: number, sigmaLambda: number, sigmaTol: number, lambda: number): number {
+  const room2 = sigmaTol ** 2 - (Sacc * sigmaLambda ** 2) ** 2 / 2;
+  if (!(room2 > 0)) return Number.isNaN(room2) ? NaN : 0;
+  const k = lambda ** 2 / (4 * Math.PI * c);
+  return (2 * room2) / (k + Math.sqrt(k * k + 4 * sigmaLambda ** 2 * room2));
+}
+
+/**
  * Half-width |λ − λ₀| of the band in which the compensated link (D_acc = S_res (λ − λ₀)) stays within the
  * tolerated broadening σ_tol, m. ∞ when S_res = 0 (within this linear model); 0 when even λ₀ exceeds σ_tol.
  */
-export function usableHalfBandwidth(Sres: number, sigmaLambda: number, sigmaTol: number): number {
-  const slopeTerm2 = (Sres * sigmaLambda ** 2) ** 2 / 2;
-  const room2 = sigmaTol ** 2 - slopeTerm2;
-  if (room2 <= 0) return 0;
-  return Math.sqrt(room2) / Math.abs(Sres * sigmaLambda);
+export function usableHalfBandwidth(Sres: number, sigmaLambda: number, sigmaTol: number, lambda: number): number {
+  if (Sres === 0) return Infinity;
+  return toleratedAccumulatedDispersion(Sres, sigmaLambda, sigmaTol, lambda) / Math.abs(Sres);
 }

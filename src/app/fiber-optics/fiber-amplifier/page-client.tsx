@@ -19,7 +19,7 @@ const show = (x: number, text: () => string) => (Number.isFinite(x) ? text() : "
 const PRESETS = [
   { id: "er980", label: "EDFA, 980 nm pump", ion: 0, pump: 0, N: 1e24, r: 2.2 },
   { id: "er1480", label: "EDFA, 1480 nm pump", ion: 0, pump: 1, N: 1e24, r: 2.2 },
-  { id: "yb976", label: "YDFA, 976 nm pump", ion: 1, pump: 0, N: 3e25, r: 3.5 },
+  { id: "yb976", label: "YDFA, 976 nm pump", ion: 1, pump: 0, N: 3e25, r: 3.5, L: 1.5 }, // pump is absorbed within about 1.5 m
 ] as const;
 
 function Card({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone: string }) {
@@ -78,6 +78,7 @@ export default function FiberAmplifierCalculator() {
     setTau(ion.tau * 1e3);
     setN(p.N);
     setRadius(p.r);
+    if ("L" in p) setLength(p.L);
   };
 
   const fiber: DopedFiber = useMemo(() => ({ N, area: Math.PI * (r_um * 1e-6) ** 2, tau: tau_ms * 1e-3 }), [N, r_um, tau_ms]);
@@ -162,7 +163,7 @@ export default function FiberAmplifierCalculator() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">
-        <Card label="Signal Gain" value={show(calc.gain, () => `${calc.gain.toFixed(2)} dB`)} sub={Number.isFinite(calc.gain) ? `full-inversion bound ${calc.fullInv.toFixed(1)} dB` : "signal fully absorbed"} tone="text-green-400" />
+        <Card label="Signal Gain" value={show(calc.gain, () => `${calc.gain.toFixed(2)} dB`)} sub={Number.isFinite(calc.gain) ? `full-inversion bound ${calc.fullInv.toFixed(1)} dB` : "signal fully absorbed"} tone={calc.gain > 25 ? "text-yellow-400" : "text-green-400"} />
         <Card label="Output Signal" value={show(calc.outDbm, () => `${calc.outDbm.toFixed(2)} dBm`)} sub={show(calc.outDbm, () => `${(10 ** (calc.outDbm / 10)).toPrecision(4)} mW`)} tone="text-blue-400" />
         <Card label="Noise Figure" value={show(calc.nf, () => `${calc.nf.toFixed(2)} dB`)} sub="signal–spontaneous limit, ≥ 3 dB at high gain" tone="text-yellow-400" />
         <Card label="Residual Pump" value={`${calc.pumpOut.toPrecision(4)} mW`} sub={`${((100 * calc.pumpOut) / Math.max(pump_mW, 1e-30)).toFixed(1)} % of launched`} tone="text-purple-400" />
@@ -172,6 +173,12 @@ export default function FiberAmplifierCalculator() {
         <Card label="Best Length (0–3L)" value={charts.atEdge ? `≥ ${charts.bestLength.toPrecision(3)} m` : show(charts.bestGain, () => `${charts.bestLength.toPrecision(3)} m`)}
           sub={charts.atEdge ? "gain still rising at 3L: the pump is not used up" : show(charts.bestGain, () => `${charts.bestGain.toFixed(2)} dB at this pump`)} tone="text-gray-200" />
       </div>
+
+      {calc.gain > 25 && (
+        <div role="alert" className="bg-yellow-900/30 border border-yellow-700 text-yellow-200 rounded-lg p-3 mb-8 text-sm">
+          ASE self-saturation is not modelled; the real gain is lower above ≈ 20–25 dB.
+        </div>
+      )}
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Model</h3>

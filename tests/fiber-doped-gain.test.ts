@@ -55,7 +55,7 @@ test("the closed form matches an RK4 integration of the rate equations", () => {
     assertRel(out[0], ref[0], 1e-6, `pump out (${pump} W, ${L} m)`);
     assertRel(out[1], ref[1], 1e-6, `signal out (${pump} W, ${L} m)`);
   }
-  // 200 mW at 980 nm, −10 dBm at 1550 nm, 10 m: 11.879 dB (the fiber-amplifier page's EDFA default).
+  // 200 mW at 980 nm, −10 dBm at 1550 nm, 10 m: 11.879 dB (σ 2.5/3.5, τ 10 ms; not the page's default cross-sections).
   assertRel(10 * Math.log10(amplifier(fiber, edfa(0.2, 1e-4), 10, 1).gain), 11.8792, 1e-4, "gain dB");
 });
 

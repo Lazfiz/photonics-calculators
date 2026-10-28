@@ -6,7 +6,8 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { couplingCoefficient } from "../../../physics/fiber-optics/coupled-mode";
-import { LP11_CUTOFF_V, MIN_V, vNumber } from "../../../physics/fiber-optics/macro-bending-loss";
+import { LP11_CUTOFF_V, MIN_V, lp11CutoffWavelength, vNumber } from "../../../physics/fiber-optics/macro-bending-loss";
+import { relativeIndexDifference } from "../../../physics/fiber-optics/step-index-modes";
 
 const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
 const fmtDbm = (x: number) => (Number.isFinite(x) ? `${x.toFixed(2)} dBm` : "— (no power)");
@@ -86,6 +87,10 @@ export default function FiberCouplerCalculator() {
   }, [kappaAt, wavelength, couplingLength, lossLinear, calc.slope, calc.kappa]);
 
   const valid = Number.isFinite(calc.kappa);
+  const noCoupling = valid && calc.kappa === 0;
+  const delta = relativeIndexDifference(fiber);
+  const cutoff_nm = lp11CutoffWavelength(fiber) * 1e9;
+  const windowCrossesCutoff = Number.isFinite(cutoff_nm) && cutoff_nm >= wavelength - 100 && cutoff_nm <= wavelength + 100;
   const chartLayout = (title: string, x: string) => ({
     paper_bgcolor: "transparent", plot_bgcolor: "transparent",
     font: { color: "#9ca3af" },
@@ -121,11 +126,29 @@ export default function FiberCouplerCalculator() {
         </p>
       )}
 
+      {valid && (delta > 0.02 || coreSpacing < 2.5 * coreRadius) && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          {delta > 0.02 ? `Δ = ${(delta * 100).toFixed(1)} % > 2 %` : `D = ${coreSpacing} µm < 2.5a = ${(2.5 * coreRadius).toFixed(1)} µm`}: the
+          weak-coupling (coupled-mode) model loses accuracy.
+        </p>
+      )}
+      {valid && windowCrossesCutoff && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          The spectral window ({wavelength - 100}–{wavelength + 100} nm) crosses the LP11 cutoff wavelength λc = {cutoff_nm.toFixed(0)} nm:
+          below λc the fibre is two-moded, and the curves there are LP01 only.
+        </p>
+      )}
+      {noCoupling && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          κ is zero at this spacing (the evanescent overlap underflows): no coupling.
+        </p>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-4 mb-8">
-        <ResultCard label="Coupling ratio" value={valid ? `${(calc.ratio * 100).toFixed(1)} : ${(100 - calc.ratio * 100).toFixed(1)}` : "—"} tone="purple" subtext="coupled : through, before excess loss" />
-        <ResultCard label="Coupling coefficient κ" value={valid ? `${calc.kappa.toPrecision(3)} mm⁻¹` : "—"} tone="blue" subtext={`V = ${fmt(calc.V, 3)}; dκ/dλ ÷ κ = ${fmt(100 * calc.slope, 3, " %")} per nm`} />
-        <ResultCard label="Length for 50:50" value={fmt(calc.L5050, 3, " mm")} tone="green" subtext={`full transfer at ${fmt(calc.Lfull, 3, " mm")}`} />
-        <ResultCard label="Port powers" value={valid ? fmtDbm(calc.coupled) : "—"} tone="red" subtext={`coupled; through ${valid ? fmtDbm(calc.through) : "—"}`} />
+        <ResultCard label="Coupling ratio" value={noCoupling ? "no coupling" : valid ? `${(calc.ratio * 100).toFixed(1)} : ${(100 - calc.ratio * 100).toFixed(1)}` : "—"} tone="purple" subtext="coupled : through, before excess loss" />
+        <ResultCard label="Coupling coefficient κ" value={noCoupling ? "no coupling" : valid ? `${calc.kappa.toPrecision(3)} mm⁻¹` : "—"} tone="blue" subtext={noCoupling ? `V = ${fmt(calc.V, 3)}; κ = 0` : `V = ${fmt(calc.V, 3)}; dκ/dλ ÷ κ = ${fmt(100 * calc.slope, 3, " %")} per nm`} />
+        <ResultCard label="Length for 50:50" value={noCoupling ? "no coupling" : fmt(calc.L5050, 3, " mm")} tone="green" subtext={noCoupling ? "no power transfer" : `full transfer at ${fmt(calc.Lfull, 3, " mm")}`} />
+        <ResultCard label="Port powers" value={noCoupling ? "no coupling" : valid ? fmtDbm(calc.coupled) : "—"} tone="red" subtext={noCoupling ? `all power stays in the through port: ${fmtDbm(calc.through)}` : `coupled; through ${valid ? fmtDbm(calc.through) : "—"}`} />
       </div>
 
       <div className="grid gap-8 md:grid-cols-2 mb-8">

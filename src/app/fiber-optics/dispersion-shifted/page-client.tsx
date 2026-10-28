@@ -62,6 +62,7 @@ export default function DispersionShiftedCalculator() {
     legend: { x: 0.02, y: 0.02 }, height: 420,
   };
 
+  const exceeds = fiberLength * km > calc.Lmax;
   const row = (label: string, value: string, cls = "font-mono") => (
     <div className="flex justify-between"><span className="text-gray-400">{label}</span><span className={cls}>{value}</span></div>
   );
@@ -95,8 +96,16 @@ export default function DispersionShiftedCalculator() {
                 {row("Accumulated D·L:", show(calc.total / (PS_NM_KM * km), 0, "ps/nm"))}
                 {row("Attenuation (typical):", `${p.alphaDbPerKm} dB/km`)}
                 {row("Fibre loss:", show(calc.loss, 1, "dB"))}
-                {row("Dispersion-limited length:", show(calc.Lmax / km, 1, "km"), "font-mono text-green-400")}
+                {row("Dispersion-limited length:", show(calc.Lmax / km, 1, "km"), valid && exceeds ? "font-mono text-red-400" : "font-mono text-green-400")}
               </div>
+              {valid && (
+                <p className={`mt-2 text-xs ${exceeds ? "text-red-400" : "text-green-400"}`}>
+                  {exceeds ? "entered length exceeds L_max" : "within limit"}
+                </p>
+              )}
+              {valid && calc.Lmax / km > 1000 && (
+                <p className="mt-2 text-xs text-yellow-400">PMD and fibre nonlinearity, not included, limit such links first</p>
+              )}
               <p className="mt-3 text-xs text-gray-500">Limit: 4Bσ ≤ 1 on the output rms width, with the input pulse width chosen to minimise it (Agrawal; covers broad and narrow sources and β₃ at λ₀).</p>
             </div>
             <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
