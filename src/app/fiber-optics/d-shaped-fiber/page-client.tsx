@@ -54,16 +54,22 @@ export default function DShapedFiberPage() {
   const chartData = useMemo(() => {
     const depths: number[] = [];
     const etas: (number | null)[] = [];
+    const cladRadius_um = cladDia / 2;
+    const dMax = Math.min(cladRadius_um, Math.max(a_um + 10, 1.3 * flatDepth)); // µm
+    const span = dMax > a_um ? dMax - a_um : 10;
     for (let i = 0; i <= 60; i++) {
-      const d = a_um + (i * 10) / 60; // µm from the core centre: core edge to 10 µm beyond it
+      const d = a_um + (i * span) / 60; // µm from the core centre: core edge to the span end
       const eta = lp01PowerBeyondPlane(calc.mode, d / a_um);
       depths.push(d);
       etas.push(eta > 0 ? 100 * eta : null);
     }
     return [
       { x: depths, y: etas, type: "scatter" as const, mode: "lines" as const, name: "Power beyond the flat (%)", line: { color: "#60a5fa" } },
+      ...(Number.isFinite(calc.eta) && calc.eta > 0 && flatDepth >= a_um
+        ? [{ x: [flatDepth], y: [100 * calc.eta], type: "scatter" as const, mode: "markers" as const, name: "Current flat", marker: { color: "#f9fafb", size: 10 } }]
+        : []),
     ];
-  }, [calc.mode, a_um]);
+  }, [calc.mode, calc.eta, a_um, cladDia, flatDepth]);
 
   const noFlat = flatDepth >= cladDia / 2;
   const cutsCore = flatDepth < a_um;
@@ -71,6 +77,7 @@ export default function DShapedFiberPage() {
   const leaky = valid && n_ext >= calc.nEff;
   const margin = calc.nEff - n_clad;
   const strong = valid && !leaky && Math.abs(calc.dNeff) > PERTURBATION_FRACTION * margin;
+  const nearLimit = valid && !leaky && !strong && Math.abs(calc.dNeff) > (PERTURBATION_FRACTION / 2) * margin;
   const nearLeak = valid && !leaky && calc.nEff - n_ext < NEAR_LEAK_FRACTION * margin;
 
   return (
@@ -128,7 +135,7 @@ export default function DShapedFiberPage() {
       <div className="grid gap-4 sm:grid-cols-4 mb-8">
         <ResultCard label="Power beyond the flat" value={valid ? fmtPct(calc.eta) : "—"} tone="blue" subtext={`V = ${fmt(calc.V, 3)}, n_eff = ${fmt(calc.nEff, 5)}`} />
         <ResultCard label="Intensity at the flat" value={valid ? fmtPct(calc.surface) : "—"} tone="cyan" subtext={`of the core-boundary value; ${fmt(flatDepth - a_um, 1, " µm")} of cladding left`} />
-        <ResultCard label="Index shift Δn_eff" value={valid && !leaky ? calc.dNeff.toExponential(2) : "—"} tone="purple" subtext={`external index ${n_ext} vs cladding, first order`} />
+        <ResultCard label="Index shift Δn_eff" value={valid && !leaky ? calc.dNeff.toExponential(2) : "—"} tone="purple" subtext={`external index ${n_ext} vs cladding, first order${nearLimit ? "; near the limit of first-order validity" : ""}`} />
         <ResultCard label="Sensitivity ∂n_eff/∂n_ext" value={valid && !leaky ? calc.sensitivity.toExponential(2) : "—"} tone="yellow" subtext={`MFD ${fmt(calc.mfd_um, 2, " µm")} (Petermann II)`} />
       </div>
 

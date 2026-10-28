@@ -48,6 +48,8 @@ export default function FiberLaserCalculator() {
   const modes = V <= MAX_EXACT_MODE_V ? guidedModeCount(V) : NaN;
   const mfd = 2 * petermannIIRadius(fiber, ll_nm * 1e-9);
   const cutoff = lp11CutoffWavelength(fiber);
+  // Core-cladding index step Δ = (n1² − n2²)/(2n1²) with n2² = n1² − NA².
+  const delta = fiber.NA ** 2 / (2 * fiber.n1 ** 2);
 
   const calc = useMemo(() => {
     const out = pump > threshold ? slope * (pump - threshold) : 0;
@@ -56,7 +58,8 @@ export default function FiberLaserCalculator() {
     const R1 = 10 ** (-loss_dB / 10);
     const opt = optimumOutputCoupler(g0L, R1);
     const atT = rigrodOutput(g0L, R1, 1 - T);
-    const Ts = Array.from({ length: 100 }, (_, i) => (i + 0.5) / 100);
+    // Log-spaced from 0.01 % to 99.99 %.
+    const Ts = Array.from({ length: 121 }, (_, i) => 10 ** (-4 + (4 * i) / 120)).map((t) => Math.min(t, 0.9999));
     const rel = Ts.map((t) => (opt.output > 0 ? (100 * rigrodOutput(g0L, R1, 1 - t)) / opt.output : NaN));
     const pumps = Array.from({ length: 101 }, (_, i) => (i * Math.max(2 * pump, 2 * threshold, 1)) / 100);
     const pOut = pumps.map((p) => (p > threshold ? slope * (p - threshold) : 0));
@@ -72,6 +75,7 @@ export default function FiberLaserCalculator() {
       data: [
         { x: pumps, y: pOut, type: "scatter" as const, mode: "lines" as const, name: "Output (W)", line: { color: "#10b981" }, xaxis: "x", yaxis: "y" },
         { x: Ts.filter((_, i) => ok[i]).map((t) => 100 * t), y: rel.filter((_, i) => ok[i]), type: "scatter" as const, mode: "lines" as const, name: "Rigrod output (% of optimum)", line: { color: "#3b82f6" }, xaxis: "x2", yaxis: "y2" },
+        { x: [100 * T], y: [opt.output > 0 ? (100 * atT) / opt.output : NaN], type: "scatter" as const, mode: "markers" as const, name: "Your coupler", marker: { color: "#facc15", size: 11, symbol: "diamond" as const, line: { color: "#ffffff", width: 1 } }, xaxis: "x2", yaxis: "y2" },
       ],
     };
   }, [pump, threshold, slope, gain_dB, loss_dB, T, lp_nm, ll_nm]);
@@ -94,7 +98,7 @@ export default function FiberLaserCalculator() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">
-        <Card label="Output Power" value={`${calc.out.toPrecision(4)} W`} sub="η_s(P_pump − P_th)" tone="text-green-400" />
+        <Card label="Output Power" value={`${calc.out.toPrecision(4)} W`} sub="η_s(P_pump − P_th): uses the entered slope efficiency and threshold, not the cavity model below" tone="text-green-400" />
         <Card label="Optical-to-Optical Efficiency" value={`${(100 * calc.optical).toFixed(1)} %`} sub="P_out/P_pump" tone="text-green-400" />
         <Card label="Stokes Efficiency" value={`${(100 * calc.stokes).toFixed(2)} %`}
           sub={calc.stokes > 1 ? "above 100 %: the pump wavelength is longer than the laser wavelength" : "λ_p/λ_l, the quantum-defect limit"}
@@ -115,6 +119,12 @@ export default function FiberLaserCalculator() {
         <Card label="LP01 Mode-Field Diameter" value={Number.isFinite(mfd) ? `${(mfd * 1e6).toFixed(2)} µm` : "—"} sub="Petermann II, exact step-index LP01" tone="text-blue-400" />
         <Card label="Single-Mode Cutoff Wavelength" value={`${(cutoff * 1e9).toFixed(0)} nm`} sub="LP11 cutoff 2πa·NA/2.405" tone="text-blue-400" />
       </div>
+
+      {delta > 0.02 && (
+        <div role="alert" className="bg-yellow-900/30 border border-yellow-700 text-yellow-200 rounded-lg p-3 mb-8 text-sm">
+          Core–cladding Δ = {(delta * 100).toFixed(1)} % exceeds 2 %: weak-guidance formulas lose accuracy.
+        </div>
+      )}
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Formulas</h3>
@@ -139,7 +149,7 @@ export default function FiberLaserCalculator() {
         font: { color: "#9ca3af" },
         xaxis: { title: "Pump Power (W)", gridcolor: "#374151", domain: [0, 0.45] },
         yaxis: { title: "Output Power (W)", gridcolor: "#374151" },
-        xaxis2: { title: "Output Coupler Transmission (%)", gridcolor: "#374151", anchor: "y2", domain: [0.55, 1] },
+        xaxis2: { title: "Output Coupler Transmission (%)", gridcolor: "#374151", anchor: "y2", domain: [0.55, 1], type: "log" },
         yaxis2: { title: "Output (% of optimum)", gridcolor: "#374151", anchor: "x2", range: [0, 105] },
         legend: { x: 0.01, y: 0.99 },
         margin: { t: 30 },

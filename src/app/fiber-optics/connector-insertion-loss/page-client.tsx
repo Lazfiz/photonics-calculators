@@ -46,7 +46,7 @@ export default function ConnectorInsertionLossPage() {
   const calc = useMemo(() => {
     const valid = fiberCoreDiam > 0 && lateralOffset >= 0 && angularMisalign >= 0 && angularMisalign < 30 &&
       gapDistance >= 0 && gapDistance <= MAX_GAP_UM && refractiveIndex >= 1 && gapIndex >= 1 && wavelength > 0;
-    if (!valid) return { latLoss: NaN, angLoss: NaN, gapLoss: NaN, totalLoss: NaN };
+    if (!valid) return { latLoss: NaN, angLoss: NaN, gapLoss: NaN, totalLoss: NaN, jointRl: NaN };
     const w = (fiberCoreDiam / 2) * UM;
     const lambda = wavelength * 1e-9;
     const d = lateralOffset * UM, tilt = angularMisalign * DEG, z = gapDistance * UM;
@@ -54,7 +54,10 @@ export default function ConnectorInsertionLossPage() {
     const joint = { w1: w, w2: w, lambda, n: z === 0 ? refractiveIndex : gapIndex };
     // Reflections in the gap (Airy) times the Gaussian overlap; at physical contact (z = 0) the gap terms vanish.
     const etalon = gapEtalonTransmission(refractiveIndex, gapIndex, z, lambda);
+    // Power reflected by the gap (lossless Airy): 1 − T. Infinite return loss at physical contact.
+    const jointRl = -10 * Math.log10(1 - etalon);
     return {
+      jointRl,
       latLoss: lossDb(gaussianCoupling({ ...joint, offset: d })),
       angLoss: lossDb(gaussianCoupling({ ...joint, tilt })),
       gapLoss: lossDb(gaussianCoupling({ ...joint, gap: z }) * etalon),
@@ -65,14 +68,15 @@ export default function ConnectorInsertionLossPage() {
   const grade = IL_GRADES[ilGrade];
 
   const offsetData = useMemo(() => {
-    const offsets = Array.from({ length: 100 }, (_, i) => i * 0.05);
+    const maxOffset = Math.max(5, 1.2 * lateralOffset);
+    const offsets = Array.from({ length: 100 }, (_, i) => (i * maxOffset) / 99);
     const w = (fiberCoreDiam / 2) * UM;
     const loss = offsets.map(d => {
       const v = lossDb(gaussianCoupling({ w1: w, w2: w, lambda: wavelength * 1e-9, offset: d * UM }));
       return Number.isFinite(v) ? v : null;
     });
     return [{ x: offsets, y: loss, type: "scatter" as const, mode: "lines" as const, name: "Loss (dB)", line: { color: "#f87171", width: 2 } }];
-  }, [fiberCoreDiam, wavelength]);
+  }, [fiberCoreDiam, wavelength, lateralOffset]);
 
   const budgetData = useMemo(() => {
     const { mean, max } = IL_GRADES[ilGrade];
@@ -149,8 +153,16 @@ export default function ConnectorInsertionLossPage() {
           <p className="text-xl font-bold text-red-400">{(grade.max * n).toFixed(2)} dB</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Grade {rlGrade} Return Loss</p>
-          <p className="text-xl font-bold text-purple-400">≥ {RL_GRADES[rlGrade].rl} dB</p>
+          <p className="text-sm text-gray-400">Return Loss of the Joint (gap)</p>
+          <p className="text-xl font-bold text-purple-400">
+            {calc.jointRl === Infinity ? "∞ dB (no gap)" : Number.isFinite(calc.jointRl) ? `${calc.jointRl.toFixed(1)} dB` : "—"}
+          </p>
+          <p className="text-xs text-gray-400">
+            −10 log₁₀(1 − T);{" "}
+            {Number.isFinite(calc.jointRl)
+              ? `${calc.jointRl >= RL_GRADES[rlGrade].rl ? "meets" : "does not meet"} grade ${rlGrade} (≥ ${RL_GRADES[rlGrade].rl} dB)`
+              : `grade ${rlGrade} needs ≥ ${RL_GRADES[rlGrade].rl} dB`}
+          </p>
         </div>
       </div>
 
@@ -162,7 +174,7 @@ export default function ConnectorInsertionLossPage() {
             xaxis: { title: "Offset (µm)", gridcolor: "#374151", color: "#9ca3af" },
             yaxis: { title: "Loss (dB)", gridcolor: "#374151", color: "#9ca3af" },
             font: { color: "#e5e7eb" }, margin: { t: 20, r: 20, b: 40, l: 50 }, height: 300,
-            shapes: [{ type: "line" as const, x0: lateralOffset, x1: lateralOffset, y0: 0, y1: 5, line: { color: "#fbbf24", dash: "dash" } }],
+            shapes: [{ type: "line" as const, x0: lateralOffset, x1: lateralOffset, yref: "paper" as const, y0: 0, y1: 1, line: { color: "#fbbf24", dash: "dash" } }],
           }} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
@@ -182,6 +194,9 @@ export default function ConnectorInsertionLossPage() {
         <div className="text-sm text-gray-300 space-y-2">
           <p className="font-mono">Lateral: η = exp(−d²/w²); angular: η = exp(−(π n_gap w θ/λ)²); gap: η = 1/(1 + (λz/(2π n_gap w²))²)</p>
           <p className="font-mono">Gap reflections (Airy): T = 1/(1 + F sin²(2π n_gap z/λ)), F = 4R/(1 − R)², R = ((n_core − n_gap)/(n_core + n_gap))²</p>
+          <p>Return loss of the joint: −10 log₁₀(1 − T) is the Fresnel/Airy reflection of the end-face gap alone (lossless, multiple
+            passes included). It ignores angled polish, contamination and glass-to-glass contact defects, which set the
+            real grade; the grade comparison is therefore a necessary check only.</p>
           <p>Physical-contact (PC, UPC, APC) connectors have z = 0, so only offset and tilt remain, and the tilt is taken in
             glass (the fibre index). With a gap the total uses the unfavourable tilt sense. Use the phase index (≈ 1.447 for
             SMF-28 at 1550 nm), not the datasheet group index 1.4682. The grade limits are random-mate statistics; adding N

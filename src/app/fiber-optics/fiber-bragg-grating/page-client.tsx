@@ -87,7 +87,10 @@ export default function FiberBraggGratingCalculator() {
           <ValidatedNumberInput label="Bragg Wavelength λ_B (nm)" value={braggWavelength} onChange={setBraggWavelength} min={200} max={3000} step="1" />
           <ValidatedNumberInput label="Effective Index n_eff (phase)" value={effectiveIndex} onChange={setEffectiveIndex} min={1} max={3} step="0.001" />
           <ValidatedNumberInput label="Grating Length (mm)" value={gratingLength} onChange={setGratingLength} min={0.1} max={1000} step="0.5" />
-          <ValidatedNumberInput label="Index Modulation Amplitude Δn" value={indexModulation} onChange={setIndexModulation} min={1e-8} max={1e-2} step="1e-5" />
+          <div>
+            <ValidatedNumberInput label="AC effective-index modulation δn_eff" value={indexModulation} onChange={setIndexModulation} min={1e-8} max={1e-2} step="1e-5" />
+            <p className="text-xs text-gray-400 mt-1">≈ 0.8 × the core index change for SMF</p>
+          </div>
           {type === "chirped" && (
             <ValidatedNumberInput label="Chirp dλ_B/dz (nm/mm)" value={chirpRate} onChange={setChirpRate} min={-50} max={50} step="0.01" />
           )}

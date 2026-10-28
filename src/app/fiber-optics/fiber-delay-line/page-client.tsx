@@ -44,6 +44,9 @@ export default function FiberDelayLineCalculator() {
     };
   }, [valid, fiberLength, groupIndex, signalWavelength, inputBitRate, temperature, thermalCoeff, spectralWidth]);
 
+  // Narrow-source regime: the broad-source formula needs σ_λ well above the modulation bandwidth λ²B/c.
+  const narrowSource = valid && spectralWidth * nm < (3 * (signalWavelength * nm) ** 2 * inputBitRate * 1e9) / c;
+
   const delayCurve = useMemo(() => {
     const lengths = Array.from({ length: 101 }, (_, i) => (i * 5 * Math.max(fiberLength, 1)) / 100);
     return [
@@ -53,7 +56,7 @@ export default function FiberDelayLineCalculator() {
   }, [fiberLength, groupIndex, calc]);
 
   const dispersionCurve = useMemo(() => {
-    const wls = Array.from({ length: 183 }, (_, i) => 1260 + i * 2);
+    const wls = Array.from({ length: 74 }, (_, i) => 1260 + i * 5);
     return [
       { x: wls, y: wls.map(w => sellmeierDispersion(w * nm, G652_LAMBDA0, G652_S0) / PS_NM_KM), type: "scatter" as const, mode: "lines" as const, name: "G.652 D(λ)", line: { color: "#10b981", width: 2 } },
       { x: [signalWavelength], y: [calc ? calc.D / PS_NM_KM : null], type: "scatter" as const, mode: "markers" as const, name: "Signal λ", marker: { color: "#f87171", size: 10 } },
@@ -108,6 +111,11 @@ export default function FiberDelayLineCalculator() {
                 {row(`Delay change vs ${T_REF} °C:`, show(calc ? calc.thermal / ps : undefined, 2, "ps"))}
                 {row("Loop FSR:", show(calc ? calc.fsr / 1e6 : undefined, 4, "MHz"))}
               </div>
+              {narrowSource && (
+                <p className="mt-3 text-xs text-yellow-400">
+                  Narrow source (σ_λ &lt; 3λ²B/c): the broad-source spread above underestimates the broadening.
+                </p>
+              )}
             </div>
             <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
               <h3 className="text-sm font-medium text-gray-400 mb-2">Formulas</h3>

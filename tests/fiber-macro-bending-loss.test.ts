@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  LP11_CUTOFF_V, MFD_FIT_V_RANGE, bendLossCoefficient, bendLossPerTurnDb, lp01Mode, lp11CutoffWavelength, modeFieldRadius,
+  LP11_CUTOFF_V, MFD_FIT_V_RANGE, bendLossCoefficient, bendLossPerTurnDb, elastoOpticBendRadius, lp01Mode, lp11CutoffWavelength, modeFieldRadius,
   vNumber,
 } from "../src/physics/fiber-optics/macro-bending-loss";
 import { besselJ, besselK } from "../src/physics/math";
@@ -91,4 +91,19 @@ test("page default: n₁ = 1.4494 over Malitson silica, not the group index 1.46
   assert.deepEqual([...MFD_FIT_V_RANGE], [1.2, 2.4]);
   const V = vNumber(page, lambda);
   assert.ok(V > MFD_FIT_V_RANGE[0] && V < MFD_FIT_V_RANGE[1]);
+});
+
+test("elasto-optic correction: R_eff = R/(1 − p_e)", () => {
+  // Nagano, Kawakami & Nishida, Appl. Opt. 17, 2080 (1978); Bertholds & Dändliker p₁₁ = 0.113, p₁₂ = 0.252,
+  // ν = 0.16. By hand at n₁ = 1.4494: p_e = (2.10076/2)(0.252 − 0.16·0.365) = 0.203354, 1/(1 − p_e) = 1.25526
+  // (Schermer & Cole, IEEE JQE 43, 899 (2007), fit 1.28 with their coefficients).
+  assertRel(elastoOpticBendRadius(1, 1.4494), 1.25526, 1e-5, "R_eff/R");
+  const page = { a: 4.1e-6, n1: 1.4494, NA: 0.1246 };
+  const lambda = 1550e-9, R = 10e-3, Reff = elastoOpticBendRadius(R, page.n1);
+  // α at R_eff, turn length 2πR: 2.62 dB/turn uncorrected → 0.367 dB/turn, inside G.657.A1 (0.75 dB at 10 mm).
+  const corrected = bendLossPerTurnDb(page, lambda, R, undefined, true);
+  assertRel(corrected, (bendLossPerTurnDb(page, lambda, Reff) * R) / Reff, 1e-12, "α(R_eff)·2πR");
+  assertRel(corrected, 0.3669, 1e-3, "corrected dB/turn");
+  // Edge: a non-positive radius stays NaN with the correction.
+  assert.ok(Number.isNaN(bendLossPerTurnDb(page, lambda, 0, undefined, true)));
 });

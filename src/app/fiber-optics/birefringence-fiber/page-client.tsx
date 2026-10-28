@@ -100,8 +100,13 @@ export default function BirefringenceCalculator() {
       )}
       {ratio < 0.8 && (
         <p role="alert" className="mb-8 rounded-lg border border-yellow-700 bg-yellow-950 p-3 text-sm text-yellow-200">
-          ε = {(1 - ratio).toFixed(2)}: the formula is first order in ε, so it loses accuracy for strongly elliptical
-          cores (the real B grows more slowly than linearly).
+          ε = {(1 - ratio).toFixed(2)}: the model is first order in the ellipticity ε, so it loses accuracy for strongly
+          elliptical cores.
+        </p>
+      )}
+      {valid && geo.delta > 0.03 && (
+        <p role="alert" className="mb-8 rounded-lg border border-yellow-700 bg-yellow-950 p-3 text-sm text-yellow-200">
+          Δ = {(geo.delta * 100).toFixed(1)} % &gt; 3 %: the weak-guidance formulas lose accuracy.
         </p>
       )}
 

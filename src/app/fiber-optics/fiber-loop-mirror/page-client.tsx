@@ -107,6 +107,13 @@ export default function FiberLoopMirrorPage() {
         margin: { t: 40 },
       }} />
 
+      {Number.isFinite(calc.period) && !pm && (
+        <p className="text-sm text-yellow-300 mt-4">
+          Comb period λ²/(B·L) = {(calc.period * 1e9).toPrecision(4)} nm exceeds the 200 nm plotted span, so the comb is
+          not drawn: the transmission is nearly flat across the band at the wavelength entered.
+        </p>
+      )}
+
       {spectrumData.length > 0 && (
         <ChartPanel data={spectrumData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",

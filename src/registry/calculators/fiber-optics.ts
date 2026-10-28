@@ -8,7 +8,7 @@ export const fiberOptics: CalculatorEntry[] = [
     heading: "Wavelength-Dependent Attenuation",
     lede: "Fiber loss versus wavelength from Rayleigh scattering, the infrared and ultraviolet absorption tails and the OH water peak, and the loss of a span at your wavelength.",
     tier: "textbook",
-    modelNote: "Rayleigh A/λ⁴ plus Keiser's empirical IR and UV tails for GeO₂-doped silica; the 1383 nm OH band is an illustrative Gaussian of input height. Bends, splices and other impurities not included.",
+    modelNote: "Rayleigh A/λ⁴ plus Keiser's empirical IR and UV tails for GeO₂-doped silica; the OH bands at 943 and 1383 nm are illustrative Gaussians (input height at 1383 nm). Bends, splices and other impurities not included.",
     references: [
       {
         citation: "Agrawal G. P. (2010). Fiber-Optic Communication Systems, 4th ed. Wiley. Fiber losses: Rayleigh scattering A/λ⁴ with A ≈ 0.7–0.9 dB·km⁻¹·µm⁴.",
@@ -40,8 +40,16 @@ export const fiberOptics: CalculatorEntry[] = [
     description: "Compare the macrobend loss of standard single-mode fibre with a reduced-MFD step-index design and check the design against the ITU-T G.657 limits.",
     heading: "Bend-Insensitive Fiber Design",
     tier: "textbook",
-    modelNote: "Marcuse curvature loss of LP01 for two step-index fibres, checked against the G.657 (08/2024) macrobend limits. Not modelled: trench profiles, the elasto-optic correction (R_eff ≈ 1.27R), coating, transitions.",
+    modelNote: "Marcuse curvature loss of LP01 for two step-index fibres, checked against the G.657 (08/2024) macrobend limits, with an optional elasto-optic correction R_eff = R/(1 − p_e) ≈ 1.25R. Not modelled: trench profiles, coating, transitions.",
     references: [
+      {
+        citation: "Nagano K., Kawakami S., Nishida S. (1978). Change of the refractive index in an optical fiber due to external forces. Appl. Opt. 17, 2080. Elasto-optic equivalent bend radius.",
+        url: "https://doi.org/10.1364/ao.17.002080",
+      },
+      {
+        citation: "Schermer R. T., Cole J. H. (2007). Improved bend loss formula verified for optical fiber by simulation and experiment. IEEE J. Quantum Electron. 43, 899. R_eff ≈ 1.28R for silica.",
+        url: "https://doi.org/10.1109/jqe.2007.903364",
+      },
       {
         citation: "Marcuse D. (1976). Curvature loss formula for optical fibers. J. Opt. Soc. Am. 66, 216. Bend loss of LP01.",
         url: "https://doi.org/10.1364/josa.66.000216",
@@ -61,7 +69,7 @@ export const fiberOptics: CalculatorEntry[] = [
     title: "Birefringence Fiber Calculator",
     description: "Geometric (elliptical-core) and stress-induced birefringence and beat length of a single-mode fiber from core and cladding indices and core shape.",
     tier: "textbook",
-    modelNote: "Sakai–Kimura first-order geometric birefringence B = εn₁Δ²G(V) of a slightly elliptical step-index core and its group value, plus a stress term you enter. Not modelled: large ellipticity, material dispersion.",
+    modelNote: "Sakai–Kimura first-order geometric birefringence B = εn₁Δ²G(V) of a slightly elliptical step-index core and its group value, plus a stress term you enter; weak guidance (Δ ≪ 1). Not modelled: large ellipticity, material dispersion.",
     references: [
       {
         citation: "Sakai J., Kimura T. (1981). Birefringence and polarization characteristics of single-mode optical fibers under elastic deformations. IEEE J. Quantum Electron. 17, 1041. G(V) for an elliptical core, as quoted in Rashleigh (1983).",
@@ -79,7 +87,7 @@ export const fiberOptics: CalculatorEntry[] = [
     description: "Calculate chromatic dispersion, pulse broadening, and system penalties for single-mode fiber.",
     heading: "Chromatic Dispersion (CD)",
     tier: "textbook",
-    modelNote: "G.652 Sellmeier D(λ) and Gaussian-pulse broadening with source width, β₂ and β₃ (no chirp). Bit-rate limit 4Bσ ≤ 1 with the optimum input pulse (broad and narrow sources). The penalty assumes a broad source.",
+    modelNote: "G.652 Sellmeier D(λ) and Gaussian-pulse broadening with source width, β₂ and β₃ (no chirp). Bit-rate limit 4Bσ ≤ 1 with the optimum input pulse (broad and narrow sources). The penalty uses the added broadening √(σ² − σ₀²).",
     references: [
       {
         citation: "ITU-T G.652 (11/2016). Characteristics of a single-mode optical fibre and cable. D(λ) = (S₀/4)(λ − λ₀⁴/λ³) with 1300 ≤ λ₀ ≤ 1324 nm and S₀ ≤ 0.092 ps/(nm²·km).",
@@ -191,7 +199,7 @@ export const fiberOptics: CalculatorEntry[] = [
         url: "https://doi.org/10.1364/ao.10.002252",
       },
       {
-        citation: "Snyder A. W., Love J. D. (1983). Optical Waveguide Theory. Chapman & Hall (Springer reprint). Step-profile modes, perturbation theory and weakly coupled fibres.",
+        citation: "Snyder A. W., Love J. D. (1983). Optical Waveguide Theory. Chapman & Hall (Springer reprint 1984). Step-profile modes, perturbation theory and weakly coupled fibres.",
         url: "https://doi.org/10.1007/978-1-4613-2813-1",
       },
     ],
@@ -203,7 +211,7 @@ export const fiberOptics: CalculatorEntry[] = [
     heading: "Dispersion Compensation",
     lede: "Calculates chromatic dispersion limits and DCF (dispersion-compensating fiber) requirements: the rms pulse broadening of a span, the 4Bσ ≤ 1 bit-rate limit and power penalty, the DCF length that cancels the dispersion at one wavelength, and the residual dispersion that a slope mismatch leaves across the band.",
     tier: "textbook",
-    modelNote: "Linear dispersion model D(λ) = D + S(λ − λ₀) for a broad Gaussian source. Not included: narrow-linewidth sources, dispersion curvature, PMD, nonlinear effects and DCF loss.",
+    modelNote: "Linear dispersion model D(λ) = D + S(λ − λ₀), Gaussian source of any width launched as the optimum Gaussian pulse (coherent β₃ term at λ₀ left out). Not included: dispersion curvature, PMD, nonlinear effects and DCF loss.",
     references: [
       {
         citation: "Agrawal G. P. (2021). Fiber-Optic Communication Systems, 5th ed., §2.4.3 and §5.4.4. Wiley.",
@@ -283,7 +291,7 @@ export const fiberOptics: CalculatorEntry[] = [
     heading: "Fiber Bandwidth Calculation",
     lede: "Calculate bandwidth limitations from chromatic dispersion, modal dispersion (MMF), and PMD for various fiber types and link configurations.",
     tier: "textbook",
-    modelNote: "Gaussian rms budget, 4Bσ ≤ 1: chromatic (spec-limit λ₀, S₀, optimum input pulse) and modal (rated 850 nm bandwidth) add in quadrature; PMD by ⟨Δτ⟩ ≤ 0.1 T. Ignores DMD, launch and transceiver limits.",
+    modelNote: "Gaussian rms budget, 4Bσ ≤ 1: chromatic (spec-limit λ₀, S₀, optimum input pulse) and modal (rated 850 nm bandwidth) add in quadrature; PMD by ⟨Δτ⟩ ≤ 0.1 T. SMF only above its 1260 nm cable cutoff. Ignores DMD, launch and transceiver limits.",
     references: [
       {
         citation: "Agrawal G. P. (2010). Fiber-Optic Communication Systems, 4th ed., §2.4.3 (4Bσ ≤ 1). Wiley.",
@@ -377,7 +385,7 @@ export const fiberOptics: CalculatorEntry[] = [
     description: "Step-index fiber parameters from the core and cladding indices and core radius: V, cutoff, MFD, effective area and index, nonlinear γ, core confinement and datasheet dispersion.",
     heading: "Fiber Characterization",
     tier: "textbook",
-    modelNote: "Step-index LP01 (Gloge): V, cutoff, b, n_eff, core power, Petermann II and Marcuse-fit MFD, A_eff and γ. D uses the G.652 λ₀/S₀ form you enter, not the geometry.",
+    modelNote: "Step-index LP01 (Gloge): V, cutoff, b, n_eff, core power, Petermann II and Marcuse-fit MFD, A_eff and γ. Weak guidance (Δ ≪ 1); Marcuse fit for 1.2 < V < 2.4; cutoff is the theoretical LP11 value. D uses the G.652 λ₀/S₀ form you enter, not the geometry.",
     references: [
       {
         citation: "Gloge D. (1971). Weakly Guiding Fibers. Appl. Opt. 10, 2252. LP modes, eigenvalue equation and core power fraction.",
@@ -410,7 +418,7 @@ export const fiberOptics: CalculatorEntry[] = [
         url: "https://doi.org/10.1364/josa.62.001267",
       },
       {
-        citation: "Snyder A. W., Love J. D. (1983). Optical Waveguide Theory. Chapman & Hall (Springer reprint). Step-profile modes, perturbation theory and weakly coupled fibres.",
+        citation: "Snyder A. W., Love J. D. (1983). Optical Waveguide Theory. Chapman & Hall (Springer reprint 1984). Step-profile modes, perturbation theory and weakly coupled fibres.",
         url: "https://doi.org/10.1007/978-1-4613-2813-1",
       },
     ],
@@ -550,7 +558,7 @@ export const fiberOptics: CalculatorEntry[] = [
         url: "https://doi.org/10.1049/ip-j.1991.0060",
       },
       {
-        citation: "Snyder A. W., Love J. D. (1983). Optical Waveguide Theory. Chapman & Hall (Springer reprint). Scalar modes of step profiles; TE01/TM01 cutoff at V = 2.405.",
+        citation: "Snyder A. W., Love J. D. (1983). Optical Waveguide Theory. Chapman & Hall (Springer reprint 1984). Scalar modes of step profiles; TE01/TM01 cutoff at V = 2.405.",
         url: "https://doi.org/10.1007/978-1-4613-2813-1",
       },
     ],
@@ -935,7 +943,7 @@ export const fiberOptics: CalculatorEntry[] = [
         url: "https://doi.org/10.1109/jqe.1982.1071574",
       },
       {
-        citation: "Snyder A. W., Love J. D. (1983). Optical Waveguide Theory. Chapman & Hall (Springer reprint). Step-profile modes, perturbation theory and weakly coupled fibres.",
+        citation: "Snyder A. W., Love J. D. (1983). Optical Waveguide Theory. Chapman & Hall (Springer reprint 1984). Step-profile modes, perturbation theory and weakly coupled fibres.",
         url: "https://doi.org/10.1007/978-1-4613-2813-1",
       },
     ],

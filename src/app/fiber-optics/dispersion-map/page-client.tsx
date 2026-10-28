@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -20,9 +20,9 @@ export default function DispersionMapPage() {
   const [lengthSMF, setLengthSMF] = useURLState("lengthSMF", 80, { min: 0, max: 500 });
   const [lengthDCF, setLengthDCF] = useURLState("lengthDCF", 15, { min: 0, max: 100 });
   const [dispSMF, setDispSMF] = useURLState("dispSMF", 17, { min: -30, max: 30 });
-  const [dispDCF, setDispDCF] = useState(-100);
+  const [dispDCF, setDispDCF] = useURLState("dcfDispersion", -100, { min: -1000, max: 1000 });
   const [slopeSMF, setSlopeSMF] = useURLState("slopeSMF", 0.056, { min: -1, max: 1 });
-  const [slopeDCF, setSlopeDCF] = useState(-0.2);
+  const [slopeDCF, setSlopeDCF] = useURLState("dcfSlope", -0.2, { min: -20, max: 20 });
   const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 1530, max: 1629 }); // nm, inside the plotted band
 
   const smf = toSI(dispSMF, slopeSMF);
@@ -43,7 +43,7 @@ export default function DispersionMapPage() {
     });
     return [
       { x: wls, y: dispVsWl, type: "scatter" as const, mode: "lines" as const, name: "Net Dispersion", line: { color: "#60a5fa" } },
-      { x: [wavelength], y: [netDispersion], type: "scatter" as const, mode: "markers" as const, name: "Operating λ", marker: { color: "#f87171", size: 12 } },
+      { x: [wavelength], y: [netDispersion], type: "scatter" as const, mode: "markers" as const, name: "Reference λ", marker: { color: "#f87171", size: 12 } },
     ];
   }, [lengthSMF, lengthDCF, dispSMF, dispDCF, slopeSMF, slopeDCF, wavelength, netDispersion]);
 
@@ -55,15 +55,21 @@ export default function DispersionMapPage() {
         <ValidatedNumberInput label="SMF Dispersion (ps/nm/km)" value={dispSMF} onChange={setDispSMF} min={-30} max={30} step="0.1" />
         <ValidatedNumberInput label="SMF Slope (ps/nm²/km)" value={slopeSMF} onChange={setSlopeSMF} min={-1} max={1} step="0.001" />
         <ValidatedNumberInput label="DCF Length (km)" value={lengthDCF} onChange={setLengthDCF} min={0} max={100} />
-        <ValidatedNumberInput label="DCF Dispersion (ps/nm/km)" value={dispDCF} onChange={setDispDCF} step="1" />
-        <ValidatedNumberInput label="DCF Slope (ps/nm²/km)" value={slopeDCF} onChange={setSlopeDCF} step="0.01" />
-        <ValidatedNumberInput label="Reference Wavelength (nm)" value={wavelength} onChange={setWavelength} min={1530} max={1629} step="1" />
+        <ValidatedNumberInput label="DCF Dispersion (ps/nm/km)" value={dispDCF} onChange={setDispDCF} min={-1000} max={1000} step="1" />
+        <ValidatedNumberInput label="DCF Slope (ps/nm²/km)" value={slopeDCF} onChange={setSlopeDCF} min={-20} max={20} step="0.01" />
+        <ValidatedNumberInput label="Reference λ (where D, S are given)" value={wavelength} onChange={setWavelength} min={1530} max={1629} step="1" />
       </div>
+
+      {dispDCF * dispSMF > 0 && (
+        <p className="mb-4 text-sm text-yellow-300" role="status">
+          D<sub>DCF</sub> has the same sign as the span D, so the DCF adds dispersion instead of compensating it.
+        </p>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Net Dispersion</p>
-          <p className={`text-2xl font-bold ${Math.abs(netDispersion) < 100 ? "text-green-400" : "text-yellow-400"}`}>{netDispersion.toFixed(0)} ps/nm</p>
+          <p className="text-2xl font-bold text-cyan-400">{netDispersion.toFixed(0)} ps/nm</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">SMF Total</p>

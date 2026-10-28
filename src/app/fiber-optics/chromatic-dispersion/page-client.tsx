@@ -9,7 +9,7 @@ import {
   FWHM_TO_RMS, beta2FromD, beta3FromDS, dispersionLength, gaussianPulseRmsWidth, sellmeierDispersion, sellmeierSlope,
   optimumOutputRmsWidth, sigmaOmegaFromLambda, transformLimitedBitRate,
 } from "../../../physics/fiber-optics/chromatic-dispersion";
-import { dispersionPenaltyDb, rmsBroadening } from "../../../physics/fiber-optics/dispersion-comp";
+import { addedRmsBroadening, dispersionPenaltyDb } from "../../../physics/fiber-optics/dispersion-comp";
 
 const nm = 1e-9, km = 1e3, ps = 1e-12;
 const PS_NM_KM = 1e-6, PS_NM2_KM = 1e3, PS2_KM = 1e-27, PS3_KM = 1e-39;
@@ -38,14 +38,15 @@ export default function ChromaticDispersionPage() {
     const sigma0 = pulseFwhm * ps * FWHM_TO_RMS;
     const sigmaOmega = sigmaOmegaFromLambda(sl, lam);
     const sigmaOut = gaussianPulseRmsWidth({ sigma0, beta2, beta3, L, sigmaOmega });
-    const sigmaD = rmsBroadening(D * L, S * L, sl);
+    const sigmaAdded = addedRmsBroadening(sigmaOut, sigma0);
     return {
-      D, S, beta2, beta3, sigma0, sigmaOut, sigmaD,
+      D, S, beta2, beta3, sigma0, sigmaOut, sigmaAdded,
       V: 2 * sigmaOmega * sigma0,
+      atZero: Math.abs(D) < 1e-12,
       LD: dispersionLength(Math.SQRT2 * sigma0, beta2),
       bOptimum: 1 / (4 * optimumOutputRmsWidth(beta2, beta3, L, sigmaOmega)),
       bCoherent: transformLimitedBitRate(beta2, L),
-      penalty: dispersionPenaltyDb(bitRate * 1e9, sigmaD),
+      penalty: dispersionPenaltyDb(bitRate * 1e9, sigmaAdded),
     };
   }, [valid, S0, lambda0, length, wavelength, sigmaLambda, pulseFwhm, bitRate]);
 
@@ -68,10 +69,11 @@ export default function ChromaticDispersionPage() {
     const sigma0 = pulseFwhm * ps * FWHM_TO_RMS;
     const sigmaOmega = sigmaOmegaFromLambda(sl, lam);
     const lengths = Array.from({ length: 100 }, (_, i) => ((i + 1) * 2 * length) / 100);
-    const width = lengths.map(l => gaussianPulseRmsWidth({ sigma0, beta2, beta3, L: l * km, sigmaOmega }) / ps);
+    const widthSi = lengths.map(l => gaussianPulseRmsWidth({ sigma0, beta2, beta3, L: l * km, sigmaOmega }));
+    const width = widthSi.map(w => w / ps);
     // Plotly can't draw Infinity: a closed eye shows as a gap.
-    const penalty = lengths.map(l => {
-      const p = dispersionPenaltyDb(bitRate * 1e9, rmsBroadening(D * l * km, S * l * km, sl));
+    const penalty = widthSi.map(w => {
+      const p = dispersionPenaltyDb(bitRate * 1e9, addedRmsBroadening(w, sigma0));
       return Number.isFinite(p) ? p : null;
     });
     return [
@@ -84,7 +86,7 @@ export default function ChromaticDispersionPage() {
 
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-3 mb-8">
+      <div className="grid gap-4 sm:grid-cols-3 mb-4">
         <ValidatedNumberInput label="Zero-Dispersion Wavelength λ₀ (nm)" value={lambda0} onChange={setLambda0} min={1200} max={1700} step="1" />
         <ValidatedNumberInput label="Zero-Dispersion Slope S₀ (ps/nm²/km)" value={S0} onChange={setS0} min={0.01} max={0.2} step="0.001" />
         <ValidatedNumberInput label="Operating Wavelength (nm)" value={wavelength} onChange={setWavelength} min={1260} max={1625} step="1" />
@@ -93,6 +95,10 @@ export default function ChromaticDispersionPage() {
         <ValidatedNumberInput label="Input Pulse FWHM (ps)" value={pulseFwhm} onChange={setPulseFwhm} min={0.01} step="1" />
         <ValidatedNumberInput label="Bit Rate (Gb/s)" value={bitRate} onChange={setBitRate} min={0.001} step="1" />
       </div>
+
+      {(lambda0 < 1300 || lambda0 > 1324) && (
+        <p className="text-xs text-yellow-400 mb-4">λ₀ = {lambda0} nm is outside the G.652 range 1300–1324 nm</p>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-4">
         <div className={card}>
@@ -111,7 +117,7 @@ export default function ChromaticDispersionPage() {
         </div>
         <div className={card}>
           <p className="text-sm text-gray-400">Dispersion Length L_D</p>
-          <p className="text-xl font-bold text-purple-400">{calc ? fmt(calc.LD / km, 2, "km") : "—"}</p>
+          <p className="text-xl font-bold text-purple-400">{calc ? (calc.atZero ? "∞" : fmt(calc.LD / km, 2, "km")) : "—"}</p>
           <p className="text-xs text-gray-500">T₀ = √2·σ₀ (1/e half-width)</p>
         </div>
       </div>
@@ -129,7 +135,7 @@ export default function ChromaticDispersionPage() {
         </div>
         <div className={card}>
           <p className="text-sm text-gray-400">Limit for σ_λ → 0, β₃ = 0</p>
-          <p className="text-xl font-bold text-cyan-400">{calc ? fmt(calc.bCoherent / 1e9, 2, "Gb/s") : "—"}</p>
+          <p className="text-xl font-bold text-cyan-400">{calc ? (calc.atZero ? "∞" : fmt(calc.bCoherent / 1e9, 2, "Gb/s")) : "—"}</p>
           <p className="text-xs text-gray-500">B√(|β₂|L) ≤ ¼</p>
         </div>
         <div className={card}>
@@ -137,7 +143,7 @@ export default function ChromaticDispersionPage() {
           <p className={`text-xl font-bold ${!calc || !(calc.penalty <= 1) ? "text-red-400" : calc.penalty > 0.5 ? "text-yellow-400" : "text-green-400"}`}>
             {calc ? (calc.penalty === Infinity ? "eye closed" : fmt(calc.penalty, 2, "dB")) : "—"}
           </p>
-          <p className="text-xs text-gray-500">{calc && calc.V < 1 ? "V_ω < 1: narrow source, use the transform-limited limit" : "broad source, −5 log₁₀(1 − (4Bσ_D)²)"}</p>
+          <p className="text-xs text-gray-500">−5 log₁₀(1 − (4Bσ_b)²), σ_b = √(σ² − σ₀²) the added rms broadening</p>
         </div>
       </div>
 
@@ -171,7 +177,7 @@ export default function ChromaticDispersionPage() {
           <p>β₂ = −λ²D/(2πc),  β₃ = (λ²/2πc)²(S + 2D/λ)</p>
           <p>σ²/σ₀² = 1 + (1 + V²)(β₂L/2σ₀²)² + ½(1 + V²)²(β₃L/4σ₀³)²,  V = 2σ_ωσ₀  [Agrawal §2.4.2, unchirped]</p>
           <p>σ_D = √((DLσ_λ)² + ½(SLσ_λ²)²)  [broad source]; optimum σ₀, β₃ = 0: σ² = σ_D² + |β₂|L</p>
-          <p>Penalty = −5 log₁₀(1 − (4Bσ_D)²) dB</p>
+          <p>Penalty = −5 log₁₀(1 − (4Bσ_b)²) dB,  σ_b = √(σ² − σ₀²)</p>
         </div>
       </div>
     </>

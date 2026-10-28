@@ -58,6 +58,7 @@ export default function AttenuationPage() {
     ];
   }, [params, wavelength, calc.at.total]);
 
+  const yTop = Math.max(10, 1.2 * (Number.isFinite(calc.at.total) ? calc.at.total : 0)); // dB/km, top of the log axis
   const outside = wavelength < 800 || wavelength > 1700;
 
   return (
@@ -99,7 +100,7 @@ export default function AttenuationPage() {
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
           xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
-          yaxis: { title: "Attenuation (dB/km)", gridcolor: "#374151", type: "log", range: [-3, 1] },
+          yaxis: { title: "Attenuation (dB/km)", gridcolor: "#374151", type: "log", range: [-3, Math.log10(yTop)] },
           legend: { x: 0.55, y: 0.98 },
           margin: { t: 20, r: 30, b: 50, l: 70 }, height: 380,
         }} />
@@ -121,7 +122,7 @@ export default function AttenuationPage() {
             ageing at the 1310–1625 nm maximum, 0.40 dB/km for cable.
           </p>
           <p className="text-gray-400">
-            Not included: waveguide imperfections and bending, the weaker OH bands near 1240 and 950 nm, hydrogen ageing, and other
+            Not included: waveguide imperfections and bending, the weak 1246 nm OH combination band (the 943 nm OH band is modelled, scaled from the 1383 nm peak), hydrogen ageing, and other
             impurities. The defaults (A 0.85, 4 mol % GeO₂) give 0.32 dB/km at 1310 nm and 0.19 dB/km at 1550 nm, typical of
             standard single-mode fibre.
           </p>

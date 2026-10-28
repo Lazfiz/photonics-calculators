@@ -28,7 +28,8 @@ const classText = (c: G657Category | null, mfd1310_um: number) =>
   (c ? `Meets the G.657.${c} macrobend limits` : "Meets no G.657 macrobend limits") +
   (c && mfd1310_um < G657_MIN_MFD_UM ? `, but its MFD is below ${G657_MIN_MFD_UM} µm` : "");
 
-const perTurn = (f: StepIndexFiber) => (R: number, lambda: number) => bendLossPerTurnDb(f, lambda, R);
+const perTurn = (f: StepIndexFiber, elastoOptic: boolean) => (R: number, lambda: number) =>
+  bendLossPerTurnDb(f, lambda, R, undefined, elastoOptic);
 
 export default function BendInsensitivePage() {
   const [radius, setRadius] = useURLState("radius", 7.5, { min: 1, max: 100 }); // mm
@@ -36,6 +37,8 @@ export default function BendInsensitivePage() {
   const [designRadius, setDesignRadius] = useURLState("designRadius", 3.4, { min: 1, max: 10 }); // µm
   const [designNA, setDesignNA] = useURLState("designNA", 0.15, { min: 0.05, max: 0.35 });
   const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.4494, { min: 1, max: 4 });
+  const [elastoOptic, setElastoOptic] = useURLState("elastoOptic", 1, { min: 0, max: 1 });
+  const eo = elastoOptic === 1;
 
   const smf = useMemo(() => ({ ...SMF, n1: coreIndex }), [coreIndex]);
   const design = useMemo(() => ({ a: designRadius * 1e-6, NA: designNA, n1: coreIndex }), [designRadius, designNA, coreIndex]);
@@ -45,39 +48,42 @@ export default function BendInsensitivePage() {
     const R = radius * 1e-3;
     const props = (f: StepIndexFiber) => ({
       V: vNumber(f, lambda),
-      loss: bendLossPerTurnDb(f, lambda, R),
+      loss: bendLossPerTurnDb(f, lambda, R, undefined, eo),
       cutoff_nm: lp11CutoffWavelength(f) * 1e9,
       mfd1550_um: 2e6 * modeFieldRadius(f, 1550e-9),
       mfd1310_um: 2e6 * modeFieldRadius(f, 1310e-9),
-      category: g657Category(perTurn(f)),
+      category: g657Category(perTurn(f, eo)),
     });
     return { smf: props(smf), design: props(design) };
-  }, [smf, design, wavelength, radius]);
+  }, [smf, design, wavelength, radius, eo]);
 
   const specRows = useMemo(
     () =>
       G657_CATEGORIES.flatMap((cat) =>
         G657_LIMITS[cat].map((l) => {
-          const d1550 = bendLossPerTurnDb(design, 1550e-9, l.R) * l.turns;
-          const d1625 = bendLossPerTurnDb(design, 1625e-9, l.R) * l.turns;
+          const d1550 = bendLossPerTurnDb(design, 1550e-9, l.R, undefined, eo) * l.turns;
+          const d1625 = bendLossPerTurnDb(design, 1625e-9, l.R, undefined, eo) * l.turns;
           return { cat, ...l, d1550, d1625, pass: d1550 <= l.max1550 && d1625 <= l.max1625 };
         }),
       ),
-    [design],
+    [design, eo],
   );
 
   const chartData = useMemo(() => {
     const lambda = wavelength * 1e-9;
-    const radii_mm = Array.from({ length: 136 }, (_, i) => 3 + i * 0.2);
+    const lo_mm = Math.min(3, radius);
+    const hi_mm = Math.max(30, 1.2 * radius);
+    const radii_mm = Array.from({ length: 136 }, (_, i) => lo_mm + (i * (hi_mm - lo_mm)) / 135);
     const curve = (f: StepIndexFiber) => {
       const mode = lp01Mode(vNumber(f, lambda));
-      return finitePairs(radii_mm, radii_mm.map((r) => bendLossPerTurnDb(f, lambda, r * 1e-3, mode)));
+      return finitePairs(radii_mm, radii_mm.map((r) => bendLossPerTurnDb(f, lambda, r * 1e-3, mode, eo)));
     };
     return [
       { ...curve(smf), type: "scatter" as const, mode: "lines" as const, name: "Standard SMF (G.652)", line: { color: "#f87171", width: 2 } },
       { ...curve(design), type: "scatter" as const, mode: "lines" as const, name: "Reduced-MFD design", line: { color: "#34d399", width: 2 } },
+      { ...finitePairs([radius, radius], [calc.smf.loss, calc.design.loss]), type: "scatter" as const, mode: "markers" as const, name: `${radius} mm`, marker: { color: "#f9fafb", size: 10 } },
     ];
-  }, [smf, design, wavelength]);
+  }, [smf, design, wavelength, radius, eo, calc.smf.loss, calc.design.loss]);
 
   const valid = Number.isFinite(calc.design.loss) && Number.isFinite(calc.smf.loss);
 
@@ -89,11 +95,22 @@ export default function BendInsensitivePage() {
         <ValidatedNumberInput label="Core Index n₁" value={coreIndex} onChange={setCoreIndex} min={1} max={4} step="0.0001" />
         <ValidatedNumberInput label="Design Core Radius (µm)" value={designRadius} onChange={setDesignRadius} min={1} max={10} step="0.1" />
         <ValidatedNumberInput label="Design NA" value={designNA} onChange={setDesignNA} min={0.05} max={0.35} step="0.005" />
+        <label className="flex items-start gap-3 rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <input type="checkbox" className="mt-1" checked={elastoOptic === 1} onChange={(e) => setElastoOptic(e.target.checked ? 1 : 0)} />
+          <span className="text-sm text-gray-300">Elasto-optic correction (R_eff = R/(1 − p_e) ≈ 1.25 R)</span>
+        </label>
       </div>
 
       {!valid && (
         <p className="mb-6 text-sm text-yellow-300" role="status">
           No result: the model needs V ≥ {MIN_V} for both fibres and NA &lt; n₁.
+        </p>
+      )}
+
+      {valid && calc.smf.V > LP11_CUTOFF_V && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          Standard SMF V = {calc.smf.V.toFixed(2)} &gt; 2.405 at {wavelength} nm: LP11 is guided too (theory; a real G.652 fibre cuts it off
+          below its cable cutoff of 1260 nm or less). Its LP01 bend loss is still shown.
         </p>
       )}
 
@@ -172,8 +189,11 @@ export default function BendInsensitivePage() {
             around the core instead, which keeps the MFD near 9 µm; trench profiles need a numerical mode solver and are not modelled.
           </p>
           <p>
-            The formula leaves out the elasto-optic correction (silica acts as if R were about 1.27× larger, so real fibre loses
-            less), coating reflections and transition loss, so treat the category as indicative.
+            The elasto-optic correction (Nagano et al. 1978; Schermer &amp; Cole 2007) is on by default: bending stretches the outer
+            side, lowering its index, and compresses the inner side, partly undoing the bend&apos;s tilt of the index profile, so
+            silica loses as if the radius were R/(1 − p_e), about 1.25× larger (the turn length
+            stays 2πR). Untick it for the plain Marcuse formula. Coating reflections and transition loss are left out, so treat the
+            category as indicative.
           </p>
         </div>
       </div>

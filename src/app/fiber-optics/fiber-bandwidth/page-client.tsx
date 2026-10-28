@@ -17,7 +17,7 @@ const PS_SQRT_KM = 1e-12 / Math.sqrt(1e3); // ps/√km → s/√m
 const MHZ_KM = 1e9; // MHz·km → Hz·m
 const KEYS = Object.keys(SELLMEIER_FIBERS) as SellmeierFiberKey[];
 const RATES = [1, 2.5, 10, 25, 40, 50, 100, 200, 400]; // Gb/s
-// Default source rms widths when a fibre is picked: a narrow DFB laser for SMF; a VCSEL for MMF at 850 nm.
+// Default source rms widths when a fibre is picked: a directly modulated laser (chirped, ≈ 6 GHz rms) for SMF; a VCSEL for MMF at 850 nm.
 const SMF_SOURCE_RMS_NM = 0.05;
 const VCSEL_RMS_NM = 0.45;
 
@@ -64,7 +64,8 @@ export default function FiberBandwidthPage() {
     }
   };
 
-  const valid = length > 0 && wavelength >= 800 && wavelength <= 1700 && sigmaLambda >= 0 && bitRate > 0
+  const belowCutoff = !isMmf && wavelength < 1260;
+  const valid = !belowCutoff && length > 0 && wavelength >= 800 && wavelength <= 1700 && sigmaLambda >= 0 && bitRate > 0
     && (isMmf ? modalBW > 0 : pmdCoeff >= 0);
 
   const calc = useMemo(() => {
@@ -91,7 +92,8 @@ export default function FiberBandwidthPage() {
 
   const limitVsLength = useMemo(() => {
     if (!calc) return [];
-    const lengths = Array.from({ length: 121 }, (_, i) => 10 ** (-3 + i * 0.05)); // 1 m … 1000 km
+    const logMax = Math.log10(Math.max(1000, 2 * length)); // km: 1 m … max(1000 km, 2L)
+    const lengths = Array.from({ length: 121 }, (_, i) => 10 ** (-3 + (i * (logMax + 3)) / 120));
     const finite = (v: number) => (Number.isFinite(v) ? v / 1e9 : null);
     const { ch, pmd } = calc;
     return [
@@ -137,6 +139,9 @@ export default function FiberBandwidthPage() {
           <ValidatedNumberInput label="PMD Coefficient (ps/√km)" value={pmdCoeff} onChange={setPmdCoeff} min={0} max={5} step="0.01" />
         )}
       </div>
+      {belowCutoff && (
+        <p className="-mt-6 mb-6 text-xs text-red-400">Below the 1260 nm cable cutoff (ITU-T G.652) SMF carries LP11 too; intermodal delay (~ps/m) dominates and is not modelled.</p>
+      )}
       {isMmf && Math.abs(wavelength - 850) > 30 && (
         <p className="-mt-6 mb-6 text-xs text-yellow-400">The OM grades rate modal bandwidth at 850 nm; enter the value at {wavelength} nm from the fibre datasheet.</p>
       )}

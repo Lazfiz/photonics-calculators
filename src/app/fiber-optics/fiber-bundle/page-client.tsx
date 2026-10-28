@@ -51,15 +51,20 @@ export default function FiberBundlePage() {
   }, [N, dCore_um, dClad_um, na, packing]);
 
   const chartData = useMemo(() => {
-    // Full hexagonal bundles, 0–12 rings.
-    const counts = Array.from({ length: 13 }, (_, n) => hexFiberCount(n));
-    const diameters = counts.map(n => hexBundleDiameter(n, dClad_um * 1e-3)); // mm
-    const fills = counts.map((n, i) => bundleFill(n, dCore_um * 1e-3, diameters[i]) * 100);
+    // Full bundles of the selected packing: 0–12 rings (hex) or 1–12 per side (square), extended to include N.
+    const hex = packing === "hexagonal";
+    const steps = Math.max(12, hex ? calc.rings : Math.ceil(Math.sqrt(N)));
+    const counts = hex ? Array.from({ length: steps + 1 }, (_, n) => hexFiberCount(n)) : Array.from({ length: steps }, (_, i) => (i + 1) ** 2);
+    const diameters = counts.map(n => (hex ? hexBundleDiameter : squareBundleDiameter)(n, dClad_um * 1e-3) * 1e3); // mm
+    const fills = counts.map((n, i) => bundleFill(n, dCore_um * 1e-3, diameters[i] * 1e-3) * 100);
+    const dot = (color: string) => ({ color, size: 11, symbol: "diamond" as const, line: { color: "#ffffff", width: 1 } });
     return [
       { x: counts, y: diameters, type: "scatter" as const, mode: "lines+markers" as const, name: "Bundle Ø (mm)", line: { color: "#f87171" }, yaxis: "y" },
       { x: counts, y: fills, type: "scatter" as const, mode: "lines+markers" as const, name: "Core fill (%)", line: { color: "#60a5fa" }, yaxis: "y2" },
+      { x: [N], y: [calc.D * 1e3], type: "scatter" as const, mode: "markers" as const, name: "Current bundle Ø", marker: dot("#f87171"), yaxis: "y" },
+      { x: [N], y: [calc.coreFill * 100], type: "scatter" as const, mode: "markers" as const, name: "Current core fill", marker: dot("#60a5fa"), yaxis: "y2" },
     ];
-  }, [dCore_um, dClad_um]);
+  }, [dCore_um, dClad_um, packing, N, calc.rings, calc.D, calc.coreFill]);
 
   return (
     <>
@@ -97,8 +102,8 @@ export default function FiberBundlePage() {
           <p>Étendue: G = π·A_core·NA² per fibre (in air)</p>
         </div>
         <p className="text-xs text-gray-400 mt-3">
-          Touching fibres with no glue or buffer. A partly filled outer ring still needs the full ring diameter. Full
-          hexagonal rings fill at most 75 % of their circle, so for large bundles a circular close packing is about
+          Touching fibres with no glue or buffer. A partly filled outer ring is taken as needing the full ring diameter (a
+          model assumption; edge sites sit closer in). Full hexagonal rings fill 75–78 % of their circle, tending to 3/4, so for large bundles a circular close packing is about
           10 % smaller in diameter.
         </p>
       </div>
@@ -106,7 +111,7 @@ export default function FiberBundlePage() {
       <ChartPanel data={chartData} layout={{
         paper_bgcolor: "transparent", plot_bgcolor: "transparent",
         font: { color: "#9ca3af" },
-        title: { text: "Full Hexagonal Bundles", font: { color: "#e5e7eb", size: 14 } },
+        title: { text: packing === "hexagonal" ? "Full Hexagonal Bundles" : "Full Square-Grid Bundles", font: { color: "#e5e7eb", size: 14 } },
         xaxis: { title: "Number of Fibers", gridcolor: "#374151" },
         yaxis: { title: "Bundle Diameter (mm)", gridcolor: "#374151" },
         yaxis2: { title: "Core Fill (%)", overlaying: "y", side: "right", gridcolor: "#374151" },
