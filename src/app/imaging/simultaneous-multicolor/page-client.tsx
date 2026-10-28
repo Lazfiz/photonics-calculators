@@ -4,14 +4,14 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { cameraNoise } from "../../../physics/detectors/camera-snr";
-import { FLUOROPHORES, bandAtWavelength, fluorophoreByName, relativeSignal } from "../../../physics/imaging/fluorophores";
+import { FLUOROPHORES, bandAtWavelength, fluorophoreByName, spilloverMatrix } from "../../../physics/imaging/fluorophores";
 
 const COLORS = ["#60a5fa", "#4ade80", "#f87171", "#a78bfa"];
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
 
 interface Channel { dye: string; laser: number; center: number; width: number }
-const DEFAULT_CHANNELS = ["EGFP,488,525,50", "mCherry,561,620,60", "miRFP670,640,700,75", "mTagBFP2,405,450,50"];
+const DEFAULT_CHANNELS = ["EGFP,488,525,50", "mCherry,561,610,40", "miRFP670,640,700,75", "mTagBFP2,405,450,50"];
 
 /** "dye,laser nm,filter centre nm,filter width nm" from the URL, with each field clamped. */
 function parseChannel(raw: string, fallback: string): Channel {
@@ -33,6 +33,7 @@ export default function SimultaneousMulticolorPage() {
   const [ch2, setCh2] = useURLState("ch2", DEFAULT_CHANNELS[1]);
   const [ch3, setCh3] = useURLState("ch3", DEFAULT_CHANNELS[2]);
   const [ch4, setCh4] = useURLState("ch4", DEFAULT_CHANNELS[3]);
+  const [acqRaw, setAcq] = useURLState("acquisition", "simultaneous"); // simultaneous | sequential
   const [fluxRaw, setFlux] = useURLState("photonFlux", 25000); // photons/pixel/s at the camera, own dye
   const [exposureRaw, setExposure] = useURLState("exposureMs", 20);
   const [readoutRaw, setReadout] = useURLState("readoutMs", 2);
@@ -47,6 +48,7 @@ export default function SimultaneousMulticolorPage() {
   const raws = [ch1, ch2, ch3, ch4];
   const setters = [setCh1, setCh2, setCh3, setCh4];
   const channels = raws.slice(0, num).map((r, i) => parseChannel(r, DEFAULT_CHANNELS[i]));
+  const mode: "simultaneous" | "sequential" = acqRaw === "sequential" ? "sequential" : "simultaneous";
   const flux = clamp(fluxRaw, 0, 1e9, 25000);
   const exposure = clamp(exposureRaw, 0.01, 10000, 20) * 1e-3;
   const readout = clamp(readoutRaw, 0, 1000, 2) * 1e-3;
@@ -56,11 +58,10 @@ export default function SimultaneousMulticolorPage() {
   const dark = clamp(darkRaw, 0, 1e4, 0.01);
   const qe = clamp(qeRaw, 1, 100, 90) / 100;
 
-  // Spillover L[i][j]: signal of dye j in channel i over its signal in its own channel j, all lasers on.
+  // Spillover L[i][j]: signal of dye j in channel i over its signal in its own channel j (NaN where dye j gives none).
   const lasers = channels.map((c) => c.laser * 1e-9);
-  const filterBand = (c: Channel) => [(c.center - c.width / 2) * 1e-9, (c.center + c.width / 2) * 1e-9] as const;
-  const R = channels.map((ci) => channels.map((cj) => relativeSignal(fluorophoreByName(cj.dye), lasers, ...filterBand(ci))));
-  const L = R.map((rowI) => rowI.map((v, j) => v / R[j][j]));
+  const bands = channels.map((c) => [(c.center - c.width / 2) * 1e-9, (c.center + c.width / 2) * 1e-9] as const);
+  const L = spilloverMatrix(channels.map((c) => fluorophoreByName(c.dye)), lasers, bands, mode);
 
   // Per-channel SNR: own-dye signal S, bleed-through from the other dyes as background.
   const pixels = binning * binning;
@@ -78,16 +79,18 @@ export default function SimultaneousMulticolorPage() {
 
   const warnings: string[] = [];
   channels.forEach((c, i) => {
-    if (!(R[i][i] > 0)) warnings.push(`Channel ${i + 1} detects none of its own dye ${c.dye}: no laser excites it or the filter misses its emission.`);
+    if (!Number.isFinite(L[i][i])) warnings.push(`Channel ${i + 1} detects none of its own dye ${c.dye}: ${mode === "sequential" ? `laser ${i + 1} doesn't excite it` : "no laser excites it"} or the filter misses its emission.`);
     channels.forEach((d, j) => {
       if (j > i && Math.abs(c.center - d.center) < (c.width + d.width) / 2) warnings.push(`Filters ${i + 1} and ${j + 1} overlap: a dichroic can't split the same band twice.`);
     });
-    lasers.forEach((l, k) => {
-      if (Math.abs(l * 1e9 - c.center) <= c.width / 2) warnings.push(`Laser ${k + 1} (${l * 1e9} nm) lies inside filter ${i + 1}: it needs a notch filter.`);
+    channels.forEach((d, k) => {
+      // Sequential: frame i has only laser i, so only that laser reaches filter i.
+      if ((mode === "simultaneous" || k === i) && Math.abs(d.laser - c.center) <= c.width / 2) warnings.push(`Laser ${k + 1} (${d.laser} nm) lies inside filter ${i + 1}: it needs a notch filter.`);
     });
   });
 
-  const wl = Array.from({ length: 451 }, (_, i) => 380 + i);
+  const wlMax = Math.ceil(Math.max(830, ...channels.map((c) => c.center + c.width / 2 + 20)));
+  const wl = Array.from({ length: wlMax - 350 + 1 }, (_, i) => 350 + i);
   const spectra = channels.flatMap((c, i) => {
     const f = fluorophoreByName(c.dye);
     return [
@@ -95,7 +98,9 @@ export default function SimultaneousMulticolorPage() {
       { x: wl, y: wl.map((l) => (Math.abs(l - c.center) <= c.width / 2 ? 1 : 0)), type: "scatter" as const, mode: "lines" as const, name: `Filter ${i + 1}`, line: { color: COLORS[i], width: 1, dash: "dot" } },
     ];
   });
-  const exposures = Array.from({ length: 100 }, (_, i) => 1 + i);
+  const eMs = exposure * 1e3;
+  const eLo = Math.min(1, eMs / 10), eHi = Math.max(100, eMs * 10);
+  const exposures = Array.from({ length: 101 }, (_, i) => eLo * (eHi / eLo) ** (i / 100)); // ms, log-spaced
   const timing = [
     { x: exposures, y: exposures.map((e) => 1000 / (e + readout * 1e3)), type: "scatter" as const, mode: "lines" as const, name: "Simultaneous", line: { color: "#4ade80", width: 2 } },
     { x: exposures, y: exposures.map((e) => 1000 / (num * (e + readout * 1e3))), type: "scatter" as const, mode: "lines" as const, name: `Sequential (${num} channels)`, line: { color: "#f87171", width: 2 } },
@@ -123,6 +128,13 @@ export default function SimultaneousMulticolorPage() {
 
       <div className="grid gap-4 sm:grid-cols-3 mb-6">
         <ValidatedNumberInput label="Number of channels (1–4)" value={numRaw} onChange={setNum} min={1} max={4} step="1" />
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Acquisition</span>
+          <select value={mode} onChange={(e) => setAcq(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
+            <option value="simultaneous">Simultaneous: all lasers, one frame</option>
+            <option value="sequential">Sequential: laser i only in frame i</option>
+          </select>
+        </label>
         <ValidatedNumberInput label="Own-dye photon flux (photons/pixel/s)" value={fluxRaw} onChange={setFlux} min={0} max={1e9} step="1000" />
         <ValidatedNumberInput label="Exposure (ms)" value={exposureRaw} onChange={setExposure} min={0.01} max={10000} step="1" />
         <ValidatedNumberInput label="Readout time (ms)" value={readoutRaw} onChange={setReadout} min={0} max={1000} step="0.5" />
@@ -166,7 +178,7 @@ export default function SimultaneousMulticolorPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 overflow-x-auto">
         <h3 className="text-lg font-semibold mb-1">Spillover matrix (%)</h3>
-        <p className="text-xs text-gray-500 mb-3">Signal of each dye in each channel, as a percentage of its signal in its own channel, with all lasers on. A log-normal band is zero past its anti-Stokes cutoff, so spillover from those weak tails reads 0.</p>
+        <p className="text-xs text-gray-500 mb-3">Signal of each dye in each channel, as a percentage of its signal in its own channel, {mode === "simultaneous" ? "with all lasers on in one frame, so it depends only on the emission spectra" : "with laser i alone in frame i, so it includes the excitation crosstalk"}. A log-normal band is zero past its anti-Stokes cutoff, so spillover from those weak tails reads 0.</p>
         <table className="text-sm font-mono">
           <thead>
             <tr className="text-gray-400">
@@ -198,7 +210,7 @@ export default function SimultaneousMulticolorPage() {
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-2">Frame rate vs exposure</h3>
           <ChartPanel data={timing} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
-            xaxis: { title: "Exposure (ms)", gridcolor: "#374151" }, yaxis: { title: "Frame rate (fps)", gridcolor: "#374151", type: "log" },
+            xaxis: { title: "Exposure (ms)", type: "log", gridcolor: "#374151" }, yaxis: { title: "Frame rate (fps)", gridcolor: "#374151", type: "log" },
             margin: { t: 30, r: 20, b: 50, l: 60 }, showlegend: true,
           }} />
         </div>
@@ -207,13 +219,15 @@ export default function SimultaneousMulticolorPage() {
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h3 className="text-lg font-semibold mb-2">Model</h3>
         <div className="space-y-1 text-sm text-gray-300 font-mono">
-          <p>R_ij ∝ ε_j Σ_k f_ex,j(λ_k) Φ_j ∫_filter i F_j dλ / ∫F_j dλ, spillover L_ij = R_ij / R_jj</p>
+          <p>R_ij ∝ ε_j Σ_k∈lasers(i) f_ex,j(λ_k) Φ_j ∫_filter i F_j dλ / ∫F_j dλ, spillover L_ij = R_ij / R_jj</p>
+          <p>Simultaneous: lasers(i) = all lasers, so the excitation cancels in L_ij. Sequential: lasers(i) = {"{laser i}"}.</p>
           <p>S = flux × t × QE × B², SNR_i = S / √(S + Σ_j≠i L_ij S + I_dark t B² + σ_read²)</p>
           <p>σ_read² = σ² (charge binning) or B²σ² (digital sum); f = 1/(t + t_read), sequential 1/(N(t + t_read))</p>
         </div>
         <p className="text-xs text-gray-500 mt-2">
           Spectra are the FPbase-fitted log-normal bands of the fluorescence-spectra page. Every laser delivers the same photon
-          flux, filters are ideal top hats and each dye gives the same own-channel signal S; bleed-through photons count as
+          flux. Simultaneously, spillover depends only on the emission ratio between filters; excitation crosstalk (a laser
+          exciting another dye) enters only in sequential mode. Filters are ideal top hats and each dye gives the same own-channel signal S; bleed-through photons count as
           background shot noise, before any linear unmixing. Laser switching time and the camera&apos;s overlap readout
           mode are not modelled.
         </p>

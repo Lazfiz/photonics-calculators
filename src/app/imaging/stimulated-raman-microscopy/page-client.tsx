@@ -5,7 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  detectedPhotoelectrons, ramanShiftFrequency, srsFocusFactor, srsModulationDepth, srsShotNoiseSnr, stokesWavelength,
+  detectedPhotoelectrons, excitationBandwidth, ramanShiftFrequency, srsFocusFactor, srsModulationDepth, srsShotNoiseSnr, stokesWavelength,
 } from "../../../physics/imaging/coherent-raman";
 import { gaussianPulsePeakPower, mixedFocusFwhm } from "../../../physics/imaging/multiphoton-focus";
 
@@ -48,6 +48,7 @@ export default function StimulatedRamanMicroscopyPage() {
   // δ on the detected beam, ppm: the input, or g_R·F·P̂/√2 of the modulated beam (pulses identical and overlapped).
   const deltaFor = (pumpDetected: boolean) => {
     if (!fromGain) return measuredPpm;
+    if (!(na < n)) return NaN; // no such focus, so no F
     const lambdaP = pumpNm * 1e-9;
     const peak = gaussianPulsePeakPower((pumpDetected ? stokesMw : pumpMw) * 1e-3, repMHz * 1e6, pulsePs * 1e-12);
     const delta = srsModulationDepth(gainCmPerGW * 1e-11, peak, lambdaP, stokesWavelength(lambdaP, shift * 100), n, pumpDetected ? "pump" : "stokes", "gaussian");
@@ -56,6 +57,11 @@ export default function StimulatedRamanMicroscopyPage() {
   const srgPpm = deltaFor(false);
   const srlPpm = deltaFor(true);
   const deltaPpm = srl ? srlPpm : srgPpm;
+  const deltaDepleted = fromGain && na < n && !Number.isFinite(deltaPpm); // δ ≥ 1: the small-signal model fails
+  const deltaLarge = fromGain && deltaPpm > 1e5; // δ > 10 %
+  const bandwidthCm = excitationBandwidth(pulsePs * 1e-12) / 100; // cm⁻¹
+  const bandwidthWide = fromGain && bandwidthCm > 10;
+  const focusOk = na < n;
 
   const results = useMemo(() => {
     const lambdaP = pumpNm * 1e-9;
@@ -69,14 +75,14 @@ export default function StimulatedRamanMicroscopyPage() {
       stokesNm: lambdaS * 1e9,
       beatTHz: ramanShiftFrequency(shift * 100) / 1e12,
       photoelectrons: N,
-      snr: srsShotNoiseSnr(deltaPpm * 1e-6, powerDet, lambdaDet, tau, eta),
+      snr: Number.isFinite(deltaPpm) ? srsShotNoiseSnr(deltaPpm * 1e-6, powerDet, lambdaDet, tau, eta) : NaN,
       minDeltaPpm: 1e6 / Math.sqrt(N),
-      lateralNm: fwhm.lateral * 1e9,
-      axialUm: fwhm.axial * 1e6,
+      lateralNm: focusOk ? fwhm.lateral * 1e9 : NaN,
+      axialUm: focusOk ? fwhm.axial * 1e6 : NaN,
       frameS: FRAME_PIXELS * FRAME_PIXELS * tau,
-      focusFactor: srsFocusFactor(lambdaP, lambdaS, n),
+      focusFactor: focusOk ? srsFocusFactor(lambdaP, lambdaS, n) : NaN,
     };
-  }, [pumpNm, shift, na, n, pumpMw, stokesMw, srl, deltaPpm, eta, dwellUs]);
+  }, [pumpNm, shift, na, n, focusOk, pumpMw, stokesMw, srl, deltaPpm, eta, dwellUs]);
 
   const snrPlot = useMemo(() => {
     const lambdaP = pumpNm * 1e-9;
@@ -84,11 +90,11 @@ export default function StimulatedRamanMicroscopyPage() {
     const dwells = Array.from({ length: 61 }, (_, i) => 10 ** (-1 + i / 20)); // 0.1–100 µs
     const snr = (P: number, lambda: number, ppm: number) => dwells.map((t) => srsShotNoiseSnr(ppm * 1e-6, P * 1e-3, lambda, t * 1e-6, eta));
     return [
-      { x: dwells, y: snr(stokesMw, lambdaS, srgPpm), name: "SRG (Stokes detected)", line: { color: "#60a5fa" }, type: "scatter", mode: "lines" },
-      { x: dwells, y: snr(pumpMw, lambdaP, srlPpm), name: "SRL (pump detected)", line: { color: "#f87171" }, type: "scatter", mode: "lines" },
+      { x: dwells, y: snr(stokesMw, lambdaS, srgPpm), name: `SRG (Stokes detected)${!fromGain && srl ? " (same δ assumed)" : ""}`, line: { color: "#60a5fa" }, type: "scatter", mode: "lines" },
+      { x: dwells, y: snr(pumpMw, lambdaP, srlPpm), name: `SRL (pump detected)${!fromGain && !srl ? " (same δ assumed)" : ""}`, line: { color: "#f87171" }, type: "scatter", mode: "lines" },
       { x: [dwellUs], y: [results.snr], name: "Current", marker: { color: "#fbbf24", size: 11 }, type: "scatter", mode: "markers" },
     ];
-  }, [pumpNm, shift, stokesMw, pumpMw, srgPpm, srlPpm, eta, dwellUs, results.snr]);
+  }, [pumpNm, shift, stokesMw, pumpMw, srgPpm, srlPpm, eta, dwellUs, fromGain, srl, results.snr]);
 
   const limitPlot = useMemo(() => {
     const lambdaDet = srl ? pumpNm * 1e-9 : stokesWavelength(pumpNm * 1e-9, shift * 100);
@@ -139,8 +145,17 @@ export default function StimulatedRamanMicroscopyPage() {
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
           <h2 className="text-lg font-semibold">Results</h2>
-          {!Number.isFinite(results.axialUm) && (
-            <p className="text-sm text-yellow-300" role="status">The NA must be below the index n for the axial size.</p>
+          {!focusOk && (
+            <p className="text-sm text-yellow-300" role="status">The NA must be below the index n for the focus size (lateral and axial FWHM, F).</p>
+          )}
+          {deltaDepleted && (
+            <p className="text-sm text-yellow-300" role="status">δ ≥ 1: the beams deplete and the small-signal estimate fails.</p>
+          )}
+          {deltaLarge && (
+            <p className="text-sm text-yellow-300" role="status">δ above 10 %: depletion is no longer negligible.</p>
+          )}
+          {bandwidthWide && (
+            <p className="text-sm text-yellow-300" role="status">The pulse bandwidth {bandwidthCm.toFixed(1)} cm⁻¹ is wider than a typical condensed-phase Raman line (≈ 10 cm⁻¹): steady-state g_R overestimates δ.</p>
           )}
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Stokes wavelength</span><span className="font-mono text-blue-400">{fmt(results.stokesNm, 1, "nm")}</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Beat frequency</span><span className="font-mono">{fmt(results.beatTHz, 2, "THz")}</span></div>
@@ -158,7 +173,7 @@ export default function StimulatedRamanMicroscopyPage() {
             <p>SRG: the Stokes beam gains (pump modulated, Stokes detected). SRL: the pump loses (Stokes modulated, pump detected).</p>
             <p>SNR = δ·√N, N = ηPτλ/(hc), shot noise of the detected beam only (Ozeki et al., Opt. Express 17, 3651, 2009). Laser excess noise, detector noise and lock-in demodulation losses make real systems worse.</p>
             <p>The modulation depth δ depends on the Raman cross-section, the concentration and both intensities: enter a measured or published value, or estimate it from g_R.</p>
-            <p>Estimate: SRG δ = g_R·F·P̂_p/√2, SRL δ = (λ_S/λ_p)·g_R·F·P̂_S/√2 with F = √2πn/√(λ_p² + λ_S²) for paraxial Gaussian beams of the same far-field angle, a sample thicker than the focus (a liquid) and identical, overlapped Gaussian pulses of peak power P̂. g_R is the plane-wave Stokes gain dI_S/dz = g_R·I_p·I_S (Boyd, Nonlinear Optics, ch. 10); a dilute species scales it by its concentration.</p>
+            <p>Estimate: SRG δ = g_R·F·P̂_p/√2, SRL δ = (λ_S/λ_p)·g_R·F·P̂_S/√2 with F = √2πn/√(λ_p² + λ_S²) for paraxial Gaussian beams of the same far-field angle, a sample thicker than the focus (a liquid) and identical, overlapped Gaussian pulses of peak power P̂. g_R is the plane-wave Stokes gain dI_S/dz = g_R·I_p·I_S (Boyd, Nonlinear Optics, ch. 10); a dilute species scales it by its concentration. Steady-state gain (pulses longer than the Raman dephasing time) and δ ≪ 1.</p>
             <p>Focus: Gaussian fit to each beam (Zipfel et al. 2003), signal FWHM of the product I_p·I_S.</p>
           </div>
         </div>

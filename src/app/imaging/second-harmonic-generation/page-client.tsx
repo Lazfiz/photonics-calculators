@@ -33,26 +33,28 @@ export default function SecondHarmonicGenerationPage() {
     const shPower = averageShgPower(shg.K, P, f, tau);
     const fwhm = multiphotonFwhm(lam, n, na, 2);
     const peakPower = gaussianPulsePeakPower(P, f, tau);
+    const g = (x: number) => (na < n ? x : NaN); // the focus formulas need NA < n
     return {
       shgNm: wavelength / 2,
-      lateral: fwhm.lateral * 1e9,
-      axial: fwhm.axial * 1e6,
+      lateral: g(fwhm.lateral * 1e9),
+      axial: g(fwhm.axial * 1e6),
       pulseEnergy: pulseEnergy(P, f) * 1e9,
-      peakIntensity: focalPeakIntensity(peakPower, lam, na),
-      w0: w0 * 1e6,
-      b: shg.b * 1e6,
-      xi: shg.xi,
-      h: shg.h,
+      peakIntensity: g(focalPeakIntensity(peakPower, lam, na)),
+      w0: g(w0 * 1e6),
+      b: g(shg.b * 1e6),
+      xi: g(shg.xi),
+      h: g(shg.h),
       forwardLc: forwardCoherenceLength(lam, dn) * 1e6,
       backwardLc: backwardCoherenceLength(lam, n, n + dn) * 1e9,
-      shPower,
-      efficiency: shPower / P,
-      nearFieldEfficiency: averageShgPower(shg.KNearField, P, f, tau) / P,
+      shPower: g(shPower),
+      efficiency: g(shPower / P),
+      nearFieldEfficiency: g(averageShgPower(shg.KNearField, P, f, tau) / P),
       bandwidth: 0.441 / tau / 1e12, // THz, transform-limited Gaussian
     };
   }, [wavelength, na, n, pulseWidth, avgPower, repRate, chi2, crystalLength, dn]);
 
   const plotData = useMemo(() => {
+    if (!(na < n)) return [];
     const lam = wavelength * 1e-9;
     const P = avgPower * 1e-3, f = repRate * 1e6, tau = pulseWidth * 1e-15;
     const w0 = focalIntensityRadius(lam, na);
@@ -68,7 +70,7 @@ export default function SecondHarmonicGenerationPage() {
     ];
   }, [wavelength, na, n, pulseWidth, avgPower, repRate, chi2, crystalLength, dn]);
 
-  const valid = Number.isFinite(results.h) && Number.isFinite(results.axial);
+  const valid = na < n && Number.isFinite(results.h) && Number.isFinite(results.axial);
 
   return (
     <>
@@ -118,10 +120,11 @@ export default function SecondHarmonicGenerationPage() {
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Conversion efficiency (average)</span><span className="font-mono text-pink-400">{sci(results.efficiency * 100, "%")}</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Plane-wave L² estimate</span><span className="font-mono text-gray-400">{sci(results.nearFieldEfficiency * 100, "%")}</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Fundamental bandwidth (Gaussian, TL)</span><span className="font-mono text-orange-400">{fmt(results.bandwidth, 2, "THz")}</span></div>
+          {na < n && na > 0.5 && <p className="text-sm text-yellow-300" role="status">The Gaussian-beam focus is indicative only above NA ≈ 0.5.</p>}
           {results.efficiency > 0.1 && <p className="text-sm text-yellow-300" role="status">Above ≈ 10 % the fundamental is depleted and this undepleted-pump estimate is too high.</p>}
           <div className="text-xs text-gray-500 mt-2 space-y-1">
             <p>P_2ω = 16π² d_eff² L P_ω² h(σ, ξ)/(ε₀ c n_ω n_2ω λ³), h = |∫_−ξ^ξ e^(iστ)/(1 + iτ) dτ|²/(4ξ), ξ = L/b, σ = bΔk/2, Δk = 2k_ω − k_2ω (Boyd &amp; Kleinman, J. Appl. Phys. 39, 3597, 1968).</p>
-            <p>For L ≪ b this is the plane-wave 8π² d² L² I sinc²(ΔkL/2)/(ε₀ c n² n λ²). For L ≫ b and normal dispersion (n(2ω) &gt; n(ω)), the Gouy phase cancels the harmonic from a uniform slab: in tissue, SHG comes from structure on the scale of the focus and the coherence lengths.</p>
+            <p>For L ≪ b this is the plane-wave 8π² d² L² I sinc²(ΔkL/2)/(ε₀ c n_ω² n_2ω λ²). For L ≫ b and normal dispersion (n(2ω) &gt; n(ω)), the Gouy phase cancels the harmonic from a uniform slab: in tissue, SHG comes from structure on the scale of the focus and the coherence lengths.</p>
             <p>Gaussian focus w₀ = 2ω_xy (Zipfel et al. 2003), b = 2πn w₀²/λ; paraxial, so only indicative above NA ≈ 0.5. Gaussian pulses: ⟨P_2ω⟩ = K · 0.664 ⟨P⟩²/(fτ).</p>
           </div>
         </div>

@@ -42,7 +42,9 @@ export default function ThirdHarmonicMicroscopyPage() {
   }, [scatteringCoeff]);
 
   const powerChart = useMemo(() => {
-    const powers = Array.from({ length: 60 }, (_, i) => 5 + i * 5);
+    const lo = Math.max(1, power / 10);
+    const hi = Math.min(500, power * 10);
+    const powers = Array.from({ length: 61 }, (_, i) => lo * (hi / lo) ** (i / 60));
     return [
       { x: powers, y: powers.map((p) => (p / power) ** 3), type: "scatter", mode: "lines", name: "THG ∝ P³", line: { color: "#a78bfa" } },
       { x: powers, y: powers.map((p) => (p / power) ** 2), type: "scatter", mode: "lines", name: "SHG ∝ P²", line: { color: "#34d399", dash: "dash" } },
@@ -70,17 +72,23 @@ export default function ThirdHarmonicMicroscopyPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="THG wavelength" value={`${(wavelength / 3).toFixed(0)} nm`} tone="purple" />
-        <ResultCard label="Peak intensity at focus" value={fmt(peakIntensity / 1e16, 2, "TW/cm²")} tone="blue" subtext="Gaussian pulse and focus" />
+        <ResultCard label="Peak intensity at focus" value={valid ? fmt(peakIntensity / 1e16, 2, "TW/cm²") : "—"} tone="blue" subtext="Gaussian pulse and focus" />
         <ResultCard label="Pulse energy" value={fmt(energy * 1e9, 2, "nJ")} tone="yellow" subtext={`Peak power ${fmt(peakPower / 1e3, 1, "kW")}`} />
-        <ResultCard label="Focal radius w (1/e²)" value={fmt(w * 1e6, 3, "µm")} tone="green" subtext="2ω_xy (Zipfel fit)" />
+        <ResultCard label="Focal radius w (1/e²)" value={valid ? fmt(w * 1e6, 3, "µm") : "—"} tone="green" subtext="2ω_xy (Zipfel fit)" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="THG source, lateral FWHM" value={fmt(thg.lateral * 1e9, 0, "nm")} tone="purple" subtext="FWHM of I³" />
-        <ResultCard label="THG source, axial FWHM" value={fmt(thg.axial * 1e6, 2, "µm")} tone="purple" subtext="Interfaces closer than this blur together" />
+        <ResultCard label="THG source, axial FWHM" value={fmt(thg.axial * 1e6, 2, "µm")} tone="purple" subtext="FWHM of the I³ source (point object)" />
         <ResultCard label="Fundamental, lateral FWHM" value={fmt(fundamental.lateral * 1e9, 0, "nm")} tone="blue" subtext="FWHM of I = THG × √3" />
         <ResultCard label="Fundamental, axial FWHM" value={fmt(fundamental.axial * 1e6, 2, "µm")} tone="blue" />
       </div>
+
+      {valid && (
+        <p className="mb-8 text-sm text-gray-300">
+          An interface responds over ≈ the fundamental axial FWHM (confocal parameter), {fmt(fundamental.axial * 1e6, 2, "µm")} (Barad et al. 1997).
+        </p>
+      )}
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Physics</h3>

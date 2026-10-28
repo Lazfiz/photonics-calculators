@@ -64,6 +64,7 @@ export default function StitchingPage() {
   const chain = sequentialStitchError(cols, rows);
   const globalErr = cachedGlobal(cols, rows);
   // Worst-tile error in σ units for square grids: chained √(2n − 2) against the global least-squares solution.
+  const noOverlap = overlapPercent === 0 || g.overlapX === 0 || g.overlapY === 0; // tiles can't be registered
   const squares = SQUARE_GRIDS.map((n) => cachedGlobal(n, n).max);
 
   // A gain step Δ blended over w: the slope is Δ/w for the ramp and peaks at (π/2)·Δ/w mid-seam for cos².
@@ -80,7 +81,7 @@ export default function StitchingPage() {
   const errorChart = [
     { x: SQUARE_GRIDS, y: SQUARE_GRIDS.map((n) => sigma * Math.sqrt(2 * n - 2)), type: "scatter" as const, mode: "lines+markers" as const, name: "Chained", line: { color: "#f87171", width: 2 } },
     { x: SQUARE_GRIDS, y: squares.map((r) => sigma * r), type: "scatter" as const, mode: "lines+markers" as const, name: "Global", line: { color: "#34d399", width: 2 } },
-    ...(cols === rows && Number.isFinite(globalErr.max)
+    ...(cols === rows && !noOverlap && Number.isFinite(globalErr.max)
       ? [{ x: [cols], y: [sigma * globalErr.max], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#facc15", size: 10 } }]
       : []),
   ];
@@ -90,10 +91,13 @@ export default function StitchingPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
         {card("Mosaic size", Number.isFinite(g.width) ? `${g.width} × ${g.height}` : "—", `${cols} × ${rows} = ${g.tiles} tiles, overlap ${g.overlapX} × ${g.overlapY} px`, "text-blue-400")}
         {card("Stitching efficiency", fmt(g.efficiency * 100, 2, " %"), "Mosaic pixels / acquired pixels", "text-yellow-400")}
-        {card("Worst tile, global optimisation", fmt(sigma * globalErr.max, 2, " px"), `RMS over tiles ${fmt(sigma * globalErr.rms, 2, " px")}, per axis`, "text-green-400")}
-        {card("Worst tile, chained", fmt(sigma * chain.max, 2, " px"), `σ√(C + R − 2); RMS over tiles ${fmt(sigma * chain.rms, 2, " px")}`, "text-red-400")}
+        {card("Worst tile, global optimisation", noOverlap ? "—" : fmt(sigma * globalErr.max, 2, " px"), `RMS over tiles ${noOverlap ? "—" : fmt(sigma * globalErr.rms, 2, " px")}, per axis`, "text-green-400")}
+        {card("Worst tile, chained", noOverlap ? "—" : fmt(sigma * chain.max, 2, " px"), `σ√(C + R − 2); RMS over tiles ${noOverlap ? "—" : fmt(sigma * chain.rms, 2, " px")}`, "text-red-400")}
       </div>
 
+      {noOverlap && (
+        <p className="text-sm text-yellow-300 mb-4" role="status">No overlap: the tiles can&apos;t be registered.</p>
+      )}
       <div role="group" aria-label="Blend profile" className="flex flex-wrap gap-2 mb-4">
         {PROFILES.map((p) => (
           <button key={p} onClick={() => setProfile(p)} className={buttonClass(profile === p)}>{PROFILE_LABELS[p]}</button>
@@ -118,11 +122,15 @@ export default function StitchingPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-6">
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-2">Blend weights across the seam</h3>
-          <ChartPanel data={blendChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
-            xaxis: { title: "Position from the seam centre (px)", gridcolor: "#374151" },
-            yaxis: { title: "Weight / relative intensity", gridcolor: "#374151", range: [0, 1.1 + gain / 200] },
-            margin: { t: 30, r: 20, b: 50, l: 60 },
-          }} />
+          {blend > 0 ? (
+            <ChartPanel data={blendChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+              xaxis: { title: "Position from the seam centre (px)", gridcolor: "#374151" },
+              yaxis: { title: "Weight / relative intensity", gridcolor: "#374151", range: [0, 1.1 + gain / 200] },
+              margin: { t: 30, r: 20, b: 50, l: 60 },
+            }} />
+          ) : (
+            <p className="text-sm text-gray-400">{noOverlap ? "No overlap, so there is nothing to blend." : "Blend width 0: a hard seam, so there are no blend weights to plot."}</p>
+          )}
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-2">Worst-tile position error in an n × n grid</h3>

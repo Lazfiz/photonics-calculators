@@ -5,6 +5,7 @@ import {
   antiStokesWavelength, carsLineshape, carsPeakDetuning, excitationBandwidth, ramanShiftFrequency, srsFocusFactor, srsLineshape,
   srsModulationDepth, stokesWavelength,
 } from "../src/physics/imaging/coherent-raman";
+import { gaussianPulsePeakPower } from "../src/physics/imaging/multiphoton-focus";
 
 function assertRel(actual: number, expected: number, tol: number, label: string) {
   assert.ok(Math.abs(actual / expected - 1) < tol, `${label}: ${actual} vs ${expected}`);
@@ -109,4 +110,8 @@ test("SRS modulation depth from g_R: SRG gR·F·P_p, SRL carries ω_p/ω_S, Gaus
   assertRel(srsModulationDepth(1e-11, 1, lp, ls, 1.33, "stokes", "gaussian"), (1e-11 * F) / Math.SQRT2, 1e-12, "SRG pulsed");
   assert.equal(srsModulationDepth(0, 1, lp, ls, 1.33, "stokes", "cw"), 0, "no gain");
   assert.ok(Number.isNaN(srsModulationDepth(-1, 1, lp, ls, 1.33, "stokes", "cw")), "negative gain");
+  // Page defaults, hand calculation: P̂ = 0.939·0.1 W/(80 MHz · 6 ps) = 195.7 W, δ = 1e-11 · 4.5137e6 · 195.7/√2 = 6.2466e-3.
+  assertRel(srsModulationDepth(1e-11, gaussianPulsePeakPower(0.1, 80e6, 6e-12), lp, ls, 1.33, "stokes", "gaussian"), 6.2466e-3, 1e-4, "SRG defaults");
+  // 500 mW Stokes in 0.1 ps pulses: δ_SRL ≈ 2.4, a pump loss above 100 %: outside the small-signal model.
+  assert.ok(Number.isNaN(srsModulationDepth(1e-11, gaussianPulsePeakPower(0.5, 80e6, 0.1e-12), lp, ls, 1.33, "pump", "gaussian")), "δ ≥ 1");
 });

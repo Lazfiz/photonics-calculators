@@ -17,11 +17,11 @@ const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.i
 const fmtNm = (x: number) => (Number.isFinite(x) ? `${(x * 1e9).toFixed(1)} nm` : "—");
 
 export default function ResolutionPage() {
-  const [naRaw, setNa] = useURLState("na", 0.95);
+  const [naRaw, setNa] = useURLState("na", 1.4);
   const [wavelengthRaw, setWavelength] = useURLState("wavelength", 550); // nm
   const [mediumIdxRaw, setMediumIdx] = useURLState("mediumIdx", 2);
   const [customNRaw, setCustomN] = useURLState("customN", 1.5);
-  const na = clamp(naRaw, 0.01, 1.8, 0.95);
+  const na = clamp(naRaw, 0.01, 1.8, 1.4);
   const wavelength = clamp(wavelengthRaw, 200, 2000, 550);
   const mediumIdx = Math.round(clamp(mediumIdxRaw, 0, media.length - 1, 2));
   const customN = clamp(customNRaw, 1, 2, 1.5);
@@ -36,14 +36,26 @@ export default function ResolutionPage() {
     axial: axialPsfFwhm(lambda, n, na),
   };
 
-  // Curves stop at NA = n, the largest NA the medium allows.
+  // Curves run up to just below min(n, 1.8): the formulas need NA < n.
   const wavelengths = [400, 500, 550, 600, 700];
   const colors = ["#60a5fa", "#34d399", "#fbbf24", "#f87171", "#c084fc"];
-  const nas = Array.from({ length: 141 }, (_, i) => 0.1 + i * 0.01).filter((x) => x < n);
-  const plotData = wavelengths.flatMap((wl, i) => [
-    { x: nas, y: nas.map((x) => abbeLateralFwhm(wl * 1e-9, x) * 1e9), type: "scatter" as const, mode: "lines" as const, name: `Abbe ${wl} nm`, line: { color: colors[i], dash: "solid" } },
-    { x: nas, y: nas.map((x) => rayleighDistance(wl * 1e-9, x) * 1e9), type: "scatter" as const, mode: "lines" as const, name: `Rayleigh ${wl} nm`, line: { color: colors[i], dash: "dash" } },
-  ]);
+  const naLo = Math.min(0.1, na);
+  const naHi = Math.min(n, 1.8) * 0.999;
+  const nas = Array.from({ length: 141 }, (_, i) => naLo + ((naHi - naLo) * i) / 140);
+  const plotData = [
+    ...wavelengths.flatMap((wl, i) => [
+      { x: nas, y: nas.map((x) => abbeLateralFwhm(wl * 1e-9, x) * 1e9), type: "scatter" as const, mode: "lines" as const, name: `Abbe ${wl} nm`, line: { color: colors[i], dash: "solid" } },
+      { x: nas, y: nas.map((x) => rayleighDistance(wl * 1e-9, x) * 1e9), type: "scatter" as const, mode: "lines" as const, name: `Rayleigh ${wl} nm`, line: { color: colors[i], dash: "dash" } },
+    ]),
+    { x: nas, y: nas.map((x) => abbeLateralFwhm(lambda, x) * 1e9), type: "scatter" as const, mode: "lines" as const, name: `Abbe ${wavelength} nm (input)`, line: { color: "#ffffff", dash: "solid", width: 3 } },
+    { x: nas, y: nas.map((x) => rayleighDistance(lambda, x) * 1e9), type: "scatter" as const, mode: "lines" as const, name: `Rayleigh ${wavelength} nm (input)`, line: { color: "#ffffff", dash: "dash", width: 3 } },
+    ...(naValid
+      ? [
+          { x: [na], y: [results.abbe * 1e9], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#fbbf24", size: 11 } },
+          { x: [na], y: [results.rayleigh * 1e9], type: "scatter" as const, mode: "markers" as const, name: "Current (Rayleigh)", showlegend: false, marker: { color: "#fbbf24", size: 11 } },
+        ]
+      : []),
+  ];
 
   return (
     <>

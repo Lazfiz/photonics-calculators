@@ -75,7 +75,8 @@ export default function SignalToNoisePage() {
     },
   ];
 
-  const bgAxis = Array.from({ length: 201 }, (_, i) => 50 * i);
+  const bgMax = Math.max(1e4, 2 * backgroundPhotons);
+  const bgAxis = Array.from({ length: 201 }, (_, i) => (bgMax * i) / 200);
   const chartData = [
     {
       x: bgAxis, y: bgAxis.map(bg => evaluate(signalPhotons, bg).snr * Math.sqrt(frames)),
@@ -89,13 +90,17 @@ export default function SignalToNoisePage() {
       x: [0, bgAxis[bgAxis.length - 1]], y: [ROSE_SNR, ROSE_SNR],
       type: "scatter" as const, mode: "lines" as const, name: "Rose criterion (SNR = 5)", line: { color: "#f87171", width: 1, dash: "dot" },
     },
+    {
+      x: [backgroundPhotons], y: [r.snr * Math.sqrt(frames)],
+      type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#fbbf24", size: 11 },
+    },
   ];
 
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <ValidatedNumberInput label="Signal Photons (per pixel)" value={signalRaw} onChange={setSignalPhotons} min={0} max={10000000} />
-        <ValidatedNumberInput label="Background Photons (per pixel)" value={backgroundRaw} onChange={setBackgroundPhotons} min={0} max={10000000} />
+        <ValidatedNumberInput label="Signal Photons (per pixel, per exposure)" value={signalRaw} onChange={setSignalPhotons} min={0} max={10000000} />
+        <ValidatedNumberInput label="Background Photons (per pixel, per exposure)" value={backgroundRaw} onChange={setBackgroundPhotons} min={0} max={10000000} />
         <ValidatedNumberInput label="Quantum Efficiency" value={qeRaw} onChange={setQuantumEfficiency} min={0.01} max={1} step="0.01" />
         <ValidatedNumberInput label="Read Noise (e⁻ rms)" value={readRaw} onChange={setReadNoise} min={0} max={100} step="0.1" />
         <ValidatedNumberInput label="Dark Current (e⁻/s/pixel)" value={darkRaw} onChange={setDarkCurrent} min={0} max={10000} />

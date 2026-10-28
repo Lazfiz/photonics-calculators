@@ -6,7 +6,7 @@ import { cameraSnr } from "../src/physics/detectors/camera-snr";
 import { createRng } from "../src/physics/random";
 import {
   FLUOROPHORES, FORSTER_PREFACTOR_NM, bandAtWavelength, emissionFraction, fluorophoreByName, forsterOverlap, forsterRadius,
-  fretEfficiency, integrateSpectrum, logNormalBand, relativeSignal,
+  fretEfficiency, integrateSpectrum, logNormalBand, relativeSignal, spilloverMatrix,
 } from "../src/physics/imaging/fluorophores";
 import { conditionNumber, fcls, nnls, ols, olsCovariance, shareStdDev, simulateMixture } from "../src/physics/imaging/linear-unmixing";
 
@@ -180,4 +180,28 @@ test("Multicolor own-dye SNR at the page defaults: 21.16 (Janesick photon transf
   // 25 000 photons/pixel/s × 20 ms × QE 0.9 = 450 e⁻; dark 0.01 e⁻/s × 20 ms; read 1.5 e⁻:
   // 450/√(450 + 0.0002 + 2.25) = 21.160.
   assertAbs(cameraSnr({ signal: 25000 * 0.02 * 0.9, read: 1.5, dark: 0.01 * 0.02 }), 21.160, 5e-4, "SNR");
+});
+
+test("Spillover: simultaneous = emission ratio (lasers cancel), sequential adds the excitation ratio", () => {
+  const same = (x: number, y: number, label: string) => (y === 0 ? assert.equal(x, 0, label) : assertRel(x, y, 1e-12, label));
+  const dyes = ["EGFP", "mCherry", "miRFP670"].map(fluorophoreByName);
+  const bands = [[500, 550], [590, 650], [662.5, 737.5]].map(([a, b]) => [a * nm, b * nm] as const);
+  const lasers = [488, 561, 640].map((l) => l * nm);
+  const sim = spilloverMatrix(dyes, lasers, bands, "simultaneous");
+  // Independent path: L_ij = EF_j(band i)/EF_j(band j), whatever the lasers.
+  for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) {
+    const ef = (b: readonly [number, number]) => emissionFraction(dyes[j].em, b[0], b[1]);
+    same(sim[i][j], ef(bands[i]) / ef(bands[j]), `sim ${i}${j}`);
+  }
+  const other = spilloverMatrix(dyes, [470, 594, 660].map((l) => l * nm), bands, "simultaneous");
+  sim.forEach((row, i) => row.forEach((v, j) => same(other[i][j], v, `laser-invariant ${i}${j}`)));
+  // Sequential: L_ij = [f_ex,j(λ_i)/f_ex,j(λ_j)]·EF ratio.
+  const seq = spilloverMatrix(dyes, lasers, bands, "sequential");
+  for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) {
+    const exRatio = bandAtWavelength(dyes[j].ex, lasers[i]) / bandAtWavelength(dyes[j].ex, lasers[j]);
+    same(seq[i][j], exRatio * sim[i][j], `seq ${i}${j}`);
+  }
+  assert.ok(seq[1][0] < sim[1][0], "EGFP barely absorbs 561 nm: less spill into channel 2 in sequential mode");
+  // A dye with no own-channel signal: NaN, not a division by zero.
+  assert.ok(Number.isNaN(spilloverMatrix([dyes[0]], [800 * nm], [[500 * nm, 550 * nm]], "sequential")[0][0]));
 });

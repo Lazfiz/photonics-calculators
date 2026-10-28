@@ -54,8 +54,8 @@ export default function AiryDiskPage() {
 
       <p className="text-sm text-gray-400 mb-6">
         Uniformly filled circular pupil, no aberrations, scalar theory. {(encircledEnergyAiry(BESSEL_J1_FIRST_ZERO) * 100).toFixed(1)} % of
-        the light falls inside the first dark ring. At NA above about 0.9 the polarized focus is up to 10–20 % wider than the
-        scalar Airy pattern. An NA above 1 needs an immersion medium.
+        the light falls inside the first dark ring. Above NA ≈ 0.9 the vector focus differs: with linear polarization it is ≈ 30 % wider
+        along the polarization and slightly narrower across it at NA 1.4; unpolarized or circular light widens it ≈ 10–20 %. An NA above 1 needs an immersion medium.
       </p>
 
       <div className="grid gap-6 lg:grid-cols-2">

@@ -20,7 +20,7 @@ export default function ShackHartmannPage() {
   const [lensletPitchUm, setLensletPitchUm] = useURLState("lensletPitchUm", 300, { min: 50, max: 2000 });
   const [lensletFocalMm, setLensletFocalMm] = useURLState("lensletFocalMm", 20, { min: 0.5, max: 200 });
   const [detectorPixelUm, setDetectorPixelUm] = useURLState("detectorPixelUm", 5.5, { min: 1, max: 30 });
-  const [rmsWavefrontNm, setRmsWavefrontNm] = useURLState("rmsWavefrontNm", 150, { min: 0, max: 2000 });
+  const [rmsWavefrontNm, setRmsWavefrontNm] = useURLState("rmsWavefrontNm", 50, { min: 0, max: 2000 });
   const [photons, setPhotons] = useURLState("photons", 1000, { min: 1, max: 1000000 });
   const [shapeParam, setShape] = useURLState("lensletShape", "square");
   const shape: LensletShape = shapeParam === "circular" ? "circular" : "square";
@@ -62,7 +62,8 @@ export default function ShackHartmannPage() {
 
   const spotSizeChart = useMemo(() => {
     const lam = wavelengthNm * 1e-9, fl = lensletFocalMm * 1e-3;
-    const pitches = Array.from({ length: 46 }, (_, i) => 50 + i * 20);
+    const pLo = Math.min(50, lensletPitchUm), pHi = Math.max(950, lensletPitchUm);
+    const pitches = Array.from({ length: 46 }, (_, i) => pLo + ((pHi - pLo) * i) / 45);
     return [
       { x: pitches, y: pitches.map((q) => 2 * spotFirstZeroRadius(lam, fl, q * 1e-6, shape) * 1e6), type: "scatter", mode: "lines", name: "Spot diameter (zeros)", line: { color: "#34d399", width: 2 } },
       { x: pitches, y: pitches.map((q) => spotFwhm(lam, fl, q * 1e-6, shape) * 1e6), type: "scatter", mode: "lines", name: "Spot FWHM", line: { color: "#60a5fa", width: 2 } },
@@ -73,22 +74,31 @@ export default function ShackHartmannPage() {
 
   const centroidChart = useMemo(() => {
     const lam = wavelengthNm * 1e-9, fl = lensletFocalMm * 1e-3, pitch = lensletPitchUm * 1e-6;
-    const counts = Array.from({ length: 41 }, (_, i) => 10 ** (1 + i * 0.1)); // 10 – 10⁵
+    const cLo = Math.min(10, photons), cHi = Math.max(1e5, photons);
+    const counts = Array.from({ length: 41 }, (_, i) => 10 ** (Math.log10(cLo) + ((Math.log10(cHi) - Math.log10(cLo)) * i) / 40));
     return [
       { x: counts, y: counts.map((nPh) => centroidPrecision(lam, fl, pitch, shape, nPh) * 1e6), type: "scatter", mode: "lines", name: "σ_centroid (µm)", line: { color: "#60a5fa", width: 2 } },
       { x: counts, y: counts.map((nPh) => ((centroidPrecision(lam, fl, pitch, shape, nPh) * pitch) / fl) * 1e9), type: "scatter", mode: "lines", name: "Wavefront noise (nm)", line: { color: "#a78bfa", width: 2, dash: "dash" } },
+      { x: [photons], y: [sigmaC * 1e6], type: "scatter", mode: "markers", name: "Current (µm)", marker: { color: "#fbbf24", size: 11 } },
+      { x: [photons], y: [sigmaW * 1e9], type: "scatter", mode: "markers", name: "Current (nm)", marker: { color: "#fbbf24", size: 11, symbol: "diamond" } },
     ];
-  }, [wavelengthNm, lensletFocalMm, lensletPitchUm, shape]);
+  }, [wavelengthNm, lensletFocalMm, lensletPitchUm, shape, photons, sigmaC, sigmaW]);
 
   const tradeoffChart = useMemo(() => {
     const lam = wavelengthNm * 1e-9, pitch = lensletPitchUm * 1e-6, px = detectorPixelUm * 1e-6;
-    const focals = Array.from({ length: 50 }, (_, i) => 1 + i * 2); // mm
+    const fLo = Math.min(1, lensletFocalMm), fHi = Math.max(99, lensletFocalMm);
+    const focals = Array.from({ length: 50 }, (_, i) => fLo + ((fHi - fLo) * i) / 49); // mm
     const positive = (y: number) => (y > 0 ? y : NaN);
+    const thetaNow = dynamicRangeAngle(lam, lensletFocalMm * 1e-3, pitch, shape);
     return [
       { x: focals, y: focals.map((fm) => positive(dynamicRangeAngle(lam, fm * 1e-3, pitch, shape) * 1e3)), type: "scatter", mode: "lines", name: "Dynamic range θ_max (mrad)", line: { color: "#f87171", width: 2 } },
       { x: focals, y: focals.map((fm) => (px / (fm * 1e-3)) * 1e3), type: "scatter", mode: "lines", name: "One-pixel tilt p/f (mrad)", line: { color: "#34d399", width: 2 } },
+      ...(thetaNow > 0
+        ? [{ x: [lensletFocalMm], y: [thetaNow * 1e3], type: "scatter", mode: "markers", name: "Current θ_max", marker: { color: "#fbbf24", size: 11 } }]
+        : []),
+      { x: [lensletFocalMm], y: [(detectorPixelUm * 1e-6 / (lensletFocalMm * 1e-3)) * 1e3], type: "scatter", mode: "markers", name: "Current p/f", marker: { color: "#fbbf24", size: 11, symbol: "diamond" } },
     ];
-  }, [wavelengthNm, lensletPitchUm, detectorPixelUm, shape]);
+  }, [wavelengthNm, lensletPitchUm, lensletFocalMm, detectorPixelUm, shape]);
 
   const dark = { paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, margin: { t: 20, b: 45, l: 55, r: 20 } };
 
@@ -124,6 +134,10 @@ export default function ShackHartmannPage() {
           </select>
         </div>
       </div>
+
+      {Number.isFinite(strehl) && strehl < 0.3 && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">Maréchal&apos;s exp(−(2πσ/λ)²) is good to ≈ 10 % only down to S ≈ 0.3.</p>
+      )}
 
       {fits && fwhm < 2 * p && (
         <p className="mb-6 text-sm text-yellow-300" role="status">The spot FWHM is under 2 pixels: centroiding is biased toward pixel centres (pixel locking).</p>

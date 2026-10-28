@@ -1,5 +1,5 @@
 /**
- * Object-side telecentricity. SI units in and out (lengths in m, angles in rad). Model tier: exact (paraxial chief
+ * Object-side telecentricity. SI units in and out (lengths in m, angles in rad). Model tier: textbook (paraxial chief
  * ray; the blur centroid is followed, aberrations ignored).
  *
  * - The chief ray passes through the centre of the entrance pupil, a distance s_EP from the object (positive when

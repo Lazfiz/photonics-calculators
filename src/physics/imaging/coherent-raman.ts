@@ -101,7 +101,9 @@ export function srsFocusFactor(lambdaPump: number, lambdaStokes: number, n: numb
  *   SRG (Stokes detected): δ = g_R F P_p,     SRL (pump detected): δ = (λ_S/λ_p) g_R F P_S,
  * the SRL factor ω_p/ω_S because the pump loses one photon per Stokes photon gained. `power` is the peak power of the
  * other (modulated) beam. For identical, overlapped Gaussian pulses the energy-weighted power is P̂/√2 ("gaussian");
- * "cw" uses P as given. Undepleted beams (δ ≪ 1).
+ * "cw" uses P as given. Undepleted beams (δ ≪ 1) and steady-state gain (pulses much longer than the Raman dephasing
+ * time T₂, i.e. narrower in bandwidth than the line). NaN when δ ≥ 1: the beams deplete (SRL would lose more than the
+ * whole pump), and the small-signal model no longer applies.
  */
 export function srsModulationDepth(
   ramanGain: number, power: number, lambdaPump: number, lambdaStokes: number, n: number,
@@ -110,5 +112,6 @@ export function srsModulationDepth(
   if (!(Number.isFinite(ramanGain) && ramanGain >= 0) || !(Number.isFinite(power) && power >= 0)) return NaN;
   const F = srsFocusFactor(lambdaPump, lambdaStokes, n);
   const P = pulses === "gaussian" ? power / Math.SQRT2 : power;
-  return (detected === "pump" ? lambdaStokes / lambdaPump : 1) * ramanGain * F * P;
+  const delta = (detected === "pump" ? lambdaStokes / lambdaPump : 1) * ramanGain * F * P;
+  return delta < 1 ? delta : NaN;
 }
