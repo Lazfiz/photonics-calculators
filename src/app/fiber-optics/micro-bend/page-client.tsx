@@ -52,7 +52,11 @@ export default function MicroBendPage() {
   const chartData = useMemo(() => {
     const lambda = wavelength * 1e-9;
     const mode = lp01Mode(vNumber(fiber, lambda));
-    const periods_mm = Array.from({ length: 241 }, (_, i) => 0.05 + i * 0.005);
+    const LcAxis_mm = criticalPeriod(fiber, lambda, mode) * 1e3;
+    // Period axis follows the cutoff period Λc and the input period so both stay on the chart.
+    const pLo = Number.isFinite(LcAxis_mm) ? Math.min(0.05, 0.05 * LcAxis_mm) : 0.05;
+    const pHi = 1.05 * Math.max(Number.isFinite(LcAxis_mm) ? LcAxis_mm : 0, period, 0.1);
+    const periods_mm = Array.from({ length: 241 }, (_, i) => pLo + ((pHi - pLo) * i) / 240);
     const curve = (loss: typeof sinusoidalMicrobendLoss) => {
       const ys = periods_mm.map((p) => DB_PER_NEPER * loss(fiber, lambda, amplitudeNm * 1e-9, p * 1e-3, mode));
       const keep = ys.map((y) => Number.isFinite(y) && y >= MIN_PLOTTED_DB);
@@ -68,8 +72,12 @@ export default function MicroBendPage() {
     if (y.length > 0 && Number.isFinite(Lc_mm)) {
       traces.push({ x: [Lc_mm, Lc_mm], y: [Math.min(...y), Math.max(...y)], type: "scatter" as const, mode: "lines" as const, name: "Λc", line: { color: "#fbbf24", width: 1 } });
     }
+    const opDb = DB_PER_NEPER * sinusoidalMicrobendLoss(fiber, lambda, amplitudeNm * 1e-9, period * 1e-3, mode);
+    if (Number.isFinite(opDb) && opDb >= MIN_PLOTTED_DB) {
+      traces.push({ x: [period], y: [opDb], type: "scatter" as const, mode: "markers" as const, name: "Operating point", marker: { color: "#ffffff", size: 9, line: { color: "#111827", width: 1 } } });
+    }
     return traces;
-  }, [fiber, wavelength, amplitudeNm]);
+  }, [fiber, wavelength, amplitudeNm, period]);
 
   const valid = Number.isFinite(calc.dBPerMetre);
   const beyondCritical = valid && period >= calc.Lc_mm;

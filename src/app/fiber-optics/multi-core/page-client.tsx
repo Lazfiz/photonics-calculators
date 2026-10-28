@@ -8,7 +8,7 @@ import { useURLState } from "../../../hooks/use-url-state";
 import {
   averagePowerCoupling, couplingCoefficient, criticalBendRadius, pairCrosstalk,
 } from "../../../physics/fiber-optics/coupled-mode";
-import { LP11_CUTOFF_V, MIN_V, lp01Mode, vNumber } from "../../../physics/fiber-optics/macro-bending-loss";
+import { LP11_CUTOFF_V, MIN_V, elastoOpticBendRadius, lp01Mode, vNumber } from "../../../physics/fiber-optics/macro-bending-loss";
 import { effectiveIndex, numericalAperture } from "../../../physics/fiber-optics/step-index-modes";
 
 /** Core layouts: nearest neighbours of the worst core, and the outer-core centre radius in pitches. */
@@ -74,7 +74,11 @@ export default function MultiCoreFiberCalculator() {
     const pitches: number[] = [];
     const pair: (number | null)[] = [];
     const worst: (number | null)[] = [];
-    for (let p = 20; p <= 100; p += 1) {
+    const pLo = Math.max(2 * coreRadius, corePitch / 2);
+    const pHi = Math.max(2 * corePitch, corePitch / 2 + 10);
+    const nPts = 80;
+    for (let i = 0; i <= nPts; i += 1) {
+      const p = pLo + (i * (pHi - pLo)) / nPts;
       const xt = calc.xtAt(p).pair;
       pitches.push(p);
       pair.push(xt > 0 ? toDb(xt) : null);
@@ -99,10 +103,13 @@ export default function MultiCoreFiberCalculator() {
         name: "Current pitch", marker: { color: "#22c55e", size: 11 },
       }]
       : traces;
-  }, [calc, corePitch, layout]);
+  }, [calc, corePitch, layout, coreRadius]);
 
   const valid = Number.isFinite(calc.kappa) && Number.isFinite(calc.h);
   const weakCoupling = valid && calc.pair < 0.1;
+  // Weak guidance (LP modes): Δ = (n₁² − n₂²)/(2n₁²) must be small; 3 % is the usual limit.
+  const delta = (coreIndex ** 2 - claddingIndex ** 2) / (2 * coreIndex ** 2);
+  const eoFactor = elastoOpticBendRadius(1, coreIndex);
 
   return (
     <>
@@ -136,6 +143,11 @@ export default function MultiCoreFiberCalculator() {
       {valid && calc.V > LP11_CUTOFF_V && (
         <p className="mb-6 text-sm text-yellow-300" role="status">
           V = {calc.V.toFixed(2)} &gt; {LP11_CUTOFF_V.toFixed(3)}: the cores carry LP11 as well; only LP01 coupling is computed, and LP11 couples far more strongly.
+        </p>
+      )}
+      {Number.isFinite(delta) && delta > 0.03 && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          Δ = {(delta * 100).toFixed(2)} % &gt; 3 %: outside the weakly guiding LP model, so κ and the LP01 field are only approximate.
         </p>
       )}
       {valid && !weakCoupling && (
@@ -188,7 +200,7 @@ export default function MultiCoreFiberCalculator() {
             Not included: LP11 and other higher-order modes, trench-assisted profiles, and coupling to cores beyond the nearest
             neighbours. The worst-core value adds the neighbour pairs, which holds while each pair is well below −10 dB. R_b is the
             physical bend radius, as in Hayashi&apos;s equivalent-index model; the elasto-optic effect makes silica act as if it were
-            about 1.27× larger (Nagano et al. 1978), which would raise the Δβ = 0 crosstalk by about 1 dB.
+            about {eoFactor > 0 ? eoFactor.toFixed(2) : "—"}× larger (Nagano et al. 1978), which would raise the Δβ = 0 crosstalk by about 1 dB.
           </p>
         </div>
       </div>

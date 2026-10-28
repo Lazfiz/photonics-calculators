@@ -24,7 +24,7 @@
  * Core–cladding transition: LP01 leaves the core where n_eff falls to n₂. At β = kn₂ the cladding field is
  * A + B ln r, and matching J₀ inside and K₀ outside gives
  *   J₀(V)/(V J₁(V)) = ln S + K₀(W)/(W K₁(W)),   V = ka√(n₁² − n₂²), W = kρ√(n₂² − n₃²), S = ρ/a,
- * whose small-V, large-W limit is V_cc ≈ √(2/ln S).
+ * whose small-V, large-W limit is V_cc ≈ √(2/(ln S + ¼)).
  */
 import { besselIScaled01, besselJ, besselKScaled, besselKScaled01, besselY, BESSEL_Y_MAX_X } from "../math";
 

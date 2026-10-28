@@ -101,7 +101,7 @@ export default function PMFiberCalculator() {
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <Card label="Beat Length" value={show(calc.L_B, () => `${(calc.L_B * 1e3).toPrecision(4)} mm`)} sub="L_B = λ/B" tone="text-blue-400" />
-        <Card label="DGD per Length" value={show(calc.dgd, () => `${(calc.dgd * 1e12).toPrecision(4)} ps/m`)} sub="B/c: group ≈ phase B in stress fibres; overstates e-core fibre ≈ 3×" tone="text-gray-200" />
+        <Card label="DGD per Length" value={show(calc.dgd, () => `${(calc.dgd * 1e12).toPrecision(4)} ps/m`)} sub="B/c: group ≈ phase B in stress fibres; for e-core fibre the group value differs from the phase value: it can be several times smaller or larger, depending on V" tone="text-gray-200" />
         <Card label="Fibre Crosstalk" value={dbText(calc.fibreXt)}
           sub="10 log tanh(hL), for a perfect launch" tone="text-gray-200" />
         <Card label="Output PER" value={dbText(calc.outDb)}

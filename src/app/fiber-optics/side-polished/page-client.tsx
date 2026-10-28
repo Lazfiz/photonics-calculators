@@ -27,7 +27,7 @@ export default function SidePolishedPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 400, max: 2500 }); // nm
   const [n_core, setN_core] = useURLState("n_core", 1.4494, { min: 1, max: 4 });
   const [n_clad, setN_clad] = useURLState("n_clad", 1.444, { min: 1, max: 4 });
-  const [n_overlay, setN_overlay] = useURLState("n_overlay", 1.444, { min: 1, max: 2 });
+  const [n_overlay, setN_overlay] = useURLState("n_overlay", 1.43, { min: 1, max: 2 });
   const [blockRadius, setBlockRadius] = useURLState("blockRadius", 25, { min: 1, max: 500 }); // cm, radius the fibre is bent to in the block
 
   const fiber = useMemo(
@@ -62,8 +62,9 @@ export default function SidePolishedPage() {
     const ds: number[] = [];
     const etas: (number | null)[] = [];
     const coupled: (number | null)[] = [];
+    const dMax = Math.max(9, 1.5 * remainingClad); // µm
     for (let i = 0; i <= 60; i++) {
-      const d = i * 0.15; // µm
+      const d = (i * dMax) / 60; // µm
       const eta = lp01PowerBeyondPlane(calc.mode, 1 + (d * 1e-6) / fiber.a);
       const phi = polishedCouplerPhase(fiber, lambda, 2 * (fiber.a + d * 1e-6), blockRadius * 1e-2, calc.mode);
       ds.push(d);
@@ -73,8 +74,11 @@ export default function SidePolishedPage() {
     return [
       { x: ds, y: etas, type: "scatter" as const, mode: "lines" as const, name: "Power beyond the face (%)", line: { color: "#60a5fa" }, yaxis: "y" },
       { x: ds, y: coupled, type: "scatter" as const, mode: "lines" as const, name: "Polished coupler, coupled (%)", line: { color: "#f59e0b" }, yaxis: "y2" },
+      ...(calc.eta > 0
+        ? [{ x: [remainingClad], y: [100 * calc.eta], type: "scatter" as const, mode: "markers" as const, name: "Your d", marker: { color: "#ffffff", size: 8 }, yaxis: "y" }]
+        : []),
     ];
-  }, [calc.mode, fiber, wavelength, blockRadius]);
+  }, [calc.mode, calc.eta, fiber, wavelength, blockRadius, remainingClad]);
 
   const valid = Number.isFinite(calc.eta);
   const leaky = valid && n_overlay >= calc.nEff;
@@ -132,7 +136,7 @@ export default function SidePolishedPage() {
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">
         <ResultCard label="Power beyond the face" value={fmtPct(calc.eta)} tone="blue" subtext={`V = ${fmt(calc.V, 3)}, n_eff = ${fmt(calc.nEff, 5)}`} />
-        <ResultCard label="Intensity at the face" value={fmtPct(calc.surface)} tone="cyan" subtext={`of the core-boundary value; tail 1/e length a/W = ${fmt(calc.decayLength_um, 2, " µm")}`} />
+        <ResultCard label="Intensity at the face" value={fmtPct(calc.surface)} tone="cyan" subtext={`of the core-boundary value; field 1/e length a/W (intensity a/2W) = ${fmt(calc.decayLength_um, 2, " µm")}`} />
         <ResultCard label="Overlay shift Δn_eff" value={leaky || !valid ? "—" : calc.dNeff.toExponential(2)} tone="purple" subtext="first-order, η(n_ov² − n₂²)/(2n_eff)" />
         <ResultCard
           label="Polished coupler"

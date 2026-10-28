@@ -17,7 +17,7 @@ const POL_CASES = [
 const toDbm = (P: number) => 10 * Math.log10(P * 1e3);
 
 export default function SRSThresholdPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 400, max: 2200 }); // nm
   const [fiberLength, setFiberLength] = useURLState("fiberLength", 10); // km
   const [effectiveArea, setEffectiveArea] = useURLState("effectiveArea", 80); // μm²
   const [loss, setLoss] = useURLState("loss", 0.2); // dB/km
@@ -25,7 +25,7 @@ export default function SRSThresholdPage() {
   const [ramanShift, setRamanShift] = useURLState("ramanShift", 13.2); // THz
 
   const results = useMemo(() => {
-    const lambda = Math.max(wavelength, 1) * 1e-9;
+    const lambda = Math.min(Math.max(wavelength, 400), 2200) * 1e-9;
     const L = Math.max(fiberLength, 1e-3) * 1e3;
     const Aeff = Math.max(effectiveArea, 1) * 1e-12;
     const alpha = alphaFromDbPerKm(Math.max(loss, 0));
@@ -67,8 +67,10 @@ export default function SRSThresholdPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Fiber Parameters</h2>
+          <div className="mb-3">
+            <ValidatedNumberInput label="Pump Wavelength (nm)" value={wavelength} onChange={setWavelength} min={400} max={2200} step="any" />
+          </div>
           {[
-            { label: "Pump Wavelength (nm)", val: wavelength, set: setWavelength },
             { label: "Fiber Length (km)", val: fiberLength, set: setFiberLength },
             { label: "Effective Area (μm²)", val: effectiveArea, set: setEffectiveArea },
             { label: "Loss (dB/km)", val: loss, set: setLoss },
@@ -82,13 +84,16 @@ export default function SRSThresholdPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Raman Parameters</h2>
           {[
-            { label: "Peak Raman Gain gR (m/W)", val: ramanGain, set: setRamanGain },
+            { label: "Peak Raman Gain gR at your pump wavelength (m/W)", val: ramanGain, set: setRamanGain },
             { label: "Raman Shift (THz)", val: ramanShift, set: setRamanShift },
           ].map(({ label, val, set }) => (
             <div key={label} className="mb-3">
               <ValidatedNumberInput label={label} value={val} onChange={set} min={0} step="any" />
             </div>
           ))}
+          <p className="text-xs text-gray-500">
+            g_R at your pump wavelength: the threshold uses the value typed here. The pump wavelength only sets the Stokes wavelength and the hint below.
+          </p>
           <div className="mt-4 p-3 bg-gray-800 rounded text-sm text-gray-400">
             <p className="font-semibold text-gray-300 mb-1">Typical Values (fused silica):</p>
             <p>• gR ≈ 1×10⁻¹³ m/W for a 1 µm pump, scaling as 1/λp: {results.gRAtLambda.toExponential(2)} m/W at {wavelength} nm</p>

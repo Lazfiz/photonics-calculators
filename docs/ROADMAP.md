@@ -186,8 +186,12 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - `photoacoustic`: diffuse build-up factor k ≈ 2–5 (Jacques, from memory) is described but set to 1.
 - `low-coherence`, `optical-coherence`: SNR prefactors ρP/(2eB) and ρPΔt/(2e) not checked against Choma 2003 eqs. 9/10 (PDF unread).
 - `plenoptic-camera`: "12 usable pixels" and "prototype reached about half" (Ng 2005 tech report) unverified.
-**Fiber optics (session 169, unverified or deferred)**
-- `macro-bending-loss`, `mode-field-diameter`: no elasto-optic option yet (`bendLossPerTurnDb(…, elastoOptic)` exists); 5w-8.
+**Fiber optics (sessions 169–170, unverified or deferred)**
+- `photonic-crystal`: Marcuse step-index MFD fit with V_SK vs Nielsen et al. OL 28, 2309 (2003) PCF fit (from memory: 6.69 vs 5.08 µm
+  at the defaults; NKT LMA-5 ≈ 4.1 µm agrees with the page). Read the paper before changing. Mortensen OL 28, 1879 DOI unchecked (429).
+- `fiber-optic-sensor`: K_T 9.56 pm/K (Cosme 2026) vs ≈ 10–13 pm/K in Kersey-era texts (from memory). `rare-earth-doped`: preset σ
+  (Er 1480, Yb 976) unchecked against Barnes Fig. 6(c) / Melkumov App. 2. `splice-loss`: air-gap Fresnel loss (≤ 0.59 dB) not
+  included (`gapEtalonTransmission` exists); the page says so. `nonlinear-effects`: SBS card is narrow-CW only (no K/linewidth option).
 - `dispersion-shifted`: G.653/G.655 preset values (S₀ ≤ 0.085; G.655.C 1–10 ps/(nm·km)) not read in the Recommendations.
 - `fiber-bragg-grating-sensor`: the ±50 K linear K_T range (Cosme 2026) unverified. `fiber-amplifier`: preset σ vs Barnes
   1991 Fig. 6(c) unverified. `dispersion-comp`: Agrawal §2.4.3/§5.4.4 numbers are 4th-edition; 5th-ed DOI 10.1002/9781119737391.

@@ -163,7 +163,12 @@ export default function RareEarthDopedCalculator() {
         <Card label="Ion Density N" value={`${calc.N.toExponential(3)} m⁻³`} sub={`${ppm} wt-ppm`} tone="text-gray-200" />
         <Card label="NA and V" value={show(calc.V, () => `${calc.NA.toFixed(4)}, V = ${calc.V.toFixed(3)}`)} sub={show(calc.cutoff, () => `at the signal; LP11 cutoff ${calc.cutoff.toFixed(0)} nm`)} tone="text-gray-200" />
         <Card label="Overlap Γ" value={guided ? `${calc.gp.toFixed(3)} / ${calc.gs.toFixed(3)}` : "—"}
-          sub={lp_nm < calc.cutoff ? "pump / signal; the pump is below the LP11 cutoff, Γ_p is for LP01 only" : "pump / signal, LP01 power in the core"} tone="text-gray-200" />
+          sub={[
+            "pump / signal",
+            lp_nm < calc.cutoff ? "the pump is below the LP11 cutoff (V > 2.405), Γ_p is for LP01 only" : "",
+            ls_nm < calc.cutoff ? "the signal is below the LP11 cutoff (V > 2.405), Γ_s is for LP01 only" : "",
+            lp_nm >= calc.cutoff && ls_nm >= calc.cutoff ? "LP01 power in the core" : "",
+          ].filter(Boolean).join("; ")} tone="text-gray-200" />
         <Card label="Pump Absorption" value={show(calc.alphaP, () => `${calc.alphaP.toPrecision(4)} dB/m`)} sub={show(calc.alphaS, () => `signal ${calc.alphaS.toPrecision(4)} dB/m (unpumped)`)} tone="text-red-400" />
         <Card label="90 % Pump Absorbed" value={show(calc.L90, () => `${calc.L90.toPrecision(4)} m`)} sub="10 dB / α_p, small-signal (bleaching lengthens it)" tone="text-red-400" />
         <Card label="Saturation Power" value={show(calc.pSatS, () => `${calc.pSatS.toPrecision(4)} mW`)} sub={show(calc.pSatP, () => `signal; pump ${calc.pSatP.toPrecision(4)} mW`)} tone="text-yellow-400" />
@@ -175,6 +180,12 @@ export default function RareEarthDopedCalculator() {
         <p role="alert" className="mb-8 rounded-lg border border-yellow-700 bg-yellow-950 p-3 text-sm text-yellow-200">
           V is below 0.5 at the pump or signal (or n₁ ≤ n₂): the mode is barely guided and the LP01 overlap is not
           defined here. Raise the index step or the core radius.
+        </p>
+      )}
+
+      {guided && Number.isFinite(calc.gain) && calc.gain > 30 && (
+        <p role="status" className="mb-8 rounded-lg border border-yellow-700 bg-yellow-950 p-3 text-sm text-yellow-200">
+          Above ≈ 30 dB, amplified spontaneous emission (not modelled) would saturate the gain; real EDFAs stay lower.
         </p>
       )}
 

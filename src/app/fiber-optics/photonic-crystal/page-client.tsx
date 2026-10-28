@@ -6,15 +6,15 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  FIT_D_OVER_PITCH, FIT_MAX_LAMBDA_OVER_PITCH, MARCUSE_MIN_V, V_CUTOFF, endlesslySingleModeLimit, pcfDispersion, pcfMode, saitohKoshibaV,
+  FIT_D_OVER_PITCH, FIT_MAX_LAMBDA_OVER_PITCH, MARCUSE_MIN_V, V_CUTOFF, cutoffWavelength, endlesslySingleModeLimit, inDRange, pcfDispersion, pcfMode, saitohKoshibaV,
 } from "../../../physics/fiber-optics/photonic-crystal";
 
 const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
 /** 1 ps/(nm·km) in s/m². */
 const PS_NM_KM = 1e-6;
 const ESM_LIMIT = endlesslySingleModeLimit();
-/** Plot range, nm: inside the Malitson fit (210–6700 nm) and the usual silica window. */
-const PLOT_NM: readonly [number, number] = [500, 2000];
+/** Default plot range, nm: inside the Malitson fit (210–6700 nm) and the usual silica window. */
+const PLOT_NM_DEFAULT: readonly [number, number] = [500, 2000];
 
 export default function PhotonicCrystalFiberCalculator() {
   const [pitch, setPitch] = useURLState("pitch", 4.5, { min: 0.5, max: 50 }); // µm, Λ
@@ -23,7 +23,7 @@ export default function PhotonicCrystalFiberCalculator() {
 
   const geometryBad = !(pitch > 0 && holeDiameter > 0 && holeDiameter < pitch);
   const r = holeDiameter / pitch;
-  const dOutOfFit = !geometryBad && !(r >= FIT_D_OVER_PITCH[0] && r <= FIT_D_OVER_PITCH[1]);
+  const dOutOfFit = !geometryBad && !inDRange(r);
   const lambdaBad = !(wavelength >= 300 && wavelength <= 3000);
 
   const mode = useMemo(
@@ -31,12 +31,18 @@ export default function PhotonicCrystalFiberCalculator() {
     [pitch, holeDiameter, wavelength, geometryBad, lambdaBad],
   );
 
+  // Widen the default range to keep the input λ and the second-mode cutoff (capped at 4000 nm, inside the Malitson fit) on the charts.
+  const cutoffForPlot_nm = geometryBad || dOutOfFit ? NaN : cutoffWavelength(pitch * 1e-6, r) * 1e9;
+  const cutoffSpan_nm = Number.isFinite(cutoffForPlot_nm) ? Math.min(4000, 1.2 * cutoffForPlot_nm) : 0;
+  const plotLo = Math.min(PLOT_NM_DEFAULT[0], Math.floor(wavelength / 10) * 10);
+  const plotHi = Math.max(PLOT_NM_DEFAULT[1], Math.ceil(Math.max(wavelength, cutoffSpan_nm) / 10) * 10);
+
   const dispersionData = useMemo(() => {
     if (geometryBad) return [];
     const wl: number[] = [];
     const total: (number | null)[] = [];
     const material: (number | null)[] = [];
-    for (let nm = PLOT_NM[0]; nm <= PLOT_NM[1]; nm += 10) {
+    for (let nm = plotLo; nm <= plotHi; nm += 10) {
       const m = pcfMode(pitch * 1e-6, holeDiameter * 1e-6, nm * 1e-9);
       wl.push(nm);
       total.push(Number.isFinite(m.dispersion) ? m.dispersion / PS_NM_KM : null);
@@ -46,33 +52,35 @@ export default function PhotonicCrystalFiberCalculator() {
       { x: wl, y: total, type: "scatter" as const, mode: "lines" as const, name: "PCF (total)", line: { color: "#60a5fa", width: 2 } },
       { x: wl, y: material, type: "scatter" as const, mode: "lines" as const, name: "Bulk silica", line: { color: "#9ca3af", width: 1.5, dash: "dash" as const } },
     ];
-  }, [pitch, holeDiameter, geometryBad]);
+  }, [pitch, holeDiameter, geometryBad, plotLo, plotHi]);
 
   const vData = useMemo(() => {
     if (geometryBad || dOutOfFit) return [];
     const wl: number[] = [];
-    const v: number[] = [];
-    for (let nm = PLOT_NM[0]; nm <= PLOT_NM[1]; nm += 10) {
+    const v: (number | null)[] = [];
+    for (let nm = plotLo; nm <= plotHi; nm += 10) {
       wl.push(nm);
-      v.push(saitohKoshibaV((nm * 1e-3) / pitch, holeDiameter / pitch));
+      // Beyond λ/Λ = 2 the fit is extrapolated: leave a gap.
+      const x = (nm * 1e-3) / pitch;
+      v.push(x <= FIT_MAX_LAMBDA_OVER_PITCH ? saitohKoshibaV(x, holeDiameter / pitch) : null);
     }
     return [
       { x: wl, y: v, type: "scatter" as const, mode: "lines" as const, name: "V_eff", line: { color: "#f59e0b", width: 2 } },
-      { x: [PLOT_NM[0], PLOT_NM[1]], y: [V_CUTOFF, V_CUTOFF], type: "scatter" as const, mode: "lines" as const, name: "2.405", line: { color: "#f87171", width: 1, dash: "dash" as const } },
+      { x: [plotLo, plotHi], y: [V_CUTOFF, V_CUTOFF], type: "scatter" as const, mode: "lines" as const, name: "2.405", line: { color: "#f87171", width: 1, dash: "dash" as const } },
     ];
-  }, [pitch, holeDiameter, geometryBad, dOutOfFit]);
+  }, [pitch, holeDiameter, geometryBad, dOutOfFit, plotLo, plotHi]);
 
   const zeroCrossings = useMemo(() => {
     if (geometryBad) return [];
     const out: number[] = [];
     let prev = NaN;
-    for (let nm = PLOT_NM[0]; nm <= PLOT_NM[1]; nm += 5) {
+    for (let nm = plotLo; nm <= plotHi; nm += 5) {
       const D = pcfDispersion(pitch * 1e-6, holeDiameter * 1e-6, nm * 1e-9);
       if (Number.isFinite(prev) && Number.isFinite(D) && Math.sign(prev) !== Math.sign(D)) out.push(nm - 5 * (D / (D - prev)));
       prev = D;
     }
     return out;
-  }, [pitch, holeDiameter, geometryBad]);
+  }, [pitch, holeDiameter, geometryBad, plotLo, plotHi]);
 
   const D_ps = mode ? mode.dispersion / PS_NM_KM : NaN;
   const cutoff_nm = mode ? mode.cutoffWavelength * 1e9 : NaN;
@@ -116,10 +124,10 @@ export default function PhotonicCrystalFiberCalculator() {
         />
         <ResultCard
           label="Guidance"
-          value={!mode ? "—" : mode.endlesslySingleMode ? "Endlessly single-mode" : mode.singleMode ? "Single-mode" : "Multimode"}
-          tone={mode && mode.singleMode ? "green" : "orange"}
+          value={!mode || !Number.isFinite(mode.V) ? "—" : mode.endlesslySingleMode ? "Endlessly single-mode" : mode.singleMode ? "Single-mode" : "Multimode"}
+          tone={!mode || !Number.isFinite(mode.V) ? "gray" : mode.singleMode ? "green" : "orange"}
           subtext={
-            !mode
+            !mode || !Number.isFinite(mode.V)
               ? undefined
               : mode.endlesslySingleMode
                 ? `d/Λ below ${ESM_LIMIT.toFixed(3)}: V < 2.405 at every λ`
@@ -169,7 +177,7 @@ export default function PhotonicCrystalFiberCalculator() {
           {" "}{FIT_D_OVER_PITCH[0]}–{FIT_D_OVER_PITCH[1]}).{" "}
           {zeroCrossings.length > 0
             ? `Zero dispersion near ${zeroCrossings.map((z) => `${z.toFixed(0)} nm`).join(" and ")}.`
-            : `No zero-dispersion wavelength between ${PLOT_NM[0]} and ${PLOT_NM[1]} nm.`}
+            : `No zero-dispersion wavelength between ${plotLo} and ${plotHi} nm.`}
         </p>
       </div>
 

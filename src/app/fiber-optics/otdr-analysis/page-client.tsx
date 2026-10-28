@@ -120,6 +120,9 @@ export default function OTDRAnalysisPage() {
         <ValidatedNumberInput label="Loss per Splice (dB)" value={spliceLossIn} onChange={setSpliceLoss} min={0} max={5} step="0.01" />
         <ValidatedNumberInput label="Launch Connector Reflectance (dB)" value={launchRIn} onChange={setLaunchR} min={-90} max={-10} step="1" />
       </div>
+      <p className="-mt-4 mb-6 text-xs text-gray-500">
+        Enter the MFD at the chosen wavelength (SMF-28: ≈ 9.2 µm at 1310 nm, 10.4 µm at 1550 nm).
+      </p>
       <h3 className="text-sm font-semibold text-gray-400 mb-2">OTDR</h3>
       <div className="grid gap-4 sm:grid-cols-4 mb-8">
         <ValidatedNumberInput label="Pulse Width (ns)" value={pulseIn} onChange={setPulse} min={1} max={100000} step="any" />
