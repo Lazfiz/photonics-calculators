@@ -1,29 +1,29 @@
-# Handover — 2026-10-28 (session 168 → session 169)
+# Handover — 2026-10-28 (session 169 → session 170)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 168 did 5w-6 (imaging textbook pass 3/3) on `phase-5/5w-6-imaging`, PR #205: 17 pages plus the airy-disk and
-sensor-cmos findings, 4 bugs, ≈ 45 minor fixes. Imaging 5w is done. PRs #200–#204 are merged to `main` but not released
-(`release` = `d82602ed`). Next: **5w-7 fiber-optics 1/2**.
+Session 169 did 5w-7 (fiber-optics textbook pass 1/2) on `phase-5/5w-7-fiber-optics`: 20 pages, 4 bugs, ≈ 40 minor
+fixes. PRs #200–#205 are merged to `main` but not released (`release` = `d82602ed`). Next: **5w-8 fiber-optics 2/2**.
 
 ## State
-- `speckleContrast(σ_φ, N_c)`: Rician √(1 + 2r)/(1 + r), r = N_c e^(−σ²)/(1 − e^(−σ²)) (Fujii & Asakura 1974); the old
-  √(1 − e^(−2σ²)) was N_c = 1. Monte Carlo (scratchpad, N_c 100): 0.746 at 2 rad vs 0.759, 0.144 at 1 rad vs 0.183 (warned).
-  Page defaults σ_h 0.08 µm, N_c 100.
-- New `spilloverMatrix(dyes, lasers, bands, mode)` in `fluorophores.ts`; multicolor has an Acquisition selector (sequential
-  = laser i only in frame i). Default ch2 mCherry 610/40.
-- `srsModulationDepth` returns NaN at δ ≥ 1; page warns δ > 10 % and pulse bandwidth > 10 cm⁻¹.
-- Defaults: resolution NA 1.4; shack-hartmann RMS 50 nm; telecentricity Δz 0.5 mm.
-- Gates on the 5w-6 commit: `npm run check` 1161 pass, 6 old eslint warnings; build: see the PR.
+- `dispersion-comp.ts`: `addedRmsBroadening(σ, σ₀)`, `optimumPulseBroadening(D_acc, S_acc, σ_λ, λ)` = √(σ_D² + λ²|D_acc|/4πc)
+  (Agrawal §2.4.2 at the optimum σ₀² = |β₂L|/2), `toleratedAccumulatedDispersion`; `usableHalfBandwidth` takes λ. The
+  chromatic-dispersion penalty uses √(σ² − σ₀²); dispersion-comp B_max uses `optimumOutputRmsWidth` (6.00 Gb/s, 80 km, σ_λ 0).
+- `macro-bending-loss.ts`: `elastoOpticBendRadius(R, n₁)` = R/(1 − p_e) = 1.2553R at n₁ 1.4494 (Bertholds p's);
+  `bendLossPerTurnDb(…, mode, elastoOptic)`. On by default on bend-insensitive only (SMF 0.367 dB/turn at 10 mm/1550).
+- fiber-bandwidth: SMF below 1260 nm invalid. fiber-amplifier: warns above 25 dB; Yb preset L = 1.5 m.
+- Gates on the 5w-7 commit: `npm run check` 1163 pass; build: see the PR.
 
 ## Next actions
-1. `/ship` PR #205. On a release (user asks): `node scripts/post-merge-check.mjs <sha> imaging/psf-calculator=523
-   imaging/optical-sectioning-thickness=0.59 imaging/light-field=53.64 imaging/digital-holography=0.03326`.
-2. 5w-7: fiber-optics textbook slugs 1–21 in registry order (`git grep -n 'tier: "textbook"'
-   src/registry/calculators/fiber-optics.ts`), skipping coupling-efficiency and connector-return-loss (162). Four
-   `physics-reviewer` agents (≈ 5 each), then implementers on disjoint page sets; main session does physics + tests + registry.
+1. `/ship` the 5w-7 PR. On a release (user asks): post-merge-check values are in the PR body.
+2. 5w-8: fiber-optics textbook slugs 22–42 in registry order (fiber-optic-sensor … wdm-coupler; `git grep -n 'tier: "textbook"'
+   src/registry/calculators/fiber-optics.ts`), skipping coupling-efficiency and connector-return-loss (162). Also offer the
+   elasto-optic flag on macro-bending-loss and mode-field-diameter (ROADMAP fiber findings).
 3. Last in Phase 5: the Gemini hero (ask the user for the files).
 
 ## Non-obvious facts
+- **Session 169:** devctl queues gated commands under another project's CPU load; an implementer's edit command queued
+  behind it never ran, yet it reported the file done. Check `git diff --stat` per allowed file before reviewing. Implementers'
+  page text needs a physics read (one wrote that bending "lowers the index on the compressed side").
 - **Session 168:** implementers wrote CRLF into LF files (git normalises on commit; `sed -i "s/$//"` restores). Check
   chart-span widenings against poles (telecentricity: the pupil pole sits on either side by the residual angle sign). Three
   implementers in parallel take ≈ 8–15 min each (shared eslint queue).
