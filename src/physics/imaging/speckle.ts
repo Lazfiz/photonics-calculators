@@ -8,9 +8,12 @@
  * - imaged (subjective) speckle: the same with the exit pupil seen from the image, λz_i/D_p = λ(1 + M)N for a lens
  *   of f-number N at magnification M;
  * - a Gaussian surface of rms height σ_h seen in reflection near normal incidence gives a phase of rms
- *   σ_φ = 4πσ_h/λ. The field is a specular phasor of intensity e^(−σ_φ²) plus a circular Gaussian (diffuse) part
- *   1 − e^(−σ_φ²) (many surface correlation cells in the spot), and the Rician contrast √(1 + 2r)/(1 + r), with
- *   r the specular-to-diffuse ratio, reduces to C = √(1 − e^(−2σ_φ²)), observed in the specular direction (ch. 3);
+ *   σ_φ = 4πσ_h/λ. A resolution cell (or, for the specular far field, the spot) holding N_c surface correlation
+ *   cells sums N_c phasors: their mean adds coherently, intensity ∝ N_c² e^(−σ_φ²), the rest as a random walk,
+ *   ∝ N_c (1 − e^(−σ_φ²)). With r = N_c e^(−σ_φ²)/(1 − e^(−σ_φ²)) the Rician contrast is √(1 + 2r)/(1 + r)
+ *   (constant phasor plus a circular Gaussian sum, ch. 3; H. Fujii, T. Asakura, Opt. Commun. 11, 35 (1974),
+ *   https://doi.org/10.1016/0030-4018(74)90327-7). The diffuse part is circular only for σ_φ ≳ 1 rad: below it the
+ *   form overestimates C (Monte Carlo, N_c = 100: 0.14 at σ_φ = 1 rad against 0.18; 0.746 at 2 rad against 0.759);
  * - the sum of N uncorrelated speckle patterns of equal mean has contrast C/√N.
  */
 
@@ -35,10 +38,15 @@ export function surfacePhaseRms(roughness: number, lambda: number): number {
   return (4 * Math.PI * roughness) / lambda;
 }
 
-/** Speckle contrast √(1 − e^(−2σ_φ²)) of a Gaussian phase screen of rms σ_φ, specular direction. */
-export function speckleContrast(phaseRms: number): number {
-  if (!(phaseRms >= 0)) return NaN;
-  return Math.sqrt(-Math.expm1(-2 * phaseRms * phaseRms));
+/**
+ * Rician speckle contrast √(1 + 2r)/(1 + r), r = N_c e^(−σ_φ²)/(1 − e^(−σ_φ²)), of a Gaussian phase screen of rms
+ * σ_φ with N_c correlation cells per resolution cell. 0 for a smooth surface. NaN unless σ_φ ≥ 0 and N_c ≥ 1.
+ */
+export function speckleContrast(phaseRms: number, cells: number): number {
+  if (!(phaseRms >= 0) || !(cells >= 1)) return NaN;
+  if (phaseRms === 0) return 0;
+  const r = (cells * Math.exp(-phaseRms * phaseRms)) / -Math.expm1(-phaseRms * phaseRms);
+  return Math.sqrt(1 + 2 * r) / (1 + r);
 }
 
 /** Contrast C/√N after summing N uncorrelated patterns of equal mean. NaN unless N ≥ 1. */

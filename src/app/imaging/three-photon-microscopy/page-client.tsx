@@ -34,20 +34,22 @@ export default function ThreePhotonMicroscopyPage() {
   const valid = Number.isFinite(fwhm3.axial) && Number.isFinite(peakPower);
 
   const depthChart = useMemo(() => {
-    const depths = Array.from({ length: 81 }, (_, i) => i * 25);
+    const maxDepth = Math.max(2000, 1.2 * depth);
+    const depths = Array.from({ length: 81 }, (_, i) => (i * maxDepth) / 80);
     const f = (d: number) => ballisticFraction(d * 1e-6, scatteringCoeff * 100);
     const k = (d: number, order: number) => aboveFloor(f(d) ** order);
     return [
       { x: depths, y: depths.map((d) => k(d, 1)), type: "scatter", mode: "lines", name: "Linear (1P)", line: { color: "#60a5fa" } },
       { x: depths, y: depths.map((d) => k(d, 2)), type: "scatter", mode: "lines", name: "Quadratic (2P)", line: { color: "#fbbf24" } },
       { x: depths, y: depths.map((d) => k(d, 3)), type: "scatter", mode: "lines", name: "Cubic (3P)", line: { color: "#34d399" } },
-      { x: [depth], y: [f(depth) ** 3], type: "scatter", mode: "markers", name: "Current", marker: { color: "#f87171", size: 12 } },
+      { x: [depth], y: [aboveFloor(f(depth) ** 3)], type: "scatter", mode: "markers", name: "Current", marker: { color: "#f87171", size: 12 } },
     ];
   }, [scatteringCoeff, depth]);
 
   const resolutionChart = useMemo(() => {
     const lam = wavelength * 1e-9;
-    const nas = Array.from({ length: 80 }, (_, i) => 0.2 + i * 0.018).filter((a) => a < refractiveIndex);
+    const na0 = Math.min(0.2, na);
+    const nas = Array.from({ length: 80 }, (_, i) => na0 + i * 0.018).filter((a) => a < refractiveIndex);
     const um = (k: number, key: "lateral" | "axial") => nas.map((a) => multiphotonFwhm(lam, refractiveIndex, a, k)[key] * 1e6);
     const current = multiphotonFwhm(lam, refractiveIndex, na, 3);
     const marks = Number.isFinite(current.axial)
@@ -84,10 +86,10 @@ export default function ThreePhotonMicroscopyPage() {
       )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ResultCard label="3P lateral FWHM" value={fmt(fwhm3.lateral * 1e9, 0, "nm")} tone="green" subtext={`2P at the same λ: ${fmt(fwhm2.lateral * 1e9, 0, "nm")}`} />
+        <ResultCard label="3P lateral FWHM" value={valid ? fmt(fwhm3.lateral * 1e9, 0, "nm") : "—"} tone="green" subtext={`2P at the same λ: ${valid ? fmt(fwhm2.lateral * 1e9, 0, "nm") : "—"}`} />
         <ResultCard label="3P axial FWHM" value={fmt(fwhm3.axial * 1e6, 2, "µm")} tone="yellow" subtext={`2P at the same λ: ${fmt(fwhm2.axial * 1e6, 2, "µm")}`} />
         <ResultCard label="Excitation volume (I³)" value={fmt(volume * 1e18, 3, "fL")} tone="blue" subtext="(π/6)^(3/2) w² w_z (1 fL = 1 µm³)" />
-        <ResultCard label="Peak intensity at focus" value={fmt(peakIntensity / 1e16, 1, "TW/cm²")} tone="green" subtext="At the surface, Gaussian pulse" />
+        <ResultCard label="Peak intensity at focus" value={valid ? fmt((peakIntensity * fraction) / 1e16, 1, "TW/cm²") : "—"} tone="green" subtext={`At the focus depth, I_surface·e^(−µz); surface: ${valid ? fmt(peakIntensity / 1e16, 1, "TW/cm²") : "—"}`} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

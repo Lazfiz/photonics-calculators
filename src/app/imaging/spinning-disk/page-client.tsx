@@ -44,10 +44,13 @@ export default function SpinningDiskPage() {
   const frameRate = spinningDiskFrameRate(diskRPM, scans);
   const fill = pinholeFillFactor(pinholeDiam, pitch);
   const scansPerExposure = (exposureMs / 1000) * frameRate;
-  const banding = scansPerExposure < 1 || Math.abs(scansPerExposure - Math.round(scansPerExposure)) > 0.05;
+  const bandingDepth = scansPerExposure > 0 ? Math.abs(scansPerExposure - Math.round(scansPerExposure)) / scansPerExposure : 1;
+  const banding = !(bandingDepth <= 0.01);
+  const pinholeTooBig = pinholeDiam > pitch;
   const fmt = (x: number, digits: number, unit: string) => (Number.isFinite(x) ? `${x.toFixed(digits)} ${unit}` : "—");
 
-  const aus = Array.from({ length: 51 }, (_, i) => i / 10);
+  const auMax = Math.max(5, 1.1 * pinholeAU);
+  const aus = Array.from({ length: 51 }, (_, i) => (i / 50) * auMax);
   const plotData = [
     { x: aus, y: aus.map((p) => confocalOpticalSectionFwhm(lambda, n, na, p) * 1e9), name: "Optical section FWHM (nm)", line: { color: "#60a5fa" }, type: "scatter", mode: "lines" },
     { x: aus, y: aus.map((p) => 100 * pinholeThroughput(p)), name: "Pinhole throughput (%)", line: { color: "#f87171" }, type: "scatter", mode: "lines", yaxis: "y2" },
@@ -87,12 +90,18 @@ export default function SpinningDiskPage() {
               {row("Optical section FWHM", inTable ? fmt(sectionNm, 0, "nm") : "> 5 AU", "text-purple-400")}
               {row("Wilhelm geometric (≥ 1 AU)", pinholeAU >= 1 ? fmt(wilhelmNm, 0, "nm") : "—")}
               {row("Frame rate (full-field scans)", fmt(frameRate, 0, "fps"), "text-red-400")}
-              {row("Open area of the disk", fmt(100 * fill, 2, "%"))}
-              {row("Illuminated time per point", fmt(fill * exposureMs, 3, "ms"))}
+              {row("Open area of the disk", pinholeTooBig ? "—" : fmt(100 * fill, 2, "%"))}
+              {row("Illuminated time per point", pinholeTooBig ? "—" : fmt(fill * exposureMs, 3, "ms"))}
               {row("Scans per exposure", fmt(scansPerExposure, 2, ""), banding ? "text-yellow-400" : "")}
               {banding && (
-                <p className="text-xs text-yellow-400">
-                  The exposure is not a whole number of scans: expect stripes (banding). Use a multiple of {fmt(1000 / frameRate, 2, "ms")}.
+                <p className="text-sm text-yellow-300" role="status">
+                  The exposure is not a whole number of scans: expect stripes (banding) of depth ≈ {fmt(100 * Math.min(1, bandingDepth), 1, "%")}.
+                  {frameRate > 0 ? <> Use a multiple of {fmt(1000 / frameRate, 2, "ms")}.</> : null}
+                </p>
+              )}
+              {pinholeTooBig && (
+                <p className="text-sm text-yellow-300" role="status">
+                  The pinhole diameter ({pinholeDiam} µm) exceeds the pitch ({pitch} µm): the holes would overlap, so the open area is not defined.
                 </p>
               )}
             </>

@@ -1,31 +1,32 @@
-# Handover — 2026-10-27 (session 167 → session 168)
+# Handover — 2026-10-28 (session 168 → session 169)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 167 did 5w-5 (imaging textbook pass 2/3) on `phase-5/5w-5-imaging`, PR #204: 18 pages, 1 bug (mtf default NA 0.95
-past the paraxial W₀₂₀), ≈ 30 minor fixes. PRs #200–#203 are merged to `main` but not released (`release` = `d82602ed`).
-Next: **5w-6 imaging 3/3**.
+Session 168 did 5w-6 (imaging textbook pass 3/3) on `phase-5/5w-6-imaging`, PR #205: 17 pages plus the airy-disk and
+sensor-cmos findings, 4 bugs, ≈ 45 minor fixes. Imaging 5w is done. PRs #200–#204 are merged to `main` but not released
+(`release` = `d82602ed`). Next: **5w-7 fiber-optics 1/2**.
 
 ## State
-- `lightFieldMicroscope`: refocused DOF uses W/R_obj (e = W) even when pixels cap N_u; dofRefocused/dofView NaN when N_u < 1.
-  `plenopticCamera`: overlapping micro-images count 2p_µ − D clean pixels; focus ≤ f blanks only refocusNear/Far.
-- New `widefieldAxialFirstZero` = λ/(n − √(n² − NA²)) in `optical-sectioning-thickness.ts` (the paraxial
-  `widefieldDepthOfField` stays for microscope DOF). psf-calculator axial FWHM is the exact 0.886 (as confocal-resolution);
-  5 pages still use `axialPsfFwhm` 0.88.
-- mtf defaults NA 0.4, Δz 3 µm; magnification eyepiece 15×; optical-sectioning-thickness NA 1.4.
-- Gates on `4c909851`: `npm run check` 1160 pass, 6 old eslint warnings; build: see the PR.
+- `speckleContrast(σ_φ, N_c)`: Rician √(1 + 2r)/(1 + r), r = N_c e^(−σ²)/(1 − e^(−σ²)) (Fujii & Asakura 1974); the old
+  √(1 − e^(−2σ²)) was N_c = 1. Monte Carlo (scratchpad, N_c 100): 0.746 at 2 rad vs 0.759, 0.144 at 1 rad vs 0.183 (warned).
+  Page defaults σ_h 0.08 µm, N_c 100.
+- New `spilloverMatrix(dyes, lasers, bands, mode)` in `fluorophores.ts`; multicolor has an Acquisition selector (sequential
+  = laser i only in frame i). Default ch2 mCherry 610/40.
+- `srsModulationDepth` returns NaN at δ ≥ 1; page warns δ > 10 % and pulse bandwidth > 10 cm⁻¹.
+- Defaults: resolution NA 1.4; shack-hartmann RMS 50 nm; telecentricity Δz 0.5 mm.
+- Gates on the 5w-6 commit: `npm run check` 1161 pass, 6 old eslint warnings; build: see the PR.
 
 ## Next actions
-1. `/ship` PR #204. On a release (user asks): `node scripts/post-merge-check.mjs <sha> imaging/psf-calculator=523
+1. `/ship` PR #205. On a release (user asks): `node scripts/post-merge-check.mjs <sha> imaging/psf-calculator=523
    imaging/optical-sectioning-thickness=0.59 imaging/light-field=53.64 imaging/digital-holography=0.03326`.
-2. 5w-6: imaging textbook slugs 38–55 in registry order, skipping structured-illumination (17): resolution,
-   second-harmonic-generation, sensor-cmos, shack-hartmann, signal-to-noise, simultaneous-multicolor, speckle-imaging,
-   spectral-unmixing, spinning-disk, stimulated-raman-microscopy, stitching, sum-frequency-microscopy, super-resolution,
-   telecentricity, third-harmonic-microscopy, three-photon-microscopy, two-photon-microscopy. Four `physics-reviewer` agents
-   (5/4/4/4), then two `implementer`s on disjoint page sets; main session does physics modules + tests + registry meanwhile.
-   Also fix the open `sensor-cmos` DR finding and the `airy-disk` polarization wording in that session.
+2. 5w-7: fiber-optics textbook slugs 1–21 in registry order (`git grep -n 'tier: "textbook"'
+   src/registry/calculators/fiber-optics.ts`), skipping coupling-efficiency and connector-return-loss (162). Four
+   `physics-reviewer` agents (≈ 5 each), then implementers on disjoint page sets; main session does physics + tests + registry.
 3. Last in Phase 5: the Gemini hero (ask the user for the files).
 
 ## Non-obvious facts
+- **Session 168:** implementers wrote CRLF into LF files (git normalises on commit; `sed -i "s/$//"` restores). Check
+  chart-span widenings against poles (telecentricity: the pupil pole sits on either side by the residual angle sign). Three
+  implementers in parallel take ≈ 8–15 min each (shared eslint queue).
 - **Session 167:** reviewers' "(from memory)" source attributions need checking: the multiphoton page credited Kobat 2011 with an
   800 nm claim; its abstract (crossref API `/works/<doi>`, field `abstract`) is about 1280 nm only. Implementers: brief
   warning conditions with abs() when a quantity is signed (mtf edgeWaves). `npx eslint <file>` alone can take > 2 min.

@@ -41,12 +41,13 @@ export default function SuperResolutionPage() {
 
   const palmPlot = useMemo(() => {
     const lam = wavelength * 1e-9;
-    const photons = Array.from({ length: 61 }, (_, i) => 10 ** (2 + i * 0.05)); // 100 – 10⁵
+    const photons = Array.from({ length: 61 }, (_, i) => 10 ** (i / 10)); // 1 – 10⁶
     return [
       { x: photons, y: photons.map((p) => localizationPrecision(lam, na, p) * 1e9), name: "σ (precision)", line: { color: "#60a5fa" }, type: "scatter", mode: "lines" },
       { x: photons, y: photons.map((p) => localizationPrecision(lam, na, p) * GAUSSIAN_FWHM_PER_SIGMA * 1e9), name: "FWHM = 2.35σ", line: { color: "#a78bfa", dash: "dash" }, type: "scatter", mode: "lines" },
+      { x: [palmPhotons], y: [localizationPrecision(lam, na, palmPhotons) * 1e9], name: "Current (σ)", marker: { color: "#fbbf24", size: 11 }, type: "scatter", mode: "markers" },
     ];
-  }, [na, wavelength]);
+  }, [na, wavelength, palmPhotons]);
 
   return (
     <>
@@ -56,7 +57,7 @@ export default function SuperResolutionPage() {
             <ValidatedNumberInput label="NA" value={na} onChange={setNa} min={0.1} max={1.7} step="0.01" />
           </div>
           <div>
-            <ValidatedNumberInput label="Emission wavelength (nm)" value={wavelength} onChange={setWavelength} min={300} max={1000} />
+            <ValidatedNumberInput label="Wavelength (nm): emission for PALM, excitation/STED for STED" value={wavelength} onChange={setWavelength} min={300} max={1000} />
           </div>
           <div>
             <ValidatedNumberInput label="Refractive index (n)" value={n} onChange={setN} min={1} max={1.8} step="0.01" />

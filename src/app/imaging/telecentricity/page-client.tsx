@@ -28,7 +28,7 @@ export default function TelecentricityPage() {
   const [blurRaw, setBlur] = useURLState("blur", 10);
   const [fieldRaw, setField] = useURLState("fieldHeight", 5);
   const [pupilRaw, setPupil] = useURLState("pupilDistance", 200);
-  const [dzRaw, setDz] = useURLState("dz", 10);
+  const [dzRaw, setDz] = useURLState("dz", 0.5);
   const [slopeRaw, setSlope] = useURLState("slope", 0.1);
   const m = clamp(magRaw, 0.01, 10, 0.5);
   const na = clamp(naRaw, 0.001, 0.5, 0.025);
@@ -36,7 +36,7 @@ export default function TelecentricityPage() {
   const blurUm = clamp(blurRaw, 0.5, 100, 10);
   const hMm = clamp(fieldRaw, 0.1, 200, 5);
   const sEPMm = clamp(pupilRaw, 10, 10000, 200);
-  const dzMm = clamp(dzRaw, -50, 50, 10);
+  const dzMm = clamp(dzRaw, -50, 50, 0.5);
   const slopeDeg = clamp(slopeRaw, -2, 2, 0.1);
 
   const teleSMm = pupilDistanceFromSlope(hMm * mm, slopeDeg * deg) / mm;
@@ -48,8 +48,14 @@ export default function TelecentricityPage() {
   const chiefDeg = chiefRayAngle(hMm * mm, sEPMm * mm) / deg;
   const dof = inoueDepthOfField(wavelengthNm * nm, 1, na, blurUm * um, m);
 
-  const span = Math.min(50, 0.9 * Math.min(sEPMm, Number.isFinite(teleSMm) ? Math.abs(teleSMm) : Infinity));
-  const dzs = Array.from({ length: 101 }, (_, k) => -span + (2 * span * k) / 100);
+  // ±span, widened toward the current Δz but never across a pupil pole at Δz = −s (s_EP > 0; the telecentric s has
+  // the sign of the residual angle, so its pole can lie on either side).
+  const poleBelow = Math.min(sEPMm, Number.isFinite(teleSMm) && teleSMm > 0 ? teleSMm : Infinity);
+  const poleAbove = Number.isFinite(teleSMm) && teleSMm < 0 ? -teleSMm : Infinity;
+  const span = Math.min(50, 0.9 * Math.min(poleBelow, poleAbove));
+  const dzLo = Math.min(-span, Math.max(1.1 * dzMm, -0.99 * poleBelow));
+  const dzHi = Math.max(span, Math.min(1.1 * dzMm, 0.99 * poleAbove));
+  const dzs = Array.from({ length: 101 }, (_, k) => dzLo + ((dzHi - dzLo) * k) / 100);
   const chart = [
     { x: dzs, y: dzs.map((z) => 100 * magnificationChange(z * mm, sEPMm * mm)), type: "scatter" as const, mode: "lines" as const, name: `Ordinary lens, s_EP ${sEPMm} mm`, line: { color: "#f87171" } },
     { x: dzs, y: dzs.map((z) => 100 * magnificationChange(z * mm, teleSMm * mm)), type: "scatter" as const, mode: "lines" as const, name: `Telecentric, ${slopeDeg}° residual`, line: { color: "#60a5fa" } },
@@ -79,6 +85,11 @@ export default function TelecentricityPage() {
           {row("Telecentric: edge image shift", fmt(teleShiftUm, 2, " µm"), "text-blue-400")}
           {(Number.isNaN(ordinary) || Number.isNaN(telecentric)) && (
             <p className="text-sm text-yellow-400">— : the displacement would move the object through the entrance pupil.</p>
+          )}
+          {Math.abs(dzMm * mm) > dof.total / 2 && (
+            <p className="text-sm text-yellow-300" role="status">
+              |Δz| exceeds half the depth of field ({fmt(dof.total / 2 / mm, 3, " mm")}): the image is out of focus; the edge shift is the blur centroid.
+            </p>
           )}
           {row("Depth of field, wave λ/NA²", fmt(dof.wave / mm, 3, " mm"))}
           {row("Depth of field, geometric e/(m·NA)", fmt(dof.detector / mm, 3, " mm"))}

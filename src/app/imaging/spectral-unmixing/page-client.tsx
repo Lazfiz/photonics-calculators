@@ -82,17 +82,25 @@ export default function SpectralUnmixingPage() {
     })),
   ];
   // Relative error σ_j/x_j against the photon budget: band variance (E·x)_b + σ_r² with x ∝ N.
-  const budgets = Array.from({ length: 31 }, (_, i) => 10 ** (2 + (4 * i) / 30));
+  const relError = (j: number, N: number) => {
+    if (!(aTrue[j] > 0)) return NaN;
+    const m = reconstruct(E, aTrue.map((a) => a * N));
+    const c = olsCovariance(E, m.map((v) => v + readNoise * readNoise));
+    return (100 * Math.sqrt(c[j][j])) / (aTrue[j] * N);
+  };
+  // 1 to 1e8 photons: the whole input range, so the current point is always on the axis.
+  const budgets = Array.from({ length: 41 }, (_, i) => 10 ** ((8 * i) / 40));
   const errorCurves = dyes.map((f, j) => ({
     x: budgets,
-    y: budgets.map((N) => {
-      if (!(aTrue[j] > 0)) return NaN;
-      const m = reconstruct(E, aTrue.map((a) => a * N));
-      const c = olsCovariance(E, m.map((v) => v + readNoise * readNoise));
-      return (100 * Math.sqrt(c[j][j])) / (aTrue[j] * N);
-    }),
+    y: budgets.map((N) => relError(j, N)),
     type: "scatter" as const, mode: "lines" as const, name: f.name, line: { color: COLORS[j], width: 2 },
   }));
+  const errorNow = {
+    x: dyes.map(() => photons), y: dyes.map((_, j) => relError(j, photons)), type: "scatter" as const, mode: "markers" as const, name: "Current",
+    marker: { color: dyes.map((_, j) => COLORS[j]), size: 10, line: { color: "#ffffff", width: 1.5 } },
+  };
+  const rewritten = start !== clamp(startRaw, 350, 950, 480) || end !== clamp(endRaw, 360, 1000, 720);
+  const lowPhotons = photons / bands < 20;
 
   const missing = dyes.filter((_, j) => !(inRange[j] > 0)).map((f) => f.name);
   const duplicate = new Set(dyes.map((f) => f.name)).size < dyes.length;
@@ -136,6 +144,8 @@ export default function SpectralUnmixingPage() {
           <h2 className="text-lg font-semibold">Results</h2>
           {missing.length > 0 && <p className="text-sm text-amber-400">{`No emission of ${missing.join(", ")} falls in the detected range: widen the range or drop the dye.`}</p>}
           {duplicate && <p className="text-sm text-amber-400">Two endmembers are the same dye: E is rank deficient and the abundances are not identifiable.</p>}
+          {rewritten && <p className="text-sm text-yellow-300" role="status">{`The range was adjusted to ${fmt(start, 0)}–${fmt(end, 0)} nm (the end must be at least one nm per band above the start); this range is used.`}</p>}
+          {lowPhotons && <p className="text-sm text-yellow-300" role="status">{`Only ${fmt(photons / bands, 1)} photons per band: below about 20 the Gaussian shot-noise approximation is crude (Poisson counts are skewed), so the ±σ and the simulated noise are unreliable.`}</p>}
           <table className="w-full text-sm font-mono">
             <thead>
               <tr className="text-gray-400"><th className="text-left font-normal">Dye</th><th className="text-right font-normal">True</th><th className="text-right font-normal">Estimate</th><th className="text-right font-normal">±σ</th></tr>
@@ -169,7 +179,7 @@ export default function SpectralUnmixingPage() {
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-2">Relative error σ/x vs photon budget</h3>
-          <ChartPanel data={errorCurves} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+          <ChartPanel data={[...errorCurves, errorNow]} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
             xaxis: { title: "Detected photons per pixel", gridcolor: "#374151", type: "log" }, yaxis: { title: "σ/x (%)", gridcolor: "#374151", type: "log" },
             margin: { t: 30, r: 20, b: 50, l: 60 }, showlegend: true,
           }} />

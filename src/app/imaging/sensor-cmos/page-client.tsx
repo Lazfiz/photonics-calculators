@@ -10,6 +10,7 @@ import { sensorNoise } from "../../../physics/detectors/sensor-noise";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits: number) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
+const T_MIN = -120, T_MAX = 60; // °C, range of the sensor-temperature input
 const T_REF = 25; // °C, reference temperature of the dark-current input
 
 interface Preset {
@@ -50,7 +51,7 @@ export default function SensorDesignPage() {
   const well = clamp(wellRaw, 100, 1e6, D.wellCapacity);
   const read = clamp(readRaw, 0.1, 100, D.readNoise);
   const darkRef = clamp(darkRaw, 0, 1e5, D.darkCurrent);
-  const temp = clamp(tempRaw, -120, 60, D.sensorTemp);
+  const temp = clamp(tempRaw, T_MIN, T_MAX, D.sensorTemp);
   const doubling = clamp(doublingRaw, 3, 12, 6);
   const exposureMs = clamp(exposureRaw, 0.01, 3.6e6, D.exposureTime);
   const electronsPerDn = clamp(gainRaw, 0.01, 1000, D.conversionGain);
@@ -78,11 +79,14 @@ export default function SensorDesignPage() {
   const signal = qe * photons;
   const saturated = signal + dark > maxSignal;
   const noise = noiseAt(signal);
+  const drExposure = dynamicRangeDb(maxSignal, floor, dark); // the dark charge occupies the well and the ADC range
   const snr = saturated ? NaN : signal / noise;
-  const crossover = darkReadCrossoverTemperature(read, darkRef * t, T_REF, doubling);
+  const crossoverRaw = darkReadCrossoverTemperature(read, darkRef * t, T_REF, doubling);
+  const crossoverInRange = Number.isFinite(crossoverRaw) && crossoverRaw >= T_MIN && crossoverRaw <= T_MAX;
   const density = darkCurrentDensity(darkRef, pitch * 1e-6) * 1e8; // A/m² → pA/cm²
 
-  const photonAxis = Array.from({ length: 241 }, (_, i) => 10 ** (i / 40));
+  const photonMax = Math.max(1e6, 10 * photons);
+  const photonAxis = Array.from({ length: 241 }, (_, i) => 10 ** ((i / 240) * Math.log10(photonMax)));
   const snrChart = [
     {
       x: photonAxis, y: photonAxis.map(n => (qe * n + dark > maxSignal ? NaN : (qe * n) / noiseAt(qe * n))),
@@ -92,6 +96,9 @@ export default function SensorDesignPage() {
       x: photonAxis, y: photonAxis.map(n => Math.sqrt(qe * n)),
       type: "scatter" as const, mode: "lines" as const, name: "Shot-noise limit √(QE·N)", line: { color: "#9ca3af", dash: "dash" },
     },
+    ...(saturated || !(photons > 0) || !Number.isFinite(snr)
+      ? []
+      : [{ x: [photons], y: [snr], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#fbbf24", size: 11 } }]),
   ];
   const temps = Array.from({ length: 81 }, (_, i) => -120 + 2.25 * i);
   const darkChart = [
@@ -118,7 +125,7 @@ export default function SensorDesignPage() {
         <ValidatedNumberInput label="Full Well Capacity (e⁻)" value={wellRaw} onChange={setWellCapacity} min={100} max={1000000} />
         <ValidatedNumberInput label="Read Noise (e⁻ rms)" value={readRaw} onChange={setReadNoise} min={0.1} max={100} step="0.1" />
         <ValidatedNumberInput label="Dark Current at 25 °C (e⁻/s/pixel)" value={darkRaw} onChange={setDarkCurrent} min={0} max={100000} />
-        <ValidatedNumberInput label="Sensor Temperature (°C)" value={tempRaw} onChange={setSensorTemp} min={-120} max={60} />
+        <ValidatedNumberInput label="Sensor Temperature (°C)" value={tempRaw} onChange={setSensorTemp} min={T_MIN} max={T_MAX} />
         <ValidatedNumberInput label="Dark Doubling Temperature (K)" value={doublingRaw} onChange={setDoublingTemp} min={3} max={12} step="0.1" />
         <ValidatedNumberInput label="Conversion Gain K (e⁻/DN)" value={gainRaw} onChange={setConversionGain} min={0.01} max={1000} step="0.01" />
         <ValidatedNumberInput label="ADC Bit Depth" value={bitsRaw} onChange={setBitDepth} min={8} max={24} />
@@ -130,10 +137,10 @@ export default function SensorDesignPage() {
         <ResultCard label="Dark Charge" value={`${fmt(dark, 4)} e⁻`} subtext={`${darkRate.toExponential(3)} e⁻/s at ${temp} °C`} tone="red" />
         <ResultCard label="Noise Floor" value={`${fmt(floor, 3)} e⁻`} subtext={`${fmt(floor / electronsPerDn, 2)} DN${floor / electronsPerDn < 0.5 ? ": below 0.5 DN, the ADC step limits it" : ""}`} tone="purple" />
         <ResultCard label="Dynamic Range (FW/σ_read)" value={`${fmt(dynamicRangeDb(well, read), 2)} dB`} subtext={`${fmt(Math.log2(well / read), 2)} stops, the usual datasheet figure`} tone="green" />
-        <ResultCard label="Dynamic Range at this exposure" value={`${fmt(dynamicRangeDb(maxSignal, floor), 2)} dB`} subtext={`${fmt(Math.log2(maxSignal / floor), 2)} stops: min(FW, ADC full scale)/noise floor`} tone="green" />
+        <ResultCard label="Dynamic Range at this exposure" value={Number.isFinite(drExposure) ? `${fmt(drExposure, 2)} dB` : "—"} subtext={Number.isFinite(drExposure) ? `${fmt(Math.log2((maxSignal - dark) / floor), 2)} stops: (min(FW, ADC full scale) − D)/noise floor` : "The dark charge fills the well"} tone="green" />
         <ResultCard label="ADC Full Scale" value={`${fmt(adcFullScale, 0)} e⁻`} subtext={adcFullScale < well ? "Below the full well: the ADC clips first" : `Quantization noise ${fmt(electronsPerDn / Math.sqrt(12), 3)} e⁻`} tone={adcFullScale < well ? "orange" : "yellow"} />
         <ResultCard label="Peak SNR √FW" value={fmt(Math.sqrt(maxSignal), 1)} subtext="Shot-noise limit at the largest signal" tone="cyan" />
-        <ResultCard label="Dark ≤ Read Noise Below" value={`${fmt(crossover, 1)} °C`} subtext="Cooling further gains little at this exposure" tone="blue" />
+        <ResultCard label="Dark ≤ Read Noise Below" value={crossoverInRange ? `${fmt(crossoverRaw, 1)} °C` : "—"} subtext={crossoverInRange ? "Cooling further gains little at this exposure" : `outside the ${T_MIN.toString().replace("-", "−")}…${T_MAX} °C range`} tone="blue" />
         <ResultCard label="Dark Current Density at 25 °C" value={`${fmt(density, 3)} pA/cm²`} subtext={`q·R/p² for a ${pitch} µm pixel`} tone="gray" />
         <ResultCard label="Full-Well Density" value={`${fmt(well / pitch ** 2, 0)} e⁻/µm²`} subtext="Full well per pixel area" tone="gray" />
       </div>
@@ -144,9 +151,9 @@ export default function SensorDesignPage() {
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 text-sm text-gray-300 font-mono space-y-1">
-        <p>S = QE·N; D = R₂₅·2^((T − 25 °C)/T_d)·t; σ_q = K/√12</p>
+        <p>S = QE·N; D = R₂₅·2^((T − 25 °C)/T_d)·t; σ_q = Δ/√12, Δ in e⁻/DN</p>
         <p>SNR = S / √(S + D + σ_read² + σ_q²)</p>
-        <p>DR = 20·log₁₀(S_max/σ_floor), S_max = min(FW, K·(2^bits − 1)), σ_floor = √(σ_read² + D + σ_q²)</p>
+        <p>DR = 20·log₁₀((S_max − D)/σ_floor), S_max = min(FW, K·(2^bits − 1)), σ_floor = √(σ_read² + D + σ_q²)</p>
         <p>Dark ≤ read noise for T ≤ 25 °C + T_d·log₂(σ_read²/(R₂₅·t))</p>
       </div>
     </>

@@ -42,6 +42,8 @@ export default function SumFrequencyMicroscopyPage() {
   const thick = clamp(thickRaw, 0.001, 100, 0.2);
   const dn = clamp(dnRaw, -0.2, 0.2, 0.01);
 
+  const focusOk = na < n; // the axial FWHM and the focus-derived power need NA < n
+
   const results = useMemo(() => {
     const lam1 = l1 * 1e-9, lam2 = l2 * 1e-9;
     const w1 = focalIntensityRadius(lam1, na), w2 = focalIntensityRadius(lam2, na);
@@ -53,18 +55,18 @@ export default function SumFrequencyMicroscopyPage() {
       sfgNm: sumFrequencyWavelength(lam1, lam2) * 1e9,
       w1: w1 * 1e6,
       w2: w2 * 1e6,
-      lateralNm: fwhm.lateral * 1e9,
-      axialUm: fwhm.axial * 1e6,
+      lateralNm: focusOk ? fwhm.lateral * 1e9 : NaN,
+      axialUm: focusOk ? fwhm.axial * 1e6 : NaN,
       xi: sfg.xi,
       bMinUm: thick / sfg.xi,
       forwardUm: lc.forward * 1e6,
       backwardNm: lc.backward * 1e9,
-      power: sfg.xi <= 1 ? power : NaN,
+      power: sfg.xi <= 1 && focusOk ? power : NaN,
     };
-  }, [l1, l2, na, n, p1, p2, tau, frep, deff, thick, dn]);
+  }, [l1, l2, na, n, focusOk, p1, p2, tau, frep, deff, thick, dn]);
 
   const wavelengthPlot = useMemo(() => {
-    const lams2 = Array.from({ length: 121 }, (_, i) => 400 + i * 10);
+    const lams2 = Array.from({ length: 161 }, (_, i) => 400 + i * 10);
     return [
       { x: lams2, y: lams2.map((l) => sumFrequencyWavelength(l1, l)), name: "SFG λ", line: { color: "#f472b6" }, type: "scatter", mode: "lines" },
       { x: [l2], y: [results.sfgNm], name: "Current", marker: { color: "#fbbf24", size: 11 }, type: "scatter", mode: "markers" },
@@ -76,17 +78,18 @@ export default function SumFrequencyMicroscopyPage() {
     const w1 = focalIntensityRadius(lam1, na), w2 = focalIntensityRadius(lam2, na);
     const bMin = results.bMinUm;
     // Thin-slab law only: from b/1000 up to b.
-    const lengths = Array.from({ length: 61 }, (_, i) => bMin * 10 ** (-3 + i / 20));
+    const start = Math.min(thick, bMin / 1000);
+    const lengths = Array.from({ length: 61 }, (_, i) => start * (bMin / start) ** (i / 60));
     const at = (L: number) => {
       const K = sfgCoefficient({ lambda1: lam1, lambda2: lam2, length: L * 1e-6, deff: deff * 1e-12, n, deltaN: dn, w1, w2 }).K;
       const P = averageSfgPower(K, p1 * 1e-3, p2 * 1e-3, frep * 1e6, tau * 1e-15) * 1e12;
-      return P > 0 ? P : NaN;
+      return P > 0 && focusOk ? P : NaN;
     };
     return [
       { x: lengths, y: lengths.map(at), name: "Thin slab, L² sinc²(ΔkL/2)", line: { color: "#60a5fa" }, type: "scatter", mode: "lines" },
-      ...(results.xi <= 1 ? [{ x: [thick], y: [at(thick)], name: "Current", marker: { color: "#fbbf24", size: 11 }, type: "scatter", mode: "markers" }] : []),
+      ...(results.xi <= 1 && focusOk ? [{ x: [thick], y: [at(thick)], name: "Current", marker: { color: "#fbbf24", size: 11 }, type: "scatter", mode: "markers" }] : []),
     ];
-  }, [l1, l2, na, n, p1, p2, tau, frep, deff, dn, thick, results.bMinUm, results.xi]);
+  }, [l1, l2, na, n, p1, p2, tau, frep, deff, dn, thick, results.bMinUm, results.xi, focusOk]);
 
   return (
     <>
@@ -113,8 +116,8 @@ export default function SumFrequencyMicroscopyPage() {
           {results.xi > XI_WARN && results.xi <= 1 && (
             <p className="text-sm text-yellow-300" role="status">L/b = {results.xi.toFixed(2)}: the thin-slab power overestimates the signal as L approaches the confocal parameter.</p>
           )}
-          {!Number.isFinite(results.axialUm) && (
-            <p className="text-sm text-yellow-300" role="status">The NA must be below the index n for the axial size.</p>
+          {!focusOk && (
+            <p className="text-sm text-yellow-300" role="status">The NA must be below the index n for the focus size and the SFG power, so these aren&apos;t shown.</p>
           )}
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">SFG wavelength</span><span className="font-mono text-pink-400">{fmt(results.sfgNm, 2, "nm")}</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">SFG photon energy</span><span className="font-mono">{fmt(hc_eV_nm / results.sfgNm, 3, "eV")}</span></div>

@@ -76,7 +76,7 @@ export const imaging: CalculatorEntry[] = [
     keywords: ["diffraction limit", "abbe", "spot size"],
     priority: 94,
     tier: "textbook",
-    modelNote: "Scalar Airy pattern of an aberration-free, uniformly filled circular pupil. Above NA ≈ 0.9 the polarized focus is up to 10–20 % wider; a Gaussian-filled pupil gives a wider, ringless spot.",
+    modelNote: "Scalar Airy pattern of an aberration-free, uniformly filled circular pupil. Above NA ≈ 0.9 the vector focus differs: linear polarization widens it ≈ 30 % along the polarization at NA 1.4 (slightly narrower across), unpolarized or circular light ≈ 10–20 %; a Gaussian-filled pupil gives a wider, ringless spot.",
     references: [
       {
         citation: "Born M., Wolf E. (2019). Principles of Optics, 7th ed., §8.5.2. Cambridge University Press. Airy pattern [2J₁(v)/v]² and encircled energy 1 − J₀² − J₁².",
@@ -795,7 +795,7 @@ export const imaging: CalculatorEntry[] = [
     title: "Resolution Calculator",
     description: "Abbe and Rayleigh lateral resolution limits for diffraction-limited imaging.",
     tier: "textbook",
-    modelNote: "Classical two-point and grating criteria for incoherent, aberration-free imaging with a uniformly filled pupil. The axial FWHM is the widefield on-axis PSF; NA must stay below the medium index.",
+    modelNote: "Classical two-point and grating criteria for incoherent, aberration-free imaging with a uniformly filled pupil. The axial FWHM is the widefield on-axis PSF; NA must stay below the medium index. Scalar: the vector focus above NA ≈ 0.9 isn't modelled.",
     references: [
       {
         citation: "Born M., Wolf E. (2019). Principles of Optics, 7th ed., §8.6.2. Cambridge University Press. Rayleigh resolving power 0.61 λ/NA.",
@@ -837,7 +837,7 @@ export const imaging: CalculatorEntry[] = [
     description: "Pixel SNR, dark charge against cooling, ADC step and dynamic range of a camera sensor, with sCMOS and cooled-CCD presets.",
     keywords: ["CMOS Sensor Design", "CCD Sensor Design", "CCD/CCM Sensor Design", "sCMOS"],
     tier: "textbook",
-    modelNote: "Poisson signal and dark charge, Gaussian read noise and quantization noise K/√12 add in quadrature (EMVA 1288). Dark current follows the doubling law about 25 °C, the local form of the n_i scaling. Fixed-pattern noise and nonlinearity near full well are left out; the presets are representative, not a specific camera.",
+    modelNote: "Poisson signal and dark charge, Gaussian read noise and quantization noise Δ/√12 (Δ in e⁻/DN) add in quadrature (EMVA 1288). Dark current follows the doubling law about 25 °C, the local form of the n_i scaling. Fixed-pattern noise and nonlinearity near full well are left out; the presets are representative, not a specific camera.",
     references: [
       {
         citation: "Janesick J. R. (2007). Photon Transfer: DN → λ. SPIE Press, ch. 5. Read, dark and shot noise in quadrature, full well and dynamic range.",
@@ -859,7 +859,7 @@ export const imaging: CalculatorEntry[] = [
     description: "SHWFS design: spot size, centroid precision, sensitivity, dynamic range, and sub-aperture layout.",
     keywords: ["Wavefront Sensing", "Shack-Hartmann Wavefront Sensor"],
     tier: "textbook",
-    modelNote: "Diffraction-limited lenslet spots; dynamic range is the tilt at which a spot stays inside its own sub-aperture. Centroid noise is the photon limit for a Gaussian spot; read noise, background and pixelation are neglected.",
+    modelNote: "Diffraction-limited lenslet spots; dynamic range is the tilt at which a spot stays inside its own sub-aperture. Centroid noise is the photon limit for a Gaussian spot; read noise, background and pixelation are neglected. Maréchal's Strehl holds for S ≳ 0.3.",
     references: [
       {
         citation: "Akondi V., Dubra A. (2021). Shack-Hartmann wavefront sensor optical dynamic range. Opt. Express 29, 8417. Eq. 2 (lenslet-bound dynamic range).",
@@ -894,7 +894,7 @@ export const imaging: CalculatorEntry[] = [
     title: "Simultaneous Multicolor Imaging",
     description: "Calculate spectral separation, crosstalk, timing budgets, and SNR for multi-channel fluorescence imaging.",
     tier: "textbook",
-    modelNote: "Spillover L_ij = R_ij/R_jj from FPbase-fitted spectra, all lasers on at equal photon flux, top-hat filters. Bleed-through adds shot noise before unmixing; charge or digital binning sets the read noise.",
+    modelNote: "Spillover L_ij = R_ij/R_jj from FPbase-fitted spectra, equal photon flux per laser, top-hat filters. Simultaneous: only the emission sets L (the lasers cancel); sequential adds excitation crosstalk. Bleed-through adds shot noise before unmixing; charge or digital binning sets the read noise.",
     references: [
       {
         citation: "Roederer M. (2001). Spectral compensation for flow cytometry: visualization artifacts, limitations, and caveats. Cytometry 45, 194–205. Spillover as the signal in a secondary detector over that in the primary one.",
@@ -916,11 +916,15 @@ export const imaging: CalculatorEntry[] = [
     description: "Laser speckle: objective and subjective speckle size, contrast from the rms roughness of a Gaussian surface, and contrast reduction by averaging uncorrelated patterns.",
     keywords: ["laser speckle", "speckle size", "speckle contrast", "surface roughness", "despeckle"],
     tier: "textbook",
-    modelNote: "Uniformly lit circular spot or pupil (|2J₁(v)/v|² correlation). Gaussian surface phase in reflection at normal incidence with many correlation cells in the spot, contrast in the specular direction; averaged patterns uncorrelated and of equal mean.",
+    modelNote: "Uniformly lit circular spot or pupil (|2J₁(v)/v|² correlation). Rician contrast of a Gaussian surface phase (normal incidence, specular direction) with N_c correlation cells per resolution cell, valid for σ_φ ≳ 1 rad; averaged patterns uncorrelated, equal mean.",
     references: [
       {
         citation: "Goodman J. W. (2020). Speckle Phenomena in Optics: Theory and Applications, 2nd ed. SPIE Press. First-order statistics (ch. 3) and spatial structure of speckle (ch. 5).",
         url: "https://doi.org/10.1117/3.2548484",
+      },
+      {
+        citation: "Fujii H., Asakura T. (1974). Effect of surface roughness on the statistical distribution of image speckle intensity. Optics Communications 11, 35–38.",
+        url: "https://doi.org/10.1016/0030-4018(74)90327-7",
       },
     ],
     related: [
@@ -977,7 +981,7 @@ export const imaging: CalculatorEntry[] = [
     description: "Shot-noise-limited SNR, detection limit, Stokes wavelength, resolution and frame time for stimulated Raman scattering microscopy.",
     keywords: ["Stimulated Raman Scattering (SRS)"],
     tier: "textbook",
-    modelNote: "SNR = δ√N from the shot noise of the detected beam alone; the modulation depth δ is an input or an estimate from the plane-wave Raman gain g_R over two paraxial Gaussian foci in a thick sample, with identical overlapped Gaussian pulses. Laser excess noise, detector noise and lock-in losses are not modelled. Resolution is the FWHM of I_p·I_S on Zipfel's Gaussian focus.",
+    modelNote: "SNR = δ√N, shot noise of the detected beam only. δ is an input or a small-signal (δ ≪ 1), steady-state (pulses longer than T₂) estimate from g_R over paraxial Gaussian foci in a thick sample. Excess laser noise and lock-in losses aren't modelled.",
     references: [
       {
         citation: "Ozeki Y. et al. (2009). Analysis and experimental assessment of the sensitivity of stimulated Raman scattering microscopy. Opt. Express 17, 3651–3658. Shot-noise-limited SRS sensitivity.",
@@ -1061,7 +1065,7 @@ export const imaging: CalculatorEntry[] = [
     title: "Sum-Frequency Generation Microscopy Calculator",
     description: "SFG wavelength, focal spot, coherence lengths and thin-layer signal power for sum-frequency generation microscopy.",
     tier: "textbook",
-    modelNote: "Wavelength from energy conservation (exact). Power: plane-wave L² sinc²(ΔkL/2) over the overlap of two Gaussian foci, valid for a uniform layer much thinner than the confocal parameter; synchronised Gaussian pulses of equal width. No walk-off or absorption, undepleted inputs.",
+    modelNote: "Wavelength from energy conservation (exact). Power: plane-wave L² sinc²(ΔkL/2) over the overlap of two Gaussian foci, valid for a uniform layer much thinner than the confocal parameter; paraxial, NA < n; synchronised Gaussian pulses of equal width. No walk-off or absorption, undepleted inputs.",
     references: [
       {
         citation: "Boyd R. W. (2008). Nonlinear Optics, 3rd ed., §2.2, eq. 2.2.10. Academic Press. Coupled-amplitude equation of sum-frequency generation.",
@@ -1118,10 +1122,10 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "third-harmonic-microscopy",
     title: "Third-Harmonic Generation Microscopy Calculator",
-    description: "Calculate THG wavelength, signal intensity, and resolution for label-free interface and heterogeneity imaging.",
+    description: "THG wavelength, focal intensity and source size, and signal scaling with power and depth, for label-free interface imaging.",
     keywords: ["Third Harmonic Generation (THG)"],
     tier: "textbook",
-    modelNote: "Focal size from Zipfel's Gaussian fit (I³ source). The signal is not predicted: in a homogeneous medium the Gouy phase cancels THG, so it appears only at interfaces, and the charts show scaling only.",
+    modelNote: "Focal size from Zipfel's Gaussian fit (I³ source). The signal is not predicted: in a homogeneous medium the Gouy phase cancels THG, so it appears only at interfaces, and the charts show scaling only. An interface responds over ≈ the confocal parameter (Barad 1997), wider than the I³ source.",
     references: [
       {
         citation: "Zipfel W. R., Williams R. M., Webb W. W. (2003). Nonlinear magic: multiphoton microscopy in the biosciences. Nat. Biotechnol. 21, 1369–1377. Gaussian fit to the squared illumination PSF.",

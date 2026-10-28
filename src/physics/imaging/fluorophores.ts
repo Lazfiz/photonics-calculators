@@ -118,6 +118,20 @@ export function relativeSignal(f: Fluorophore, lasers: readonly number[], lo: nu
   return f.extinction * ex * f.quantumYield * emissionFraction(f.em, lo, hi);
 }
 
+/**
+ * Spillover matrix L[i][j] = R_ij/R_jj: the signal of dye j in channel i relative to dye j in its own channel j, with
+ * R_ij = relativeSignal(dye j, lasers on in frame i, filter band i). "simultaneous": every laser is on in one frame, so
+ * the excitation cancels and L_ij is the emission ratio of dye j between filters i and j. "sequential": frame i has only
+ * laser i, so L_ij also carries the excitation ratio f_ex,j(λ_i)/f_ex,j(λ_j). NaN where dye j gives no own-channel signal.
+ */
+export function spilloverMatrix(
+  dyes: readonly Fluorophore[], lasers: readonly number[], bands: readonly (readonly [number, number])[],
+  mode: "simultaneous" | "sequential",
+): number[][] {
+  const R = bands.map(([lo, hi], i) => dyes.map((d) => relativeSignal(d, mode === "simultaneous" ? lasers : [lasers[i]], lo, hi)));
+  return R.map((row) => row.map((v, j) => (R[j][j] > 0 ? v / R[j][j] : NaN)));
+}
+
 /** Förster overlap J = ∫F_D ε_A λ⁴ dλ / ∫F_D dλ (Lakowicz §13.2), in M⁻¹ cm⁻¹ nm⁴. */
 export function forsterOverlap(donor: Fluorophore, acceptor: Fluorophore): number {
   const emD = (l: number) => bandAtWavelength(donor.em, l);

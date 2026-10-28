@@ -45,7 +45,8 @@ export default function TwoPhotonMicroscopyPage() {
 
   const resolutionChart = useMemo(() => {
     const lam = wavelength * 1e-9;
-    const nas = Array.from({ length: 80 }, (_, i) => 0.2 + i * 0.018).filter((a) => a < refractiveIndex);
+    const na0 = Math.min(0.2, na);
+    const nas = Array.from({ length: 80 }, (_, i) => na0 + i * 0.018).filter((a) => a < refractiveIndex);
     const lateral = nas.map((a) => multiphotonFwhm(lam, refractiveIndex, a, 2).lateral * 1e6);
     const axial = nas.map((a) => multiphotonFwhm(lam, refractiveIndex, a, 2).axial * 1e6);
     const current = multiphotonFwhm(lam, refractiveIndex, na, 2);
@@ -83,10 +84,10 @@ export default function TwoPhotonMicroscopyPage() {
       )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ResultCard label="Lateral FWHM (2P)" value={fmt(fwhm.lateral * 1e9, 0, "nm")} tone="blue" subtext={`1P equivalent λ ${(wavelength / 2).toFixed(0)} nm`} />
-        <ResultCard label="Axial FWHM (2P)" value={fmt(fwhm.axial * 1e6, 2, "µm")} tone="yellow" subtext={na <= 0.7 ? "Zipfel fit; NA ≤ 0.7 branch" : "Zipfel fit; NA > 0.7 branch"} />
+        <ResultCard label="Lateral FWHM (2P)" value={valid ? fmt(fwhm.lateral * 1e9, 0, "nm") : "—"} tone="blue" subtext={`1P equivalent λ ${(wavelength / 2).toFixed(0)} nm; ${na <= 0.7 ? "Zipfel fit, NA ≤ 0.7 branch" : "Zipfel fit, NA > 0.7 branch"}`} />
+        <ResultCard label="Axial FWHM (2P)" value={fmt(fwhm.axial * 1e6, 2, "µm")} tone="yellow" subtext="Zipfel fit" />
         <ResultCard label="Excitation volume" value={fmt(volume * 1e18, 3, "fL")} tone="purple" subtext="π^(3/2) ω_xy² ω_z (1 fL = 1 µm³)" />
-        <ResultCard label="Peak intensity at focus" value={fmt(peakIntensity / 1e16, 2, "TW/cm²")} tone="green" subtext="At the surface, Gaussian pulse" />
+        <ResultCard label="Peak intensity at focus" value={valid ? fmt((peakIntensity * fractionAtDepth) / 1e16, 2, "TW/cm²") : "—"} tone="green" subtext={`At the focus depth, I_surface·e^(−µz); surface: ${valid ? fmt(peakIntensity / 1e16, 2, "TW/cm²") : "—"}`} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
@@ -104,7 +105,7 @@ export default function TwoPhotonMicroscopyPage() {
           <p className="font-mono">ω_z = 0.532λ/(√2 (n − √(n² − NA²))), V = π^(3/2) ω_xy² ω_z</p>
           <p className="font-mono">I_peak = P_peak/(2π ω_xy²), P_peak = 2√(ln 2/π)·E/τ</p>
           <p className="font-mono">P(z) = P₀ exp(−µz), 2P signal ∝ P(z)²</p>
-          <p>Gaussian fit to the squared focal intensity of a filled objective pupil: Zipfel, Williams &amp; Webb, Nat. Biotechnol. 21, 1369 (2003). The peak intensity is within about 1 % of the Airy peak πNA²P/λ². The depth model counts only ballistic excitation photons; aberrations and out-of-focus background are not included.</p>
+          <p>Gaussian fit to the squared focal intensity of a filled objective pupil: Zipfel, Williams &amp; Webb, Nat. Biotechnol. 21, 1369 (2003). The peak intensity is within about 1 % of the Airy peak πNA²P/λ² (NA ≤ 0.8; the high-NA fit is 4–10 % lower at NA 1.0–1.4). The depth model counts only ballistic excitation photons; aberrations and out-of-focus background are not included.</p>
         </div>
       </div>
 

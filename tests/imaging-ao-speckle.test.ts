@@ -51,19 +51,20 @@ test("speckle size and Gaussian-surface contrast (Goodman, Speckle Phenomena in 
   // λ(1 + M)N = 0.532 µm · 1.5 · 8 = 6.384 µm.
   assertRel(subjectiveSpeckleSize(532 * nm, 8, 0.5) / um, 6.384, 1e-12, "λ(1 + M)N");
   assertRel(surfacePhaseRms(532 * nm / (4 * Math.PI), 532 * nm), 1, 1e-12, "σ_h = λ/4π → σ_φ = 1");
-  // Rician hand values √(1 + 2r)/(1 + r), r = e^(−σ²)/(1 − e^(−σ²)): σ_φ 1 → 0.92987, 0.5 → 0.62727.
-  for (const s of [1, 0.5]) {
-    const r = Math.exp(-s * s) / -Math.expm1(-s * s);
-    assertRel(speckleContrast(s), Math.sqrt(1 + 2 * r) / (1 + r), 1e-12, `Rician form at ${s}`);
-  }
-  assertRel(speckleContrast(1), 0.92987, 1e-5, "C(1)");
-  assertRel(speckleContrast(0.5), 0.62727, 1e-5, "C(0.5)");
-  // Small σ_φ: C ≈ √2 σ_φ; fully rough: C → 1.
-  assertRel(speckleContrast(1e-4), Math.SQRT2 * 1e-4, 1e-6, "smooth limit");
-  assert.equal(speckleContrast(0), 0);
-  assert.equal(speckleContrast(10), 1);
+  // Rician √(1 + 2r)/(1 + r), r = N_c e^(−σ²)/(1 − e^(−σ²)) (Goodman ch. 3; Fujii & Asakura 1974). Hand values:
+  // N_c 100, σ_φ 2 → r = 1.8657, C = 0.75904; N_c 1000, σ_φ 2 → 0.31489. A seeded Monte Carlo sum of N_c phasors with
+  // Gaussian phases (20 000 trials) gave 0.746 and 0.313.
+  assertRel(speckleContrast(2, 100), 0.75904, 1e-4, "N_c 100, 2 rad");
+  assertRel(speckleContrast(2, 1000), 0.31489, 1e-4, "N_c 1000, 2 rad");
+  // N_c = 1 is the old C = √(1 − e^(−2σ²)) (0.92987 at 1 rad); more cells lower the contrast.
+  assertRel(speckleContrast(1, 1), 0.92987, 1e-5, "N_c 1");
+  assert.ok(speckleContrast(1, 100) < 0.2, "many cells, σ_φ 1");
+  // Smooth surface: no speckle; fully rough: C → 1.
+  assert.equal(speckleContrast(0, 100), 0);
+  assertRel(speckleContrast(10, 1e6), 1, 1e-12, "fully developed");
+  assert.ok(Number.isNaN(speckleContrast(1, 0.5)), "N_c < 1");
   assertRel(averagedContrast(1, 10), 0.316228, 1e-6, "1/√10");
   assert.ok(Number.isNaN(averagedContrast(1, 0.5)));
   assert.ok(Number.isNaN(objectiveSpeckleSize(532 * nm, 0.2, 0)));
-  assert.ok(Number.isNaN(speckleContrast(-1)));
+  assert.ok(Number.isNaN(speckleContrast(-1, 100)));
 });
