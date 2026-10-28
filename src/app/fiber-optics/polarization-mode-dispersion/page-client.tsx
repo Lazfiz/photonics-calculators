@@ -61,8 +61,13 @@ export default function PMDPage() {
   }, [calc.mean_ps, calc.maxDgd_ps, maxToMean]);
 
   const distanceData = useMemo(() => {
-    const distances = Array.from({ length: 100 }, (_, i) => (i + 1) * 10);
-    const traces: Record<string, unknown>[] = CHART_RATES_GBPS.map((rate) => ({
+    // Distance axis: from min(10, L/2) to max(1000, 2L) km, so the operating length is always on the chart.
+    const dLo = Math.min(10, length / 2);
+    const dHi = Math.max(1000, 2 * length);
+    const distances = Array.from({ length: 200 }, (_, i) => dLo + ((dHi - dLo) * i) / 199);
+    const rates: number[] = [...CHART_RATES_GBPS];
+    if (!rates.includes(bitRate)) rates.push(bitRate);
+    const traces: Record<string, unknown>[] = rates.map((rate) => ({
       x: distances,
       y: distances.map((d) => meanDgd(pmdCoeff * PS_SQRT_KM, d * 1e3) * rate * 1e9),
       type: "scatter", mode: "lines", name: `${rate} Gb/s`, line: { width: 1.5 },
@@ -71,8 +76,12 @@ export default function PMDPage() {
       x: [distances[0], distances[distances.length - 1]], y: [MEAN_DGD_BIT_FRACTION, MEAN_DGD_BIT_FRACTION],
       type: "scatter", mode: "lines", name: "0.1 rule", line: { color: "#f87171", width: 1, dash: "dash" },
     });
+    traces.push({
+      x: [length], y: [meanDgd(pmdCoeff * PS_SQRT_KM, length * 1e3) * bitRate * 1e9],
+      type: "scatter", mode: "markers", name: "Operating point", marker: { color: "#ffffff", size: 9, line: { color: "#111827", width: 1 } },
+    });
     return traces;
-  }, [pmdCoeff]);
+  }, [pmdCoeff, length, bitRate]);
 
   const withinRule = calc.meanOverT <= MEAN_DGD_BIT_FRACTION;
 

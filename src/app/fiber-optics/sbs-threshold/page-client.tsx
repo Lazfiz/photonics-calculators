@@ -17,7 +17,7 @@ const POL_CASES = [
 const toDbm = (P: number) => 10 * Math.log10(P * 1e3);
 
 export default function SBSThresholdPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 400, max: 2200 }); // nm
   const [fiberLength, setFiberLength] = useURLState("fiberLength", 10); // km
   const [effectiveArea, setEffectiveArea] = useURLState("effectiveArea", 80); // μm²
   const [loss, setLoss] = useURLState("loss", 0.2); // dB/km
@@ -26,7 +26,7 @@ export default function SBSThresholdPage() {
   const [laserLinewidth, setLaserLinewidth] = useURLState("laserLinewidth", 1); // MHz
 
   const results = useMemo(() => {
-    const lambda = Math.max(wavelength, 1) * 1e-9;
+    const lambda = Math.min(Math.max(wavelength, 400), 2200) * 1e-9;
     const L = Math.max(fiberLength, 1e-3) * 1e3;
     const Aeff = Math.max(effectiveArea, 1) * 1e-12;
     const alpha = alphaFromDbPerKm(Math.max(loss, 0));
@@ -39,7 +39,8 @@ export default function SBSThresholdPage() {
       sbsThreshold({ Aeff, gB, Leff: leff, K, sourceLinewidth: dnu, brillouinLinewidth: dnuB });
     const thresholds = POL_CASES.map(({ key }) => threshold(SBS_POLARIZATION_FACTOR[key]));
 
-    const linewidths = Array.from({ length: 81 }, (_, i) => (i * 5 * dnuB) / 80 / 1e6); // 0 … 5Δν_B, MHz
+    const lwMax = Math.max(5 * dnuB, 2 * dnuS) / 1e6; // MHz
+    const linewidths = Array.from({ length: 81 }, (_, i) => (i * lwMax) / 80); // 0 … max(5Δν_B, 2Δν_s), MHz
     const lengths = Array.from({ length: 80 }, (_, i) => ((i + 1) / 80) * 2 * (L / 1e3)); // 0 … 2L, km
     const curves = (xs: number[], f: (K: number, x: number) => number) =>
       POL_CASES.map(({ key, label, color }) => ({
@@ -52,7 +53,14 @@ export default function SBSThresholdPage() {
       nuB: brillouinShift(lambda),
       linewidthFactor: sbsLinewidthFactor(dnuS, dnuB),
       thresholds,
-      vsLinewidth: curves(linewidths, (K, lw) => threshold(K, Leff, lw * 1e6)),
+      vsLinewidth: [
+        ...curves(linewidths, (K, lw) => threshold(K, Leff, lw * 1e6)),
+        // The input linewidth on each curve.
+        {
+          type: "scatter" as const, mode: "markers" as const, name: "Your Δνs", showlegend: false,
+          x: thresholds.map(() => dnuS / 1e6), y: thresholds.map((t) => t * 1e3), marker: { color: "#ffffff", size: 8 },
+        },
+      ],
       vsLength: curves(lengths, (K, l) => threshold(K, effectiveLength(alpha, l * 1e3))),
     };
   }, [wavelength, fiberLength, effectiveArea, loss, brillouinGain, brillouinBandwidth, laserLinewidth]);
@@ -69,8 +77,10 @@ export default function SBSThresholdPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Fiber Parameters</h2>
+          <div className="mb-3">
+            <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={400} max={2200} step="any" />
+          </div>
           {[
-            { label: "Wavelength (nm)", val: wavelength, set: setWavelength },
             { label: "Fiber Length (km)", val: fiberLength, set: setFiberLength },
             { label: "Effective Area (μm²)", val: effectiveArea, set: setEffectiveArea },
             { label: "Loss (dB/km)", val: loss, set: setLoss },
@@ -92,6 +102,9 @@ export default function SBSThresholdPage() {
               <ValidatedNumberInput label={label} value={val} onChange={set} min={0} step="any" />
             </div>
           ))}
+          <p className="text-xs text-gray-500">
+            The Brillouin gain bandwidth Δν_B is your value at this wavelength (it scales ≈ 1/λ²); the wavelength itself only sets the Brillouin shift.
+          </p>
         </div>
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
@@ -109,8 +122,9 @@ export default function SBSThresholdPage() {
             ))}
           </div>
           <p className="text-xs text-gray-500 mt-3">
-            P_th = 21·K·A_eff·(1 + Δνs/ΔνB) / (gB·L_eff). The linewidth factor assumes a Lorentzian source; phase or
-            data modulation that spreads the spectrum over GHz raises the threshold much further.
+            P_th = 21·K·A_eff·(1 + Δνs/ΔνB) / (gB·L_eff). The linewidth factor assumes a Lorentzian source; phase
+            modulation or dithering of the source that spreads the spectrum over GHz raises the threshold much further, whereas
+            on–off keying keeps about half the power in the carrier and so only roughly doubles it.
           </p>
         </div>
 

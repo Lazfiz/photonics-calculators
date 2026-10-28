@@ -9,7 +9,7 @@ goes in the PR description.
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
-  textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 (fiber-optics 1/2) done (sessions 163–169); next 5w-8 (fiber-optics 2/2); the Gemini hero is last. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) done (sessions 163–170); next 5w-9 (wave-optics 1/2); the Gemini hero is last. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -186,8 +186,12 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - `photoacoustic`: diffuse build-up factor k ≈ 2–5 (Jacques, from memory) is described but set to 1.
 - `low-coherence`, `optical-coherence`: SNR prefactors ρP/(2eB) and ρPΔt/(2e) not checked against Choma 2003 eqs. 9/10 (PDF unread).
 - `plenoptic-camera`: "12 usable pixels" and "prototype reached about half" (Ng 2005 tech report) unverified.
-**Fiber optics (session 169, unverified or deferred)**
-- `macro-bending-loss`, `mode-field-diameter`: no elasto-optic option yet (`bendLossPerTurnDb(…, elastoOptic)` exists); 5w-8.
+**Fiber optics (sessions 169–170, unverified or deferred)**
+- `photonic-crystal`: Marcuse step-index MFD fit with V_SK vs Nielsen et al. OL 28, 2309 (2003) PCF fit (from memory: 6.69 vs 5.08 µm
+  at the defaults; NKT LMA-5 ≈ 4.1 µm agrees with the page). Read the paper before changing. Mortensen OL 28, 1879 DOI unchecked (429).
+- `fiber-optic-sensor`: K_T 9.56 pm/K (Cosme 2026) vs ≈ 10–13 pm/K in Kersey-era texts (from memory). `rare-earth-doped`: preset σ
+  (Er 1480, Yb 976) unchecked against Barnes Fig. 6(c) / Melkumov App. 2. `splice-loss`: air-gap Fresnel loss (≤ 0.59 dB) not
+  included (`gapEtalonTransmission` exists); the page says so. `nonlinear-effects`: SBS card is narrow-CW only (no K/linewidth option).
 - `dispersion-shifted`: G.653/G.655 preset values (S₀ ≤ 0.085; G.655.C 1–10 ps/(nm·km)) not read in the Recommendations.
 - `fiber-bragg-grating-sensor`: the ±50 K linear K_T range (Cosme 2026) unverified. `fiber-amplifier`: preset σ vs Barnes
   1991 Fig. 6(c) unverified. `dispersion-comp`: Agrawal §2.4.3/§5.4.4 numbers are 4th-edition; 5th-ed DOI 10.1002/9781119737391.
@@ -278,7 +282,7 @@ One box per session, in this order.
   connector-return-loss, fade-probability.
   - [x] 5w-1 detectors 1/3 (session 163, PR #200) · [x] 5w-2 detectors 2/3 (session 164, PR #201) · [x] 5w-3 detectors 3/3 (session 165, PR #202)
   - [x] 5w-4 imaging 1/3 (session 166, PR #203) · [x] 5w-5 imaging 2/3 (session 167, PR #204) · [x] 5w-6 imaging 3/3 (session 168, PR #205)
-  - [x] 5w-7 fiber-optics 1/2 (session 169) · [ ] 5w-8 fiber-optics 2/2 (41)
+  - [x] 5w-7 fiber-optics 1/2 (session 169, PR #206) · [x] 5w-8 fiber-optics 2/2 (session 170, PR #207)
   - [ ] 5w-9 wave-optics 1/2 · [ ] 5w-10 wave-optics 2/2 (32)
   - [ ] 5w-11 free-space-comms (17) · [ ] 5w-12 laser-safety (20) · [ ] 5w-13 materials (22)
   - [ ] 5w-14 spectroscopy (21) · [ ] 5w-15 thin-film + polarization (24)
@@ -301,7 +305,10 @@ One box per session, in this order.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
-  - 5w-7 fiber-optics 1/2 (session 169, `phase-5/5w-7-fiber-optics`): 20 pages, 4 bugs: chromatic-dispersion penalty ignored a
+  - 5w-8 fiber-optics 2/2 (session 170, `phase-5/5w-8-fiber-optics`, PR #207): 21 pages, 3 bugs: photonic-crystal V/guidance
+    outside d/Λ 0.2–0.8, wdm-coupler (dead selector, echoed isolation; new `wdm-channel-plan.ts`, tier illustrative), nonzero-dispersion
+    λ0 out of band; elasto-optic on by default on macro-bending-loss and mode-field-diameter; 14 chart ranges; 1167 tests.
+  - 5w-7 fiber-optics 1/2 (session 169, `phase-5/5w-7-fiber-optics`, PR #206): 20 pages, 4 bugs: chromatic-dispersion penalty ignored a
     narrow source (now √(σ² − σ₀²)), dispersion-comp no limit at σ_λ 0 (optimum-pulse σ_b), fiber-bandwidth SMF < 1260 nm,
     fiber-amplifier > 25 dB unwarned; elasto-optic R/(1 − p_e) on bend-insensitive; 1163 tests.
   - 5w-6 imaging 3/3 (session 168, `phase-5/5w-6-imaging`, PR #205): 17 pages + airy-disk/sensor-cmos findings, 4 bugs: speckle contrast

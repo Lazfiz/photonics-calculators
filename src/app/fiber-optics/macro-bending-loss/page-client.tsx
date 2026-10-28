@@ -6,8 +6,8 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  DB_PER_NEPER, LP11_CUTOFF_V, MFD_FIT_V_RANGE, MIN_V, bendLossCoefficient, bendLossPerTurnDb, lp01Mode, lp11CutoffWavelength,
-  modeFieldRadius, vNumber,
+  DB_PER_NEPER, LP11_CUTOFF_V, MFD_FIT_V_RANGE, MIN_V, bendLossCoefficient, bendLossPerTurnDb, elastoOpticBendRadius, lp01Mode,
+  lp11CutoffWavelength, modeFieldRadius, vNumber,
 } from "../../../physics/fiber-optics/macro-bending-loss";
 import { claddingIndex } from "../../../physics/fiber-optics/step-index-modes";
 
@@ -33,6 +33,10 @@ export default function MacrobendingLossPage() {
   // 1.4682 is SMF-28's group index, not a core index.
   const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.4494, { min: 1, max: 4 });
   const [numBends, setNumBends] = useURLState("numBends", 1, { min: 1, max: 10000 }); // turns
+  // On by default, as on bend-insensitive: Schermer & Cole 2007 fit measured SMF-28 loss with R_eff ≈ 1.28 R.
+  const [elastoOptic, setElastoOptic] = useURLState("elastoOptic", 1, { min: 0, max: 1 });
+  const eo = elastoOptic === 1;
+  const eoFactor = elastoOpticBendRadius(1, coreIndex);
 
   const fiber = useMemo(() => ({ a: coreRadius * 1e-6, n1: coreIndex, NA: coreNA }), [coreRadius, coreIndex, coreNA]);
 
@@ -41,33 +45,39 @@ export default function MacrobendingLossPage() {
     const R = bendRadius * 1e-3;
     const V = vNumber(fiber, lambda);
     const mode = lp01Mode(V);
-    const perTurn = bendLossPerTurnDb(fiber, lambda, R, mode);
+    const perTurn = bendLossPerTurnDb(fiber, lambda, R, mode, eo);
     return {
       V,
       n2: claddingIndex(fiber),
-      dBPerMetre: DB_PER_NEPER * bendLossCoefficient(fiber, lambda, R, mode),
+      dBPerMetre: DB_PER_NEPER * bendLossCoefficient(fiber, lambda, eo ? elastoOpticBendRadius(R, fiber.n1) : R, mode),
       perTurn,
       total: perTurn * numBends,
       mfd_um: 2 * modeFieldRadius(fiber, lambda) * 1e6,
       cutoff_nm: lp11CutoffWavelength(fiber) * 1e9,
     };
-  }, [fiber, wavelength, bendRadius, numBends]);
+  }, [fiber, wavelength, bendRadius, numBends, eo]);
 
   const radiusData = useMemo(() => {
-    const radii_mm = Array.from({ length: 126 }, (_, i) => 5 + i * 0.2);
+    // 5–30 mm, widened to keep the input radius on the chart.
+    const lo = Math.min(5, 0.8 * bendRadius);
+    const hi = Math.max(30, 1.25 * bendRadius);
+    const radii_mm = Array.from({ length: 126 }, (_, i) => lo + (i * (hi - lo)) / 125);
     return CHART_WAVELENGTHS_NM.map((wl) => {
       const lambda = wl * 1e-9;
       const mode = lp01Mode(vNumber(fiber, lambda));
-      const loss = radii_mm.map((r) => bendLossPerTurnDb(fiber, lambda, r * 1e-3, mode));
+      const loss = radii_mm.map((r) => bendLossPerTurnDb(fiber, lambda, r * 1e-3, mode, eo));
       return { ...plottable(radii_mm, loss), type: "scatter" as const, mode: "lines" as const, name: `${wl} nm`, line: { width: 2 } };
     });
-  }, [fiber]);
+  }, [fiber, bendRadius, eo]);
 
   const wavelengthData = useMemo(() => {
-    const wavelengths_nm = Array.from({ length: 61 }, (_, i) => 1100 + i * 10);
-    const loss = wavelengths_nm.map((wl) => bendLossPerTurnDb(fiber, wl * 1e-9, bendRadius * 1e-3));
+    // 1100–1700 nm, widened to keep the input wavelength on the chart.
+    const lo = Math.min(1100, wavelength - 50);
+    const hi = Math.max(1700, wavelength + 50);
+    const wavelengths_nm = Array.from({ length: 61 }, (_, i) => lo + (i * (hi - lo)) / 60);
+    const loss = wavelengths_nm.map((wl) => bendLossPerTurnDb(fiber, wl * 1e-9, bendRadius * 1e-3, undefined, eo));
     return [{ ...plottable(wavelengths_nm, loss), type: "scatter" as const, mode: "lines" as const, name: "Bend loss", line: { color: "#f97316", width: 2 } }];
-  }, [fiber, bendRadius]);
+  }, [fiber, bendRadius, wavelength, eo]);
 
   const valid = Number.isFinite(calc.perTurn);
   const mfdInFit = Number.isFinite(calc.mfd_um) && calc.V >= MFD_FIT_V_RANGE[0] && calc.V <= MFD_FIT_V_RANGE[1];
@@ -81,6 +91,12 @@ export default function MacrobendingLossPage() {
         <ValidatedNumberInput label="Core NA" value={coreNA} onChange={setCoreNA} min={0.01} max={0.5} step="0.001" />
         <ValidatedNumberInput label="Core Index n₁" value={coreIndex} onChange={setCoreIndex} min={1} max={4} step="0.0001" />
         <ValidatedNumberInput label="Number of Turns" value={numBends} onChange={setNumBends} min={1} max={10000} step="1" />
+        <label className="flex items-start gap-3 rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <input type="checkbox" className="mt-1" checked={eo} onChange={(e) => setElastoOptic(e.target.checked ? 1 : 0)} />
+          <span className="text-sm text-gray-300">
+            Elasto-optic correction (R_eff = R/(1 − p_e) = {eoFactor > 0 ? eoFactor.toFixed(3) : "—"} R)
+          </span>
+        </label>
       </div>
 
       {!valid && (
@@ -139,7 +155,7 @@ export default function MacrobendingLossPage() {
           <p className="font-mono">α = √π κ² exp(−2γ³R / 3β²) / (2 γ^(3/2) V² √R K₁²(W))   [1/m, power]</p>
           <p className="font-mono">κ = U/a, γ = W/a, β² = (n₁k)² − κ², U J₁(U)/J₀(U) = W K₁(W)/K₀(W)</p>
           <p>Marcuse&apos;s curvature-loss formula for the LP01 mode of a step-index fibre (J. Opt. Soc. Am. 66, 216, 1976), with the exact LP01 eigenvalues. Loss per turn = 4.343 α · 2πR dB.</p>
-          <p>Textbook approximation. It leaves out the elasto-optic correction (silica acts as if R were about 1.27× larger, so real fibre loses less), reflections from the cladding and coating (ripples in R and λ), and the transition loss where each bend starts and ends. ITU-T G.657 (08/2024) specifies bend loss at R = 5, 7.5, 10 and 15 mm.</p>
+          <p>Textbook approximation. The elasto-optic correction is on by default: bending strains the glass, so silica acts as if R were larger (R/(1 − p_e) ≈ 1.25 R with the Bertholds–Dändliker photo-elastic constants; Schermer &amp; Cole 2007 fit 1.28 R to measured SMF-28 loss). The loss falls by about 18× at the defaults; untick it for Marcuse&apos;s formula as published. The model leaves out reflections from the cladding and coating (ripples in R and λ), and the transition loss where each bend starts and ends. ITU-T G.657 (08/2024) specifies bend loss at R = 5, 7.5, 10 and 15 mm.</p>
         </div>
       </div>
     </>

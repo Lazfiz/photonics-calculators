@@ -16,8 +16,8 @@ export default function PumpCombinerCalculator() {
   const [powerRaw, setPumpPowerPerPort] = useURLState("pumpPowerPerPort", 30); // W
   const [effRaw, setCombinerEfficiency] = useURLState("combinerEfficiency", 98); // %
   const [signalILRaw, setSignalInsertionLoss] = useURLState("signalInsertionLoss", 0.1); // dB
-  const [pumpCoreRaw, setPumpCore] = useURLState("pumpCore", 105); // µm
-  const [pumpCladRaw, setPumpClad] = useURLState("pumpClad", 125); // µm
+  const [pumpCoreRaw, setPumpCore] = useURLState("pumpCore", 200); // µm
+  const [pumpCladRaw, setPumpClad] = useURLState("pumpClad", 220); // µm
   const [pumpNARaw, setPumpNA] = useURLState("pumpNA", 0.22);
   const [outDiaRaw, setOutDia] = useURLState("outputDiameter", 400); // µm, pump guide (inner cladding)
   const [outNARaw, setOutNA] = useURLState("outputNA", 0.46);
@@ -52,7 +52,7 @@ export default function PumpCombinerCalculator() {
   }, [N, signalPort, P, eta, signalIL, pumpCore_um, pumpClad_um, pumpNA, outDia_um, outNA]);
 
   const chartData = useMemo(() => {
-    const ports = Array.from({ length: 36 }, (_, i) => i + 1);
+    const ports = Array.from({ length: Math.max(36, N + 5) }, (_, i) => i + 1);
     const out = outDia_um * 1e-6;
     const taper = ports.map(n => Math.min(1, taperedPumpNA(pumpNA, hexBundleDiameter(n + (signalPort ? 1 : 0), pumpClad_um * 1e-6), out)));
     // NA the output guide needs if only the pump étendue counts: NA_out·√U.
@@ -62,7 +62,7 @@ export default function PumpCombinerCalculator() {
       { x: ports, y: ideal, type: "scatter" as const, mode: "lines" as const, name: "Étendue limit (cores only)", line: { color: "#60a5fa", width: 2 } },
       { x: ports, y: ports.map(() => outNA), type: "scatter" as const, mode: "lines" as const, name: "Output NA", line: { color: "#9ca3af", width: 1, dash: "dash" } },
     ];
-  }, [pumpNA, pumpCore_um, pumpClad_um, outDia_um, outNA, signalPort]);
+  }, [pumpNA, pumpCore_um, pumpClad_um, outDia_um, outNA, signalPort, N]);
 
   const ok = (b: boolean) => (b ? "text-green-400" : "text-red-400");
 
@@ -116,6 +116,8 @@ export default function PumpCombinerCalculator() {
             <p className="text-xs text-gray-400 mt-2">
               The taper test includes the cladding and packing gaps, so it is stricter than the étendue bound.
               The signal fibre is taken with the pump cladding Ø.
+              The bundle diameter (2n + 1)·d assumes full hexagonal rings around a centre fibre, so for 2–4 fibres without
+              a centre fibre it overstates the bundle (N = 2: 3d vs 2d) and the taper NA, which errs on the safe side.
             </p>
           </div>
         </div>

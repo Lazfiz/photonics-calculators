@@ -95,3 +95,16 @@ test("invalid geometry gives NaN, not a number", () => {
   assert.ok(Number.isNaN(pcfMode(0, 1e-6, 1550e-9).dispersion));
   assert.ok(Number.isNaN(cutoffWavelength(4e-6, 1.2)));
 });
+
+test("d/Λ outside 0.2–0.8 gives no V or guidance; d/Λ = 0.2 itself is inside despite rounding", () => {
+  // 0.9e-6 / 4.5e-6 = 0.19999999999999998 in floating point; the fit range is 0.2 ≤ d/Λ ≤ 0.8 (Saitoh & Koshiba 2005).
+  const edge = pcfMode(4.5e-6, 0.9e-6, 1550e-9);
+  assert.equal(edge.physical, true);
+  assert.ok(edge.W > 0 && edge.W < edge.V, `V ${edge.V}, W ${edge.W}`);
+  // d/Λ = 0.889: the extrapolated fit gave V = 5.42, shown next to "endlessly single-mode".
+  const out = pcfMode(4.5e-6, 4.0e-6, 1550e-9);
+  assert.ok(Number.isNaN(out.V) && Number.isNaN(out.W));
+  assert.equal(out.endlesslySingleMode, false);
+  assert.equal(out.singleMode, false);
+  assert.equal(pcfMode(4.5e-6, 0.5e-6, 1550e-9).endlesslySingleMode, false);
+});

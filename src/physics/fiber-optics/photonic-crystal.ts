@@ -46,7 +46,8 @@ export const FIT_MAX_LAMBDA_OVER_PITCH = 2;
 /** Below this V Marcuse's spot-size fit is no longer accurate (≈ 1 % for 1.2 ≤ V ≤ 2.4 in step-index fibre). */
 export const MARCUSE_MIN_V = 1.2;
 
-const inDRange = (r: number) => r >= FIT_D_OVER_PITCH[0] && r <= FIT_D_OVER_PITCH[1];
+/** 0.2 ≤ d/Λ ≤ 0.8, with a 1e-9 relative margin so that d/Λ = 1e-6/5e-6 = 0.19999999999999998 counts as 0.2. */
+export const inDRange = (r: number) => r >= FIT_D_OVER_PITCH[0] * (1 - 1e-9) && r <= FIT_D_OVER_PITCH[1] * (1 + 1e-9);
 /** The fitted W is physical only for 0 < W < V (n_FSM < n_eff < n_co); it dips below 0 for d/Λ < 0.4 at large λ/Λ. */
 const physicalVW = (V: number, W: number) => W > 0 && W < V;
 
@@ -171,7 +172,7 @@ export interface PcfMode {
   waveguideDispersion: number;
   /** Whether (d/Λ, λ/Λ) lies inside the range the fits were made over. */
   inFitRange: boolean;
-  /** 0.2 ≤ d/Λ ≤ 0.8 and 0 < W < V; otherwise n_eff, n_FSM, NA, MFD and D are NaN. */
+  /** 0.2 ≤ d/Λ ≤ 0.8 and 0 < W < V; otherwise n_eff, n_FSM, NA, MFD and D are NaN (and V, W, U too outside the d/Λ range). */
   physical: boolean;
 }
 
@@ -180,13 +181,15 @@ export function pcfMode(pitch: number, holeDiameter: number, lambda: number): Pc
   const r = holeDiameter / pitch;
   const x = lambda / pitch;
   const aEff = pitch / Math.sqrt(3);
-  const V = saitohKoshibaV(x, r);
-  const W = saitohKoshibaW(x, r);
+  // Outside 0.2 ≤ d/Λ ≤ 0.8 the fits diverge (V = 5.4 at d/Λ 0.89, 25.7 at 0.9): no V, W or guidance there.
+  const dOk = inDRange(r);
+  const V = dOk ? saitohKoshibaV(x, r) : NaN;
+  const W = dOk ? saitohKoshibaW(x, r) : NaN;
   const U = Math.sqrt(Math.max(V * V - W * W, 0));
   const nCore = refractiveIndex(SILICA, lambda);
   const ka = (2 * Math.PI * aEff) / lambda;
   const fsm2 = nCore * nCore - (V / ka) ** 2;
-  const ok = inDRange(r) && physicalVW(V, W);
+  const ok = dOk && physicalVW(V, W);
   const nFsm = ok && fsm2 >= 1 ? Math.sqrt(fsm2) : NaN;
   const nEff = effectiveIndex(pitch, holeDiameter, lambda);
   const w = !ok || V < MARCUSE_MIN_V ? NaN : aEff * (0.65 + 1.619 * V ** -1.5 + 2.879 * V ** -6);
@@ -204,14 +207,14 @@ export function pcfMode(pitch: number, holeDiameter: number, lambda: number): Pc
     nEff,
     na: Number.isFinite(nFsm) ? V / ka : NaN,
     singleMode: V < V_CUTOFF,
-    endlesslySingleMode: isEndlesslySingleMode(r),
+    endlesslySingleMode: dOk && isEndlesslySingleMode(r),
     cutoffWavelength: cutoffWavelength(pitch, r),
     mfd: 2 * w,
     effectiveArea: Math.PI * w * w,
     dispersion,
     materialDispersion,
     waveguideDispersion: dispersion - materialDispersion,
-    inFitRange: inDRange(r) && x > 0 && x <= FIT_MAX_LAMBDA_OVER_PITCH * (1 + 1e-9),
+    inFitRange: dOk && x > 0 && x <= FIT_MAX_LAMBDA_OVER_PITCH * (1 + 1e-9),
     physical: ok,
   };
 }

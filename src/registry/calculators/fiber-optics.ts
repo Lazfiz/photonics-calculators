@@ -609,7 +609,7 @@ export const fiberOptics: CalculatorEntry[] = [
     description: "Detailed macrobending loss calculation using the curvature radiation model for single-mode fiber.",
     keywords: ["Macro Bending Loss", "Macro Bend Loss"],
     tier: "textbook",
-    modelNote: "Marcuse's asymptotic curvature loss (R much larger than a) for the LP01 mode of a step-index, weakly guiding fibre. Not modelled: the elasto-optic correction (R_eff ≈ 1.27 R), coating reflections, transition loss.",
+    modelNote: "Marcuse's asymptotic curvature loss (R much larger than a) for the LP01 mode of a step-index, weakly guiding fibre, with the elasto-optic correction R_eff = R/(1 − p_e) ≈ 1.25R on by default. Not modelled: coating reflections, transition loss.",
     references: [
       {
         citation: "Marcuse D. (1976). Curvature loss formula for optical fibers. J. Opt. Soc. Am. 66, 216. Curvature loss formula for an LP_ν mode, used here for LP01.",
@@ -625,6 +625,14 @@ export const fiberOptics: CalculatorEntry[] = [
       {
         citation: "Marcuse D. (1977). Loss Analysis of Single-Mode Fiber Splices. Bell Syst. Tech. J. 56, 703–718. Gaussian fit of the mode-field radius.",
         url: "https://doi.org/10.1002/j.1538-7305.1977.tb00534.x",
+      },
+      {
+        citation: "Nagano K., Kawakami S., Nishida S. (1978). Change of the refractive index in an optical fiber due to external forces. Appl. Opt. 17, 2080. Elasto-optic equivalent bend radius.",
+        url: "https://doi.org/10.1364/ao.17.002080",
+      },
+      {
+        citation: "Schermer R. T., Cole J. H. (2007). Improved bend loss formula verified for optical fiber by simulation and experiment. IEEE J. Quantum Electron. 43, 899. R_eff ≈ 1.28R for silica.",
+        url: "https://doi.org/10.1109/jqe.2007.903364",
       },
     ],
   },
@@ -667,7 +675,7 @@ export const fiberOptics: CalculatorEntry[] = [
     title: "Mode Field Diameter",
     description: "Mode-field diameter (Petermann II and Gaussian fit), effective area, V, b and core confinement of a step-index single-mode fiber, with its bend loss.",
     tier: "textbook",
-    modelNote: "Exact LP01 of a weakly guiding step-index fibre: Petermann II MFD in closed form, Marcuse's Gaussian-fit MFD and πw² area, Marcuse bend loss. Graded and trench profiles need a mode solver.",
+    modelNote: "Exact LP01 of a weakly guiding step-index fibre: Petermann II MFD in closed form, Marcuse's Gaussian-fit MFD and πw² area, Marcuse bend loss with the elasto-optic R_eff ≈ 1.25R (on by default). Graded and trench profiles need a mode solver.",
     references: [
       {
         citation: "Gloge D. (1971). Weakly Guiding Fibers. Appl. Opt. 10, 2252. LP modes, eigenvalue equation and core power fraction.",
@@ -684,6 +692,14 @@ export const fiberOptics: CalculatorEntry[] = [
       {
         citation: "Marcuse D. (1976). Curvature loss formula for optical fibers. J. Opt. Soc. Am. 66, 216. Bend loss of LP01.",
         url: "https://doi.org/10.1364/josa.66.000216",
+      },
+      {
+        citation: "Nagano K., Kawakami S., Nishida S. (1978). Change of the refractive index in an optical fiber due to external forces. Appl. Opt. 17, 2080. Elasto-optic equivalent bend radius.",
+        url: "https://doi.org/10.1364/ao.17.002080",
+      },
+      {
+        citation: "Schermer R. T., Cole J. H. (2007). Improved bend loss formula verified for optical fiber by simulation and experiment. IEEE J. Quantum Electron. 43, 899. R_eff ≈ 1.28R for silica.",
+        url: "https://doi.org/10.1109/jqe.2007.903364",
       },
     ],
   },
@@ -713,7 +729,7 @@ export const fiberOptics: CalculatorEntry[] = [
     title: "Nonlinear Effects in Fiber",
     description: "Calculate the nonlinear coefficient γ, SPM and XPM phase, four-wave-mixing efficiency and SBS/SRS thresholds of a fiber span.",
     tier: "textbook",
-    modelNote: "γ = 2πn₂/(λA_eff), SPM phase and Gaussian rms broadening, XPM upper bound (no walk-off), Inoue FWM efficiency (β₂, β₃) for the nearest product, worst-case CW SBS/SRS thresholds. Not a Q penalty.",
+    modelNote: "γ = 2πn₂/(λA_eff), SPM phase and Gaussian rms broadening, XPM upper bound (no walk-off), Inoue FWM efficiency (β₂, β₃) for the nearest product, worst-case CW SBS/SRS thresholds. Co-polarized γ: in randomly birefringent fibre the effective γ is 8/9 of it (Manakov). Not a Q penalty.",
     references: [
       {
         citation: "Agrawal G. P. (2019). Nonlinear Fiber Optics, 6th ed., §2.3 (γ), §4.1 (SPM), §7.1 (XPM). Academic Press.",
@@ -734,7 +750,7 @@ export const fiberOptics: CalculatorEntry[] = [
     title: "Non-Zero Dispersion Shifted Fiber (NZ-DSF)",
     description: "Design NZ-DSF fibers (G.655) with optimized dispersion for DWDM systems — balancing dispersion and nonlinearity.",
     tier: "textbook",
-    modelNote: "Linear D(λ) about 1550 nm from your D and slope, compared with G.652 (Sellmeier) and G.653 presets; valid over 1460–1625 nm. FWM phase mismatch Δβ = |β₂|(2πΔν)² ignores β₃.",
+    modelNote: "Linear D(λ) about 1550 nm from your D and slope, compared with G.652 (Sellmeier) and G.653 presets; valid over 1460–1625 nm, so λ0 is shown only inside that band. FWM phase mismatch with β₂ and β₃ from D and S.",
     references: [
       {
         citation: "ITU-T G.655. Characteristics of a non-zero dispersion-shifted single-mode optical fibre and cable (G.655.C: 1 ≤ |D| ≤ 10 ps/(nm·km) over 1530–1565 nm).",
@@ -874,7 +890,7 @@ export const fiberOptics: CalculatorEntry[] = [
     description: "Ion density from wt-ppm, LP01 overlap, pump and signal absorption, 90 % absorption length, saturation power, gain and noise figure of an Er- or Yb-doped fiber.",
     keywords: ["Rare-Earth Fiber Dopants"],
     tier: "textbook",
-    modelNote: "Two-level Er or Yb; Γ from the exact LP01 field for a core doped to its edge (an upper bound). Preset cross-sections are measured (Er³⁺: Barnes et al. 1991; Yb³⁺: Melkumov et al. 2004). Tm, Ho, Nd and Er/Yb co-doping are not covered.",
+    modelNote: "Two-level Er or Yb; Γ from the exact LP01 field for a core doped to its edge (an upper bound). Preset cross-sections are measured (Er³⁺: Barnes et al. 1991; Yb³⁺: Melkumov et al. 2004). No ASE self-saturation (gains above ≈ 30 dB are overstated). Tm, Ho, Nd and Er/Yb co-doping are not covered.",
     references: [
       {
         citation: "Gloge D. (1971). Weakly Guiding Fibers. Appl. Opt. 10, 2252. LP01 power fraction in the core, Γ = 1 − (U²/V²)(1 − K₀²(W)/K₁²(W)).",
@@ -1032,11 +1048,12 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "wdm-coupler",
     title: "WDM Channel Plan",
-    description: "WDM channel wavelengths, frequency spacing, ITU-T grid type (CWDM or DWDM), total bandwidth, insertion loss and isolation from channel count and spacing.",
-    tier: "textbook",
-    modelNote: "Equally spaced channel plan with Δν = cΔλ/λ² at the centre wavelength; Gaussian passbands are illustrative. Not modelled: grid anchoring to 193.1 THz, filter technology, isolation from the passband.",
+    description: "WDM channel wavelengths, frequency spacing, ITU-T grid type (CWDM or DWDM), total bandwidth, insertion loss and Gaussian-passband isolation from channel count and spacing.",
+    tier: "illustrative",
+    modelNote: "Channel plan on equal frequency steps for the G.694.1 DWDM spacings (Δν = cΔλ/λ² at the centre) and equal wavelength steps otherwise (G.694.2 CWDM). Gaussian passbands give the adjacent-channel isolation 12.04(Δλ/FWHM)² dB; real filters (flat-top thin film, sin² interleavers) differ. Not modelled: anchoring to 193.1 THz.",
     references: [
       { citation: "ITU-T G.694.1. Spectral grids for WDM applications: DWDM frequency grid." },
+      { citation: "ITU-T G.694.2. Spectral grids for WDM applications: CWDM wavelength grid (20 nm, 1271–1611 nm)." },
     ],
   },
 ];

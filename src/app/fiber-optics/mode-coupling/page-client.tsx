@@ -27,7 +27,9 @@ export default function ModeCouplingCalculator() {
   const beat = psi > 0 ? Math.PI / psi : Infinity; // period of the exchange, mm
 
   const zMax = Math.max(L_mm * 1.2, Number.isFinite(beat) ? 2 * beat : 0, 1e-3);
-  const zs = Array.from({ length: 401 }, (_, i) => (i / 400) * zMax);
+  // ~20 samples per exchange period π/ψ (capped), so long couplers do not alias.
+  const nz = Math.min(20000, Math.max(401, Math.ceil((20 * zMax * psi) / Math.PI)));
+  const zs = Array.from({ length: nz }, (_, i) => (i / (nz - 1)) * zMax);
   const lengthSeries = [
     { name: "Coupled guide", color: "#3b82f6", points: zs.map((z) => ({ x: round6(z), y: round6(codirectionalTransfer(kappa, deltaBeta, z) * P0) })) },
     { name: "Through guide", color: "#ef4444", points: zs.map((z) => ({ x: round6(z), y: round6((1 - codirectionalTransfer(kappa, deltaBeta, z)) * P0) })) },
@@ -36,8 +38,10 @@ export default function ModeCouplingCalculator() {
 
   // Transfer at this length vs mismatch: the coupler's wavelength (Δβ) response, over ±max(8π/L, 2|Δβ|, 4κ).
   const dbSpan = Math.max(L_mm > 0 ? (8 * Math.PI) / L_mm : 0, 2 * Math.abs(deltaBeta), 4 * kappa, 1e-6);
+  // Fringes in Δβ are ≈ 2π/L apart (L in mm, Δβ in mm⁻¹); ~20 samples per fringe over the 2·dbSpan range.
+  const ndb = Math.min(20000, Math.max(201, Math.ceil((20 * 2 * dbSpan * L_mm) / (2 * Math.PI))));
   const mismatchSeries = L_mm > 0 ? [
-    { name: "Coupled fraction", color: "#a78bfa", points: Array.from({ length: 401 }, (_, i) => ((i - 200) / 200) * dbSpan)
+    { name: "Coupled fraction", color: "#a78bfa", points: Array.from({ length: ndb }, (_, i) => ((2 * i - (ndb - 1)) / (ndb - 1)) * dbSpan)
       .map((db) => ({ x: round6(db), y: round6(codirectionalTransfer(kappa, db, L_mm)) })) },
     { name: "This Δβ", color: "#22c55e", showPoints: true, points: [{ x: round6(deltaBeta), y: round6(fraction) }] },
   ] : [];

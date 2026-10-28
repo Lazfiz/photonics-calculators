@@ -6,7 +6,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  LP11_CUTOFF_V, MFD_FIT_V_RANGE, MIN_V, bendLossPerTurnDb, lp01Mode, lp11CutoffWavelength, modeFieldRadius, vNumber,
+  LP11_CUTOFF_V, MFD_FIT_V_RANGE, MIN_V, bendLossPerTurnDb, elastoOpticBendRadius, lp01Mode, lp11CutoffWavelength, modeFieldRadius, vNumber,
 } from "../../../physics/fiber-optics/macro-bending-loss";
 import {
   claddingIndex, coreConfinement, effectiveIndex, lp01Field, normalizedB, petermannIIRadius, relativeIndexDifference,
@@ -31,6 +31,9 @@ export default function ModeFieldDiameterPage() {
   const [coreRadius, setCoreRadius] = useURLState("coreRadius", SMF_PRESET.coreRadius, { min: 0.5, max: 100 }); // µm
   const [na, setNa] = useURLState("na", SMF_PRESET.na, { min: 0.01, max: 0.5 });
   const [coreIndex, setCoreIndex] = useURLState("coreIndex", SMF_PRESET.coreIndex, { min: 1, max: 4 });
+  const [elastoOptic, setElastoOptic] = useURLState("elastoOptic", 1, { min: 0, max: 1 });
+  const eo = elastoOptic === 1;
+  const eoFactor = elastoOpticBendRadius(1, coreIndex);
 
   const applyPreset = () => {
     setCoreRadius(SMF_PRESET.coreRadius);
@@ -66,7 +69,8 @@ export default function ModeFieldDiameterPage() {
 
   const profileData = useMemo(() => {
     if (!valid) return [];
-    const r_um = Array.from({ length: 241 }, (_, i) => -3 * coreRadius + (i * 6 * coreRadius) / 240);
+    const half = Math.max(3 * coreRadius, 1.5 * calc.wFit_um);
+    const r_um = Array.from({ length: 241 }, (_, i) => -half + (i * 2 * half) / 240);
     const exact = r_um.map((r) => lp01Field(calc.mode, r / coreRadius) ** 2);
     const gauss = r_um.map((r) => Math.exp((-2 * r * r) / calc.wFit_um ** 2));
     return [
@@ -77,22 +81,35 @@ export default function ModeFieldDiameterPage() {
   }, [valid, calc.mode, calc.wFit_um, coreRadius]);
 
   const mfdData = useMemo(() => {
-    const wl_nm = Array.from({ length: 91 }, (_, i) => 1100 + i * 10);
+    const lo = Math.min(1100, 0.7 * wavelength);
+    const hi = Math.max(2000, 1.3 * wavelength);
+    const wl_nm = Array.from({ length: 91 }, (_, i) => lo + (i * (hi - lo)) / 90);
     const fit = wl_nm.map((wl) => 2e6 * modeFieldRadius(fiber, wl * 1e-9));
     const pii = wl_nm.map((wl) => 2e6 * petermannIIRadius(fiber, wl * 1e-9));
+    // Marcuse's fit is only valid inside MFD_FIT_V_RANGE: solid there, grey dotted outside.
+    const inFit = wl_nm.map((wl) => {
+      const V = vNumber(fiber, wl * 1e-9);
+      return V >= MFD_FIT_V_RANGE[0] && V <= MFD_FIT_V_RANGE[1];
+    });
+    const fitIn = fit.map((y, i) => (inFit[i] && Number.isFinite(y) ? y : null));
+    const fitOut = fit.map((y, i) => (!inFit[i] && Number.isFinite(y) ? y : null));
     return [
       { ...finitePairs(wl_nm, pii), type: "scatter" as const, mode: "lines" as const, name: "Petermann II", line: { color: "#3b82f6", width: 2 } },
-      { ...finitePairs(wl_nm, fit), type: "scatter" as const, mode: "lines" as const, name: "Gaussian fit", line: { color: "#22c55e", width: 2, dash: "dash" as const } },
+      { x: wl_nm, y: fitIn, type: "scatter" as const, mode: "lines" as const, name: "Gaussian fit", line: { color: "#22c55e", width: 2, dash: "dash" as const } },
+      { x: wl_nm, y: fitOut, type: "scatter" as const, mode: "lines" as const, name: "Gaussian fit (outside fit range)", line: { color: "#6b7280", width: 1, dash: "dot" as const } },
+      ...(Number.isFinite(calc.mfdPII_um)
+        ? [{ x: [wavelength], y: [calc.mfdPII_um], type: "scatter" as const, mode: "markers" as const, name: "Input λ", marker: { color: "#f59e0b", size: 10 } }]
+        : []),
     ];
-  }, [fiber]);
+  }, [fiber, wavelength, calc.mfdPII_um]);
 
   const bendData = useMemo(() => {
     const lambda = wavelength * 1e-9;
     const mode = lp01Mode(vNumber(fiber, lambda));
     const radii_mm = Array.from({ length: 126 }, (_, i) => 5 + i * 0.2);
-    const loss = radii_mm.map((R) => bendLossPerTurnDb(fiber, lambda, R * 1e-3, mode));
+    const loss = radii_mm.map((R) => bendLossPerTurnDb(fiber, lambda, R * 1e-3, mode, eo));
     return [{ ...finitePairs(radii_mm, loss, MIN_PLOTTED_DB), type: "scatter" as const, mode: "lines" as const, name: "Bend loss", line: { color: "#ef4444", width: 2 } }];
-  }, [fiber, wavelength]);
+  }, [fiber, wavelength, eo]);
 
   const layout = (x: string, y: string, logY = false) => ({
     paper_bgcolor: "transparent", plot_bgcolor: "transparent",
@@ -110,6 +127,12 @@ export default function ModeFieldDiameterPage() {
         <ValidatedNumberInput label="Numerical Aperture" value={na} onChange={setNa} min={0.01} max={0.5} step="0.001" />
         <ValidatedNumberInput label="Core Index n₁" value={coreIndex} onChange={setCoreIndex} min={1} max={4} step="0.0001" />
       </div>
+      <label className="mb-4 flex items-start gap-3 rounded-lg border border-gray-800 bg-gray-900 p-4">
+        <input type="checkbox" className="mt-1" checked={eo} onChange={(e) => setElastoOptic(e.target.checked ? 1 : 0)} />
+        <span className="text-sm text-gray-300">
+          Elasto-optic correction (R_eff = R/(1 − p_e) = {eoFactor > 0 ? eoFactor.toFixed(3) : "—"} R)
+        </span>
+      </label>
       <div className="mb-8 flex flex-wrap items-center gap-3 text-sm text-gray-400">
         <button onClick={applyPreset} className="px-3 py-1 text-xs rounded border bg-gray-800 border-gray-700 hover:border-blue-500">
           SMF-28-like step fibre
@@ -156,7 +179,10 @@ export default function ModeFieldDiameterPage() {
           <h3 className="text-lg font-semibold mb-3">Bend Loss per Turn vs Radius ({wavelength} nm)</h3>
           <ChartPanel data={bendData} layout={layout("Bend radius (mm)", "Loss per turn (dB)", true)} />
           <p className="mt-2 text-xs text-gray-500">
-            Marcuse 1976 curvature loss of LP01, as on the macrobending-loss page; no elasto-optic correction. At 10 mm: {fmtDb(bendLossPerTurnDb(fiber, wavelength * 1e-9, 10e-3))} dB/turn.
+            Marcuse 1976 curvature loss of LP01, as on the macrobending-loss page. {eo
+              ? `The elasto-optic correction R_eff = R/(1 − p_e) ≈ ${eoFactor > 0 ? eoFactor.toFixed(2) : "—"} R is on (Schermer & Cole 2007 fit 1.28 R to measured SMF-28).`
+              : "The elasto-optic correction is off (bare radius)."}{" "}
+            At 10 mm: {fmtDb(bendLossPerTurnDb(fiber, wavelength * 1e-9, 10e-3, undefined, eo))} dB/turn.
           </p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">

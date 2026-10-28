@@ -44,16 +44,23 @@ export default function SpliceLossPage() {
     const w = (coreDiam / 2) * UM;
     const base = { w1: w, w2: w, lambda: wavelength_nm * 1e-9, n: Math.max(gapIndex, 1) };
     const finite = (v: number) => (Number.isFinite(v) ? v : null);
-    const offsets = Array.from({ length: 100 }, (_, i) => i * 0.05);
-    const angles = Array.from({ length: 100 }, (_, i) => i * 0.02);
+    // Axes reach 1.5 times the 1/e scales (offset w, tilt λ/(πnw)) or 1.2 × the input, whichever is larger.
+    const wUm = coreDiam / 2;
+    const offsetMax = Math.max(1.5 * wUm, 1.2 * lateralOffset); // µm
+    const tiltScale = (base.lambda / (Math.PI * base.n * w)) / DEG; // degrees
+    const angleMax = Math.min(Math.max(1.5 * tiltScale, 1.2 * angularMisalign), 89); // degrees
+    const offsets = Array.from({ length: 100 }, (_, i) => (i * offsetMax) / 99);
+    const angles = Array.from({ length: 100 }, (_, i) => (i * angleMax) / 99);
     const latLosses = offsets.map(d => finite(lossDb(gaussianCoupling({ ...base, offset: d * UM }))));
     const angLosses = angles.map(a => finite(lossDb(gaussianCoupling({ ...base, tilt: a * DEG }))));
 
     return [
       { x: offsets, y: latLosses, type: "scatter" as const, mode: "lines" as const, name: "Lateral", line: { color: "#f87171" }, xaxis: "x", yaxis: "y" },
       { x: angles, y: angLosses, type: "scatter" as const, mode: "lines" as const, name: "Angular", line: { color: "#60a5fa" }, xaxis: "x2", yaxis: "y2" },
+      { x: [lateralOffset], y: [finite(lossDb(gaussianCoupling({ ...base, offset: lateralOffset * UM })))], type: "scatter" as const, mode: "markers" as const, name: "Your offset", marker: { color: "#f87171", size: 10, symbol: "diamond" }, xaxis: "x", yaxis: "y" },
+      { x: [angularMisalign], y: [finite(lossDb(gaussianCoupling({ ...base, tilt: angularMisalign * DEG })))], type: "scatter" as const, mode: "markers" as const, name: "Your tilt", marker: { color: "#60a5fa", size: 10, symbol: "diamond" }, xaxis: "x2", yaxis: "y2" },
     ];
-  }, [coreDiam, wavelength_nm, gapIndex]);
+  }, [coreDiam, wavelength_nm, gapIndex, lateralOffset, angularMisalign]);
 
   const fmt = (v: number) => (v === Infinity ? "∞ dB" : Number.isFinite(v) ? `${v.toFixed(3)} dB` : "—");
 

@@ -25,7 +25,7 @@ export default function NonlinearEffectsPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 1 }); // nm
   const [dispersion, setDispersion] = useURLState("dispersion", 17, { min: -200, max: 200 }); // ps/(nm·km)
   const [slope, setSlope] = useURLState("slope", 0.058, { min: -1, max: 1 }); // ps/(nm²·km)
-  const [numChannels, setNumChannels] = useURLState("numChannels", 1, { min: 1 });
+  const [numChannels, setNumChannels] = useURLState("numChannels", 8, { min: 1 });
   const [channelSpacing, setChannelSpacing] = useURLState("channelSpacing", 100, { min: 0 }); // GHz
 
   const calc = useMemo(() => {
@@ -58,14 +58,18 @@ export default function NonlinearEffectsPage() {
     const sbs = sbsThreshold({ Aeff, gB: SILICA_BRILLOUIN_GAIN, Leff });
     const srs = srsThreshold(Aeff, ramanGainAt(lambda), Leff);
 
-    const powers = Array.from({ length: 101 }, (_, i) => -5 + i * 0.25); // dBm
+    const pLo = Math.min(-5, power - 5), pHi = Math.max(20, power + 5);
+    const powers = Array.from({ length: 101 }, (_, i) => pLo + (i * (pHi - pLo)) / 100); // dBm
     const phaseVsPower = [
       { name: "φ_SPM", color: "#f87171", f: (p: number) => nonlinearPhase(gamma, p, Leff) },
       { name: `φ_XPM max (${N - 1} other ch.)`, color: "#60a5fa", f: (p: number) => xpmPhaseMax(gamma, p, Leff, N - 1) },
-    ].map(({ name, color, f }) => ({
+    ].flatMap(({ name, color, f }) => [{
       x: powers, y: powers.map((p) => f(10 ** (p / 10) * 1e-3)),
       type: "scatter" as const, mode: "lines" as const, name, line: { color, width: 2 },
-    }));
+    }, {
+      x: [power], y: [f(P)], type: "scatter" as const, mode: "markers" as const,
+      name: `${name} at input`, showlegend: false, marker: { color, size: 10, line: { color: "#fbbf24", width: 2 } },
+    }]);
 
     const distances = Array.from({ length: 80 }, (_, i) => ((i + 1) / 80) * 2 * (L / 1e3)); // km
     const phaseVsDistance = [{
@@ -73,10 +77,14 @@ export default function NonlinearEffectsPage() {
       type: "scatter" as const, mode: "lines" as const, name: "φ_SPM (rad)", line: { color: "#a78bfa", width: 2 },
     }];
 
-    const spacings = Array.from({ length: 96 }, (_, i) => 5 + i * 2); // GHz
+    const spHi = Math.max(200, 1.2 * (df / 1e9)); // GHz
+    const spacings = Array.from({ length: 96 }, (_, i) => 5 + (i * (spHi - 5)) / 95); // GHz
     const fwmVsSpacing = [{
       x: spacings, y: spacings.map((s) => toDb(fwmRatio(s * 1e9))),
       type: "scatter" as const, mode: "lines" as const, name: "degenerate product / channel", line: { color: "#fbbf24", width: 2 },
+    }, {
+      x: [df / 1e9], y: [toDb(fwmRatio(df))], type: "scatter" as const, mode: "markers" as const,
+      name: "Input spacing", marker: { color: "#f87171", size: 10 },
     }];
 
     return {
@@ -124,12 +132,12 @@ export default function NonlinearEffectsPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">SBS / SRS Threshold</p>
           <p className="text-xl font-bold">
-            <span className={sbsAbove ? "text-red-400" : "text-green-400"}>{calc.sbsDbm.toFixed(1)}</span>
+            <span className={sbsAbove ? "text-yellow-400" : "text-green-400"}>{calc.sbsDbm.toFixed(1)}</span>
             {" / "}
             <span className={srsAbove ? "text-red-400" : "text-green-400"}>{calc.srsDbm.toFixed(1)}</span> dBm
           </p>
           <p className="text-xs text-gray-500">
-            narrow CW, co-polarized{sbsAbove ? " · launch is above SBS" : ""}{srsAbove ? " · above SRS" : ""}
+            narrow CW line; modulated channels have a much higher threshold. Co-polarized{sbsAbove ? " · launch exceeds the narrow-CW SBS value" : ""}{srsAbove ? " · above SRS" : ""}
           </p>
         </div>
       </div>

@@ -64,7 +64,7 @@ export default function FiberOpticSensorPage() {
         return { kind: "mzi" as const, perMicrostrain: perStrain * 1e-6, perK, phase: perStrain * eps + perK * dT, perStrain };
       }
       case "fabry_perot": {
-        // Plane-wave Airy model: beyond ≈ 50 µm the second reflection diffracts and recouples poorly into SMF.
+        // Plane-wave Airy model: beyond ≈ 20 µm the second reflection diffracts and recouples poorly into SMF (input allowed to 50 µm, contrast overstated there).
         const d = clamp(cavityLength, 1, 50) * 1e-6;
         const R = clamp(mirrorR, 0, 0.9);
         const F = coefficientOfFinesse(R);
@@ -85,12 +85,21 @@ export default function FiberOpticSensorPage() {
   const chart = useMemo(() => {
     const line = (x: number[], y: number[], name: string, color: string) =>
       [{ x, y: y.map((v) => (Number.isFinite(v) ? v : null)), type: "scatter" as const, mode: "lines" as const, name, line: { color } }];
-    const strains = Array.from({ length: 101 }, (_, i) => i * 20); // 0–2000 µε
+    // Strain axis: 0…max(2000, 1.2·|ε|) µε, extended to negative ε when the input is negative.
+    const epsUe = eps * 1e6;
+    const sMax = Math.max(2000, 1.2 * Math.abs(epsUe));
+    const sLo = epsUe < 0 ? -sMax : 0;
+    const sHi = epsUe < 0 ? 0 : sMax;
+    const strains = Array.from({ length: 101 }, (_, i) => sLo + ((sHi - sLo) * i) / 100);
+    const marker = (x: number, y: number) => ({
+      x: [x], y: [Number.isFinite(y) ? y : null], type: "scatter" as const, mode: "markers" as const, name: "Operating point",
+      marker: { color: "#ffffff", size: 9, line: { color: "#111827", width: 1 } },
+    });
     switch (calc.kind) {
       case "fbg":
-        return { x: "Strain (µε)", y: "Bragg shift (pm)", data: line(strains, strains.map((s) => s * calc.strainPm), "Strain shift", "#f87171") };
+        return { x: "Strain (µε)", y: "Bragg shift (pm)", data: [...line(strains, strains.map((s) => s * calc.strainPm), "Strain shift", "#f87171"), marker(epsUe, epsUe * calc.strainPm)] };
       case "mzi":
-        return { x: "Strain (µε)", y: "Phase (rad)", data: line(strains, strains.map((s) => s * calc.perMicrostrain), "Phase", "#34d399") };
+        return { x: "Strain (µε)", y: "Phase (rad)", data: [...line(strains, strains.map((s) => s * calc.perMicrostrain), "Phase", "#34d399"), marker(epsUe, epsUe * calc.perMicrostrain)] };
       case "efpi": {
         const span = Math.min(2.5 * calc.fsr, 1.6 * lambda);
         const wls = Array.from({ length: 2001 }, (_, i) => lambda - span / 2 + (span * i) / 2000);
@@ -100,14 +109,21 @@ export default function FiberOpticSensorPage() {
         };
       }
       case "evanescent": {
-        const ns = Array.from({ length: 101 }, (_, i) => 1.3 + (i * (nEff - 1.3 - 1e-3)) / 100);
+        // n_ext axis: from min(1.3, n_ext − 0.02) up to just below n_eff (air at 1.0 is reachable).
+        const lo = Math.min(1.3, calc.nExt - 0.02);
+        const hi = nEff - 1e-3;
+        if (!(hi > lo)) {
+          return { x: "External index n_ext", y: "Penetration depth (nm)", data: [], empty: "No guided evanescent field in this range: n_eff must exceed n_ext." };
+        }
+        const ns = Array.from({ length: 101 }, (_, i) => lo + ((hi - lo) * i) / 100);
         return {
           x: "External index n_ext", y: "Penetration depth (nm)",
-          data: line(ns, ns.map((n) => penetrationDepth(lambda, nEff, n) * 1e9), "d_p", "#fbbf24"),
+          data: [...line(ns, ns.map((n) => penetrationDepth(lambda, nEff, n) * 1e9), "d_p", "#fbbf24"),
+            marker(calc.nExt, penetrationDepth(lambda, nEff, calc.nExt) * 1e9)],
         };
       }
     }
-  }, [calc, lambda, nEff]);
+  }, [calc, lambda, nEff, eps]);
 
   const pm = (v: number) => `${(v * 1e12).toFixed(1)} pm`;
   const nmOrDash = (v: number, digits = 1) => (Number.isFinite(v) ? `${(v * 1e9).toFixed(digits)} nm` : "not guided");
@@ -214,11 +230,13 @@ export default function FiberOpticSensorPage() {
               <p>d_p = λ / (2π·√(n_eff² − n_ext²)) (Harrick 1967)</p>
               <p>n_ext(T) = n_ext + (dn/dT)·ΔT, dn/dT ≈ −1×10⁻⁴/K for water</p>
               <p>n_eff is the local mode index where the cladding is removed; it must exceed n_ext.</p>
+              <p>Only the thermo-optic change of the external medium is applied; silica&apos;s own dn/dT (≈ +1×10⁻⁵/K) on n_eff is not included.</p>
             </>
           )}
         </div>
       </div>
 
+      {chart.empty && <p className="text-sm text-yellow-400 mb-2">{chart.empty}</p>}
       <ChartPanel data={chart.data} layout={{
         paper_bgcolor: "transparent", plot_bgcolor: "transparent",
         font: { color: "#9ca3af" },

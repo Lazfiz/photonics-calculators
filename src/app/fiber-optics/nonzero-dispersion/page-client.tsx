@@ -6,14 +6,16 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { wavelengthWidth } from "../../../physics/spectroscopy/wavenumber";
+import { fwmPhaseMismatch } from "../../../physics/fiber-optics/fiber-nonlinear";
 import {
-  beta2FromD, linearDispersion, linearZeroDispersionWavelength, presetDispersion,
+  beta2FromD, beta3FromDS, linearDispersion, linearZeroDispersionWavelength, presetDispersion,
 } from "../../../physics/fiber-optics/chromatic-dispersion";
 
 const nm = 1e-9, km = 1e3;
 const PS_NM_KM = 1e-6, PS_NM2_KM = 1e3;
 // The linear model about 1550 nm holds across the S, C and L bands only.
 const BAND_MIN = 1460, BAND_MAX = 1625;
+const C_BAND = [1530, 1565] as const; // nm
 
 export default function NonzeroDispersionPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: BAND_MIN, max: BAND_MAX }); // nm
@@ -29,13 +31,23 @@ export default function NonzeroDispersionPage() {
     const fiber = { D: dispAt1550 * PS_NM_KM, S: dispSlope * PS_NM2_KM };
     const D = linearDispersion(fiber, lam);
     const lambda0 = linearZeroDispersionWavelength(fiber);
-    // Channel spacing in wavelength Δλ = λ²Δν/c; FWM phase mismatch between adjacent channels Δβ = β₂(2πΔν)².
+    // Channel spacing in wavelength Δλ = λ²Δν/c; FWM phase mismatch between adjacent channels (degenerate, equal spacing),
+    // Δβ = −(2πΔν)²[β₂ + β₃·2πΔν], including β₃; the smaller of the ± offsets (stronger FWM) is shown.
     const dnu = channelSpacing * 1e9;
     const deltaLambda = wavelengthWidth(lam, dnu);
-    const deltaBeta = Math.abs(beta2FromD(D, lam)) * (2 * Math.PI * dnu) ** 2;
+    const beta2 = beta2FromD(D, lam);
+    const beta3 = beta3FromDS(D, fiber.S, lam);
+    const deltaBeta = Math.min(
+      Math.abs(fwmPhaseMismatch(beta2, dnu, dnu, beta3)),
+      Math.abs(fwmPhaseMismatch(beta2, -dnu, -dnu, beta3)),
+    );
+    const lambda0InBand = Number.isFinite(lambda0) && dispSlope !== 0 && lambda0 / nm >= BAND_MIN && lambda0 / nm <= BAND_MAX;
+    // Linear D(λ) is monotonic, so the C-band extremes are at its ends.
+    const dC1 = linearDispersion(fiber, C_BAND[0] * nm), dC2 = linearDispersion(fiber, C_BAND[1] * nm);
+    const dCMin = Math.min(dC1, dC2), dCMax = Math.max(dC1, dC2);
     const dSMF = presetDispersion("G652", lam);
     const dDSF = presetDispersion("DSF", lam);
-    return { D, lambda0, totalDisp: D * length * km, deltaLambda, deltaBeta, dSMF, dDSF };
+    return { D, lambda0, lambda0InBand, dCMin, dCMax, totalDisp: D * length * km, deltaLambda, deltaBeta, dSMF, dDSF };
   }, [wavelength, length, dispSlope, dispAt1550, channelSpacing]);
 
   const dispCurveData = useMemo(() => {
@@ -64,6 +76,7 @@ export default function NonzeroDispersionPage() {
     !valid ? "—" : Number.isFinite(v) ? `${v.toFixed(digits)}${unit}` : "—";
   // |D| below 1e-3 ps/(nm·km) counts as zero: λ − 1550 nm in floating point leaves ~1e-22 s/m² at λ₀.
   const nzZero = Math.abs(calc.D) < 1e-3 * PS_NM_KM;
+  const fwmRisk = valid && (Math.min(Math.abs(calc.dCMin), Math.abs(calc.dCMax)) < 1 * PS_NM_KM || calc.dCMin * calc.dCMax < 0);
   const ratio = Math.abs(calc.dSMF) / Math.abs(calc.D);
 
   return (
@@ -76,11 +89,18 @@ export default function NonzeroDispersionPage() {
         <ValidatedNumberInput label="Channel Spacing (GHz)" value={channelSpacing} onChange={setChannelSpacing} min={1} />
       </div>
 
+      {fwmRisk && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          D runs from {(calc.dCMin / PS_NM_KM).toFixed(2)} to {(calc.dCMax / PS_NM_KM).toFixed(2)} ps/(nm·km) over {C_BAND[0]}–{C_BAND[1]} nm
+          (linear model): four-wave mixing risk. NZ-DSF keeps |D| ≥ 1 ps/(nm·km) across the C band.
+        </p>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">D(λ) NZ-DSF</p>
           <p className="text-xl font-bold text-green-400">{show(calc.D / PS_NM_KM, 2, " ps/nm/km")}</p>
-          <p className="text-xs text-gray-500">λ₀ = {show(calc.lambda0 / nm, 0, " nm")}</p>
+          <p className="text-xs text-gray-500">{!valid ? "λ₀ = —" : calc.lambda0InBand ? `λ₀ = ${(calc.lambda0 / nm).toFixed(0)} nm` : `no zero in ${BAND_MIN}–${BAND_MAX} nm`}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Accumulated D·L</p>
@@ -126,7 +146,7 @@ export default function NonzeroDispersionPage() {
           <p>D(λ) = D(1550) + S · (λ − 1550 nm),  λ₀ = 1550 nm − D(1550)/S</p>
           <p>G.652 reference: D(λ) = (S₀/4)(λ − λ₀⁴/λ³), S₀ = 0.092, λ₀ = 1310 nm</p>
           <p>Δλ = λ² · Δν / c</p>
-          <p>Δβ_FWM = |β₂|(2πΔν)²,  β₂ = −λ²D/(2πc)</p>
+          <p>Δβ_FWM = −(2πΔν)²[β₂ + β₃·2πΔν],  β₂ = −λ²D/(2πc),  β₃ = (λ²/2πc)²(S + 2D/λ)</p>
           <p>G.655.C: 1 ≤ |D| ≤ 10 ps/(nm·km) over 1530–1565 nm</p>
           <p>Trade-off: low |D| → stronger FWM; high |D| → more compensation needed</p>
         </div>
