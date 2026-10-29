@@ -5,11 +5,11 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 171, 2026-10-29)
+## Status (session 172, 2026-10-29)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
-  textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9 (wave-optics 1/2) done (sessions 163–171); next 5w-10 (wave-optics 2/2); the Gemini hero is last. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) done (sessions 163–172); next 5w-11 (free-space-comms); the Gemini hero is last. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -152,6 +152,12 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - `thin-disk-laser` (session 150): Chanteloup's σ_e values are literature (Fan 2007, Brown 2005), σ_a measured; κ 7 is 8 at.%
   while the default doping is 10 at.% (Beil 2010 via Koerner 2012 Table 4: 5.7 at 12 at.%). Nd heat fraction 0.32 (Fan 1993,
   doi 10.1109/3.234394, paywalled) is still unsourced where it's used.
+- Session 172 (5w-10, unverified, from memory): supercontinuum "N > 16 = MI-dominated" threshold and the 835 nm PCF defaults
+  (Dudley 2006 Fig. 3; the femto-st PDF link is dead); DW cubic uses P₀, not the ≈ 4× ejected-soliton power. `q-switched-laser`:
+  r is the input, so the Degnan optimum coupling can't show; a g₀l input would. `thin-disk` "heat higher below threshold" and
+  `slab-laser` 0.32 heat fraction (Fan 1993, non-lasing?) unsourced. `ring-cavity` Siegman ch. 11/21 unchecked. `injection-locking`
+  stable band at weak injection (Henry–Olsson–Dutta 1985, Mogensen 1985 Fig. 2) unchecked. `soliton` default T₀ 57 fs sits at the
+  edge of Raman-free NLS. Kerr-lens title "Kerr Lens Mode Locking" while the page computes only the lens.
 **Free-space comms**
 - `aperture-averaging`: only the Gaussian aperture is modelled; a hard circular aperture gives a 5–11 % lower A at d² = 1–30 (reviewer quadrature, unchecked).
 - `adaptive-optics` (FSO): the actuator count is fed to Noll's fit 0.2944 J^(−√3/2) as a mode count (input up to 10⁵). The
@@ -287,7 +293,7 @@ One box per session, in this order.
   - [x] 5w-1 detectors 1/3 (session 163, PR #200) · [x] 5w-2 detectors 2/3 (session 164, PR #201) · [x] 5w-3 detectors 3/3 (session 165, PR #202)
   - [x] 5w-4 imaging 1/3 (session 166, PR #203) · [x] 5w-5 imaging 2/3 (session 167, PR #204) · [x] 5w-6 imaging 3/3 (session 168, PR #205)
   - [x] 5w-7 fiber-optics 1/2 (session 169, PR #206) · [x] 5w-8 fiber-optics 2/2 (session 170, PR #207)
-  - [x] 5w-9 wave-optics 1/2 (session 171, PR #208) · [ ] 5w-10 wave-optics 2/2 (17 slugs, injection-locking … thin-disk-laser)
+  - [x] 5w-9 wave-optics 1/2 (session 171, PR #208) · [x] 5w-10 wave-optics 2/2 (session 172, PR #209)
   - [ ] 5w-11 free-space-comms (17) · [ ] 5w-12 laser-safety (20) · [ ] 5w-13 materials (22)
   - [ ] 5w-14 spectroscopy (21) · [ ] 5w-15 thin-film + polarization (24)
 - [ ] Last: replace the home-page hero with the one the user made in Gemini, and wire it in (ask the user for the files).
@@ -309,6 +315,9 @@ One box per session, in this order.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - 5w-10 wave-optics 2/2 (session 172, `phase-5/5w-10-wave-optics`, PR #209): 16 pages, 1 bug: supercontinuum DW from the full
+    cubic β₂Ω²/2 + β₃Ω³/6 = γP₀/2 (745 vs 910 nm at old defaults; defaults now Dudley's 835 nm PCF, N 8.65); slow-light resonance
+    signal in MHz; 13 pages got validity warnings or text fixes; Kerr waist 30 µm; 1173 tests.
   - 5w-9 wave-optics 1/2 (session 171, `phase-5/5w-9-wave-optics`, PR #208): 16 pages, 3 bugs: diffraction-integral on-axis value
     called exact (now Rayleigh–Sommerfeld, Heurtley 1973), FEL negative L_sat shown "saturated", gas-laser confocal banner; 7 defaults
     changed (abcd, chirped, DFG w 150 µm, FWM seed, FEL L_u 15 m, gas bore 3.2 mm, HG TEM₂₁); diode log-gain cap 3. Source check:
