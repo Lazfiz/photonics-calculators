@@ -60,9 +60,10 @@ export default function SolidStateLaserResonatorPage() {
   const lambdaP = lambdaP_nm * 1e-9;
   const mode = twoMirrorMode(lambda, Leff, g1, g2);
   const radiusAt = (u: number) => radiusAtDistance(mode.w0, mode.zR, u - mode.z1); // u: reduced position
-  const toPhysical = (u: number) => (u <= l / n ? u * n : u + l * (1 - 1 / n));
+  const toPhysical = (u: number) => (u < 0 ? u : u <= l / n ? u * n : u + l * (1 - 1 / n));
   const waistPos = toPhysical(mode.z1);
   const rodSpot = Math.max(radiusAt(0), radiusAt(l / n)); // w(u) is convex: the largest spot in the rod is at a face
+  const clipped = fits && Number.isFinite(rodSpot) && rodSpot > d_mm * 5e-4;
 
   // Rod pumped uniformly over its cross-section, multimode output filling it.
   const rodArea = Math.PI * (d_mm * 5e-4) ** 2;
@@ -128,7 +129,7 @@ export default function SolidStateLaserResonatorPage() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-4">
         <ResultCard label="g₁g₂" value={fmt(g1 * g2)} subtext={`g₁ = ${fmt(g1)}, g₂ = ${fmt(g2)}; ${stability}`} tone={statusTone} />
         <ResultCard label="TEM₀₀ waist w₀" value={`${fmt(mode.w0 * 1e6)} µm`} subtext={`${fmt(waistPos * 1e3)} mm from the HR`} tone="green" />
-        <ResultCard label="TEM₀₀ spot in the rod" value={`${fmt(rodSpot * 1e6)} µm`} subtext={`Rod radius ${fmt(rodEdge)} µm; spot on OC ${fmt(mode.w2 * 1e6)} µm`} tone="cyan" />
+        <ResultCard label="TEM₀₀ spot in the rod" value={`${fmt(rodSpot * 1e6)} µm`} subtext={`Rod radius ${fmt(rodEdge)} µm; spot on OC ${fmt(mode.w2 * 1e6)} µm`} tone={clipped ? "red" : "cyan"} />
         <ResultCard label="Effective cavity length" value={`${fmt(Leff * 1e3)} mm`} subtext="L − l(1 − 1/n)" tone="blue" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
@@ -142,6 +143,12 @@ export default function SolidStateLaserResonatorPage() {
         <p className="mb-6 rounded-lg border border-yellow-700 bg-yellow-950/40 p-3 text-sm text-yellow-200">
           The cavity is {stability === "unstable" ? "unstable" : "on the stability boundary"}: there is no TEM₀₀ mode. The threshold and
           output still describe a multimode laser only if the cavity confines the light.
+        </p>
+      )}
+
+      {clipped && (
+        <p className="mb-6 rounded-lg border border-yellow-700 bg-yellow-950/40 p-3 text-sm text-yellow-200">
+          TEM₀₀ spot (w) is larger than the rod radius: the mode is clipped and the aperture loss is not modelled.
         </p>
       )}
 

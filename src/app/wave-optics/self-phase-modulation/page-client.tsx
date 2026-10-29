@@ -63,7 +63,9 @@ export default function SelfPhaseModulationPage() {
     !spectrum && `φ_max above ${SPM_SPECTRUM_MAX_PHASE} rad: the spectrum grid can't resolve it, and dispersion would matter long before this.`,
     P0 >= Pcr && (zsf < L
       ? `P ≥ P_cr and the beam self-focuses to collapse after about ${fmt(zsf * 1e3, 3)} mm, inside the medium: the plane-wave SPM picture fails there.`
-      : `P ≥ P_cr: the beam self-focuses, but the collapse distance ${fmt(zsf * 1e3, 3)} mm lies beyond the medium.`),
+      : L > 0.2 * zsf
+        ? `P₀ > P_cr: the beam already self-focuses inside the medium (L/z_sf = ${fmt(L / zsf, 2)}), so the on-axis intensity grows and φ_max is a lower bound.`
+        : `P ≥ P_cr: the beam self-focuses, but the collapse distance ${fmt(zsf * 1e3, 3)} mm lies beyond the medium.`),
   ].filter(Boolean) as string[];
 
   return (

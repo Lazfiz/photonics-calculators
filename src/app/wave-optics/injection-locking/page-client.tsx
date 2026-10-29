@@ -72,6 +72,12 @@ export default function InjectionLockingPage() {
           className="text-blue-400 hover:text-blue-300 disabled:text-gray-500">Use this k_c</button>
       </p>
 
+      {rho > 0.1 && (
+        <p className="mb-6 rounded-lg border border-yellow-700 bg-yellow-950/40 p-3 text-sm text-yellow-200">
+          Strong injection (ρ &gt; −10 dB): the weak-injection locking range and its asymmetry are only estimates.
+        </p>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
         <ResultCard label="Locking range" value={`${fmt(lower)} to +${fmt(upper)} GHz`} subtext={`width ${fmt(upper - lower)} GHz`} tone="blue" />
         <ResultCard label="Injection ratio ρ" value={`${fmt(rhoDb, 4)} dB`} subtext={`P_inj/P = ${fmt(rho)}; √ρ = ${fmt(Math.sqrt(rho))}`} tone="purple" />

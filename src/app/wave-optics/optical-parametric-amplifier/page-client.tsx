@@ -113,9 +113,9 @@ export default function OPACalculator() {
           Γ² = 2ω_sω_i d_eff² I_p/(n_pn_sn_i ε₀c³) and the signal grows by G = 1 + (Γ/g)² sinh²(gL), which is ≈ e^(2ΓL)/4 at high gain.
           A phase mismatch lowers g; beyond |Δk| = 2Γ the gain only oscillates. The gain is computed at the pump&apos;s on-axis
           intensity 2P/(πw²), so it is the peak gain of a Gaussian beam. Detuning the signal by Δν changes Δk by −2πΔν δ_si,
-          where δ_si is the signal–idler group-velocity mismatch. That sets the gain bandwidth: 0.886/(|δ_si|L) at low gain, narrowing
+          where δ_si is the signal–idler group-velocity mismatch. That sets the gain bandwidth: 0.886/(|δ_si|L) at low gain, widening as √(ΓL)
           towards (2√ln2/π)√(Γ/L)/|δ_si| at high gain (Cerullo &amp; De Silvestri 2003). The defaults are a 1064 nm-pumped PPLN
-          amplifier for 1550 nm: indices and δ_si from the Zelmon Sellmeier (21 °C, extraordinary), first-order QPM period{" "}
+          amplifier for 1550 nm: indices and δ_si from the Zelmon Sellmeier (21 °C, extraordinary), first-order QPM period for the entered indices (update n when you change a wavelength){" "}
           {fmt(qpmPeriod * 1e6, 4)} µm, and d_eff = 2d₃₃/π = 12.4 pm/V
           from d₃₃ = 19.5 pm/V of congruent LiNbO₃ for SHG of 1.313 µm (Shoji et al. 1997; 25.2 pm/V at 1.064 µm).
           Miller&apos;s rule scales d by 0.87 for the 3.39 µm idler, to ≈ 10.8 pm/V.</p>

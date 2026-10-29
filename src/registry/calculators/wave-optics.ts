@@ -338,7 +338,7 @@ export const waveOptics: CalculatorEntry[] = [
     description: "Thin Kerr lens of a Gaussian beam, f = πw⁴/(8n₂PL), with the on-axis nonlinear phase, the critical power for self-focusing and the Rayleigh range in the crystal.",
     keywords: ["Kerr lens", "KLM", "self-focusing", "nonlinear refractive index n2", "critical power", "Ti:sapphire"],
     tier: "textbook",
-    modelNote: "Parabolic approximation of the Gaussian intensity near the axis, I ≈ I₀(1 − 2r²/w²), in a thin crystal: 1/f = 4n₂I₀L/w² with I₀ = 2P/(πw²). Holds for L below z_R and f and for P well below P_cr = 3.77 λ²/(8π n₀ n₂); the page warns outside that range. Cavity design (the stability-limit shift) isn't modelled.",
+    modelNote: "Parabolic approximation of the Gaussian intensity near the axis, I ≈ I₀(1 − 2r²/w²), in a thin crystal: 1/f = 4n₂I₀L/w² with I₀ = 2P/(πw²). Holds for L below z_R and f and for P well below P_cr = 3.77 λ²/(8π n₀ n₂); the page warns outside that range. The on-axis lens overstates whole-beam focusing: on its own it would trap a Gaussian at λ²/(8π n₀ n₂) = P_cr/3.77. Cavity design (the stability-limit shift) isn't modelled.",
     references: [
       { citation: "Magni V., Cerullo G., De Silvestri S. (1993). ABCD matrix analysis of propagation of gaussian beams through Kerr media. Opt. Commun. 96, 348–355.", url: "https://doi.org/10.1016/0030-4018(93)90284-C" },
       { citation: "Fibich G., Gaeta A. L. (2000). Critical power for self-focusing in bulk media and in hollow waveguides. Opt. Lett. 25, 335–337.", url: "https://doi.org/10.1364/OL.25.000335" },
@@ -412,7 +412,7 @@ export const waveOptics: CalculatorEntry[] = [
     title: "Optical Parametric Amplifier",
     description: "Signal gain, idler output and gain bandwidth of an optical parametric amplifier from pump power and radius, d_eff, indices, phase mismatch and signal–idler group-velocity mismatch.",
     tier: "textbook",
-    modelNote: "Plane-wave, undepleted-pump gain at the pump's on-axis intensity; the bandwidth comes from first-order group-velocity mismatch only (no group-velocity dispersion). No focusing, walk-off or pump depletion. d_eff is an input: 12.4 pm/V is 2d₃₃/π of congruent PPLN, d₃₃ for SHG of 1.313 µm (Shoji et al. 1997); Miller's rule scales it by 0.87 (≈ 10.8 pm/V) for a 3.39 µm idler.",
+    modelNote: "Plane-wave, undepleted-pump gain at the pump's on-axis intensity; the bandwidth comes from first-order group-velocity mismatch only (no group-velocity dispersion). No focusing, walk-off or pump depletion; the depletion check compares the on-axis gain with the total pump power, so a seed narrower than the pump depletes it locally sooner. d_eff is an input: 12.4 pm/V is 2d₃₃/π of congruent PPLN, d₃₃ for SHG of 1.313 µm (Shoji et al. 1997); Miller's rule scales it by 0.87 (≈ 10.8 pm/V) for a 3.39 µm idler.",
     references: [
       {
         citation: "Boyd R. W. (2008). Nonlinear Optics, 3rd ed., §2.2 and §2.8. Academic Press. Coupled-amplitude equations for sum- and difference-frequency generation and parametric amplification.",
@@ -473,7 +473,7 @@ export const waveOptics: CalculatorEntry[] = [
     description: "Q-switched laser: peak and average power and duty cycle of a pulse train, plus pulse energy, width and peak power from the Q-switch rate equations.",
     keywords: ["Q-switching", "giant pulse", "Nd:YAG Q-switched", "extraction efficiency", "photon lifetime", "Degnan"],
     tier: "textbook",
-    modelNote: "Pulse train: shape factor × E/τ for Gaussian, sech² or flat pulses. Cavity model: four-level rate equations with an instant switch and an empty lower level (Wagner–Lengyel, Degnan), top-hat mode, integrated numerically for the shape and FWHM. A slow lower-level decay, a finite switching time and transverse gain variation are not modelled. Nd:YAG σ default from Koechner.",
+    modelNote: "Pulse train: shape factor × E/τ for Gaussian, sech² or flat pulses. Cavity model: four-level rate equations with an instant switch and an empty lower level (Wagner–Lengyel, Degnan), top-hat mode, integrated numerically for the shape and FWHM. The inversion ratio r is an input held fixed when R_oc changes, so the optimum coupling at a fixed pump (Degnan) isn't shown. A slow lower-level decay, a finite switching time and transverse gain variation are not modelled. Nd:YAG σ default from Koechner.",
     references: [
       { citation: "Wagner W. G., Lengyel B. A. (1963). Evolution of the giant pulse in a laser. J. Appl. Phys. 34, 2040–2046.", url: "https://doi.org/10.1063/1.1729732" },
       { citation: "Degnan J. J. (1989). Theory of the optimally coupled Q-switched laser. IEEE J. Quantum Electron. 25, 214–220.", url: "https://doi.org/10.1109/3.16265" },
@@ -617,7 +617,7 @@ export const waveOptics: CalculatorEntry[] = [
     description: "Length scales of supercontinuum generation in a photonic crystal fibre: soliton number, dispersion length, soliton fission length and the dispersive-wave wavelength from β₂ and β₃.",
     keywords: ["supercontinuum", "soliton fission", "photonic crystal fiber", "dispersive wave", "soliton number"],
     tier: "textbook",
-    modelNote: "Sech² pump pulse. Fission length L_D/N and the leading-order dispersive-wave offset −3β₂/β₃ are scaling estimates. The spectrum needs a generalised NLS simulation and is not computed.",
+    modelNote: "Sech² pump pulse. Fission length L_D/N is a scaling estimate. Dispersive-wave offset from the β₂, β₃ phase-matching cubic with the soliton wavenumber γP₀/2 at the input peak power (solitons ejected at fission are stronger, so the true wave lies further out); higher-order dispersion and Raman are left out. N > 16 is labelled modulation-instability dominated. The spectrum needs a generalised NLS simulation and is not computed. Defaults: the 835 nm PCF example of Dudley et al. 2006.",
     references: [
       { citation: "Dudley J. M., Genty G., Coen S. (2006). Supercontinuum generation in photonic crystal fiber. Rev. Mod. Phys. 78, 1135–1184.", url: "https://doi.org/10.1103/RevModPhys.78.1135" },
       { citation: "Akhmediev N., Karlsson M. (1995). Cherenkov radiation emitted by solitons in optical fibers. Phys. Rev. A 51, 2602.", url: "https://doi.org/10.1103/PhysRevA.51.2602" },

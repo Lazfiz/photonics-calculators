@@ -12,7 +12,7 @@ const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.i
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
 const round6 = (x: number) => Number(x.toPrecision(6));
 
-// Split-step budget: step h = min(0.02, 0.05/N²) L_D (N = 1 holds its shape to 3e-5, N = 2 recovers to 3e-3), at most
+// Split-step budget: step h = min(0.02, 0.05/N²) L_D (N = 1 holds its shape to 3e-5, N = 2 recovers to 4e-3), at most
 // 1000 steps and 10 L_D, on 1024 points over 64 T₀. Above N = 4 that grid no longer resolves the compressed peak.
 const MAX_ORDER = 4;
 const MAX_XI = 10;
@@ -65,7 +65,7 @@ export default function SolitonPage() {
   const simNote = !Number.isFinite(LD)
     ? "β₂ = 0: no dispersion length, so the pulse only gains SPM phase and keeps its intensity shape."
     : N > MAX_ORDER
-      ? `N > ${MAX_ORDER}: the browser grid can't resolve the compressed peak. The lengths above still hold; such pulses split in real fibres (see supercontinuum generation).`
+      ? `N > ${MAX_ORDER}: the browser grid can't resolve the compressed peak. The lengths above still hold; ${anomalous ? "such pulses split in real fibres (see supercontinuum generation)." : "with normal dispersion they don't split: SPM and optical wave breaking broaden the spectrum."}`
       : sim?.truncated
         ? `The simulation stops at ${fmt((sim.xi.at(-1) ?? 0) * LD, 3)} m (${fmt(sim.xi.at(-1) ?? 0, 3)} L_D), its step budget.`
         : "";
@@ -91,7 +91,9 @@ export default function SolitonPage() {
             ? content.count > 0
               ? `${content.count} soliton${content.count > 1 ? "s" : ""} inside; the strongest settles at ${fmt(content.amplitude ** 2 * P1)} W, width T₀/${fmt(content.amplitude, 3)}`
               : "N < 1/2: no soliton, the pulse disperses"
-            : "normal dispersion (β₂ > 0): no bright soliton, the pulse broadens"}
+            : beta2 === 0
+              ? "zero dispersion (β₂ = 0): SPM only, the intensity shape is kept"
+              : "normal dispersion (β₂ > 0): no bright soliton, the pulse broadens"}
           tone={anomalous && content.count > 0 ? "cyan" : "red"}
         />
       </div>

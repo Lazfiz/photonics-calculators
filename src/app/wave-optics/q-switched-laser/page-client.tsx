@@ -86,6 +86,11 @@ export default function QSwitchedLaserPage() {
         <ResultCard label="Duty cycle" value={`${fmt(duty * 100)} %`} subtext={`τ × f; peak/average ${fmt(pk / avg)}`} tone="cyan" />
       </div>
 
+      <p className="-mt-6 mb-8 text-sm text-gray-400">
+        If the pulse period 1/f is shorter than the upper-state lifetime (≈ 230 µs in Nd:YAG), the inversion doesn&apos;t recover between
+        pulses, so r and E fall at high rates.
+      </p>
+
       <h2 className="text-lg font-semibold mb-3">Pulse from the cavity (rate equations, defaults: Nd:YAG)</h2>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">
         <ValidatedNumberInput label="Initial inversion / threshold r" value={ratioRaw} onChange={setRatio} min={1.01} max={50} step="any" />
@@ -110,6 +115,8 @@ export default function QSwitchedLaserPage() {
         <p>Rate equations (Wagner–Lengyel, Degnan), four-level medium with an instant switch: rη = −ln(1 − η), E = (hνA/2σ) ln(1/R) rη,
           P_p = (γ₂/2)(hνA/σ)(r − 1 − ln r)/τ_c with γ₂ = −ln R, γ = γ_i + γ₂/2 and τ_c = L_e/(cγ), L_e = L + (n − 1)l. The plotted
           shape is integrated numerically; the FWHM comes from it.</p>
+        <p>The inversion ratio r = N_i/N_th is held fixed when you change R_oc. At a fixed pump the initial gain g₀l is fixed instead, so
+          r = g₀l/γ falls as R_oc drops, and the energy has an optimum coupling (Degnan 1989) that this input hides.</p>
       </div>
 
       {series[0].points.length > 0 && <SimpleLineChart title="Q-switched pulse from the rate equations" xLabel="Time from the peak (ns)" yLabel="Output power (kW)" series={series} />}
