@@ -145,9 +145,10 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   HeNe course report (Ng et al. 2015); no sourced g₀/I_sat for Ar⁺ or CO₂, so the line buttons set λ only.
 - `diode-laser-resonator` (session 149): hybrid set (De Koninck g₀/N_tr/B/C, Wenzel A/n_g); De Koninck's g₀ is Tsvid's dg/d ln J used as
   is (≈ 1750/cm in the N law); η_i·share 35 % vs Tsvid's 40–54 %. Coldren's gain tables have no open copy. Session 171: the
-  log-gain cap g/g₀ ≤ 3 (N ≤ e³ N_tr) is a judgement, not a sourced fit range; diode and dye modelNotes are ≈ 470 characters.
-- `dye-laser-resonator` (session 171, unverified): the flow transit time 2w_p/v may be w_p/v at the mode centre (≤ 2× in τ_eff).
-- `attosecond-pulse` (session 171): no flag for the magnetic-drift limit at long λ and high I (U_p ≳ 10 keV at 10 µm, 1e15 W/cm²).
+  log-gain cap g/g₀ ≤ 3 (N ≤ e³ N_tr) is a judgement, not a sourced fit range (Coldren, McIlroy paywalled; WIAS 2002 gives
+  only N > 2.5e18); diode and dye modelNotes are ≈ 470–560 characters.
+- `dye-laser-resonator` (session 171): τ_eff (erfcx closed form) is our own small-signal derivation; no textbook defines the jet
+  transit time precisely (Hollberg 1990 gives only the regime). The slope uses Laporta–Brussard's near-threshold overlap.
 - `thin-disk-laser` (session 150): Chanteloup's σ_e values are literature (Fan 2007, Brown 2005), σ_a measured; κ 7 is 8 at.%
   while the default doping is 10 at.% (Beil 2010 via Koerner 2012 Table 4: 5.7 at 12 at.%). Nd heat fraction 0.32 (Fan 1993,
   doi 10.1109/3.234394, paywalled) is still unsourced where it's used.
@@ -310,7 +311,9 @@ One box per session, in this order.
 ## Done (one line each; detail in the archive and the PR descriptions)
   - 5w-9 wave-optics 1/2 (session 171, `phase-5/5w-9-wave-optics`, PR #208): 16 pages, 3 bugs: diffraction-integral on-axis value
     called exact (now Rayleigh–Sommerfeld, Heurtley 1973), FEL negative L_sat shown "saturated", gas-laser confocal banner; 7 defaults
-    changed (abcd, chirped, DFG w 150 µm, FWM seed, FEL L_u 15 m, gas bore 3.2 mm, HG TEM₂₁); diode log-gain cap 3; 1169 tests.
+    changed (abcd, chirped, DFG w 150 µm, FWM seed, FEL L_u 15 m, gas bore 3.2 mm, HG TEM₂₁); diode log-gain cap 3. Source check:
+    dye τ_eff erfcx + Laporta–Brussard slope (P_out 0.43 → 0.64 W), attosecond Lorentz-drift flag (Klaiber 2008), filament
+    clamp 4e13 (Kasparian 2000), gaussian-beam Gouy text (sed-garbled in 98a54033) rewritten.
   - 5w-8 fiber-optics 2/2 (session 170, `phase-5/5w-8-fiber-optics`, PR #207): 21 pages, 3 bugs: photonic-crystal V/guidance
     outside d/Λ 0.2–0.8, wdm-coupler (dead selector, echoed isolation; new `wdm-channel-plan.ts`, tier illustrative), nonzero-dispersion
     λ0 out of band; elasto-optic on by default on macro-bending-loss and mode-field-diameter; 14 chart ranges; 1167 tests.

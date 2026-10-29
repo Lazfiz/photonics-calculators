@@ -10,7 +10,10 @@ PRs #200–#207 are merged to `main` but not released (`release` = `d82602ed`). 
 - `free-electron-laser.ts`: saturationLength NaN when 9P_sat ≤ P_n. `diode-laser.ts`: `MAX_LOG_GAIN_RATIO` = 3 (was 20).
 - New defaults: abcd-matrix d150_f100_d300 (A = −2), chirped-pulse ΔG 0.2 mm, difference-frequency w 150 µm (P_i 1.172 µW),
   four-wave-mixing seed 0.01 mW, free-electron-laser L_u 15 m, gas-laser bore 3.2 mm, hermite-gaussian TEM₂₁ at z = 5 mm.
-- Gates on the 5w-9 commit: `npm run check` 1169 pass; build: see the PR.
+- Source-check commit (user asked to verify the UNVERIFIED findings): `laser-resonator.ts` `flowTripletLifetime(τ_T, v, w₀, w_p)`
+  = (c√π/(2v)) erfcx(c/(2vτ_T)), c² = (w₀² + w_p²)/2, and `gaussianSlopeSaturationArea(w₀, w_p)` (Laporta–Brussard);
+  `tripletGainFactor` now takes τ_eff (4 args). `high-harmonic.ts` `lorentzDriftParameter(I_p, I, λ)` (Klaiber 2008), Γ ∝ I^1.5 λ⁴.
+  Dye default output 0.642 W (was 0.431), slope 29.5 %.
 
 ## Next actions
 1. `/ship` the 5w-9 PR. On a release (user asks), check on the local build first: `wave-optics/diffraction-integral=0.9075
@@ -20,7 +23,10 @@ PRs #200–#207 are merged to `main` but not released (`release` = `d82602ed`). 
 3. Last in Phase 5: the Gemini hero (ask the user for the files).
 
 ## Non-obvious facts
-- **Session 171:** implementers reported edits that never reached disk on 2 of 3 runs (dye + filamentation, hermite-gaussian +
+- **Session 171:** a sed replacement with `&` in the new text pasted the matched text into gaussian-beam (committed, then
+  fixed): do multi-line or prose replacements with a node script using `replace(a, () => b)`. Verified this session: Goodman
+  2nd ed. (4-24) is the Fraunhofer condition, (4-25) the Fraunhofer integral; Siegman ch. 26 is "Laser Q-Switching" (no
+  cavity-dumping section in the contents); Huang & Kim 2007: Xie fit within ≈ 10 %, σ_δ < ρ (eq. 71). Implementers reported edits that never reached disk on 2 of 3 runs (dye + filamentation, hermite-gaussian +
   gaussian-beam): run `git status --short` after each report and count files. Physics reviewers can be blocked from writing
   scratchpad probes inside a worktree (they fall back to `node --import tsx -e`); worktree isolation is not needed for read-only
   reviewers. A reviewer fix formula can be wrong while the finding is right (abcd EFL: −1/(n_out C), not −n_out/C). New warnings
