@@ -21,12 +21,15 @@ export const waveOptics: CalculatorEntry[] = [
     description: "High-harmonic generation in a gas: ponderomotive energy, cutoff photon energy I_p + 3.17 U_p, last odd harmonic, barrier-suppression intensity and the Fourier-limited attosecond pulse of the selected band.",
     keywords: ["high harmonic generation", "HHG", "attosecond", "ponderomotive energy", "cutoff law", "three-step model", "XUV"],
     tier: "textbook",
-    modelNote: "Three-step model cutoff I_p + 3.17 U_p, U_p = e²I/(2ε₀cmω²), ionization energies from NIST. The Fourier limit treats the band from its low edge to the cutoff as a Gaussian FWHM; attochirp, phase matching and ionization depletion are not modelled. Barrier suppression from the classical over-the-barrier field.",
+    modelNote: "Three-step model cutoff I_p + 3.17 U_p, U_p = e²I/(2ε₀cmω²), ionization energies from NIST. The Fourier limit treats the band from its low edge to the cutoff as a Gaussian FWHM; attochirp, phase matching and ionization depletion are not modelled. Barrier suppression from the classical over-the-barrier field; few-cycle drivers reach somewhat beyond it (Brabec & Krausz §VI–VII). The page flags the magnetic (Lorentz) drift when Klaiber's parameter √(2I_p)a₀³c/(16ω) exceeds 1, where recombination falls.",
     references: [
       { citation: "Corkum P. B. (1993). Plasma perspective on strong field multiphoton ionization. Phys. Rev. Lett. 71, 1994–1997.", url: "https://doi.org/10.1103/PhysRevLett.71.1994" },
       { citation: "Krause J. L., Schafer K. J., Kulander K. C. (1992). High-order harmonic generation from atoms and ions in the high intensity regime. Phys. Rev. Lett. 68, 3535–3538.", url: "https://doi.org/10.1103/PhysRevLett.68.3535" },
       { citation: "Augst S. et al. (1989). Tunneling ionization of noble gases in a high-intensity laser field. Phys. Rev. Lett. 63, 2212–2215.", url: "https://doi.org/10.1103/PhysRevLett.63.2212" },
       { citation: "Krausz F., Ivanov M. (2009). Attosecond physics. Rev. Mod. Phys. 81, 163–234.", url: "https://doi.org/10.1103/RevModPhys.81.163" },
+      { citation: "Brabec T., Krausz F. (2000). Intense few-cycle laser fields: frontiers of nonlinear optics. Rev. Mod. Phys. 72, 545–591, §VI–VII.", url: "https://doi.org/10.1103/RevModPhys.72.545" },
+      { citation: "Klaiber M., Hatsagortsyan K. Z., Müller C., Keitel C. H. (2008). Coherent hard x rays from attosecond pulse train-assisted harmonic generation. Opt. Lett. 33, 411–413. Drift criterion √(2I_p)ξ³c/(16ω) > 1.", url: "https://doi.org/10.1364/OL.33.000411" },
+      { citation: "Galloway B. R. et al. (2016). Lorentz drift compensation in high harmonic generation in the soft and hard X-ray regions of the spectrum. Opt. Express 24, 21818.", url: "https://doi.org/10.1364/OE.24.021818" },
     ],
   },
   {
@@ -55,7 +58,7 @@ export const waveOptics: CalculatorEntry[] = [
     tier: "textbook",
     modelNote: "Ideal full dump with an instant switch: the energy stored in a linear cavity, P_circ × 2L/c, leaves as a flat pulse one round trip long. Partial dumps, the switch rise time and the build-up between dumps are not modelled; the page only flags dump rates at or above c/2L.",
     references: [
-      { citation: "Siegman A. E. (1986). Lasers, ch. 26. University Science Books." },
+      { citation: "Siegman A. E. (1986). Lasers, ch. 26 (Laser Q-Switching). University Science Books." },
       { citation: "Koechner W. (2006). Solid-State Laser Engineering, 6th ed., ch. 8. Springer.", url: "https://doi.org/10.1007/0-387-29338-8" },
     ],
   },
@@ -128,6 +131,14 @@ export const waveOptics: CalculatorEntry[] = [
         citation: "Heurtley J. C. (1973). Scalar Rayleigh–Sommerfeld and Kirchhoff diffraction integrals: a comparison of exact evaluations for axial points. JOSA 63, 1003–1008.",
         url: "https://doi.org/10.1364/josa.63.001003",
       },
+      {
+        citation: "Osterberg H., Smith L. W. (1961). Closed solutions of Rayleigh's diffraction integral for axial points. JOSA 51, 1050–1054.",
+        url: "https://doi.org/10.1364/josa.51.001050",
+      },
+      {
+        citation: "Mielenz K. D. (2002). Optical diffraction in close proximity to plane apertures. I. Boundary-value solutions for circular apertures and slits. J. Res. NIST 107, 355–362, eq. (9b).",
+        url: "https://doi.org/10.6028/jres.107.028",
+      },
     ],
   },
   {
@@ -159,7 +170,7 @@ export const waveOptics: CalculatorEntry[] = [
     description: "CW dye jet laser in a two-mirror cavity: TEM₀₀ waist, triplet loss versus flow speed, threshold pump power, small-signal gain, output power and slope efficiency.",
     keywords: ["rhodamine 6G", "dye jet", "triplet absorption", "intersystem crossing", "CW dye laser threshold", "Rigrod"],
     tier: "textbook",
-    modelNote: "Four-level dye with the pump fully absorbed in a jet at the cavity waist; the Gaussian pump and mode overlap over π(w₀² + wₚ²)/2. Triplets reduce the gain cross-section to σₑ − σ_T k_ST τ_eff, with τ_eff set by the triplet lifetime and the flow transit across the pump spot. Output from Rigrod's homogeneous plane-wave model. Default dye: rhodamine 6G in ethanol at 590 nm (Falkenstein 1978 σₑ and τ; Pavlopoulos 1988 σ_T, from a 77 K glass; Webb 1970 k_ST and τ_T, air-saturated). Ground-state reabsorption and the gain spectrum are ignored.",
+    modelNote: "Four-level dye with the pump fully absorbed in a jet at the cavity waist; the Gaussian pump and mode overlap over π(w₀² + wₚ²)/2. Triplets reduce the gain cross-section to σₑ − σ_T k_ST τ_eff; τ_eff = (c√π/(2v)) erfcx(c/(2vτ_T)), c² = (w₀² + wₚ²)/2, is the mode-weighted small-signal triplet lifetime in the flowing jet (derived here; τ_T for slow flow, the transit time for fast flow). Output from Rigrod's homogeneous model with the Laporta–Brussard near-threshold saturation area πw₀²(w₀² + 2wₚ²)/(2(w₀² + wₚ²)), slope overlap ¾ for matched spots. Default dye: rhodamine 6G in ethanol at 590 nm (Falkenstein 1978 σₑ and τ; Pavlopoulos 1988 σ_T, from a 77 K glass; Webb 1970 k_ST and τ_T, air-saturated). Ground-state reabsorption and the gain spectrum are ignored.",
     references: [
       { citation: "Peterson O. G., Tuccio S. A., Snavely B. B. (1970). CW operation of an organic dye solution laser. Appl. Phys. Lett. 17, 245–247.", url: "https://doi.org/10.1063/1.1653384" },
       { citation: "Webb J. P., McColgin W. C., Peterson O. G. et al. (1970). Intersystem crossing rate and triplet state lifetime for a lasing dye. J. Chem. Phys. 53, 4227–4229.", url: "https://doi.org/10.1063/1.1673926" },
@@ -168,6 +179,9 @@ export const waveOptics: CalculatorEntry[] = [
       { citation: "Falkenstein W., Penzkofer A., Kaiser W. (1978). Amplified spontaneous emission in rhodamine dyes. Opt. Commun. 27, 151–156. Rh6G in ethanol: σₑ spectrum (Fig. 6), τ_F = 4.2 ± 0.3 ns.", url: "https://doi.org/10.1016/0030-4018(78)90196-7" },
       { citation: "Pavlopoulos T. G., Golich D. J. (1988). Triplet extinction coefficients of some laser dyes I. J. Appl. Phys. 64, 521–527. Rh6G ε_T(590 nm) = 9.7 × 10³ M⁻¹cm⁻¹.", url: "https://doi.org/10.1063/1.341991" },
       { citation: "Phillion D. W., Kuizenga D. J., Siegman A. E. (1974). Rotational diffusion and triplet state processes in dye laser solutions. J. Chem. Phys. 61, 3828. K_T = 0.35 ± 0.02 at 596 nm.", url: "https://doi.org/10.1063/1.1682572" },
+      { citation: "Laporta P., Brussard M. (1991). Design criteria for mode size optimization in diode-pumped solid-state lasers. IEEE J. Quantum Electron. 27, 2319–2326. Slope overlap (∫s r dV)²/∫s² r dV.", url: "https://doi.org/10.1109/3.97276" },
+      { citation: "Shayeganrad G. (2012). Optimum design of end-pumped solid-state lasers. In Solid State Laser, InTech, eqs. 10–12.", url: "https://doi.org/10.5772/38902" },
+      { citation: "Hollberg L. (1990). CW dye lasers. In Dye Laser Principles (Duarte F. J., Hillman L. W., eds.), ch. 5, 185–238. Academic Press. Jet flow and pump-spot regime.", url: "https://doi.org/10.1016/B978-0-12-222700-4.50010-3" },
     ],
   },
   {

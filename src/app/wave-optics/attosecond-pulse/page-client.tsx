@@ -7,7 +7,7 @@ import { useURLState } from "../../../hooks/use-url-state";
 import { c, h, q } from "../../../physics/constants";
 import {
   IONIZATION_ENERGY_EV, barrierSuppressionIntensity, fourierLimitDuration, hhgCutoff, highestOddHarmonic,
-  ponderomotiveEnergy, type HhgGas,
+  lorentzDriftParameter, ponderomotiveEnergy, type HhgGas,
 } from "../../../physics/wave-optics/high-harmonic";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -37,6 +37,7 @@ export default function AttosecondPulsePage() {
   const qMax = highestOddHarmonic(cutoff, photon);
   const keldysh = up > 0 ? Math.sqrt(ip / (2 * up)) : NaN; // γ_K = √(I_p/(2U_p))
   const ibs = barrierSuppressionIntensity(ip) / 1e4; // W/cm²
+  const drift = lorentzDriftParameter(ip, intensityCm2 * 1e4, lambda);
   const band = cutoff - edge;
   const tl = fourierLimitDuration(band);
   const period = lambda / c;
@@ -93,6 +94,11 @@ export default function AttosecondPulsePage() {
       {keldysh > 1 && (
         <p className="text-sm text-yellow-400 mb-6">Keldysh γ = {fmt(keldysh, 3)} &gt; 1: multiphoton regime, where the three-step cutoff law I_p + 3.17 U_p is only indicative.</p>
       )}
+      {drift > 1 && (
+        <p className="text-sm text-yellow-400 mb-6">Lorentz drift Γ = √(2I_p) a₀³ c/(16ω) = {fmt(drift, 3)} &gt; 1 (Klaiber et al. 2008): the
+          magnetic force pushes the returning electron past the ion by more than its wave-packet spread, so recombination and the
+          harmonic yield fall, more steeply as Γ grows (Galloway et al. 2016 measured it at mid-infrared drivers).</p>
+      )}
 
       <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">
         <p>In the three-step model an electron tunnels out near a field peak, is driven by the laser field and recombines,
@@ -100,7 +106,8 @@ export default function AttosecondPulsePage() {
           giving a train of attosecond bursts and odd harmonics 2ħω apart; an isolated pulse needs a driver of about one cycle
           or a gating scheme. The Fourier limit treats the selected band, from its low edge (a metal filter, say) to the cutoff,
           as a Gaussian FWHM. The intrinsic attochirp makes real pulses longer, and above the barrier-suppression intensity
-          ionization depletes the gas before the peak.</p>
+          ionization depletes the gas before the peak. Since Γ grows as I^(3/2)λ⁴, long-wavelength drivers meet the
+          magnetic-drift limit first (Γ = 1 for helium near 7 × 10¹⁵ W/cm² at 1.8 µm, 1.3 × 10¹⁴ W/cm² at 8 µm).</p>
       </div>
 
       <SimpleLineChart title="Cutoff energy against driver wavelength" xLabel="Driver wavelength (nm)" yLabel="Cutoff photon energy (eV)" series={series} />

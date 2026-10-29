@@ -100,7 +100,7 @@ export default function FilamentationPage() {
         <p>Above the critical power the Kerr lens beats diffraction and a Gaussian beam self-focuses. A collimated beam
           collapses after z_sf = 0.367 z_R / √((√(P/P_cr) − 0.852)² − 0.0219), Dawes and Marburger&apos;s fit to numerical
           solutions. Near the collapse the intensity climbs until multiphoton ionisation makes a plasma that defocuses the
-          beam and absorbs energy. The intensity then clamps, at about 5×10¹³ W/cm² in air (Kasparian et al.), and a
+          beam and absorbs energy. The intensity then clamps, at about 4×10¹³ W/cm² in air (Kasparian, Sauerbrey &amp; Chin 2000), and a
           filament forms. The filament&apos;s length and plasma density need a full propagation model; this page gives the
           threshold and where the filament starts. P uses the pulse&apos;s peak power, which self-focuses first. Far above
           P_cr, small irregularities in the beam make it break into several filaments.</p>

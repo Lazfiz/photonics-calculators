@@ -16,6 +16,7 @@
  *   K = (1 − R₂)√R₁'/((√R₁' + √R₂)(1 − √(R₁'R₂)))  → T/δ for small losses (Rigrod's T/2 form).
  */
 import { c, h } from "../constants";
+import { erfcx } from "../math";
 import { rigrodOutput } from "../fiber-optics/doped-fiber-gain";
 
 /** Logarithmic loss −ln(1 − f) = −log1p(−f), nepers, of a fractional power loss f per pass; NaN outside 0 ≤ f < 1. */
@@ -32,6 +33,22 @@ export function roundTripLoss(R1: number, R2: number, internal = 0): number {
 /** Effective pumped area π(w₀² + w_p²)/2 of a Gaussian pump of radius w_p overlapping a Gaussian mode of radius w₀. */
 export function gaussianOverlapArea(wMode: number, wPump: number): number {
   return wMode > 0 && wPump > 0 ? (Math.PI * (wMode * wMode + wPump * wPump)) / 2 : NaN;
+}
+
+/**
+ * Near-threshold saturation area of a Gaussian mode w₀ pumped by a Gaussian of radius w_p (end pumping, no diffraction
+ * over the gain length): A_s = π w₀²(w₀² + 2w_p²)/(2(w₀² + w_p²)). With it, P_out = I_sat A_s K (g₀l − δ/2) has the
+ * Laporta–Brussard slope, whose overlap factor A_s/A = w₀²(w₀² + 2w_p²)/(w₀² + w_p²)² = (∫s r dV)²/(∫s² r dV) (s, r
+ * normalized mode and pump densities): 1 for w_p ≪ w₀, ¾ at w_p = w₀, 2w₀²/w_p² for w_p ≫ w₀. It is the near-threshold
+ * value; well above threshold the mode wings saturate as well and only a full spatial model follows that. P. Laporta and
+ * M. Brussard, IEEE J. Quantum Electron. 27, 2319 (1991), doi 10.1109/3.97276; G. Shayeganrad, in Solid State Laser
+ * (InTech, 2012), eqs. 10–12, doi 10.5772/38902.
+ */
+export function gaussianSlopeSaturationArea(wMode: number, wPump: number): number {
+  if (!(wMode > 0 && wPump > 0)) return NaN;
+  const m2 = wMode * wMode;
+  const p2 = wPump * wPump;
+  return (Math.PI * m2 * (m2 + 2 * p2)) / (2 * (m2 + p2));
 }
 
 /** Single-pass small-signal gain g₀l = η_p σ τ P_p λ_p/(h c A), nepers; P_p is the absorbed pump power. */
@@ -76,16 +93,32 @@ export function fourLevelSlopeEfficiency(
 }
 
 /**
- * Dye laser: fraction of the singlet gain left after triplet-triplet absorption, 1 − σ_T k_ST τ_eff/σ_e, where triplets
- * live τ_eff = (1/τ_T + 1/t_transit)⁻¹ and t_transit = 2w_p/v is the flow transit time through the pump spot.
+ * Dye laser: fraction of the singlet gain left after triplet-triplet absorption, 1 − σ_T k_ST τ_eff/σ_e, where τ_eff
+ * is the effective triplet lifetime in the pumped region (τ_T without flow, flowTripletLifetime in a jet).
  * Negative: the triplet absorption exceeds the gain and the dye cannot lase CW. O. G. Peterson, S. A. Tuccio,
  * B. B. Snavely, Appl. Phys. Lett. 17, 245 (1970), doi 10.1063/1.1653384; J. P. Webb, W. C. McColgin,
  * O. G. Peterson et al., J. Chem. Phys. 53, 4227 (1970), doi 10.1063/1.1673926.
  */
-export function tripletGainFactor(sigmaE: number, sigmaT: number, kST: number, tauT: number, transitTime: number): number {
-  if (!(sigmaE > 0 && sigmaT >= 0 && kST >= 0 && tauT > 0 && transitTime > 0)) return NaN;
-  const tauEff = 1 / (1 / tauT + 1 / transitTime);
+export function tripletGainFactor(sigmaE: number, sigmaT: number, kST: number, tauEff: number): number {
+  if (!(sigmaE > 0 && sigmaT >= 0 && kST >= 0 && tauEff >= 0)) return NaN;
   return 1 - (sigmaT * kST * tauEff) / sigmaE;
+}
+
+/**
+ * Effective triplet lifetime in a dye jet flowing at v across a CW Gaussian pump spot (radius w_p) and mode (w₀), small
+ * signal: triplets made upstream decay as e^(−s/(vτ_T)) while they drift a distance s, and the triplet loss is weighted by
+ * the mode. The pump–mode cross-correlation along the flow is e^(−s²/c²), c² = (w₀² + w_p²)/2, so
+ * τ_eff = (1/v)∫₀^∞ e^(−s²/c² − s/(vτ_T)) ds = (c√π/(2v)) erfcx(c/(2vτ_T)).
+ * Limits: τ_T when vτ_T ≪ c; transit time c√π/(2v) = √(π/8)√(w₀² + w_p²)/v (0.886 w_p/v at w₀ = w_p) when vτ_T ≫ c.
+ * The transverse profile across the flow cancels for Gaussian beams. Own derivation from the rate equation
+ * v dN_T/dx = k_ST N_S − N_T/τ_T; flow regime as in L. Hollberg, in Dye Laser Principles (Academic, 1990), ch. 5,
+ * doi 10.1016/B978-0-12-222700-4.50010-3.
+ */
+export function flowTripletLifetime(tauT: number, v: number, wMode: number, wPump: number): number {
+  if (!(tauT > 0 && v >= 0 && wMode > 0 && wPump > 0) || !Number.isFinite(v)) return NaN;
+  if (v === 0) return tauT;
+  const cLen = Math.sqrt((wMode * wMode + wPump * wPump) / 2);
+  return ((cLen * Math.sqrt(Math.PI)) / (2 * v)) * erfcx(cLen / (2 * v * tauT));
 }
 
 /** Mean-square TEM₀₀ radius over [0, L] for a waist w₀ at z₁ from mirror 1 with Rayleigh range z_R (reduced lengths). */

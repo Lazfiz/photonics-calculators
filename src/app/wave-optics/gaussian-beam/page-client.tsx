@@ -93,7 +93,10 @@ export default function GaussianBeamPage() {
       <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">
         <p>z<sub>R</sub> = πw₀²/λ, &nbsp; θ = λ/(πw₀)</p>
         <p>w(z) = w₀ √(1 + (z/z<sub>R</sub>)²), &nbsp; R(z) = z (1 + (z<sub>R</sub>/z)²)</p>
-        <p>ψ(z) = arctan(z/z<sub>R</sub>): the extra phase relative to a plane wave (the wavefronts run ahead of a plane wavethe phase lag behind a plane wave; a TEMmnapos;s); a TEMmn mode picks up (m + n + 1)ψ.</p>
+        <p>ψ(z) = arctan(z/z<sub>R</sub>), the Gouy phase: the extra phase relative to a plane wave in step with the beam at the
+          waist. On axis the phase velocity is slightly above c, so the wavefronts trail that plane wave before the waist and run
+          ahead after it, π in all (some texts call ψ a retardation, but the on-axis phase velocity still exceeds c). A TEMmn mode picks up
+          (m + n + 1)ψ.</p>
       </div>
 
       <div className="space-y-6">

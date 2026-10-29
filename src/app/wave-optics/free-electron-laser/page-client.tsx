@@ -94,7 +94,7 @@ export default function FreeElectronLaserPage() {
       {input.energySpread > r.rho && (
         <p className="mb-4 rounded-lg border border-yellow-700 bg-yellow-950/40 p-3 text-sm text-yellow-200">
           σ_δ = {fmt(input.energySpread)} exceeds ρ = {fmt(r.rho)}: the energy spread is wider than the FEL gain bandwidth, so the gain is
-          strongly suppressed and Xie&apos;s fit is extrapolated.
+          strongly suppressed (Huang &amp; Kim require σ_δ &lt; ρ) and Xie&apos;s fit, made for small η, loses accuracy.
         </p>
       )}
 

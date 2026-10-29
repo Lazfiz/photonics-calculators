@@ -7,8 +7,8 @@ import { useURLState } from "../../../hooks/use-url-state";
 import { gParameter, resonatorStability, twoMirrorMode } from "../../../physics/wave-optics/two-mirror-resonator";
 import { radiusAtDistance } from "../../../physics/wave-optics/gaussian-beam";
 import {
-  fourLevelGain, fourLevelSlopeEfficiency, fourLevelThreshold, gaussianOverlapArea, laserOutput, logarithmicLoss, roundTripLoss,
-  saturationIntensity, tripletGainFactor,
+  flowTripletLifetime, fourLevelGain, fourLevelSlopeEfficiency, fourLevelThreshold, gaussianOverlapArea, gaussianSlopeSaturationArea,
+  laserOutput, logarithmicLoss, roundTripLoss, saturationIntensity, tripletGainFactor,
 } from "../../../physics/wave-optics/laser-resonator";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -57,12 +57,13 @@ export default function DyeLaserResonatorPage() {
   const mode = twoMirrorMode(lambda, L, g1, g2);
   const statusTone = stability === "stable" ? "green" : stability === "marginal" ? "yellow" : "red";
 
-  // Jet at the waist: triplets live τ_eff while the flow carries them across the pump spot (transit 2wₚ/v).
-  const factorAt = (v: number) => tripletGainFactor(sigmaE, sigmaT, kST, tauT, (2 * wp) / v);
+  // Jet at the waist: triplets live τ_eff while the flow carries them across the pump spot and the mode.
+  const factorAt = (v: number) => tripletGainFactor(sigmaE, sigmaT, kST, flowTripletLifetime(tauT, v, mode.w0, wp));
+  const tauEff = flowTripletLifetime(tauT, flow, mode.w0, wp);
   const factor = factorAt(flow);
   const sigmaNet = sigmaE * factor;
   const pumpArea = gaussianOverlapArea(mode.w0, wp);
-  const modeArea = (Math.PI * mode.w0 * mode.w0) / 2;
+  const modeArea = gaussianSlopeSaturationArea(mode.w0, wp); // Laporta–Brussard near-threshold saturation area
   const delta = roundTripLoss(1, R_oc, internal);
   const pTh = factor > 0 ? fourLevelThreshold(delta, lambdaP, sigmaNet, tau, pumpArea, etaP) : NaN;
   const gainAt = (p: number) => (factor > 0 ? fourLevelGain(p, lambdaP, sigmaNet, tau, pumpArea, etaP) : NaN);
@@ -88,7 +89,7 @@ export default function DyeLaserResonatorPage() {
     { name: "Operating point", color: "#facc15", showPoints: true, points: Number.isFinite(pOut) ? [{ x: round6(pump), y: round6(pOut) }] : [] },
   ];
 
-  // Log span from 0.2 m/s (or the set speed) up to at least 4wₚ/τ_T, where the transit time is a quarter of τ_T.
+  // Log span from 0.2 m/s (or the set speed) up to at least 4wₚ/τ_T, where the transit time is well below τ_T.
   const vMax = Math.max(20, 2 * flow, (4 * wp) / tauT);
   const vMin = Math.min(0.2, flow);
   const flowSeries = [
@@ -140,14 +141,14 @@ export default function DyeLaserResonatorPage() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-4">
         <ResultCard label="g₁g₂" value={fmt(g1 * g2)} subtext={`g₁ = ${fmt(g1)}, g₂ = ${fmt(g2)}; ${stability}`} tone={statusTone} />
         <ResultCard label="TEM₀₀ waist w₀ (in the jet)" value={`${fmt(mode.w0 * 1e6)} µm`} subtext={`${fmt(mode.z1 * 1e3)} mm from mirror 1`} tone="green" />
-        <ResultCard label="Gain left after triplet absorption" value={`${fmt(factor * 100)} %`} subtext={`Flow transit 2wₚ/v = ${fmt((2 * wp) / flow * 1e6)} µs`} tone={factor > 0 ? "cyan" : "red"} />
+        <ResultCard label="Gain left after triplet absorption" value={`${fmt(factor * 100)} %`} subtext={`Effective triplet lifetime τ_eff = ${fmt(tauEff * 1e6)} µs (τ_T = ${fmt(tauT * 1e6)} µs)`} tone={factor > 0 ? "cyan" : "red"} />
         <ResultCard label="Round-trip loss δ" value={`${fmt(delta * 100)} %`} subtext="−ln R_OC + 2 × loss per pass" tone="orange" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
         <ResultCard label="Threshold pump power" value={`${fmt(pTh)} W`} subtext={`Overlap area π(w₀² + wₚ²)/2 = ${fmt(pumpArea * 1e12)} µm²`} tone="red" />
         <ResultCard label="Small-signal gain g₀l" value={fmt(g0l)} subtext={`Single pass at ${fmt(pump)} W; threshold δ/2 = ${fmt(delta / 2)}`} tone="blue" />
-        <ResultCard label="Output power" value={`${fmt(pOut)} W`} subtext={`I_sat = hc/(λσₑτ) = ${fmt(iSat / 1e7)} kW/cm²`} tone="yellow" />
-        <ResultCard label="Slope efficiency" value={`${fmt(slope * 100)} %`} subtext={`Quantum defect limit λₚ/λ = ${fmt((lambdaP / lambda) * 100)} %`} tone="purple" />
+        <ResultCard label="Output power" value={`${fmt(pOut)} W`} subtext={`I_sat = hc/(λσₑτ) = ${fmt(iSat / 1e7)} kW/cm², near-threshold Rigrod`} tone="yellow" />
+        <ResultCard label="Slope efficiency" value={`${fmt(slope * 100)} %`} subtext={`Mode–pump overlap ${fmt((modeArea / pumpArea) * 100, 3)} %; quantum defect limit λₚ/λ = ${fmt((lambdaP / lambda) * 100)} %`} tone="purple" />
       </div>
 
       {!(factor > 0) && (
@@ -164,16 +165,18 @@ export default function DyeLaserResonatorPage() {
       )}
 
       <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">
-        <p>Gain cross-section net of triplets: σₑ − σ_T k_ST τ_eff, τ_eff = (1/τ_T + v/(2wₚ))⁻¹. The pumped jet (pump fully absorbed) gives
-          g₀l = ηₚ(σₑ − σ_T k_ST τ_eff)τPₚλₚ/(hcA), A = π(w₀² + wₚ²)/2, so the jet thickness cancels.</p>
-        <p>Threshold g₀l = δ/2; output from Rigrod with the saturation power I_sat πw₀²/2.</p>
+        <p>Gain cross-section net of triplets: σₑ − σ_T k_ST τ_eff. Triplets made upstream decay while the jet carries them through the
+          mode, so τ_eff = (c√π/(2v)) erfcx(c/(2vτ_T)), c² = (w₀² + wₚ²)/2: τ_T for slow flow, the transit time √(π/8)√(w₀² + wₚ²)/v
+          for fast flow. The pumped jet (pump fully absorbed) gives g₀l = ηₚ(σₑ − σ_T k_ST τ_eff)τPₚλₚ/(hcA), A = π(w₀² + wₚ²)/2,
+          so the jet thickness cancels.</p>
+        <p>Threshold g₀l = δ/2. Output from Rigrod with the saturation area πw₀²(w₀² + 2wₚ²)/(2(w₀² + wₚ²)), which gives the
+          near-threshold slope overlap w₀²(w₀² + 2wₚ²)/(w₀² + wₚ²)² of Laporta &amp; Brussard (1991): ¾ for matched spots.</p>
         <p>Default dye: rhodamine 6G in ethanol. σₑ(590 nm) = 1.1 × 10⁻¹⁶ cm², read off Fig. 6, and τ = 4.2 ns (Falkenstein, Penzkofer &amp;
           Kaiser 1978); σ_T(590 nm) = 3.7 × 10⁻¹⁷ cm² from ε_T = 9.7 × 10³ M⁻¹cm⁻¹, measured in a 77 K glass (Pavlopoulos &amp; Golich 1988);
           k_ST = 3.4 × 10⁶ s⁻¹ and τ_T = 0.25 µs in air-saturated ethanol, where dissolved O₂ quenches the triplets (Webb et al. 1970;
           degassed solutions keep them much longer). Together K_T = k_ST τ_T σ_T/σₑ = 0.29, against 0.35 ± 0.02 measured in a CW laser
           (Phillion, Kuizenga &amp; Siegman 1974, water with Triton X-100). With air-saturated dye (τ_T ≈ 0.25 µs) oxygen
-          quenching, not flow, clears the triplets, so the flow speed barely matters; degassed dye (τ_T ≈ 10 µs) needs v ≳ 2wₚ/τ_T.
-          The transit-time interpolation (2wₚ/v) is a heuristic.</p>
+          quenching, not flow, clears the triplets, so the flow speed barely matters; degassed dye (τ_T ≈ 10 µs) needs v ≳ wₚ/τ_T.</p>
       </div>
 
       <div className="space-y-6">

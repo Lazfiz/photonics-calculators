@@ -35,8 +35,9 @@ export function circularOnAxisIntensity(NF: number): number {
 /**
  * Exact on-axis intensity behind a circular aperture in Rayleigh–Sommerfeld (first kind) theory, no paraxial step:
  * U/U₀ = e^(ikz) − (z/R) e^(ikR), R = √(z² + a²), so I/I₀ = |1 − (z/R) e^(ik(R − z))|². Tends to 4 sin²(π N_F/2) when
- * the dropped Fresnel phase is small. R − z = a²/(R + z) avoids cancellation. Heurtley, JOSA 63, 1003 (1973),
- * doi 10.1364/JOSA.63.001003.
+ * the dropped Fresnel phase is small. R − z = a²/(R + z) avoids cancellation. H. Osterberg and L. W. Smith, JOSA 51, 1050
+ * (1961), doi 10.1364/JOSA.51.001050; K. D. Mielenz, J. Res. NIST 107, 355 (2002), eq. (9b), doi 10.6028/jres.107.028;
+ * Heurtley, JOSA 63, 1003 (1973), doi 10.1364/JOSA.63.001003.
  */
 export function circularOnAxisIntensityExact(a: number, lambda: number, z: number): number {
   if (!(a > 0 && lambda > 0 && z > 0) || !Number.isFinite(a * lambda * z)) return NaN;
@@ -47,8 +48,8 @@ export function circularOnAxisIntensityExact(a: number, lambda: number, z: numbe
 }
 
 /**
- * Phase the Fresnel approximation drops at the aperture edge, k(√(z² + a²) − z) − π N_F ≈ −π a⁴/(4λz³) (Goodman
- * eq. 4-18). Its magnitude ≪ 1 rad is the condition for the paraxial on-axis value to hold.
+ * Phase the Fresnel approximation drops at the aperture edge, k(√(z² + a²) − z) − π N_F ≈ −π a⁴/(4λz³), the next
+ * term of the binomial expansion (Goodman §4.2.2). Its magnitude ≪ 1 rad is the condition for the paraxial on-axis value to hold.
  */
 export function fresnelEdgePhaseError(a: number, lambda: number, z: number): number {
   if (!(a > 0 && lambda > 0 && z > 0) || !Number.isFinite(a * lambda * z)) return NaN;

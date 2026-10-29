@@ -162,7 +162,7 @@ test("circular aperture: exact Rayleigh–Sommerfeld on-axis intensity (Heurtley
   assertAbs(circularOnAxisIntensity(fresnelNumber(3e-3, 632.8e-9, 0.05)), 1.6875, 1e-4, "paraxial value");
   // Edge: the page default (a = 100 µm, z = 50 mm) drops 1e-6 rad, so the two agree.
   assertAbs(circularOnAxisIntensityExact(100e-6, 632.8e-9, 0.05), 0.9075040453, 1e-5, "paraxial limit");
-  // Dropped phase ≈ −π a⁴/(4λz³) (Goodman eq. 4-18): −0.804 rad at a = 3 mm, z = 50 mm.
+  // Dropped phase ≈ −π a⁴/(4λz³) (next binomial term, Goodman §4.2.2): −0.804 rad at a = 3 mm, z = 50 mm.
   assertRel(fresnelEdgePhaseError(3e-3, 632.8e-9, 0.05), -Math.PI * 81e-12 / (4 * 632.8e-9 * 1.25e-4), 3e-3, "quartic term");
   assert.ok(Number.isNaN(circularOnAxisIntensityExact(0, 632.8e-9, 0.05)), "a = 0");
 });
