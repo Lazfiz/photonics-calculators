@@ -71,14 +71,14 @@ export default function CavityModeSpacingPage() {
   // Stability diagram: stable between the axes and the hyperbola g₁g₂ = 1.
   const hyperbola = (sign: 1 | -1) =>
     Array.from({ length: 61 }, (_, i) => {
-      const x = sign * (0.5 + (1.5 * i) / 60);
+      const x = sign * (1 / 3 + ((3 - 1 / 3) * i) / 60);
       return { x: round6(x), y: round6(1 / x) };
     });
   const onChart = Math.abs(g1) <= 3 && Math.abs(g2) <= 3;
   const diagram = [
     { name: "g₁g₂ = 1 (boundary)", color: "#9ca3af", points: hyperbola(1) },
     { name: "g₁g₂ = 1, negative branch", color: "#9ca3af", points: hyperbola(-1) },
-    { name: "g₁ = 0 and g₂ = 0 (boundary)", color: "#6b7280", dashed: true, points: [{ x: -2, y: 0 }, { x: 0, y: 0 }, { x: 0, y: -2 }, { x: 0, y: 2 }, { x: 0, y: 0 }, { x: 2, y: 0 }] },
+    { name: "g₁ = 0 and g₂ = 0 (boundary)", color: "#6b7280", dashed: true, points: [{ x: -3, y: 0 }, { x: 0, y: 0 }, { x: 0, y: -3 }, { x: 0, y: 3 }, { x: 0, y: 0 }, { x: 3, y: 0 }] },
     { name: "Symmetric: planar, confocal, concentric", color: "#60a5fa", dashed: true, showPoints: true, points: [{ x: -1, y: -1 }, { x: 0, y: 0 }, { x: 1, y: 1 }] },
     { name: onChart ? "This cavity" : "This cavity (off the chart)", color: stability === "unstable" ? "#f87171" : "#34d399", showPoints: true, points: onChart ? [{ x: round6(g1), y: round6(g2) }] : [] },
   ];
@@ -119,6 +119,7 @@ export default function CavityModeSpacingPage() {
           + for g &gt; 0 and − for g &lt; 0.</p>
         <p>z<sub>R</sub>² = L² g₁g₂(1 − g₁g₂)/(g₁ + g₂ − 2g₁g₂)², w₀² = λz<sub>R</sub>/(nπ), z₁ = L g₂(1 − g₁)/(g₁ + g₂ − 2g₁g₂),
           w₁² = (λL/nπ)√(g₂/(g₁(1 − g₁g₂))).</p>
+        <p>For a dispersive filling the mode spacing uses the group index: FSR = c/(2n<sub>g</sub>L); the index input here is the phase index.</p>
       </div>
 
       <div className="space-y-6">

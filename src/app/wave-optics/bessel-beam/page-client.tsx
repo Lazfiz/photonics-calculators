@@ -70,7 +70,7 @@ export default function BesselBeamPage() {
         <ResultCard label="Core radius to the first dark ring" value={`${fmt(r0_um)} µm`} subtext={`r₀ = 2.405/k_r; core diameter ${fmt(2 * r0_um)} µm`} tone="blue" />
         <ResultCard label="Core FWHM" value={`${fmt(fwhm_um)} µm`} subtext="Full width at half the peak intensity" tone="green" />
         <ResultCard label="Bessel range z_max = R/tan θ" value={`${fmt(zMax_mm)} mm`} subtext="Where the cone of rays from the input edge crosses the axis" tone="orange" />
-        <ResultCard label="Gaussian with waist r₀" value={`z_R = ${fmt(zRGauss_mm)} mm`} subtext={`The Bessel core lasts ${fmt(zMax_mm / zRGauss_mm, 3)} × longer`} tone="purple" />
+        <ResultCard label="Gaussian with waist r₀" value={`z_R = ${fmt(zRGauss_mm)} mm`} subtext={`The Bessel core lasts ${fmt(zMax_mm / zRGauss_mm, 3)} × longer (w₀ = r₀; a Gaussian matched to the core FWHM, w₀ = FWHM/√(2 ln 2), has a z_R about 1.6× shorter still)`} tone="purple" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 mb-6">
         <ResultCard label="Radial wavenumber k_r = k sin θ" value={`${fmt(kr * 1e-3)} rad/mm`} subtext={`θ = ${fmt((alpha * 180) / Math.PI, 4)}°`} tone="cyan" />
@@ -80,6 +80,7 @@ export default function BesselBeamPage() {
       <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">
         <p>E(r, z) = J₀(k<sub>r</sub>r) e<sup>ik<sub>z</sub>z</sup>, k<sub>r</sub> = (2π/λ) sin θ, k<sub>z</sub> = (2π/λ) cos θ: plane waves on a cone of half-angle θ.</p>
         <p>An ideal Bessel beam carries infinite power; a real one, from an axicon or annular slit, keeps its core only up to z<sub>max</sub>. For an axicon of index n and base angle γ, θ ≈ (n − 1)γ.</p>
+        <p>λ is the wavelength in the medium; above θ ≈ 0.3 rad the scalar (paraxial-amplitude) picture is only indicative.</p>
       </div>
 
       <div className="space-y-6">

@@ -19,7 +19,7 @@ export default function ChirpedPulsePage() {
   const [energyRaw, setEnergy] = useURLState("pulseEnergy", 1); // mJ
   const [linesRaw, setLines] = useURLState("gratingLines", 1740); // lines/mm
   const [incidenceRaw, setIncidence] = useURLState("incidence", 45); // deg
-  const [offsetRaw, setOffset] = useURLState("compressorOffset", 0); // mm
+  const [offsetRaw, setOffset] = useURLState("compressorOffset", 0.2); // mm
 
   const lambda = clamp(wavelengthRaw, 200, 5000, 800) * 1e-9;
   const dlambda = clamp(bandwidthRaw, 0.01, 1000, 10) * 1e-9;
@@ -79,7 +79,7 @@ export default function ChirpedPulsePage() {
             : `double pass, β = ${fmt((perMetre.beta * 180) / Math.PI)}°, ${fmt(perMetre.gdd * 1e27)} fs²/mm; TOD ${fmt(compressor.tod * 1e45)} fs³`}
           tone="cyan"
         />
-        <ResultCard label="Recompressed duration" value={noOrder ? "—" : `${fmt(tauOut * 1e15)} fs`} subtext={`residual GDD ${fmt(residual * 1e30)} fs²; peak ${fmt(peakOut / 1e9)} GW`} tone="blue" />
+        <ResultCard label="Recompressed duration" value={noOrder ? "—" : `${fmt(tauOut * 1e15)} fs`} subtext={`residual GDD ${fmt(residual * 1e30)} fs²; peak ${fmt(peakOut / 1e9)} GW, assuming a lossless compressor (real four-reflection grating compressors pass ≈ 60–70 %)`} tone="blue" />
       </div>
 
       <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">

@@ -8,7 +8,7 @@ import {
 import { cePhaseSlip, combTooth, nearestTooth, wrapOffset } from "../src/physics/wave-optics/frequency-comb";
 import {
   IONIZATION_ENERGY_EV, barrierSuppressionIntensity, fourierLimitDuration, hhgCutoff, highestOddHarmonic,
-  ponderomotiveEnergy,
+  lorentzDriftParameter, ponderomotiveEnergy,
 } from "../src/physics/wave-optics/high-harmonic";
 import { TIME_BANDWIDTH, frequencyWidth, wavelengthWidth } from "../src/physics/wave-optics/pulsed-laser";
 
@@ -92,4 +92,16 @@ test("HHG: U_p, E_c = I_p + 3.17 U_p, odd harmonics, Fourier limit (Krause 1992;
   assertRel(barrierSuppressionIntensity(IONIZATION_ENERGY_EV.hydrogen * q) / 1e4, 4.0e9 * 13.5984 ** 4, 2e-4, "I_BS");
   assert.ok(Number.isNaN(fourierLimitDuration(0)));
   assert.ok(Number.isNaN(ponderomotiveEnergy(1e18, 0)));
+});
+
+test("HHG Lorentz drift parameter (Klaiber et al. 2008)", () => {
+  // Hand calculation in atomic units: He (I_p = 0.90357 Ha), 800 nm (ω = 0.056954), 6.2e16 W/cm² (E₀ = 1.3291 au):
+  // a₀ = E₀/(cω) = 1.3291/(137.036 × 0.056954) = 0.17030; Γ = √(1.80714) × 0.17030³ × 137.036/(16 × 0.056954) = 0.9985.
+  assertRel(lorentzDriftParameter(IONIZATION_ENERGY_EV.helium * q, 6.2e20, 800e-9), 0.9985, 1e-3, "Γ He 800 nm");
+  // Γ ∝ I^(3/2) λ⁴.
+  const g0 = lorentzDriftParameter(IONIZATION_ENERGY_EV.argon * q, 2e18, 800e-9);
+  assertRel(lorentzDriftParameter(IONIZATION_ENERGY_EV.argon * q, 8e18, 1600e-9), g0 * 8 * 16, 1e-12, "scaling");
+  assert.ok(g0 < 1e-3, "negligible at 800 nm, 2e14 W/cm²");
+  assert.equal(lorentzDriftParameter(IONIZATION_ENERGY_EV.argon * q, 0, 800e-9), 0);
+  assert.ok(Number.isNaN(lorentzDriftParameter(0, 1e18, 800e-9)));
 });

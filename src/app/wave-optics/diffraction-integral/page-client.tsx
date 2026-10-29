@@ -7,7 +7,7 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
   MAX_CIRCULAR_FRESNEL_NUMBER, airyFirstZeroRadius, circularFraunhoferIntensity, circularFresnelIntensity,
-  circularOnAxisIntensity, fresnelNumber, slitFirstZero, slitFraunhoferIntensity, slitFresnelIntensity,
+  circularOnAxisIntensity, circularOnAxisIntensityExact, fresnelEdgePhaseError, fresnelNumber, slitFirstZero, slitFraunhoferIntensity, slitFresnelIntensity,
 } from "../../../physics/wave-optics/diffraction-integral";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -37,7 +37,10 @@ export default function DiffractionIntegralPage() {
   const obs_um = clamp(obsRaw, a_um / 10, obsCap_um, Math.min(500, obsCap_um));
 
   const tooNear = !slit && NF > MAX_CIRCULAR_FRESNEL_NUMBER;
-  const onAxis = slit ? slitFresnelIntensity(NF, 0) : circularOnAxisIntensity(NF);
+  const onAxisParaxial = slit ? slitFresnelIntensity(NF, 0) : circularOnAxisIntensity(NF);
+  const onAxis = slit ? onAxisParaxial : circularOnAxisIntensityExact(a, lambda, z);
+  // Phase the Fresnel step drops at the aperture edge; > 0.1 rad shifts the on-axis value by up to ≈ 0.2 I₀.
+  const edgePhase = Math.abs(fresnelEdgePhaseError(a, lambda, z));
   const farField = NF <= 1; // the Fraunhofer curve is worth overlaying
   const regime = NF < 0.1 ? "Fraunhofer (far field)" : NF <= 1 ? "Fresnel, near the far field" : "Fresnel (near field)";
   const zFar_mm = ((a * a) / lambda) * 1e3; // N_F = 1
@@ -96,7 +99,9 @@ export default function DiffractionIntegralPage() {
         <ResultCard
           label="On-axis intensity I(0)/I₀"
           value={fmt(onAxis)}
-          subtext={slit ? "Fresnel integrals at x = 0" : "4 sin²(πN_F/2): bright for odd N_F, dark for even"}
+          subtext={slit
+            ? "Fresnel integrals at x = 0"
+            : `exact Rayleigh–Sommerfeld; paraxial 4 sin²(πN_F/2) = ${fmt(onAxisParaxial)} (bright for odd N_F, dark for even)`}
           tone="green"
         />
         <ResultCard
@@ -111,8 +116,14 @@ export default function DiffractionIntegralPage() {
       {tooNear && (
         <p className="mb-6 rounded-lg border border-yellow-700 bg-yellow-950/40 p-3 text-sm text-yellow-200">
           N_F = {fmt(NF, 3)} is above {MAX_CIRCULAR_FRESNEL_NUMBER}: the screen is so close that the pattern is the
-          aperture&apos;s geometric shadow with fine edge fringes. The on-axis value above is still exact; move the screen
+          aperture&apos;s geometric shadow with fine edge fringes. The on-axis value above is the exact Rayleigh–Sommerfeld one; move the screen
           further or shrink the aperture to plot the pattern.
+        </p>
+      )}
+      {edgePhase > 0.1 && (
+        <p className="mb-6 rounded-lg border border-yellow-700 bg-yellow-950/40 p-3 text-sm text-yellow-200">
+          The Fresnel approximation drops a phase πa⁴/(4λz³) = {fmt(edgePhase, 2)} rad at the aperture edge, which is not ≪ 1:
+          the {slit ? "on-axis value and the " : ""}plotted Fresnel pattern {slit ? "are" : "is"} only approximate. Use a larger z or a smaller aperture.
         </p>
       )}
       {angle > 0.1 && (

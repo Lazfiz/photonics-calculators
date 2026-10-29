@@ -12,7 +12,7 @@ const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.i
 const fmt = (x: number, digits: number) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
 const MAX_ELEMENTS = 20;
 const LEN = 1e6; // mm, limit for distances, focal lengths and radii
-const DEFAULT_ELEMENTS = "d100";
+const DEFAULT_ELEMENTS = "d150_f100_d300";
 
 type Kind = AbcdElement["kind"];
 // UI element: lengths in mm. URL token per element, joined by "_": d<mm>, f<mm>, m, r<mm>, n<n₁>x<n₂>.
@@ -66,7 +66,7 @@ export default function ABCDMatrixPage() {
   const elements = useMemo(() => parseElements(elementsRaw), [elementsRaw]);
   const setElements = (els: UiElement[]) => setElementsRaw(serialize(els));
   const inputHeight = clamp(heightRaw, -1e6, 1e6, 1);
-  const inputAngle = clamp(angleRaw, -1e6, 1e6, 0);
+  const inputAngle = clamp(angleRaw, -500, 500, 0);
 
   const addElement = () => {
     if (elements.length < MAX_ELEMENTS) setElements([...elements, { kind: "space", a: 50, b: 0 }]);
@@ -86,13 +86,16 @@ export default function ABCDMatrixPage() {
   const ray = traceRay(M, inputHeight * 1e-3, inputAngle * 1e-3);
   const valid = [M.A, M.B, M.C, M.D].every(Number.isFinite);
   const isImaging = valid && Math.abs(M.B) < 1e-9;
-  const efl_mm = valid && M.C !== 0 ? -1e3 / M.C : NaN; // −1/C in m, shown in mm
+  const efl_mm = valid && M.C !== 0 ? -1e3 / M.C : NaN; // −1/C in m, shown in mm (rear focal length f′ = n_out/P)
+  // Output medium index: n₂ of the last interface element (1 if none). Real-angle convention: C = −P/n_out, EFL = 1/P.
+  const nOut = [...elements].reverse().find((e) => e.kind === "interface")?.b ?? 1;
+  const eflPower_mm = Number.isFinite(efl_mm) ? efl_mm / nOut : NaN;
 
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Input ray height y (mm)" value={heightRaw} onChange={setInputHeight} min={-1e6} max={1e6} />
-        <ValidatedNumberInput label="Input ray angle θ (mrad)" value={angleRaw} onChange={setInputAngle} min={-1e6} max={1e6} />
+        <ValidatedNumberInput label="Input ray angle θ (mrad)" value={angleRaw} onChange={setInputAngle} min={-500} max={500} />
       </div>
 
       <div className="space-y-3 mb-8">
@@ -147,7 +150,7 @@ export default function ABCDMatrixPage() {
           <p className="text-sm text-gray-400 mb-2">Output ray</p>
           <p className="text-lg">Height: <span className="text-blue-400 font-bold">{fmt(ray.y * 1e3, 4)} mm</span></p>
           <p className="text-lg">Angle: <span className="text-green-400 font-bold">{fmt(ray.theta * 1e3, 4)} mrad</span></p>
-          <p className="text-sm text-gray-400 mt-2">Effective focal length −1/C: {Number.isFinite(efl_mm) ? `${fmt(efl_mm, 3)} mm` : "— (afocal, C = 0)"}</p>
+          <p className="text-sm text-gray-400 mt-2">Rear focal length f′ = −1/C: {Number.isFinite(efl_mm) ? `${fmt(efl_mm, 3)} mm${nOut !== 1 ? `; EFL = f′/n_out = ${fmt(eflPower_mm, 3)} mm` : ""}` : "— (afocal, C = 0)"}</p>
           {isImaging && <p className="text-sm text-yellow-400 mt-2">Imaging condition (B = 0): magnification A = {fmt(M.A, 4)}</p>}
         </div>
       </div>

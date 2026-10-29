@@ -34,10 +34,13 @@ export function differentialEfficiency(etaI: number, alphaI: number, alphaM: num
 
 /**
  * Carrier density N_tr e^{g/g₀} at which the logarithmic gain g₀ ln(N/N_tr) reaches the material gain g, 1/m³.
- * NaN when g/g₀ > 20: far outside the range where the logarithmic fit holds.
+ * NaN when g/g₀ > MAX_LOG_GAIN_RATIO: N above e³ N_tr ≈ 20 N_tr (≈ 4e19 cm⁻³ for N_tr = 1.8e18). The cap is a
+ * model-validity judgement, not a sourced limit: the logarithmic fit (Coldren & Corzine §4.3) is made over a few N_tr,
+ * and real gain saturates well before 20 N_tr.
  */
+export const MAX_LOG_GAIN_RATIO = 3;
 export function logGainCarrierDensity(gain: number, g0: number, nTr: number): number {
-  if (!(g0 > 0 && nTr > 0 && Number.isFinite(gain)) || gain / g0 > 20) return NaN;
+  if (!(g0 > 0 && nTr > 0 && Number.isFinite(gain)) || gain / g0 > MAX_LOG_GAIN_RATIO) return NaN;
   return nTr * Math.exp(gain / g0);
 }
 

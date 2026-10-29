@@ -7,7 +7,7 @@ import { useURLState } from "../../../hooks/use-url-state";
 import { c, h, q } from "../../../physics/constants";
 import {
   IONIZATION_ENERGY_EV, barrierSuppressionIntensity, fourierLimitDuration, hhgCutoff, highestOddHarmonic,
-  ponderomotiveEnergy, type HhgGas,
+  lorentzDriftParameter, ponderomotiveEnergy, type HhgGas,
 } from "../../../physics/wave-optics/high-harmonic";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -35,7 +35,9 @@ export default function AttosecondPulsePage() {
   const cutoff = hhgCutoff(ip, up);
   const photon = (h * c) / lambda;
   const qMax = highestOddHarmonic(cutoff, photon);
+  const keldysh = up > 0 ? Math.sqrt(ip / (2 * up)) : NaN; // γ_K = √(I_p/(2U_p))
   const ibs = barrierSuppressionIntensity(ip) / 1e4; // W/cm²
+  const drift = lorentzDriftParameter(ip, intensityCm2 * 1e4, lambda);
   const band = cutoff - edge;
   const tl = fourierLimitDuration(band);
   const period = lambda / c;
@@ -75,11 +77,11 @@ export default function AttosecondPulsePage() {
           label="Ponderomotive energy U_p"
           value={`${fmt(up / q)} eV`}
           subtext={intensityCm2 > ibs
-            ? `above the barrier-suppression intensity ${fmt(ibs, 3)} W/cm²: the gas ionizes within a cycle and the cutoff is not reached`
+            ? `above the barrier-suppression intensity ${fmt(ibs, 3)} W/cm²: ionization saturates the medium; long drivers cap the cutoff near I_BS, few-cycle drivers reach somewhat beyond it`
             : `barrier-suppression intensity ${fmt(ibs, 3)} W/cm²`}
           tone={intensityCm2 > ibs ? "red" : "orange"}
         />
-        <ResultCard label="Cutoff photon energy" value={`${fmt(cutoff / q)} eV`} subtext={`I_p + 3.17 U_p; λ = ${fmt(((h * c) / cutoff) * 1e9)} nm, last odd harmonic ${qMax}`} tone="blue" />
+        <ResultCard label="Cutoff photon energy" value={`${fmt(cutoff / q)} eV`} subtext={`I_p + 3.17 U_p; λ = ${fmt(((h * c) / cutoff) * 1e9)} nm, last odd harmonic ${qMax}; Keldysh γ = ${fmt(keldysh, 3)}`} tone="blue" />
         <ResultCard
           label="Fourier-limited pulse"
           value={band > 0 ? `${fmt(tl * 1e18)} as` : "—"}
@@ -89,13 +91,23 @@ export default function AttosecondPulsePage() {
         <ResultCard label="Driver cycles in the FWHM" value={fmt(tau / period, 3)} subtext={`bursts every T/2 = ${fmt((period / 2) * 1e15)} fs; harmonics 2ħω = ${fmt((2 * photon) / q)} eV apart`} tone="cyan" />
       </div>
 
+      {keldysh > 1 && (
+        <p className="text-sm text-yellow-400 mb-6">Keldysh γ = {fmt(keldysh, 3)} &gt; 1: multiphoton regime, where the three-step cutoff law I_p + 3.17 U_p is only indicative.</p>
+      )}
+      {drift > 1 && (
+        <p className="text-sm text-yellow-400 mb-6">Lorentz drift Γ = √(2I_p) a₀³ c/(16ω) = {fmt(drift, 3)} &gt; 1 (Klaiber et al. 2008): the
+          magnetic force pushes the returning electron past the ion by more than its wave-packet spread, so recombination and the
+          harmonic yield fall, more steeply as Γ grows (Galloway et al. 2016 measured it at mid-infrared drivers).</p>
+      )}
+
       <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">
         <p>In the three-step model an electron tunnels out near a field peak, is driven by the laser field and recombines,
           emitting up to I_p + 3.17 U_p, with U_p = e²I/(2ε₀cmω²) ∝ Iλ². A multi-cycle driver repeats this every half cycle,
           giving a train of attosecond bursts and odd harmonics 2ħω apart; an isolated pulse needs a driver of about one cycle
           or a gating scheme. The Fourier limit treats the selected band, from its low edge (a metal filter, say) to the cutoff,
           as a Gaussian FWHM. The intrinsic attochirp makes real pulses longer, and above the barrier-suppression intensity
-          ionization depletes the gas before the peak.</p>
+          ionization depletes the gas before the peak. Since Γ grows as I^(3/2)λ⁴, long-wavelength drivers meet the
+          magnetic-drift limit first (Γ = 1 for helium near 7 × 10¹⁵ W/cm² at 1.8 µm, 1.3 × 10¹⁴ W/cm² at 8 µm).</p>
       </div>
 
       <SimpleLineChart title="Cutoff energy against driver wavelength" xLabel="Driver wavelength (nm)" yLabel="Cutoff photon energy (eV)" series={series} />

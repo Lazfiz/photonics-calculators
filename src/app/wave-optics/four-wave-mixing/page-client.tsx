@@ -22,7 +22,7 @@ export default function FourWaveMixingPage() {
   const [lambdaPumpRaw, setLambdaPump] = useURLState("wavelengthPump", 1550); // nm
   const [lambdaSignalRaw, setLambdaSignal] = useURLState("wavelengthSignal", 1560); // nm
   const [pumpPowerRaw, setPumpPower] = useURLState("pumpPower", 1000); // mW
-  const [seedPowerRaw, setSeedPower] = useURLState("seedPower", 1); // mW
+  const [seedPowerRaw, setSeedPower] = useURLState("seedPower", 0.01); // mW
   const [n2Raw, setN2] = useURLState("n2", 2.6); // ×10⁻²⁰ m²/W (= ×10⁻¹⁶ cm²/W)
   const [areaRaw, setArea] = useURLState("coreArea", 11); // µm²
   const [lengthRaw, setLength] = useURLState("fiberLength", 500); // m
@@ -56,7 +56,7 @@ export default function FourWaveMixingPage() {
 
   const warnings = [
     !valid && "The signal frequency is above twice the pump frequency (λ_s < λ_p/2), so there is no idler: 1/λ_i = 2/λ_p − 1/λ_s.",
-    valid && Ps * gain > 0.1 * Pp && `The amplified signal reaches ${fmt((100 * Ps * gain) / Pp, 3)} % of the pump: the pump is depleted and the undepleted-pump gain overstates the output.`,
+    valid && Ps * (gain - 1) + Pi > 0.1 * Pp && `Signal and idler take more than 10 % of the pump (${fmt((100 * (Ps * (gain - 1) + Pi)) / Pp, 3)} %): the pump is depleted and the undepleted-pump gain overstates the output.`,
     !Number.isFinite(omegaPk) && Pp > 0 && "No detuning phase-matches (κ = 0 needs β₂ < 0 or β₄ < 0, i.e. anomalous dispersion): the gain band collapses to the pump and the idler grows only quadratically.",
   ].filter(Boolean) as string[];
 
@@ -107,7 +107,7 @@ export default function FourWaveMixingPage() {
           signal grows as G_s = 1 + [(γP_p/g) sinh(gL)]², with g² = (γP_p)² − (κ/2)² and κ = Δβ + 2γP_p: the linear
           mismatch Δβ = β_s + β_i − 2β_p plus the pump&apos;s self- and cross-phase modulation. Gain is exponential where
           |κ| &lt; 2γP_p and peaks at cosh²(γP_pL) where κ = 0, which needs anomalous dispersion at the pump. Far outside the
-          band, or for a weak pump, it reduces to the low-conversion law P_i ≈ (γP_pL)² sinc²(ΔβL/2) P_s. The defaults are a
+          band G − 1 tends to (γP_pL)² sinc²(κL/2), κ = Δβ + 2γP_p; for a weak pump κ → Δβ. The defaults are a
           500 m highly nonlinear fiber pumped with 1 W just on the anomalous side of its zero-dispersion wavelength. Fiber loss,
           polarization and Raman gain are not modelled.</p>
         {warnings.map((msg) => <p key={msg} className="text-yellow-400">{msg}</p>)}

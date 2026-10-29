@@ -11,7 +11,7 @@ import {
 } from "../src/physics/wave-optics/bessel-beam";
 import {
   MAX_CIRCULAR_FRESNEL_NUMBER, airyFirstZeroRadius, circularFraunhoferIntensity, circularFresnelIntensity,
-  circularOnAxisIntensity, fresnelNumber, slitFirstZero, slitFraunhoferIntensity, slitFresnelIntensity,
+  circularOnAxisIntensity, circularOnAxisIntensityExact, fresnelEdgePhaseError, fresnelNumber, slitFirstZero, slitFraunhoferIntensity, slitFresnelIntensity,
 } from "../src/physics/wave-optics/diffraction-integral";
 
 function assertRel(actual: number, expected: number, tol: number, label: string) {
@@ -149,4 +149,20 @@ test("Fresnel diffraction, slit: knife-edge quarter, wide-slit centre, Fraunhofe
   assertRel(slitFraunhoferIntensity(0.5, 0), 2, 1e-15, "4 N_F on axis");
   assertAbs(slitFraunhoferIntensity(0.5, 1), 0, 1e-15, "first zero at x = λz/(2a) ⇔ x/a = 1/(2N_F)");
   assertRel(slitFirstZero(100e-6, 632.8e-9, 0.05), 158.2e-6, 1e-9, "λz/(2a)");
+});
+
+test("circular aperture: exact Rayleigh–Sommerfeld on-axis intensity (Heurtley 1973)", () => {
+  // I/I₀ = |1 − (z/R) e^(ik(R−z))|², R = √(z² + a²). Hand calc, a = 3 mm, z = 50 mm, λ = 632.8 nm: R − z = 89.92 µm,
+  // k(R − z) = 892.8 rad, z/R = 0.99820 → 0.3613, while the paraxial 4 sin²(π N_F/2) at N_F = 284.45 gives 1.6875.
+  const R = Math.hypot(0.05, 3e-3);
+  const t = 0.05 / R;
+  const hand = 1 + t * t - 2 * t * Math.cos(((2 * Math.PI) / 632.8e-9) * (R - 0.05));
+  assertRel(circularOnAxisIntensityExact(3e-3, 632.8e-9, 0.05), hand, 1e-9, "closed form");
+  assertAbs(circularOnAxisIntensityExact(3e-3, 632.8e-9, 0.05), 0.3613, 1e-4, "far from the paraxial 1.6875");
+  assertAbs(circularOnAxisIntensity(fresnelNumber(3e-3, 632.8e-9, 0.05)), 1.6875, 1e-4, "paraxial value");
+  // Edge: the page default (a = 100 µm, z = 50 mm) drops 1e-6 rad, so the two agree.
+  assertAbs(circularOnAxisIntensityExact(100e-6, 632.8e-9, 0.05), 0.9075040453, 1e-5, "paraxial limit");
+  // Dropped phase ≈ −π a⁴/(4λz³) (next binomial term, Goodman §4.2.2): −0.804 rad at a = 3 mm, z = 50 mm.
+  assertRel(fresnelEdgePhaseError(3e-3, 632.8e-9, 0.05), -Math.PI * 81e-12 / (4 * 632.8e-9 * 1.25e-4), 3e-3, "quartic term");
+  assert.ok(Number.isNaN(circularOnAxisIntensityExact(0, 632.8e-9, 0.05)), "a = 0");
 });

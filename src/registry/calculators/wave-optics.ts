@@ -21,12 +21,15 @@ export const waveOptics: CalculatorEntry[] = [
     description: "High-harmonic generation in a gas: ponderomotive energy, cutoff photon energy I_p + 3.17 U_p, last odd harmonic, barrier-suppression intensity and the Fourier-limited attosecond pulse of the selected band.",
     keywords: ["high harmonic generation", "HHG", "attosecond", "ponderomotive energy", "cutoff law", "three-step model", "XUV"],
     tier: "textbook",
-    modelNote: "Three-step model cutoff I_p + 3.17 U_p, U_p = e²I/(2ε₀cmω²), ionization energies from NIST. The Fourier limit treats the band from its low edge to the cutoff as a Gaussian FWHM; attochirp, phase matching and ionization depletion are not modelled. Barrier suppression from the classical over-the-barrier field.",
+    modelNote: "Three-step model cutoff I_p + 3.17 U_p, U_p = e²I/(2ε₀cmω²), ionization energies from NIST. The Fourier limit treats the band from its low edge to the cutoff as a Gaussian FWHM; attochirp, phase matching and ionization depletion are not modelled. Barrier suppression from the classical over-the-barrier field; few-cycle drivers reach somewhat beyond it (Brabec & Krausz §VI–VII). The page flags the magnetic (Lorentz) drift when Klaiber's parameter √(2I_p)a₀³c/(16ω) exceeds 1, where recombination falls.",
     references: [
       { citation: "Corkum P. B. (1993). Plasma perspective on strong field multiphoton ionization. Phys. Rev. Lett. 71, 1994–1997.", url: "https://doi.org/10.1103/PhysRevLett.71.1994" },
       { citation: "Krause J. L., Schafer K. J., Kulander K. C. (1992). High-order harmonic generation from atoms and ions in the high intensity regime. Phys. Rev. Lett. 68, 3535–3538.", url: "https://doi.org/10.1103/PhysRevLett.68.3535" },
       { citation: "Augst S. et al. (1989). Tunneling ionization of noble gases in a high-intensity laser field. Phys. Rev. Lett. 63, 2212–2215.", url: "https://doi.org/10.1103/PhysRevLett.63.2212" },
       { citation: "Krausz F., Ivanov M. (2009). Attosecond physics. Rev. Mod. Phys. 81, 163–234.", url: "https://doi.org/10.1103/RevModPhys.81.163" },
+      { citation: "Brabec T., Krausz F. (2000). Intense few-cycle laser fields: frontiers of nonlinear optics. Rev. Mod. Phys. 72, 545–591, §VI–VII.", url: "https://doi.org/10.1103/RevModPhys.72.545" },
+      { citation: "Klaiber M., Hatsagortsyan K. Z., Müller C., Keitel C. H. (2008). Coherent hard x rays from attosecond pulse train-assisted harmonic generation. Opt. Lett. 33, 411–413. Drift criterion √(2I_p)ξ³c/(16ω) > 1.", url: "https://doi.org/10.1364/OL.33.000411" },
+      { citation: "Galloway B. R. et al. (2016). Lorentz drift compensation in high harmonic generation in the soft and hard X-ray regions of the spectrum. Opt. Express 24, 21818.", url: "https://doi.org/10.1364/OE.24.021818" },
     ],
   },
   {
@@ -55,7 +58,7 @@ export const waveOptics: CalculatorEntry[] = [
     tier: "textbook",
     modelNote: "Ideal full dump with an instant switch: the energy stored in a linear cavity, P_circ × 2L/c, leaves as a flat pulse one round trip long. Partial dumps, the switch rise time and the build-up between dumps are not modelled; the page only flags dump rates at or above c/2L.",
     references: [
-      { citation: "Siegman A. E. (1986). Lasers, ch. 26. University Science Books." },
+      { citation: "Siegman A. E. (1986). Lasers, ch. 26 (Laser Q-Switching). University Science Books." },
       { citation: "Koechner W. (2006). Solid-State Laser Engineering, 6th ed., ch. 8. Springer.", url: "https://doi.org/10.1007/0-387-29338-8" },
     ],
   },
@@ -65,7 +68,7 @@ export const waveOptics: CalculatorEntry[] = [
     description: "Two-mirror resonator: g-parameters and stability diagram, free spectral range, transverse mode spacing, TEM₀₀ waist size and position, and spot sizes on the mirrors.",
     keywords: ["Cavity Stability Diagram", "g-parameters", "resonator stability", "transverse mode spacing", "Gouy phase", "free spectral range"],
     tier: "textbook",
-    modelNote: "Paraxial Gaussian modes of two spherical mirrors (Kogelnik–Li), with a medium of index n filling the cavity. The transverse spacing takes the Gouy phase on the branch set by the sign of g, so cavities with g < 0 space their modes by more than FSR/2. Aperture losses and mirror tilt are ignored.",
+    modelNote: "Paraxial Gaussian modes of two spherical mirrors (Kogelnik–Li), with a medium of index n filling the cavity (phase index; a dispersive filling spaces the modes by c/(2n_gL)). The transverse spacing takes the Gouy phase on the branch set by the sign of g, so cavities with g < 0 space their modes by more than FSR/2. Aperture losses and mirror tilt are ignored.",
     references: [
       {
         citation: "Kogelnik H., Li T. (1966). Laser beams and resonators. Appl. Opt. 5, 1550–1567.",
@@ -80,7 +83,7 @@ export const waveOptics: CalculatorEntry[] = [
     description: "Chirped pulse amplification: transform-limited duration of a bandwidth, stretcher GDD for a stretch ratio, Treacy grating-compressor separation, recompressed duration against a separation error, and peak powers.",
     keywords: ["CPA", "pulse compression", "pulse stretcher", "grating compressor", "Treacy compressor", "group delay dispersion", "transform limit"],
     tier: "textbook",
-    modelNote: "Gaussian pulses with quadratic spectral phase: τ = τ₀√(1 + (4 ln2 φ₂/τ₀²)²), τ₀ = 0.4413/Δν. Treacy double-pass grating-pair GDD and TOD in the first order; the stretcher is assumed to cancel the compressor TOD. Gain narrowing, the B-integral and material dispersion are not modelled.",
+    modelNote: "Gaussian pulses with quadratic spectral phase: τ = τ₀√(1 + (4 ln2 φ₂/τ₀²)²), τ₀ = 0.4413/Δν. Treacy double-pass grating-pair GDD and TOD in the first order; the stretcher is assumed to cancel the compressor TOD, and the compressor is lossless. Gain narrowing, the B-integral and material dispersion are not modelled.",
     references: [
       { citation: "Treacy E. B. (1969). Optical pulse compression with diffraction gratings. IEEE J. Quantum Electron. 5, 454–458.", url: "https://doi.org/10.1109/JQE.1969.1076303" },
       { citation: "Strickland D., Mourou G. (1985). Compression of amplified chirped optical pulses. Opt. Commun. 56, 219–221.", url: "https://doi.org/10.1016/0030-4018(85)90120-8" },
@@ -92,7 +95,7 @@ export const waveOptics: CalculatorEntry[] = [
     title: "Difference Frequency Generation (DFG)",
     description: "Idler power, wavelength and quasi-phase-matching period of χ⁽²⁾ difference-frequency generation (ωp − ωs → ωi) from pump and signal powers, beam radius, d_eff, indices and phase mismatch.",
     tier: "textbook",
-    modelNote: "Plane waves over two Gaussian beams of equal radius, both inputs undepleted, low parametric gain (ΓL ≪ 1), no focusing, walk-off or absorption. d_eff is an input: 12.4 pm/V is 2d₃₃/π of congruent PPLN, d₃₃ for SHG of 1.313 µm (Shoji et al. 1997); Miller's rule scales it by 0.87 (≈ 10.8 pm/V) for a 3.39 µm idler.",
+    modelNote: "Plane waves over two Gaussian beams of equal radius, both inputs undepleted, low parametric gain (ΓL ≪ 1), no focusing, walk-off or absorption; the page flags crystals longer than the smallest confocal parameter, the idler's (radius w/√2) included. d_eff is an input: 12.4 pm/V is 2d₃₃/π of congruent PPLN, d₃₃ for SHG of 1.313 µm (Shoji et al. 1997); Miller's rule scales it by 0.87 (≈ 10.8 pm/V) for a 3.39 µm idler.",
     references: [
       {
         citation: "Boyd R. W. (2008). Nonlinear Optics, 3rd ed., §2.2 and §2.8. Academic Press. Coupled-amplitude equations for sum- and difference-frequency generation and parametric amplification.",
@@ -117,12 +120,24 @@ export const waveOptics: CalculatorEntry[] = [
     description: "Fresnel diffraction pattern of a circular aperture or slit at any distance, with the Fresnel number, on-axis intensity and the far-field Fraunhofer limit.",
     keywords: ["fresnel diffraction", "fresnel number", "fraunhofer diffraction", "fresnel integrals", "circular aperture"],
     tier: "textbook",
-    modelNote: "Scalar Fresnel (paraxial) diffraction of a plane wave, intensities relative to the incident one. Valid for z ≫ a and small angles; the circular aperture is computed up to N_F = 20.",
+    modelNote: "Scalar Fresnel (paraxial) diffraction of a plane wave, intensities relative to the incident one. Valid for z ≫ a and small angles; the circular aperture is computed up to N_F = 20. The circular on-axis value is the exact Rayleigh–Sommerfeld one (Heurtley 1973); the page flags when the dropped Fresnel phase πa⁴/(4λz³) exceeds 0.1 rad.",
     references: [
       { citation: "Goodman J. W. (2005). Introduction to Fourier Optics, 3rd ed. Roberts & Company, ch. 4." },
       {
         citation: "Born M., Wolf E. (1999). Principles of Optics, 7th ed. Cambridge University Press, ch. 8.",
         url: "https://doi.org/10.1017/cbo9781139644181",
+      },
+      {
+        citation: "Heurtley J. C. (1973). Scalar Rayleigh–Sommerfeld and Kirchhoff diffraction integrals: a comparison of exact evaluations for axial points. JOSA 63, 1003–1008.",
+        url: "https://doi.org/10.1364/josa.63.001003",
+      },
+      {
+        citation: "Osterberg H., Smith L. W. (1961). Closed solutions of Rayleigh's diffraction integral for axial points. JOSA 51, 1050–1054.",
+        url: "https://doi.org/10.1364/josa.51.001050",
+      },
+      {
+        citation: "Mielenz K. D. (2002). Optical diffraction in close proximity to plane apertures. I. Boundary-value solutions for circular apertures and slits. J. Res. NIST 107, 355–362, eq. (9b).",
+        url: "https://doi.org/10.6028/jres.107.028",
       },
     ],
   },
@@ -155,7 +170,7 @@ export const waveOptics: CalculatorEntry[] = [
     description: "CW dye jet laser in a two-mirror cavity: TEM₀₀ waist, triplet loss versus flow speed, threshold pump power, small-signal gain, output power and slope efficiency.",
     keywords: ["rhodamine 6G", "dye jet", "triplet absorption", "intersystem crossing", "CW dye laser threshold", "Rigrod"],
     tier: "textbook",
-    modelNote: "Four-level dye with the pump fully absorbed in a jet at the cavity waist; the Gaussian pump and mode overlap over π(w₀² + wₚ²)/2. Triplets reduce the gain cross-section to σₑ − σ_T k_ST τ_eff, with τ_eff set by the triplet lifetime and the flow transit across the pump spot. Output from Rigrod's homogeneous plane-wave model. Default dye: rhodamine 6G in ethanol at 590 nm (Falkenstein 1978 σₑ and τ; Pavlopoulos 1988 σ_T, from a 77 K glass; Webb 1970 k_ST and τ_T, air-saturated). Ground-state reabsorption and the gain spectrum are ignored.",
+    modelNote: "Four-level dye with the pump fully absorbed in a jet at the cavity waist; the Gaussian pump and mode overlap over π(w₀² + wₚ²)/2. Triplets reduce the gain cross-section to σₑ − σ_T k_ST τ_eff; τ_eff = (c√π/(2v)) erfcx(c/(2vτ_T)), c² = (w₀² + wₚ²)/2, is the mode-weighted small-signal triplet lifetime in the flowing jet (derived here; τ_T for slow flow, the transit time for fast flow). Output from Rigrod's homogeneous model with the Laporta–Brussard near-threshold saturation area πw₀²(w₀² + 2wₚ²)/(2(w₀² + wₚ²)), slope overlap ¾ for matched spots. Default dye: rhodamine 6G in ethanol at 590 nm (Falkenstein 1978 σₑ and τ; Pavlopoulos 1988 σ_T, from a 77 K glass; Webb 1970 k_ST and τ_T, air-saturated). Ground-state reabsorption and the gain spectrum are ignored.",
     references: [
       { citation: "Peterson O. G., Tuccio S. A., Snavely B. B. (1970). CW operation of an organic dye solution laser. Appl. Phys. Lett. 17, 245–247.", url: "https://doi.org/10.1063/1.1653384" },
       { citation: "Webb J. P., McColgin W. C., Peterson O. G. et al. (1970). Intersystem crossing rate and triplet state lifetime for a lasing dye. J. Chem. Phys. 53, 4227–4229.", url: "https://doi.org/10.1063/1.1673926" },
@@ -164,6 +179,9 @@ export const waveOptics: CalculatorEntry[] = [
       { citation: "Falkenstein W., Penzkofer A., Kaiser W. (1978). Amplified spontaneous emission in rhodamine dyes. Opt. Commun. 27, 151–156. Rh6G in ethanol: σₑ spectrum (Fig. 6), τ_F = 4.2 ± 0.3 ns.", url: "https://doi.org/10.1016/0030-4018(78)90196-7" },
       { citation: "Pavlopoulos T. G., Golich D. J. (1988). Triplet extinction coefficients of some laser dyes I. J. Appl. Phys. 64, 521–527. Rh6G ε_T(590 nm) = 9.7 × 10³ M⁻¹cm⁻¹.", url: "https://doi.org/10.1063/1.341991" },
       { citation: "Phillion D. W., Kuizenga D. J., Siegman A. E. (1974). Rotational diffusion and triplet state processes in dye laser solutions. J. Chem. Phys. 61, 3828. K_T = 0.35 ± 0.02 at 596 nm.", url: "https://doi.org/10.1063/1.1682572" },
+      { citation: "Laporta P., Brussard M. (1991). Design criteria for mode size optimization in diode-pumped solid-state lasers. IEEE J. Quantum Electron. 27, 2319–2326. Slope overlap (∫s r dV)²/∫s² r dV.", url: "https://doi.org/10.1109/3.97276" },
+      { citation: "Shayeganrad G. (2012). Optimum design of end-pumped solid-state lasers. In Solid State Laser, InTech, eqs. 10–12.", url: "https://doi.org/10.5772/38902" },
+      { citation: "Hollberg L. (1990). CW dye lasers. In Dye Laser Principles (Duarte F. J., Hillman L. W., eds.), ch. 5, 185–238. Academic Press. Jet flow and pump-spot regime.", url: "https://doi.org/10.1016/B978-0-12-222700-4.50010-3" },
     ],
   },
   {
@@ -187,7 +205,7 @@ export const waveOptics: CalculatorEntry[] = [
     description: "Degenerate four-wave mixing in a fiber (2ωp = ωs + ωi): parametric signal gain, idler wavelength and power, phase mismatch κ = Δβ + 2γP, gain spectrum and peak-gain detuning from pump power, n₂, A_eff, length, β₂ and β₄.",
     keywords: ["FWM", "fiber optical parametric amplifier", "FOPA", "parametric gain", "idler", "phase matching", "highly nonlinear fiber"],
     tier: "textbook",
-    modelNote: "Undepleted CW pump, co-polarized waves, lossless fiber: G_s = 1 + [(γP/g) sinh(gL)]², g² = (γP)² − (κ/2)², κ = β₂Ω² + β₄Ω⁴/12 + 2γP, and P_i = (λ_s/λ_i)(G_s − 1)P_s. Not modelled: fiber loss, pump depletion (flagged above 10 %), polarization, Raman gain, longitudinal dispersion fluctuations.",
+    modelNote: "Undepleted CW pump, co-polarized waves, lossless fiber: G_s = 1 + [(γP/g) sinh(gL)]², g² = (γP)² − (κ/2)², κ = β₂Ω² + β₄Ω⁴/12 + 2γP, and P_i = (λ_s/λ_i)(G_s − 1)P_s. Not modelled: fiber loss, pump depletion (flagged when signal and idler take more than 10 % of the pump), polarization, Raman gain, longitudinal dispersion fluctuations.",
     references: [
       { citation: "Stolen R. H., Bjorkholm J. E. (1982). Parametric amplification and frequency conversion in optical fibers. IEEE J. Quantum Electron. 18, 1062.", url: "https://doi.org/10.1109/JQE.1982.1071660" },
       { citation: "Hansryd J., Andrekson P. A., Westlund M., Li J., Hedekvist P.-O. (2002). Fiber-based optical parametric amplifiers and their applications. IEEE J. Sel. Top. Quantum Electron. 8, 506.", url: "https://doi.org/10.1109/JSTQE.2002.1016354" },
@@ -200,7 +218,7 @@ export const waveOptics: CalculatorEntry[] = [
     description: "SASE free-electron laser: resonance wavelength, Pierce parameter ρ with the beam size, 3D gain length from Ming Xie's fit, saturation power and length, and the power along the undulator.",
     keywords: ["FEL", "SASE", "Pierce parameter", "Ming Xie formula", "undulator", "gain length", "x-ray laser"],
     tier: "textbook",
-    modelNote: "Planar undulator. ρ from Huang–Kim with the rms beam size √(βε_n/γ); the gain length includes diffraction, emittance and energy spread through Ming Xie's fit (within about 10 % of numerical solutions). Start-up from the 1D shot-noise power and Xie's empirical saturation power 1.6ρ(L_G0/L_G)²P_beam; the plot caps the exponential growth at P_sat. Checked against Xie's LCLS design table and the LCLS ρ = 4.5e-4. No helical undulators, taper or harmonics.",
+    modelNote: "Planar undulator. ρ from Huang–Kim with the rms beam size √(βε_n/γ); the gain length includes diffraction, emittance and energy spread through Ming Xie's fit (within about 10 % of numerical solutions). Start-up from the 1D shot-noise power and Xie's empirical saturation power 1.6ρ(L_G0/L_G)²P_beam; the plot caps the exponential growth at P_sat. Checked against Xie's LCLS design table and the LCLS ρ = 4.5e-4. The fit is extrapolated (flagged) once the energy spread σ_δ exceeds ρ; no saturation length when 9P_sat ≤ P_n. No helical undulators, taper or harmonics.",
     references: [
       { citation: "Huang Z., Kim K.-J. (2007). Review of x-ray free-electron laser theory. Phys. Rev. ST Accel. Beams 10, 034801.", url: "https://doi.org/10.1103/PhysRevSTAB.10.034801" },
       { citation: "Xie M. (1995). Design optimization for an X-ray free electron laser driven by SLAC linac. Proc. 1995 Particle Accelerator Conference, 183–185.", url: "https://accelconf.web.cern.ch/p95/ARTICLES/TPG/TPG10.PDF" },

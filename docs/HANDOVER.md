@@ -1,28 +1,36 @@
-# Handover — 2026-10-28 (session 170 → session 171)
+# Handover — 2026-10-29 (session 171 → session 172)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 170 did 5w-8 (fiber-optics textbook pass 2/2) on `phase-5/5w-8-fiber-optics`, PR #207: 21 pages, 3 bugs.
-PRs #200–#206 are merged to `main` but not released (`release` = `d82602ed`). Next: **5w-9 wave-optics 1/2**.
+Session 171 did 5w-9 (wave-optics textbook pass 1/2) on `phase-5/5w-9-wave-optics`, PR #208: 16 pages, 3 bugs.
+PRs #200–#207 are merged to `main` but not released (`release` = `d82602ed`). Next: **5w-10 wave-optics 2/2**.
 
 ## State
-- New `src/physics/fiber-optics/wdm-channel-plan.ts`: `ituGrid(Δλ, λc)` (G.694.1 DWDM equal-Δν spacings, G.694.2 CWDM 20 nm,
-  else custom equal-Δλ), `channelWavelengths(n, λc, Δλ, equalFrequency)` (NaN at/below zero), `gaussianPassband`,
-  `gaussianAdjacentIsolationDb` = 12.04 (Δλ/FWHM)² dB. wdm-coupler is now tier illustrative.
-- `photonic-crystal.ts`: `inDRange` exported, 1e-9 relative margin; `pcfMode` V, W, U NaN and ESM false outside d/Λ 0.2–0.8.
-- Elasto-optic R/(1 − p_e) is on by default on macro-bending-loss, mode-field-diameter and bend-insensitive (`elastoOptic`
-  URL flag). Defaults now: macro 15 mm 0.00472 dB/turn (was 0.0852), MFD page 10 mm 0.367 dB/turn.
-- nonzero-dispersion Δβ includes β₃ (`fwmPhaseMismatch`, smaller of ±Δν): 2.243 rad/km at the defaults (β₂ only: 2.266).
-- Gates on the 5w-8 commit: `npm run check` 1167 pass; build: see the PR.
+- `diffraction-integral.ts`: new `circularOnAxisIntensityExact(a, λ, z)` = |1 − (z/R)e^{ik(R−z)}|² (Heurtley 1973, Rayleigh–Sommerfeld)
+  and `fresnelEdgePhaseError` ≈ −πa⁴/(4λz³); the page shows the exact on-axis value and warns above 0.1 rad.
+- `free-electron-laser.ts`: saturationLength NaN when 9P_sat ≤ P_n. `diode-laser.ts`: `MAX_LOG_GAIN_RATIO` = 3 (was 20).
+- New defaults: abcd-matrix d150_f100_d300 (A = −2), chirped-pulse ΔG 0.2 mm, difference-frequency w 150 µm (P_i 1.172 µW),
+  four-wave-mixing seed 0.01 mW, free-electron-laser L_u 15 m, gas-laser bore 3.2 mm, hermite-gaussian TEM₂₁ at z = 5 mm.
+- Source-check commit (user asked to verify the UNVERIFIED findings): `laser-resonator.ts` `flowTripletLifetime(τ_T, v, w₀, w_p)`
+  = (c√π/(2v)) erfcx(c/(2vτ_T)), c² = (w₀² + w_p²)/2, and `gaussianSlopeSaturationArea(w₀, w_p)` (Laporta–Brussard);
+  `tripletGainFactor` now takes τ_eff (4 args). `high-harmonic.ts` `lorentzDriftParameter(I_p, I, λ)` (Klaiber 2008), Γ ∝ I^1.5 λ⁴.
+  Dye default output 0.642 W (was 0.431), slope 29.5 %.
 
 ## Next actions
-1. `/ship` the 5w-8 PR. On a release (user asks): `fiber-optics/macro-bending-loss=4.72e-3 fiber-optics/mode-field-diameter=0.367
-   fiber-optics/wdm-coupler=48.2 fiber-optics/side-polished=-1.56e-4` (check them on the local build first).
-2. 5w-9: wave-optics textbook slugs 1–16 in registry order (abcd-matrix … hermite-gaussian; `git grep -n 'tier: "textbook"'
-   src/registry/calculators/wave-optics.ts`). 5w-10: slugs 17–33 (injection-locking … thin-disk-laser), skipping
-   optical-parametric-oscillator (162).
+1. `/ship` the 5w-9 PR. On a release (user asks), check on the local build first: `wave-optics/diffraction-integral=0.9075
+   wave-optics/difference-frequency=1.172 wave-optics/hermite-gaussian=3.115` (plus the 5w-8 values in PR #207).
+2. 5w-10: wave-optics textbook slugs 17–33 in registry order (injection-locking … thin-disk-laser), skipping
+   optical-parametric-oscillator (162); `git grep -n 'tier: "textbook"' src/registry/calculators/wave-optics.ts`.
 3. Last in Phase 5: the Gemini hero (ask the user for the files).
 
 ## Non-obvious facts
+- **Session 171:** a sed replacement with `&` in the new text pasted the matched text into gaussian-beam (committed, then
+  fixed): do multi-line or prose replacements with a node script using `replace(a, () => b)`. Verified this session: Goodman
+  2nd ed. (4-24) is the Fraunhofer condition, (4-25) the Fraunhofer integral; Siegman ch. 26 is "Laser Q-Switching" (no
+  cavity-dumping section in the contents); Huang & Kim 2007: Xie fit within ≈ 10 %, σ_δ < ρ (eq. 71). Implementers reported edits that never reached disk on 2 of 3 runs (dye + filamentation, hermite-gaussian +
+  gaussian-beam): run `git status --short` after each report and count files. Physics reviewers can be blocked from writing
+  scratchpad probes inside a worktree (they fall back to `node --import tsx -e`); worktree isolation is not needed for read-only
+  reviewers. A reviewer fix formula can be wrong while the finding is right (abcd EFL: −1/(n_out C), not −n_out/C). New warnings
+  can fire at the defaults (DFG idler b_i < L at w 100 µm): check each new flag against the default inputs.
 - **Session 170:** `ChartPanel` → `SimpleChart` ignores layout `shapes`/`annotations` (only Plotly draws them): mark an
   operating point with a `mode: "markers"` trace. connector-insertion-loss still uses a `shapes` line (likely invisible).
   An implementer again reported an edit (otdr help line) that has no diff: check `git diff --stat` per allowed file. In Git

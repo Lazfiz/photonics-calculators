@@ -25,7 +25,7 @@ function collapseCurves(Pcr: number, zR: number, f: number, power: number) {
   });
   return [
     { name: "Collimated (Marburger)", color: "#60a5fa", points: curve(Infinity) },
-    ...(Number.isFinite(f) ? [{ name: `With the f = ${fmt(f * 1e3, 3)} mm lens`, color: "#f472b6", points: curve(f) }] : []),
+    ...(Number.isFinite(f) ? [{ name: `With the geometric focus at ${fmt(f * 1e3, 3)} mm`, color: "#f472b6", points: curve(f) }] : []),
   ];
 }
 
@@ -36,7 +36,7 @@ export default function FilamentationPage() {
   const [waistRaw, setWaist] = useURLState("beamWaist", 50); // µm
   const [n2Raw, setN2] = useURLState("n2", 2.4); // 1e-16 cm²/W, fused silica (Dubietis et al. 2017, Table 1)
   const [n0Raw, setN0] = useURLState("n0", 1.45);
-  const [lensRaw, setLens] = useURLState("lensFocal", 0); // mm, 0 = collimated
+  const [lensRaw, setLens] = useURLState("lensFocal", 0); // mm, geometric focus depth in the medium, 0 = collimated
 
   const lambda = clamp(lambdaRaw, 200, 20000, 800) * 1e-9;
   const energy = clamp(energyRaw, 0, 1e7, 1) * 1e-6;
@@ -65,9 +65,9 @@ export default function FilamentationPage() {
   const lensNote = !Number.isFinite(f)
     ? ""
     : !collapses
-      ? `Below P_cr the lens focuses the beam at about f = ${fmtLength(f)}, but it doesn't collapse.`
+      ? `Below P_cr the lens focuses the beam at the geometric focus depth ${fmtLength(f)}, but it doesn't collapse.`
       : Number.isFinite(zLens)
-        ? `With the lens the collapse moves to ${fmtLength(zLens)}, before the geometric focus at ${fmtLength(f)}.`
+        ? `With the lens the collapse moves to ${fmtLength(zLens)}, before the geometric focus at depth ${fmtLength(f)}.`
         : "The diverging lens outruns the Kerr lens: no collapse.";
 
   return (
@@ -79,7 +79,7 @@ export default function FilamentationPage() {
         <ValidatedNumberInput label="Beam radius at the entrance, 1/e² (µm)" value={waistRaw} onChange={setWaist} min={1} max={1e5} step="any" />
         <ValidatedNumberInput label="n₂ (×10⁻¹⁶ cm²/W)" value={n2Raw} onChange={setN2} min={1e-4} max={1e6} step="any" />
         <ValidatedNumberInput label="Linear index n₀" value={n0Raw} onChange={setN0} min={1} max={5} step="0.01" />
-        <ValidatedNumberInput label="Lens focal length (mm, 0 = collimated)" value={lensRaw} onChange={setLens} min={-1e6} max={1e6} step="any" />
+        <ValidatedNumberInput label="Geometric focus depth in the medium (mm, n₀f for a lens at the entrance face; 0 = collimated)" value={lensRaw} onChange={setLens} min={-1e6} max={1e6} step="any" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
@@ -100,7 +100,7 @@ export default function FilamentationPage() {
         <p>Above the critical power the Kerr lens beats diffraction and a Gaussian beam self-focuses. A collimated beam
           collapses after z_sf = 0.367 z_R / √((√(P/P_cr) − 0.852)² − 0.0219), Dawes and Marburger&apos;s fit to numerical
           solutions. Near the collapse the intensity climbs until multiphoton ionisation makes a plasma that defocuses the
-          beam and absorbs energy. The intensity then clamps, at about 5×10¹³ W/cm² in air (Kasparian et al.), and a
+          beam and absorbs energy. The intensity then clamps, at about 4×10¹³ W/cm² in air (Kasparian, Sauerbrey &amp; Chin 2000), and a
           filament forms. The filament&apos;s length and plasma density need a full propagation model; this page gives the
           threshold and where the filament starts. P uses the pulse&apos;s peak power, which self-focuses first. Far above
           P_cr, small irregularities in the beam make it break into several filaments.</p>

@@ -21,7 +21,7 @@ const LINES = [
 ];
 
 export default function GasLaserResonatorPage() {
-  const [diameterRaw, setDiameter] = useURLState("tubeDiameter", 6); // mm bore
+  const [diameterRaw, setDiameter] = useURLState("tubeDiameter", 3.2); // mm bore
   const [lengthRaw, setLength] = useURLState("tubeLength", 500); // mm, mirror spacing
   const [wavelengthRaw, setWavelength] = useURLState("wavelength", 632.8, { min: 100, max: 20000 }); // nm
   const [r1Raw, setR1] = useURLState("R1", 1000); // mm
@@ -64,7 +64,7 @@ export default function GasLaserResonatorPage() {
   const best = optimumOutputCoupler(g0l, rearR);
   const pBest = best.output * pSat;
 
-  const rLo = Math.max(0.5, Math.min(R_oc, Number.isFinite(best.R2) ? best.R2 : 1) - 0.02);
+  const rLo = Math.max(0.01, Math.min(R_oc, Number.isFinite(best.R2) ? best.R2 : 1) - 0.02);
   const curve = Number.isFinite(pSat)
     ? Array.from({ length: 121 }, (_, i) => {
         const r = rLo + ((0.9999 - rLo) * i) / 120;
@@ -109,8 +109,8 @@ export default function GasLaserResonatorPage() {
         <ValidatedNumberInput label="Mirror spacing = gain length L (mm)" value={lengthRaw} onChange={setLength} min={10} max={1e5} step="any" />
         <ValidatedNumberInput label="Bore diameter (mm)" value={diameterRaw} onChange={setDiameter} min={0.1} max={100} step="any" />
         <ValidatedNumberInput label="Other loss per pass (%: windows, scatter)" value={lossRaw} onChange={setLoss} min={0} max={50} step="any" />
-        <ValidatedNumberInput label="HR radius R₁ (mm; 0 = flat)" value={r1Raw} onChange={setR1} min={-1e7} max={1e7} step="any" />
-        <ValidatedNumberInput label="Output coupler radius R₂ (mm; 0 = flat)" value={r2Raw} onChange={setR2} min={-1e7} max={1e7} step="any" />
+        <ValidatedNumberInput label="HR radius R₁ (mm; + concave, − convex, 0 = flat)" value={r1Raw} onChange={setR1} min={-1e7} max={1e7} step="any" />
+        <ValidatedNumberInput label="Output coupler radius R₂ (mm; + concave, − convex, 0 = flat)" value={r2Raw} onChange={setR2} min={-1e7} max={1e7} step="any" />
         <ValidatedNumberInput label="HR reflectance" value={rHrRaw} onChange={setRHr} min={0.01} max={1} step="any" />
         <ValidatedNumberInput label="Output coupler reflectance" value={rOcRaw} onChange={setROc} min={0.01} max={0.9999} step="any" />
       </div>
@@ -128,7 +128,7 @@ export default function GasLaserResonatorPage() {
         <ResultCard label="Output at the optimum" value={`${fmt(pBest * 1e3)} mW`} tone="yellow" />
       </div>
 
-      {stability !== "stable" && (
+      {!Number.isFinite(mode.w0) && (
         <p className="mb-6 rounded-lg border border-yellow-700 bg-yellow-950/40 p-3 text-sm text-yellow-200">
           The cavity is {stability === "unstable" ? "unstable" : "on the stability boundary"}: there is no TEM₀₀ mode, so no waist or
           output power.
@@ -137,7 +137,7 @@ export default function GasLaserResonatorPage() {
 
       <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">
         <p>Rigrod: P = P_sat (1 − R₂)√R₁′(g₀L + ln√(R₁′R₂))/((√R₁′ + √R₂)(1 − √(R₁′R₂))), R₁′ = R_HR(1 − loss)²; threshold g₀L = δ/2.
-          For small losses the optimum transmission is T ≈ √(2g₀L δᵢ) − δᵢ.</p>
+          For small losses the optimum transmission is T ≈ √(2g₀L δᵢ) − δᵢ, with δᵢ = 2L_i + (1 − R_HR) the round-trip internal loss.</p>
         <p>Mode: Kogelnik–Li, w₀² = (λ/π)L√(g₁g₂(1 − g₁g₂))/|g₁ + g₂ − 2g₁g₂|. Fresnel number N = a²/(λL).</p>
       </div>
 

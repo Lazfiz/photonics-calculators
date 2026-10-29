@@ -5,8 +5,8 @@ import { c, h } from "../src/physics/constants";
 import { optimumOutputCoupler, rigrodOutput } from "../src/physics/fiber-optics/doped-fiber-gain";
 import { gParameter, twoMirrorMode } from "../src/physics/wave-optics/two-mirror-resonator";
 import {
-  fourLevelGain, fourLevelSlopeEfficiency, fourLevelThreshold, gaussianOverlapArea, laserOutput, logarithmicLoss, meanSquareRadius,
-  rigrodSlope, roundTripLoss, saturationIntensity, tripletGainFactor,
+  flowTripletLifetime, fourLevelGain, fourLevelSlopeEfficiency, fourLevelThreshold, gaussianOverlapArea, gaussianSlopeSaturationArea,
+  laserOutput, logarithmicLoss, meanSquareRadius, rigrodSlope, roundTripLoss, saturationIntensity, tripletGainFactor,
 } from "../src/physics/wave-optics/laser-resonator";
 
 function assertRel(actual: number, expected: number, tol: number, label: string) {
@@ -71,23 +71,62 @@ test("slope efficiency η_p(λ_p/λ)K matches the derivative of the output", () 
 
 test("Gaussian overlap area and the triplet gain factor of a CW dye laser", () => {
   assertRel(gaussianOverlapArea(30e-6, 40e-6), (Math.PI * (9e-10 + 1.6e-9)) / 2, 1e-12, "π(w₀² + wₚ²)/2");
-  // σ_T k_ST τ_eff/σₑ with τ_eff = (1/1 µs + 1/12 µs)⁻¹ = 0.923 µs: 1e-21 × 5e6 × 0.923e-6/2e-20 = 0.2308.
-  const f = tripletGainFactor(2e-20, 1e-21, 5e6, 1e-6, 12e-6);
-  assertRel(f, 1 - (1e-21 * 5e6 * (12e-6 / 13)) / 2e-20, 1e-12, "factor");
-  assertRel(f, 0.76923, 1e-4, "factor value");
-  assert.equal(tripletGainFactor(2e-20, 0, 5e6, 1e-6, 12e-6), 1); // no triplet absorption
+  // σ_T k_ST τ_eff/σₑ = 1e-21 × 5e6 × 0.923e-6/2e-20 = 0.2308.
+  assertRel(tripletGainFactor(2e-20, 1e-21, 5e6, 0.923e-6), 1 - 0.23075, 1e-12, "factor");
+  assert.equal(tripletGainFactor(2e-20, 0, 5e6, 1e-6), 1); // no triplet absorption
   // CW limit (Peterson et al. 1970): σₑ = σ_T k_ST τ_T with no flow removal → factor 0.
-  assert.ok(Math.abs(tripletGainFactor(2e-20, 4e-21, 5e6, 1e-6, 1e30)) < 1e-12, "σₑ = σ_T k_ST τ_T");
+  assert.ok(Math.abs(tripletGainFactor(2e-20, 4e-21, 5e6, 1e-6)) < 1e-12, "σₑ = σ_T k_ST τ_T");
+});
+
+test("flow-swept triplet lifetime: closed form against the integral and its limits", () => {
+  // τ_eff = (1/v)∫₀^∞ exp(−s²/c² − s/(vτ_T)) ds, c² = (w₀² + wₚ²)/2: midpoint rule against the erfcx closed form.
+  const w0 = 25e-6, wp = 35e-6, v = 5, tauT = 2e-6;
+  const c2 = (w0 * w0 + wp * wp) / 2;
+  const n = 200000, sMax = 20 * Math.sqrt(c2);
+  let sum = 0;
+  for (let i = 0; i < n; i++) {
+    const s = ((i + 0.5) * sMax) / n;
+    sum += Math.exp(-(s * s) / c2 - s / (v * tauT));
+  }
+  assertRel(flowTripletLifetime(tauT, v, w0, wp), (sum * sMax) / n / v, 1e-6, "τ_eff");
+  // Fast flow: transit time √(π/8)√(w₀² + wₚ²)/v, 0.8862 wₚ/v at w₀ = wₚ (30 µm, 5 m/s → 5.3174 µs).
+  assertRel(flowTripletLifetime(1, 5, 30e-6, 30e-6), (Math.sqrt(Math.PI) / 2) * 30e-6 / 5, 1e-5, "fast-flow limit");
+  // Slow flow and no flow: τ_T.
+  assertRel(flowTripletLifetime(250e-9, 1e-6, 30e-6, 30e-6), 250e-9, 1e-9, "slow-flow limit");
+  assert.equal(flowTripletLifetime(250e-9, 0, 30e-6, 30e-6), 250e-9);
+  assert.ok(Number.isNaN(flowTripletLifetime(250e-9, -1, 30e-6, 30e-6)));
+});
+
+test("Laporta–Brussard near-threshold slope overlap for Gaussian mode and pump", () => {
+  // A_s/A = w₀²(w₀² + 2wₚ²)/(w₀² + wₚ²)² (Laporta & Brussard 1991; Shayeganrad 2012 eq. 12): ¾ matched, → 1 for a small
+  // pump, → 2w₀²/wₚ² for a large one.
+  const ratio = (w0: number, wp: number) => gaussianSlopeSaturationArea(w0, wp) / gaussianOverlapArea(w0, wp);
+  assertRel(ratio(30e-6, 30e-6), 0.75, 1e-12, "matched");
+  assertRel(ratio(30e-6, 30e-9), 1, 1e-5, "small pump");
+  assertRel(ratio(30e-6, 30e-3), 2e-6, 1e-5, "large pump");
+  // Same ratio from the overlap integrals (∫s r dV)²/(∫s² r dV), s ∝ e^(−2r²/w₀²), r ∝ e^(−2r²/wₚ²), radial midpoint rule.
+  const w0 = 30e-6, wp = 45e-6, n = 20000, rMax = 8 * wp;
+  let sr = 0, ssr = 0, rNorm = 0;
+  for (let i = 0; i < n; i++) {
+    const r = ((i + 0.5) * rMax) / n;
+    const sv = Math.exp((-2 * r * r) / (w0 * w0));
+    const rv = Math.exp((-2 * r * r) / (wp * wp));
+    rNorm += rv * r; sr += sv * rv * r; ssr += sv * sv * rv * r;
+  }
+  // With s and r normalized, (∫s r)²/(∫s² r) = (Σ s r)²/(Σ r · Σ s² r): the norm of s, the radial step and 2π cancel.
+  assertRel(ratio(w0, wp), (sr * sr) / (rNorm * ssr), 1e-6, "integral");
 });
 
 test("dye page defaults: sourced rhodamine 6G triplet parameters", () => {
   // σₑ(590 nm) 1.1e-16 cm² (Falkenstein et al. 1978 Fig. 6), σ_T 3.7e-17 cm² (Pavlopoulos & Golich 1988, ε_T 9.7e3 /(M cm)),
-  // k_ST 3.4e6 /s and τ_T 250 ns in air-saturated ethanol (Webb et al. 1970). Jet: 2wₚ/v = 60 µm/(5 m/s) = 12 µs.
-  // τ_eff = (4e6 + 8.3333e4)⁻¹ = 244.898 ns; 3.7e-21 · 3.4e6 · 244.898e-9/1.1e-20 = 0.280075.
-  assertRel(tripletGainFactor(1.1e-20, 3.7e-21, 3.4e6, 250e-9, 12e-6), 0.719925, 1e-5, "factor");
+  // k_ST 3.4e6 /s and τ_T 250 ns in air-saturated ethanol (Webb et al. 1970). Jet: wₚ = w₀ = 30 µm, v = 5 m/s gives
+  // c = 30 µm, x = c/(2vτ_T) = 12, τ_eff = (c√π/(2v)) erfcx(12) = 5.31736 µs × 0.046854 = 249.141 ns;
+  // 3.7e-21 · 3.4e6 · 249.141e-9/1.1e-20 = 0.284927.
+  assertRel(flowTripletLifetime(250e-9, 5, 30e-6, 30e-6), 249.141e-9, 1e-5, "τ_eff");
+  assertRel(tripletGainFactor(1.1e-20, 3.7e-21, 3.4e6, flowTripletLifetime(250e-9, 5, 30e-6, 30e-6)), 0.715073, 1e-5, "factor");
   // Without flow, K_T = k_ST τ_T σ_T/σₑ = 0.2859, within 20 % of 0.35 ± 0.02 measured in a CW Rh6G laser
   // (Phillion, Kuizenga & Siegman, J. Chem. Phys. 61, 3828 (1974); water with Triton X-100).
-  const kT = 1 - tripletGainFactor(1.1e-20, 3.7e-21, 3.4e6, 250e-9, 1e30);
+  const kT = 1 - tripletGainFactor(1.1e-20, 3.7e-21, 3.4e6, 250e-9);
   assertRel(kT, 0.285909, 1e-5, "K_T");
   assert.ok(Math.abs(kT / 0.35 - 1) < 0.2, `K_T ${kT}`);
 });
@@ -112,7 +151,8 @@ test("domain guards", () => {
   assert.ok(Number.isNaN(roundTripLoss(0.9, 0.9, -0.1)));
   assert.ok(Number.isNaN(fourLevelThreshold(0.05, 808e-9, 0, TAU, ROD)));
   assert.ok(Number.isNaN(rigrodSlope(1, 1)));
-  assert.ok(Number.isNaN(tripletGainFactor(2e-20, 1e-21, 5e6, 1e-6, 0)));
+  assert.ok(Number.isNaN(tripletGainFactor(2e-20, 1e-21, 5e6, -1e-6)));
+  assert.ok(Number.isNaN(gaussianSlopeSaturationArea(0, 30e-6)));
   assert.ok(Number.isNaN(meanSquareRadius(NaN, 1, 0, 1)));
 });
 
