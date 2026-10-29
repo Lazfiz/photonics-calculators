@@ -88,13 +88,15 @@ export default function DyeLaserResonatorPage() {
     { name: "Operating point", color: "#facc15", showPoints: true, points: Number.isFinite(pOut) ? [{ x: round6(pump), y: round6(pOut) }] : [] },
   ];
 
-  const vMax = Math.max(20, 2 * flow);
+  // Log span from 0.2 m/s (or the set speed) up to at least 4wₚ/τ_T, where the transit time is a quarter of τ_T.
+  const vMax = Math.max(20, 2 * flow, (4 * wp) / tauT);
+  const vMin = Math.min(0.2, flow);
   const flowSeries = [
     {
       name: "Gain left after triplet absorption",
       color: "#f87171",
       points: Array.from({ length: 101 }, (_, i) => {
-        const v = (vMax * (i + 1)) / 101;
+        const v = vMin * (vMax / vMin) ** (i / 100);
         return { x: round6(v), y: round6(factorAt(v) * 100) };
       }),
     },
@@ -169,12 +171,14 @@ export default function DyeLaserResonatorPage() {
           Kaiser 1978); σ_T(590 nm) = 3.7 × 10⁻¹⁷ cm² from ε_T = 9.7 × 10³ M⁻¹cm⁻¹, measured in a 77 K glass (Pavlopoulos &amp; Golich 1988);
           k_ST = 3.4 × 10⁶ s⁻¹ and τ_T = 0.25 µs in air-saturated ethanol, where dissolved O₂ quenches the triplets (Webb et al. 1970;
           degassed solutions keep them much longer). Together K_T = k_ST τ_T σ_T/σₑ = 0.29, against 0.35 ± 0.02 measured in a CW laser
-          (Phillion, Kuizenga &amp; Siegman 1974, water with Triton X-100).</p>
+          (Phillion, Kuizenga &amp; Siegman 1974, water with Triton X-100). With air-saturated dye (τ_T ≈ 0.25 µs) oxygen
+          quenching, not flow, clears the triplets, so the flow speed barely matters; degassed dye (τ_T ≈ 10 µs) needs v ≳ 2wₚ/τ_T.
+          The transit-time interpolation (2wₚ/v) is a heuristic.</p>
       </div>
 
       <div className="space-y-6">
         {powerSeries[0].points.length > 0 && <SimpleLineChart title="Output power versus absorbed pump power" xLabel="Absorbed pump power (W)" yLabel="Output power (W)" series={powerSeries} />}
-        <SimpleLineChart title="Singlet gain left after triplet absorption versus flow speed (below 0 % no CW lasing)" xLabel="Flow speed (m/s)" yLabel="Gain left (%)" series={flowSeries} />
+        <SimpleLineChart title="Singlet gain left after triplet absorption versus flow speed (below 0 % no CW lasing)" xLabel="Flow speed (m/s)" yLabel="Gain left (%)" series={flowSeries} xScale="log" />
         {profileSeries[0].points.length > 0 && <SimpleLineChart title="TEM₀₀ beam radius between the mirrors" xLabel="Position from mirror 1 (mm)" yLabel="Beam radius (µm)" series={profileSeries} />}
       </div>
     </>

@@ -24,7 +24,7 @@ export default function DifferenceFrequencyPage() {
   const [lengthRaw, setLength] = useURLState("crystalLength", 20); // mm
   const [pumpPowerRaw, setPumpPower] = useURLState("pumpPower", 500); // mW
   const [signalPowerRaw, setSignalPower] = useURLState("signalPower", 10); // mW
-  const [waistRaw, setWaist] = useURLState("beamWaist", 100); // µm
+  const [waistRaw, setWaist] = useURLState("beamWaist", 150); // µm
   const [nPumpRaw, setNPump] = useURLState("nPump", 2.1555);
   const [nSignalRaw, setNSignal] = useURLState("nSignal", 2.1376);
   const [nIdlerRaw, setNIdler] = useURLState("nIdler", 2.0814);
@@ -36,7 +36,7 @@ export default function DifferenceFrequencyPage() {
   const L = clamp(lengthRaw, 0.01, 1000, 20) * 1e-3;
   const Pp = clamp(pumpPowerRaw, 0, 1e9, 500) * 1e-3;
   const Ps = clamp(signalPowerRaw, 0, 1e9, 10) * 1e-3;
-  const w = clamp(waistRaw, 1, 1e5, 100) * 1e-6;
+  const w = clamp(waistRaw, 1, 1e5, 150) * 1e-6;
   const nP = clamp(nPumpRaw, 1, 5, 2.1555);
   const nS = clamp(nSignalRaw, 1, 5, 2.1376);
   const nI = clamp(nIdlerRaw, 1, 5, 2.0814);
@@ -57,24 +57,29 @@ export default function DifferenceFrequencyPage() {
     (2 * Pp) / (Math.PI * w * w),
   );
   const gammaL = gamma * L;
-  const bMin = Math.min(confocalParameter(lambdaP, nP, w), confocalParameter(lambdaS, nS, w));
+  // The idler polarisation ∝ E_p E_s* has radius w/√2 for equal pump and signal radius w.
+  const bP = confocalParameter(lambdaP, nP, w);
+  const bS = confocalParameter(lambdaS, nS, w);
+  const bI = valid ? confocalParameter(lambdaI, nI, w / Math.SQRT2) : NaN;
+  const bMin = Math.min(bP, bS, Number.isFinite(bI) ? bI : Infinity);
+  const limiting = bMin === bI ? "idler" : bMin === bS ? "signal" : "pump";
   const xi = L / bMin;
 
   const warnings = [
     !valid && "The signal wavelength must be longer than the pump wavelength: the idler is at 1/λ_i = 1/λ_p − 1/λ_s.",
     valid && gammaL > 0.5 && `On-axis gain ΓL = ${fmt(gammaL, 3)}: the signal is amplified as well (G = cosh²ΓL), so the low-gain law underestimates the idler. Use the optical parametric amplifier page.`,
-    valid && xi > 0.5 && `L is ${fmt(xi, 3)} times the smaller confocal parameter 2πnw²/λ (${fmt(bMin * 1e3, 3)} mm): the beams change size in the crystal, so the plane-wave value overestimates P_i.`,
+    valid && xi > 0.5 && `L is ${fmt(xi, 3)} times the smallest confocal parameter 2πnw²/λ (${limiting}, ${fmt(bMin * 1e3, 3)} mm): the beams change size in the crystal, so the plane-wave value overestimates P_i.`,
   ].filter(Boolean) as string[];
 
   const lengthCurve = Number.isFinite(Pi) ? [{
     name: "P_i(L)", color: "#34d399",
     points: Array.from({ length: 201 }, (_, i) => (i / 100) * L).map((l) => ({ x: round6(l * 1e3), y: round6(power(l, deltaK) * 1e6) })),
   }] : [];
-  const dkSpan = (4 * Math.PI) / L;
+  const dkSpan = Math.max((4 * Math.PI) / L, 1.2 * Math.abs(deltaK));
   const mismatchCurve = Number.isFinite(Pi) ? [{
     name: "P_i(Δk)", color: "#f472b6",
     points: Array.from({ length: 201 }, (_, i) => ((i - 100) / 100) * dkSpan).map((dk) => ({ x: round6(dk * 1e-3), y: round6(power(L, dk) * 1e6) })),
-  }] : [];
+  }, { name: "Set Δk", color: "#fbbf24", showPoints: true, points: [{ x: round6(deltaK * 1e-3), y: round6(power(L, deltaK) * 1e6) }] }] : [];
 
   return (
     <>

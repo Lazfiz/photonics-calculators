@@ -20,10 +20,10 @@ export default function HigherOrderModesPage() {
   const [familyRaw, setFamily] = useURLState("family", "");
   const [wavelengthRaw, setWavelength] = useURLState("wavelength", 1550); // nm
   const [waistRaw, setWaist] = useURLState("waist", 50); // µm, TEM₀₀ 1/e² waist radius
-  const [zRaw, setZ] = useURLState("z", 0); // mm from the waist
+  const [zRaw, setZ] = useURLState("z", 5); // mm from the waist
   const [powerRaw, setPower] = useURLState("power", 1); // mW
-  const [mRaw, setM] = useURLState("m", 0, { min: 0, max: MAX_INDEX });
-  const [nRaw, setN] = useURLState("n", 0, { min: 0, max: MAX_INDEX });
+  const [mRaw, setM] = useURLState("m", 2, { min: 0, max: MAX_INDEX });
+  const [nRaw, setN] = useURLState("n", 1, { min: 0, max: MAX_INDEX });
   const [pRaw, setP] = useURLState("p", NaN); // NaN when absent: a link from the old Laguerre-Gaussian page sets p or l
   const [lRaw, setL] = useURLState("l", NaN);
 
@@ -31,10 +31,10 @@ export default function HigherOrderModesPage() {
   const lg = family === "lg";
   const wavelength = clamp(wavelengthRaw, 200, 11000, 1550);
   const waist_um = clamp(waistRaw, 1, 1e5, 50);
-  const z_mm = clamp(zRaw, -1e5, 1e5, 0);
+  const z_mm = clamp(zRaw, -1e5, 1e5, 5);
   const power_mW = clamp(powerRaw, 1e-6, 1e9, 1);
-  const m = index(mRaw, 0, MAX_INDEX, 0);
-  const n = index(nRaw, 0, MAX_INDEX, 0);
+  const m = index(mRaw, 0, MAX_INDEX, 2);
+  const n = index(nRaw, 0, MAX_INDEX, 1);
   const p = index(pRaw, 0, MAX_INDEX, 0);
   const l = index(lRaw, -MAX_INDEX, MAX_INDEX, 1);
 
@@ -106,8 +106,8 @@ export default function HigherOrderModesPage() {
           </>
         ) : (
           <>
-            <ValidatedNumberInput label={`Mode index m, along x (0–${MAX_INDEX})`} value={mRaw} onChange={setM} min={0} max={MAX_INDEX} step="1" />
-            <ValidatedNumberInput label={`Mode index n, along y (0–${MAX_INDEX})`} value={nRaw} onChange={setN} min={0} max={MAX_INDEX} step="1" />
+            <ValidatedNumberInput label={`Mode index m, along x (0–${MAX_INDEX})`} value={Number.isFinite(mRaw) ? m : mRaw} onChange={setM} min={0} max={MAX_INDEX} step="1" />
+            <ValidatedNumberInput label={`Mode index n, along y (0–${MAX_INDEX})`} value={Number.isFinite(nRaw) ? n : nRaw} onChange={setN} min={0} max={MAX_INDEX} step="1" />
           </>
         )}
         <ValidatedNumberInput label="Wavelength λ (nm)" value={wavelengthRaw} onChange={setWavelength} min={200} max={11000} />

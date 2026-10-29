@@ -128,7 +128,9 @@ export function freeElectronLaser(p: FelInput): FelResult {
   const beamPower = (gamma * ELECTRON_REST_ENERGY * p.current) / q;
   const noisePower = (rho * rho * c * gamma * ELECTRON_REST_ENERGY) / wavelength;
   const saturationPower = 1.6 * rho * (lg0 / gainLength) ** 2 * beamPower;
-  const saturationLength = gainLength * Math.log((9 * saturationPower) / noisePower);
+  // NaN when P_sat ≤ P_n/9: the degraded gain never lifts the beam above its start-up noise (no exponential regime).
+  const satRatio = (9 * saturationPower) / noisePower;
+  const saturationLength = satRatio > 1 ? gainLength * Math.log(satRatio) : NaN;
   return {
     gamma, wavelength, jj, sigmaX, rho, gainLength1D: lg0, etaD, etaE, etaG, gainLength,
     beamPower, noisePower, saturationPower, saturationLength,

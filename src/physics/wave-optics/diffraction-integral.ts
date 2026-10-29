@@ -33,6 +33,31 @@ export function circularOnAxisIntensity(NF: number): number {
 }
 
 /**
+ * Exact on-axis intensity behind a circular aperture in Rayleigh–Sommerfeld (first kind) theory, no paraxial step:
+ * U/U₀ = e^(ikz) − (z/R) e^(ikR), R = √(z² + a²), so I/I₀ = |1 − (z/R) e^(ik(R − z))|². Tends to 4 sin²(π N_F/2) when
+ * the dropped Fresnel phase is small. R − z = a²/(R + z) avoids cancellation. Heurtley, JOSA 63, 1003 (1973),
+ * doi 10.1364/JOSA.63.001003.
+ */
+export function circularOnAxisIntensityExact(a: number, lambda: number, z: number): number {
+  if (!(a > 0 && lambda > 0 && z > 0) || !Number.isFinite(a * lambda * z)) return NaN;
+  const R = Math.hypot(z, a);
+  const phi = ((2 * Math.PI) / lambda) * ((a * a) / (R + z));
+  const t = z / R;
+  return 1 + t * t - 2 * t * Math.cos(phi);
+}
+
+/**
+ * Phase the Fresnel approximation drops at the aperture edge, k(√(z² + a²) − z) − π N_F ≈ −π a⁴/(4λz³) (Goodman
+ * eq. 4-18). Its magnitude ≪ 1 rad is the condition for the paraxial on-axis value to hold.
+ */
+export function fresnelEdgePhaseError(a: number, lambda: number, z: number): number {
+  if (!(a > 0 && lambda > 0 && z > 0) || !Number.isFinite(a * lambda * z)) return NaN;
+  const R = Math.hypot(z, a);
+  // k a²/(R + z) − k a²/(2z) = −k a² (R − z)/(2z(R + z)) = −k a⁴/(2z(R + z)²)
+  return -((2 * Math.PI) / lambda) * (a * a * a * a) / (2 * z * (R + z) * (R + z));
+}
+
+/**
  * Fresnel intensity behind a circular aperture at scaled radius ρ/a, relative to the incident intensity. Complex
  * Simpson rule over t ∈ [0, 1] with 16 + 16 (2 N_F + v/π) panels (16 per half period of the integrand), error ≲ 1e-5
  * of the incident intensity; J₀ from besselJ0Fast (|error| < 1e-7). NaN above MAX_CIRCULAR_FRESNEL_NUMBER.

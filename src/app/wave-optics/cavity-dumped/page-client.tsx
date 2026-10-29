@@ -57,6 +57,12 @@ export default function CavityDumpedLaserPage() {
         </p>
       )}
 
+      {possible && duty > 0.1 && (
+        <p className="mb-6 rounded-lg border border-yellow-700 bg-yellow-950/40 p-3 text-sm text-yellow-200">
+          The dump rate is above 10 % of c/2L: fewer than 10 round trips between dumps, so the cavity can&apos;t rebuild the full circulating power; the real pulse energy is lower.
+        </p>
+      )}
+
       <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">
         <p>A linear cavity of optical length L stores E = P_circ × 2L/c in the one-way circulating power P_circ. A fast switch (Pockels
           cell or acousto-optic dumper) that couples all of it out gives a pulse one round trip long, τ_RT = 2L/c, with peak power

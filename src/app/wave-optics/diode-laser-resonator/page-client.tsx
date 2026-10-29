@@ -6,7 +6,7 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { c } from "../../../physics/constants";
 import {
-  differentialEfficiency, facetShare, gaussianFarField, logGainCarrierDensity, mirrorLoss, modeSpacing, radiativeShare, recombinationRate,
+  differentialEfficiency, facetShare, gaussianFarField, logGainCarrierDensity, MAX_LOG_GAIN_RATIO, mirrorLoss, modeSpacing, radiativeShare, recombinationRate,
   slopeEfficiency, thresholdCurrent, thresholdModalGain,
 } from "../../../physics/wave-optics/diode-laser";
 
@@ -79,8 +79,10 @@ export default function DiodeLaserResonatorPage() {
   ];
 
   // I_th(L): the mirror loss falls as 1/L while the pumped volume grows as L, so the threshold current has a minimum.
+  const lMin = Math.min(50, (L * 1e6) / 2);
+  const lMax = Math.max(4000, 1.5 * L * 1e6);
   const lengthCurve = Array.from({ length: 160 }, (_, i) => {
-    const Lc = (50 + (i * 3950) / 159) * 1e-6;
+    const Lc = (lMin + (i * (lMax - lMin)) / 159) * 1e-6;
     const N = logGainCarrierDensity(thresholdModalGain(alphaI, Lc, R1, R2) / gamma, g0, nTr);
     return { x: round6(Lc * 1e6), y: round6(thresholdCurrent(w * d * Lc, N, A, B, C, etaI) * 1e3) };
   }).filter((p) => Number.isFinite(p.y));
@@ -145,8 +147,7 @@ export default function DiodeLaserResonatorPage() {
 
       {!Number.isFinite(nTh) && Number.isFinite(gTh) && (
         <p className="mb-6 rounded-lg border border-yellow-700 bg-yellow-950/40 p-3 text-sm text-yellow-200">
-          The material gain needed, {fmt(gTh / gamma / 100)} 1/cm, is more than 20 g₀: the active region cannot reach threshold in
-          this cavity. Lengthen it, raise the facet reflectance or add wells.
+          The material gain needed, {fmt(gTh / gamma / 100)} 1/cm, is more than {MAX_LOG_GAIN_RATIO} g₀ (N above e³ N_tr): beyond the logarithmic gain fit, so this cavity can&apos;t reach threshold. Lengthen it, raise the facet reflectance or add wells.
         </p>
       )}
 

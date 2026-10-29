@@ -143,3 +143,13 @@ test("FEL: Xie (1995) table 1 gain and saturation lengths", () => {
   const zero = freeElectronLaser({ kineticEnergy: 100 * MeV, lambdaU: 0.03, K: 1.5, current: 0, normEmittance: 5e-6, beta: 1, energySpread: 0 });
   assert.ok(Number.isNaN(zero.rho) && Number.isNaN(zero.gainLength));
 });
+
+test("FEL: no saturation length when P_sat ≤ P_n/9 (edge)", () => {
+  // 100 MeV, λ_u = 30 mm, K = 1.5, β = 1 m, but I = 1 A and ε_n = 1 mm rad: the Xie-degraded gain length (~1e12 m) leaves
+  // 9 P_sat below the start-up noise, so ln(9 P_sat/P_n) < 0 and a "saturation length" would come out negative.
+  const r = freeElectronLaser({
+    kineticEnergy: 100 * 1e6 * q, lambdaU: 0.03, K: 1.5, current: 1, normEmittance: 1e-3, beta: 1, energySpread: 0.001,
+  });
+  assert.ok(9 * r.saturationPower < r.noisePower, "P_sat below the noise");
+  assert.ok(Number.isNaN(r.saturationLength), `L_sat ${r.saturationLength}`);
+});

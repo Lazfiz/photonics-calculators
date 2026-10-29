@@ -16,7 +16,7 @@ export default function FreeElectronLaserPage() {
   const [energyRaw, setEnergy] = useURLState("electronEnergy", 100); // MeV kinetic
   const [periodRaw, setPeriod] = useURLState("undulatorPeriod", 30); // mm
   const [KRaw, setK] = useURLState("undulatorK", 1.5);
-  const [lengthRaw, setLength] = useURLState("undulatorLength", 2); // m
+  const [lengthRaw, setLength] = useURLState("undulatorLength", 15); // m
   const [currentRaw, setCurrent] = useURLState("beamCurrent", 100); // A
   const [emittanceRaw, setEmittance] = useURLState("beamEmittance", 5); // mm mrad, normalized
   const [betaRaw, setBeta] = useURLState("betaFunction", 1); // m
@@ -31,7 +31,7 @@ export default function FreeElectronLaserPage() {
     beta: clamp(betaRaw, 0.01, 1000, 1),
     energySpread: clamp(spreadRaw, 0, 0.1, 0.001),
   };
-  const Lu = clamp(lengthRaw, 0.01, 1000, 2);
+  const Lu = clamp(lengthRaw, 0.01, 1000, 15);
   const r = freeElectronLaser(input);
   const pEnd = felPower(Lu, r);
   const saturated = Lu >= r.saturationLength;
@@ -49,13 +49,16 @@ export default function FreeElectronLaserPage() {
     { name: "Undulator end", color: "#f87171", showPoints: true, points: Number.isFinite(pEnd) && pEnd > 0 ? [{ x: round6(Lu), y: round6(pEnd) }] : [] },
   ];
 
-  const Ks = Array.from({ length: 100 }, (_, i) => 0.3 + (i * 4.7) / 99);
+  const kLo = Math.min(0.3, input.K / 2);
+  const kHi = Math.max(5, 2 * input.K);
+  const Ks = Array.from({ length: 100 }, (_, i) => kLo + (i * (kHi - kLo)) / 99);
   const gainVsK = (key: "gainLength" | "gainLength1D") => Ks
     .map((K) => ({ x: round6(K), y: round6(freeElectronLaser({ ...input, K })[key]) }))
     .filter((p) => Number.isFinite(p.y));
   const kSeries = [
     { name: "L_G with emittance, diffraction, energy spread (Xie)", color: "#60a5fa", points: gainVsK("gainLength") },
     { name: "L_G0, 1D cold beam", color: "#a78bfa", dashed: true, points: gainVsK("gainLength1D") },
+    { name: "Input K", color: "#f87171", showPoints: true, points: Number.isFinite(r.gainLength) ? [{ x: round6(input.K), y: round6(r.gainLength) }] : [] },
   ];
 
   const E0 = input.kineticEnergy / MeV;
@@ -86,8 +89,15 @@ export default function FreeElectronLaserPage() {
         <ResultCard label="Resonance wavelength λ₁" value={`${fmt(r.wavelength * 1e9)} nm`} subtext={`γ = ${fmt(r.gamma)}; [JJ] = ${fmt(r.jj)}`} tone="green" />
         <ResultCard label="Pierce parameter ρ" value={fmt(r.rho)} subtext={`beam size σ_x = √(βε_n/γ) = ${fmt(r.sigmaX * 1e6)} µm`} tone="yellow" />
         <ResultCard label="Power gain length L_G" value={`${fmt(r.gainLength)} m`} subtext={`1D cold beam L_G0 = ${fmt(r.gainLength1D)} m`} tone="red" />
-        <ResultCard label="Saturation length" value={`${fmt(r.saturationLength)} m`} subtext={`L_G ln(9P_sat/P_n), noise P_n = ${fmt(r.noisePower)} W`} tone="orange" />
+        <ResultCard label="Saturation length" value={Number.isFinite(r.saturationLength) ? `${fmt(r.saturationLength)} m` : "—"} subtext={Number.isFinite(r.saturationLength) ? `L_G ln(9P_sat/P_n), noise P_n = ${fmt(r.noisePower)} W` : "no exponential gain: 9 P_sat ≤ P_n"} tone="orange" />
       </div>
+      {input.energySpread > r.rho && (
+        <p className="mb-4 rounded-lg border border-yellow-700 bg-yellow-950/40 p-3 text-sm text-yellow-200">
+          σ_δ = {fmt(input.energySpread)} exceeds ρ = {fmt(r.rho)}: the energy spread is wider than the FEL gain bandwidth, so the gain is
+          strongly suppressed and Xie&apos;s fit is extrapolated.
+        </p>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
         <ResultCard label="Saturation power" value={`${fmt(r.saturationPower / 1e6)} MW`} subtext={`1.6ρ(L_G0/L_G)² of P_beam = ${fmt(r.beamPower / 1e9)} GW`} tone="purple" />
         <ResultCard label="Power at the undulator end" value={`${fmt(pEnd)} W`} subtext={saturated ? "saturated" : `${fmt(Lu / r.gainLength, 3)} gain lengths, not saturated`} tone={saturated ? "purple" : "gray"} />
