@@ -5,11 +5,11 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 169, 2026-10-28)
+## Status (session 171, 2026-10-29)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
-  textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) done (sessions 163–170); next 5w-9 (wave-optics 1/2); the Gemini hero is last. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9 (wave-optics 1/2) done (sessions 163–171); next 5w-10 (wave-optics 2/2); the Gemini hero is last. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -144,7 +144,10 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   σ_T is a 77 K-glass value (no room-temperature liquid ε_T found); τ_T 0.25 µs is air-saturated (no degassed/COT value found). `gas-laser-resonator`: g₀ 0.15 /m and I_sat 25 W/cm² come from one
   HeNe course report (Ng et al. 2015); no sourced g₀/I_sat for Ar⁺ or CO₂, so the line buttons set λ only.
 - `diode-laser-resonator` (session 149): hybrid set (De Koninck g₀/N_tr/B/C, Wenzel A/n_g); De Koninck's g₀ is Tsvid's dg/d ln J used as
-  is (≈ 1750/cm in the N law); η_i·share 35 % vs Tsvid's 40–54 %. Coldren's gain tables have no open copy.
+  is (≈ 1750/cm in the N law); η_i·share 35 % vs Tsvid's 40–54 %. Coldren's gain tables have no open copy. Session 171: the
+  log-gain cap g/g₀ ≤ 3 (N ≤ e³ N_tr) is a judgement, not a sourced fit range; diode and dye modelNotes are ≈ 470 characters.
+- `dye-laser-resonator` (session 171, unverified): the flow transit time 2w_p/v may be w_p/v at the mode centre (≤ 2× in τ_eff).
+- `attosecond-pulse` (session 171): no flag for the magnetic-drift limit at long λ and high I (U_p ≳ 10 keV at 10 µm, 1e15 W/cm²).
 - `thin-disk-laser` (session 150): Chanteloup's σ_e values are literature (Fan 2007, Brown 2005), σ_a measured; κ 7 is 8 at.%
   while the default doping is 10 at.% (Beil 2010 via Koerner 2012 Table 4: 5.7 at 12 at.%). Nd heat fraction 0.32 (Fan 1993,
   doi 10.1109/3.234394, paywalled) is still unsourced where it's used.
@@ -283,7 +286,7 @@ One box per session, in this order.
   - [x] 5w-1 detectors 1/3 (session 163, PR #200) · [x] 5w-2 detectors 2/3 (session 164, PR #201) · [x] 5w-3 detectors 3/3 (session 165, PR #202)
   - [x] 5w-4 imaging 1/3 (session 166, PR #203) · [x] 5w-5 imaging 2/3 (session 167, PR #204) · [x] 5w-6 imaging 3/3 (session 168, PR #205)
   - [x] 5w-7 fiber-optics 1/2 (session 169, PR #206) · [x] 5w-8 fiber-optics 2/2 (session 170, PR #207)
-  - [ ] 5w-9 wave-optics 1/2 · [ ] 5w-10 wave-optics 2/2 (32)
+  - [x] 5w-9 wave-optics 1/2 (session 171, PR #208) · [ ] 5w-10 wave-optics 2/2 (17 slugs, injection-locking … thin-disk-laser)
   - [ ] 5w-11 free-space-comms (17) · [ ] 5w-12 laser-safety (20) · [ ] 5w-13 materials (22)
   - [ ] 5w-14 spectroscopy (21) · [ ] 5w-15 thin-film + polarization (24)
 - [ ] Last: replace the home-page hero with the one the user made in Gemini, and wire it in (ask the user for the files).
@@ -305,6 +308,9 @@ One box per session, in this order.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - 5w-9 wave-optics 1/2 (session 171, `phase-5/5w-9-wave-optics`, PR #208): 16 pages, 3 bugs: diffraction-integral on-axis value
+    called exact (now Rayleigh–Sommerfeld, Heurtley 1973), FEL negative L_sat shown "saturated", gas-laser confocal banner; 7 defaults
+    changed (abcd, chirped, DFG w 150 µm, FWM seed, FEL L_u 15 m, gas bore 3.2 mm, HG TEM₂₁); diode log-gain cap 3; 1169 tests.
   - 5w-8 fiber-optics 2/2 (session 170, `phase-5/5w-8-fiber-optics`, PR #207): 21 pages, 3 bugs: photonic-crystal V/guidance
     outside d/Λ 0.2–0.8, wdm-coupler (dead selector, echoed isolation; new `wdm-channel-plan.ts`, tier illustrative), nonzero-dispersion
     λ0 out of band; elasto-optic on by default on macro-bending-loss and mode-field-diameter; 14 chart ranges; 1167 tests.
