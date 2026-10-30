@@ -58,7 +58,7 @@ export default function DiversityReceptionPage() {
 
   const sepData = useMemo(() => {
     const { lambda, L, sigmaI2 } = base;
-    const sMax = 3 * Math.sqrt(lambda * L);
+    const sMax = Math.max(3 * Math.sqrt(lambda * L), 1.2 * separation * 1e-2);
     // 17 points: each separation needs its own N-branch sum tables (≈ 10 ms each at N = 8).
     const seps = Array.from({ length: 17 }, (_, i) => (sMax * i) / 16);
     const x = seps.map((s) => s * 100);
@@ -73,7 +73,7 @@ export default function DiversityReceptionPage() {
       y: seps.map((s) => irradianceCorrelation(s, lambda, L)),
     }];
     return { gain, corr };
-  }, [base, pOut, n]);
+  }, [base, pOut, n, separation]);
 
   return (
     <>
@@ -104,7 +104,8 @@ export default function DiversityReceptionPage() {
         <ResultCard label="Scintillation index σ_I² (point)" value={fmt(base.sigmaI2)} tone="purple" />
         <ResultCard label={`Irradiance correlation b_I(${fmt(separation)} cm)`} value={fmt(results.bI)} tone="cyan"
           subtext={`Fresnel zone ${fmt(fresnelZone(base.lambda, base.L) * 100)} cm`} />
-        <ResultCard label="Log-irradiance correlation ρ_ln" value={fmt(results.rho)} tone="gray" />
+        <ResultCard label="Log-irradiance correlation ρ_ln" value={fmt(results.rho)} tone="gray"
+          subtext={results.rho < 0 ? "negative ρ treated as 0 (conservative)" : undefined} />
         <ResultCard label="Fade margin, single receiver" value={`${fmt(results.single)} dB`} tone="orange" subtext={`for P_out = ${fmt(pOut)}`} />
         <ResultCard label={`Fade margin, ${combiners.find((c) => c.id === selected)!.label}, N = ${n}`} value={`${fmt(results.selMargin)} dB`} tone="green" />
         <ResultCard label="Diversity gain" value={`${fmt(results.gain)} dB`} tone="green" subtext="single margin − combiner margin" />
@@ -127,11 +128,11 @@ export default function DiversityReceptionPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Diversity gain vs separation</h2>
-          <ChartPanel data={sepData.gain} layout={chartLayout("Receiver separation (cm)", "Diversity gain (dB)")} />
+          <ChartPanel data={[...sepData.gain, { type: "scatter", mode: "markers", x: [separation], y: [results.gain], name: "Current", marker: { color: "#facc15", size: 10 } }]} layout={chartLayout("Receiver separation (cm)", "Diversity gain (dB)")} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Irradiance correlation vs separation</h2>
-          <ChartPanel data={sepData.corr} layout={chartLayout("Receiver separation (cm)", "b_I")} />
+          <ChartPanel data={[...sepData.corr, { type: "scatter", mode: "markers", x: [separation], y: [results.bI], name: "Current", marker: { color: "#facc15", size: 10 } }]} layout={chartLayout("Receiver separation (cm)", "b_I")} />
         </div>
       </div>
 

@@ -124,7 +124,9 @@ export default function LinkBudgetPage() {
           w = θR/2 that falls on an aperture of radius a. Closer in, or for a large receiver, the card shows the exact
           capture 1 − exp(−2a²/w(R)²) with w(R) = w₀√(1 + (R/z_R)²). Atmospheric attenuation is per kilometre: take it from the{" "}
           <Link href="/free-space-comms/fog-attenuation" className="underline">fog</Link>,{" "}<Link href="/free-space-comms/rain-attenuation" className="underline">rain</Link> or{" "}
-          <Link href="/free-space-comms/snow-attenuation" className="underline">snow</Link> calculators.
+          <Link href="/free-space-comms/snow-attenuation" className="underline">snow</Link> calculators. With θ fixed, λ cancels in P_r
+          (G_t·G_r/FSPL = D²/(2θ²R²) for a small receiver); it matters only through the atmospheric attenuation, which you
+          enter for your wavelength, and the diffraction-limited waist.
         </p>
         <p className="text-gray-500">
           Not modelled: turbulence fading, pointing jitter statistics and background noise. The sensitivity is the

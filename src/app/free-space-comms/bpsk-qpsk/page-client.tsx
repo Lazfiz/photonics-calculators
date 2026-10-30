@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -10,17 +10,23 @@ import {
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) =>
   Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback;
+type Modulation = "BPSK" | "QPSK" | "OQPSK";
+const MODULATIONS: Modulation[] = ["BPSK", "QPSK", "OQPSK"];
+const isModulation = (s: string): s is Modulation => (MODULATIONS as string[]).includes(s);
+const isReceiver = (s: string): s is CoherentReceiver => s === "heterodyne" || s === "homodyne";
 const dBm = (watts: number) => 10 * Math.log10(watts / 1e-3);
 
 export default function BpskQpskPage() {
   const [ebn0dB, setEbn0dB] = useURLState("ebn0dB", 10, { min: -10, max: 30 });
-  const [modulation, setModulation] = useState<"BPSK" | "QPSK" | "OQPSK">("BPSK");
+  const [modulationRaw, setModulation] = useURLState("modulation", "BPSK");
   const [dataRateRaw, setDataRate] = useURLState("dataRate", 1); // Gbps
   const [rxPower, setRxPower] = useURLState("rxPower", -50, { min: -100, max: 30 }); // dBm
   const [wavelengthRaw, setWavelength] = useURLState("wavelength", 1550); // nm
   const [etaRaw, setEta] = useURLState("eta", 1);
-  const [receiver, setReceiver] = useState<CoherentReceiver>("heterodyne");
+  const [receiverRaw, setReceiver] = useURLState("receiver", "heterodyne");
 
+  const modulation: Modulation = isModulation(modulationRaw) ? modulationRaw : "BPSK";
+  const receiver: CoherentReceiver = isReceiver(receiverRaw) ? receiverRaw : "heterodyne";
   const dataRate = clamp(dataRateRaw, 1e-6, 1e4, 1);
   const wavelength = clamp(wavelengthRaw, 200, 20000, 1550);
   const eta = clamp(etaRaw, 0.01, 1, 1);
@@ -55,18 +61,25 @@ export default function BpskQpskPage() {
     // Symbol rate
     const symbolRate = dataRate / specEff;
 
-    return { ber, ser, reqEbN0, targetBERs, specEff, bw, n0dBmHz: dBm(n0), requiredPr, photonsPerBit, margin, symbolRate };
+    // Eb/N0 the RX power input actually delivers: P/(N0·R), in dB (the margin above is the same quantity).
+    const ebn0AtRxDb = rxPower - dBm(n0) - 10 * Math.log10(dataRate * 1e9);
+    const berAtRx = bpskBer(10 ** (ebn0AtRxDb / 10));
+
+    return { ber, ser, ebn0AtRxDb, berAtRx, reqEbN0, targetBERs, specEff, bw, n0dBmHz: dBm(n0), requiredPr, photonsPerBit, margin, symbolRate };
   }, [ebn0dB, modulation, dataRate, rxPower, wavelength, eta, rx]);
 
   const plotData = useMemo(() => {
-    // 0–15 dB spans BER 0.08 down to ~1e-15.
-    const ebnoRange = Array.from({ length: 151 }, (_, i) => i * 0.1);
+    // At least 0–15 dB (BER 0.08 down to ~1e-15), widened to include the Eb/N0 input.
+    const lo = Math.min(0, Math.floor(ebn0dB)), hi = Math.max(15, Math.ceil(ebn0dB));
+    const ebnoRange = Array.from({ length: 301 }, (_, i) => lo + ((hi - lo) * i) / 300);
+    const positive = (y: number) => (y > 0 ? y : null);
     const lin = (dB: number) => 10 ** (dB / 10);
     return [
-      { x: ebnoRange, y: ebnoRange.map((e) => bpskBer(lin(e))), type: "scatter", mode: "lines", name: "BER: BPSK, QPSK, OQPSK", line: { color: "#06b6d4" } },
-      { x: ebnoRange, y: ebnoRange.map((e) => qpskSer(lin(e))), type: "scatter", mode: "lines", name: "SER: QPSK", line: { color: "#f59e0b", dash: "dash" } },
+      { x: ebnoRange, y: ebnoRange.map((e) => positive(bpskBer(lin(e)))), type: "scatter", mode: "lines", name: "BER: BPSK, QPSK, OQPSK", line: { color: "#06b6d4" } },
+      { x: ebnoRange, y: ebnoRange.map((e) => positive(qpskSer(lin(e)))), type: "scatter", mode: "lines", name: "SER: QPSK", line: { color: "#f59e0b", dash: "dash" } },
+      { x: [ebn0dB], y: [positive(bpskBer(lin(ebn0dB)))], type: "scatter", mode: "markers", name: "Current", marker: { color: "#22c55e", size: 10 } },
     ];
-  }, []);
+  }, [ebn0dB]);
 
   return (
     <>
@@ -75,7 +88,7 @@ export default function BpskQpskPage() {
           <h2 className="text-lg font-semibold text-cyan-400">Inputs</h2>
           <div>
             <label className="block text-sm text-gray-400 mb-1" htmlFor="modulation">Modulation</label>
-            <select id="modulation" value={modulation} onChange={(e) => setModulation(e.target.value as "BPSK" | "QPSK" | "OQPSK")}
+            <select id="modulation" value={modulation} onChange={(e) => setModulation(e.target.value)}
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
               <option>BPSK</option><option>QPSK</option><option>OQPSK</option>
             </select>
@@ -86,7 +99,7 @@ export default function BpskQpskPage() {
           <ValidatedNumberInput label="Photodiode Quantum Efficiency η" value={etaRaw} onChange={setEta} min={0.01} max={1} step="any" />
           <div>
             <label className="block text-sm text-gray-400 mb-1" htmlFor="receiver">Coherent Receiver</label>
-            <select id="receiver" value={receiver} onChange={(e) => setReceiver(e.target.value as CoherentReceiver)}
+            <select id="receiver" value={receiver} onChange={(e) => setReceiver(e.target.value)}
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
               <option value="heterodyne">Heterodyne / intradyne (two quadratures)</option>
               <option value="homodyne">Single-quadrature homodyne (BPSK only)</option>
@@ -113,6 +126,8 @@ export default function BpskQpskPage() {
               <div className="flex justify-between"><span className="text-gray-400">Shot-noise N₀</span><span>{calc.n0dBmHz.toFixed(1)} dBm/Hz</span></div>
               <div className="flex justify-between"><span className="text-gray-400">Photons per Bit at P<sub>req</sub></span><span>{calc.photonsPerBit.toPrecision(3)}</span></div>
               <div className="flex justify-between"><span className="text-gray-400">Required RX Power</span><span>{calc.requiredPr.toFixed(1)} dBm</span></div>
+              <div className="flex justify-between"><span className="text-gray-400">Eb/N0 at RX power</span><span>{Number.isFinite(calc.ebn0AtRxDb) ? `${calc.ebn0AtRxDb.toFixed(1)} dB` : "—"}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500 text-xs">BER at that Eb/N0</span><span className="text-xs">{!Number.isFinite(calc.berAtRx) ? "—" : calc.berAtRx < 1e-15 ? "< 10⁻¹⁵" : calc.berAtRx.toExponential(2)}</span></div>
               <div className="flex justify-between"><span className="text-gray-400">Power Margin</span><span className={calc.margin > 0 ? "text-green-400" : "text-red-400"}>{calc.margin.toFixed(1)} dB</span></div>
             </div>
           </div>

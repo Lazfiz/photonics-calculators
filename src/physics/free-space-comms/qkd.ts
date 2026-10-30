@@ -75,7 +75,19 @@ export function plobBound(eta: number): number {
  * Returns 0 if there is no key even without channel loss, and Infinity if there is still a key at maxDb.
  */
 export function maxChannelLossDb(p: Omit<DecoyBb84Params, "eta">, etaBob: number, maxDb = 200): number {
-  const key = (lossDb: number) => decoyBb84({ ...p, eta: etaBob * 10 ** (-lossDb / 10) }).keyPerPulse;
+  return lossCutoff((lossDb) => decoyBb84({ ...p, eta: etaBob * 10 ** (-lossDb / 10) }).keyPerPulse, maxDb);
+}
+
+/** As `maxChannelLossDb`, with μ re-optimised (`optimalMu`) at each loss: the longest reach of any μ in [0.01, 1]. */
+export function maxChannelLossDbOptimalMu(p: Omit<DecoyBb84Params, "eta" | "mu">, etaBob: number, maxDb = 200): number {
+  return lossCutoff((lossDb) => {
+    const eta = etaBob * 10 ** (-lossDb / 10);
+    return decoyBb84({ ...p, eta, mu: optimalMu({ ...p, eta }) }).keyPerPulse;
+  }, maxDb);
+}
+
+/** Bisection (60 steps) for the edge of key(loss) > 0 on [0, maxDb]; 0 if no key at 0 dB, Infinity if still a key at maxDb. */
+function lossCutoff(key: (lossDb: number) => number, maxDb: number): number {
   if (!(key(0) > 0)) return 0;
   if (key(maxDb) > 0) return Infinity;
   let lo = 0, hi = maxDb;

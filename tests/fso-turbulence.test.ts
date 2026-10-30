@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  andrewsApertureFactor, apertureParameter, beamWanderLossDb, beamWanderVariance, diversityOutage, diversityThreshold,
+  andrewsApertureFactor, aoResidualVariance, apertureParameter, beamWanderLossDb, beamWanderVariance, diversityOutage, diversityThreshold,
   fittingErrorVariance, friedParameter, gammaGammaCdf, gammaGammaParameters, greenwoodFrequency, irradianceCorrelation,
   isoplanaticAngle, logIrradianceCorrelation, logIrradianceVariances, lognormalFadeProbability, rytovVariance,
   scintillationIndex, servoLagVariance, sphericalRytovVariance, strehlRatio, uncorrectedPhaseVariance, weakApertureFactor,
@@ -68,6 +68,20 @@ test("adaptive optics: Noll variances, Greenwood servo lag without a D/r₀ fact
   // D = 100 r₀ uncorrected: the seeing-limited (r₀/D)² ≈ 1e-4, not the Maréchal e^(−22) underflow.
   close(strehlRatio(uncorrectedPhaseVariance(100, 1), 100, 1), 1 / (1 + 1e4), 1e-9);
   assert.equal(strehlRatio(0, 0.5, 1), 1);
+});
+
+test("adaptive optics: a slow loop's residual is capped at the open-loop variance (|1 − H|² ≤ 1)", () => {
+  // Page defaults with f_3dB = 10 Hz: C_n² 1e-14, 1550 nm, 1 km → r₀ = 7.85 cm (Fried 0.185 λ^(6/5)(C_n²L)^(−3/5), hand);
+  // σ²_open = 1.0299 (10/7.85)^(5/3) = 1.542 rad²; f_G = 0.427·10/0.0785 = 54.4 Hz → (5.44)^(5/3) = 16.8 rad² uncapped.
+  const r0 = friedParameter(1e-14, 1550e-9, 1000);
+  close(r0, 0.0785, 1e-3);
+  const open = uncorrectedPhaseVariance(0.1, r0);
+  close(open, 1.542, 1e-3);
+  const servo = servoLagVariance(greenwoodFrequency(10, r0), 10);
+  assert.ok(servo > 16 && servo < 17.5);
+  assert.equal(aoResidualVariance(fittingErrorVariance(127, 0.1, r0), servo, open), open);
+  // A fast loop is untouched: 0.1 + 0.2 < 1.0299.
+  close(aoResidualVariance(0.1, 0.2, 1.0299), 0.3, 1e-12);
 });
 
 test("all-regime aperture averaging reproduces a published worked example (arXiv:2607.12837 app. D.4)", () => {
