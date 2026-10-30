@@ -44,6 +44,7 @@ export default function SlowLightPage() {
   const [lRaw, setStructureLength] = useURLState("structureLength", 1); // mm
   const [gRaw, setGainDb] = useURLState("gainDb", 30); // dB at line centre
   const [wRaw, setResonanceWidth] = useURLState("resonanceWidth", 30); // MHz FWHM
+  const [sigRaw, setSignalMHz] = useURLState("signalMHz", 10); // MHz, signal bandwidth (resonance mode)
 
   const resonance = modelRaw === "resonance";
   const ngInput = clamp(ngRaw, 0.01, 1e9, 10);
@@ -53,6 +54,7 @@ export default function SlowLightPage() {
   const L = clamp(lRaw, 1e-6, 1e9, 1) * 1e-3;
   const gainDb = clamp(gRaw, -100, 100, 30);
   const fwhm_MHz = clamp(wRaw, 1e-6, 1e6, 30);
+  const signalMHz = clamp(sigRaw, 1e-6, 1e9, 10);
 
   const gainNp = gainDb * NP_PER_DB;
   const tauRes = lorentzianDelay(gainNp, fwhm_MHz * 1e6, 0);
@@ -61,7 +63,7 @@ export default function SlowLightPage() {
   const tau = resonance ? tau0 + tauRes : groupDelay(ng, L);
   const excess = tau - tau0;
   const vg = groupVelocity(ng);
-  const dnu = bandwidthHz(lambda, Math.min(dLambda, 1.99 * lambda));
+  const dnu = resonance ? signalMHz * 1e6 : bandwidthHz(lambda, Math.min(dLambda, 1.99 * lambda));
   const wideSignal = resonance && dnu > fwhm_MHz * 1e6;
 
   return (
@@ -85,24 +87,28 @@ export default function SlowLightPage() {
         <ValidatedNumberInput label="Background Group Index n₀" value={n0Raw} onChange={setNBase} min={1} max={5} step="any" />
         <ValidatedNumberInput label="Structure Length (mm)" value={lRaw} onChange={setStructureLength} min={1e-6} max={1e9} step="any" />
         <ValidatedNumberInput label="Wavelength (nm)" value={wlRaw} onChange={setWavelength} min={100} max={20000} />
-        <ValidatedNumberInput label="Signal Bandwidth Δλ (nm)" value={bwRaw} onChange={setBandwidth} min={0} max={1000} step="any" />
+        {resonance ? (
+          <ValidatedNumberInput label="Signal bandwidth Δν (MHz)" value={sigRaw} onChange={setSignalMHz} min={1e-6} max={1e9} step="any" />
+        ) : (
+          <ValidatedNumberInput label="Signal Bandwidth Δλ (nm)" value={bwRaw} onChange={setBandwidth} min={0} max={1000} step="any" />
+        )}
       </div>
 
       {wideSignal && (
         <div className="mb-6 rounded-lg border border-yellow-800 bg-yellow-950/40 p-4 text-sm text-yellow-100">
           The signal bandwidth {fmtHz(dnu)} is wider than the resonance ({fmt(fwhm_MHz)} MHz): the delay and gain vary across
-          the signal, so pulses are distorted and the line-centre delay does not apply. Narrow Δλ or widen the resonance.
+          the signal, so pulses are distorted and the line-centre delay does not apply. Narrow the signal or widen the resonance.
         </div>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="Group Index n_g" value={fmt(ng)} tone="blue"
-          subtext={resonance ? `n₀ + cτ_res/L; slowdown n_g/n₀ = ${fmt(ng / n0)}` : `slowdown n_g/n₀ = ${fmt(ng / n0)}`} />
+          subtext={resonance ? `n₀ + cτ_res/L; slowdown n_g/n₀ = ${fmt(ng / n0)}. G already includes the length; for Brillouin slow light in fibre use a km-scale L` : `slowdown n_g/n₀ = ${fmt(ng / n0)}`} />
         <ResultCard label="Group Velocity c/n_g" value={ng > 0 ? `${fmt(vg)} m/s` : "negative"} tone="cyan"
           subtext={ng > 0 ? `${fmt((100 * vg) / c)} % of c` : "n_g < 0: fast light, the output peak leaves before the input peak arrives"} />
         <ResultCard label="Group Delay τ" value={fmtTime(tau)} tone="green" subtext={`${fmtTime((ng * 1e-3) / c)} per mm`} />
         <ResultCard label="Excess Delay over n₀" value={fmtTime(excess)} tone="purple" subtext={`background alone: ${fmtTime(tau0)}`} />
-        <ResultCard label="Signal Bandwidth Δν" value={fmtHz(dnu)} tone="yellow" subtext={`Δλ = ${fmt(dLambda * 1e9)} nm at ${fmt(lambda * 1e9)} nm`} />
+        <ResultCard label="Signal Bandwidth Δν" value={fmtHz(dnu)} tone="yellow" subtext={resonance ? "entered directly; must stay below the line FWHM" : `Δλ = ${fmt(dLambda * 1e9)} nm at ${fmt(lambda * 1e9)} nm`} />
         <ResultCard label="Delay × Bandwidth τΔν" value={fmt(tau * dnu)} tone="orange"
           subtext={`excess Δτ·Δν = ${fmt(excess * dnu)} (≈ bits stored beyond plain propagation)`} />
         {resonance && (

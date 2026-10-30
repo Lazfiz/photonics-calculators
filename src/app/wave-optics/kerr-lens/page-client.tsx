@@ -17,14 +17,14 @@ const fmtLength = (m: number) => !Number.isFinite(m)
 
 export default function KerrLensPage() {
   const [lambdaRaw, setLambda] = useURLState("wavelength", 800); // nm
-  const [waistRaw, setWaist] = useURLState("beamWaist", 20); // µm
+  const [waistRaw, setWaist] = useURLState("beamWaist", 30); // µm
   const [n0Raw, setN0] = useURLState("n0", 1.76);
   const [n2Raw, setN2] = useURLState("n2", 3.2); // 1e-16 cm²/W = 1e-20 m²/W
   const [powerRaw, setPower] = useURLState("peakPower", 100); // kW
   const [lengthRaw, setLength] = useURLState("crystalLength", 2); // mm
 
   const lambda = clamp(lambdaRaw, 200, 20000, 800) * 1e-9;
-  const w = clamp(waistRaw, 1, 1e5, 20) * 1e-6;
+  const w = clamp(waistRaw, 1, 1e5, 30) * 1e-6;
   const n0 = clamp(n0Raw, 1, 5, 1.76);
   const n2 = clamp(n2Raw, 1e-4, 1e6, 3.2) * 1e-20;
   const power = clamp(powerRaw, 0, 1e9, 100) * 1e3;
@@ -75,7 +75,7 @@ export default function KerrLensPage() {
           parabola, I₀(1 − 2r²/w²), so a crystal of length L adds the phase of a thin lens with 1/f = 4n₂I₀L/w² =
           8n₂PL/(πw⁴). In a Kerr-lens mode-locked laser the pulse peak sees this lens and the low-power continuous light
           doesn&apos;t. An aperture or the gain spot then favours the pulse. The lens holds for L below z_R and f, and for P
-          well below P_cr. The plot shows how the real Gaussian phase leaves the parabola beyond r ≈ w/2.</p>
+          well below P_cr. The plot shows how the real Gaussian phase leaves the parabola beyond r ≈ w/2. The lens comes from the on-axis curvature of the Kerr phase, so it overstates how strongly the whole beam focuses: this parabolic lens alone would trap a Gaussian at λ²/(8πn₀n₂) = P_cr/3.77.</p>
         {warnings.map((msg) => <p key={msg} className="text-yellow-400">{msg}</p>)}
       </div>
 

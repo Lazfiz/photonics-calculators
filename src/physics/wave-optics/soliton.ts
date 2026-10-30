@@ -81,6 +81,29 @@ export function dispersiveWaveShift(beta2: number, beta3: number): number {
   return Number.isFinite(beta2) && Number.isFinite(beta3) && beta3 !== 0 ? (-3 * beta2) / beta3 : NaN;
 }
 
+/**
+ * Dispersive-wave offset Ω, rad/s, from the full phase-matching condition with the soliton's nonlinear wavenumber:
+ * β₂Ω²/2 + β₃Ω³/6 = γP_s/2 (Akhmediev & Karlsson 1995; a fundamental soliton of peak power P_s gains phase γP_s z/2,
+ * Agrawal ch. 5). With x = Ω·sign(β₃) and x₀ = 3|β₂|/|β₃| it reads x²|β₃|(x − x₀)/6 = γP_s/2, which has one root in
+ * (x₀, x₀ + ∛(3γP_s/|β₃|)]; bisection to 1e-12 relative. P_s → 0 gives −3β₂/β₃; to first order Ω ≈ −3β₂/β₃ + γP_sβ₃/(3β₂²).
+ * NaN unless β₂ < 0, β₃ ≠ 0, γ > 0 and P_s ≥ 0.
+ */
+export function dispersiveWaveShiftNonlinear(beta2: number, beta3: number, gamma: number, power: number): number {
+  if (!(Number.isFinite(beta2) && beta2 < 0 && Number.isFinite(beta3) && beta3 !== 0 && finitePositive(gamma)
+    && Number.isFinite(power) && power >= 0)) return NaN;
+  const b3 = Math.abs(beta3);
+  const x0 = (3 * Math.abs(beta2)) / b3;
+  const rhs = (gamma * power) / 2;
+  let lo = x0;
+  let hi = x0 + Math.cbrt((3 * gamma * power) / b3);
+  for (let i = 0; i < 200 && hi - lo > 1e-12 * hi; i++) {
+    const mid = (lo + hi) / 2;
+    if ((mid * mid * b3 * (mid - x0)) / 6 < rhs) lo = mid;
+    else hi = mid;
+  }
+  return Math.sign(beta3) * (lo + hi) / 2;
+}
+
 export interface SolitonContent {
   /** Number of solitons the input contains, ⌊N + 1/2⌋. */
   count: number;

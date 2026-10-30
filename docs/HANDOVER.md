@@ -1,28 +1,29 @@
-# Handover — 2026-10-29 (session 171 → session 172)
+# Handover — 2026-10-29 (session 172 → session 173)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 171 did 5w-9 (wave-optics textbook pass 1/2) on `phase-5/5w-9-wave-optics`, PR #208: 16 pages, 3 bugs.
-PRs #200–#207 are merged to `main` but not released (`release` = `d82602ed`). Next: **5w-10 wave-optics 2/2**.
+Session 172 did 5w-10 (wave-optics textbook pass 2/2) on `phase-5/5w-10-wave-optics`, PR #209: 16 pages, 1 bug.
+PRs #200–#208 are merged to `main` but not released (`release` = `d82602ed`). Next: **5w-11 free-space-comms** (17 slugs).
 
 ## State
-- `diffraction-integral.ts`: new `circularOnAxisIntensityExact(a, λ, z)` = |1 − (z/R)e^{ik(R−z)}|² (Heurtley 1973, Rayleigh–Sommerfeld)
-  and `fresnelEdgePhaseError` ≈ −πa⁴/(4λz³); the page shows the exact on-axis value and warns above 0.1 rad.
-- `free-electron-laser.ts`: saturationLength NaN when 9P_sat ≤ P_n. `diode-laser.ts`: `MAX_LOG_GAIN_RATIO` = 3 (was 20).
-- New defaults: abcd-matrix d150_f100_d300 (A = −2), chirped-pulse ΔG 0.2 mm, difference-frequency w 150 µm (P_i 1.172 µW),
-  four-wave-mixing seed 0.01 mW, free-electron-laser L_u 15 m, gas-laser bore 3.2 mm, hermite-gaussian TEM₂₁ at z = 5 mm.
-- Source-check commit (user asked to verify the UNVERIFIED findings): `laser-resonator.ts` `flowTripletLifetime(τ_T, v, w₀, w_p)`
-  = (c√π/(2v)) erfcx(c/(2vτ_T)), c² = (w₀² + w_p²)/2, and `gaussianSlopeSaturationArea(w₀, w_p)` (Laporta–Brussard);
-  `tripletGainFactor` now takes τ_eff (4 args). `high-harmonic.ts` `lorentzDriftParameter(I_p, I, λ)` (Klaiber 2008), Γ ∝ I^1.5 λ⁴.
-  Dye default output 0.642 W (was 0.431), slope 29.5 %.
+- `soliton.ts`: new `dispersiveWaveShiftNonlinear(β₂, β₃, γ, P)` solves β₂Ω²/2 + β₃Ω³/6 = γP/2 by bisection on
+  x²|β₃|(x − x₀)/6 = γP/2 (root in (x₀, x₀ + ∛(3γP/|β₃|)]); golden 744.72 nm (old defaults), 667.673 nm (Dudley PCF).
+- New defaults: supercontinuum = Dudley 2006 835 nm PCF (0.567 nJ, 50 fs, 15 cm, γ 110, β₂ −11.83, β₃ 0.081; N 8.65,
+  λ_DW 667.6 nm); kerr-lens waist 30 µm (f 49.70 mm, no warning); slow-light resonance mode has its own `signalMHz` (10).
+- Warnings added: mode-locked (τ·f_rep > 0.1, N < 2, sub-cycle), injection-locking ρ > −10 dB, SSLR spot > rod radius,
+  slab no-TIR hides output, SPM L > 0.2 z_sf above P_cr. Unverified items are in ROADMAP Open findings → Wave optics.
 
 ## Next actions
-1. `/ship` the 5w-9 PR. On a release (user asks), check on the local build first: `wave-optics/diffraction-integral=0.9075
-   wave-optics/difference-frequency=1.172 wave-optics/hermite-gaussian=3.115` (plus the 5w-8 values in PR #207).
-2. 5w-10: wave-optics textbook slugs 17–33 in registry order (injection-locking … thin-disk-laser), skipping
-   optical-parametric-oscillator (162); `git grep -n 'tier: "textbook"' src/registry/calculators/wave-optics.ts`.
+1. `/ship` the 5w-10 PR. On a release (user asks), check on the local build first: `wave-optics/supercontinuum=667.6
+   wave-optics/kerr-lens=49.70` (plus the 5w-8 values in PR #207 and the 5w-9 values: `wave-optics/diffraction-integral=0.9075
+   wave-optics/difference-frequency=1.172 wave-optics/hermite-gaussian=3.115`).
+2. 5w-11: free-space-comms textbook slugs in registry order (17), skipping scintillation and fade-probability;
+   `git grep -n 'tier: "textbook"' src/registry/calculators/free-space-comms.ts`.
 3. Last in Phase 5: the Gemini hero (ask the user for the files).
 
 ## Non-obvious facts
+- **Session 172:** the Dudley RMP 2006 PDF on members.femto-st.fr 404s (HTML "Page not found" saved as .pdf: check `head -c 8`);
+  ResearchGate downloads are blocked by the auto-mode classifier, so don't try them. 4 reviewers + 3 implementers ran ≈ 6 + 4 min;
+  all three implementers' edits reached disk this time. A tsx `-e` dynamic import needs `x.default ?? x`.
 - **Session 171:** a sed replacement with `&` in the new text pasted the matched text into gaussian-beam (committed, then
   fixed): do multi-line or prose replacements with a node script using `replace(a, () => b)`. Verified this session: Goodman
   2nd ed. (4-24) is the Fraunhofer condition, (4-25) the Fraunhofer integral; Siegman ch. 26 is "Laser Q-Switching" (no
@@ -50,9 +51,7 @@ PRs #200–#207 are merged to `main` but not released (`release` = `d82602ed`). 
 - **Session 162:** reviewer claims from memory were wrong again (ICNIRP 2013 Table 5 has no C_A below 10 ps on purpose).
   ICNIRP 2013 PDF: `curl -sL https://www.icnirp.org/cms/upload/publications/ICNIRPLaser180gdl_2013.pdf`, `pdftotext -raw`.
   One page per category: `shuf | awk -F/ '!seen[$1]++'`.
-- **Session 161:** CLS probe = scratchpad CDP script: `Page.addScriptToEvaluateOnNewDocument` with a `layout-shift`
-  PerformanceObserver (skip `hadRecentInput`), read `window.__cls` 5 s after navigate; 3000 px tall viewport. Git Bash rewrites
-  `/cat/slug` args even for node scripts: `export MSYS_NO_PATHCONV=1`.
+- **Session 161:** Git Bash rewrites `/cat/slug` args even for node scripts: `export MSYS_NO_PATHCONV=1`.
 - **Session 160:** the Chrome extension's screenshots time out on this site; use a headless CDP script (pattern in
   `scripts/ui-check.mjs`): `Emulation.setDeviceMetricsOverride` for a true 360 px viewport, `Input.dispatchMouseEvent` for
   hover, `Page.captureScreenshot` clips in page coordinates (add `scrollY`). In the Bash tool a bare `python -` or

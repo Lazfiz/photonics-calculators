@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 import { c } from "../src/physics/constants";
 import {
-  SECH_FWHM_FACTOR, dispersionLength, dispersiveWaveShift, fissionLength, fundamentalSolitonPower, nonlinearLength,
+  SECH_FWHM_FACTOR, dispersionLength, dispersiveWaveShift, dispersiveWaveShiftNonlinear, fissionLength, fundamentalSolitonPower, nonlinearLength,
   sechPeakPower, sechT0, solitonContent, solitonOrder, solitonPeriod, solveNls,
 } from "../src/physics/wave-optics/soliton";
 
@@ -57,6 +57,25 @@ test("dispersive wave: Ω ≈ −3β₂/β₃ (Akhmediev & Karlsson 1995)", () =
   assertRel(shift, 3e14, 1e-12, "Ω");
   assertRel((2 * Math.PI * c) / ((2 * Math.PI * c) / 1064e-9 + shift), 909.823e-9, 1e-5, "λ_DW");
   assert.ok(Number.isNaN(dispersiveWaveShift(-1e-26, 0)));
+});
+
+test("dispersive wave: full phase matching β₂Ω²/2 + β₃Ω³/6 = γP/2 (Akhmediev & Karlsson 1995)", () => {
+  // Golden values from an independent Newton solve of the cubic (scratchpad probe, agrees to 1e-13).
+  // β₂ = −10 ps²/km, β₃ = 0.1 ps³/km, γ = 0.1 /W/m, P = 88.137 kW: γP ≈ 9.8|β₂|Ω₀², so the leading order fails.
+  const omega0 = (2 * Math.PI * c) / 1064e-9;
+  const shift = dispersiveWaveShiftNonlinear(-1e-26, 1e-40, 0.1, 88137.1);
+  assertRel(shift, 7.58992e14, 1e-5, "Ω");
+  assertRel((2 * Math.PI * c) / (omega0 + shift), 744.720e-9, 1e-5, "λ_DW (leading order 909.8 nm)");
+  // 835 nm PCF case (Dudley et al. 2006): β₂ = −11.83 ps²/km, β₃ = 0.081038 ps³/km, γ = 0.11 /W/m, 10 kW → 667.67 nm.
+  const pcf = dispersiveWaveShiftNonlinear(-11.83e-27, 8.1038e-41, 0.11, 1e4);
+  assertRel((2 * Math.PI * c) / ((2 * Math.PI * c) / 835e-9 + pcf), 667.673e-9, 1e-5, "λ_DW PCF");
+  // β₃ < 0 mirrors the offset to the red side.
+  assertRel(dispersiveWaveShiftNonlinear(-1e-26, -1e-40, 0.1, 88137.1), -7.58992e14, 1e-5, "Ω, β₃ < 0");
+  // P → 0 recovers −3β₂/β₃; small P adds γPβ₃/(3β₂²) = 3.333e10 rad/s to first order.
+  assertRel(dispersiveWaveShiftNonlinear(-1e-26, 1e-40, 0.1, 0), 3e14, 1e-12, "Ω(P = 0)");
+  assertRel(dispersiveWaveShiftNonlinear(-1e-26, 1e-40, 0.1, 1) - 3e14, 3.3333e10, 1e-3, "first-order shift");
+  assert.ok(Number.isNaN(dispersiveWaveShiftNonlinear(1e-26, 1e-40, 0.1, 1)), "normal dispersion");
+  assert.ok(Number.isNaN(dispersiveWaveShiftNonlinear(-1e-26, 0, 0.1, 1)), "β₃ = 0");
 });
 
 test("soliton content of N sech τ: ⌊N + ½⌋ solitons, strongest amplitude 2N − 1 (Satsuma & Yajima 1974)", () => {

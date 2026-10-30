@@ -38,7 +38,7 @@ export default function ModeMatchingPage() {
   const fs = Array.from({ length: 161 }, (_, i) => fLo + (i * (fHi - fLo)) / 160);
   const coupling = [
     { name: "Best η at each focal length", color: "#60a5fa", points: fs.map((f) => ({ x: round6(f), y: round6(bestLensPosition(p, f * 1e-3).eta * 100) })) },
-    { name: "Matching lens (η = 100 %)", color: "#f87171", showPoints: true, points: [{ x: round6(fOpt_mm), y: 100 }] },
+    ...(sol.lensBetweenWaists ? [{ name: "Matching lens (η = 100 %)", color: "#f87171", showPoints: true, points: [{ x: round6(fOpt_mm), y: 100 }] }] : []),
     { name: "Your lens", color: "#facc15", showPoints: true, points: [{ x: round6(fStock_mm), y: round6(stock.eta * 100) }] },
   ];
 

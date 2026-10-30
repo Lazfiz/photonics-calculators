@@ -92,7 +92,7 @@ export default function SumFrequencyPage() {
         <ResultCard label="SFG power P₃" value={fmtPower(P3)} subtext={`η·2P₁P₂/(π(w₁² + w₂²)), sinc²(ΔkL/2) = ${fmt(sinc2, 3)}`} tone="green" />
         <ResultCard label="SFG wavelength λ₃" value={`${fmt(lambda3 * 1e9, 5)} nm`} subtext="1/λ₃ = 1/λ₁ + 1/λ₂" tone="blue" />
         <ResultCard label="Normalized efficiency" value={`${fmt(normalized * 100, 3)} %/W`} subtext={`P₃/(P₁P₂); ${fmt(photonFraction * 100, 3)} % of the weaker beam's photons`} tone="orange" />
-        <ResultCard label="First-order QPM period" value={`${fmt(qpmPeriod * 1e6, 4)} µm`} subtext={`2π/|Δk| from the indices; coherence length ${fmt(qpmPeriod * 5e5, 4)} µm`} tone="cyan" />
+        <ResultCard label="First-order QPM period" value={`${fmt(qpmPeriod * 1e6, 4)} µm`} subtext={`2π/|Δk| for the entered indices; update n₁, n₂, n₃ when you change a wavelength. Coherence length ${fmt(qpmPeriod * 5e5, 4)} µm`} tone="cyan" />
       </div>
 
       <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">

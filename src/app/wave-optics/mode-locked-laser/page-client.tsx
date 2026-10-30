@@ -81,6 +81,18 @@ export default function ModeLockedLaserPage() {
         <ResultCard label="Peak power" value={`${fmt(peak / 1e3)} kW`} subtext={`E = P/f = ${fmt(energy * 1e9)} nJ; duty ${fmt(tau * repRate * 100)} %`} tone="purple" />
       </div>
 
+      {(tau * repRate > 0.1 || modes < 2) && (
+        <p className="mb-6 rounded-lg border border-yellow-700 bg-yellow-950/40 p-3 text-sm text-yellow-200">
+          Pulses this long for the repetition rate overlap (duty τ·f_rep = {fmt(tau * repRate)}) or span fewer than two modes: not a
+          mode-locked train, so the peak power and mode count don&apos;t apply.
+        </p>
+      )}
+      {cycles < 1 && (
+        <p className="mb-6 rounded-lg border border-yellow-700 bg-yellow-950/40 p-3 text-sm text-yellow-200">
+          Shorter than one optical cycle: the envelope model and the time-bandwidth product no longer hold.
+        </p>
+      )}
+
       <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">
         <p>The pulse train repeats once per cavity round trip, f_rep = c/2L (linear) or c/L (ring), with L the optical length. A
           transform-limited pulse of intensity FWHM τ spans Δν = K/τ, K = 0.4413 (Gaussian) or 0.3148 (sech²), so about Δν/f_rep modes

@@ -70,10 +70,10 @@ export default function SlabLaserPage() {
   const powerCurve = Array.from({ length: 121 }, (_, i) => {
     const p = (pMax * i) / 120;
     return { x: round6(p), y: round6(output(p)) };
-  }).filter((p) => Number.isFinite(p.y));
+  }).filter((p) => tir && Number.isFinite(p.y));
   const powerSeries = [
     { name: "Output power", color: "#60a5fa", points: powerCurve },
-    { name: "This pump", color: "#facc15", showPoints: true, points: Number.isFinite(pOut) ? [{ x: round6(pump), y: round6(pOut) }] : [] },
+    { name: "This pump", color: "#facc15", showPoints: true, points: tir && Number.isFinite(pOut) ? [{ x: round6(pump), y: round6(pOut) }] : [] },
   ];
 
   const profile = Number.isFinite(dTCentre)
@@ -91,7 +91,7 @@ export default function SlabLaserPage() {
         <ValidatedNumberInput label="Slab width W (mm)" value={widthRaw} onChange={setWidth} min={0.1} max={1000} step="any" />
         <ValidatedNumberInput label="Slab thickness t (mm, cooled faces)" value={thicknessRaw} onChange={setThickness} min={0.05} max={100} step="any" />
         <ValidatedNumberInput label="Slab length L (mm)" value={lengthRaw} onChange={setLength} min={1} max={2000} step="any" />
-        <ValidatedNumberInput label="Bounces N (crossings of t)" value={bouncesRaw} onChange={setBounces} min={1} max={1000} step="1" />
+        <ValidatedNumberInput label="Thickness crossings N" value={bouncesRaw} onChange={setBounces} min={1} max={1000} step="1" />
         <ValidatedNumberInput label="Crystal index n" value={nRaw} onChange={setN} min={1.01} max={4} step="any" />
         <ValidatedNumberInput label="Output coupler reflectance (HR = 1)" value={rOcRaw} onChange={setROc} min={0.01} max={0.9999} step="any" />
         <ValidatedNumberInput label="Scatter loss (1/cm)" value={scatterRaw} onChange={setScatter} min={0} max={10} step="any" />
@@ -113,7 +113,7 @@ export default function SlabLaserPage() {
         <ResultCard label="Zigzag angle θ" value={`${fmt(theta * DEG)}°`} subtext={`face incidence ${fmt(90 - theta * DEG)}°; critical ${fmt(Math.asin(1 / n) * DEG)}°`} tone={tir ? "blue" : "red"} />
         <ResultCard label="Zigzag path L/cos θ" value={`${fmt(pathLength * 1e3)} mm`} subtext={`aperture W t cos θ = ${fmt(area * 1e6)} mm²`} tone="cyan" />
         <ResultCard label="Threshold (absorbed pump)" value={`${fmt(pTh)} W`} subtext={`δ = ${fmt(delta * 100)} % round trip`} tone="orange" />
-        <ResultCard label="Output power" value={`${fmt(pOut)} W`} subtext={`slope ${fmt(slope * 100)} %; P_sat = ${fmt(pSat)} W`} tone="purple" />
+        <ResultCard label="Output power" value={tir ? `${fmt(pOut)} W` : "—"} subtext={tir ? `slope ${fmt(slope * 100)} %; P_sat = ${fmt(pSat)} W` : "no TIR: the zigzag beam leaks out of the faces"} tone="purple" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
         <ResultCard label="Heat density Q" value={`${fmt(Q / 1e6)} W/cm³`} subtext={`heat fraction × pump / W t L`} tone="yellow" />

@@ -88,7 +88,9 @@ export default function ThinDiskLaserPage() {
     {
       name: "Front-to-back temperature rise",
       color: "#f87171",
-      points: Number.isFinite(etaAbs) ? pumpGrid.map((p) => ({ x: round6(p), y: round6(diskTemperatureRise((etaAbs * p) / area, heat, d, kappa)) })) : [],
+      points: reachable && Number.isFinite(etaAbs)
+        ? pumpGrid.map((_, i) => pTh + ((pMax - pTh) * i) / 120).map((p) => ({ x: round6(p), y: round6(diskTemperatureRise((etaAbs * p) / area, heat, d, kappa)) }))
+        : [],
     },
   ];
 
@@ -155,7 +157,7 @@ export default function ThinDiskLaserPage() {
       <div className="space-y-6">
         {powerSeries[0].points.length > 0 && <SimpleLineChart title="Output power versus incident pump power" xLabel="Pump power (W)" yLabel="Output power (W)" series={powerSeries} />}
         {passSeries[0].points.length > 0 && <SimpleLineChart title="Pump absorption versus number of passes" xLabel="Pump passes" yLabel="Absorbed (%)" series={passSeries} />}
-        {tempSeries[0].points.length > 0 && <SimpleLineChart title="Temperature rise through the disk" xLabel="Pump power (W)" yLabel="Temperature rise (K)" series={tempSeries} />}
+        {tempSeries[0].points.length > 0 && <SimpleLineChart title="Temperature rise through the disk, above threshold" xLabel="Pump power (W)" yLabel="Temperature rise (K)" series={tempSeries} />}
       </div>
     </>
   );

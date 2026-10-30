@@ -54,7 +54,8 @@ export default function SpatialFilterPage() {
 
   // Beam at the collimating lens (far field of the pinhole), relative to the peak of the uncut beam.
   const W_mm = divergenceHalfAngle({ lambda, w0: w }) * f2_mm;
-  const rhos = Array.from({ length: 121 }, (_, i) => (i * 2.5 * W_mm) / 120);
+  const rhoMax = Math.max(2.5 * W_mm, (1.6 * lambda * f2_mm) / a); // mm; reaches the first ring (zero near 0.61λf₂/a)
+  const rhos = Array.from({ length: 121 }, (_, i) => (i * rhoMax) / 120);
   const keep = (y: number) => (Number.isFinite(y) && y > 1e-12 ? round6(y) : null);
   const farField = [
     { name: "Without pinhole", color: "#9ca3af", dashed: true, points: rhos.map((r) => ({ x: round6(r), y: keep(Math.exp((-2 * r * r) / (W_mm * W_mm))) })) },
@@ -105,7 +106,7 @@ export default function SpatialFilterPage() {
       <div className="space-y-6">
         <SimpleLineChart title="Pinhole throughput" xLabel="Pinhole diameter (µm)" yLabel="Power through the pinhole (%)" series={throughput} />
         <SimpleLineChart
-          title="Beam profile at the collimating lens"
+          title={m2 > 1 ? "Beam profile at the collimating lens (Gaussian focal spot, M² = 1 equivalent)" : "Beam profile at the collimating lens"}
           xLabel="Radius ρ (mm)"
           yLabel="Intensity (relative to the uncut peak)"
           yScale="log"
