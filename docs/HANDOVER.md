@@ -1,30 +1,32 @@
-# Handover — 2026-10-31 (session 175 → session 176)
+# Handover — 2026-10-31 (session 176 → session 177)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 175 did 5w-13 (materials textbook pass, 22 pages, 5 bugs) on `phase-5/5w-13-materials`.
-PRs #200–#211 are merged to `main` but not released (`release` = `d82602ed`). Next: **5w-14 spectroscopy** (21 slugs).
+Session 176 did 5w-14 (spectroscopy textbook pass, 21 pages, 3 bugs) on `phase-5/5w-14-spectroscopy`, PR #213.
+PRs #200–#212 are merged to `main` but not released (`release` = `d82602ed`). Next: **5w-15 thin-film + polarization** (24).
 
 ## State
-- nonlinear-crystals: Boyd–Kleinman walk-off. `walkOffParameter` B = ρ√(Lk_ω)/2, `boydKleinmanHWalkOff(σ, B, ξ)` (1-D
-  Simpson in u = τ − τ′, inner integral closed), `bestFocus(B, tuneSigma)` (cached). BBO 10 mm, 30 µm: B 8.725, h 0.0792,
-  K 0.00604 %/W (was ≈ 0.048 without walk-off); B = 0 gives h_mm 1.068 at ξ 2.84, σ 0.57. `SHG_CRYSTALS[id].walkOff`.
-- brillouin `phononLifetime` = 1/(2πΔν_B) (was 1/(πΔν_B)); 20 MHz → 7.958 ns (Agrawal NFO).
-- heat-capacity: sapphire c_ref 79.416 J/(mol·K) at 300 K, CaF₂ 68.588 at 298 K (NIST-JANAF Al-096, Ca-014).
-- two-photon: ZnTe (measured 3 % above the 2PA edge) uses Eq. 1 instead of F₂ scaling (`nearEdgeReference`); 800 nm 7.04 cm/GW.
-- semiconductor-bandgap: the visible band was drawn on the wrong axes; now shaded 380–750 nm on a log λ_edge axis.
-- `diamondIndex` moved to `window-materials.ts` (re-exported by crystal-properties), interpolates Palik in 1/λ²
-  (0.8 µm 2.398956); transparency-range now shows diamond's n to 20 µm. KRS-5 Sellmeier is a ROADMAP box.
-- Page notes/limits: acousto-optic Raman–Nath (Q < 1) flag + Bragg bandwidth; photorefractive traps default 1e22 m⁻³;
-  thermal-conductivity dn/dT = 0 enterable (`DNDT_PRESET` 1e6 sentinel); damage-threshold > 1 µs warning. 1183 tests.
+- Grating shadowing `blazeShadowFactor` = min(1, ρ(β)/ρ(α)), ρ(x) = cos x/cos(x − φ) for x ≥ φ, else cos φ (`facetFraction`
+  in `spectral-resolution.ts`). α = 0, 700 nm, 1200 l/mm, λ_B 550: k 0.728137, η₁ 0.60521 (was 0.6488 / 0.5393). Littrow
+  (grating-efficiency) and the dispersive-element defaults (α 45°) are unchanged: η₁ 0.74724.
+- `overlapFreeBand(λmin, λmax, m)` in `stray-light.ts` = [max(λmin, λmax(m−1)/m), min(λmax, λmin(m+1)/m)) or NaN; stray-light
+  shows "none" for m = 2 on 200–1100 nm. `overlapFreeLimit` stays for spectral-range's m+1 check.
+- infrared-spectroscopy: HCl capped at 1200 K (one D term: levels turn over at J = 56; sum unconverged ≥ ≈ 1230 K); spectrum
+  grid ≥ 5 points/FWHM (≤ 20 000) plus every line centre.
+- Minor: chart spans follow inputs on 8 pages; spectral-range order m−1 note; FP card shows exact Airy FWHM
+  (2FSR/π)asin(π/2ℱ); LIBS presets set U⁺/U⁰ from ground-term weights (default 2 = Ca) and warn for H; SFG free OH −15;
+  2D `transferMatrix` golden 0.56908. 1185 tests.
 
 ## Next actions
-1. `/ship` the 5w-13 PR. On a release (user asks), check on the local build first: `materials/nonlinear-crystals`
-   (K 0.006043 %/W at defaults) and `materials/brillouin-scattering` (T_B ≈ 8 ns) plus the values listed in PRs #207–#211.
-2. 5w-14: spectroscopy textbook slugs in registry order (21), skipping the ROADMAP's session-162 slugs:
-   `awk '/slug:/{s=$2} /tier: "textbook"/{print s}' src/registry/calculators/spectroscopy.ts`.
-3. Then 5w-15 thin-film + polarization. Last in Phase 5: the Gemini hero (ask the user for the files).
+1. `/ship` the 5w-14 PR. Post-merge (on a release only): `spectroscopy/stray-light=2.699`
+   `spectroscopy/dispersive-element=74.7` plus the values listed in PRs #207–#212 (5w-13: nonlinear-crystals K 0.006043 %/W,
+   brillouin T_B ≈ 8 ns).
+2. 5w-15: thin-film + polarization textbook slugs in registry order (24), skipping the ROADMAP's session-162 slugs:
+   `awk '/slug:/{s=$2} /tier: "textbook"/{print s}' src/registry/calculators/{thin-film,polarization}.ts`.
+3. Then the KRS-5 Sellmeier box, and last in Phase 5 the Gemini hero (ask the user for the files).
 
 ## Non-obvious facts
+- **Session 176:** reviewer "UNVERIFIED" claims can be wrong the other way: Scholkmann & Wolf 2013 *do* recommend 0–70 y
+  (fitted on 0–50 y). SPIE pages fetch empty; WebFetch of the `.pdf` URL saves it to `tool-results/` for `pdftotext -raw`.
 - **Session 175:** an edit script doing `s.slice(0, start) + newText` drops everything after the block (3 functions
   vanished): replace a delimited block or append the tail. `crystal-properties.ts` imports `window-materials.ts`, so
   shared code goes in the latter. `useURLState` can't hold NaN: use an out-of-range sentinel. NIST-JANAF tables fetch as
@@ -57,9 +59,7 @@ PRs #200–#211 are merged to `main` but not released (`release` = `d82602ed`). 
   stated-but-false conditions, results that ignore an input, fixed chart ranges that miss the input, and formulas past
   their limit. Brief: verdict + BUG/MINOR/UNVERIFIED, file:line, hand calcs, "(from memory)", probe prefixes, don't edit.
   Implementers: allowed files, no registry, targeted tests + eslint, no tsc; the main session runs `npm run check` once.
-- **Session 162:** reviewer claims from memory were wrong (ICNIRP 2013 Table 5 has no C_A below 10 ps on purpose). One page
   per category: `shuf | awk -F/ '!seen[$1]++'`.
-- **Session 161:** Git Bash rewrites `/cat/slug` args even for node scripts: `export MSYS_NO_PATHCONV=1`.
 - **Session 160:** Chrome extension screenshots time out on this site; use a headless CDP script (pattern in
   `scripts/ui-check.mjs`). In the Bash tool a bare `python -` or `cat > file` with no input hangs until timeout.
 - **Session 157:** a new Plotly trace type goes in both `plotly-traces.ts` and `plotly-bundle.ts`. `ui-check <base> load

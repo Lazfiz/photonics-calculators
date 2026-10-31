@@ -5,11 +5,11 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 175, 2026-10-31)
+## Status (session 176, 2026-10-31)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
-  textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) and 5w-13 (materials) done (sessions 163–175); next 5w-14 (spectroscopy); the Gemini hero is last. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) and 5w-13 (materials) and 5w-14 (spectroscopy) done (sessions 163–176); next 5w-15 (thin-film + polarization); the Gemini hero is last. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -221,6 +221,7 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 
 **Imaging / spectroscopy** (found in the detectors part 0, session 63)
 - Spectroscopy part 11 (session 107): `infrared-spectroscopy` has no Herman–Wallis factor or absolute band strength; `electron-spectroscopy` graphite ρ 2.2 (SRD 71 table value) vs 2.26 g/cm³ crystal; LHM water ε₂ = 3.52 + 7.52θ kept (fits Table I with RMS 0.43, against 0.49 with −), and the page allows only −5 to 40 °C.
+- 5w-14 (session 176), unverified: `spectral-calibration` Hg lines labelled NIST ASD may be Sansonetti, Salit & Reader 1996 (doi:10.1364/AO.35.000074, ≈ 1 pm); `sum-frequency-gen` water preset gives 3200 and 3400 the same sign (Ji 2008 shows a positive 3200 band, later HD-SFG does not; amplitudes illustrative).
 - `spectroscopy/conc-mirror` and `jacquinot` (session 104) both show the Jacquinot ratio π f/(h tan θ) from `throughput.ts`;
   conc-mirror adds the mirror cone and slit étendue. Merge into jacquinot only if the user asks.
 - Imaging part 8 (session 86): `photoacoustic` applies only the single-pulse and ≥ 10 s skin limits (`pulse-train.ts` has no skin rules); `sum-frequency-microscopy` withholds the power for L > b (no non-degenerate Boyd–Kleinman); SRS δ is an input (no cross-section model).
@@ -306,7 +307,7 @@ One box per session, in this order.
   - [x] 5w-7 fiber-optics 1/2 (session 169, PR #206) · [x] 5w-8 fiber-optics 2/2 (session 170, PR #207)
   - [x] 5w-9 wave-optics 1/2 (session 171, PR #208) · [x] 5w-10 wave-optics 2/2 (session 172, PR #209)
   - [x] 5w-11 free-space-comms (session 173, PR #210) · [x] 5w-12 laser-safety (session 174, PR #211) · [x] 5w-13 materials (session 175)
-  - [ ] 5w-14 spectroscopy (21) · [ ] 5w-15 thin-film + polarization (24)
+  - [x] 5w-14 spectroscopy (session 176, PR #213: 21 pages, 3 bugs) · [ ] 5w-15 thin-film + polarization (24)
 - [ ] transparency-range KRS-5 has only Crystran's n = 2.371 at 10 µm. Add Rodney & Malitson 1956's Sellmeier (from memory: K 1.8293958,
   1.6675593, 1.1210424, 0.04513366, 12.380234; λ² 0.0225, 0.0625, 0.1225, 0.2025, 27089.737 µm²; gives 2.3707 at 10 µm) once checked
   against the paper (JOSA 46, 956). It enters the shared `MATERIALS`, so check the other pages that list them.
