@@ -1,30 +1,35 @@
-# Handover — 2026-10-31 (session 174 → session 175)
+# Handover — 2026-10-31 (session 175 → session 176)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 174 did 5w-12 (laser-safety textbook pass, 20 pages, 2 bugs) on `phase-5/5w-12-laser-safety`, PR #211.
-PRs #200–#210 are merged to `main` but not released (`release` = `d82602ed`). Next: **5w-13 materials** (22 slugs).
+Session 175 did 5w-13 (materials textbook pass, 22 pages, 5 bugs) on `phase-5/5w-13-materials`.
+PRs #200–#211 are merged to `main` but not released (`release` = `d82602ed`). Next: **5w-14 spectroscopy** (21 slugs).
 
 ## State
-- `laser-classes.ts`: new `escapingBeam(P, d, D, od)` → { power: P(1 − e^(−2D²/d²))·10^−od, d: min(d, D) }; golden
-  5 W, 50 mm beam, 3 mm opening at 1064 nm: 35.87 mW, Class 3B (was 1M at the full width).
-- `pulse-train.ts` `pulseLimits`: cornealUv/cornealIr below 1 ns = min(H(1 ns)·t/1 ns, 0.1·H(1 ns)) (ICNIRP p. 287);
-  1550 nm 500 ps 0.785 mJ (was 3.93 mJ), 10 ps 78.5 µJ unchanged. Retina unchanged.
-- `hazard-distance.ts` `requiredOpticalDensity(λ, P, d, t, { actualExposure })`: Table 5 note c (d < 1 mm, t < 0.35 s,
-  1 mm aperture) scales P_max by 2(D/d)²/(1 − e^(−2D²/d²)); only the medical focus uses it. 10.6 µm, 10 W, 0.2 mm, 0.25 s:
-  OD 4.604 (2.905 without).
-- retinal-hazard: verdict over every eye limit; anterior segment binds from 1299 nm at 10 s (1350 nm, 2 mm: 0.1886 W).
-- Defaults: classification 20 mW (10 mW at 1550 nm sat in IEC's 4 % rounding gap; near-limit warning added),
-  research-lab 300 mW (500 mW was on the 3B/4 boundary), atmospheric-attenuation 1064 nm. thermal-lens-hazard heading
-  "Eyewear Filter Heating". 1180 tests.
+- nonlinear-crystals: Boyd–Kleinman walk-off. `walkOffParameter` B = ρ√(Lk_ω)/2, `boydKleinmanHWalkOff(σ, B, ξ)` (1-D
+  Simpson in u = τ − τ′, inner integral closed), `bestFocus(B, tuneSigma)` (cached). BBO 10 mm, 30 µm: B 8.725, h 0.0792,
+  K 0.00604 %/W (was ≈ 0.048 without walk-off); B = 0 gives h_mm 1.068 at ξ 2.84, σ 0.57. `SHG_CRYSTALS[id].walkOff`.
+- brillouin `phononLifetime` = 1/(2πΔν_B) (was 1/(πΔν_B)); 20 MHz → 7.958 ns (Agrawal NFO).
+- heat-capacity: sapphire c_ref 79.416 J/(mol·K) at 300 K, CaF₂ 68.588 at 298 K (NIST-JANAF Al-096, Ca-014).
+- two-photon: ZnTe (measured 3 % above the 2PA edge) uses Eq. 1 instead of F₂ scaling (`nearEdgeReference`); 800 nm 7.04 cm/GW.
+- semiconductor-bandgap: the visible band was drawn on the wrong axes; now shaded 380–750 nm on a log λ_edge axis.
+- `diamondIndex` moved to `window-materials.ts` (re-exported by crystal-properties), interpolates Palik in 1/λ²
+  (0.8 µm 2.398956); transparency-range now shows diamond's n to 20 µm. KRS-5 Sellmeier is a ROADMAP box.
+- Page notes/limits: acousto-optic Raman–Nath (Q < 1) flag + Bragg bandwidth; photorefractive traps default 1e22 m⁻³;
+  thermal-conductivity dn/dT = 0 enterable (`DNDT_PRESET` 1e6 sentinel); damage-threshold > 1 µs warning. 1183 tests.
 
 ## Next actions
-1. `/ship` the 5w-12 PR. On a release (user asks), check on the local build first: `laser-safety/classification=3R` and
-   `laser-safety/atmospheric-attenuation=0.296` (dB/km, new defaults) plus the values listed in PRs #207–#210.
-2. 5w-13: materials textbook slugs in registry order (22); skip raman-scattering (session 162);
-   `awk '/slug:/{s=$2} /tier: "textbook"/{print s}' src/registry/calculators/materials.ts`.
-3. Then 5w-14 spectroscopy, 5w-15 thin-film + polarization. Last in Phase 5: the Gemini hero (ask the user for the files).
+1. `/ship` the 5w-13 PR. On a release (user asks), check on the local build first: `materials/nonlinear-crystals`
+   (K 0.006043 %/W at defaults) and `materials/brillouin-scattering` (T_B ≈ 8 ns) plus the values listed in PRs #207–#211.
+2. 5w-14: spectroscopy textbook slugs in registry order (21), skipping the ROADMAP's session-162 slugs:
+   `awk '/slug:/{s=$2} /tier: "textbook"/{print s}' src/registry/calculators/spectroscopy.ts`.
+3. Then 5w-15 thin-film + polarization. Last in Phase 5: the Gemini hero (ask the user for the files).
 
 ## Non-obvious facts
+- **Session 175:** an edit script doing `s.slice(0, start) + newText` drops everything after the block (3 functions
+  vanished): replace a delimited block or append the tail. `crystal-properties.ts` imports `window-materials.ts`, so
+  shared code goes in the latter. `useURLState` can't hold NaN: use an out-of-range sentinel. NIST-JANAF tables fetch as
+  `https://janaf.nist.gov/tables/<id>.txt` (Al-096 sapphire, Ca-014 CaF₂). Nested golden-section `bestFocus` ≈ 50 ms
+  tuned, ≈ 3 ms untuned; uncached, a 50-point chart re-ran them on every keystroke.
 - **Session 174:** the C: drive filled to 0 bytes mid-session (ENOSPC on Edit; Edit's temp-then-rename left the
   originals whole). Check `df -h /c` when writes fail. A probe `.mts` importing repo files needs `file:///C:/…` URLs
   (or a `.ts` with an absolute `C:/…` path; top-level await needs `.mts`). devctl queues tests behind implementers'
@@ -38,8 +43,6 @@ PRs #200–#210 are merged to `main` but not released (`release` = `d82602ed`). 
   report. My own "hand" golden value was wrong (1.9932 vs 1.9920 dB): get goldens from a probe, then check by hand. ITU-R
   PDFs: `https://www.itu.int/dms_pubrec/itu-r/rec/p/R-REC-P.1814-1-202509-I!!PDF-E.pdf` (pattern), `pdftotext -raw`.
   Hard vs Gaussian aperture averaging asymptote 1.130 checks with GR 6.574.2 and a Gaussian filter exp(−κ²D²/16).
-- **Session 172:** the Dudley RMP 2006 PDF on members.femto-st.fr 404s (HTML saved as .pdf: check `head -c 8`);
-  ResearchGate downloads are blocked by the auto-mode classifier. A tsx `-e` dynamic import needs `x.default ?? x`.
 - **Session 171:** a sed replacement with `&` in the new text pastes the match: do prose replacements with a node script
   using `replace(a, () => b)`. Goodman 2nd ed. (4-24) is the Fraunhofer condition, (4-25) the integral; Siegman ch. 26 is
   Q-switching. Physics reviewers can't write scratchpad probes inside a worktree; read-only reviewers need no worktree. A
