@@ -6,7 +6,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { c, h } from "../../../physics/constants";
-import { decoyBb84, maxChannelLossDb, optimalMu, plobBound } from "../../../physics/free-space-comms/qkd";
+import { decoyBb84, maxChannelLossDb, maxChannelLossDbOptimalMu, optimalMu, plobBound } from "../../../physics/free-space-comms/qkd";
 
 const fmt = (x: number, digits = 3) =>
   !Number.isFinite(x) ? "—" : x === 0 ? "0" : Math.abs(x) >= 0.01 && Math.abs(x) < 1e5 ? x.toPrecision(digits) : x.toExponential(2);
@@ -54,34 +54,47 @@ export default function QuantumKeyDistributionPage() {
     const sys = { y0, eDetector, fEc };
     const res = decoyBb84({ ...sys, mu, eta });
     const maxLoss = maxChannelLossDb({ ...sys, mu }, etaBob, 300);
+    const maxLossOpt = maxChannelLossDbOptimalMu(sys, etaBob, 300);
     const maxRange = !Number.isFinite(maxLoss) ? Infinity : alpha > 0 ? Math.max(0, (maxLoss - fixedLoss) / alpha) : maxLoss >= fixedLoss ? Infinity : 0;
     const muOpt = optimalMu({ ...sys, eta });
     const optKey = decoyBb84({ ...sys, mu: muOpt, eta }).keyPerPulse;
     return {
-      lossDb, etaCh, eta, res, maxLoss, maxRange, muOpt: optKey > 0 ? muOpt : NaN, optKey,
+      lossDb, etaCh, eta, res, maxLoss, maxLossOpt, maxRange, muOpt: optKey > 0 ? muOpt : NaN, optKey,
       plob: plobBound(etaCh), power: (mu * repRate * h * c) / lambda,
     };
   }, [alpha, range, fixedLoss, etaBob, y0, eDetector, fEc, mu, repRate, lambda]);
 
-  const xMax = Number.isFinite(r.maxRange) && r.maxRange > 0 ? Math.min(1.15 * r.maxRange, 1e5) : Math.max(2 * range, 100);
+  // With α = 0 every distance gives the same loss, so the charts run over the total channel loss instead.
+  const byLoss = alpha === 0;
+  const cutoff = Math.max(r.maxLoss, r.maxLossOpt); // the optimal-μ key reaches at least as far as the fixed-μ key
+  const cutoffRange = (cutoff - fixedLoss) / alpha;
+  const xMax = byLoss
+    ? (Number.isFinite(cutoff) && cutoff > 0 ? Math.min(1.15 * cutoff, 345) : 345)
+    : (Number.isFinite(cutoffRange) && cutoffRange > 0 ? Math.min(1.15 * cutoffRange, 1e5) : Math.max(2 * range, 100));
   const distances = useMemo(() => Array.from({ length: 201 }, (_, i) => (xMax * i) / 200), [xMax]);
+  const xNow = byLoss ? r.lossDb : range;
+  const xTitle = byLoss ? "Total channel loss (dB)" : "Distance (km)";
+  const xName = byLoss ? "channel loss" : "distance";
 
   const keyPlot = useMemo(() => {
     const sys = { y0, eDetector, fEc };
-    const etaChAt = (d: number) => 10 ** (-(alpha * d + fixedLoss) / 10);
+    const etaChAt = (x: number) => 10 ** (-(byLoss ? x : alpha * x + fixedLoss) / 10);
     return [
       { x: distances, y: distances.map((d) => positiveOrNull(decoyBb84({ ...sys, mu, eta: etaChAt(d) * etaBob }).keyPerPulse)), type: "scatter", mode: "lines", name: `Decoy BB84, μ = ${fmt(mu)}`, line: { color: "#06b6d4" } },
       { x: distances, y: distances.map((d) => { const eta = etaChAt(d) * etaBob; return positiveOrNull(decoyBb84({ ...sys, mu: optimalMu({ ...sys, eta }), eta }).keyPerPulse); }), type: "scatter", mode: "lines", name: "Decoy BB84, optimal μ", line: { color: "#22c55e", dash: "dash" } },
       { x: distances, y: distances.map((d) => positiveOrNull(plobBound(etaChAt(d)))), type: "scatter", mode: "lines", name: "PLOB bound −log₂(1 − η_ch)", line: { color: "#9ca3af", dash: "dot" } },
+      { x: [xNow], y: [positiveOrNull(decoyBb84({ ...sys, mu, eta: etaChAt(xNow) * etaBob }).keyPerPulse)], type: "scatter", mode: "markers", name: "Current", marker: { color: "#facc15", size: 9 } },
     ];
-  }, [distances, y0, eDetector, fEc, alpha, fixedLoss, mu, etaBob]);
+  }, [distances, y0, eDetector, fEc, alpha, fixedLoss, mu, etaBob, byLoss, xNow]);
 
   const qberPlot = useMemo(() => {
     const sys = { y0, eDetector, fEc, mu };
+    const etaChAt = (x: number) => 10 ** (-(byLoss ? x : alpha * x + fixedLoss) / 10);
     return [
-      { x: distances, y: distances.map((d) => 100 * decoyBb84({ ...sys, eta: 10 ** (-(alpha * d + fixedLoss) / 10) * etaBob }).qber), type: "scatter", mode: "lines", name: "QBER E_μ", line: { color: "#f97316" } },
+      { x: distances, y: distances.map((d) => 100 * decoyBb84({ ...sys, eta: etaChAt(d) * etaBob }).qber), type: "scatter", mode: "lines", name: "QBER E_μ", line: { color: "#f97316" } },
+      { x: [xNow], y: [100 * decoyBb84({ ...sys, eta: etaChAt(xNow) * etaBob }).qber], type: "scatter", mode: "markers", name: "Current", marker: { color: "#facc15", size: 9 } },
     ];
-  }, [distances, y0, eDetector, fEc, mu, alpha, fixedLoss, etaBob]);
+  }, [distances, y0, eDetector, fEc, mu, alpha, fixedLoss, etaBob, byLoss, xNow]);
 
   const hasKey = r.res.keyPerPulse > 0;
 
@@ -107,7 +120,7 @@ export default function QuantumKeyDistributionPage() {
         <ResultCard label="Channel loss / overall η" value={`${fmt(r.lossDb)} dB`} tone="gray" subtext={`η = η_ch·η_Bob = ${fmt(r.eta)}`} />
         <ResultCard label="Gain Q_μ / single-photon gain Q₁" value={`${fmt(r.res.gain)} / ${fmt(r.res.q1)}`} tone="blue" subtext="detections per pulse" />
         <ResultCard label="Maximum distance (key > 0)" tone="cyan" {...maxDistanceCard(r.maxLoss, r.maxRange, alpha, fixedLoss)} />
-        <ResultCard label="Optimal μ here" value={fmt(r.muOpt)} tone="purple" subtext={r.optKey > 0 ? `key ${fmt(r.optKey)} bit per pulse` : "no key at any μ ≤ 1"} />
+        <ResultCard label="Optimal μ here" value={fmt(r.muOpt)} tone="purple" subtext={r.optKey > 0 ? `key ${fmt(r.optKey)} bit per pulse` : "no key at any 0.01 ≤ μ ≤ 1"} />
         <ResultCard label="PLOB bound (channel)" value={Number.isFinite(r.plob) ? SI_RATE(r.plob * repRate) : "unbounded"} tone="gray"
           subtext={Number.isFinite(r.plob) ? `${fmt(r.plob)} bit per pulse, any protocol` : "lossless channel, η_ch = 1"} />
         <ResultCard label="Mean optical power" value={`${fmt(10 * Math.log10(r.power * 1e3))} dBm`} tone="gray" subtext={`${fmt(r.power)} W = μ·f_rep·hc/λ`} />
@@ -115,18 +128,18 @@ export default function QuantumKeyDistributionPage() {
 
       <div className="grid gap-4 lg:grid-cols-2 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <h2 className="text-sm font-semibold text-gray-300 mb-2">Secure key per pulse vs distance</h2>
+          <h2 className="text-sm font-semibold text-gray-300 mb-2">Secure key per pulse vs {xName}</h2>
           <ChartPanel data={keyPlot} layout={{
-            xaxis: { title: "Distance (km)", color: "#9ca3af", gridcolor: "#374151" },
+            xaxis: { title: xTitle, color: "#9ca3af", gridcolor: "#374151" },
             yaxis: { title: "bit per pulse", type: "log", color: "#9ca3af", gridcolor: "#374151" },
             margin: { l: 60, r: 20, t: 20, b: 50 }, paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#d1d5db" },
             legend: { x: 0.4, y: 0.98, bgcolor: "rgba(0,0,0,0)" },
           }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <h2 className="text-sm font-semibold text-gray-300 mb-2">QBER vs distance</h2>
+          <h2 className="text-sm font-semibold text-gray-300 mb-2">QBER vs {xName}</h2>
           <ChartPanel data={qberPlot} layout={{
-            xaxis: { title: "Distance (km)", color: "#9ca3af", gridcolor: "#374151" },
+            xaxis: { title: xTitle, color: "#9ca3af", gridcolor: "#374151" },
             yaxis: { title: "QBER (%)", color: "#9ca3af", gridcolor: "#374151", range: [0, 50] },
             margin: { l: 60, r: 20, t: 20, b: 50 }, paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#d1d5db" },
           }} />

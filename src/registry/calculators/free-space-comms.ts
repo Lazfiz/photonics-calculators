@@ -20,7 +20,7 @@ export const freeSpaceComms: CalculatorEntry[] = [
     description: "Fried parameter r₀, Greenwood frequency, isoplanatic angle and Strehl ratio with and without adaptive optics for a free-space optical link.",
     keywords: ["Adaptive Optics Strehl Gain"],
     tier: "textbook",
-    modelNote: "One uniform turbulent layer with one wind speed; the corrected Zernike modes are taken as about the actuator count. Not modelled: wavefront-sensor noise, anisoplanatism and scintillation.",
+    modelNote: "One uniform turbulent layer with one wind speed; the corrected Zernike modes are taken as about the actuator count; the servo residual is capped at the open-loop variance. Not modelled: wavefront-sensor noise, anisoplanatism and scintillation.",
     references: [
       {
         citation: "Andrews L. C., Phillips R. L. (2005). Laser Beam Propagation through Random Media, 2nd ed. SPIE. Plane-wave Fried parameter and isoplanatic angle for constant Cn².",
@@ -44,7 +44,7 @@ export const freeSpaceComms: CalculatorEntry[] = [
     title: "Aperture Averaging",
     description: "Weak-fluctuation aperture-averaging factor for plane and spherical waves (exact integral and Andrews' fits), Rytov variance and the all-regime scintillation index versus receiver diameter.",
     tier: "textbook",
-    modelNote: "Weak fluctuations: exact Gaussian-aperture integral of the Kolmogorov spectrum, with Andrews' 1992 fits for comparison; the all-regime σ_I²(D) interpolation under-averages for d² ≫ 1. Constant Cn².",
+    modelNote: "Weak fluctuations: exact Gaussian-aperture integral of the Kolmogorov spectrum, with Andrews' 1992 fits for comparison; the all-regime σ_I²(D) interpolation under-averages for d² ≫ 1. A hard circular aperture differs by up to ≈ 13 %. Constant Cn².",
     references: [
       {
         citation: "Andrews L. C. (1992). Aperture-averaging factor for optical scintillations of plane and spherical waves in the atmosphere. J. Opt. Soc. Am. A 9(4), 597.",
@@ -103,7 +103,7 @@ export const freeSpaceComms: CalculatorEntry[] = [
     title: "Beam Wander",
     description: "RMS turbulence-induced wander of a collimated Gaussian beam, its angular jitter and the mean on-axis loss versus Cn², path length and beam radius.",
     tier: "textbook",
-    modelNote: "Collimated Gaussian beam, constant Cn², infinite outer scale: ⟨r_c²⟩ = 2.42 Cn²L³W₀^(−1/3), independent of λ. Mean on-axis loss 10 log(1 + 2⟨r_c²⟩/W²), W the diffracted beam radius.",
+    modelNote: "Weak fluctuations (σ_R² < 1, 2W₀ < r₀), collimated Gaussian beam, constant Cn², infinite outer scale: ⟨r_c²⟩ = 2.42 Cn²L³W₀^(−1/3), independent of λ. Mean on-axis loss 10 log(1 + 2⟨r_c²⟩/W²), W the diffracted beam radius.",
     references: [
       {
         citation: "Churnside J. H., Lataitis R. J. (1990). Wander of an optical beam in the turbulent atmosphere. Appl. Opt. 29(7), 926.",
@@ -180,10 +180,6 @@ export const freeSpaceComms: CalculatorEntry[] = [
         url: "https://doi.org/10.1109/twc.2007.06109",
       },
       {
-        citation: "Fenton L. F. (1960). The sum of log-normal probability distributions in scatter transmission systems. IRE Trans. Commun. Syst. 8(1), 57–67.",
-        url: "https://doi.org/10.1109/tcom.1960.1097606",
-      },
-      {
         citation: "Andrews L. C., Phillips R. L. (2005). Laser Beam Propagation through Random Media, 2nd ed. SPIE. Weak-fluctuation plane-wave irradiance covariance function.",
       },
     ],
@@ -253,7 +249,7 @@ export const freeSpaceComms: CalculatorEntry[] = [
     title: "FSO Geometric Loss",
     description: "Geometric spreading loss of a divergent FSO beam: top-hat footprint from exit aperture and divergence versus the exact Gaussian-beam capture by the receiver aperture.",
     tier: "textbook",
-    modelNote: "Top-hat d_t + θR footprint (≥ 0 dB) beside the exact capture 1 − exp(−2a²/w²) of a Gaussian beam with half-angle θ/2, which is 3.01 dB better for a small receiver. Perfect pointing, no turbulence.",
+    modelNote: "Top-hat d_t + θR footprint (≥ 0 dB) beside the exact capture 1 − exp(−2a²/w²) of a Gaussian beam with half-angle θ/2 leaving the exit aperture (w² = w₀² + (θR/2)², w₀ = max(d_t/2, λ/(πθ/2))), 3.01 dB better for a small receiver once θR ≫ d_t. Perfect pointing, no turbulence.",
     references: [
       {
         citation: "Kim I. I., Korevaar E. (2001). Availability of free-space optics (FSO) and hybrid FSO/RF systems. Proc. SPIE 4530, 84.",
@@ -262,6 +258,10 @@ export const freeSpaceComms: CalculatorEntry[] = [
       {
         citation: "Degnan J. J., Klein B. J. (1974). Optical antenna gain. 2: Receiving antennas. Appl. Opt. 13(10), 2397.",
         url: "https://doi.org/10.1364/ao.13.002397",
+      },
+      {
+        citation: "Siegman A. E. (1990). New developments in laser resonators. Proc. SPIE 1224, 2. Embedded Gaussian of a beam with M² ≥ 1.",
+        url: "https://doi.org/10.1117/12.18425",
       },
     ],
   },

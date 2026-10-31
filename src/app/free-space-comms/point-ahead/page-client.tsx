@@ -90,7 +90,7 @@ export default function PointAheadPage() {
           The beacon from the far terminal shows where it was R/c ago, and the transmitted beam arrives R/c later, so the
           transmit direction must lead the received beacon by θ<sub>PA</sub> = 2v⊥/c. Use the transverse velocity in an
           inertial frame: a GEO satellite is fixed in the sky, yet relative to the stars it moves 2.61 km/s faster than a
-          station beneath it, which gives 17.4 µrad. The LEO preset uses the orbital velocity alone, as the cited chapter does; the station&apos;s own 0.47 km/s rotation at the equator lowers it by a few µrad.
+          station beneath it, which gives 17.4 µrad. The LEO preset uses the orbital velocity alone, as the cited chapter does; the station&apos;s own rotation (up to 0.465 km/s at the equator) changes θ<sub>PA</sub> by up to ≈ ±3 µrad (2 × 0.465 km/s / c = 3.1 µrad), depending on the pass geometry.
         </p>
         <p>
           Point-ahead matters when θ<sub>PA</sub> is a sizeable fraction of the beam half-angle; a 10 cm aperture at

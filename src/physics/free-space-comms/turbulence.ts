@@ -530,6 +530,15 @@ export function servoLagVariance(greenwood: number, bandwidth: number): number {
   return (greenwood / bandwidth) ** (5 / 3);
 }
 
+/**
+ * Residual phase variance of an AO loop, rad²: fitting + servo lag, capped at the open-loop variance. Greenwood's
+ * (f_G/f_3dB)^(5/3) is the high-bandwidth asymptote; a first-order loop's error rejection |1 − H|² = f²/(f² + f_c²) ≤ 1
+ * never amplifies the phase, so the residual can't exceed the uncorrected σ² (D. P. Greenwood, JOSA 67, 390 (1977)).
+ */
+export function aoResidualVariance(fitting: number, servo: number, openLoop: number): number {
+  return Math.min(fitting + servo, openLoop);
+}
+
 /** Strehl ratio e^(−σ²) + (1 − e^(−σ²))/(1 + (D/r₀)²) (Parenti & Sasiela 1994). */
 export function strehlRatio(phaseVariance: number, diameter: number, r0: number): number {
   const core = Math.exp(-phaseVariance);

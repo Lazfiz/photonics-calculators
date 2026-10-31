@@ -67,7 +67,7 @@ export default function LasercomLinkPage() {
       - pointingLoss - atmosLoss);
     return [
       { x: ranges, y: powers, type: "scatter", mode: "lines", name: "Rx power (dBm)", line: { color: "#06b6d4" }, yaxis: "y" },
-      { x: ranges, y: ranges.map((r) => Math.sqrt(8 / gt) * r * 1e3), type: "scatter", mode: "lines", name: "Spot radius (m)", line: { color: "#f59e0b" }, yaxis: "y2" },
+      { x: ranges, y: ranges.map((r) => Math.sqrt(8 / gt) * r * 1e3), type: "scatter", mode: "lines", name: "Equivalent spot radius (m)", line: { color: "#f59e0b" }, yaxis: "y2" },
     ];
   }, [txPower, txAperture, rxAperture, wavelength, range, txEfficiency, rxEfficiency, pointingLoss, atmosLoss]);
 
@@ -93,8 +93,9 @@ export default function LasercomLinkPage() {
               <div className="flex justify-between"><span className="text-gray-400">TX gain</span><span>{calc.txGain.toFixed(2)} dBi</span></div>
               <div className="flex justify-between"><span className="text-gray-400">RX gain</span><span>{calc.rxGain.toFixed(2)} dBi</span></div>
               <div className="flex justify-between"><span className="text-gray-400">Free-space path loss</span><span>{calc.fspl.toFixed(2)} dB</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Spot radius at RX (1/e²)</span><span>{fmt(calc.spot)} m</span></div>
-              <div className="flex justify-between font-bold"><span className="text-gray-300">Received power</span><span className={calc.pr > -40 ? "text-green-400" : "text-red-400"}>{calc.pr.toFixed(2)} dBm</span></div>
+              <div className="flex justify-between"><span className="text-gray-400">Equivalent Gaussian spot radius (1/e²)</span><span>{fmt(calc.spot)} m</span></div>
+              <div className="text-xs text-gray-500">same on-axis gain as G<sub>t</sub> (η<sub>tx</sub> included)</div>
+              <div className="flex justify-between font-bold"><span className="text-gray-300">Received power</span><span>{calc.pr.toFixed(2)} dBm</span></div>
             </div>
           </div>
           {(nearField || bigCapture) && (
@@ -113,7 +114,7 @@ export default function LasercomLinkPage() {
             <p><strong className="text-gray-400">Friis:</strong> P<sub>r</sub> = P<sub>t</sub> G<sub>t</sub> G<sub>r</sub> (λ / 4πR)² · L<sub>point</sub> · L<sub>atm</sub></p>
             <p><strong className="text-gray-400">Gains:</strong> G = (π D / λ)² η, with η the antenna efficiency (Gaussian illumination, truncation, obscuration, optics)</p>
             <p><strong className="text-gray-400">FSPL:</strong> 20 log₁₀(4πR/λ). It isn&apos;t a loss on its own: the gains cancel it, and together they count the beam spreading once.</p>
-            <p><strong className="text-gray-400">Spot radius:</strong> w = θR with θ = √(8/G<sub>t</sub>), the Gaussian beam with the same on-axis gain</p>
+            <p><strong className="text-gray-400">Spot radius:</strong> w = θR with θ = √(8/G<sub>t</sub>), the Gaussian beam with the same on-axis gain (η<sub>tx</sub> included). Above η<sub>tx</sub> = 0.8145 (Klein–Degnan Gaussian optimum) you need a flat-top beam.</p>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
             <ChartPanel data={plotData} layout={{

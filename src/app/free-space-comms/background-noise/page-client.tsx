@@ -66,12 +66,17 @@ export default function BackgroundNoisePage() {
   const fovData = useMemo(() => {
     const lambda = wavelength * 1e-9;
     const rx = { area, passband, filterT, optics };
-    const fovs = Array.from({ length: 121 }, (_, i) => 10 ** (-2 + (5 * i) / 120)); // 0.01–1000 mrad
-    return BACKGROUND_SCENES.map((s, i) => ({
+    const lo = Math.log10(Math.min(0.01, fov));
+    const fovs = Array.from({ length: 121 }, (_, i) => 10 ** (lo + ((3 - lo) * i) / 120)); // min(0.01, FOV)–1000 mrad
+    const lines = BACKGROUND_SCENES.map((s, i) => ({
       type: "scatter", mode: "lines", x: fovs, y: fovs.map((f) => dBm(collected(s.id, f, lambda, rx).power)), name: s.label,
       line: { color: COLORS[i], width: s.id === scene ? 3 : 1.5 },
     }));
-  }, [scene, wavelength, passband, area, filterT, optics]);
+    return [...lines, {
+      type: "scatter", mode: "markers", x: [fov], y: [dBm(collected(scene, fov, lambda, rx).power)], name: "Current",
+      marker: { color: "#f97316", size: 10 },
+    }];
+  }, [scene, wavelength, fov, passband, area, filterT, optics]);
 
   const spectrumData = useMemo(() => {
     const nms = Array.from({ length: 71 }, (_, i) => 850 + 10 * i);
@@ -133,7 +138,8 @@ export default function BackgroundNoisePage() {
           by about ×10 with haze, sun angle and pointing, and between the table wavelengths the interpolation ignores the
           1.13 and 1.38 µm water-vapour bands, where the sky is much darker. The Sun is a 5772 K blackbody disc of
           6.79×10⁻⁵ sr above the atmosphere (the real disc is within about ±20 %; the atmosphere lowers it at the
-          ground); it fills only its own disc once the FOV is wider. A clear night sky is several orders of magnitude
+          ground); it fills only its own disc once the FOV is wider. The Sun scene counts the solar disc only: sky and
+          aureole radiance outside the 9.3 mrad disc are not added when the FOV is wider. A clear night sky is several orders of magnitude
           darker.
         </p>
       </div>

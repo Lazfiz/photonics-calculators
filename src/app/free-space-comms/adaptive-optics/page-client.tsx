@@ -7,7 +7,7 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
   fittingErrorVariance, friedParameter, greenwoodFrequency, isoplanaticAngle, servoLagVariance, strehlRatio,
-  uncorrectedPhaseVariance,
+  rytovVariance, uncorrectedPhaseVariance, aoResidualVariance,
 } from "../../../physics/free-space-comms/turbulence";
 
 const fmt = (x: number, digits = 3) =>
@@ -31,11 +31,12 @@ export default function AdaptiveOpticsPage() {
     const sigma2Open = uncorrectedPhaseVariance(D, r0);
     const sigma2Fit = fittingErrorVariance(aoActuators, D, r0);
     const sigma2Servo = servoLagVariance(fG, aoBandwidth);
-    const sigma2AO = sigma2Fit + sigma2Servo;
+    const sigma2AO = aoResidualVariance(sigma2Fit, sigma2Servo, sigma2Open);
+    const rytov = rytovVariance(c2n, lambda, L);
     const strehlNoAO = strehlRatio(sigma2Open, D, r0);
     const strehlAO = strehlRatio(sigma2AO, D, r0);
     return {
-      r0, DoverR0: D / r0, fG, theta0: isoplanaticAngle(c2n, lambda, L),
+      r0, DoverR0: D / r0, fG, rytov, theta0: isoplanaticAngle(c2n, lambda, L),
       sigma2Open, sigma2Fit, sigma2Servo, sigma2AO, strehlNoAO, strehlAO, improvement: strehlAO / strehlNoAO,
     };
   }, [c2n, wavelength, range, diameter, aoActuators, aoBandwidth, windSpeed]);
@@ -43,15 +44,17 @@ export default function AdaptiveOpticsPage() {
   const plotData = useMemo(() => {
     const lambda = wavelength * 1e-9;
     const L = range * 1e3;
-    // Log-spaced C_n² from 1e-17 (very weak) to 1e-12 m^(−2/3) (strong, near the ground on a hot day).
-    const cn2s = Array.from({ length: 101 }, (_, i) => 10 ** (-17 + (5 * i) / 100));
+    // Log-spaced C_n² over the input range 1e-18 to 1e-11 m^(−2/3).
+    const cn2s = Array.from({ length: 141 }, (_, i) => 10 ** (-18 + (7 * i) / 140));
     const r0s = cn2s.map((cn2) => friedParameter(cn2, lambda, L) * 100);
     return [
       { x: cn2s, y: r0s, type: "scatter", mode: "lines", name: "r₀", line: { color: "#06b6d4", width: 2 } },
       { x: [cn2s[0], cn2s[cn2s.length - 1]], y: [diameter, diameter], type: "scatter", mode: "lines", name: "Aperture D",
         line: { color: "#f43f5e", dash: "dash" } },
+      { x: [c2n], y: [friedParameter(c2n, lambda, L) * 100], type: "scatter", mode: "markers", name: "Current",
+        marker: { color: "#facc15", size: 10 } },
     ];
-  }, [wavelength, range, diameter]);
+  }, [c2n, wavelength, range, diameter]);
 
   return (
     <>
@@ -73,7 +76,22 @@ export default function AdaptiveOpticsPage() {
         <ResultCard label="Strehl (with AO)" value={fmt(calc.strehlAO)} tone="green"
           subtext={`σ²_fit = ${fmt(calc.sigma2Fit)}, σ²_servo = ${fmt(calc.sigma2Servo)} rad²`} />
         <ResultCard label="AO improvement" value={`${fmt(calc.improvement)}×`} tone="yellow" />
+        <ResultCard label="Rytov variance σ_R²" value={fmt(calc.rytov)} tone="purple" />
       </div>
+
+      {aoBandwidth < calc.fG && (
+        <div role="alert" className="mb-6 rounded-lg border border-yellow-600 bg-yellow-900/30 p-4 text-sm text-yellow-200">
+          Loop bandwidth below the Greenwood frequency: (f_G/f₃dB)^(5/3) is a high-bandwidth asymptote, so the
+          residual is capped at the open-loop variance (a first-order loop&apos;s |1 − H|² ≤ 1 never amplifies the
+          phase).
+        </div>
+      )}
+      {calc.rytov > 0.5 && (
+        <div role="alert" className="mb-6 rounded-lg border border-yellow-600 bg-yellow-900/30 p-4 text-sm text-yellow-200">
+          Strong scintillation (σ_R² = {fmt(calc.rytov)}): amplitude fluctuations are not modelled and the Strehl is
+          optimistic.
+        </div>
+      )}
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold mb-3">Fried parameter vs Cn²</h3>

@@ -6,7 +6,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  MM_PER_HOUR, RAIN_PATH_MAX, RAIN_SHAPES, type RainShape, rainPathAttenuation, rainPowerLaw,
+  MM_PER_HOUR, RAIN_SHAPES, type RainShape, rainPathAttenuation, rainPowerLaw,
 } from "../../../physics/free-space-comms/precipitation";
 
 const ratePresets = [
@@ -27,7 +27,7 @@ export default function RainAttenuationPage() {
   const [rangeRaw, setRange] = useURLState("range", 1); // km
   const [muRaw, setMu] = useURLState("mu", 0);
   const rainRate = clamp(rateRaw, 0, 300, 25);
-  const range = clamp(rangeRaw, 0, 20, 1);
+  const range = clamp(rangeRaw, 0, 5, 1);
   const mu = clamp(Math.round(muRaw), -2, 2, 0) as RainShape;
 
   const calc = useMemo(() => {
@@ -36,16 +36,19 @@ export default function RainAttenuationPage() {
   }, [rainRate, range, mu]);
 
   const plotData = useMemo(() => {
-    const rates = Array.from({ length: 150 }, (_, i) => 1 + i);
-    return RAIN_SHAPES.map((m, i) => ({
+    const top = Math.max(150, rainRate);
+    const rates = Array.from({ length: 300 }, (_, i) => 0.1 + ((top - 0.1) * i) / 299);
+    const lines = RAIN_SHAPES.map((m, i) => ({
       x: rates,
       y: rates.map((R) => rainPathAttenuation(R * MM_PER_HOUR, range * 1e3, m).attenuation),
       type: "scatter", mode: "lines", name: muLabel(m),
       line: { color: COLORS[i], width: m === mu ? 3 : 1.5, dash: m === mu ? "solid" : "dot" },
     }));
-  }, [range, mu]);
-
-  const outOfRange = range * 1e3 > RAIN_PATH_MAX;
+    return [...lines, {
+      x: [rainRate], y: [rainPathAttenuation(rainRate * MM_PER_HOUR, range * 1e3, mu).attenuation],
+      type: "scatter", mode: "markers", name: "Current", marker: { color: "#facc15", size: 10 },
+    }];
+  }, [range, mu, rainRate]);
 
   return (
     <>
@@ -60,7 +63,7 @@ export default function RainAttenuationPage() {
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Rain rate (mm/h)" value={rainRate} onChange={setRainRate} min={0} max={300} step="0.5" />
-        <ValidatedNumberInput label="Link length (km)" value={range} onChange={setRange} min={0} max={20} step="0.1" />
+        <ValidatedNumberInput label="Link length (km)" value={range} onChange={setRange} min={0} max={5} step="0.1" />
         <div>
           <label htmlFor="rain-mu" className="block text-sm text-gray-400 mb-1">Drop-size shape µ (gamma DSD)</label>
           <select id="rain-mu" value={mu} onChange={(e) => setMu(Number(e.target.value))}
@@ -69,12 +72,6 @@ export default function RainAttenuationPage() {
           </select>
         </div>
       </div>
-
-      {outOfRange && (
-        <p className="mb-6 rounded-lg border border-yellow-700 bg-yellow-900/20 p-3 text-sm text-yellow-200">
-          ITU-R P.1814-1 states its path model for links up to 5 km; beyond that the result is an extrapolation.
-        </p>
-      )}
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ResultCard label="Specific attenuation γ" value={`${fmt(calc.specific * 1e3)} dB/km`} tone="cyan"
@@ -104,7 +101,7 @@ export default function RainAttenuationPage() {
           and 1520–1600 nm bands. k and α come from Mie theory over a gamma drop-size distribution whose shape µ
           measurements put between −2 and 2. F accounts for rain cells being smaller than the link, and the
           multiple-scattering gain G_ms = a_ms·L^b_ms (a_ms, b_ms quadratic in ln R) for light scattered forward into
-          the receiver. R in mm/h, L in km.
+          the receiver. R in mm/h, L in km (the Recommendation states the path model for L ≤ 5 km, so the link length is limited to 5 km).
         </p>
         <p className="text-gray-500">
           Below 1 mm/h the G_ms fit misbehaves (it turns negative, or grows as the rain stops), so there the gain is

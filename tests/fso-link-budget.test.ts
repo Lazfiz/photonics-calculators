@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   apertureGain, fraunhoferDistance, freeSpacePathLoss, friisReceivedPower, gaussianTxGain, kleinDegnanEfficiency,
-  optimumTruncation, toDb, topHatGeometricLoss, truncatedGaussianFarField, truncatedGaussianWidth,
+  gaussianGeometricCapture, optimumTruncation, toDb, topHatGeometricLoss, truncatedGaussianFarField, truncatedGaussianWidth,
 } from "../src/physics/free-space-comms/link-budget";
 import { pointingCapture } from "../src/physics/free-space-comms/pointing-loss";
 import { besselJ, firstCrossing } from "../src/physics/math";
@@ -78,6 +78,20 @@ test("geometric loss, 5 mm exit, 1 mrad, 1 km, 10 cm receiver: top-hat 20.04 dB 
   close(-toDb(pointingCapture(1550e-9, w0, 1000, 0.1, 0, 0).alignedFraction), 17.0331, 1e-4);
   // Edge case: a beam no wider than the receiver loses nothing.
   assert.equal(topHatGeometricLoss(0.005, 1e-3, 50, 0.1), 0);
+  // The page's Gaussian starts at the 2.5 mm exit radius (> w₀ = 0.98676 mm): w(1 km) = √(0.0025² + 0.5²) = 0.500006 m.
+  close(-toDb(gaussianGeometricCapture(0.005, 1e-3, 1000, 0.1, 1550e-9).fraction), 17.0332, 1e-4);
+});
+
+test("geometric loss with a wide exit aperture: the Gaussian keeps the aperture, Δ ≠ 3 dB (embedded Gaussian, hand)", () => {
+  // d_t = 100 mm, θ = 1 mrad, R = 100 m, d_r = 10 cm. Top-hat: 20·log₁₀(0.2/0.1) = 6.0206 dB.
+  close(topHatGeometricLoss(0.1, 1e-3, 100, 0.1), 6.0206, 1e-4);
+  // Gaussian: w₀ = 50 mm, θR/2 = 50 mm → w = 70.711 mm; 1 − exp(−2·0.05²/0.005) = 1 − e^(−1) = 0.632121 → 1.9920 dB.
+  const g = gaussianGeometricCapture(0.1, 1e-3, 100, 0.1, 1550e-9);
+  close(g.beamRadius, 0.0707107, 1e-6);
+  close(-toDb(g.fraction), 1.9920, 1e-4);
+  assert.equal(g.diffractionLimited, false);
+  // Edge case: θ = 0.1 mrad from a 5 mm exit is below the 1550 nm diffraction limit (w₀ = 9.87 mm > 2.5 mm).
+  assert.equal(gaussianGeometricCapture(0.005, 1e-4, 1000, 0.1, 1550e-9).diffractionLimited, true);
 });
 
 test("far-field width of a truncated, obscured Gaussian (Fraunhofer Hankel transform)", () => {

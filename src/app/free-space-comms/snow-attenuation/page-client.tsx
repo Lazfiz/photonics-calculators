@@ -54,8 +54,8 @@ export default function SnowAttenuationPage() {
           <label htmlFor="snow-type" className="block text-sm text-gray-400 mb-1">Snow type</label>
           <select id="snow-type" value={snowType} onChange={(e) => setSnowType(e.target.value)}
             className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
-            <option value="dry">Dry snow (above ≈ 500 m elevation)</option>
-            <option value="wet">Wet snow (below ≈ 500 m)</option>
+            <option value="dry">Dry snow</option>
+            <option value="wet">Wet snow</option>
           </select>
         </div>
       </div>

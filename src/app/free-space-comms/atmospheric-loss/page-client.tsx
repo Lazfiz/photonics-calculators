@@ -41,7 +41,7 @@ export default function AtmosphericLossPage() {
   }, [wavelength, visibility, linkLength]);
 
   const plotData = useMemo(() => {
-    const wavelengths = Array.from({ length: 141 }, (_, i) => 400 + i * 10); // 400–1800 nm
+    const wavelengths = Array.from({ length: 211 }, (_, i) => 400 + i * 10); // 400–2500 nm
     return [
       { x: wavelengths, y: wavelengths.map((wl) => alphaDbPerKm(wl, visibility).total), type: "scatter", mode: "lines", name: "Total α", line: { color: "#06b6d4", width: 2 } },
       { x: wavelengths, y: wavelengths.map((wl) => alphaDbPerKm(wl, visibility).rayleigh), type: "scatter", mode: "lines", name: "Rayleigh", line: { color: "#a78bfa", dash: "dot" } },
@@ -66,8 +66,19 @@ export default function AtmosphericLossPage() {
         <ValidatedNumberInput label="Link Length (km)" value={linkLength} onChange={setLinkLength} min={0.001} max={1000} step="0.1" />
       </div>
 
+      {(wavelength > 1600 || (wavelength >= 1350 && wavelength <= 1450) || (wavelength >= 1800 && wavelength <= 1950)) && (
+        <div className="mb-6 space-y-1 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-200">
+          {wavelength > 1600 && (
+            <p>Kim&apos;s q law is fitted up to 1.55 µm and the Peck–Reeder index to 1.69 µm: extrapolation.</p>
+          )}
+          {((wavelength >= 1350 && wavelength <= 1450) || (wavelength >= 1800 && wavelength <= 1950)) && (
+            <p>This wavelength lies in a water absorption band: molecular water absorption is not modelled; the real loss here is far higher.</p>
+          )}
+        </div>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <ResultCard label="Attenuation α" value={`${fmt(calc.total)} dB/km`} tone="cyan" subtext={`= ${fmt(calc.total / DB_PER_NEPER)} km⁻¹ (Np/km)`} />
+        <ResultCard label="Attenuation α" value={`${fmt(calc.total)} dB/km`} tone="cyan" subtext={`β = ${fmt(calc.total / DB_PER_NEPER)} km⁻¹`} />
         <ResultCard label="Path loss" value={`${fmt(calc.totalLoss)} dB`} tone="orange" subtext={`over ${linkLength} km`} />
         <ResultCard label="Transmittance" value={`${fmt(calc.transmittance * 100, 4)} %`} tone="green" />
         <ResultCard label="Aerosol (Kim)" value={`${fmt(calc.aerosol)} dB/km`} tone="yellow" subtext={`q = ${fmt(calc.q)}`} />
@@ -92,7 +103,7 @@ export default function AtmosphericLossPage() {
           standard air is computed from its refractive index (Bucholtz, Appl. Opt. 34, 2765, 1995); the rest is aerosol
           and scales with Kim&apos;s exponent q: 1.6 (V &gt; 50 km), 1.3 (6–50 km), 0.16V + 0.34 (1–6 km), V − 0.5
           (0.5–1 km) and 0 in fog, where scattering no longer depends on wavelength (Kim, McArthur &amp; Korevaar,
-          Proc. SPIE 4214, 26, 2001). β is in nepers per km; the loss in dB is 4.343 times larger.
+          Proc. SPIE 4214, 26, 2001). β is the power extinction coefficient in km⁻¹; the loss in dB/km is 4.343 times larger.
         </p>
         <p className="text-gray-500">
           Not modelled: molecular absorption (water-vapour bands near 940, 1130, 1380 and 1870 nm; choose a wavelength

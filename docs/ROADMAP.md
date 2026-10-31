@@ -5,11 +5,11 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 172, 2026-10-29)
+## Status (session 173, 2026-10-30)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
-  textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) done (sessions 163–172); next 5w-11 (free-space-comms); the Gemini hero is last. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) done (sessions 163–173); next 5w-12 (laser-safety); the Gemini hero is last. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -159,7 +159,10 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   stable band at weak injection (Henry–Olsson–Dutta 1985, Mogensen 1985 Fig. 2) unchecked. `soliton` default T₀ 57 fs sits at the
   edge of Raman-free NLS. Kerr-lens title "Kerr Lens Mode Locking" while the page computes only the lens.
 **Free-space comms**
-- `aperture-averaging`: only the Gaussian aperture is modelled; a hard circular aperture gives a 5–11 % lower A at d² = 1–30 (reviewer quadrature, unchecked).
+- `aperture-averaging`: only the Gaussian aperture is modelled; a hard circular aperture gives a 5–11 % lower A at d² = 1–30 (two reviewers' quadrature),
+  crossing near d² ≈ 100 and → 1.13× as d² → ∞ (checked in session 173 with GR 6.574.2). The page states this; a hard-aperture option could add it.
+- `beam-wander` (unverified): 2.42 Cn²L³W₀^(−1/3) uses the exit radius W₀ in the large-scale filter; with diffraction W(z) the factor is
+  3∫ξ²(1 + (ξL/z_R)²)^(−1/6)dξ (0.90 at the defaults, 0.49 at L/z_R = 12). Check Andrews & Phillips 2005 §6.5 for a near-field condition.
 - `adaptive-optics` (FSO): the actuator count is fed to Noll's fit 0.2944 J^(−√3/2) as a mode count (input up to 10⁵). The
   exact residual falls as J^(−5/6): 8 % above the fit at J = 1000, 12 % at 4000. Use `nollResidual` (J ≤ 5000) or Hudgin's
   `dmFittingVariance` with the pitch, as the imaging page now does.
@@ -174,6 +177,8 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   (unchecked against Alcock's table).
 
 **Free-space comms**
+- `point-ahead` (low): the "≈ 18 µrad for GEO" chapter quote and eq. (8.4) in `point-ahead.ts` are unread (the 17.4 µrad value is derived).
+- `DB_PER_NEPER` (low): 4.343 dB per power e-fold is called a neper; ISO 80000-3 has 1 Np = 8.686 dB. The atmospheric-loss page now says km⁻¹; other pages still use the name.
 - `snow-attenuation` (low): the sources never define S (read as water-equivalent), and the 2005 ICTON origin of the law
   is unverified (joanneum PDF is an HTML wall). Check Awan et al. WOCN 2009 / ICTON 2005 in Chrome; tier could drop to illustrative.
 - `geometric-loss` (low): the top-hat law (d_t + θR) is cited to Kim & Korevaar, SPIE 4530, 84 (2001) by DOI only; full text
@@ -294,7 +299,7 @@ One box per session, in this order.
   - [x] 5w-4 imaging 1/3 (session 166, PR #203) · [x] 5w-5 imaging 2/3 (session 167, PR #204) · [x] 5w-6 imaging 3/3 (session 168, PR #205)
   - [x] 5w-7 fiber-optics 1/2 (session 169, PR #206) · [x] 5w-8 fiber-optics 2/2 (session 170, PR #207)
   - [x] 5w-9 wave-optics 1/2 (session 171, PR #208) · [x] 5w-10 wave-optics 2/2 (session 172, PR #209)
-  - [ ] 5w-11 free-space-comms (17) · [ ] 5w-12 laser-safety (20) · [ ] 5w-13 materials (22)
+  - [x] 5w-11 free-space-comms (session 173, PR #210) · [ ] 5w-12 laser-safety (20) · [ ] 5w-13 materials (22)
   - [ ] 5w-14 spectroscopy (21) · [ ] 5w-15 thin-film + polarization (24)
 - [ ] Last: replace the home-page hero with the one the user made in Gemini, and wire it in (ask the user for the files).
 
@@ -315,6 +320,9 @@ One box per session, in this order.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - 5w-11 free-space-comms (session 173, `phase-5/5w-11-free-space-comms`, PR #210): 17 pages, 1 bug: AO servo-lag variance
+    uncapped (AO "worse than none" below f_G; now ≤ open-loop); geometric-loss Gaussian keeps the exit aperture; QKD optimal-μ
+    reach (142.21 km) and loss axis at α = 0; rain L ≤ 5 km (P.1814-1 PDF checked); chart spans and markers on 14 pages; 1176 tests.
   - 5w-10 wave-optics 2/2 (session 172, `phase-5/5w-10-wave-optics`, PR #209): 16 pages, 1 bug: supercontinuum DW from the full
     cubic β₂Ω²/2 + β₃Ω³/6 = γP₀/2 (745 vs 910 nm at old defaults; defaults now Dudley's 835 nm PCF, N 8.65); slow-light resonance
     signal in MHz; 13 pages got validity warnings or text fixes; Kerr waist 30 µm; 1173 tests.

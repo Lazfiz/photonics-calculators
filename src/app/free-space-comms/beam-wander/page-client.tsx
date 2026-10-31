@@ -6,7 +6,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { beamRadius } from "../../../physics/free-space-comms/pointing-loss";
-import { beamWanderLossDb, beamWanderVariance } from "../../../physics/free-space-comms/turbulence";
+import { beamWanderLossDb, beamWanderVariance, friedParameter, rytovVariance } from "../../../physics/free-space-comms/turbulence";
 
 const fmt = (x: number, digits = 3) =>
   !Number.isFinite(x) ? "—" : x === 0 ? "0" : Math.abs(x) >= 0.01 && Math.abs(x) < 1e5 ? x.toPrecision(digits) : x.toExponential(2);
@@ -18,7 +18,7 @@ const chartLayout = (xTitle: string, yTitle: string, logX = false) => ({
 });
 
 export default function BeamWanderPage() {
-  const [cn2, setCn2] = useURLState("cn2", 1e-15, { min: 1e-18, max: 1e-11 }); // m^(−2/3)
+  const [cn2, setCn2] = useURLState("cn2", 1e-14, { min: 1e-18, max: 1e-11 }); // m^(−2/3)
   const [pathLength, setPathLength] = useURLState("pathLength", 1, { min: 0.001, max: 1000 }); // km
   const [w0Cm, setW0Cm] = useURLState("beamRadius", 2, { min: 0.01, max: 100 }); // transmit beam radius W₀, cm
   const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 200, max: 20000 }); // nm
@@ -30,30 +30,44 @@ export default function BeamWanderPage() {
     const variance = beamWanderVariance(cn2, L, W0);
     const rms = Math.sqrt(variance);
     const W = beamRadius(W0, lambda, L);
-    return { variance, rms, angular: rms / L, W, lossDb: beamWanderLossDb(variance, W) };
+    const sigmaR2 = rytovVariance(cn2, lambda, L);
+    const r0 = friedParameter(cn2, lambda, L);
+    return {
+      variance, rms, angular: rms / L, W, lossDb: beamWanderLossDb(variance, W), sigmaR2, r0,
+      strong: sigmaR2 > 1 || 2 * W0 > r0,
+    };
   }, [cn2, pathLength, w0Cm, wavelength]);
 
   const cn2Data = useMemo(() => {
     const L = pathLength * 1e3;
     const W0 = w0Cm * 1e-2;
-    const n = 60;
-    const xs = Array.from({ length: n }, (_, i) => 10 ** (-17 + (5 * i) / (n - 1)));
+    const n = 100;
+    const xs = Array.from({ length: n }, (_, i) => 10 ** (-18 + (7 * i) / (n - 1))); // 1e-18 .. 1e-11
     return [{
       type: "scatter", mode: "lines", x: xs, y: xs.map((c) => Math.sqrt(beamWanderVariance(c, L, W0)) * 100),
       name: "rms wander", line: { color: "#a78bfa", width: 2 },
+    }, {
+      type: "scatter", mode: "markers", x: [cn2], y: [Math.sqrt(beamWanderVariance(cn2, L, W0)) * 100],
+      name: "Current", marker: { color: "#facc15", size: 10 },
     }];
-  }, [pathLength, w0Cm]);
+  }, [cn2, pathLength, w0Cm]);
 
   const distData = useMemo(() => {
     const lambda = wavelength * 1e-9;
     const W0 = w0Cm * 1e-2;
     const n = 80;
-    const kms = Array.from({ length: n }, (_, i) => 0.1 * 100 ** (i / (n - 1))); // 0.1 .. 10 km
+    const kLo = Math.min(0.1, pathLength / 10);
+    const kHi = Math.max(10, pathLength * 10);
+    const kms = Array.from({ length: n }, (_, i) => kLo * (kHi / kLo) ** (i / (n - 1))); // log-spaced
     return [
       { type: "scatter", mode: "lines", x: kms, y: kms.map((k) => Math.sqrt(beamWanderVariance(cn2, k * 1e3, W0)) * 100), name: "rms wander", line: { color: "#a78bfa", width: 2 } },
       { type: "scatter", mode: "lines", x: kms, y: kms.map((k) => beamRadius(W0, lambda, k * 1e3) * 100), name: "beam radius W(L)", line: { color: "#3b82f6", dash: "dash" } },
+      { type: "scatter", mode: "markers", x: [pathLength], y: [Math.sqrt(beamWanderVariance(cn2, pathLength * 1e3, W0)) * 100],
+        name: "Current wander", marker: { color: "#facc15", size: 10 } },
+      { type: "scatter", mode: "markers", x: [pathLength], y: [beamRadius(W0, lambda, pathLength * 1e3) * 100],
+        name: "Current W(L)", marker: { color: "#f43f5e", size: 10 } },
     ];
-  }, [cn2, w0Cm, wavelength]);
+  }, [cn2, pathLength, w0Cm, wavelength]);
 
   return (
     <>
@@ -70,7 +84,16 @@ export default function BeamWanderPage() {
         <ResultCard label="Angular RMS wander" value={`${fmt(results.angular * 1e6)} µrad`} tone="cyan" subtext="√⟨r_c²⟩ / L" />
         <ResultCard label="Beam radius W(L)" value={`${fmt(results.W * 100)} cm`} tone="gray" subtext="free-space Gaussian spread at the receiver" />
         <ResultCard label="Mean on-axis loss" value={`${fmt(results.lossDb)} dB`} tone="orange" subtext="10·log10(1 + 2⟨r_c²⟩/W²)" />
+        <ResultCard label="Rytov variance σ_R²" value={fmt(results.sigmaR2)} tone="blue" subtext="plane wave" />
+        <ResultCard label="Fried parameter r₀" value={`${fmt(results.r0 * 100)} cm`} tone="cyan" subtext={`2W₀ = ${fmt(w0Cm * 2)} cm`} />
       </div>
+
+      {results.strong && (
+        <div role="alert" className="mb-6 rounded-lg border border-yellow-600 bg-yellow-900/30 p-4 text-sm text-yellow-200">
+          Outside weak fluctuations (σ_R² &lt; 1, 2W₀ &lt; r₀): the weak-turbulence wander formula overestimates the
+          wander here.
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
@@ -79,7 +102,7 @@ export default function BeamWanderPage() {
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Wander and beam radius vs distance</h2>
-          <ChartPanel data={distData} layout={chartLayout("Distance (km)", "Radius (cm)")} />
+          <ChartPanel data={distData} layout={chartLayout("Distance (km)", "Radius (cm)", true)} />
         </div>
       </div>
 
