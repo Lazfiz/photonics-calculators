@@ -19,8 +19,9 @@
  *   2×10⁻² C_C J/m² to 13 µs, 90 C_C t^0.75 J/m² to 10 s, then 10 C_A C_C W/m² (C_A = 5).
  * - 400–1400 nm, anterior segment (cornea, lens): the skin limit below 700 nm, twice it above, for an eye-only
  *   exposure (Table 5 note d): skin 200 C_A J/m² to 100 ns, 1.1×10⁴ C_A t^0.25 J/m² to 10 s, then 2×10³ C_A W/m²
- *   (Table 7). It binds at 1150–1400 nm, where C_C raises the retinal limit ("both retinal damage and damage to the
- *   anterior segment has to be considered", p. 281), and for a large source with an open field of view.
+ *   (Table 7). Both limits are checked from 1150 nm ("both retinal damage and damage to the anterior segment has to
+ *   be considered", p. 281), but it binds only from about 1300 nm (t ≥ 10 s; about 1360 nm for ns pulses) to
+ *   1400 nm, where C_C raises the retinal limit, and for a large source with an open field of view.
  * - 1400 nm – 1 mm, cornea: 10³ J/m² to 1 ms, then 5.6×10³ t^0.25 J/m² (1400–1500 and 1800–2600 nm); 10⁴ J/m²
  *   (1500–1800 nm); 100 J/m² to 100 ns, then 5.6×10³ t^0.25 J/m² (2600 nm – 1 mm); from 10 s, 10³ W/m².
  * - Averaging apertures (Table 8; Table 7 for the skin limit): 7 mm for the retinal limits; 3.5 mm for the anterior

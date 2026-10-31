@@ -150,10 +150,13 @@ export default function IndustrialLaserSafetyPage() {
       )}
 
       <p className="text-sm text-gray-400 mb-8">
-        The direct-beam NOHD grows the beam as a + rφ (ANSI Z136.1, IEC TR 60825-14). A diffuse reflection is Lambertian,
+        The direct-beam NOHD grows the beam as a + rφ (ANSI Z136.1, IEC TR 60825-14). It is the NOHD of the unfocused (collimated, head-off) exit beam, which is
+        conservative; behind a focusing head the beam spreads at about (beam diameter)/f, see the medical laser safety
+        page (lens-on-laser) for that case. A diffuse reflection is Lambertian,
         ρP/(πr²), and the spot is an extended source of α = d<sub>63</sub>/r, which raises the retinal limit through
         ICNIRP&apos;s C<sub>E</sub> with an open field of view. Both use the ICNIRP 2013 limits for one exposure of up to
-        t (10 s is the usual time for unintended viewing of invisible beams). Eyewear OD is log<sub>10</sub>(exposure /
+        t (0.25 s for an unintended view of a visible beam, 10 s in the near infrared, 700–1400 nm; outside 400–1400 nm
+        ICNIRP 2013, p. 285, uses the longest exposure expected). Eyewear OD is log<sub>10</sub>(exposure /
         limit); the filter must also survive the beam (EN 207 damage threshold), which this page does not check. Plume,
         plasma radiation and fumes are separate hazards.
       </p>

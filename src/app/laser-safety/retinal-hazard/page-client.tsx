@@ -29,8 +29,8 @@ export default function RetinalHazardPage() {
   const r = useMemo(() => {
     const s = retinalImageDiameter(lambda, d, D);
     let governing: { kind: EyeLimitKind; pMax: number } | null = null;
-    const retinal = eyeLimits(lambda).filter((l) => l.kind === "retinalThermal" || l.kind === "retinalPhotochemical");
-    for (const l of retinal) {
+    // Every eye limit: from 1150 nm the anterior segment must be checked too, and it binds from about 1.3 µm (ICNIRP 2013, p. 281).
+    for (const l of eyeLimits(lambda)) {
       const pMax = limitMaxPower(l, d, t);
       if (!governing || pMax < governing.pMax) governing = { kind: l.kind, pMax };
     }
@@ -44,7 +44,9 @@ export default function RetinalHazardPage() {
   }, [lambda, P, d, D, t]);
 
   const chartData = useMemo(() => {
-    const ds = Array.from({ length: 201 }, (_, i) => 0.02 * Math.pow(1000, i / 200)); // mm
+    const dMin = Math.min(0.02, (d * 1e3) / 2); // mm, the range always contains the beam diameter
+    const dMax = Math.max(20, 2 * d * 1e3);
+    const ds = Array.from({ length: 201 }, (_, i) => dMin * Math.pow(dMax / dMin, i / 200)); // mm
     const eR = ds.map((x) => retinalIrradiance(P, x * 1e-3, retinalImageDiameter(lambda, x * 1e-3, D), D));
     const sz = ds.map((x) => retinalImageDiameter(lambda, x * 1e-3, D) * 1e6);
     return [
@@ -75,7 +77,7 @@ export default function RetinalHazardPage() {
       </div>
       {r.governing && (
         <div className="grid gap-4 sm:grid-cols-2 mb-4">
-          <ResultCard label="Max power within the retinal limits" value={fmtPower(r.governing.pMax)} subtext={LIMIT_LABELS[r.governing.kind]} tone="green" />
+          <ResultCard label="Max power within the eye limits" value={fmtPower(r.governing.pMax)} subtext={LIMIT_LABELS[r.governing.kind]} tone="green" />
           <ResultCard label="Power / max power" value={`${fmtNum(ratio)}× ${ratio > 1 ? "(exceeds)" : "(within)"}`} tone={ratio > 1 ? "red" : "green"} />
         </div>
       )}
@@ -88,7 +90,8 @@ export default function RetinalHazardPage() {
         retinal irradiance spreads the pupil power evenly over the image and ignores absorption in the eye, so it is an
         upper bound; ICNIRP puts the gain over the corneal irradiance at about 100 000. The limits are what to compare
         with: ICNIRP&apos;s retinal limits (thermal, and photochemical from 10 s at 400–600 nm) for a point source, as
-        corneal exposure over 7 mm. A smaller pupil lowers the retinal irradiance but not the limits: ICNIRP allows no
+        corneal exposure over 7 mm, and its anterior-segment limit, which ICNIRP has checked from 1150 nm and which
+        binds from about 1300 nm, where the retinal limit has risen with C_C. A smaller pupil lowers the retinal irradiance but not the limits: ICNIRP allows no
         credit for a pupil under 7 mm.
       </p>
 

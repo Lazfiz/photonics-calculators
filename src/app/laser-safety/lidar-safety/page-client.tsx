@@ -51,8 +51,10 @@ export default function LidarSafetyPage() {
     (r: number) => pulseTrainLimits(lambda, effectiveDiameterAt(beam, r), train).limits.map((l) => ({ kind: l.kind, ratio: Q / l.qMax })),
     [lambda, beam, train, Q],
   );
-  const rMin = nohdFinite ? Math.max(nohd * 1e-3, 0.01) : 0.01;
-  const rMax = nohdFinite ? Math.max(nohd * 10, rMin * 10) : 1000;
+  const rMin0 = nohdFinite ? Math.max(nohd * 1e-3, 0.01) : 0.01;
+  const rMin = range > 0 ? Math.min(rMin0, range / 3) : rMin0;
+  const rMax0 = nohdFinite ? Math.max(nohd * 10, rMin0 * 10) : 1000;
+  const rMax = Math.max(rMax0, range * 3, 1);
   const markers = useMemo(() => {
     const m: { r: number; y?: number; label: string }[] = [];
     if (nohdFinite) m.push({ r: nohd, label: "NOHD" });

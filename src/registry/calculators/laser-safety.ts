@@ -226,7 +226,7 @@ export const laserSafety: CalculatorEntry[] = [
     title: "Enclosure Classification",
     description: "Class of a product that encloses a stronger laser, from the beam escaping through an opening and the window over it (IEC 60825-1:2014), and the optical density the opening needs for Class 1.",
     tier: "textbook",
-    modelNote: "Accessible emission: the centred Gaussian's share through the opening × 10^−OD, classed with the IEC 60825-1:2014 CW AELs (classification page). Not modelled: scattered leakage, several openings, pulses, guard damage.",
+    modelNote: "Accessible emission: the centred Gaussian's share through the opening × 10^−OD, in a beam no wider than the opening, classed with the IEC 60825-1:2014 CW AELs (classification page). Not modelled: scattered leakage, several openings, pulses, guard damage.",
     references: [
       {
         citation: "IEC 60825-1:2014. Safety of laser products – Part 1: Equipment classification and requirements. Protective housing, accessible emission, Tables 3–8 (AELs).",
@@ -394,7 +394,7 @@ export const laserSafety: CalculatorEntry[] = [
     title: "Medical Laser Safety Calculator",
     description: "Surgical laser with a focusing handpiece: NOHD beyond the focus and eyewear OD on the ICNIRP 2013 eye limits, with the spot's power density, fluence and the target's thermal relaxation time.",
     tier: "textbook",
-    modelNote: "Lens-on-laser beam spreading at b₀/f from the focus; ICNIRP 2013 point-source eye limits over each aperture, exposures up to t; TRT: a Gaussian centre temperature halves. Not modelled: bare fibres, pulses, skin.",
+    modelNote: "Lens-on-laser beam spreading at b₀/f from the focus; ICNIRP 2013 point-source eye limits over each aperture, exposures up to t; focus under 1 mm and 0.35 s by its peak (Table 5 note c); TRT: a Gaussian centre temperature halves. Not modelled: bare fibres, pulses, skin.",
     references: [
       {
         citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 5 and 8.",
@@ -573,7 +573,7 @@ export const laserSafety: CalculatorEntry[] = [
     title: "Retinal Hazard Calculator",
     description: "Retinal image size and irradiance of a laser beam viewed directly, from its wavelength, power, diameter and the pupil, compared with the ICNIRP 2013 retinal limits.",
     tier: "textbook",
-    modelNote: "A 17 mm eye focusing a TEM₀₀ beam to 4λf/(πd), at least 25.5 µm (α_min); retinal irradiance before absorption. Limits: ICNIRP 2013 retinal, point source, 400–1400 nm.",
+    modelNote: "A 17 mm eye focusing a TEM₀₀ beam to 4λf/(πd), at least 25.5 µm (α_min); retinal irradiance before absorption. Limits: ICNIRP 2013 retinal and anterior-segment, point source, 400–1400 nm.",
     references: [
       {
         citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 2, 3, 5 and 8.",
@@ -640,6 +640,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "thermal-lens-hazard",
     title: "Thermal Lens Hazard",
+    heading: "Eyewear Filter Heating",
     description: "Temperature rise of a laser eyewear filter or lens at the beam centre, absorbed at the face or through the thickness, and the time until it softens.",
     tier: "textbook",
     modelNote: "Gaussian beam heating a laterally infinite plate with insulated faces, absorbed at the face or evenly in depth; constant properties and no cooling, so long exposures err high. Not modelled: thermal stress, dye bleaching.",
@@ -675,7 +676,7 @@ export const laserSafety: CalculatorEntry[] = [
     title: "Ultrafast Laser Safety Calculator",
     description: "Eye safety of femtosecond and picosecond lasers on the ICNIRP 2013 limits: sub-ns single-pulse limits, the average-power rule that governs MHz trains, eyewear OD and NOHD.",
     tier: "textbook",
-    modelNote: "ICNIRP 2013 repetitive-pulse rules with the sub-ns rows (1 mJ/m² from 100 fs to 10 ps); round Gaussian beam over each aperture, NOHD with a + rφ. Not modelled: bursts, harmonics, eyewear saturation.",
+    modelNote: "ICNIRP 2013 repetitive-pulse rules with the sub-ns rows (1 mJ/m² from 100 fs to 10 ps; the cornea below 10 % of its 1 ns limit, p. 287); round Gaussian beam over each aperture, NOHD with a + rφ. Not modelled: bursts, harmonics, eyewear saturation.",
     references: [
       {
         citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Repetitive pulse exposures (p. 287), Tables 4, 5 and 8.",

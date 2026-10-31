@@ -106,7 +106,8 @@ export default function PulsedMPEPage() {
         </p>
         <p>
           Below 1 ns ICNIRP Table 5 gives retinal limits of 1 mJ/m² (× C_C above 1050 nm) from 100 fs to 10 ps; shorter
-          pulses, and the corneal limits below 1 ns, keep the irradiance of the shortest tabulated duration. The beam is a
+          pulses, and the corneal limits below 1 ns, keep the irradiance of the shortest tabulated duration; the cornea is
+          also kept below 10 % of its 1 ns limit, ICNIRP&apos;s conservative interim guideline (p. 287). The beam is a
           round Gaussian centred on each aperture (7 mm for the retina, 1–3.5 mm for the cornea). Not modelled:
           irregular trains and bursts, scanned beams, skin.
         </p>

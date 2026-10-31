@@ -352,3 +352,14 @@ test("thermal vs photochemical: the crossover is ICNIRP's T₁ for a point sourc
   assertRel(photochemicalCrossover(nm(550), 0.1), Math.pow(1e4 / 1200, 4 / 3), 1e-9, "extended source");
   assert.ok(Number.isNaN(photochemicalCrossover(nm(650))) && Number.isNaN(photochemicalCrossover(nm(350))), "no dual limit");
 });
+
+test("Anterior segment against retina at 1150–1400 nm", () => {
+  // ICNIRP 2013 p. 281 and Table 5 note d: twice the skin limit, 2 × 1.1 × 10⁴ C_A t^0.25 J/m² (C_A = 5), over 3.5 mm.
+  // At 1350 nm, 10 s, a 2 mm beam: 1.956 × 10⁵ J/m² → 0.1886 W, below the retinal 19.3 W (C_C raises it).
+  const ant = limitMaxPower(limitOf(nm(1350), "anteriorSegment"), 2e-3, 10);
+  assertRel(ant, (2 * 1.1e4 * 5 * Math.pow(10, 0.25) / 10) * area(3.5e-3) / -Math.expm1(-2 * 3.5 * 3.5 / 4), 1e-9, "anterior, 1350 nm");
+  assert.ok(limitMaxPower(limitOf(nm(1350), "retinalThermal"), 2e-3, 10) > 50 * ant);
+  // The crossover at 10 s is near 1299 nm: the retina still governs at 1298 nm, the anterior segment at 1300 nm.
+  assert.ok(limitMaxPower(limitOf(nm(1298), "retinalThermal"), 2e-3, 10) < limitMaxPower(limitOf(nm(1298), "anteriorSegment"), 2e-3, 10));
+  assert.ok(limitMaxPower(limitOf(nm(1300), "retinalThermal"), 2e-3, 10) > limitMaxPower(limitOf(nm(1300), "anteriorSegment"), 2e-3, 10));
+});

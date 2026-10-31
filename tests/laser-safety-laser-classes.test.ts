@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  aelEnergy, classAels, classifyCw, cwClassLimit, exposureLimitEnergy, timeBase,
+  aelEnergy, classAels, classifyCw, cwClassLimit, escapingBeam, exposureLimitEnergy, timeBase,
 } from "../src/physics/laser-safety/laser-classes";
 
 // Tabulated values: IEC 60825-1:1993+A1:1997+A2:2001, Tables 1 (Class 1), 2 (Class 2), 3 (Class 3R), 4 (Class 3B),
@@ -160,4 +160,21 @@ test("classification of CW beams", () => {
   assert.equal(classifyCw(nm(1064), 0, pointer).laserClass, "1");
   assert.equal(classifyCw(nm(1064), -1, pointer).laserClass, null);
   assert.equal(classifyCw(nm(150), 1e-3, pointer).laserClass, null);
+});
+
+test("Escaping beam: a beam clipped by the opening is classed no wider than it", () => {
+  // 5 W at 1064 nm, 50 mm beam, 3 mm opening: 5(1 − exp(−2·9/2500)) = 35.87 mW, all of it within 3 mm, so all of it
+  // passes the 7 mm stop: above 3R (5 × 1.92 mW), within 0.5 W: 3B. Classed at the full 50 mm, only 3.8 % would pass
+  // the 7 mm stop and it came out 1M.
+  const e = escapingBeam(5, 50e-3, 3e-3, 0);
+  assertRel(e.power, 5 * -Math.expm1(-18 / 2500), 1e-12, "power through the opening");
+  assert.equal(e.d, 3e-3);
+  assert.equal(classifyCw(nm(1064), e.power, { d: e.d, phi: 1e-3 }).laserClass, "3B");
+  assert.equal(classifyCw(nm(1064), e.power, { d: 50e-3, phi: 1e-3 }).laserClass, "1M");
+  // A window of OD 2 scales the power; a beam narrower than the opening keeps its size.
+  assertRel(escapingBeam(1, 2e-3, 5e-3, 2).power, 1e-2 * -Math.expm1(-2 * 25 / 4), 1e-12, "OD 2");
+  assert.equal(escapingBeam(1, 2e-3, 5e-3, 2).d, 2e-3);
+  // Edge: a closed opening passes nothing; invalid inputs give NaN.
+  assert.equal(escapingBeam(5, 50e-3, 0, 0).power, 0);
+  assert.ok(Number.isNaN(escapingBeam(5, 0, 3e-3, 0).power));
 });

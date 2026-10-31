@@ -81,6 +81,11 @@ export default function DiffuseReflectionPage() {
               Closer than 10 spot diameters ρP/(πr²) overstates the irradiance (it treats the spot as a point).
             </p>
           ) : null}
+          {hazardFinite && haz.distance < 10 * d ? (
+            <p className="rounded-lg border border-amber-700/60 bg-amber-950/30 p-3 text-sm text-amber-200 mb-4">
+              The hazard distance lies within 10 spot diameters, where ρP/(πr²) overstates the irradiance.
+            </p>
+          ) : null}
 
           <div className="grid gap-4 sm:grid-cols-3 mb-4">
             <ResultCard

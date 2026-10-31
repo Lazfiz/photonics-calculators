@@ -80,7 +80,7 @@ export default function AELLimitsPage() {
                 <th className="py-2 pr-4">Class</th>
                 <th className="py-2 pr-4">One emission of {fmtTime(t)}</th>
                 <th className="py-2 pr-4">CW (power through the stop)</th>
-                <th className="py-2">Set by</th>
+                <th className="py-2">CW set by</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-800">

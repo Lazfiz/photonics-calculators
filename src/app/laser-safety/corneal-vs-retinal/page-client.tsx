@@ -46,7 +46,6 @@ export default function CornealVsRetinalPage() {
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 401 }, (_, i) => 180 * Math.pow(20000 / 180, i / 400));
     const curve = (retina: boolean) => wls.map((nm) => tissueMax(eyeLimits(nm * 1e-9), retina, d, t)?.pMax ?? NaN);
-    // The cornea curve has a gap at 400–1150 nm, where only the retinal limits apply.
     const traces: Record<string, unknown>[] = [
       ...segmentedLine(wls, curve(true), "Retina", { color: "#60a5fa" }),
       ...segmentedLine(wls, curve(false), "Cornea / lens", { color: "#fbbf24" }),
@@ -109,8 +108,9 @@ export default function CornealVsRetinalPage() {
         the cornea-to-retina irradiance gain for a point source at about 100 000. Here the eye is a 17 mm lens that
         focuses a TEM₀₀ beam to 4λf/(πd), but never below 25.5 µm (α_min = 1.5 mrad), so the gain is (7 mm / image)²,
         at most 7.5×10⁴. In the UV and from 1400 nm the cornea and lens absorb the beam and only the corneal limits apply.
-        The skin limit (twice it from 700 nm) also protects the cornea and lens; for a beam it matters from 1150 to
-        1400 nm, where C_C raises the retinal limit as water absorbs more. Each limit is a corneal exposure averaged over its aperture (7 mm retinal, 3.5 mm
+        The skin limit (twice it from 700 nm) also protects the cornea and lens; ICNIRP 2013 (p. 281) checks both limits from
+        1150 nm, but the anterior-segment limit binds only from about 1300 nm (for t ≥ 10 s; about 1360 nm for ns
+        pulses) to 1400 nm, where C_C raises the retinal limit as water absorbs more. Each limit is a corneal exposure averaged over its aperture (7 mm retinal, 3.5 mm
         anterior, 1 → 3.5 mm corneal); the max power is for this beam, staying within the limit at every duration up to
         t. Absorption in the ocular media is not modelled.
       </p>

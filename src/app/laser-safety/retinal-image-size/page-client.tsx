@@ -11,17 +11,15 @@ import { ALPHA_MIN, correctionCE } from "../../../physics/laser-safety/eye-expos
 import { gaussianApparentSource, MAX_ACCOMMODATION } from "../../../physics/laser-safety/retinal-image";
 import { divergenceHalfAngle } from "../../../physics/wave-optics/gaussian-beam";
 
-const R_MIN = 1e-3; // m, chart range
-const R_MAX = 100;
 
 export default function RetinalImageSizePage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 808, { min: 180, max: 1400 }); // nm
+  const [wavelength, setWavelength] = useURLState("wavelength", 808, { min: 400, max: 1400 }); // nm, a retinal image exists only at 400–1400 nm
   const [beamDiam, setBeamDiam] = useURLState("beamDiam", 0.4, { min: 0.001 }); // mm, 1/e² at the waist
   const [beamDivergence, setBeamDivergence] = useURLState("beamDivergence", 200, { min: 0 }); // mrad, 1/e² full angle
   const [viewingDistance, setViewingDistance] = useURLState("viewingDistance", 10, { min: 0 }); // cm from the waist to the eye
 
   // Embedded-Gaussian beam and an accommodating 17 mm eye: src/physics/laser-safety/retinal-image.ts. SI inside.
-  const lambda = Math.max(wavelength, 1) * 1e-9;
+  const lambda = Math.min(Math.max(wavelength, 400), 1400) * 1e-9;
   const d0 = Math.max(beamDiam, 1e-6) * 1e-3;
   const theta = Math.max(beamDivergence, 0) * 1e-3;
   const r = Math.max(viewingDistance, 0) * 1e-2;
@@ -35,6 +33,8 @@ export default function RetinalImageSizePage() {
   const belowDiffraction = theta < thetaDiffraction;
 
   const chartData = useMemo(() => {
+    const R_MIN = r > 0 ? Math.min(1e-3, r / 3) : 1e-3; // m, chart range always contains the viewing distance
+    const R_MAX = Math.max(100, 3 * r);
     const rs = Array.from({ length: 201 }, (_, i) => R_MIN * Math.pow(R_MAX / R_MIN, i / 200));
     const alphas = rs.map((x) => gaussianApparentSource(lambda, d0, theta, x).alpha * 1e3);
     const line = finiteXY(rs, alphas);
@@ -42,7 +42,7 @@ export default function RetinalImageSizePage() {
     return [
       { ...line, type: "scatter", mode: "lines", name: "α", line: { color: "#60a5fa" } },
       { x: [R_MIN, R_MAX], y: [1.5, 1.5], type: "scatter", mode: "lines", name: "α_min", line: { color: "#fbbf24", dash: "dash" } },
-      { x: [R_MIN, R_MAX], y: [100, 100], type: "scatter", mode: "lines", name: "α_max", line: { color: "#f87171", dash: "dot" } },
+      { x: [R_MIN, R_MAX], y: [100, 100], type: "scatter", mode: "lines", name: "α_max (t ≥ 0.25 s)", line: { color: "#f87171", dash: "dot" } },
       { ...here, type: "scatter", mode: "markers", name: "Your eye", marker: { color: "#ffffff", size: 8 } },
     ];
   }, [lambda, d0, theta, r, s.alpha]);
@@ -51,7 +51,7 @@ export default function RetinalImageSizePage() {
     <>
       <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={180} max={1400} step="any" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={400} max={1400} step="any" />
         <ValidatedNumberInput label="Beam diameter at the waist, 1/e² (mm)" value={beamDiam} onChange={setBeamDiam} min={0.001} step="any" />
         <ValidatedNumberInput label="Divergence, 1/e² full angle (mrad)" value={beamDivergence} onChange={setBeamDivergence} min={0} step="any" />
         <ValidatedNumberInput label="Distance from the waist to the eye (cm)" value={viewingDistance} onChange={setViewingDistance} min={0} step="any" />
@@ -116,7 +116,7 @@ export default function RetinalImageSizePage() {
       ) : null}
       <p className="text-xs text-gray-500 mt-2 mb-6">
         The chart shows α against the distance from the waist (log scales), with α_min = 1.5 mrad and α_max = 100 mrad
-        dashed. Nearer than 100 mm the eye can&apos;t focus and the blurred image grows.
+        (for t ≥ 0.25 s) dashed. Nearer than 100 mm the eye can&apos;t focus and the blurred image grows.
       </p>
 
       <div className="text-sm text-gray-400 space-y-2">

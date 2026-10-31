@@ -179,3 +179,14 @@ test("Safe diameter: the inverse in d", () => {
   assert.equal(pulseTrainSafeDiameter(nm(1064), 1e-7, train), 0);
   assert.ok(Number.isNaN(pulseTrainSafeDiameter(nm(1064), -1, train)));
 });
+
+test("Below 1 ns at the cornea: the lower of the held irradiance and 10 % of the 1 ns limit", () => {
+  // ICNIRP 2013 p. 287: below 400 nm and above 1400 nm, keep sub-ns exposures below 10 % of the 1 ns limit (an interim
+  // guideline); p. 282 holds the 1 ns irradiance. At 1550 nm H(1 ns) = 10⁴ J/m² over 1 mm (Tables 5, 8).
+  assertRel(pulseTrainLimits(nm(1550), 0, single(5e-10)).qMax, 0.1 * 1e4 * A1, 1e-12, "1550 nm, 500 ps: 10 %");
+  assertRel(pulseTrainLimits(nm(1550), 0, single(1e-11)).qMax, 1e4 * A1 * 1e-2, 1e-12, "1550 nm, 10 ps: irradiance held");
+  assertRel(pulseTrainLimits(nm(1550), 0, single(1e-9)).qMax, 1e4 * A1, 1e-12, "1550 nm, 1 ns unchanged");
+  assertRel(pulseTrainLimits(nm(355), 0, single(5e-10)).qMax, 0.1 * 5.6e3 * Math.pow(1e-9, 0.25) * A1, 1e-12, "355 nm, 500 ps");
+  // The retina keeps Table 5's rows: 2 C_A mJ/m² from 10 ps at 633 nm (C_A = 1), over 7 mm.
+  assertRel(pulseTrainLimits(nm(633), 0, single(5e-10)).qMax, 2e-3 * A7, 1e-12, "633 nm, 500 ps");
+});

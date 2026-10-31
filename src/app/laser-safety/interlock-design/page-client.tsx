@@ -97,8 +97,9 @@ export default function InterlockDesignPage() {
         </p>
         <p>
           ISO 13855 uses K = 2.0 m/s for hands and arms and 1.6 m/s for the body, and adds an intrusion allowance C for
-          sensing devices such as light curtains (S = K·T + C). For a Class 4 beam t_max is nanoseconds to microseconds,
-          so in practice the emission has to stop before the beam can be reached: T ≤ S/K. Not modelled: reflections inside
+          sensing devices such as light curtains (S = K·T + C). In the retinal hazard region (400–1400 nm) t_max is
+          nanoseconds to microseconds, so the shutter has to close before the beam can be reached: T ≤ S/K. In the mid
+          and far infrared t_max can be milliseconds to seconds. Not modelled: reflections inside
           the enclosure, the skin, the interlock&apos;s reliability (ISO 13849 performance level) and IEC 60825-1&apos;s
           rule that a Class 3B or 4 product&apos;s interlocks prevent access to radiation above the Class 1 limits.
         </p>

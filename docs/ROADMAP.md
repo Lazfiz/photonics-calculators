@@ -5,11 +5,11 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 173, 2026-10-30)
+## Status (session 174, 2026-10-31)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
-  textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) done (sessions 163–173); next 5w-12 (laser-safety); the Gemini hero is last. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) done (sessions 163–174); next 5w-13 (materials); the Gemini hero is last. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -245,6 +245,12 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 **Laser safety** (optional)
 - A scanned-lidar mode on `lidar-safety`.
 - Re-check the classes when IEC 60825-1 Ed. 4 is published (only a BSI draft in 2026).
+- Session 174 (deferred): ICNIRP Table 5 note c (peak of a beam < 1 mm for t < 0.35 s) is applied only to the medical
+  page's focus OD (`requiredOpticalDensity(…, { actualExposure: true })`); other pages average over 1 mm. `diffuse-reflection`
+  only warns inside 10 spot diameters; the on-axis disk ρP/(π(r² + a²)) would fix the near zone. Outside 400–1400 nm the
+  pages assume 10 s with a note (ICNIRP p. 285: the longest exposure expected). Unverified: the TRT shape factors
+  (/27 sphere, 3/16 layer) against Anderson & Parrish 1983; the ANSI differences quoted from Schulmeister 2017 on
+  `ansi-iec-comparison`; ICAO Doc 9815 levels and EN 207 test conditions (from memory).
 
 **Codex review 2026-10-24** (each reproduced in session 144 with the repo's functions; golden cases for the tests)
 - Fixed in 4g-b (session 146). Leftovers: the OPA page's linear-GVM spectrum can run past degeneracy ν_p/2 when |δ_si| is tiny,
@@ -299,7 +305,7 @@ One box per session, in this order.
   - [x] 5w-4 imaging 1/3 (session 166, PR #203) · [x] 5w-5 imaging 2/3 (session 167, PR #204) · [x] 5w-6 imaging 3/3 (session 168, PR #205)
   - [x] 5w-7 fiber-optics 1/2 (session 169, PR #206) · [x] 5w-8 fiber-optics 2/2 (session 170, PR #207)
   - [x] 5w-9 wave-optics 1/2 (session 171, PR #208) · [x] 5w-10 wave-optics 2/2 (session 172, PR #209)
-  - [x] 5w-11 free-space-comms (session 173, PR #210) · [ ] 5w-12 laser-safety (20) · [ ] 5w-13 materials (22)
+  - [x] 5w-11 free-space-comms (session 173, PR #210) · [x] 5w-12 laser-safety (session 174, PR #211) · [ ] 5w-13 materials (22)
   - [ ] 5w-14 spectroscopy (21) · [ ] 5w-15 thin-film + polarization (24)
 - [ ] Last: replace the home-page hero with the one the user made in Gemini, and wire it in (ask the user for the files).
 
@@ -320,6 +326,11 @@ One box per session, in this order.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - 5w-12 laser-safety (session 174, `phase-5/5w-12-laser-safety`, PR #211): 20 pages, 2 bugs: enclosure-class classed a beam
+    clipped by the opening at its full width (1M for 3B; new `escapingBeam`), retinal-hazard's verdict ignored the anterior
+    segment (binds from ≈ 1.3 µm); sub-ns cornea ≤ 10 % of the 1 ns limit (ICNIRP p. 287) in `pulseLimits`; note c on the
+    medical focus OD (4.60 vs 2.91); 0.25 s / 10 s re-cited to ICNIRP p. 285; defaults (classification 20 mW, research-lab
+    300 mW, atmospheric 1064 nm); chart ranges on 5 pages.
   - 5w-11 free-space-comms (session 173, `phase-5/5w-11-free-space-comms`, PR #210): 17 pages, 1 bug: AO servo-lag variance
     uncapped (AO "worse than none" below f_G; now ≤ open-loop); geometric-loss Gaussian keeps the exit aperture; QKD optimal-μ
     reach (142.21 km) and loss axis at α = 0; rain L ≤ 5 km (P.1814-1 PDF checked); chart spans and markers on 14 pages; 1176 tests.

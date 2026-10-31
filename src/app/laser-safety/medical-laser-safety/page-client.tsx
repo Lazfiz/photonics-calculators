@@ -51,7 +51,8 @@ export default function MedicalLaserSafetyPage() {
   const beam = useMemo(() => roundBeam(spot, phi), [spot, phi]);
   const limits = useMemo(() => eyeLimits(lambda), [lambda]);
   const nohd = useMemo(() => nominalOcularHazardDistance(lambda, P, beam, tEye), [lambda, P, beam, tEye]);
-  const odFocus = useMemo(() => requiredOpticalDensity(lambda, P, spot, tEye), [lambda, P, spot, tEye]);
+  // ICNIRP 2013 Table 5 note c: a focus under 1 mm viewed for < 0.35 s counts by its actual radiant exposure.
+  const odFocus = useMemo(() => requiredOpticalDensity(lambda, P, spot, tEye, { actualExposure: true }), [lambda, P, spot, tEye]);
   const odLens = useMemo(() => requiredOpticalDensity(lambda, P, b0, tEye), [lambda, P, b0, tEye]);
   const valid = limits.length > 0 && !Number.isNaN(nohd.distance) && !Number.isNaN(odFocus.od);
 
@@ -119,7 +120,8 @@ export default function MedicalLaserSafetyPage() {
         <div>
           <ValidatedNumberInput label="Eye exposure time (s)" value={eyeExposure} onChange={setEyeExposure} min={1e-9} max={30000} step="any" />
           <p className="text-xs text-gray-500 mt-2">
-            10 s for an accidental view of an invisible beam (ANSI Z136.1); 0.25 s only for visible beams.
+            0.25 s for an unintended view of a visible beam and 10 s in the near infrared, 700–1400 nm; outside
+            400–1400 nm ICNIRP 2013 (p. 285) uses the longest exposure expected.
           </p>
         </div>
       </div>
@@ -136,7 +138,7 @@ export default function MedicalLaserSafetyPage() {
             label="Eyewear optical density"
             value={`OD ${odFocus.od.toFixed(2)}`}
             tone="purple"
-            subtext={`For the beam at its focus (all of it inside the aperture); OD ${odLens.od.toFixed(2)} for the ${fmtNum(b0 * 1e3)} mm beam at the lens`}
+            subtext={`For the beam at its focus (all of it inside the aperture; its peak below 1 mm and 0.35 s, ICNIRP note c); OD ${odLens.od.toFixed(2)} for the ${fmtNum(b0 * 1e3)} mm beam at the lens`}
           />
         </div>
       ) : (
@@ -159,8 +161,9 @@ export default function MedicalLaserSafetyPage() {
         </p>
         <p>
           Eyes: beyond the focus the beam spreads at b₀/f, so the hazard distance is the standards&apos;
-          lens-on-laser value (f/b₀)√(4P/(πE)) (ANSI Z136.1 App. B, ANSI Z136.3), here on the ICNIRP 2013 limits for
-          an exposure of up to t, averaged over each limit&apos;s aperture. The optical density brings the whole beam
+          lens-on-laser value (f/b₀)√(4P/(πE)) with b₀ the 1/e diameter (the 1/e² input over √2), here on the ICNIRP
+          2013 limits for an exposure of up to t, averaged over each limit&apos;s aperture. For the focus itself a beam
+          under 1 mm viewed for less than 0.35 s counts by its peak radiant exposure (ICNIRP Table 5 note c). The optical density brings the whole beam
           within every limit; the filter must also survive the beam (EN 207). Not modelled: bare fibres (use the fiber
           laser page), specular reflections from instruments, pulses, the skin.
         </p>

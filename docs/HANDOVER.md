@@ -1,29 +1,37 @@
-# Handover — 2026-10-31 (session 173 → session 174)
+# Handover — 2026-10-31 (session 174 → session 175)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 173 did 5w-11 (free-space-comms textbook pass, 17 pages, 1 bug) on `phase-5/5w-11-free-space-comms`, PR #210.
-PRs #200–#209 are merged to `main` but not released (`release` = `d82602ed`). Next: **5w-12 laser-safety** (20 slugs).
+Session 174 did 5w-12 (laser-safety textbook pass, 20 pages, 2 bugs) on `phase-5/5w-12-laser-safety`, PR #211.
+PRs #200–#210 are merged to `main` but not released (`release` = `d82602ed`). Next: **5w-13 materials** (22 slugs).
 
 ## State
-- `turbulence.ts`: new `aoResidualVariance(fit, servo, open)` = min(fit + servo, open) (a first-order loop's |1 − H|² ≤ 1).
-- `link-budget.ts`: new `gaussianGeometricCapture(d_t, θ, R, d_r, λ)`: embedded Gaussian, w₀ = max(d_t/2, λ/(πθ/2)),
-  w² = w₀² + (θR/2)² (Siegman, SPIE 1224, 2 (1990)); golden 17.0332 dB (defaults), 1.9920 dB (d_t 100 mm, 100 m).
-- `qkd.ts`: new `maxChannelLossDbOptimalMu` (GYS 29.864 dB = 142.21 km vs 142.01 km at μ 0.48); QKD charts plot against
-  total channel loss when α = 0.
-- New defaults: beam-wander Cn² 1e-14 (0.71 dB loss shows), receiver-fov half-angle 20 mrad (≈ equal-noise FOV 18.7 mrad).
-- Rain path length capped at 5 km: ITU-R P.1814-1 §4.2 states L ≤ 5 km; Tables 4–5 in the code match the PDF.
-- Open findings added: beam-wander W₀ vs W(z) in the filter, point-ahead "≈ 18 µrad" quote, DB_PER_NEPER naming.
+- `laser-classes.ts`: new `escapingBeam(P, d, D, od)` → { power: P(1 − e^(−2D²/d²))·10^−od, d: min(d, D) }; golden
+  5 W, 50 mm beam, 3 mm opening at 1064 nm: 35.87 mW, Class 3B (was 1M at the full width).
+- `pulse-train.ts` `pulseLimits`: cornealUv/cornealIr below 1 ns = min(H(1 ns)·t/1 ns, 0.1·H(1 ns)) (ICNIRP p. 287);
+  1550 nm 500 ps 0.785 mJ (was 3.93 mJ), 10 ps 78.5 µJ unchanged. Retina unchanged.
+- `hazard-distance.ts` `requiredOpticalDensity(λ, P, d, t, { actualExposure })`: Table 5 note c (d < 1 mm, t < 0.35 s,
+  1 mm aperture) scales P_max by 2(D/d)²/(1 − e^(−2D²/d²)); only the medical focus uses it. 10.6 µm, 10 W, 0.2 mm, 0.25 s:
+  OD 4.604 (2.905 without).
+- retinal-hazard: verdict over every eye limit; anterior segment binds from 1299 nm at 10 s (1350 nm, 2 mm: 0.1886 W).
+- Defaults: classification 20 mW (10 mW at 1550 nm sat in IEC's 4 % rounding gap; near-limit warning added),
+  research-lab 300 mW (500 mW was on the 3B/4 boundary), atmospheric-attenuation 1064 nm. thermal-lens-hazard heading
+  "Eyewear Filter Heating". 1180 tests.
 
 ## Next actions
-1. `/ship` the 5w-11 PR. On a release (user asks), check on the local build first: `free-space-comms/geometric-loss=17.03
-   free-space-comms/quantum-key-distribution=142.0` plus the 5w-8 values in PR #207, the 5w-9 values
-   (`wave-optics/diffraction-integral=0.9075 wave-optics/difference-frequency=1.172 wave-optics/hermite-gaussian=3.115`)
-   and the 5w-10 values (`wave-optics/supercontinuum=667.6 wave-optics/kerr-lens=49.70`).
-2. 5w-12: laser-safety textbook slugs in registry order (20); `git grep -n 'tier: "textbook"' src/registry/calculators/laser-safety.ts`.
-   ICNIRP 2013 PDF: `curl -sL https://www.icnirp.org/cms/upload/publications/ICNIRPLaser180gdl_2013.pdf`, `pdftotext -raw`.
-3. Then 5w-13 materials, 5w-14 spectroscopy, 5w-15 thin-film + polarization. Last in Phase 5: the Gemini hero (ask the user for the files).
+1. `/ship` the 5w-12 PR. On a release (user asks), check on the local build first: `laser-safety/classification=3R` and
+   `laser-safety/atmospheric-attenuation=0.296` (dB/km, new defaults) plus the values listed in PRs #207–#210.
+2. 5w-13: materials textbook slugs in registry order (22); skip raman-scattering (session 162);
+   `awk '/slug:/{s=$2} /tier: "textbook"/{print s}' src/registry/calculators/materials.ts`.
+3. Then 5w-14 spectroscopy, 5w-15 thin-film + polarization. Last in Phase 5: the Gemini hero (ask the user for the files).
 
 ## Non-obvious facts
+- **Session 174:** the C: drive filled to 0 bytes mid-session (ENOSPC on Edit; Edit's temp-then-rename left the
+  originals whole). Check `df -h /c` when writes fail. A probe `.mts` importing repo files needs `file:///C:/…` URLs
+  (or a `.ts` with an absolute `C:/…` path; top-level await needs `.mts`). devctl queues tests behind implementers'
+  eslint for 10+ min: run them in the background. node:test's spec reporter prints `ℹ tests N`, not `# pass`.
+  ICNIRP 2013 has two sub-ns rules: p. 282 holds the 1 ns irradiance, p. 287 adds "< 10 % of the 1 ns limit" below
+  400 / above 1400 nm; both are now in `pulseLimits`. The IEC 2001 text and Schulmeister white papers were checked in
+  sessions 30–33 (archive line ≈ 446); don't re-flag their values as unverified.
 - **Session 173:** devctl intercepts a *whole* Bash command when any part is gated (`npx tsx --test`, eslint, tsc): a
   heredoc + `node edit.mjs` + test in one call never ran, and the queued test ran against old files. Write files and run
   gates in separate calls. An implementer's QKD edits again never reached disk (1 of 3): `git status --short` after each
