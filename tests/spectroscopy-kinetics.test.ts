@@ -8,7 +8,7 @@ import {
 } from "../src/physics/spectroscopy/pump-probe";
 import { absorptance, relativeQuantumYield } from "../src/physics/spectroscopy/quantum-yield";
 import {
-  absorptiveLineshape, dimer, dimerPeaks, homogeneousFwhm, orientationalAverage, spectrum2D,
+  absorptiveLineshape, dimer, dimerPeaks, homogeneousFwhm, orientationalAverage, spectrum2D, transferMatrix,
 } from "../src/physics/spectroscopy/two-dimensional";
 
 const close = (actual: number, expected: number, rel: number, msg?: string) =>
@@ -152,4 +152,16 @@ test("2D spectrum of a coupled dimer", () => {
   const sigma = 150e2 / (2 * Math.sqrt(2 * Math.LN2));
   const direct = peaks.reduce((s, p) => s + p.amplitude * absorptiveLineshape(d.energies[0] - p.w1, d.energies[1] - p.w3, sigma, 26.5e2), 0);
   close(z[0][0], direct, 1e-12);
+});
+
+test("dimer population transfer: two-state relaxation golden value", () => {
+  // Hand calculation. Δ = 200 cm⁻¹, J = 100 cm⁻¹: splitting = √(Δ² + 4J²) = 282.84 cm⁻¹.
+  // Uphill/downhill ratio e^(−hcΔE/kT) = e^(−1.4388 · 282.84 / 300) = 0.2576 (300 K, c₂ = 1.4388 cm·K).
+  // Two-state kinetics with k↓ = 1/τ, k↑ = 0.2576 k↓: K = 1.2576/τ, equilibrium P(−) = 1/1.2576 = 0.7952.
+  // P(−|+)(T_w) = P_eq(−) (1 − e^(−K T_w)); at T_w = τ: 0.7952 · (1 − e^(−1.2576)) = 0.7952 · 0.7157 = 0.5691.
+  const d = dimer(12500e2, 200e2, 100e2, Math.PI / 3);
+  const t = transferMatrix(d, 300e-15, 300e-15, 300);
+  close(t[1][0], 0.56908, 1e-4);
+  close(t[0][0] + t[0][1], 1, 1e-12); // rows are probabilities
+  assert.deepEqual(transferMatrix(d, 0, 300e-15, 300), [[1, 0], [0, 1]]); // T_w = 0: identity, no cross-peak transfer
 });

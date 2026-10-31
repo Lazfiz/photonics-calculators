@@ -34,8 +34,9 @@ export default function GratingEfficiencyPage() {
   const lambdaOverD = lambda / d;
 
   const chart = (() => {
-    const lo = 0.4 * lambdaB;
-    const hi = Math.min(cutoff, 3 * lambdaB);
+    // Window around the blaze, widened so the input λ (marker) is inside; never past the propagation limit 2d/m.
+    const lo = Math.min(0.4 * lambdaB, 0.9 * lambda);
+    const hi = Math.min(cutoff, Math.max(3 * lambdaB, 1.1 * lambda));
     const x = Array.from({ length: 401 }, (_, i) => lo + ((hi - lo) * i) / 400);
     const traces: Record<string, unknown>[] = [
       { x: x.map((l) => l * 1e9), y: x.map((l) => r6(littrowBlazeEfficiency(l, d, order, phi))), type: "scatter", mode: "lines",

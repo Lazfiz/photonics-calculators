@@ -150,7 +150,7 @@ export default function NearInfraredPage() {
           <span className="text-sm text-gray-300">DPF</span>
           <select value={dpfMode} onChange={(e) => setDpfMode(e.target.value)}
             className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
-            <option value="age">Adult head from age (Scholkmann–Wolf)</option>
+            <option value="age">Frontal head from age (Scholkmann–Wolf)</option>
             <option value="manual">Enter DPF values</option>
           </select>
         </label>

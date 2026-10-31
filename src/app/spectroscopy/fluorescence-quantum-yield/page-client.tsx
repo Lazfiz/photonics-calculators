@@ -38,7 +38,8 @@ export default function FluorescenceQuantumYieldPage() {
   const highA = Math.max(q.sampleAbsorbance, q.referenceAbsorbance) > 0.1;
 
   // f/(A ln 10): how far the absorptance is from the linear (small-A) form
-  const As = Array.from({ length: 200 }, (_, i) => 0.005 + (i / 199) * 0.995);
+  const aMax = Math.max(1, 1.2 * Math.max(q.sampleAbsorbance, q.referenceAbsorbance)); // keep both markers on the curve
+  const As = Array.from({ length: 200 }, (_, i) => 0.005 + (i / 199) * (aMax - 0.005));
   const ratio = (A: number) => absorptance(A) / (A * Math.LN10);
   const chart = [
     { x: As, y: As.map((A) => r6(ratio(A))), type: "scatter", mode: "lines", name: "f / (A ln 10)", line: { color: "#60a5fa", width: 2 } },

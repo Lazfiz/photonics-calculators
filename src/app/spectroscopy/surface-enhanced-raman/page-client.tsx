@@ -48,14 +48,16 @@ export default function SurfaceEnhancedRamanPage() {
   const efAt = (lambda: number, dist: number) =>
     sersEnhancement(silverPermittivity(lambda), silverPermittivity(stokesWavelength(lambda, shiftCm * perCm)), epsM, a, dist);
   const round = (y: number) => Number(y.toPrecision(4));
-  const wls = Array.from({ length: 301 }, (_, i) => 300 + 2 * i);
+  const wlMax = Math.max(900, laserNm + 50); // nm; extends past 900 so the laser marker stays on the curve
+  const wls = Array.from({ length: 301 }, (_, i) => Number((300 + ((wlMax - 300) * i) / 300).toPrecision(6)));
   const spectrum = wls.map((w) => ({ w, e: efAt(w * 1e-9, d) }));
   const spectrumSeries = [
     { name: "EF, maximum over the surface", color: "#60a5fa", points: spectrum.map(({ w, e }) => ({ x: w, y: round(e.max) })) },
     { name: "EF averaged over the surface", color: "#34d399", points: spectrum.map(({ w, e }) => ({ x: w, y: round(e.average) })) },
-    ...(laserNm <= 900 ? [{ name: "Current", color: "#fbbf24", showPoints: true, points: [{ x: laserNm, y: round(ef.max) }, { x: laserNm, y: round(ef.average) }] }] : []),
+    { name: "Current", color: "#fbbf24", showPoints: true, points: [{ x: laserNm, y: round(ef.max) }, { x: laserNm, y: round(ef.average) }] },
   ];
-  const dists = Array.from({ length: 101 }, (_, i) => 0.2 * i);
+  const distMax = Math.max(20, 1.5 * distanceNm); // nm
+  const dists = Array.from({ length: 101 }, (_, i) => Number(((distMax * i) / 100).toPrecision(6)));
   const decay = dists.map((x) => ({ x, e: efAt(lambdaL, x * 1e-9) }));
   const decaySeries = [
     { name: "EF, maximum over the surface", color: "#60a5fa", points: decay.map(({ x, e }) => ({ x, y: round(e.max) })) },
@@ -87,9 +89,15 @@ export default function SurfaceEnhancedRamanPage() {
           resonance, so these quasistatic values are too high near it; use Mie theory.
         </p>
       )}
+      {radiusNm < 5 && (
+        <div className="mb-4 rounded-lg border border-yellow-800 bg-yellow-950/40 p-4 text-sm text-yellow-100">
+          Surface (Kreibig) damping broadens and weakens the resonance below about 10 nm diameter; the bulk ε used here
+          overestimates the enhancement factor for such a small sphere.
+        </div>
+      )}
       <p className="mb-8 text-sm text-gray-400">
         The enhancement factor of an isolated sphere is set by silver&apos;s permittivity and the medium, not by the
-        radius: the radius only sets how fast the field decays away from the surface, as (a/(a + d))³ in the field.
+        radius in this quasistatic model: the radius only sets how fast the field decays away from the surface, as (a/(a + d))³ in the field.
         Gaps between particles (hot spots) give far larger but very local enhancements, which this model does not cover.
       </p>
 

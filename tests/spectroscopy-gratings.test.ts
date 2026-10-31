@@ -49,13 +49,19 @@ test("scalar envelope (Casini & Nelson eqs. 18, 21, 23) and its normalisation ov
   close(gratingDiffractionAngle(550e-9, d, 1, 45 * DEG) / DEG, -2.7000, 1e-4);
   close(blazeEnvelope(550e-9, d, 1, phiB, 45 * DEG), 0.98331, 1e-4);
   close(scalarBlazeEfficiency(550e-9, d, 1, phiB, 45 * DEG), 0.74724, 1e-4);
-  // Shadowing (α < β): α = 0, λ = 700 nm, β = 57.140°, ρ = cos φ = 0.943990, x = 1.002289, sinc² = 0.70694,
-  // k = cos β cos(α − φ)/(cos α cos(β − φ)) = 0.648843; with I₋₁ = 0.046696, I₀ = 0.096891:
-  // η₁ = 0.648843 · 0.706922/0.850509 = 0.53930.
+  // Shadowing (α < φ < β): α = 0, λ = 700 nm, β = 57.140°, ρ(α) = cos φ = 0.943990 (whole facet lit), x = 1.002289,
+  // sinc² = 0.70694. The exit direction sees ρ(β) = cos β/cos(β − φ) = 0.54260/0.78937 = 0.687370 of the period, so
+  // k = ρ(β)/ρ(α) = 0.728137 (right-angle sawtooth geometry; the α ≥ φ form cos β cos(α − φ)/(cos α cos(β − φ))
+  // would give 0.648843, a lit length longer than the facet). With I₋₁ = 0.046696, I₀ = 0.096891:
+  // η₁ = 0.728137 · 0.706922/0.850509 = 0.60521.
   const b700 = gratingDiffractionAngle(700e-9, d, 1, 0);
-  close(blazeShadowFactor(b700, phiB, 0), 0.648843, 1e-5);
+  close(blazeShadowFactor(b700, phiB, 0), 0.728137, 1e-5);
   close(blazeEnvelope(700e-9, d, 1, phiB, 0), 0.70694, 1e-4);
-  close(scalarBlazeEfficiency(700e-9, d, 1, phiB, 0), 0.53930, 1e-4);
+  close(scalarBlazeEfficiency(700e-9, d, 1, phiB, 0), 0.60521, 1e-4);
+  // α = 10°, λ = 400 nm: β = 17.840° < φ, so the exit direction sees the whole facet and k = 1.
+  const b400 = gratingDiffractionAngle(400e-9, d, 1, 10 * DEG);
+  close(b400 / DEG, 17.8395, 1e-5);
+  assert.equal(blazeShadowFactor(b400, phiB, 10 * DEG), 1);
 });
 
 test("orders, Rayleigh anomalies and order overlap", () => {

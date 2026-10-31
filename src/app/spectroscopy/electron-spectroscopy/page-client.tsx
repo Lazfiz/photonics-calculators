@@ -48,10 +48,11 @@ export default function ElectronSpectroscopyPage() {
   const belowFit = emitted && hv - Eb < 50, aboveFit = emitted && hv - Eb > 2000;
   const Ep = plasmonEnergy(mat);
 
-  const energies = Array.from({ length: 200 }, (_, i) => 50 * 10 ** ((i / 199) * Math.log10(200))); // above E_F
+  const eMax = Math.max(10000, 1.2 * (hv - Eb)); // eV; extends past 10 keV so the marker stays on the curve
+  const energies = Array.from({ length: 200 }, (_, i) => 50 * 10 ** ((i / 199) * Math.log10(eMax / 50))); // above E_F
   const imfpChart = [
     { x: energies.map(r6), y: energies.map((E) => r6(imfpTpp2m(E, mat) / nm)), type: "scatter", mode: "lines", name: "TPP-2M λ", line: { color: "#60a5fa", width: 2 } },
-    ...(Number.isFinite(lambda) && hv - Eb <= 10000 ? [{ x: [r6(hv - Eb)], y: [r6(lambda / nm)], type: "scatter", mode: "markers", name: `hν − E_B = ${fmt(hv - Eb, 5)} eV`, line: { color: "#f87171" }, marker: { color: "#f87171", size: 9 } }] : []),
+    ...(Number.isFinite(lambda) ? [{ x: [r6(hv - Eb)], y: [r6(lambda / nm)], type: "scatter", mode: "markers", name: `hν − E_B = ${fmt(hv - Eb, 5)} eV`, line: { color: "#f87171" }, marker: { color: "#f87171", size: 9 } }] : []),
   ];
   const zMax = Number.isFinite(depth95) ? 1.5 * depth95 : 10 * nm;
   const zs = Array.from({ length: 200 }, (_, i) => (zMax * i) / 199);

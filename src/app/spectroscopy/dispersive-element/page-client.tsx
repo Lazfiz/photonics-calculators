@@ -106,7 +106,8 @@ export default function DispersiveElementPage() {
         <ResultCard label={`Blaze Wavelength at α (order ${order})`} value={Number.isFinite(lambdaB) ? `${fmt(lambdaB * 1e9)} nm` : "—"}
           tone="purple" subtext="d[sin α + sin(2φ − α)] / m" />
         <ResultCard label="Scalar Efficiency (centre)" value={Number.isFinite(effC) ? `${(effC * 100).toFixed(1)} %` : "—"} tone="yellow"
-          subtext="shared over orders; × coating reflectance" />
+          subtext={centre / d < 0.2 ? "shared over orders; × coating reflectance"
+            : `λ/d = ${(centre / d).toFixed(2)} ≥ 0.2: scalar estimate, real efficiency depends on polarization`} />
         <ResultCard label="Resolving Power per mm Width" value={(order * grooveDensity).toFixed(0)} tone="red"
           subtext="R = mN, N = grooves illuminated" />
       </div>
@@ -130,14 +131,14 @@ export default function DispersiveElementPage() {
         <h3 className="text-lg font-semibold">Model</h3>
         <p className="font-mono">mλ = d(sin α + sin β),   dβ/dλ = m/(d·cos β),   dλ/dx = d·cos β/(m·f),   R = mN</p>
         <p className="font-mono">I_m = sinc²(π·d·ρ·[sin(α − φ) + sin(β_m − φ)] / λ),   ρ = cos α / cos(α − φ) (α ≥ φ), cos φ (α &lt; φ)</p>
-        <p className="font-mono">η_m = k·I_m / Σ I_m′,   k = min(1, cos β·cos(α − φ) / (cos α·cos(β − φ))) when α &lt; β</p>
+        <p className="font-mono">η_m = k·I_m / Σ I_m′,   k = min(1, ρ(β) / ρ(α)),   ρ(β) as ρ with α → β</p>
         <p>
           α and β are measured from the grating normal, positive on the same side. The reciprocal linear dispersion
           d·cos β/(m·f) holds on a focal plane normal to the diffracted ray; a flat detector normal to the central ray
           sees x = f·tan(β − β₀), which multiplies it by cos²(β − β₀). The blaze wavelength is entered as the catalogue
           value (first order, Littrow); at another incidence angle the facets reflect into β = 2φ − α, which moves the
           peak. The efficiency is scalar theory for a sawtooth with a right-angle apex: the envelopes of all propagating
-          orders share the incident power, and facet shadowing (α &lt; β) removes a fraction k. Coating reflectance and
+          orders share the incident power, and when β &gt; α the riser hides part of the lit facet from the exit direction (shadowing), leaving the fraction k. Coating reflectance and
           polarization are not included; it is fair for λ/d below about 0.2.
           The free spectral range λ/m does not depend on the groove density.
         </p>

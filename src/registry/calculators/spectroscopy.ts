@@ -264,7 +264,7 @@ export const spectroscopy: CalculatorEntry[] = [
     title: "Infrared (IR) Spectroscopy",
     description: "Vibration–rotation band of HCl or CO: anharmonic band origin, P and R branch lines, Boltzmann intensities at the instrument resolution, force constant and the isotope shift of H³⁷Cl or ¹³CO.",
     tier: "textbook",
-    modelNote: "Anharmonic oscillator to (v + ½)⁴ plus vibrating rotor (B_v = B_e − α_e(v + ½), one distortion constant) with NIST constants (including ω_e y_e and ω_e z_e); relative line strengths from Hönl–London, Boltzmann and stimulated-emission factors, without Herman–Wallis factors, pressure broadening or absolute band strengths.",
+    modelNote: "Anharmonic oscillator to (v + ½)⁴ plus vibrating rotor (B_v = B_e − α_e(v + ½), one distortion constant) with NIST constants (including ω_e y_e and ω_e z_e); relative line strengths from Hönl–London, Boltzmann and stimulated-emission factors, without Herman–Wallis factors, pressure broadening or absolute band strengths. With one D term, HCl is limited to 1200 K.",
     references: [
       { citation: "Herzberg G. (1950). Molecular Spectra and Molecular Structure I: Spectra of Diatomic Molecules, 2nd ed. Van Nostrand." },
       { citation: "NIST Chemistry WebBook, SRD 69: constants of diatomic molecules (after Huber & Herzberg 1979).", url: "https://webbook.nist.gov/chemistry/" },

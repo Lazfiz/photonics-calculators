@@ -84,6 +84,13 @@ test("HCl: microwave line, force constant and the infrared fundamental with its 
   close(h37.we, hcl.we * rho, 1e-14);
   const shift = (vibrationalTerm(1, h37) - vibrationalTerm(0, h37) - nu0) / 100;
   assert.ok(shift < -2.0 && shift > -2.2, `${shift}`);
+  // The infrared page stops HCl at 1200 K: with one D term the levels turn over at J = ⌊√(B₀/6D)⌋ − 1 = 56, where
+  // F = 27904 cm⁻¹; at 1240 K (2J+1)e^(−hcF/kT)/Q = 113·e^(−32.38)/82.9 ≈ 1.2e-14 > 1e-14, so the sum is not converged.
+  for (const v of [1, 2, 3]) {
+    assert.ok(rovibrationalBand(hcl, v, 1200).length > 0, `v = ${v} at 1200 K`);
+    assert.ok(rovibrationalBand(h37, v, 1200).length > 0, `H³⁷Cl v = ${v} at 1200 K`);
+  }
+  assert.equal(rovibrationalBand(hcl, 1, 1250).length, 0);
 });
 
 test("THz: Liebe–Hufford–Manabe water against its Table I data and a hand calculation", () => {

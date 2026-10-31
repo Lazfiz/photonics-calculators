@@ -35,8 +35,11 @@ export default function ConcMirrorPage() {
   const ratio = jacquinotRatio(f, h, theta, theta);
 
   const chart = (() => {
-    // f-number N = f/D from 0.6 to 10 at the current radius of curvature.
-    const ns = Array.from({ length: 121 }, (_, i) => 0.6 * (10 / 0.6) ** (i / 120));
+    // f-number N = f/D around the current value (so the marker is on the curve), at the current radius of curvature.
+    const nNow = f / D;
+    const nLo = Math.max(0.3, nNow / 3);
+    const nHi = Math.max(3 * nNow, nNow + 2);
+    const ns = Array.from({ length: 121 }, (_, i) => nLo * (nHi / nLo) ** (i / 120));
     const at = (N: number) => mirrorRimHalfAngle(Rc, f / N);
     const line = (y: number[], name: string, color: string, dash?: string) =>
       ({ x: ns.map(r6), y: y.map(r6), type: "scatter", mode: "lines", name, line: { color, width: 2, ...(dash ? { dash } : {}) } });

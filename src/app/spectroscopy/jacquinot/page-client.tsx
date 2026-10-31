@@ -57,6 +57,12 @@ export default function JacquinotPage() {
         <ValidatedNumberInput label="Beam Diameter (mm)" value={beamRaw} onChange={setBeamDiameter} min={1} max={500} />
       </div>
 
+      {res > wn && (
+        <div className="mb-6 rounded-lg border border-yellow-800 bg-yellow-950/40 p-4 text-sm text-yellow-100">
+          The resolution 1/L = {fmt(res)} cm⁻¹ is coarser than ν̃ = {fmt(wn)} cm⁻¹: increase the maximum path difference L.
+        </div>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="Resolution Δν̃ = 1/L" value={`${fmt(res)} cm⁻¹`} tone="blue" subtext={`resolving power R = ν̃L = ${fmt(R)}`} />
         <ResultCard label="Max Solid Angle Ω = 2πΔν̃/ν̃" value={`${fmt(omega)} sr`} tone="green"

@@ -351,8 +351,8 @@ function VibronicModel(props: {
         <p>
           One vibrational mode, the same frequency in both electronic states, displaced harmonic potentials, emission from
           the relaxed v′ = 0 level, and T ≈ 0, so absorption and emission line shapes are mirror images about the 0–0 line.
-          The emission is red-tailed in wavelength because its progression runs to the red and the 10⁷/λ² Jacobian of a
-          spectral density stretches that side; absorption is a property at each wavelength and takes no Jacobian. Real
+          The emission is red-tailed in wavelength because its progression runs to the red and the λ = 10⁷/ν̃ axis map
+          stretches that side; the 10⁷/λ² Jacobian of a spectral density keeps the area (it lowers the red wing); absorption is a property at each wavelength and takes no Jacobian. Real
           dyes have several modes, thermal hot bands, solvent relaxation and a different excited-state frequency, so fit
           S and ν̃_v to a measured spectrum rather than reading them from this one.
         </p>

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   absorbanceError, apparentAbsorbanceLimit, maxStrayRatio, measuredAbsorbance, measuredTransmittance, orderSortingWindow,
-  overlappingOrders, strayRatioFromPowerRatio,
+  overlapFreeBand, overlappingOrders, strayRatioFromPowerRatio,
 } from "../src/physics/spectroscopy/stray-light";
 import {
   czernyTurner, evalPolynomial, fitPolynomial, maxCalibrationError, pixelToWavelength, polynomialSlope, wavelengthToPixel,
@@ -100,4 +100,20 @@ test("spectral calibration: polynomial fits and their error across the detector"
   const rng = createRng(1);
   const noisy = px.map((x) => x + 0.05 * gaussian(rng));
   close(maxCalibrationError(fitPolynomial(noisy, hg, 3, c, c)!, sp) * 1e9, 0.0120, 3e-2);
+});
+
+test("overlap-free band of order m inside the source/detector range", () => {
+  // Palmer & Loewen ch. 2: order n puts mλ/n where order m has λ. Free when mλ/(m + 1) < λ_min and mλ/(m − 1) > λ_max.
+  // m = 2, 400–700 nm: [max(400, 700/2), min(700, 400·3/2)) = [400, 600) nm. At 590 nm orders 1 and 3 bring 1180 and
+  // 393.3 nm (both outside); at 610 nm order 3 brings 406.7 nm (inside).
+  const b = overlapFreeBand(400e-9, 700e-9, 2);
+  assert.ok(Math.abs(b.low - 400e-9) < 1e-15 && Math.abs(b.high - 600e-9) < 1e-15);
+  assert.equal(overlappingOrders(590e-9, 2, 400e-9, 700e-9).length, 0);
+  assert.equal(overlappingOrders(610e-9, 2, 400e-9, 700e-9).length, 1);
+  // m = 2, 200–1100 nm: [550, 300) is empty, since order 1 of 2λ lands everywhere (250 nm ← 500 nm).
+  assert.ok(Number.isNaN(overlapFreeBand(200e-9, 1100e-9, 2).low));
+  // m = 1: up to 2λ_min, but never past λ_max.
+  const one = overlapFreeBand(200e-9, 300e-9, 1);
+  assert.ok(Math.abs(one.low - 200e-9) < 1e-15 && Math.abs(one.high - 300e-9) < 1e-15);
+  assert.ok(Math.abs(overlapFreeBand(200e-9, 1100e-9, 1).high - 400e-9) < 1e-15);
 });
