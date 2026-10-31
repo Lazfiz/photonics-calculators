@@ -91,8 +91,8 @@ export default function DiodeLaserSafetyPage() {
         <div>
           <ValidatedNumberInput label="Exposure time (s)" value={exposureTime} onChange={setExposureTime} min={1e-9} max={30000} step="any" />
           <p className="text-xs text-gray-500 mt-2">
-            0.25 s (the blink reflex) only protects for visible beams; 10 s is the usual assumption for unintended viewing
-            of near-IR (ANSI Z136.1).
+            ICNIRP 2013, p. 285: 0.25 s (the blink reflex) for an unintended view of a visible beam, 10 s at
+            700–1400 nm.
           </p>
         </div>
       </div>

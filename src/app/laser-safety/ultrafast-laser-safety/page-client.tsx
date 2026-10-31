@@ -96,8 +96,10 @@ export default function UltrafastLaserSafetyPage() {
           single pulse, sets the limit: ICNIRP 2013&apos;s rule 2 holds every group of pulses to the limit for the time it
           spans, up to the whole exposure. Pulses closer together than T_i (5 µs below 1050 nm, 13 µs above) also count as
           one pulse for the C_P rule. The single-pulse limits below 1 ns are ICNIRP 2013 Table 5&apos;s: 1 mJ/m² over the
-          7 mm pupil from 100 fs to 10 ps (× C_C above 1050 nm; no C_A), 2 C_A mJ/m² from 10 ps; shorter than 100 fs, and
-          on the cornea below 1 ns, the irradiance is held at the shortest tabulated value.
+          7 mm pupil from 100 fs to 10 ps (× C_C above 1050 nm; no C_A), 2 C_A mJ/m² from 10 ps (20 C_C mJ/m² at 1050–1400 nm); shorter than 100 fs, and
+          on the cornea below 1 ns, the irradiance is held at the shortest tabulated value. For the cornea (below 400 nm and
+          above 1400 nm) ICNIRP 2013 (p. 287) also advises, as a conservative interim guideline, keeping sub-ns exposures
+          below 10 % of the 1 ns limit; the page applies it.
         </p>
         <p>
           Below 10 ps the retina is damaged by non-linear effects (laser-induced breakdown) rather than heat, which is why
@@ -112,8 +114,9 @@ export default function UltrafastLaserSafetyPage() {
         <div className="bg-gray-900 rounded-lg p-4">
           <PulseTrainChart lambda={lambda} d={d} duration={tau} exposure={T} energy={Q} prf={prf} />
           <p className="text-xs text-gray-500 mt-2">
-            Largest energy per pulse against the repetition rate at the output, for this pulse duration and exposure. Above a
-            few kHz the average-power rule falls as 1/f and takes over from the single-pulse limit.
+            Largest energy per pulse against the repetition rate at the output, for this pulse duration and exposure. Which
+            rule binds depends on the train: for exposures longer than 0.25 s the C_P rule usually binds first as the rate
+            rises, then the group (rule 2) rule at high rates.
           </p>
         </div>
       ) : null}

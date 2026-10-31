@@ -50,7 +50,7 @@ export default function AnsiIecComparisonPage() {
             <ResultCard
               label="Exposure limit (MPE), ICNIRP 2013"
               value={`${fmtNum(r.mpe.energy / mpeArea)} J/m²`}
-              subtext={`${r.mpe.kind ? LIMIT_LABELS[r.mpe.kind] : ""}; averaged over ${fmtNum(r.mpe.aperture * 1e3)} mm, ${fmtNum(r.mpe.energy / mpeArea / t)} W/m²`}
+              subtext={`${r.mpe.kind ? LIMIT_LABELS[r.mpe.kind] : ""}; for a beam inside the aperture, averaged over ${fmtNum(r.mpe.aperture * 1e3)} mm, ${fmtNum(r.mpe.energy / mpeArea / t)} W/m²`}
               tone="blue"
             />
             <ResultCard

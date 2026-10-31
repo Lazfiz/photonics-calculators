@@ -21,7 +21,9 @@
  * Not modelled: repetitive pulses, atmospheric attenuation, collecting optics, specular reflections, beams that
  * converge after the aperture.
  */
-import { ALPHA_MIN, eyeLimits, limitMaxPower, T_MAX, T_MIN, type EyeLimitKind, type TabulatedLimit } from "./eye-exposure-limits";
+import {
+  ALPHA_MIN, apertureIrradiance, eyeLimits, limitingAperture, limitMaxPower, T_MAX, T_MIN, type EyeLimitKind, type TabulatedLimit,
+} from "./eye-exposure-limits";
 
 /** How a beam widens with range: a + rφ (the standards' formula) or √(a² + (rφ)²) (Gaussian, waist at the aperture). */
 export type BeamGrowth = "linear" | "gaussian";
@@ -154,10 +156,18 @@ export interface OpticalDensity {
  * Optical density a filter needs for a beam of power P (W) and 1/e² diameter d (m) at λ (m) to stay within every eye
  * limit for exposures up to t (s): log10(P/P_max) with P_max from `limitMaxPower` (a filter scales the power, not the
  * profile). OD = log10(H/EL) as in ANSI Z136.1 and EN 207; the filter also has to survive the beam.
+ * With `actualExposure`, ICNIRP 2013 Table 5 note c: a beam narrower than 1 mm, for t < 0.35 s, is compared by its
+ * actual radiant exposure, not its average over the 1 mm aperture. Then P_max shrinks by the peak-to-average ratio
+ * (8/(πd²)) / ((1 − exp(−2D²/d²))/(πD²/4)) = 2(D/d)²/(1 − exp(−2D²/d²)), D = 1 mm: the same for every t′ ≤ t, as the
+ * aperture is 1 mm throughout.
  */
-export function requiredOpticalDensity(lambda: number, P: number, d: number, t: number): OpticalDensity {
+export function requiredOpticalDensity(
+  lambda: number, P: number, d: number, t: number, opts: { actualExposure?: boolean } = {},
+): OpticalDensity {
   const limits = eyeLimits(lambda).map((limit): LimitOpticalDensity => {
-    const pMax = limitMaxPower(limit, d, t);
+    const D = limitingAperture(limit, t);
+    const noteC = opts.actualExposure === true && d > 0 && d < 1e-3 && t < 0.35 && Math.abs(D - 1e-3) < 1e-12;
+    const pMax = limitMaxPower(limit, d, t) / (noteC ? 8 / (Math.PI * d * d) / apertureIrradiance(1, d, D) : 1);
     return { kind: limit.kind, pMax, od: Math.max(0, Math.log10(P / pMax)) };
   });
   if (limits.length === 0 || limits.some((l) => Number.isNaN(l.od))) return { od: NaN, limiting: null, limits };

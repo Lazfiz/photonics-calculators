@@ -16,7 +16,7 @@ const NAMES: Record<AelClass, string> = { "1": "Class 1 (1M)", "2": "Class 2 (2M
 const COLORS: Record<AelClass, string> = { "1": "#4ade80", "2": "#facc15", "3R": "#fb923c", "3B": "#f87171" };
 
 export default function ClassificationPage() {
-  const [power, setPower] = useURLState("power", 10, { min: 0 }); // mW
+  const [power, setPower] = useURLState("power", 20, { min: 0 }); // mW
   const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 180, max: 1000000 }); // nm
   const [beamDia, setBeamDia] = useURLState("beamDia", 1, { min: 0.001 }); // mm, 1/e² at the output (waist)
   const [divergence, setDivergence] = useURLState("divergence", 1, { min: 0 }); // mrad, 1/e² full angle
@@ -59,6 +59,10 @@ export default function ClassificationPage() {
 
   const selectClass = "mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white";
   const c1Applies = opts.condition1 && condition1Modelled(lambda);
+  // The standard rounds its AELs to two figures (up to 4 % from the ICNIRP-derived limits here).
+  const nearLimit = result.checks.some((c) =>
+    [c.condition3.power, c.condition1?.power ?? NaN].some((p) => Number.isFinite(p) && Math.abs(P / p - 1) < 0.04),
+  );
   return (
     <>
       <LaserSafetyDisclaimer />
@@ -90,7 +94,12 @@ export default function ClassificationPage() {
       {result.laserClass ? (
         <>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-4">
-            <ResultCard label="Class (IEC 60825-1:2014)" value={`Class ${result.laserClass}`} tone={CLASS_TONES[result.laserClass]} />
+            <ResultCard
+              label="Class (IEC 60825-1:2014)"
+              value={`Class ${result.laserClass}`}
+              subtext={!c1Applies && (result.laserClass === "1" || result.laserClass === "2") ? `Condition 1 not assessed: may be ${result.laserClass}M` : undefined}
+              tone={CLASS_TONES[result.laserClass]}
+            />
             <ResultCard
               label="Beam at the naked-eye stop (Condition 3)"
               value={`${fmtNum(result.diameter3 * 1e3)} mm`}
@@ -104,6 +113,11 @@ export default function ClassificationPage() {
               tone="cyan"
             />
           </div>
+          {nearLimit && (
+            <p className="text-amber-300 text-sm mb-4">
+              Within 4 % of a class limit: the standard&apos;s tables round to two figures, so check this power against them.
+            </p>
+          )}
           <div className="overflow-x-auto mb-8">
             <table className="w-full text-sm text-gray-300">
               <thead>

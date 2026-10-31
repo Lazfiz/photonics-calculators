@@ -127,3 +127,14 @@ test("uniform-irradiance limit", () => {
   assert.equal(limitMaxIrradiance(thermal, 100), 10);
   assertRel(limitMaxIrradiance(thermal, 10), Math.min(10, exposureLimit(thermal, 9.999999) / 9.999999), 1e-6, "joint");
 });
+
+test("OD with ICNIRP Table 5 note c: a beam under 1 mm for under 0.35 s counts by its peak", () => {
+  // 10 W at 10.6 µm in a 0.2 mm spot, 0.25 s: the peak radiant exposure 8Pt/(πd²) = 1.59 × 10⁸ J/m² against
+  // 5.6 × 10³ t^0.25 = 3.96 × 10³ J/m² (Table 5): OD 4.604. The 1 mm average gives 2.905.
+  const peak = (8 * 10 * 0.25) / (Math.PI * 4e-8);
+  assertRel(requiredOpticalDensity(10.6e-6, 10, 0.2e-3, 0.25, { actualExposure: true }).od, Math.log10(peak / (5.6e3 * Math.pow(0.25, 0.25))), 1e-9, "note c");
+  assertRel(requiredOpticalDensity(10.6e-6, 10, 0.2e-3, 0.25).od, 2.9051770981, 1e-9, "aperture average");
+  // Not applied from 0.35 s, nor to a beam of 1 mm or more.
+  assert.equal(requiredOpticalDensity(10.6e-6, 10, 0.2e-3, 0.5, { actualExposure: true }).od, requiredOpticalDensity(10.6e-6, 10, 0.2e-3, 0.5).od);
+  assert.equal(requiredOpticalDensity(10.6e-6, 10, 2e-3, 0.25, { actualExposure: true }).od, requiredOpticalDensity(10.6e-6, 10, 2e-3, 0.25).od);
+});

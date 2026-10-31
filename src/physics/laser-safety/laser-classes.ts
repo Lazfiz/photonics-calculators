@@ -275,6 +275,17 @@ export interface Classification {
   readonly diameter1: number | null;
 }
 
+/**
+ * Beam escaping a centred round opening (diameter D, m) in an enclosure around a Gaussian beam (power P, W; 1/e²
+ * diameter d, m) under a window of optical density od: power P(1 − exp(−2D²/d²))·10^−od, and a 1/e² diameter of at
+ * most D. All of the escaping power lies within the opening, so a beam clipped by it is classed as no wider than it:
+ * conservative near the opening (its extra diffraction only lowers the hazard far from it).
+ */
+export function escapingBeam(P: number, d: number, D: number, od: number): { readonly power: number; readonly d: number } {
+  if (!(P >= 0 && d > 0 && D >= 0 && od >= 0)) return { power: NaN, d: NaN };
+  return { power: P * -Math.expm1((-2 * D * D) / (d * d)) * Math.pow(10, -od), d: Math.min(d, D) };
+}
+
 export interface CwBeam {
   /** 1/e² diameter at the output (the waist), m. */
   readonly d: number;

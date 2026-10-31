@@ -37,6 +37,8 @@ export default function FiberLaserSafetyPage() {
 
   // 1/e² full-angle divergence: a TEM₀₀ mode diffracting from its waist w₀ = d/2, or the output filling the NA.
   const phi = multimode ? 2 * Math.tan(Math.asin(NA)) : 2 * divergenceHalfAngle({ lambda, w0: d / 2 });
+  // The paraxial φ = 2λ/(πw₀) fails once λ/(πw₀) exceeds ~0.3 rad (MFD close to λ).
+  const nonParaxial = !multimode && lambda / (Math.PI * (d / 2)) > 0.3;
   const equivalentNA = Math.sin(Math.min(phi / 2, Math.PI / 2));
 
   const beam = useMemo(() => roundBeam(d, phi, "gaussian"), [d, phi]);
@@ -105,6 +107,12 @@ export default function FiberLaserSafetyPage() {
           </p>
         </div>
       </div>
+
+      {nonParaxial ? (
+        <p className="text-amber-300 mb-4">
+          MFD close to the wavelength: the paraxial divergence λ/(πw₀) overstates the spread, so the NOHD is understated.
+        </p>
+      ) : null}
 
       {valid ? (
         <>

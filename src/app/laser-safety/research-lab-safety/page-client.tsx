@@ -15,7 +15,7 @@ import { classifyCw } from "../../../physics/laser-safety/laser-classes";
 import { peakIrradiance } from "../../../physics/laser-safety/visual-interference";
 
 export default function ResearchLabSafetyPage() {
-  const [power, setPower] = useURLState("power", 500, { min: 0 }); // mW
+  const [power, setPower] = useURLState("power", 300, { min: 0 }); // mW
   const [wavelength, setWavelength] = useURLState("wavelength", 780, { min: 180, max: 1000000 }); // nm
   const [beamDia, setBeamDia] = useURLState("beamDia", 1.5, { min: 0.001 }); // mm, 1/e² at the output
   const [divergence, setDivergence] = useURLState("divergence", 1.5, { min: 0 }); // mrad, 1/e² full angle
@@ -64,7 +64,7 @@ export default function ResearchLabSafetyPage() {
         <ValidatedNumberInput label="Divergence, 1/e² full angle (mrad)" value={divergence} onChange={setDivergence} min={0} step="any" />
         <div>
           <ValidatedNumberInput label="Eye exposure time (s)" value={exposureTime} onChange={setExposureTime} min={1e-9} max={30000} step="any" />
-          <p className="text-xs text-gray-500 mt-2">10 s for an accidental view of an invisible beam (ANSI Z136.1); 0.25 s only for visible beams.</p>
+          <p className="text-xs text-gray-500 mt-2">0.25 s for an unintended view of a visible beam, 10 s in the near infrared (700–1400 nm); outside 400–1400 nm ICNIRP 2013 (p. 285) uses the longest exposure expected.</p>
         </div>
         <ValidatedNumberInput label="Lab length (m)" value={labLength} onChange={setLabLength} min={0} step="any" />
         <ValidatedNumberInput label="Lab width (m)" value={labWidth} onChange={setLabWidth} min={0} step="any" />

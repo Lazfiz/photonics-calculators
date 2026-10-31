@@ -6,7 +6,7 @@ import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { classifyCw, type ClassCheck } from "../../../physics/laser-safety/laser-classes";
+import { classifyCw, escapingBeam, type ClassCheck } from "../../../physics/laser-safety/laser-classes";
 
 /** Largest power of the beam within a class under every applied condition, W. */
 const classMax = (c: ClassCheck) => Math.min(c.condition3.power, c.condition1?.power ?? Infinity);
@@ -27,10 +27,10 @@ export default function EnclosureClassPage() {
   const D = Math.max(apertureSize, 0) * 1e-3;
   const od = Math.max(windowOD, 0);
 
-  // The opening passes the centred Gaussian's share 1 − exp(−2D²/d²); the window attenuates it by 10^−OD.
-  const throughOpening = P * -Math.expm1((-2 * D * D) / (d * d));
-  const accessible = throughOpening * Math.pow(10, -od);
-  const r = useMemo(() => classifyCw(lambda, accessible, { d, phi }), [lambda, accessible, d, phi]);
+  // The opening passes the centred Gaussian's share 1 − exp(−2D²/d²) in a beam no wider than D; the window × 10^−OD.
+  const throughOpening = escapingBeam(P, d, D, 0).power;
+  const { power: accessible, d: dOut } = escapingBeam(P, d, D, od);
+  const r = useMemo(() => classifyCw(lambda, accessible, { d: dOut, phi }), [lambda, accessible, dOut, phi]);
   const [c1, , c3R] = r.checks;
   const odFor = (c: ClassCheck) => Math.max(0, Math.log10(throughOpening / classMax(c)));
 
@@ -59,7 +59,13 @@ export default function EnclosureClassPage() {
             <ResultCard
               label="Class 1 limit for this beam"
               value={fmtPower(classMax(c1))}
-              subtext={c1.condition3.limiting ? `${AEL_LABELS[c1.condition3.limiting]}, time base ${fmtNum(c1.condition3.timeBase)} s` : undefined}
+              subtext={
+                c1.condition1 && c1.condition1.power < c1.condition3.power
+                  ? "through binoculars (Condition 1)"
+                  : c1.condition3.limiting
+                    ? `${AEL_LABELS[c1.condition3.limiting]}, time base ${fmtNum(c1.condition3.timeBase)} s`
+                    : undefined
+              }
               tone="green"
             />
           </div>
@@ -85,15 +91,17 @@ export default function EnclosureClassPage() {
         <p>
           A product that encloses a stronger laser is classified by what a person can reach outside it, the accessible
           emission (IEC 60825-1:2014). Here that is the beam escaping through one opening, attenuated by a window or
-          filter over it; the product class follows from the class limits for that beam: a 7 mm stop 100 mm away for
-          the naked eye (at 400–1400 nm; the corneal stop in the infrared, 1 mm in the UV) and a 50 mm stop at 2 m for
-          binoculars, over a 100 s time base (30 000 s in the UV). A Class 1 product keeps the emission below the
+          filter over it; the product class follows from the class limits for that beam: for the naked eye a stop
+          100 mm away at 302.5 nm – 4 µm and at the opening elsewhere (7 mm at 400–1400 nm; the corneal stop in the
+          infrared, 1 mm in the UV), and for binoculars a 50 mm stop at 2 m (modelled at 400–1400 nm), over a 100 s
+          time base (30 000 s in the UV). A Class 1 product keeps the emission below the
           Class 1 limit in normal operation; panels that open onto the stronger beam need safety interlocks, or tools
           to remove them and warning labels (IEC 60825-1).
         </p>
         <p>
-          The opening passes the centred Gaussian beam&apos;s share 1 − exp(−2D²/d²); the escaping beam is treated as a
-          Gaussian of the same size (a clipped beam diffracts more, which lowers the hazard far from it). Not modelled:
+          The opening passes the centred Gaussian beam&apos;s share 1 − exp(−2D²/d²). The escaping beam is classed as a
+          Gaussian no wider than the opening, since all of its power lies within it: conservative near the opening, as
+          a clipped beam diffracts more, which lowers the hazard only far from it. Not modelled:
           scattered and diffuse leakage, several openings, pulses, and whether the window or guard survives the beam
           (IEC 60825-4 tests laser guards).
         </p>

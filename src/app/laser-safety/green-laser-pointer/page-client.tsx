@@ -26,8 +26,11 @@ export default function GreenLaserPointerPage() {
   const phi = Math.max(divergence, 0) * 1e-3;
   const r = Math.max(distance, 0);
   const visible = wavelength >= 400 && wavelength <= 700;
-  // A visible beam is assumed to be looked away from within 0.25 s; an invisible one gets 10 s (ANSI Z136.1).
+  // Eye exposure time, ICNIRP 2013 p. 285: 0.25 s for an unintended view of a visible beam, 10 s at 700–1400 nm.
+  // Elsewhere the longest expected exposure applies; 10 s is assumed.
+  const nearIr = wavelength > 700 && wavelength <= 1400;
   const tEye = visible ? 0.25 : 10;
+  const outsideRule = !visible && !nearIr;
 
   const beam = useMemo(() => roundBeam(d, phi), [d, phi]);
   const cls = useMemo(() => classifyCw(lambda, P, { d, phi }), [lambda, P, d, phi]);
@@ -51,12 +54,16 @@ export default function GreenLaserPointerPage() {
     });
     const traces: Record<string, unknown>[] = [
       { x: rs, y: rs.map((x) => toUw(peakIrradiance(P, effectiveDiameterAt(beam, x)))), type: "scatter", mode: "lines", name: "Peak irradiance", line: { color: "#4ade80" } },
-      line(ICAO_LEVELS.sensitive, "Flash-blind", "#f87171"),
-      line(ICAO_LEVELS.critical, "Glare", "#fbbf24"),
-      line(ICAO_LEVELS.laserFree, "Distraction", "#60a5fa"),
     ];
+    if (visible) {
+      traces.push(
+        line(ICAO_LEVELS.sensitive, "Flash-blind", "#f87171"),
+        line(ICAO_LEVELS.critical, "Glare", "#fbbf24"),
+        line(ICAO_LEVELS.laserFree, "Distraction", "#60a5fa"),
+      );
+    }
     return P > 0 ? traces : [];
-  }, [P, beam, dazzle.laserFree]);
+  }, [P, beam, dazzle.laserFree, visible]);
 
   const fmtRange = (x: number) => (x === 0 ? "below it at the output" : fmtDistance(x));
   return (
@@ -92,11 +99,20 @@ export default function GreenLaserPointerPage() {
               tone="cyan"
             />
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-            <ResultCard label="Flash-blindness (100 µW/cm²) out to" value={fmtRange(dazzle.sensitive)} tone="orange" />
-            <ResultCard label="Glare (5 µW/cm²) out to" value={fmtRange(dazzle.critical)} tone="yellow" />
-            <ResultCard label="Distraction (50 nW/cm²) out to" value={fmtRange(dazzle.laserFree)} tone="blue" />
-          </div>
+          {outsideRule ? (
+            <p className="text-amber-300 mb-4">
+              Outside 400–1400 nm ICNIRP 2013 uses the longest exposure expected; 10 s is assumed here.
+            </p>
+          ) : null}
+          {visible ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+              <ResultCard label="Flash-blindness (100 µW/cm²) out to" value={fmtRange(dazzle.sensitive)} tone="orange" />
+              <ResultCard label="Glare (5 µW/cm²) out to" value={fmtRange(dazzle.critical)} tone="yellow" />
+              <ResultCard label="Distraction (50 nW/cm²) out to" value={fmtRange(dazzle.laserFree)} tone="blue" />
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500 mb-8">Dazzle levels apply to visible beams only.</p>
+          )}
           <p className="text-sm text-gray-400 mb-8">
             Peak irradiance at {fmtDistance(r)}: {fmtNum(peakAtR * 100)} µW/cm².
           </p>

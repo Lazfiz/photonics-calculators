@@ -33,7 +33,9 @@
  * Below 1 ns (Table 5): the retinal thermal limit is 1.0 C_E mJ/m² (× C_C from 1050 nm, no C_A) from 100 fs to 10 ps
  * and its 1 ns value from 10 ps. Below 100 fs, and below 1 ns for the cornea and anterior segment, ICNIRP holds the
  * irradiance at its value at the shortest tabulated duration ("For exposure durations shorter than those defined in
- * Table 5"), so H ∝ t. Each aperture keeps its 1 ns size.
+ * Table 5", p. 282), so H ∝ t. Below 400 nm and above 1400 nm (the cornea) ICNIRP's "conservative interim guideline"
+ * (p. 287) also keeps the exposure below 10 % of the 1 ns limit, which is the lower of the two from 100 ps to 1 ns.
+ * Each aperture keeps its 1 ns size.
  *
  * Rule 1 uses the limit at τ alone, as written. (`limitMaxPower`·τ, the CW reading, also holds every shorter part of
  * the pulse to its limit; the two differ only by the tables' rounding at joints and on an extended source's t^1.25
@@ -76,6 +78,11 @@ export function pulseLimits(lambda: number, alpha = 0): EyeLimit[] {
         { t0: 0, t1: T_ULTRASHORT, a: h / T_ULTRASHORT, p: 1 },
         { t0: T_ULTRASHORT, t1: T_10PS, a: h, p: 0 },
         { t0: T_10PS, t1: T_MIN, a: h1, p: 0 },
+      ];
+    } else if (limit.kind === "cornealUv" || limit.kind === "cornealIr") {
+      short = [
+        { t0: 0, t1: 0.1 * T_MIN, a: h1 / T_MIN, p: 1 },
+        { t0: 0.1 * T_MIN, t1: T_MIN, a: 0.1 * h1, p: 0 },
       ];
     } else short = [{ t0: 0, t1: T_MIN, a: h1 / T_MIN, p: 1 }];
     const [ap, ...rest] = limit.apertures;

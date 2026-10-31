@@ -12,7 +12,6 @@ import {
 } from "../../../physics/laser-safety/filter-heating";
 
 const AMBIENT_C = 25;
-const T_CHART = [1e-3, 1e3] as const; // s
 
 export default function ThermalLensHazardPage() {
   const [power, setPower] = useURLState("power", 2000, { min: 0 }); // mW
@@ -40,13 +39,17 @@ export default function ThermalLensHazardPage() {
   const meanIrradiance = (Math.max(power, 0) * 1e-3) / ((Math.PI * d * d) / 4) / 1e4; // W/cm²
 
   const chartData = useMemo(() => {
-    const ts = Array.from({ length: 121 }, (_, i) => T_CHART[0] * Math.pow(T_CHART[1] / T_CHART[0], i / 120));
+    const tMin = Math.min(1e-3, t / 3); // s, the range always contains the exposure time
+    const tMax = Math.max(1e3, 3 * t);
+    const ts = Array.from({ length: 121 }, (_, i) => tMin * Math.pow(tMax / tMin, i / 120));
     const rise = finiteXY(ts, ts.map((x) => filterTemperatureRise(pAbs, d, L, x, material, deposition)));
+    const here = finiteXY([t], [filterTemperatureRise(pAbs, d, L, t, material, deposition)]);
     return [
       { ...rise, type: "scatter", mode: "lines", name: "ΔT", line: { color: "#f87171" } },
-      { x: [...T_CHART], y: [dTAllowed, dTAllowed], type: "scatter", mode: "lines", name: "To T_g", line: { color: "#fbbf24", dash: "dash" } },
+      { x: [tMin, tMax], y: [dTAllowed, dTAllowed], type: "scatter", mode: "lines", name: "To T_g", line: { color: "#fbbf24", dash: "dash" } },
+      { ...here, type: "scatter", mode: "markers", name: "Your exposure", marker: { color: "#ffffff", size: 8 } },
     ];
-  }, [pAbs, d, L, material, deposition, dTAllowed]);
+  }, [pAbs, d, L, t, material, deposition, dTAllowed]);
 
   const selectClass = "mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white";
   return (
