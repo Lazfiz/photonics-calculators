@@ -51,7 +51,9 @@ export default function ApertureAveragingPage() {
     const lambda = wavelength * 1e-9;
     const L = distance * 1e3;
     const n = 80;
-    const Dm = Array.from({ length: n }, (_, i) => 1e-3 * 1000 ** (i / (n - 1))); // 1 mm .. 1 m
+    const D0 = rxDiameter > 0 ? Math.min(1e-3, (rxDiameter * 1e-2) / 2) : 1e-3; // start below the current D
+    const Dend = Math.max(1, rxDiameter * 1e-2);
+    const Dm = Array.from({ length: n }, (_, i) => D0 * (Dend / D0) ** (i / (n - 1))); // 1 mm .. 1 m
     const d2s = Dm.map((D) => apertureParameter(lambda, L, D));
     const x = Dm.map((D) => D * 100);
     return [
@@ -59,8 +61,13 @@ export default function ApertureAveragingPage() {
       { type: "scatter", mode: "lines", x, y: d2s.map((d) => andrewsApertureFactor(d, "plane")), name: "plane, Andrews 1992", line: { color: "#06b6d4", dash: "dash" } },
       { type: "scatter", mode: "lines", x, y: d2s.map((d) => weakApertureFactor(d, "spherical")), name: "spherical, exact", line: { color: "#a855f7", width: 2 } },
       { type: "scatter", mode: "lines", x, y: d2s.map((d) => andrewsApertureFactor(d, "spherical")), name: "spherical, Andrews 1992", line: { color: "#a855f7", dash: "dash" } },
+      ...(rxDiameter > 0 ? [{
+        type: "scatter", mode: "markers", name: "Current", x: [rxDiameter],
+        y: [weakApertureFactor(apertureParameter(lambda, L, rxDiameter * 1e-2), "plane")],
+        marker: { color: "#facc15", size: 10 },
+      }] : []),
     ];
-  }, [wavelength, distance]);
+  }, [wavelength, distance, rxDiameter]);
 
   return (
     <>
@@ -99,7 +106,7 @@ export default function ApertureAveragingPage() {
         <p>
           For a Gaussian aperture in weak fluctuations, A is computed by numerical integration of the Kolmogorov
           spectrum (plane and spherical wave). Andrews&apos; interpolation [1 + 1.062 d²]^(−7/6) is within 13 %
-          of the exact plane-wave value for d² ≥ 1 (4 % at 10 cm, 1 km), but his spherical-wave version (0.333) runs 25–33 % high at d² = 1–10 and 10–13 % low for d² ≥ 1000.
+          of the exact plane-wave value for d² ≥ 1 (4 % at 10 cm, 1 km), but his spherical-wave version (0.333) runs 25–37 % high at d² = 1–10 (peak 1.37× near d² ≈ 2.3) and 10–13 % low for d² ≥ 1000.
           For D ≫ √(L/k), A ∝ d^(−7/3).
         </p>
         <p>
@@ -107,7 +114,8 @@ export default function ApertureAveragingPage() {
           Andrews &amp; Phillips, <em>Laser Beam Propagation through Random Media</em>, 2nd ed., 2005). That expression is
           an interpolation whose aperture terms fall as d⁻² instead of d^(−7/3), so for d² ≫ 1 it averages too little
           (1.8× the weak value at 10 cm, 1 km); in weak turbulence A·σ_R² is the better value. A hard circular
-          aperture averages slightly more than the Gaussian one.
+          aperture gives ≈ 5–11 % lower A (more averaging) than this Gaussian aperture at d² = 1–30, but a higher A at
+          large d²: the ratio crosses 1 near d² ≈ 100 and tends to 1.13 as d² → ∞.
         </p>
       </div>
     </>

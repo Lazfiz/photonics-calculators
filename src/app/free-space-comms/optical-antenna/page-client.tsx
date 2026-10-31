@@ -50,13 +50,19 @@ export default function OpticalAntennaPage() {
   const plotData = useMemo(() => {
     const lambda = wavelength * 1e-9;
     const g = kleinDegnanEfficiency(fill, obscuration);
-    const apertures = Array.from({ length: 200 }, (_, i) => 1 + i * 0.5);
+    const apertures = Array.from({ length: 200 }, (_, i) => (aperture / 10) * 100 ** (i / 199));
+    const txAt = (cm: number) => toDb((apertureGain(cm * 1e-2, lambda) * g * efficiency) / beamQuality ** 4);
+    const rxAt = (cm: number) => toDb(apertureGain(cm * 1e-2, lambda, obscuration, efficiency));
+    const divAt = (cm: number) => ((beamQuality * width * lambda) / (Math.PI * cm * 1e-2)) * 1e6;
     return [
-      { x: apertures, y: apertures.map((cm) => toDb((apertureGain(cm * 1e-2, lambda) * g * efficiency) / beamQuality ** 4)), type: "scatter", mode: "lines", name: "TX gain (dBi)", line: { color: "#06b6d4" }, yaxis: "y" },
-      { x: apertures, y: apertures.map((cm) => toDb(apertureGain(cm * 1e-2, lambda, obscuration, efficiency))), type: "scatter", mode: "lines", name: "RX gain (dBi)", line: { color: "#a78bfa", dash: "dot" }, yaxis: "y" },
-      { x: apertures, y: apertures.map((cm) => ((beamQuality * width * lambda) / (Math.PI * cm * 1e-2)) * 1e6), type: "scatter", mode: "lines", name: "Divergence (µrad)", line: { color: "#f59e0b" }, yaxis: "y2" },
+      { x: apertures, y: apertures.map(txAt), type: "scatter", mode: "lines", name: "TX gain (dBi)", line: { color: "#06b6d4" }, yaxis: "y" },
+      { x: apertures, y: apertures.map(rxAt), type: "scatter", mode: "lines", name: "RX gain (dBi)", line: { color: "#a78bfa", dash: "dot" }, yaxis: "y" },
+      { x: apertures, y: apertures.map(divAt), type: "scatter", mode: "lines", name: "Divergence (µrad)", line: { color: "#f59e0b" }, yaxis: "y2" },
+      { x: [aperture], y: [txAt(aperture)], type: "scatter", mode: "markers", name: "Current TX", marker: { color: "#06b6d4", size: 9 }, yaxis: "y" },
+      { x: [aperture], y: [rxAt(aperture)], type: "scatter", mode: "markers", name: "Current RX", marker: { color: "#a78bfa", size: 9 }, yaxis: "y" },
+      { x: [aperture], y: [divAt(aperture)], type: "scatter", mode: "markers", name: "Current divergence", marker: { color: "#f59e0b", size: 9 }, yaxis: "y2" },
     ];
-  }, [wavelength, obscuration, efficiency, beamQuality, fill, width]);
+  }, [aperture, wavelength, obscuration, efficiency, beamQuality, fill, width]);
 
   return (
     <>
@@ -81,14 +87,14 @@ export default function OpticalAntennaPage() {
               subtext={`g(α, γ) = ${calc.g.toFixed(4)} (${toDb(calc.g).toFixed(2)} dB)`} />
             <ResultCard label="Receive gain" value={`${calc.rxGain.toFixed(2)} dBi`} tone="purple" subtext="(πD/λ)² (1 − γ²) η" />
             <ResultCard label="Directivity limit (πD/λ)²" value={`${calc.directivity.toFixed(2)} dBi`} tone="gray" subtext="uniform, unobscured" />
-            <ResultCard label="Beam waist W₀ = a/α" value={`${fmt(calc.w0 * 1e3)} mm`} tone="blue" />
+            <ResultCard label="Beam waist W₀ = a/α (unclipped Gaussian)" value={`${fmt(calc.w0 * 1e3)} mm`} tone="blue" />
             <ResultCard label="Far-field half-angle (1/e²)" value={`${fmt(calc.theta * 1e6)} µrad`} tone="orange"
               subtext={`unclipped Gaussian M²λ/(πW₀): ${fmt(calc.thetaGauss * 1e6)} µrad`} />
-            <ResultCard label="Rayleigh range πW₀²/(M²λ)" value={`${fmt(calc.zR)} m`} tone="green" />
+            <ResultCard label="Rayleigh range πW₀²/(M²λ) (unclipped Gaussian)" value={`${fmt(calc.zR)} m`} tone="green" />
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
             <ChartPanel data={plotData} layout={{
-              xaxis: { title: "Aperture (cm)", color: "#9ca3af", gridcolor: "#374151" },
+              xaxis: { title: "Aperture (cm)", color: "#9ca3af", gridcolor: "#374151", type: "log" },
               yaxis: { title: "Gain (dBi)", color: "#06b6d4", gridcolor: "#374151" },
               yaxis2: { title: "Divergence (µrad)", color: "#f59e0b", gridcolor: "#374151", overlaying: "y", side: "right" },
               paper_bgcolor: "transparent", plot_bgcolor: "transparent",

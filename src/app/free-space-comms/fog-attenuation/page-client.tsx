@@ -50,22 +50,25 @@ export default function FogAttenuationPage() {
     const outside = isAlNaboulsi(model)
       ? wavelength < AL_NABOULSI_LAMBDA[0] * 1e9 || wavelength > AL_NABOULSI_LAMBDA[1] * 1e9
         || visibility < AL_NABOULSI_VISIBILITY[0] / 1e3 || visibility > AL_NABOULSI_VISIBILITY[1] / 1e3
-      : wavelength > 1550;
+      : wavelength > 1550 || visibility < 0.05;
     return { sigma, alpha, loss, transmittance: 10 ** (-loss / 10), q, outside };
   }, [model, wavelength, visibility, range]);
 
   const plotData = useMemo(() => {
     const logSpan = (lo: number, hi: number, n: number) =>
       Array.from({ length: n }, (_, i) => lo * (hi / lo) ** (i / (n - 1)));
-    return MODELS.map((m) => {
-      const vis = isAlNaboulsi(m.id) ? logSpan(0.05, 1, 60) : logSpan(0.05, 10, 120);
+    const lines = MODELS.map((m) => {
+      const vis = isAlNaboulsi(m.id) ? logSpan(0.05, 1, 60) : logSpan(Math.min(0.05, visibility), Math.max(10, visibility), 160);
       return {
         x: vis, y: vis.map((v) => extinctionPerKm(m.id, wavelength, v) * DB_PER_NEPER),
         type: "scatter", mode: "lines", name: m.label,
         line: { color: m.color, width: m.id === model ? 3 : 1.5, dash: isAlNaboulsi(m.id) ? "dash" : "solid" },
       };
     });
-  }, [wavelength, model]);
+    return [...lines, {
+      x: [visibility], y: [calc.alpha], type: "scatter", mode: "markers", name: "Current", marker: { color: "#f97316", size: 10 },
+    }];
+  }, [wavelength, model, visibility, calc.alpha]);
 
   return (
     <>
@@ -96,7 +99,7 @@ export default function FogAttenuationPage() {
         <p className="mb-6 text-sm text-yellow-300">
           {isAlNaboulsi(model)
             ? "Outside the fitted range of Al Naboulsi's law (690–1550 nm, V = 50–1000 m): an extrapolation."
-            : "Beyond 1550 nm the visibility laws are extrapolated."}
+            : [wavelength > 1550 ? "Beyond 1550 nm the visibility laws are extrapolated." : "", visibility < 0.05 ? "Below 50 m visibility: extrapolation." : ""].filter(Boolean).join(" ")}
         </p>
       )}
 

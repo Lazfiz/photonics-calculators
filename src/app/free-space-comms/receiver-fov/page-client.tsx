@@ -48,7 +48,7 @@ export default function ReceiverFovPage() {
   const [sceneRaw, setScene] = useURLState("scene", "horizon");
   const [wavelengthRaw, setWavelength] = useURLState("wavelength", 1550); // nm
   const [diameterRaw, setDiameter] = useURLState("rxAperture", 0.2); // m
-  const [fovRaw, setFov] = useURLState("fovHalfAngle", 5); // mrad
+  const [fovRaw, setFov] = useURLState("fovHalfAngle", 20); // mrad
   const [etaRaw, setEta] = useURLState("opticalEfficiency", 0.7);
   const [passbandRaw, setPassband] = useURLState("filterBandwidth", 1); // nm
   const [qeRaw, setQe] = useURLState("qe", 0.8);
@@ -60,7 +60,7 @@ export default function ReceiverFovPage() {
   const [kRaw, setK] = useURLState("k", 0.4);
 
   const scene = parseScene(sceneRaw);
-  const fov = clamp(fovRaw, 1e-3, 1000, 5);
+  const fov = clamp(fovRaw, 1e-3, 1000, 20);
   const signalDbm = clamp(signalRaw, -120, 30, -30);
   const rx: Receiver = useMemo(() => ({
     lambda: clamp(wavelengthRaw, 850, 1550, 1550) * 1e-9,
@@ -93,22 +93,29 @@ export default function ReceiverFovPage() {
 
   const fovData = useMemo(() => {
     const Ps = 10 ** (signalDbm / 10) * 1e-3;
-    const fovs = Array.from({ length: 121 }, (_, i) => 10 ** (-2 + (4 * i) / 120)); // 0.01–100 mrad
-    return BACKGROUND_SCENES.map((s, i) => ({
+    const lo = Math.log10(Math.min(fov, 0.01));
+    const hi = Math.log10(Math.max(fov, 100));
+    const fovs = Array.from({ length: 161 }, (_, i) => 10 ** (lo + ((hi - lo) * i) / 160)); // min(FOV, 0.01)–max(FOV, 100) mrad
+    const lines = BACKGROUND_SCENES.map((s, i) => ({
       type: "scatter", mode: "lines", x: fovs, y: fovs.map((f) => dB(noiseFor(Ps, bgPower(s.id, f * 1e-3, rx), rx).snr)),
       name: s.label, line: { color: COLORS[i], width: s.id === scene ? 3 : 1.5 },
     }));
-  }, [scene, signalDbm, rx]);
+    return [...lines, {
+      type: "scatter", mode: "markers", x: [fov], y: [dB(noiseFor(Ps, bgPower(scene, fov * 1e-3, rx), rx).snr)], name: "Current",
+      marker: { color: "#f97316", size: 10 },
+    }];
+  }, [scene, fov, signalDbm, rx]);
 
   const signalData = useMemo(() => {
     const Pb = bgPower(scene, fov * 1e-3, rx);
-    const dbms = Array.from({ length: 81 }, (_, i) => -70 + i);
+    const dbms = Array.from({ length: 81 }, (_, i) => signalDbm - 40 + i);
     const snr = (bg: number) => dbms.map((d) => dB(noiseFor(10 ** (d / 10) * 1e-3, bg, rx).snr));
     return [
       { type: "scatter", mode: "lines", x: dbms, y: snr(Pb), name: "with background", line: { color: "#f59e0b", width: 2 } },
       { type: "scatter", mode: "lines", x: dbms, y: snr(0), name: "no background", line: { color: "#3b82f6", dash: "dash" } },
+      { type: "scatter", mode: "markers", x: [signalDbm], y: [dB(noiseFor(10 ** (signalDbm / 10) * 1e-3, Pb, rx).snr)], name: "Current", marker: { color: "#f97316", size: 10 } },
     ];
-  }, [scene, fov, rx]);
+  }, [scene, fov, signalDbm, rx]);
 
   const underfilled = fov * 1e-3 < results.diffraction;
 
@@ -172,7 +179,7 @@ export default function ReceiverFovPage() {
           R = QE·qλ/(hc), F = kM + (1 − k)(2 − 1/M) (McIntyre 1966). The signal is assumed to pass the field stop
           entirely; background radiances are typical clear-sky and cloud values (Giggenbach 2022) or a 5772 K solar
           disc above the atmosphere. Spot growth from turbulence (λ/r₀ ≫ λ/D) is not modelled. A wider FOV eases pointing and turbulence-induced spot motion, but once the
-          background shot noise passes the amplifier noise every doubling of the half-angle quadruples it.
+          background shot noise passes the amplifier noise every doubling of the half-angle quadruples it for an extended sky (for the Sun, only until the FOV covers the 4.65 mrad half-angle disc).
         </p>
       </div>
     </>

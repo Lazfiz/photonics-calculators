@@ -20,7 +20,10 @@
  * Geometric loss of a divergent beam, top-hat form: the beam of exit diameter d_t and full divergence θ fills a
  * disc of diameter d_t + θR, of which the receiver catches (d_r/(d_t + θR))² (I. I. Kim, E. Korevaar, Proc. SPIE 4530,
  * 84 (2001), doi:10.1117/12.449800). A Gaussian beam with the same 1/e² footprint is twice as bright on axis, so a
- * small receiver catches 2× (3.01 dB) more; that case is `pointingCapture` in ./pointing-loss.
+ * small receiver catches 2× (3.01 dB) more. The Gaussian of `gaussianGeometricCapture` leaves the exit aperture with
+ * w₀ = max(d_t/2, λ/(π θ/2)): an embedded Gaussian (M² ≥ 1) whose radius w(R)² = w₀² + (θR/2)² starts at the
+ * aperture and ends at the far-field half-angle θ/2 (A. E. Siegman, "New developments in laser resonators",
+ * Proc. SPIE 1224, 2 (1990), doi:10.1117/12.18425). The TEM₀₀ limit w₀ = λ/(π θ/2) is the same formula with z_R = w₀/(θ/2).
  *
  * Beam width of a truncated Gaussian: in the Fraunhofer zone the field of the beam over the annulus γa ≤ r ≤ a is
  * E(u) ∝ ∫_γ^1 exp(−α²ρ²) J₀(uρ) ρ dρ, u = k a sin θ (Hankel transform; J. W. Goodman, Introduction to Fourier
@@ -112,6 +115,24 @@ export function friisReceivedPower(
 export function topHatGeometricLoss(txDiameter: number, fullDivergence: number, range: number, rxDiameter: number): number {
   const beam = txDiameter + fullDivergence * range;
   return beam > rxDiameter ? 20 * Math.log10(beam / rxDiameter) : 0;
+}
+
+/**
+ * Gaussian geometric capture: the fraction 1 − exp(−2(d_r/2)²/w²) of a beam of exit 1/e² diameter d_t and full 1/e²
+ * divergence θ caught by a receiver of diameter d_r at range R, with w² = w₀² + (θR/2)² and w₀ = max(d_t/2, λ/(πθ/2)).
+ * `diffractionLimited` is true when θ is below the TEM₀₀ divergence of a d_t/2 waist (the beam can't leave the aperture).
+ */
+export function gaussianGeometricCapture(
+  txDiameter: number, fullDivergence: number, range: number, rxDiameter: number, lambda: number,
+): { waist: number; beamRadius: number; fraction: number; diffractionLimited: boolean } {
+  if (!(txDiameter > 0) || !(fullDivergence > 0) || !(range >= 0) || !(rxDiameter >= 0) || !(lambda > 0)) {
+    return { waist: NaN, beamRadius: NaN, fraction: NaN, diffractionLimited: false };
+  }
+  const tem00 = lambda / (Math.PI * (fullDivergence / 2));
+  const waist = Math.max(txDiameter / 2, tem00);
+  const beamRadius = Math.hypot(waist, (fullDivergence * range) / 2);
+  const fraction = -Math.expm1((-2 * (rxDiameter / 2) ** 2) / beamRadius ** 2);
+  return { waist, beamRadius, fraction, diffractionLimited: tem00 > txDiameter / 2 };
 }
 
 /**

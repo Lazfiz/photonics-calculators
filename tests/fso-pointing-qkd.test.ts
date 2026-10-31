@@ -5,7 +5,7 @@ import {
   GEO_SUBSATELLITE_VPERP, GM_EARTH, R_EARTH_EQ, R_GEO, airyHalfAngle, lightTime, pointAheadAngle,
 } from "../src/physics/free-space-comms/point-ahead";
 import { quadCellNea, rasterScan, squareCoverage, stareProbability } from "../src/physics/free-space-comms/acquisition";
-import { decoyBb84, maxChannelLossDb, optimalMu, plobBound } from "../src/physics/free-space-comms/qkd";
+import { decoyBb84, maxChannelLossDb, maxChannelLossDbOptimalMu, optimalMu, plobBound } from "../src/physics/free-space-comms/qkd";
 import { capturedPower, linkSecurity, nepLimitedSnr } from "../src/physics/free-space-comms/physical-layer-security";
 import { secrecyCapacity } from "../src/physics/free-space-comms/channel-capacity";
 import { gaussianDiscFraction } from "../src/physics/free-space-comms/pointing-loss";
@@ -93,6 +93,19 @@ test("decoy BB84 limits: noiseless channel gives q·ημe^(−μ); bright pulses
   assert.equal(plobBound(0), 0);
   // The decoy-state key stays below the bound (here η·μe^(−μ)/2 ≪ 1.44 η).
   assert.ok(decoyBb84({ ...GYS, mu: 0.48, eta: etaAt(20) }).keyPerPulse < plobBound(etaAt(20)));
+});
+
+test("decoy BB84, GYS: re-optimising μ at each loss extends the key from 142.01 to 142.21 km", () => {
+  // 29.864 dB / 0.21 dB/km = 142.21 km; an independent reviewer bisection (session 173 probe) gave 142.21 km.
+  const opt = maxChannelLossDbOptimalMu(GYS, 0.045);
+  close(opt / 0.21, 142.21, 1e-4);
+  assert.ok(opt >= maxChannelLossDb({ ...GYS, mu: 0.48 }, 0.045));
+  // The cutoff is a sign change of the optimal-μ key.
+  const keyAt = (db: number) => { const eta = 0.045 * 10 ** (-db / 10); return decoyBb84({ ...GYS, eta, mu: optimalMu({ ...GYS, eta }) }).keyPerPulse; };
+  assert.ok(keyAt(opt - 0.01) > 0);
+  assert.equal(keyAt(opt + 0.01), 0);
+  // Edge case: no key at zero loss for any μ.
+  assert.equal(maxChannelLossDbOptimalMu({ ...GYS, y0: 0.5 }, 0.045), 0);
 });
 
 test("physical-layer security: exact Gaussian capture never exceeds P; wiretap capacity (Leung-Yan-Cheong & Hellman 1978)", () => {
