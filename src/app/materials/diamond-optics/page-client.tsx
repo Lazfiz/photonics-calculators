@@ -50,8 +50,8 @@ export default function DiamondOpticsPage() {
     ["Knoop hardness", `${sheet.knoop} kg/mm² (with orientation)`],
     ["Young's modulus", `${sheet.youngs_GPa.para} GPa`],
     ["Density", `${sheet.density_g_cm3} g/cm³`],
-    ["Specific heat", `${sheet.specificHeat_J_kgK} J/(kg·K) at 273 K`],
-    ["Melting point", `${sheet.meltingPoint_C} °C (${sheet.meltingNote})`],
+    ["Specific heat", `≈ ${sheet.specificHeat_J_kgK} J/(kg·K) near room temperature`],
+    ["Melting point", `${sheet.meltingPoint_C} °C, only at GPa pressures. At 1 atm diamond does not melt: it graphitizes above ≈ 1500 °C in vacuum or inert gas and oxidizes in air from ≈ 700 °C`],
   ];
 
   return (
@@ -109,7 +109,7 @@ export default function DiamondOpticsPage() {
             Below 644 nm the index is Peter&apos;s Sellmeier formula, fitted to his own measurements; beyond it, Palik&apos;s
             tabulated values (0.656–20 µm) interpolated linearly in wavelength. Diamond is cubic, so it has one index. An uncoated,
             non-absorbing plate with both surfaces&apos; multiple reflections added in intensity transmits at most
-            T = 2n/(n² + 1): about 71 % in the visible. Absorption in the two- and three-phonon band (2.5–7 µm), near the UV
+            T = 2n/(n² + 1) (incoherent: no interference between the surfaces): about 71 % in the visible. Absorption in the two- and three-phonon band (2.5–7 µm), near the UV
             edge and from nitrogen impurities (type I diamond) lowers it.
           </p>
         </div>

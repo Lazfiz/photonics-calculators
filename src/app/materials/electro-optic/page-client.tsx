@@ -69,13 +69,14 @@ function modulator(choice: Choice, lambda: number, d: number, L: number, custom:
 
 function transmissionChart(Vpi: number, V: number) {
   if (!Number.isFinite(Vpi)) return [];
-  const xs = Array.from({ length: CHART_POINTS + 1 }, (_, k) => (2 * Vpi * k) / CHART_POINTS);
+  const Vmax = Math.max(2 * Vpi, 1.1 * Math.abs(V));
+  const xs = Array.from({ length: CHART_POINTS + 1 }, (_, k) => (Vmax * k) / CHART_POINTS);
   const scale = Vpi >= 1000 ? 1000 : 1;
   const traces: Record<string, unknown>[] = [{
     x: xs.map((x) => round6(x / scale)), y: xs.map((x) => round6(crossedPolarizerTransmission((Math.PI * x) / Vpi))),
     type: "scatter", mode: "lines", name: "T = sin²(πV/2V_π)", line: { color: "#60a5fa", width: 2 },
   }];
-  if (V <= 2 * Vpi) {
+  {
     traces.push({ x: [round6(V / scale)], y: [round6(crossedPolarizerTransmission((Math.PI * V) / Vpi))], type: "scatter", mode: "markers", name: "selected", line: { color: "#f87171" }, marker: { color: "#f87171", size: 9 } });
   }
   return traces;

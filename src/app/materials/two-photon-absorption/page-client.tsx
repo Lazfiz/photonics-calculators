@@ -6,7 +6,7 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { hc_eV_nm } from "../../../physics/constants";
 import {
-  SI_FIT_MIN_LAMBDA, TPA_MEDIA, indirectBeta, linearEdge_eV, mediumBeta, mediumRegime, scaledBeta, scalingBeta, tpaRegime, tpaTransmission,
+  SI_FIT_MIN_LAMBDA, TPA_MEDIA, indirectBeta, linearEdge_eV, mediumBeta, mediumRegime, nearEdgeReference, scaledBeta, scalingBeta, tpaRegime, tpaTransmission,
   type TpaMediumId,
 } from "../../../physics/materials/two-photon";
 
@@ -28,12 +28,18 @@ const REGIME_NOTE = {
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const sig = (x: number, digits: number) => (Number.isFinite(x) ? String(+x.toPrecision(digits)) : "—");
 
-/** β (cm/GW) across the 2PA window E_g/2 < ħω < edge: scaled from the measurement and the Eq. 1 prediction. */
-function betaCurves(betaRef: number, lambdaRef: number, bandGap_eV: number, edge_eV: number, n: number | null, Ep_eV: number | null) {
+/**
+ * β (cm/GW) across the 2PA window E_g/2 < ħω < edge: scaled from the measurement and the Eq. 1 prediction. A measurement
+ * at the 2PA edge (ZnTe) is drawn as a point instead of being scaled.
+ */
+function betaCurves(betaRef: number, lambdaRef: number, bandGap_eV: number, edge_eV: number, n: number | null, Ep_eV: number | null, nearEdge = false) {
   const lambdaLo = (hc_eV_nm / edge_eV) * 1.002;
   const lambdaHi = (2 * hc_eV_nm) / bandGap_eV;
   const x = Array.from({ length: 121 }, (_, i) => +(lambdaLo + (i / 120) * (lambdaHi - lambdaLo)).toFixed(3));
-  const curves = [{
+  const curves = [nearEdge ? {
+    x: [+(lambdaRef * 1e9).toFixed(3)], y: [+(betaRef / 1e-11).toFixed(6)], type: "scatter" as const, mode: "markers" as const,
+    name: `Measured (${Math.round(lambdaRef * 1e9)} nm)`, marker: { color: "#f59e0b", size: 8 }, line: { color: "#f59e0b", width: 0 },
+  } : {
     x, y: x.map((l) => +(scaledBeta(betaRef, lambdaRef, l * 1e-9, bandGap_eV) / 1e-11).toFixed(6)),
     type: "scatter" as const, mode: "lines" as const, name: "Scaled from measured β", line: { color: "#a78bfa", width: 2 },
   }];
@@ -63,9 +69,11 @@ function indirectCurves(bandGap_eV: number, betaRef: number, lambdaRef: number) 
   ];
 }
 
-/** Transmission (%) against peak intensity, 0.01–1000 GW/cm², log-spaced. */
-function transmissionCurve(beta: number, length: number) {
-  const x = Array.from({ length: 101 }, (_, i) => +(10 ** (-2 + i * 0.05)).toPrecision(6));
+/** Transmission (%) against peak intensity, log-spaced over 4 decades below to 1 above I₀ (at least 0.01–1000 GW/cm²). */
+function transmissionCurve(beta: number, length: number, intensity_GWcm2: number) {
+  const lo = Math.min(-2, Math.floor(Math.log10(Math.max(intensity_GWcm2, 1e-6))) - 4);
+  const hi = Math.max(3, Math.ceil(Math.log10(Math.max(intensity_GWcm2, 1e-6))) + 1);
+  const x = Array.from({ length: 101 }, (_, i) => +(10 ** (lo + (i / 100) * (hi - lo))).toPrecision(6));
   return { x, y: x.map((I) => +(tpaTransmission(beta, I * 1e13, length) * 100).toFixed(6)) };
 }
 
@@ -94,12 +102,13 @@ export default function TwoPhotonAbsorptionPage() {
   const eq1 = medium && medium.n !== null && medium.Ep_eV !== null ? { n: medium.n, Ep_eV: medium.Ep_eV } : null;
   const betaEq1 = eq1 ? scalingBeta(lambda, eq1.n, bandGap_eV, eq1.Ep_eV) : NaN;
   const indirect = medium?.gap === "indirect";
+  const nearEdge = medium ? nearEdgeReference(medium) : false;
   const edge_eV = medium ? linearEdge_eV(medium) : bandGap_eV;
   const T = tpaTransmission(beta, intensity_GWcm2 * 1e13, L);
   const curves = indirect
     ? indirectCurves(bandGap_eV, betaRef, lambdaRef)
-    : refRegime === "two-photon" ? betaCurves(betaRef, lambdaRef, bandGap_eV, edge_eV, eq1?.n ?? null, eq1?.Ep_eV ?? null) : null;
-  const tCurve = Number.isFinite(beta) ? transmissionCurve(beta, L) : null;
+    : refRegime === "two-photon" ? betaCurves(betaRef, lambdaRef, bandGap_eV, edge_eV, eq1?.n ?? null, eq1?.Ep_eV ?? null, nearEdge) : null;
+  const tCurve = Number.isFinite(beta) ? transmissionCurve(beta, L, intensity_GWcm2) : null;
   const select = (id: Choice) => {
     setMaterial(id);
     if (id !== "custom") setWavelength(Math.round(TPA_MEDIA[id].lambda * 1e9));
@@ -137,6 +146,9 @@ export default function TwoPhotonAbsorptionPage() {
         {indirect && regime === "two-photon" && lambda < hc_eV_nm * 1e-9 / bandGap_eV && (
           <span className="text-yellow-400">Above the 1.12 eV indirect gap, phonon-assisted linear absorption (5 × 10² cm⁻¹ at 850 nm) is not included in T. </span>
         )}
+        {nearEdge && regime === "two-photon" && (
+          <span className="text-yellow-400">Measured only 3 % above the 2PA edge, where band-tail and exciton absorption exceed the two-band model ({sig(medium!.beta / 1e-11, 3)} vs {sig(scalingBeta(medium!.lambda, medium!.n!, bandGap_eV, medium!.Ep_eV!) / 1e-11, 2)} cm/GW from Eq. 1), so β here is Eq. 1, not scaled from the measurement. </span>
+        )}
         {medium?.gap === "effective" && regime === "two-photon" && Math.abs(lambda - medium.lambda) > 0.01 * medium.lambda && (
           <span className="text-yellow-400">Away from the measured wavelength the two-band scaling of wide-gap solids is order-of-magnitude (DeSalvo et al.). </span>
         )}
@@ -163,7 +175,10 @@ export default function TwoPhotonAbsorptionPage() {
         <div className="bg-gray-900 rounded-lg p-4 mb-6">
           <h3 className="text-sm font-bold mb-2">Transmission vs peak intensity ({sig(thickness_mm, 4)} mm)</h3>
           <ChartPanel
-            data={[{ x: tCurve.x, y: tCurve.y, type: "scatter" as const, mode: "lines" as const, name: "T", line: { color: "#f59e0b", width: 2 } }]}
+            data={[
+              { x: tCurve.x, y: tCurve.y, type: "scatter" as const, mode: "lines" as const, name: "T", line: { color: "#f59e0b", width: 2 } },
+              ...(intensity_GWcm2 > 0 && Number.isFinite(T) ? [{ x: [intensity_GWcm2], y: [+(T * 100).toFixed(6)], type: "scatter" as const, mode: "markers" as const, name: "I₀", marker: { color: "#f87171", size: 8 } }] : []),
+            ]}
             layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "I₀ (GW/cm²)", gridcolor: "#374151", type: "log" }, yaxis: { title: "Transmission (%)", gridcolor: "#374151" }, margin: { t: 20, b: 50, l: 60, r: 20 } }}
           />
         </div>
@@ -177,7 +192,8 @@ export default function TwoPhotonAbsorptionPage() {
             Degenerate two-photon absorption between two parabolic bands, allowed for E_g/2 &lt; ħω &lt; E_g. A measured β moves
             to another wavelength by the ratio of F₂, which peaks at 2ħω = 1.43 E_g; Eq. 1 of Van Stryland et al. (1985) predicts
             β from n, E_g and E_p alone; it matches their measurements within the ±40 % error, except ZnTe, whose 1064 nm
-            point sits at the edge of the window.
+            point sits at the edge of the window (4.5 against 0.71 cm/GW); scaling that point would carry the excess across the
+            window (44 cm/GW at 800 nm), so the ZnTe preset uses Eq. 1.
           </p>
           <p>
             T is for a plane wave of constant intensity. Gaussian beams and pulses transmit more at the same peak intensity,

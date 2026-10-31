@@ -69,6 +69,9 @@ export default function RareEarthAbsorptionPage() {
           glass by tens of percent, so enter your sample&apos;s own value where you have it.
         </p>
       </div>
+      <p className="text-xs text-gray-400 mb-6">
+        Concentration is the ion&apos;s wt-ppm. Vendors often quote wt % of the oxide (Er₂O₃ → Er: × 0.874, i.e. 2·167.26/382.5) or mol-ppm.
+      </p>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ValidatedNumberInput label="Absorption Cross-Section σ_a (×10⁻²⁵ m²)" value={sigmaInput} onChange={setSigma} min={0.001} max={1000} step="any" />

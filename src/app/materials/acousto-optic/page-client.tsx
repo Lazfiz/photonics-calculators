@@ -11,7 +11,9 @@ import {
 const IDS = Object.keys(ACOUSTO_OPTIC) as AcoustoOpticId[];
 const CUSTOM = "custom";
 const DEFAULT_ID: AcoustoOpticId = "teo2-shear";
-const CHART_POINTS = 200;
+const CHART_POINTS_MIN = 200;
+const CHART_POINTS_MAX = 2000;
+const SAMPLES_PER_PERIOD = 20;
 const DEG = Math.PI / 180;
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -27,7 +29,11 @@ const powerText = (P_W: number) => (!Number.isFinite(P_W) ? "—" : P_W < 1 ? `$
 
 function efficiencyChart(lambda: number, M2: number, L: number, H: number, P_W: number, P100: number) {
   const max_W = Math.max(2 * P100, P_W);
-  const p = Array.from({ length: CHART_POINTS + 1 }, (_, k) => (k * max_W) / CHART_POINTS);
+  // η = sin²(a√P) is periodic in √P with period π/a, so sample uniformly in √P to avoid aliasing at large P.
+  const a = (Math.PI / (Math.SQRT2 * lambda)) * Math.sqrt((M2 * L) / H);
+  const periods = (a * Math.sqrt(max_W)) / Math.PI;
+  const N = Math.min(CHART_POINTS_MAX, Math.max(CHART_POINTS_MIN, Math.ceil(SAMPLES_PER_PERIOD * periods)));
+  const p = Array.from({ length: N + 1 }, (_, k) => (max_W * k * k) / (N * N));
   return [
     { x: p.map(round6), y: p.map((x) => round6(100 * braggEfficiency(lambda, M2, L, H, x))), type: "scatter", mode: "lines", name: "η", line: { color: "#60a5fa", width: 2 } },
     { x: [round6(P_W)], y: [round6(100 * braggEfficiency(lambda, M2, L, H, P_W))], type: "scatter", mode: "markers", name: "now", line: { color: "#f87171" }, marker: { color: "#f87171", size: 9 } },
@@ -76,6 +82,9 @@ export default function AcoustoOpticPage() {
   const tau = accessTime(D, v);
   const spots = tau * df;
   const chart = Number.isFinite(P100) ? efficiencyChart(lambda, M2, L, H, power_W, P100) : [];
+  const dfBragg = (1.8 * n * v * v) / (lambda * f * L); // display-only: Chang, Handbook of Optics vol. II ch. 12
+  const ramanNath = Number.isFinite(Q) && Q < 1;
+  const intermediate = Number.isFinite(Q) && Q >= 1 && Q < 10;
   const noAngle = "λf/(2v) > 1: no Bragg angle at this frequency";
   const regime = !Number.isFinite(Q) ? undefined : Q >= 10 ? "Bragg regime (Q ≫ 1)" : Q <= 1 ? "Raman–Nath regime (Q ≪ 1)" : "intermediate: the Bragg formulas are approximate";
 
@@ -130,10 +139,17 @@ export default function AcoustoOpticPage() {
           subtext="Δθ = λΔf/v, outside the cell" />
         <ResultCard label="Klein–Cook parameter Q" value={sig(Q, 4)} tone="purple" subtext={regime} />
         <ResultCard label="First-order efficiency η" value={Number.isFinite(eta) ? `${sig(eta, 4)} %` : "—"} tone="red"
-          subtext={power_W > P100 ? "overdriven: past P₁₀₀ the power flows back into the zero order" : `at ${sig(power_W, 4)} W acoustic power`} />
+          subtext={ramanNath ? "Bragg formula invalid (Q < 1)" : power_W > P100 ? "overdriven: past P₁₀₀ the power flows back into the zero order"
+            : intermediate ? "intermediate regime, η approximate" : `at ${sig(power_W, 4)} W acoustic power`} />
       </div>
+      {ramanNath && (
+        <p className="text-sm text-yellow-400 mb-4">
+          Q &lt; 1: the cell is in the Raman–Nath regime, where the Bragg sin² efficiency does not apply. Several orders appear
+          and the first order peaks near J₁² ≈ 34 %, so η and the power for 100 % shown here are not valid.
+        </p>
+      )}
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <ResultCard label="Power for 100 %" value={powerText(P100)} tone="yellow" subtext={Number.isFinite(P100) ? "λ²H/(2M₂L)" : "M₂ or L is zero"} />
+        <ResultCard label="Power for 100 %" value={powerText(P100)} tone="yellow" subtext={ramanNath ? "Bragg formula invalid (Q < 1)" : Number.isFinite(P100) ? (intermediate ? "λ²H/(2M₂L); intermediate regime, approximate" : "λ²H/(2M₂L)") : "M₂ or L is zero"} />
         <ResultCard label="Access time τ = D/v" value={Number.isFinite(tau) ? `${sig(tau * 1e6, 4)} µs` : "—"} tone="gray" subtext="time for the sound to cross the beam" />
         <ResultCard label="Resolvable spots N = τΔf" value={sig(spots, 4)} tone="green" subtext="for the swept bandwidth" />
       </div>
@@ -187,7 +203,12 @@ export default function AcoustoOpticPage() {
             (Q ≪ 1). The efficiency and the power for 100 % follow Yariv &amp; Yeh, ch. 9.
           </p>
           <p className="font-mono">τ = D/v,  N = τΔf</p>
-          <p>Acoustic attenuation is ignored.</p>
+          <p>
+            Acoustic attenuation is ignored. The Bragg acoustic bandwidth is not modelled: an isotropic cell passes about
+            Δf ≈ 1.8 n v²/(λ₀f₀L) (Chang, Handbook of Optics vol. II ch. 12), here ≈ {Number.isFinite(dfBragg) ? `${sig(dfBragg / 1e6, 3)} MHz` : "—"}, which is
+            why wide-band TeO₂ deflectors use anisotropic (tangential) phase matching. The resolvable-spot count assumes the full
+            sweep diffracts.
+          </p>
         </div>
       </div>
     </>

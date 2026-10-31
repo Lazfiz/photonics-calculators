@@ -32,10 +32,15 @@ const SEMICONDUCTORS: Record<string, Semiconductor> = {
 /** Absorption edge hc/E_g in nm for E_g in eV. */
 const egToWavelength = (eg: number) => cutoffWavelength(eg) * 1e9;
 
+const T_MIN = 10;
+const T_MAX = 700;
+/** Chart temperatures, K: T_MIN to T_MAX in 3 K steps. */
+const TEMPS = Array.from({ length: (T_MAX - T_MIN) / 3 + 1 }, (_, i) => T_MIN + i * 3);
+
 export default function SemiconductorBandgapPage() {
   const [selected, setSelected] = useState<string[]>(["GaAs", "InP", "Si", "GaN", "InGaAs"]);
   const [temperatureRaw, setTemperature] = useURLState("temperature", 300);
-  const temperature = Number.isFinite(temperatureRaw) ? Math.min(700, Math.max(10, temperatureRaw)) : 300;
+  const temperature = Number.isFinite(temperatureRaw) ? Math.min(T_MAX, Math.max(T_MIN, temperatureRaw)) : 300;
 
   const toggle = (key: string) => setSelected(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
 
@@ -46,23 +51,29 @@ export default function SemiconductorBandgapPage() {
     });
   }, [selected, temperature]);
 
+  // The charts span the slider (T_MIN–T_MAX) and mark the selected temperature.
   const chartData = useMemo(() => {
-    const temps = Array.from({ length: 200 }, (_, i) => 10 + i * 3);
-    return selected.map(key => {
+    return selected.flatMap(key => {
       const s = SEMICONDUCTORS[key];
-      return { x: temps, y: temps.map(s.bandGap), type: "scatter" as const, mode: "lines" as const, name: s.name, line: { color: s.color, width: 2 } };
+      return [
+        { x: TEMPS, y: TEMPS.map(s.bandGap), type: "scatter" as const, mode: "lines" as const, name: s.name, line: { color: s.color, width: 2 } },
+        { x: [temperature], y: [s.bandGap(temperature)], type: "scatter" as const, mode: "markers" as const, name: `${s.name} at ${temperature} K`, showlegend: false, marker: { color: s.color, size: 8 } },
+      ];
     });
-  }, [selected]);
+  }, [selected, temperature]);
 
   const wlChart = useMemo(() => {
-    return selected.map(key => {
+    return selected.flatMap(key => {
       const s = SEMICONDUCTORS[key];
-      const temps = Array.from({ length: 200 }, (_, i) => 10 + i * 3);
-      return { x: temps, y: temps.map(T => egToWavelength(s.bandGap(T))), type: "scatter" as const, mode: "lines" as const, name: s.name, line: { color: s.color, width: 2, dash: "dash" } };
+      return [
+        { x: TEMPS, y: TEMPS.map(T => egToWavelength(s.bandGap(T))), type: "scatter" as const, mode: "lines" as const, name: s.name, line: { color: s.color, width: 2, dash: "dash" } },
+        { x: [temperature], y: [egToWavelength(s.bandGap(temperature))], type: "scatter" as const, mode: "markers" as const, name: `${s.name} at ${temperature} K`, showlegend: false, marker: { color: s.color, size: 8 } },
+      ];
     });
-  }, [selected]);
+  }, [selected, temperature]);
 
-  const visRegion = useMemo(() => [{ x: [380, 750, 750, 380], y: [0, 0, 5, 5], type: "scatter" as const, fill: "toself" as const, fillcolor: "rgba(255,255,255,0.05)", line: { color: "transparent" }, showlegend: false, hoverinfo: "skip" as const }], []);
+  // Visible band, λ = 380–750 nm across the whole temperature axis.
+  const visRegion = useMemo(() => [{ x: [T_MIN, T_MAX, T_MAX, T_MIN], y: [380, 380, 750, 750], type: "scatter" as const, fill: "toself" as const, fillcolor: "rgba(250,204,21,0.08)", line: { color: "transparent" }, name: "Visible", showlegend: false, hoverinfo: "skip" as const }], []);
 
   return (
     <>
@@ -74,7 +85,7 @@ export default function SemiconductorBandgapPage() {
 
       <div className="mb-8">
         <label className="block text-sm text-gray-400 mb-1">Temperature: {temperature} K ({(temperature - 273.15).toFixed(0)} °C)</label>
-        <input type="range" aria-label="Temperature (K)" min={10} max={700} step={5} value={temperature} onChange={e => setTemperature(+e.target.value)} />
+        <input type="range" aria-label="Temperature (K)" min={T_MIN} max={T_MAX} step={5} value={temperature} onChange={e => setTemperature(+e.target.value)} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -93,8 +104,8 @@ export default function SemiconductorBandgapPage() {
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
-        <h3 className="text-sm font-bold mb-2">Absorption Edge Wavelength vs Temperature</h3>
-        <ChartPanel data={[...wlChart, ...visRegion]} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Temperature (K)", gridcolor: "#374151" }, yaxis: { title: "λ_edge (nm)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.25 }, margin: { t: 20, b: 70, l: 60, r: 20 } }} />
+        <h3 className="text-sm font-bold mb-2">Absorption Edge Wavelength vs Temperature (shaded: visible, 380–750 nm)</h3>
+        <ChartPanel data={[...wlChart, ...visRegion]} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Temperature (K)", gridcolor: "#374151" }, yaxis: { title: "λ_edge (nm)", gridcolor: "#374151", type: "log" }, legend: { orientation: "h", y: -0.25 }, margin: { t: 20, b: 70, l: 60, r: 20 } }} />
       </div>
 
       <div className="mt-8 bg-gray-900 rounded-lg p-4 text-sm text-gray-400">

@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import { useURLState } from "../../../hooks/use-url-state";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { expansionWaves, thermalExpansion } from "../../../physics/materials/thermal-expansion";
@@ -13,6 +15,8 @@ interface Material {
   source: "Crystran" | "SCHOTT" | "Corning" | "Kaye & Laby" | "NIST";
 }
 
+const DT_MIN = -273;
+const DT_MAX = 3000;
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 
 const MATERIALS: Material[] = [
@@ -40,8 +44,9 @@ export default function ThermalExpansionPage() {
   const [alphaRaw, setAlpha] = useURLState("alpha", 7.1);
   const [dTRaw, setDT] = useURLState("dT", 100); // temperature change in °C
   const [lengthRaw, setLength] = useURLState("length", 100); // mm
+  const [selected, setSelected] = useState<string | null>(null); // preset row last clicked; cleared when α is edited by hand
   const alpha = clamp(alphaRaw, -50, 100, 7.1);
-  const dT = clamp(dTRaw, -1000, 3000, 100);
+  const dT = clamp(dTRaw, DT_MIN, DT_MAX, 100);
   const length = clamp(lengthRaw, 0, 1e6, 100);
 
   const dL = thermalExpansion(alpha * 1e-6, length, dT); // mm, since L is in mm
@@ -52,15 +57,22 @@ export default function ThermalExpansionPage() {
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <div>
-          <ValidatedNumberInput label="CTE α (×10⁻⁶/K)" value={alphaRaw} onChange={setAlpha} min={-50} max={100} step="any" />
+          <ValidatedNumberInput label="CTE α (×10⁻⁶/K)" value={alphaRaw} onChange={(v) => { setSelected(null); setAlpha(v); }} min={-50} max={100} step="any" />
         </div>
         <div>
-          <ValidatedNumberInput label="Temperature change ΔT (°C)" value={dTRaw} onChange={setDT} min={-1000} max={3000} step="any" />
+          <ValidatedNumberInput label="Temperature change ΔT (°C)" value={dTRaw} onChange={setDT} min={DT_MIN} max={DT_MAX} step="any" />
         </div>
         <div>
           <ValidatedNumberInput label="Length L (mm)" value={lengthRaw} onChange={setLength} min={0} max={1000000} step="any" />
         </div>
       </div>
+
+      {Math.abs(dT) > 50 && (
+        <p className="text-sm mb-4 text-yellow-400">
+          α itself changes with temperature; over large ranges use the mean α of the range (Si: 2.9 × 10⁻⁶/K from 300 to 400 K
+          vs 2.6 at 293 K, Okada &amp; Tokumaru 1984).
+        </p>
+      )}
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
@@ -91,8 +103,8 @@ export default function ThermalExpansionPage() {
           </thead>
           <tbody>
             {materials.map((m, i) => (
-              <tr key={i} className={`border-b border-gray-800/50 hover:bg-gray-900/50 cursor-pointer ${alpha === m.alpha ? "bg-blue-900/20" : ""}`}
-                onClick={() => setAlpha(m.alpha)}>
+              <tr key={i} className={`border-b border-gray-800/50 hover:bg-gray-900/50 cursor-pointer ${selected === m.name && alpha === m.alpha ? "bg-blue-900/20" : ""}`}
+                onClick={() => { setSelected(m.name); setAlpha(m.alpha); }}>
                 <td className="py-2 px-3 font-medium">{m.name}</td>
                 <td className="py-2 px-3 text-gray-400">{m.type}</td>
                 <td className="py-2 px-3 text-right font-mono text-blue-400">{m.alpha}</td>

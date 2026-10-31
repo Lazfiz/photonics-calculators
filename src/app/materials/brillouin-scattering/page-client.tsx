@@ -22,9 +22,11 @@ const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.i
 const sig = (x: number, digits: number) => (Number.isFinite(x) ? String(+x.toPrecision(digits)) : "—");
 const exp = (x: number, digits: number) => (Number.isFinite(x) ? x.toExponential(digits) : "—");
 
-/** ν_B over 400–2000 nm for the chosen medium, GHz (rounded for the chart axis). */
-function shiftCurve(n: number, vA: number) {
-  const x = Array.from({ length: 161 }, (_, i) => 400 + i * 10);
+/** ν_B over min(400, 0.9λ)–max(2000, 1.1λ) nm for the chosen medium, GHz (rounded for the chart axis). */
+function shiftCurve(n: number, vA: number, lambda_nm: number) {
+  const lo = Math.min(400, 0.9 * lambda_nm);
+  const hi = Math.max(2000, 1.1 * lambda_nm);
+  const x = Array.from({ length: 161 }, (_, i) => +(lo + (i * (hi - lo)) / 160).toFixed(3));
   return { x, y: x.map((l) => +(brillouinShift(l * 1e-9, vA, n) / 1e9).toFixed(6)) };
 }
 
@@ -64,7 +66,7 @@ export default function BrillouinScatteringPage() {
   const gB = brillouinGain(lambda, medium, linewidth);
   const TB = phononLifetime(linewidth);
   const lambdaS = stokesWavelength(lambda, nuB);
-  const curve = shiftCurve(medium.n, medium.vA);
+  const curve = shiftCurve(medium.n, medium.vA, wavelength_nm);
 
   return (
     <>
@@ -100,7 +102,7 @@ export default function BrillouinScatteringPage() {
       <div className="grid gap-4 sm:grid-cols-3 mb-4">
         <ResultCard label="Brillouin shift ν_B = 2nv_A/λ" value={`${sig(nuB / 1e9, 4)} GHz`} tone="blue" subtext={`Stokes wavelength ${sig(lambdaS * 1e9, 7)} nm`} />
         <ResultCard label="Peak gain g_B" value={`${exp(gB, 3)} m/W`} tone="green" subtext={`= ${sig(gB * 1e11, 4)} cm/GW, Lorentzian of FWHM ${sig(linewidth_MHz, 4)} MHz`} />
-        <ResultCard label="Acoustic wavelength Λ = λ/(2n)" value={`${sig(Lambda * 1e6, 4)} µm`} tone="orange" subtext={`phonon lifetime T_B = 1/(πΔν_B) = ${sig(TB * 1e9, 4)} ns`} />
+        <ResultCard label="Acoustic wavelength Λ = λ/(2n)" value={`${sig(Lambda * 1e6, 4)} µm`} tone="orange" subtext={`phonon lifetime T_B = 1/(2πΔν_B) = ${sig(TB * 1e9, 4)} ns`} />
       </div>
       <p className="text-sm text-gray-400 mb-8">
         The SBS threshold of a fibre (effective area, length, loss, polarization and source linewidth) is on the{" "}
@@ -110,7 +112,10 @@ export default function BrillouinScatteringPage() {
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <h3 className="text-sm font-bold mb-2">Brillouin shift vs pump wavelength</h3>
         <ChartPanel
-          data={[{ x: curve.x, y: curve.y, type: "scatter" as const, mode: "lines" as const, name: "ν_B", line: { color: "#60a5fa", width: 2 } }]}
+          data={[
+            { x: curve.x, y: curve.y, type: "scatter" as const, mode: "lines" as const, name: "ν_B", line: { color: "#60a5fa", width: 2 } },
+            { x: [wavelength_nm], y: [+(nuB / 1e9).toFixed(6)], type: "scatter" as const, mode: "markers" as const, name: "selected", marker: { color: "#f87171", size: 9 } },
+          ]}
           layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Pump wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "ν_B (GHz)", gridcolor: "#374151" }, margin: { t: 20, b: 50, l: 60, r: 20 } }}
         />
       </div>
@@ -130,7 +135,7 @@ export default function BrillouinScatteringPage() {
           </p>
           <p>
             Each medium other than silica comes with a measurement. As₂Se₃ fibre (Abedin 2005, 1.56 µm): 6.0e-9 m/W measured,
-            6.09e-9 from the formula; its ρ, v_A and p₁₂ are the paper&apos;s Table 1, after Uchida &amp; Niizeki 1973. As₂S₃
+            6.09e-9 from the formula, and ν_B = 2nv_A/λ gives 8.10 GHz against the measured 7.95 GHz (+1.9 %); its ρ, v_A and p₁₂ are the paper&apos;s Table 1, after Uchida &amp; Niizeki 1973. As₂S₃
             waveguide (Pant et al. 2011): 0.715e-9 m/W measured, 0.78e-9 from the formula (0.74e-9 with their mode overlap 0.95).
             Diamond (Bai et al. 2020, 532 nm; longitudinal phonons along [110], pump polarized along ⟨111⟩): 60 ± 9 cm/GW
             measured from the laser threshold, 74 cm/GW from the formula at the measured Δν_B of 11.9 ± 4.3 MHz and 60 cm/GW at

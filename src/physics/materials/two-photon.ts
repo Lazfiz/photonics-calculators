@@ -157,13 +157,26 @@ export function indirectBeta(lambda: number, bandGap_eV = SI_INDIRECT_GAP_EV, C_
   return 2 * C_cmGW * sum * CM_PER_GW;
 }
 
+/** 2ħω/E_g below which a measurement sits too close to the 2PA edge to anchor F₂ scaling. */
+export const NEAR_EDGE_RATIO = 1.1;
+
 /**
- * β of a preset at λ, m/W: F₂ scaling from its measurement (direct or effective gap), or Bristow's fit for silicon
- * (NaN below 850 nm, outside the measured range).
+ * True for a direct-gap row measured just above the 2PA edge (2ħω_ref < 1.1 E_g, only ZnTe: 1.031 at 1064 nm). There
+ * band-tail and excitonic absorption lift β above the two-band model (ZnTe at 1064 nm: 4.5 cm/GW measured, 0.71 from Eq. 1) and
+ * F₂(x_ref) is tiny, so scaling the measurement would multiply that excess (ZnTe at 800 nm: 44 vs 7.0 cm/GW).
+ */
+export function nearEdgeReference(m: TpaMedium): boolean {
+  return m.gap === "direct" && m.n !== null && m.Ep_eV !== null && twoPhotonRatio(m.lambda, m.bandGap_eV) < NEAR_EDGE_RATIO;
+}
+
+/**
+ * β of a preset at λ, m/W: F₂ scaling from its measurement (direct or effective gap), Eq. 1 for a row measured at the
+ * edge (`nearEdgeReference`), or Bristow's fit for silicon (NaN below 850 nm, outside the measured range).
  */
 export function mediumBeta(m: TpaMedium, lambda: number): number {
   if (m.gap === "indirect") return lambda >= SI_FIT_MIN_LAMBDA ? indirectBeta(lambda, m.bandGap_eV) : NaN;
   if (mediumRegime(m, lambda) === "linear") return NaN;
+  if (nearEdgeReference(m)) return scalingBeta(lambda, m.n!, m.bandGap_eV, m.Ep_eV!);
   return scaledBeta(m.beta, m.lambda, lambda, m.bandGap_eV);
 }
 

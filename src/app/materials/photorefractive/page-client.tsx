@@ -58,7 +58,7 @@ export default function PhotorefractivePage() {
   const [wavelengthRaw, setWavelength] = useURLState("wavelength", 532); // nm
   const [angleRaw, setAngle] = useURLState("angle", 20); // full crossing angle outside, degrees
   const [temperatureRaw, setTemperature] = useURLState("temperature", 295); // K
-  const [trapsRaw, setTraps] = useURLState("traps", 10); // N_eff, 1e22 m⁻³
+  const [trapsRaw, setTraps] = useURLState("traps", 1); // N_eff, 1e22 m⁻³
   const [lengthRaw, setLength] = useURLState("length", 5); // mm
   const [ratioRaw, setRatio] = useURLState("ratio", 1000); // pump/signal
   const [nRaw, setN] = useURLState("n", 2.2);
@@ -69,7 +69,7 @@ export default function PhotorefractivePage() {
   const wavelength_nm = clamp(wavelengthRaw, WAVELENGTH_MIN_NM, WAVELENGTH_MAX_NM, 532);
   const angle_deg = clamp(angleRaw, ANGLE_MIN_DEG, ANGLE_MAX_DEG, 20);
   const T = clamp(temperatureRaw, 1, 1000, 295);
-  const traps = clamp(trapsRaw, 0.001, 1e4, 10);
+  const traps = clamp(trapsRaw, 0.001, 1e4, 1);
   const length_mm = clamp(lengthRaw, 0.01, 100, 5);
   const ratio = clamp(ratioRaw, 1e-3, 1e9, 1000);
   const lambda = wavelength_nm * 1e-9;
@@ -116,9 +116,12 @@ export default function PhotorefractivePage() {
         {custom
           ? "Custom crystal: r_eff and ε belong to the chosen polarization and grating direction."
           : `LiNbO₃ with e-polarized beams and the grating along c: r₃₃ = 30.8 pm/V, ε₃₃ = 28 (Weis & Gaylord 1985), n_e = ${sig(ne, 5)} (Zelmon et al. 1997).`}{" "}
-        N_eff depends on doping and is an input, not a material constant.{" "}
-        {!Number.isFinite(n) && <span className="text-yellow-400">The wavelength is outside the index fit (400–5000 nm).</span>}
+        N_eff depends on doping and is an input, not a material constant.
       </p>
+
+      {!custom && angle_deg > 60 && (
+        <p className="text-sm mb-4 text-yellow-400">Above 2θ ≈ 60° the fixed r₃₃ and full contrast overstate Γ by more than 15 %.</p>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-3 mb-4">
         <ResultCard label="Grating period Λ = λ/(2 sin θ)" value={`${sig(g.period * 1e6, 4)} µm`} tone="gray"
@@ -158,6 +161,11 @@ export default function PhotorefractivePage() {
           <p>
             Small angles give long periods and a weak diffusion field; large angles give short periods, where the trap density
             caps the field. Γ peaks near Λ = 2π√(ε₀εk_BT/(q²N_eff)).
+          </p>
+          <p>
+            The model keeps r_eff = r₃₃ and full fringe contrast at every angle. Inside the crystal the e-waves&apos; fields tilt
+            by ±θ_in from c, which adds a −(n_o/n_e)⁴r₁₃ sin²θ_in term and lowers the fringe contrast by cos 2θ_in: at 2θ = 60°
+            outside Γ is about 16 % lower, so read the large-angle part of the curve as an upper bound.
           </p>
           <p>
             Fe:LiNbO₃ is dominated by its photovoltaic current, which this model leaves out: its diffusion gain is a lower

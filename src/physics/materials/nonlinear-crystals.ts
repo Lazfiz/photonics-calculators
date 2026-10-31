@@ -1,7 +1,7 @@
 /**
  * χ⁽²⁾ crystals for second-harmonic generation of 1064 nm: effective coefficient d_eff of one phase-matched cut, the
- * indices it uses, and the focused-beam SHG power. Model tier: textbook (Boyd–Kleinman, undepleted pump, exact phase
- * matching Δk = 0, no walk-off, no absorption). SI units: λ in m, d in m/V, lengths in m, powers in W.
+ * indices it uses, and the focused-beam SHG power. Model tier: textbook (Boyd–Kleinman with walk-off, undepleted pump,
+ * focus at the crystal centre, no absorption). SI units: λ in m, d in m/V, lengths in m, powers in W.
  *
  * - Type I phase matching of a negative uniaxial crystal (o + o → e, Boyd, Nonlinear Optics, 3rd ed., ch. 2):
  *   n_e(θ, 2ω) = n_o(ω), 1/n_e(θ)² = cos²θ/n_o² + sin²θ/n_e², so
@@ -22,6 +22,10 @@
  *   (G. D. Boyd & D. A. Kleinman, J. Appl. Phys. 39, 3597 (1968); `boydKleinmanH` in imaging/second-harmonic-generation.ts).
  *   At Δk = 0, h = arctan²ξ/ξ, largest (0.646) at ξ = 1.39 (2ξ/(1 + ξ²) = arctan ξ); detuning Δk to σ = 0.57 raises it to 1.068 at ξ = 2.84.
  *   For type II, n_ω is the mean of the two fundamental indices and the input is polarized at 45°.
+ * - Walk-off (BK 1968 §II): B = ρ√(L k_ω)/2, k_ω = 2πn_ω/λ, and
+ *   h(σ, B, ξ) = (1/4ξ) ∫∫_{−ξ}^{ξ} dτ dτ′ e^{iσ(τ−τ′) − (B²/ξ)(τ−τ′)²}/((1 + iτ)(1 − iτ′)).
+ *   ρ is the walk-off of the e-wave (or in-plane wave) of the cut: the SH of BBO and LBO, the in-plane fundamental of KTP
+ *   and BiBO (for type II the BK form with one walking wave is approximate); the 90° and QPM cuts have none.
  */
 
 import { c, epsilon_0 } from "../constants";
@@ -79,6 +83,8 @@ export interface ShgCrystal {
   n2Omega: number;
   /** Transparency window, m. */
   transparency: [number, number];
+  /** Poynting walk-off angle between the interacting waves, rad. */
+  walkOff: number;
   source: string;
 }
 
@@ -102,31 +108,37 @@ export const SHG_CRYSTALS: Record<ShgCrystalId, ShgCrystal> = {
     name: "β-BBO", cut: `type I (ooe), θ = ${(BBO_THETA / deg).toFixed(1)}°`,
     deff: (BBO.d31 * Math.sin(BBO_THETA) + BBO.d22 * Math.cos(BBO_THETA)) * 1e-12,
     nOmega: BBO.no1064, n2Omega: BBO.no1064, transparency: [189e-9, 3500e-9],
+    walkOff: Math.abs(uniaxialWalkOff(BBO.no532, BBO.ne532, BBO_THETA)),
     source: "EKSMA BBO sheet (d₂₂, d₃₁, indices); θ from the indices",
   },
   lbo: {
     name: "LBO", cut: "type I (ooe), XY plane, φ = 11.6°", deff: LBO.d32 * Math.cos(LBO.phi) * 1e-12,
     nOmega: LBO.nz1064, n2Omega: xyPlaneIndex(LBO.nx532, LBO.ny532, LBO.phi), transparency: [155e-9, 3200e-9],
+    // XY plane: 1/n² = sin²φ/n_x² + cos²φ/n_y² is the uniaxial form with n_o → n_y, n_e → n_x, θ → φ.
+    walkOff: Math.abs(uniaxialWalkOff(LBO.ny532, LBO.nx532, LBO.phi)),
     source: "EKSMA LBO sheet",
   },
   ktp: {
     name: "KTP", cut: "type II, XY plane, φ = 23.5°",
     deff: (KTP.d15 * Math.sin(KTP.phi) ** 2 + KTP.d24 * Math.cos(KTP.phi) ** 2) * 1e-12,
     nOmega: ktpN, n2Omega: xyPlaneIndex(KTP.nx532, KTP.ny532, KTP.phi), transparency: [350e-9, 4400e-9],
+    walkOff: Math.abs(uniaxialWalkOff(KTP.ny1064, KTP.nx1064, KTP.phi)),
     source: "EKSMA KTP sheet",
   },
   bibo: {
     name: "BiBO", cut: `type I (ee → o), YZ plane, θ = ${(180 - BIBO_THETA / deg).toFixed(1)}°`, deff: 3.0e-12, nOmega: BIBO_N, n2Omega: BIBO_N,
-    transparency: [286e-9, 2500e-9], source: "CASTECH BiBO sheet (d_eff); n and θ from Umemura et al. 2007",
+    transparency: [286e-9, 2500e-9],
+    // YZ plane: 1/n² = cos²θ/n_y² + sin²θ/n_z² is the uniaxial form with n_o → n_y, n_e → n_z.
+    walkOff: Math.abs(uniaxialWalkOff(BIBO.o1064.ny, BIBO.o1064.nz, BIBO_THETA)), source: "CASTECH BiBO sheet (d_eff); n and θ from Umemura et al. 2007",
   },
   "mgo-ln": {
     name: "MgO:LiNbO₃ (bulk)", cut: "type I (ooe), θ = 90°, temperature-tuned", deff: LN.d31 * 1e-12,
-    nOmega: LN.o1064.no, n2Omega: LN.o1064.no, transparency: [420e-9, 5200e-9],
+    nOmega: LN.o1064.no, n2Omega: LN.o1064.no, transparency: [420e-9, 5200e-9], walkOff: 0,
     source: "d₃₁ Shoji et al. 1997; n_o Zelmon et al. 1997",
   },
   ppln: {
     name: "MgO:PPLN (QPM)", cut: "first-order QPM, eee", deff: ((2 * LN.d33) / Math.PI) * 1e-12,
-    nOmega: crystalIndices("linbo3", 1064e-9).ne, n2Omega: LN.e532.ne, transparency: [420e-9, 5200e-9],
+    nOmega: crystalIndices("linbo3", 1064e-9).ne, n2Omega: LN.e532.ne, transparency: [420e-9, 5200e-9], walkOff: 0,
     source: "d₃₃ Shoji et al. 1997, d_eff = 2d₃₃/π; n_e Zelmon et al. 1997",
   },
 };
@@ -139,6 +151,8 @@ export interface FocusedShgInput {
   n2Omega: number;
   /** 1/e² radius of the focus at the crystal centre, m. */
   w0: number;
+  /** Walk-off angle ρ, rad (default 0). */
+  walkOff?: number;
 }
 
 export interface FocusedShg {
@@ -148,17 +162,102 @@ export interface FocusedShg {
   xi: number;
   /** Confocal parameter, m. */
   b: number;
+  /** Walk-off parameter B. */
+  B: number;
 }
 
-/** Boyd–Kleinman SHG coefficient at exact phase matching (Δk = 0, σ = 0). */
-export function focusedShg({ lambda, length, deff, nOmega, n2Omega, w0 }: FocusedShgInput): FocusedShg {
+/** Boyd–Kleinman SHG coefficient at exact phase matching (Δk = 0, σ = 0), with walk-off. */
+export function focusedShg({ lambda, length, deff, nOmega, n2Omega, w0, walkOff = 0 }: FocusedShgInput): FocusedShg {
   const b = confocalParameter(lambda, nOmega, w0);
-  if (!(Number.isFinite(b) && length > 0 && Number.isFinite(deff) && nOmega >= 1 && n2Omega >= 1)) {
-    return { K: NaN, h: NaN, xi: NaN, b: NaN };
+  const B = walkOffParameter(walkOff, length, lambda, nOmega);
+  if (!(Number.isFinite(b) && length > 0 && Number.isFinite(deff) && nOmega >= 1 && n2Omega >= 1 && B >= 0)) {
+    return { K: NaN, h: NaN, xi: NaN, b: NaN, B: NaN };
   }
   const xi = length / b;
-  const h = boydKleinmanH(0, xi);
-  return { K: shgPrefactor(lambda, length, deff, nOmega, n2Omega) * h, h, xi, b };
+  const h = B > 0 ? boydKleinmanHWalkOff(0, B, xi) : boydKleinmanH(0, xi);
+  return { K: shgPrefactor(lambda, length, deff, nOmega, n2Omega) * h, h, xi, b, B };
+}
+
+/** Walk-off parameter B = ρ√(L k_ω)/2 with k_ω = 2πn_ω/λ (Boyd & Kleinman 1968). */
+export function walkOffParameter(walkOff: number, length: number, lambda: number, nOmega: number): number {
+  if (!(walkOff >= 0 && length > 0 && lambda > 0 && nOmega > 0)) return NaN;
+  return (walkOff * Math.sqrt((length * 2 * Math.PI * nOmega) / lambda)) / 2;
+}
+
+/**
+ * Boyd–Kleinman h(σ, B, ξ) with walk-off, focus at the crystal centre, no absorption:
+ *   h = (1/4ξ) ∫∫_{−ξ}^{ξ} dτ dτ′ e^{iσ(τ−τ′) − (B²/ξ)(τ−τ′)²}/((1 + iτ)(1 − iτ′)).
+ * With u = τ − τ′ the inner integral is closed: 1/((1 + iu + iτ′)(1 − iτ′)) = [1/(1 + iu + iτ′) + 1/(1 − iτ′)]/(2 + iu),
+ * with antiderivative i[ln(1 − iτ′) − ln(1 + iu + iτ′)]/(2 + iu) (both arguments have real part 1, so the principal logs
+ * are continuous) over τ′ ∈ [max(−ξ, −ξ − u), min(ξ, ξ − u)]. The u integral over [−2ξ, 2ξ] is Simpson's rule, cut where
+ * e^{−(B²/ξ)u²} < 1e-12. The integrand is Hermitian, so h is the real part. B = 0 gives `boydKleinmanH`.
+ */
+export function boydKleinmanHWalkOff(sigma: number, B: number, xi: number): number {
+  if (!Number.isFinite(sigma) || !(B >= 0 && Number.isFinite(B)) || !(Number.isFinite(xi) && xi > 0)) return NaN;
+  const a = (B * B) / xi;
+  const uMax = a > 0 ? Math.min(2 * xi, Math.sqrt(27.6 / a)) : 2 * xi;
+  // ≥ 10 points per unit u (the 1/(1 + iτ) scale) and per radian of e^{iσu}; capped for very thick slabs.
+  let n = Math.min(400_000, Math.max(400, Math.ceil(2 * uMax * 10 * Math.max(1, Math.abs(sigma)))));
+  if (n % 2) n += 1;
+  const step = (2 * uMax) / n;
+  let sum = 0;
+  for (let i = 0; i <= n; i++) {
+    const u = -uMax + i * step;
+    const lo = Math.max(-xi, -xi - u), hi = Math.min(xi, xi - u);
+    // ΔF = [ln(1 − iτ′) − ln(1 + iu + iτ′)] from lo to hi: log-modulus (real) and argument (imaginary) parts.
+    const dr = 0.5 * Math.log(((1 + hi * hi) * (1 + (u + lo) ** 2)) / ((1 + lo * lo) * (1 + (u + hi) ** 2)));
+    const di = Math.atan(lo) - Math.atan(hi) - Math.atan(u + hi) + Math.atan(u + lo);
+    // C = iΔF/(2 + iu)
+    const den = 4 + u * u;
+    const cr = (dr * u - 2 * di) / den, ci = (di * u + 2 * dr) / den;
+    const weight = i === 0 || i === n ? 1 : i % 2 ? 4 : 2;
+    sum += weight * Math.exp(-a * u * u) * (Math.cos(sigma * u) * cr - Math.sin(sigma * u) * ci);
+  }
+  return (sum * step) / 3 / (4 * xi);
+}
+
+/** Coarse scan, then golden-section refinement around the best scan point: the argument of the maximum of f on [lo, hi]. */
+function maximize(f: (x: number) => number, lo: number, hi: number, scan: number): number {
+  let best = lo, fBest = -Infinity;
+  const dx = (hi - lo) / scan;
+  for (let k = 0; k <= scan; k++) {
+    const v = f(lo + k * dx);
+    if (v > fBest) { fBest = v; best = lo + k * dx; }
+  }
+  const g = (Math.sqrt(5) - 1) / 2;
+  let a = Math.max(lo, best - dx), b = Math.min(hi, best + dx);
+  let x1 = b - g * (b - a), x2 = a + g * (b - a), f1 = f(x1), f2 = f(x2);
+  // 20 steps shrink the bracket to 0.618²⁰ ≈ 7e-5 of 2dx; h is flat at its maximum.
+  for (let it = 0; it < 20; it++) {
+    if (f1 > f2) { b = x2; x2 = x1; f2 = f1; x1 = b - g * (b - a); f1 = f(x1); }
+    else { a = x1; x1 = x2; f1 = f2; x2 = a + g * (b - a); f2 = f(x2); }
+  }
+  return (a + b) / 2;
+}
+
+/**
+ * Best focus for walk-off B: the ξ (0.2–20) that maximizes h at σ = 0, or, with `tuneSigma`, h maximized over σ
+ * (−0.5 to 2) at each ξ as well: the Boyd–Kleinman optimum, h = 1.068 at ξ = 2.84 and
+ * σ = 0.57 for B = 0. Walk-off moves the optimum to ξ ≈ 1.4–1.8 and σ ≈ 0.6–0.75, well inside these ranges.
+ */
+const bestFocusCache = new Map<string, { h: number; xi: number; sigma: number }>();
+
+export function bestFocus(B: number, tuneSigma = false): { h: number; xi: number; sigma: number } {
+  if (!(B >= 0 && Number.isFinite(B))) return { h: NaN, xi: NaN, sigma: NaN };
+  const key = `${B}|${tuneSigma}`;
+  const cached = bestFocusCache.get(key);
+  if (cached) return cached;
+  if (bestFocusCache.size > 1000) bestFocusCache.clear();
+  const result = searchBestFocus(B, tuneSigma);
+  bestFocusCache.set(key, result);
+  return result;
+}
+
+function searchBestFocus(B: number, tuneSigma: boolean): { h: number; xi: number; sigma: number } {
+  const sigmaAt = (xi: number) => (tuneSigma ? maximize((s) => boydKleinmanHWalkOff(s, B, xi), -0.5, 2, 10) : 0);
+  const xi = Math.exp(maximize((x) => boydKleinmanHWalkOff(sigmaAt(Math.exp(x)), B, Math.exp(x)), Math.log(0.2), Math.log(20), 12));
+  const sigma = sigmaAt(xi);
+  return { h: boydKleinmanHWalkOff(sigma, B, xi), xi, sigma };
 }
 
 /** 16π² d² L/(ε₀ c n_ω n_2ω λ³), 1/W: K per unit h. */

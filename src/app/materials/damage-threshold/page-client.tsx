@@ -14,7 +14,10 @@ const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.i
 const show = (x: number, text: () => string) => (Number.isFinite(x) ? text() : "—");
 const NS = 1e-9;
 const J_CM2 = 1e4; // J/m² per J/cm²
-const CHART_TAU = Array.from({ length: 61 }, (_, i) => 10 ** (-11 + i * 0.1)); // 10 ps to 10 µs
+const LONG_PULSE = 1e-6; // s, beyond this heating approaches the long-pulse/CW regime
+const CHART_POINTS = 60;
+/** Log-spaced pulse durations, s, from lo to hi. */
+const tauGrid = (lo: number, hi: number) => Array.from({ length: CHART_POINTS + 1 }, (_, i) => lo * (hi / lo) ** (i / CHART_POINTS));
 
 function Card({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone: string }) {
   return (
@@ -46,6 +49,10 @@ export default function DamageThresholdPage() {
   const margin = fTh / fPeak;
   const eMax = energyAtFluence(fTh, w);
   const outsideScaling = tau < THERMAL_SCALING_MIN_TAU || tauRef < THERMAL_SCALING_MIN_TAU;
+
+  const longPulse = tau > LONG_PULSE || tauRef > LONG_PULSE;
+  // 10 ps to 10 µs at least, widened to a decade beyond both pulse durations
+  const CHART_TAU = tauGrid(Math.min(1e-11, Math.min(tau, tauRef) / 10), Math.max(1e-5, Math.max(tau, tauRef) * 10));
 
   const series = [
     { name: "Scaled LIDT", color: "#3b82f6", points: CHART_TAU.map((t) => ({ x: t / NS, y: Number((scaleDamageThreshold(fRef, tauRef, t, exponent) / J_CM2).toPrecision(6)) })) },
@@ -83,6 +90,12 @@ export default function DamageThresholdPage() {
         <p role="alert" className="mb-8 rounded-lg border border-yellow-700 bg-yellow-950 p-3 text-sm text-yellow-200">
           A pulse duration is below 20 ps, where damage is driven by multiphoton and avalanche ionisation and the
           threshold depends on τ more weakly than √τ: the scaled value is not reliable there.
+        </p>
+      )}
+
+      {longPulse && (
+        <p role="alert" className="mb-8 rounded-lg border border-yellow-700 bg-yellow-950 p-3 text-sm text-yellow-200">
+          Beyond ≈ 1 µs heating approaches the long-pulse/CW regime; the √τ law isn&apos;t validated there.
         </p>
       )}
 

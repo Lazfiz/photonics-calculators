@@ -86,6 +86,12 @@ export default function PhotoelasticPage() {
         <ValidatedNumberInput label="Thickness d (mm)" value={thicknessRaw} onChange={setThickness} min={THICKNESS_MIN_MM} max={THICKNESS_MAX_MM} step="0.5" />
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthRaw} onChange={setWavelength} min={WAVELENGTH_MIN_NM} max={WAVELENGTH_MAX_NM} step="1" />
       </div>
+      {(wavelength_nm < 400 || wavelength_nm > 2500) && (
+        <p className="text-sm mb-4 text-yellow-400">
+          C is measured in the visible (silica&apos;s C rises 5.6 % from 650 to 460 nm, Jog 1957) and glasses absorb outside
+          roughly 0.35–2.5 µm; outside this range the retardance is indicative only.
+        </p>
+      )}
       <p className="text-xs mb-6 text-gray-500">For uniaxial stress (σ₂ = 0), a positive value is tension and a negative one compression.</p>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-4">

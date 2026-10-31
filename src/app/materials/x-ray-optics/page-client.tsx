@@ -143,8 +143,10 @@ export default function XRayOpticsPage() {
         <p className="text-xs text-gray-400 mt-3">
           f₁ and f₂ are the Henke scattering factors (CXRO tables, 1–30 keV) of independent atoms, so values within
           about 50 eV of an absorption edge depend on the chemical state and are only approximate. β counts
-          photoabsorption only: Compton scattering adds about 28 % to the attenuation of beryllium and 6 % for carbon
-          at 10 keV, more at 30 keV, and under 1 % for silicon and heavier elements.
+          photoabsorption only: Compton (incoherent) scattering adds about 28 % to the attenuation of beryllium and 6 % for carbon
+          at 10 keV, and under 1 % for silicon and heavier elements at 10 keV. Scattering grows with energy: at 30 keV Compton
+          and Rayleigh together are about a fifth of silicon&apos;s total attenuation (NIST XCOM), so T here is an upper bound
+          at high energy.
         </p>
       </div>
     </>

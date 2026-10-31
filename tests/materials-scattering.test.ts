@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { BRILLOUIN_MEDIA, FUSED_SILICA_BRILLOUIN, acousticWavelength, brillouinGain, phononLifetime } from "../src/physics/materials/brillouin";
 import { RAMAN_LINES, dephasingTime, lorentzianGain, ramanGainAtPump, ramanGainExponent } from "../src/physics/materials/raman-gain";
 import {
-  TPA_MEDIA, indirectBeta, indirectF2, mediumBeta, mediumRegime, scaledBeta, scalingBeta, tpaF2, tpaRegime, tpaTransmission,
+  TPA_MEDIA, indirectBeta, indirectF2, mediumBeta, mediumRegime, nearEdgeReference, scaledBeta, scalingBeta, tpaF2, tpaRegime, tpaTransmission,
   twoPhotonRatio,
 } from "../src/physics/materials/two-photon";
 import { brillouinShift } from "../src/physics/fiber-optics/fiber-nonlinear";
@@ -25,8 +25,8 @@ test("Brillouin shift, acoustic wavelength and gain of fused silica at 1550 nm (
   assertRel(acousticWavelength(1550e-9, m.n), 0.53448e-6, 1e-4, "Λ");
   // g_B = 2π · 1.45⁷ · 0.286² / (c · (1.55e-6)² · 2210 · 5960 · 20e6) = 3.650e-11 m/W.
   assertRel(brillouinGain(1550e-9, m, 20e6), 3.650e-11, 1e-3, "g_B");
-  // T_B = 1/(π · 20 MHz) = 15.92 ns.
-  assertRel(phononLifetime(20e6), 15.915e-9, 1e-4, "T_B");
+  // Agrawal, NFO: Δν_B = Γ_B/2π, T_B = 1/Γ_B, so T_B = 1/(2π · 20 MHz) = 7.958 ns.
+  assertRel(phononLifetime(20e6), 7.9577e-9, 1e-4, "T_B");
   assert.ok(Number.isNaN(brillouinGain(1550e-9, m, 0)), "Δν_B = 0 is guarded");
 });
 
@@ -123,6 +123,18 @@ test("2PA scaling of Eq. 1 against the predicted column of Van Stryland 1985 Tab
     const m = TPA_MEDIA[id];
     const lambda = (2 * hc_eV_nm * 1e-9) / twoPhoton_eV;
     assertRel(scalingBeta(lambda, m.n ?? NaN, m.bandGap_eV, m.Ep_eV ?? NaN), beta_cmGW * 1e-11, 0.03, id);
+  }
+});
+
+test("ZnTe, measured at the 2PA edge, uses Eq. 1 instead of F₂ scaling", () => {
+  // Van Stryland 1985 Table 1: ZnTe n 2.79, E_g 2.26 eV, E_p 19.1 eV, β 4.5 cm/GW at 1.06 µm (2ħω/E_g = 1.031).
+  // By hand at 800 nm: x = 2·1239.842/800/2.26 = 1.37151, F₂ = 0.37151^1.5/1.37151⁵ = 0.046662,
+  // β = 3100·√19.1·0.046662/(2.79²·2.26³) = 7.036 cm/GW (F₂ scaling from 4.5 at 1064 nm would give 44.4).
+  const z = TPA_MEDIA.znte;
+  assert.ok(nearEdgeReference(z), "ZnTe near the edge");
+  assertRel(mediumBeta(z, 800e-9), 7.036e-11, 1e-3, "ZnTe 800 nm");
+  for (const id of ["gaas", "cdte", "cdse", "znse", "cds", "zno", "silicon", "bbo"] as const) {
+    assert.ok(!nearEdgeReference(TPA_MEDIA[id]), id);
   }
 });
 

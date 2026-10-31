@@ -3,9 +3,10 @@ import assert from "node:assert/strict";
 
 import { KERR_MEDIA, kerrIndexChange, n2FromEsu, piPhaseIntensity } from "../src/physics/materials/kerr-index";
 import {
-  BBO_THETA, SHG_CRYSTALS, SHG_LAMBDA, focusedShg, shgPrefactor, typeIPhaseMatchingAngle, uniaxialWalkOff, waistForXi,
+  BBO_THETA, SHG_CRYSTALS, SHG_LAMBDA, bestFocus, boydKleinmanHWalkOff, focusedShg, shgPrefactor, typeIPhaseMatchingAngle, uniaxialWalkOff, waistForXi,
   xyPlaneIndex,
 } from "../src/physics/materials/nonlinear-crystals";
+import { boydKleinmanH } from "../src/physics/imaging/second-harmonic-generation";
 import { criticalPower, nonlinearPhase } from "../src/physics/wave-optics/kerr";
 import { nonlinearCoefficient } from "../src/physics/fiber-optics/fiber-nonlinear";
 
@@ -106,4 +107,28 @@ test("focused SHG at Δk = 0 follows h = arctan²ξ/ξ, largest at ξ = 1.39", (
   assertRel(at(1.39), 0.6455, 1e-3, "h(1.39)");
   assert.ok(at(1.2) < at(1.39) && at(1.6) < at(1.39), "maximum at 1.39");
   assert.ok(Number.isNaN(focusedShg({ ...input, w0: 0 }).K));
+});
+
+test("Boyd–Kleinman h(σ, B, ξ) with walk-off", () => {
+  // B = 0 reduces to the single-integral h(σ, ξ).
+  for (const [sigma, xi] of [[0, 0.1], [0, 1.39], [0.57, 2.84], [1, 5], [-1, 3], [0.5, 50]]) {
+    assertRel(boydKleinmanHWalkOff(sigma, 0, xi), boydKleinmanH(sigma, xi), 1e-6, `B = 0, σ = ${sigma}, ξ = ${xi}`);
+  }
+  // Weak focusing (ξ ≪ 1, the denominators → 1): the BK double integral becomes
+  // (1/4ξ)∫∫ e^{−(B²/ξ)(τ−τ′)²} = ξ[√π erf(t)/t − (1 − e^{−t²})/t²], t = 2B√ξ. B = 10, ξ = 0.01: t = 2, erf 2 = 0.9953223,
+  // h = 0.01 · (0.8820814 − 0.2454211) = 0.0063666.
+  assertRel(boydKleinmanHWalkOff(0, 10, 0.01), 0.0063666, 1e-4, "weak focusing");
+  // BK 1968: h_mm = 1.068 at ξ = 2.84, σ = 0.57 without walk-off; ξ = 1.39 and h = 0.646 at σ = 0.
+  const opt = bestFocus(0, true), pm = bestFocus(0);
+  assertRel(opt.h, 1.068, 2e-3, "h_mm");
+  assertRel(opt.xi, 2.84, 0.01, "ξ_m");
+  assertRel(pm.xi, 1.392, 1e-3, "ξ at σ = 0");
+  // BBO, 10 mm, w₀ = 30 µm: ρ = 55.81 mrad, B = 0.05581 · √(0.01 · 2π · 1.6551/1.064e-6)/2 = 8.725, ξ = 1.137,
+  // h = 0.0792 (an independent 2-D quadrature in the session 175 review gave 0.080 with σ tuned) instead of 0.635.
+  const bbo = SHG_CRYSTALS.bbo;
+  const r = focusedShg({ lambda: SHG_LAMBDA, length: 0.01, deff: bbo.deff, nOmega: bbo.nOmega, n2Omega: bbo.n2Omega, w0: 30e-6, walkOff: bbo.walkOff });
+  assertRel(r.B, 8.725, 1e-3, "B");
+  assertRel(r.h, 0.0792, 2e-3, "h");
+  assert.equal(SHG_CRYSTALS.ppln.walkOff, 0);
+  assert.ok(Number.isNaN(boydKleinmanHWalkOff(0, -1, 1)), "B < 0");
 });
