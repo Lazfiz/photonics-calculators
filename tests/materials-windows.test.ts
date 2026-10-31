@@ -89,6 +89,8 @@ test("domain: n = 1 transmits all, bad n is NaN, bands and fit ranges", () => {
   assert.equal(transmits(WINDOW_MATERIALS.ge, 1 * um), false);
   assert.ok(Number.isNaN(windowIndex(WINDOW_MATERIALS.ge, 1 * um)));
   assert.ok(Number.isNaN(windowIndex(WINDOW_MATERIALS.krs5, 10 * um)));
+  // Diamond windows use Peter's formula and then Palik's table, so the 7–100 µm band has an index to 20 µm.
+  assertAbs(windowIndex(WINDOW_MATERIALS.diamond, 10 * um), 2.3765, 1e-12, "diamond 10 µm");
   // Two bands: silicon transmits at 50 µm but not at 20 µm.
   assert.equal(transmits(WINDOW_MATERIALS.si, 50 * um), true);
   assert.equal(transmits(WINDOW_MATERIALS.si, 20 * um), false);

@@ -29,13 +29,14 @@ const bandText = (bands: readonly (readonly [number, number])[]) =>
   bands.length ? bands.map(([lo, hi]) => `${+(lo * 1e6).toPrecision(3)}–${+(hi * 1e6).toPrecision(3)} µm`).join(", ") : "—";
 
 /** n(λ) of each IR material with a formula, over its fit range inside the chart window. */
-function indexSeries(selected: WindowMaterialId) {
+function indexSeries(selected: WindowMaterialId, chartMax: number) {
   return IR_IDS.flatMap((id) => {
     const d = WINDOW_MATERIALS[id].dispersion;
     return hasFormula(d) ? [{ id, d }] : [];
   }).map(({ id, d }, i) => {
     const lo = Math.max(d.model.range[0] * 1e6, CHART_MIN_UM);
-    const hi = Math.min(d.model.range[1] * 1e6, CHART_MAX_UM);
+    const hi = Math.min(d.model.range[1] * 1e6, chartMax);
+    if (!(hi > lo)) return { x: [], y: [], type: "scatter", mode: "lines", name: WINDOW_MATERIALS[id].name, showlegend: false };
     const um = Array.from({ length: CHART_POINTS + 1 }, (_, k) => lo + (k * (hi - lo)) / CHART_POINTS);
     const n = um.map((x) => refractiveIndex(d.model, x * 1e-6));
     const keep = n.map(Number.isFinite);
@@ -76,7 +77,14 @@ export default function InfraredGlassPage() {
     nSubtext = `${d.reference}; dn/dT from ${tRef} °C`;
   }
 
-  const indexChart = useMemo(() => indexSeries(material), [material]);
+  const chartMax = Math.max(CHART_MAX_UM, 1.1 * wavelength);
+  const indexLines = useMemo(() => indexSeries(material, chartMax), [material, chartMax]);
+  const indexChart = Number.isFinite(nRef)
+    ? [...indexLines, {
+      x: [wavelength], y: [Math.round(nRef * 1e6) / 1e6], type: "scatter", mode: "markers", name: `${mat.name.split(" (")[0]} at ${wavelength} µm`,
+      marker: { color: "#f87171", size: 10, line: { color: "#fff", width: 1 } },
+    }]
+    : indexLines;
   const bandRows = IR_IDS.map((id) => ({
     key: id, name: WINDOW_MATERIALS[id].name.split(" (")[0], selected: id === material,
     bands: WINDOW_MATERIALS[id].bands.map(([lo, hi]) => [lo * 1e6, hi * 1e6] as const),

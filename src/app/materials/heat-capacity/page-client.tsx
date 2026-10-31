@@ -149,8 +149,8 @@ export default function HeatCapacityPage() {
         <p className="text-xs text-gray-400 mt-3">
           The Debye curve gives the shape, the measured value its scale. One θ_D serves all temperatures, and the
           harmonic model has no c_p − c_V or anharmonic term, so above room temperature it runs low: silicon at
-          1000 K comes out 8 % below the measured value. One θ_D also drifts away from room temperature: sapphire is 9 % low
-          at 200 K and 37 % low at 100 K, and MgO runs 8–9 % high from 500 to 1000 K. Glasses have no preset (no cited θ_D), nor has diamond: its
+          1000 K comes out 8 % below the measured value. One θ_D also drifts away from room temperature: sapphire is 5 % low
+          at 200 K and 21 % low at 100 K, and MgO runs 8–9 % high from 500 to 1000 K. Glasses have no preset (no cited θ_D), nor has diamond: its
           low-temperature θ_D of 2250 K gives half its measured c_p at 273 K.
         </p>
       </div>

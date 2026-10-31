@@ -17,13 +17,13 @@
  * - θ_D: experimental values from Landolt–Börnstein (O. Madelung, U. Rössler, M. Schulz), as tabulated in
  *   M. Råsander, M. A. Moram, J. Chem. Phys. 143, 144104 (2015), doi:10.1063/1.4932334 (arXiv:1505.02379), Table VII.
  *   Sapphire: 990 K, the Debye temperature of D. G. Archer's fit, J. Phys. Chem. Ref. Data 22, 1441 (1993),
- *   doi:10.1063/1.555931, §2. Against Archer's Table 2 the scaled curve is within 3.1 % from 250 to 1000 K, 9 % low
- *   at 200 K and 37 % low at 100 K. MgO with its 945 K runs high instead: against NIST-JANAF (M. W. Chase, J. Phys.
- *   Chem. Ref. Data Monograph 9, 1998, table Mg-008) it is 12 % low at 200 K, 8 % high at 500 K and 9 % at 1000 K.
+ *   doi:10.1063/1.555931, §2. Against NIST-JANAF (M. W. Chase, J. Phys. Chem. Ref. Data Monograph 9, 1998, table
+ *   Al-096) the scaled curve is within 1.1 % from 300 to 1000 K, 5.1 % low at 200 K and 21 % low at 100 K. MgO with
+ *   its 945 K runs high instead: against JANAF table Mg-008 it is 12 % low at 200 K, 8 % high at 500 K and 9 % at 1000 K.
  * - GaAs has no preset: Crystran's 360 J/(kg·K) is above the Dulong–Petit limit 6R/M = 345 J/(kg·K).
- * - Si c_p: Desai 1986 Table 4, 20.007 J/(mol·K) at 298.15 K. Sapphire: Archer Table 2, 81.56 J/(mol·K) at 300 K
- *   (Crystran's 763 J/(kg·K) at 293 K is 2.9 % below Archer's 785 there). MgO: JANAF, 37.106 J/(mol·K) at 298.15 K
- *   (Crystran: 877 J/(kg·K)). The others and all densities: Crystran data sheets.
+ * - Si c_p: Desai 1986 Table 4, 20.007 J/(mol·K) at 298.15 K. Sapphire: JANAF Al-096, 79.416 J/(mol·K) at 300 K
+ *   (Crystran: 763 J/(kg·K) at 293 K). MgO: JANAF Mg-008, 37.106 J/(mol·K) at 298.15 K (Crystran: 877 J/(kg·K)).
+ *   CaF₂: JANAF Ca-014, 68.588 J/(mol·K) at 298.15 K (Crystran: 854 J/(kg·K)). Ge, LiF and all densities: Crystran.
  */
 
 import { R_gas } from "../constants";
@@ -92,8 +92,8 @@ export interface HeatCapacityMaterial {
 export const HEAT_CAPACITY_MATERIALS: Record<HeatCapacityMaterialId, HeatCapacityMaterial> = {
   si: { name: "Silicon", cRef: 20.007 / 28.0855e-3, tRef: 298.15, thetaD: 645, density: 2330 },
   ge: { name: "Germanium", cRef: 310, tRef: 298.15, thetaD: 373, density: 5330 },
-  caf2: { name: "CaF₂", cRef: 854, tRef: 298.15, thetaD: 510, density: 3180 },
+  caf2: { name: "CaF₂", cRef: 68.588 / 78.0748e-3, tRef: 298.15, thetaD: 510, density: 3180 },
   lif: { name: "LiF", cRef: 1562, tRef: 298.15, thetaD: 732, density: 2639 },
   mgo: { name: "MgO", cRef: 37.106 / 40.304e-3, tRef: 298.15, thetaD: 945, density: 3580 },
-  sapphire: { name: "Sapphire (Al₂O₃)", cRef: 81.56 / 101.9613e-3, tRef: 300, thetaD: 990, density: 3970 },
+  sapphire: { name: "Sapphire (Al₂O₃)", cRef: 79.416 / 101.9613e-3, tRef: 300, thetaD: 990, density: 3970 },
 };

@@ -7,7 +7,7 @@ export const materials: CalculatorEntry[] = [
     description: "Acousto-optic Bragg cell design: Bragg and deflection angles, scan range, Klein–Cook Q, first-order diffraction efficiency from the figure of merit M₂ and acoustic power, access time and resolvable spots, for TeO₂, LiNbO₃, PbMoO₄ and fused silica.",
     keywords: ["Acousto-Optic Materials", "AOM", "Acousto-Optic Deflector", "Figure of Merit M₂"],
     tier: "textbook",
-    modelNote: "Isotropic Bragg diffraction of plane waves with acoustic attenuation ignored. M₂ and the sound velocity hold for the listed acoustic mode and light polarization at 632.8 nm; the PbMoO₄ and fused-silica values are from a vendor table. TeO₂ slow-shear deflectors use anisotropic diffraction, so their Bragg angles differ from the isotropic ones.",
+    modelNote: "Isotropic Bragg diffraction of plane waves with acoustic attenuation ignored. M₂ and the sound velocity hold for the listed acoustic mode and light polarization at 632.8 nm; the PbMoO₄ and fused-silica values are from a vendor table. TeO₂ slow-shear deflectors use anisotropic diffraction, so their Bragg angles differ from the isotropic ones. The acoustic bandwidth of Bragg matching is not modelled, and below Q = 1 (Raman–Nath) the sin² efficiency is flagged as invalid.",
     references: [
       {
         citation: "Uchida N., Ohmachi Y., Niizeki N., Inamura T. (1972). Arrangement for acousto-optical light deflection. US Patent 3,661,441, Tables 1 and 2 (TeO₂, LiNbO₃).",
@@ -177,7 +177,7 @@ export const materials: CalculatorEntry[] = [
     title: "Laser Damage Threshold",
     description: "Scale an optic's rated pulsed laser damage threshold (LIDT) to your pulse duration with the √τ law and compare it with the 2E/(πw²) peak fluence of your Gaussian beam: margin and energy at threshold.",
     tier: "textbook",
-    modelNote: "F_th(τ) = F_ref (τ/τ_ref)^a with a = ½ (heat diffusion), measured above about 20 ps; real optics scatter around it. Peak fluence 2E/(πw²) of a TEM₀₀ beam (ISO 21254 effective area πw²/2). Wavelength, spot-size and repetition-rate effects are not modelled; the rated value comes from the optic's data sheet.",
+    modelNote: "F_th(τ) = F_ref (τ/τ_ref)^a with a = ½ (heat diffusion), measured above about 20 ps; real optics scatter around it. Peak fluence 2E/(πw²) of a TEM₀₀ beam (ISO 21254 effective area πw²/2). Above about 1 µs heating approaches the CW regime and the √τ law is not validated (the page warns). Wavelength, spot-size and repetition-rate effects are not modelled; the rated value comes from the optic's data sheet.",
     references: [
       {
         citation: "Stuart B. C., Feit M. D., Herman S., Rubenchik A. M., Shore B. W., Perry M. D. (1996). Nanosecond-to-femtosecond laser-induced breakdown in dielectrics. Phys. Rev. B 53, 1749–1761. √τ scaling above about 20 ps (fused silica, CaF₂).",
@@ -194,10 +194,10 @@ export const materials: CalculatorEntry[] = [
     slug: "diamond-optics",
     title: "Diamond Optics",
     description: "Refractive index of diamond from 226 nm to 20 µm (Peter's Sellmeier formula, Palik's infrared values), Fresnel-limited window transmission, transmission bands, and thermal and mechanical properties.",
-    lede: "n(λ) from Peter's Sellmeier formula to 644 nm and Palik's tabulated values beyond; an uncoated, non-absorbing plate transmits at most 2n/(n² + 1).",
+    lede: "n(λ) from Peter's Sellmeier formula to 644 nm and Palik's tabulated values beyond; an uncoated, non-absorbing plate transmits at most 2n/(n² + 1) (reflections added incoherently).",
     keywords: ["Diamond Refractive Index", "CVD Diamond Window"],
     tier: "textbook",
-    modelNote: "Peter's Sellmeier fit is exact for the fit over his 226–644 nm; beyond that the index is interpolated linearly between Palik's values (to 20 µm, changes of a few 1e-4). Transmission is the lossless two-surface Fresnel limit; the 2.5–7 µm multiphonon band and impurities lower it. Properties are room-temperature data-sheet values.",
+    modelNote: "Peter's Sellmeier fit is exact for the fit over his 226–644 nm; beyond that the index is interpolated linearly in 1/λ² between Palik's values to 20 µm (on a smooth dispersion curve this adds under 1e-4; linear in λ it was up to 3e-3 between 0.66 and 2 µm). Transmission is the lossless two-surface Fresnel limit; the 2.5–7 µm multiphonon band and impurities lower it. Properties are room-temperature data-sheet values.",
     references: [
       {
         citation: "Peter F. (1923). Über Brechungsindizes und Absorptionskonstanten des Diamanten zwischen 644 und 226 mμ. Z. Phys. 15, 358–368.",
@@ -249,7 +249,7 @@ export const materials: CalculatorEntry[] = [
     title: "Heat Capacity of Optical Materials",
     description: "Specific heat c_p(T) of Si, Ge, CaF₂, LiF, MgO and sapphire from the Debye model scaled to the measured room-temperature value, volumetric heat capacity, and the heat to warm a part from T₁ to T₂.",
     tier: "textbook",
-    modelNote: "c_p(T) = c_p(T_ref)·D(θ_D/T)/D(θ_D/T_ref) with the Debye function D and one Debye temperature; Q = m∫c_p dT. Harmonic, so it runs low above room temperature (Si at 1000 K: 8 % below Desai's value) and misses the dip of θ_D near 40 K; sapphire is within 3.1 % of Archer's table from 250 to 1000 K, MgO 8–9 % above JANAF from 500 to 1000 K. No presets for glasses, diamond or GaAs.",
+    modelNote: "c_p(T) = c_p(T_ref)·D(θ_D/T)/D(θ_D/T_ref) with the Debye function D and one Debye temperature; Q = m∫c_p dT. Harmonic, so it runs low above room temperature (Si at 1000 K: 8 % below Desai's value) and misses the dip of θ_D near 40 K; sapphire is within 1.1 % of JANAF from 300 to 1000 K (5 % low at 200 K, 21 % at 100 K), MgO 8–9 % above JANAF from 500 to 1000 K. No presets for glasses, diamond or GaAs.",
     references: [
       {
         citation: "Debye P. (1912). Zur Theorie der spezifischen Wärmen. Ann. Phys. 344, 789–839.",
@@ -260,11 +260,11 @@ export const materials: CalculatorEntry[] = [
         url: "https://doi.org/10.1063/1.4932334",
       },
       {
-        citation: "Archer D. G. (1993). Thermodynamic properties of synthetic sapphire (α-Al₂O₃), Standard Reference Material 720, and the effect of temperature-scale differences on thermodynamic properties. J. Phys. Chem. Ref. Data 22, 1441–1453. Debye temperature 990 K (§2); c_p 81.56 J/(mol·K) at 300 K (Table 2).",
+        citation: "Archer D. G. (1993). Thermodynamic properties of synthetic sapphire (α-Al₂O₃), Standard Reference Material 720, and the effect of temperature-scale differences on thermodynamic properties. J. Phys. Chem. Ref. Data 22, 1441–1453. Debye temperature 990 K (§2).",
         url: "https://doi.org/10.1063/1.555931",
       },
       {
-        citation: "Chase M. W. (1998). NIST-JANAF Thermochemical Tables, 4th ed. J. Phys. Chem. Ref. Data Monograph 9. MgO (cr), table Mg-008: c_p 37.106 J/(mol·K) at 298.15 K, 45.544 at 500 K.",
+        citation: "Chase M. W. (1998). NIST-JANAF Thermochemical Tables, 4th ed. J. Phys. Chem. Ref. Data Monograph 9. MgO (cr), table Mg-008: c_p 37.106 J/(mol·K) at 298.15 K, 45.544 at 500 K; α-Al₂O₃, table Al-096: 79.416 J/(mol·K) at 300 K; CaF₂, table Ca-014: 68.588 J/(mol·K) at 298.15 K.",
         url: "https://janaf.nist.gov/tables/Mg-008.txt",
       },
       {
@@ -272,7 +272,7 @@ export const materials: CalculatorEntry[] = [
         url: "https://doi.org/10.1063/1.555761",
       },
       {
-        citation: "Crystran. Handbook of Infrared and Ultraviolet Optical Materials, data sheets: specific heat and density of Ge, CaF₂ and LiF; density of Si, MgO and sapphire.",
+        citation: "Crystran. Handbook of Infrared and Ultraviolet Optical Materials, data sheets: specific heat and density of Ge and LiF; density of Si, CaF₂, MgO and sapphire.",
         url: "https://www.crystran.com/optical-materials",
       },
     ],
@@ -326,7 +326,7 @@ export const materials: CalculatorEntry[] = [
     description: "Faraday rotation θ = VBL in TGG, TSAG, CeF₃ and fused silica, with the Verdet constant's dispersion from published fits, the field or length for a 45° isolator rotator, and YIG's saturated rotation at 1550 nm.",
     keywords: ["Verdet Constant", "Faraday Isolator", "Faraday Rotator", "TGG"],
     tier: "textbook",
-    modelNote: "θ = VBL is exact for a uniform field. V(λ) comes from published fits inside their ranges: the single-transition model for the Tb³⁺ and Ce³⁺ paramagnets (Vojna et al.), a dispersion fit for fused silica (Tran et al.). YIG is ferrimagnetic, so only its saturated rotation at 1550 nm is given.",
+    modelNote: "θ = VBL is exact for a uniform field. V(λ) at room temperature comes from published fits inside their ranges: the single-transition model for the Tb³⁺ and Ce³⁺ paramagnets (Vojna et al.), a dispersion fit for fused silica (Tran et al.). YIG is ferrimagnetic, so only its saturated rotation at 1550 nm is given.",
     references: [
       {
         citation: "Vojna D., Slezák O., Lucianetti A., Mocek T. (2019). Verdet constant of magneto-active materials developed for high-power Faraday devices. Appl. Sci. 9, 3160. Eq. 13 and Tables 1–3.",
@@ -344,7 +344,7 @@ export const materials: CalculatorEntry[] = [
     description: "Second-harmonic generation of 1064 nm in BBO, LBO, KTP, BiBO, bulk MgO:LiNbO₃ and PPLN: d_eff of each phase-matched cut, and the focused-beam (Boyd–Kleinman) SH power and efficiency for a crystal length, pump power and waist.",
     keywords: ["Second Harmonic Generation", "d_eff", "Boyd–Kleinman Focusing", "PPLN", "BBO"],
     tier: "textbook",
-    modelNote: "Boyd–Kleinman focused Gaussian beam at exact phase matching (Δk = 0), undepleted pump, no walk-off or absorption. d_eff comes from each source's d_ij and cut at 1064 nm (BBO's and BiBO's angles from their indices); published values differ by tens of per cent between sources. Mid-IR crystals (AgGaS₂, ZGP, GaSe, OP-GaAs) and walk-off, acceptance and damage data are not included until sourced.",
+    modelNote: "Boyd–Kleinman focused Gaussian beam with walk-off, h(σ, B, ξ) with B = ρ√(Lk_ω)/2, focus at the crystal centre, undepleted pump, no absorption; for type II the one-walking-wave form is approximate. d_eff comes from each source's d_ij and cut at 1064 nm (BBO's and BiBO's angles from their indices); published values differ by tens of per cent between sources. Mid-IR crystals (AgGaS₂, ZGP, GaSe, OP-GaAs) and acceptance and damage data are not included until sourced.",
     references: [
       {
         citation: "Boyd G. D., Kleinman D. A. (1968). Parametric Interaction of Focused Gaussian Light Beams. J. Appl. Phys. 39, 3597–3639. Focusing function h(σ, ξ).",
@@ -445,7 +445,7 @@ export const materials: CalculatorEntry[] = [
     description: "Stress birefringence of optical glass: Δn = C(σ₁ − σ₂) and the retardance R = C d (σ₁ − σ₂) for fused silica and twelve Schott glasses, in nm/cm as glass catalogs quote it, with the stress that gives a half-wave retardance.",
     keywords: ["Photoelastic Constants", "Stress-Optic Coefficient", "Stress Optical Coefficient K"],
     tier: "textbook",
-    modelNote: "Linear stress-optic law for isotropic glass at one wavelength (C varies a few percent across the visible). Crystals are not covered: they have a stress-optic tensor, so their birefringence depends on the stress and light directions.",
+    modelNote: "Linear stress-optic law for isotropic glass at one wavelength (C varies a few percent across the visible; the page warns outside 0.4–2.5 µm). Crystals are not covered: they have a stress-optic tensor, so their birefringence depends on the stress and light directions.",
     references: [
       {
         citation: "SCHOTT AG (2017). Optical glass data sheets, 2017-01-20: stress optical coefficient K.",
@@ -464,7 +464,7 @@ export const materials: CalculatorEntry[] = [
     description: "Light-induced refractive index changes via space-charge fields in electro-optic materials. Key for holographic storage, phase conjugation, and beam coupling.",
     keywords: ["Two-Beam Coupling", "Space-Charge Field", "Kukhtarev Model", "Photorefractive Gain"],
     tier: "textbook",
-    modelNote: "Kukhtarev's band-transport model in steady state: one carrier type, diffusion only (no applied field, no photovoltaic current), small fringe modulation. E_sc = E_D/(1 + E_D/E_q) and Γ = 2πn³r_eff E_sc/(λ cos θ). The trap density is an input; Fe:LiNbO₃'s photovoltaic field, which usually dominates, is left out.",
+    modelNote: "Kukhtarev's band-transport model in steady state: one carrier type, diffusion only (no applied field, no photovoltaic current), small fringe modulation. E_sc = E_D/(1 + E_D/E_q) and Γ = 2πn³r_eff E_sc/(λ cos θ). r_eff = r₃₃ with full fringe contrast at every angle, an upper bound for large angles (about 16 % high at 2θ = 60° in LiNbO₃). The trap density is an input; Fe:LiNbO₃'s photovoltaic field, which usually dominates, is left out.",
     references: [
       {
         citation: "Kukhtarev N. V., Markov V. B., Odulov S. G., Soskin M. S., Vinetskii V. L. (1978). Holographic storage in electrooptic crystals. I. Steady state. Ferroelectrics 22, 949–960.",
@@ -612,7 +612,7 @@ export const materials: CalculatorEntry[] = [
     title: "Thermal Conductivity for Optics",
     description: "Room-temperature thermal conductivity of window materials (Crystran) and what it means for an absorbing optic: thermal resistance, face-to-face and beam centre-to-edge temperature rise, and the dn/dT thermal lens.",
     tier: "textbook",
-    modelNote: "Steady state, constant room-temperature k. ΔT = Pd/(kA) through a slab; P/(4πkd) beam centre to edge for uniform heating with radial flow; dn/dT lens f = 2kA/(P dn/dT) (Koechner's rod). Stress-optic and end-bulging lens terms, Gaussian heating, axial flow and k(T) are not modelled.",
+    modelNote: "Steady state, constant room-temperature k (Si: Crystran's 273 K value). ΔT = Pd/(kA) through a slab absorbing at one face (half that for uniform bulk absorption); P/(4πkd) beam centre to edge for uniform heating with radial flow; dn/dT lens f = 2kA/(P dn/dT) (Koechner's rod). Stress-optic and end-bulging lens terms, Gaussian heating, axial flow and k(T) are not modelled.",
     references: [
       {
         citation: "Koechner W. (2006). Solid-State Laser Engineering, 6th ed. Springer. Ch. 7: temperature profile and thermal lens of a uniformly heated rod.",
@@ -727,7 +727,7 @@ export const materials: CalculatorEntry[] = [
     title: "X-ray Optics Materials",
     description: "X-ray refractive index n = 1 − δ − iβ of Be, diamond, Si, Ni, Cu, Mo, Pt, Au, Kapton and Si₃N₄ from 1 to 30 keV, from the Henke scattering factors: critical angle, attenuation length, μ/ρ and transmission, with absorption edges.",
     tier: "textbook",
-    modelNote: "δ, β = (r_e λ²/2π) Σ n_q f₁,₂ with the Henke f₁, f₂ of independent atoms (CXRO tables, interpolated within 0.2 %); θ_c = √(2δ), μ = 4πβ/λ. Approximate within ~50 eV of an edge. β is photoabsorption only: below CXRO's β by 22 % for Be and 6 % for C at 10 keV (Compton), < 1 % for Si and heavier.",
+    modelNote: "δ, β = (r_e λ²/2π) Σ n_q f₁,₂ with the Henke f₁, f₂ of independent atoms (CXRO tables, interpolated within 0.2 %); θ_c = √(2δ), μ = 4πβ/λ. Approximate within ~50 eV of an edge. β is photoabsorption only: below CXRO's β by 22 % for Be and 6 % for C at 10 keV (Compton), < 1 % for Si and heavier there. Scattering grows with energy: at 30 keV Compton and Rayleigh are about a fifth of silicon's attenuation (NIST XCOM), so T is an upper bound.",
     references: [
       {
         citation: "Henke B. L., Gullikson E. M., Davis J. C. (1993). X-ray interactions: photoabsorption, scattering, transmission, and reflection at E = 50–30,000 eV, Z = 1–92. At. Data Nucl. Data Tables 54, 181–342.",

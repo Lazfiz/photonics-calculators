@@ -13,8 +13,6 @@
  * - Diamond n(λ): Peter's Sellmeier formula (sellmeier-data) over his 226–644 nm, then Palik's values as Crystran
  *   tabulates them (0.656–20 µm), interpolated linearly in λ. The 2.5–7 µm multiphonon band absorbs.
  */
-import { refractiveIndex } from "./sellmeier";
-import { MATERIALS } from "./sellmeier-data";
 import { WINDOW_MATERIALS } from "./window-materials";
 
 /** A value along and across the c axis (equal for an isotropic crystal). */
@@ -29,7 +27,10 @@ export interface CrystalSheet {
   density_g_cm3: number;
   meltingPoint_C: number;
   meltingNote?: string;
-  /** dn/dT, 1/K, at the wavelength given. */
+  /**
+   * dn/dT, 1/K, at the wavelength given. Crystran labels these by propagation direction: "∥ c" is light travelling along c,
+   * which sees n_o, so para = dn_o/dT and perp = dn_e/dT for the uniaxial crystals (calcite: 3 and 13; quartz: −5.5 and −6.5).
+   */
   dnDT: AxisPair;
   dnDTLambda: number;
   /** Thermal conductivity, W/(m·K). */
@@ -88,26 +89,5 @@ export function quartzRotatoryPower(lambda: number): number {
 
 // ------------------------------------------------------------------ diamond index
 
-/** Diamond n (ordinary light; cubic) from Crystran's table of Palik's values, [λ µm, n]. */
-const DIAMOND_IR: readonly (readonly [number, number])[] = [
-  [0.656, 2.4104], [1, 2.3905], [2, 2.3813], [3, 2.3795], [4, 2.3787], [5, 2.3783], [6, 2.3779], [10, 2.3765], [20, 2.3741],
-];
-
-export const DIAMOND_RANGE: readonly [number, number] = [MATERIALS.diamond.model.range[0], 20e-6];
-
-export const DIAMOND_IR_SOURCE = "E. D. Palik (ed.), Handbook of Optical Constants of Solids, vol. 1 (Academic Press, 1985), as tabulated by Crystran";
-
-/** Diamond n(λ) and its source: Peter's formula to 644 nm, then the Palik table; NaN outside 226 nm–20 µm. */
-export function diamondIndex(lambda: number): { n: number; source: "peter" | "palik" | null } {
-  const peter = MATERIALS.diamond.model;
-  if (!(lambda >= DIAMOND_RANGE[0] && lambda <= DIAMOND_RANGE[1])) return { n: NaN, source: null };
-  if (lambda <= peter.range[1]) return { n: refractiveIndex(peter, lambda), source: "peter" };
-  const x = lambda * 1e6;
-  const nodes: (readonly [number, number])[] = [[peter.range[1] * 1e6, refractiveIndex(peter, peter.range[1])], ...DIAMOND_IR];
-  for (let i = 1; i < nodes.length; i++) {
-    const [x0, n0] = nodes[i - 1];
-    const [x1, n1] = nodes[i];
-    if (x <= x1) return { n: n0 + ((n1 - n0) * (x - x0)) / (x1 - x0), source: "palik" };
-  }
-  return { n: NaN, source: null };
-}
+// Diamond n(λ) lives with the window materials, which also use it; re-exported here for the diamond page.
+export { DIAMOND_IR_SOURCE, DIAMOND_RANGE, diamondIndex } from "./window-materials";

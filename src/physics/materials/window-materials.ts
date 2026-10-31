@@ -29,7 +29,7 @@ export interface WindowMaterial {
   bands: readonly (readonly [number, number])[];
   /** dn/dT near room temperature, 1/K (null: not sourced). */
   dnDT: number | null;
-  /** Thermal conductivity, W/(m·K). */
+  /** Thermal conductivity, W/(m·K), Crystran's room-temperature table value (silicon's 163 is at 273 K, Crystran). */
   conductivity: number | null;
   /** Knoop hardness, kg/mm². */
   knoop: number | null;
@@ -112,9 +112,38 @@ export function hasFormula(d: DispersionMaterial | DataSheetIndex): d is Dispers
   return "model" in d;
 }
 
-/** Index at λ (m) from the material's formula; NaN outside the fit range or for a data-sheet-only material. */
+/** Diamond n (ordinary light; cubic) from Crystran's table of Palik's values, [λ µm, n]. */
+const DIAMOND_IR: readonly (readonly [number, number])[] = [
+  [0.656, 2.4104], [1, 2.3905], [2, 2.3813], [3, 2.3795], [4, 2.3787], [5, 2.3783], [6, 2.3779], [10, 2.3765], [20, 2.3741],
+];
+
+export const DIAMOND_RANGE: readonly [number, number] = [MATERIALS.diamond.model.range[0], 20e-6];
+
+export const DIAMOND_IR_SOURCE = "E. D. Palik (ed.), Handbook of Optical Constants of Solids, vol. 1 (Academic Press, 1985), as tabulated by Crystran";
+
+/**
+ * Diamond n(λ) and its source: Peter's formula to 644 nm, then the Palik table; NaN outside 226 nm–20 µm.
+ * Between nodes n is linear in 1/λ² (Cauchy form, far below the 0.1–0.18 µm UV resonances): on Edwards & Ochoa's
+ * Sellmeier curve that chord is within 1e-4, where a chord linear in λ is 2.7e-3 off at 0.8 µm.
+ */
+export function diamondIndex(lambda: number): { n: number; source: "peter" | "palik" | null } {
+  const peter = MATERIALS.diamond.model;
+  if (!(lambda >= DIAMOND_RANGE[0] && lambda <= DIAMOND_RANGE[1])) return { n: NaN, source: null };
+  if (lambda <= peter.range[1]) return { n: refractiveIndex(peter, lambda), source: "peter" };
+  const x = lambda * 1e6;
+  const nodes: (readonly [number, number])[] = [[peter.range[1] * 1e6, refractiveIndex(peter, peter.range[1])], ...DIAMOND_IR];
+  for (let i = 1; i < nodes.length; i++) {
+    const [x0, n0] = nodes[i - 1];
+    const [x1, n1] = nodes[i];
+    if (x <= x1) return { n: n0 + ((n1 - n0) * (x0 ** -2 - x ** -2)) / (x0 ** -2 - x1 ** -2), source: "palik" };
+  }
+  return { n: NaN, source: null };
+}
+
+/** Index at λ (m) from the material's formula (diamond: Peter, then Palik); NaN outside the fit range or for a data-sheet-only material. */
 export function windowIndex(m: WindowMaterial, lambda: number): number {
   const d = m.dispersion;
+  if (d === MATERIALS.diamond) return diamondIndex(lambda).n;
   return hasFormula(d) && inRange(d.model, lambda) ? refractiveIndex(d.model, lambda) : NaN;
 }
 

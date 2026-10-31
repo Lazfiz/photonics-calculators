@@ -7,7 +7,7 @@
  *
  * G. P. Agrawal, Nonlinear Fiber Optics, 6th ed. (Academic Press, 2019), doi:10.1016/C2018-0-01168-8, Brillouin
  * scattering:
- *   ν_B = 2 n v_A/λ_p,   Λ = λ_p/(2n) = v_A/ν_B,   T_B = 1/(πΔν_B),
+ *   ν_B = 2 n v_A/λ_p,   Λ = λ_p/(2n) = v_A/ν_B,   Δν_B = Γ_B/2π,   T_B = 1/Γ_B = 1/(2πΔν_B),
  *   g_B = 2π n⁷ p₁₂² / (c λ_p² ρ₀ v_A Δν_B)   (peak of the Lorentzian line, Δν_B its FWHM),
  * with fused-silica values n = 1.45, v_A = 5.96 km/s, ρ₀ = 2210 kg/m³ and p₁₂ = 0.286. Δν_B scales as λ_p⁻² (the
  * phonon damping grows as the acoustic wavenumber squared), so the peak g_B hardly depends on the pump wavelength.
@@ -96,7 +96,7 @@ export function acousticWavelength(lambdaPump: number, n: number): number {
   return positive(lambdaPump) && positive(n) ? lambdaPump / (2 * n) : NaN;
 }
 
-/** Phonon lifetime T_B = 1/(πΔν_B) from the FWHM gain bandwidth, s. */
+/** Phonon lifetime T_B = 1/Γ_B = 1/(2πΔν_B) from the FWHM gain bandwidth (Agrawal: ≈ 10 ns in silica), s. */
 export function phononLifetime(linewidth: number): number {
-  return positive(linewidth) ? 1 / (Math.PI * linewidth) : NaN;
+  return positive(linewidth) ? 1 / (2 * Math.PI * linewidth) : NaN;
 }

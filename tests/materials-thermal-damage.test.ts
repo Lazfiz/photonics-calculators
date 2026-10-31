@@ -40,16 +40,22 @@ test("Silicon: the Debye value at θ_D = 645 K matches Desai 1986 at room temper
   assert.equal(scaledHeatCapacity(si.cRef, si.tRef, si.thetaD, si.tRef), si.cRef);
 });
 
-test("Sapphire: θ_D = 990 K against Archer 1993 Table 2", () => {
+test("Sapphire: θ_D = 990 K against NIST-JANAF table Al-096", () => {
   const al = HEAT_CAPACITY_MATERIALS.sapphire;
-  assertRel(al.cRef, 799.9, 1e-4, "c_p(300 K) = 81.56 J/(mol·K) / 101.961 g/mol");
-  // Archer Table 2, J/(mol·K): 250 K 69.80, 400 K 97.37, 550 K 110.31, 1000 K 124.89 within 3.1 %; 200 K 54.61 is missed by 9 %.
+  assertRel(al.cRef, 778.88, 1e-4, "c_p(300 K) = 79.416 J/(mol·K) / 101.9613 g/mol");
+  // JANAF Al-096, J/(mol·K): 400 K 96.086, 600 K 112.545, 1000 K 124.771 within 1.1 %; 200 K 51.120 is 5.1 % low,
+  // 100 K 12.855 is 21 % low.
   const molar = (T: number) => scaledHeatCapacity(al.cRef, al.tRef, al.thetaD, T) * 101.9613e-3;
-  assertRel(molar(250), 69.8, 0.035, "250 K");
-  assertRel(molar(400), 97.37, 0.035, "400 K");
-  assertRel(molar(550), 110.31, 0.035, "550 K");
-  assertRel(molar(1000), 124.89, 0.035, "1000 K");
-  assertRel(molar(200), 54.61 * (1 - 0.088), 0.005, "200 K, documented 8.8 % low");
+  assertRel(molar(400), 96.086, 0.012, "400 K");
+  assertRel(molar(600), 112.545, 0.012, "600 K");
+  assertRel(molar(1000), 124.771, 0.012, "1000 K");
+  assertRel(molar(200), 51.12 * (1 - 0.0509), 0.002, "200 K, documented 5.1 % low");
+  assertRel(molar(100), 12.855 * (1 - 0.2141), 0.002, "100 K, documented 21 % low");
+});
+
+test("CaF₂ c_p from NIST-JANAF table Ca-014", () => {
+  // 68.588 J/(mol·K) at 298.15 K over 78.0748 g/mol = 878.48 J/(kg·K).
+  assertRel(HEAT_CAPACITY_MATERIALS.caf2.cRef, 878.48, 1e-4, "CaF₂ 298.15 K");
 });
 
 test("MgO: θ_D = 945 K against NIST-JANAF table Mg-008", () => {

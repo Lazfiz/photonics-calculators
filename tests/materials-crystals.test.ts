@@ -92,9 +92,13 @@ test("diamond: Peter 2.4173 at 589.3 nm, a plate transmits 2n/(n² + 1) = 0.7065
   assert.equal(d.source, "peter");
   assertAbs(d.n, 2.4173, 1e-4, "n_D");
   assertAbs(fresnelLimitTransmission(d.n), 0.7065, 1e-4, "plate T");
-  // Crystran (Palik) table: 2.3765 at 10 µm; halfway between 10 and 20 µm the interpolation gives the mean.
+  // Crystran (Palik) table: 2.3765 at 10 µm. Between nodes n is linear in 1/λ²: at 15 µm the weight is
+  // (1/100 − 1/225)/(1/100 − 1/400) = 0.740741, n = 2.3765 − 0.0024 · 0.740741 = 2.374722; at 0.8 µm (nodes 0.656 and
+  // 1 µm) it is (2.323766 − 1.5625)/1.323766 = 0.575078, n = 2.4104 − 0.0199 · 0.575078 = 2.398956. Edwards & Ochoa's
+  // Sellmeier gives 2.40006 there against its own chord 2.40013; a chord linear in λ gives 2.40280.
   assertAbs(diamondIndex(10e-6).n, 2.3765, 1e-12, "10 µm");
-  assertAbs(diamondIndex(15e-6).n, (2.3765 + 2.3741) / 2, 1e-12, "15 µm");
+  assertAbs(diamondIndex(15e-6).n, 2.374722, 1e-6, "15 µm");
+  assertAbs(diamondIndex(0.8e-6).n, 2.398956, 1e-6, "0.8 µm");
   assert.equal(diamondIndex(10.6e-6).source, "palik");
   // Continuous at Peter's 644 nm limit, and 0.656 µm lands on the table's 2.4104 (Peter gives 2.4102 there).
   assertAbs(diamondIndex(644.0001e-9).n, diamondIndex(644e-9).n, 1e-6, "continuity");

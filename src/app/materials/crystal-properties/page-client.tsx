@@ -30,6 +30,12 @@ const layout = (x: string, y: string) => ({
   margin: { t: 20, r: 20, b: 50, l: 60 }, height: 320,
 });
 
+/** dn/dT as dn_o/dT and dn_e/dT (Crystran's ∥ c propagation sees n_o), or one value for a cubic crystal. */
+function dnPair(p: AxisPair) {
+  const v = (x: number) => String(+(x * 1e6).toPrecision(4));
+  return p.para === p.perp ? `${v(p.para)} ×10⁻⁶/K` : `dn_o/dT = ${v(p.para)}, dn_e/dT = ${v(p.perp)} ×10⁻⁶/K`;
+}
+
 /** "a ∥, b ⊥" in the given scale, or one value when both are equal. */
 function pair(p: AxisPair, scale: number, unit: string) {
   const v = (x: number) => String(+(x * scale).toPrecision(4));
@@ -98,7 +104,7 @@ export default function CrystalPropertiesPage() {
 
   const properties: [string, string][] = [
     ["Transmission", sheet.bands.map(([a, b]) => `${+(a * 1e6).toPrecision(3)}–${+(b * 1e6).toPrecision(3)} µm`).join(", ")],
-    ["dn/dT", `${pair(sheet.dnDT, 1e6, "×10⁻⁶/K")} at ${+(sheet.dnDTLambda * 1e9).toPrecision(3)} nm`],
+    ["dn/dT", `${dnPair(sheet.dnDT)} at ${+(sheet.dnDTLambda * 1e9).toPrecision(3)} nm`],
     ["Thermal conductivity", pair(sheet.conductivity, 1, "W/(m·K)")],
     ["Thermal expansion", pair(sheet.expansion, 1e6, "×10⁻⁶/K")],
     ["Knoop hardness", `${sheet.knoop} kg/mm²`],
