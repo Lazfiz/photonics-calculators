@@ -78,8 +78,8 @@ const DATA = {
   kbr: { name: "KBr", dispersion: MATERIALS.kbr, bands: um([0.23, 25]), dnDT: -40.8e-6, conductivity: 4.816, knoop: 7 },
   csi: { name: "CsI", dispersion: MATERIALS.csi, bands: um([0.25, 55]), dnDT: -99.3e-6, conductivity: 1.1, knoop: 20 },
   krs5: {
-    name: "KRS-5 (TlBr–TlI)", dispersion: { n: 2.371, lambda: 10e-6, source: "Crystran" }, bands: um([0.6, 40]),
-    dnDT: -235e-6, conductivity: 0.544, knoop: 40.2,
+    name: "KRS-5 (TlBr–TlI)", dispersion: MATERIALS.krs5, bands: um([0.6, 40]),
+    dnDT: -235e-6, conductivity: 0.544, knoop: 40.2, note: "dn/dT at 10 µm; −254 ×10⁻⁶/K at 0.58 µm (Rodney & Malitson 1956).",
   },
   znse: { name: "ZnSe", dispersion: MATERIALS.znse, bands: um([0.6, 21]), dnDT: 61e-6, conductivity: 18, knoop: 120 },
   zns: {

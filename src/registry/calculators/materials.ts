@@ -97,7 +97,7 @@ export const materials: CalculatorEntry[] = [
     modelNote: "Exact for the published Sellmeier formula inside its fit range, with analytic derivatives. The formula is itself a fit to measurements (typically ±1e-5 to ±1e-4 in n) at the temperature of those measurements.",
     references: [
       {
-        citation: "refractiveindex.info database (CC0). Sellmeier data sets for fused silica, As₂S₃ and ZBLAN glass and twelve crystals, each with its original reference shown on the page.",
+        citation: "refractiveindex.info database (CC0). Sellmeier data sets for fused silica, As₂S₃ and ZBLAN glass and thirteen crystals, each with its original reference shown on the page.",
       },
       {
         citation: "SCHOTT optical glass catalog (Zemax AGF 2017-01-20). Sellmeier coefficients of 10 glasses.",
@@ -287,7 +287,11 @@ export const materials: CalculatorEntry[] = [
     modelNote: "Index from published Sellmeier fits inside their ranges, shifted linearly by one room-temperature dn/dT; transmission is the lossless two-surface Fresnel limit 2n/(n² + 1). Bands, dn/dT, conductivity and hardness are Crystran data-sheet values, and Amorphous Materials' for AMTIR-1 and As₂S₃ (AMTIR-6: band and hardness only, its dn/dT changes sign across the band); none are sourced for ZBLAN.",
     references: [
       {
-        citation: "refractiveindex.info database (CC0). Sellmeier data sets, each with its original reference shown on the page. Used for Ge, Si, ZnSe, ZnS, CaF₂, BaF₂, MgF₂, NaCl, KBr, CsI, As₂S₃ and ZBLAN.",
+        citation: "refractiveindex.info database (CC0). Sellmeier data sets, each with its original reference shown on the page. Used for Ge, Si, ZnSe, ZnS, CaF₂, BaF₂, MgF₂, NaCl, KBr, CsI, KRS-5, As₂S₃ and ZBLAN.",
+      },
+      {
+        citation: "Rodney W. S., Malitson I. H. (1956). Refraction and dispersion of thallium bromide iodide. J. Opt. Soc. Am. 46, 956. KRS-5 Sellmeier formula at 25 °C (0.577–39.38 µm) and dn/dT.",
+        url: "https://doi.org/10.1364/JOSA.46.000956",
       },
       {
         citation: "Rodney W. S., Malitson I. H., King T. A. (1958). Refractive index of arsenic trisulfide. J. Opt. Soc. Am. 48, 633.",
@@ -302,7 +306,7 @@ export const materials: CalculatorEntry[] = [
         url: "https://doi.org/10.1063/1.555536",
       },
       {
-        citation: "Crystran. Handbook of Infrared and Ultraviolet Optical Materials, data sheets: transmission range, dn/dT, thermal conductivity, Knoop hardness; KRS-5 index at 10 µm.",
+        citation: "Crystran. Handbook of Infrared and Ultraviolet Optical Materials, data sheets: transmission range, dn/dT, thermal conductivity, Knoop hardness.",
         url: "https://www.crystran.com/optical-materials",
       },
       {
@@ -693,6 +697,10 @@ export const materials: CalculatorEntry[] = [
       {
         citation: "Malitson I. H. (1965). Interspecimen comparison of the refractive index of fused silica. J. Opt. Soc. Am. 55, 1205.",
         url: "https://doi.org/10.1364/JOSA.55.001205",
+      },
+      {
+        citation: "Rodney W. S., Malitson I. H. (1956). Refraction and dispersion of thallium bromide iodide. J. Opt. Soc. Am. 46, 956. KRS-5.",
+        url: "https://doi.org/10.1364/JOSA.46.000956",
       },
     ],
   },

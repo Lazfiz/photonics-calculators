@@ -98,6 +98,21 @@ test("crystal sets agree with independent measurements", () => {
   assert.equal(inRange(MATERIALS.diamond.model, 700e-9), false);
 });
 
+test("KRS-5 (Rodney & Malitson 1956): the paper's computed and measured indices at 25 °C", () => {
+  // JOSA 46, 956, Table IV (the formula's own values, 5 decimals): the transcription must match to rounding.
+  for (const [l, n] of [[0.6, 2.60221], [1, 2.4462], [2, 2.39498], [10, 2.37069], [20, 2.34058]]) {
+    assertAbs(refractiveIndex(MATERIALS.krs5.model, l * um), n, 1e-5, `KRS-5 Table IV ${l} µm`);
+  }
+  // Table I, observed at 25 °C (residuals −13 to +20 ×10⁻⁵): the fit range ends are 0.57696 and 39.38 µm.
+  for (const [l, n] of [[0.57696, 2.62758], [9.724, 2.37132], [25.16, 2.31696], [39.38, 2.21621]]) {
+    assertAbs(refractiveIndex(MATERIALS.krs5.model, l * um), n, 2.5e-4, `KRS-5 Table I ${l} µm`);
+  }
+  // Crystran's data-sheet n = 2.371 at 10 µm.
+  assertAbs(refractiveIndex(MATERIALS.krs5.model, 10 * um), 2.371, 1e-3, "KRS-5 Crystran 10 µm");
+  assert.equal(inRange(MATERIALS.krs5.model, 0.55 * um), false);
+  assert.equal(inRange(MATERIALS.krs5.model, 39.38 * um), true);
+});
+
 test("the merged dispersion pages' reviewer values (materials audit part 0, PR #155)", () => {
   // Malitson 1965 (doi:10.1364/JOSA.55.001205): n_d 1.45846, V_d 67.82.
   assertAbs(refractiveIndex(MATERIALS.fusedSilica.model, LAMBDA_D), 1.45846, 1e-5, "fused silica n_d");

@@ -88,6 +88,18 @@ export const MATERIALS = {
     reference: "H. H. Li, J. Phys. Chem. Ref. Data 5, 329 (1976), doi:10.1063/1.555536",
     temperature_C: 24,
   },
+  krs5: {
+    // Table III, 25 °C; fitted to their measurements from 0.5770 to 39.38 µm (Table I residuals ≤ 2e-4).
+    name: "Thallium bromide iodide (KRS-5)",
+    model: fromSquaredForm(
+      1,
+      [1.8293958, 1.6675593, 1.1210424, 0.04513366, 12.380234],
+      [0.0225, 0.0625, 0.1225, 0.2025, 27089.737],
+      [0.577, 39.38],
+    ),
+    reference: "W. S. Rodney, I. H. Malitson, J. Opt. Soc. Am. 46, 956 (1956), doi:10.1364/JOSA.46.000956",
+    temperature_C: 25,
+  },
   as2s3: {
     name: "Arsenic trisulfide glass (As₂S₃)",
     model: fromSquaredForm(
