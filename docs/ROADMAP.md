@@ -5,12 +5,12 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 177, 2026-11-01)
+## Status (session 178, 2026-11-01)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
-  textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) and 5w-13 (materials) and 5w-14 (spectroscopy) and 5w-15 (thin-film + polarization) done (sessions 163–177): 5w is complete; next the KRS-5
-  Sellmeier box; the Gemini hero is last. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) and 5w-13 (materials) and 5w-14 (spectroscopy) and 5w-15 (thin-film + polarization) done (sessions 163–177): 5w is complete; KRS-5
+  Sellmeier done (session 178); next the Gemini hero. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -301,9 +301,7 @@ One box per session, in this order.
 
 ## Phase 5 — after Phase 3 (user plan, session 156)
 - [x] Spot-check (session 162, `phase-5/spot-check`, PR #199): 20 pages, 2 bugs (TIA noise, SIM note), both textbook tier.
-- [ ] transparency-range KRS-5 has only Crystran's n = 2.371 at 10 µm. Add Rodney & Malitson 1956's Sellmeier (from memory: K 1.8293958,
-  1.6675593, 1.1210424, 0.04513366, 12.380234; λ² 0.0225, 0.0625, 0.1225, 0.2025, 27089.737 µm²; gives 2.3707 at 10 µm) once checked
-  against the paper (JOSA 46, 956). It enters the shared `MATERIALS`, so check the other pages that list them.
+- [x] KRS-5 Sellmeier (session 178, `phase-5/krs5-sellmeier`, PR #215): see Done.
 - [ ] Last: replace the home-page hero with the one the user made in Gemini, and wire it in (ask the user for the files).
 
 ## Decisions (keep)
@@ -323,6 +321,8 @@ One box per session, in this order.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- KRS-5 Sellmeier (session 178, `phase-5/krs5-sellmeier`, PR #215): Rodney & Malitson 1956 Table III (25 °C, 0.577–39.38 µm) in
+  `MATERIALS.krs5`, checked to 1e-5 against Table IV (2.37069 at 10 µm); window pages and chromatic-dispersion now use it.
 - 5w full textbook-tier pass (sessions 163–177, PRs #200–#214): every textbook-tier page reviewed against primary literature.
   - 5w-15 thin-film + polarization (session 177, `phase-5/5w-15-thin-film-polarization`, PR #214): 24 pages, 4 bugs: depolarization
     Γ₀ at λ₀ not 1/σ₀ (2.8° → 0.6°), Kirsch image aliased (pixel-averaged now), environmental-stability and wedge-film spectra missed λ₀;

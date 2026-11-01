@@ -71,12 +71,11 @@ test("Fresnel limit 2n/(n² + 1) reproduces Crystran's two-surface reflection lo
     ["nacl", 10.6, 0.075, 1e-3], ["caf2", 5, 0.054, 1e-3], ["baf2", 5, 0.065, 1e-3], ["mgf2", 0.22, 0.057, 1e-3],
     ["lif", 0.6, 0.052, 1e-3], ["kbr", 10, 0.083, 1e-3], ["csi", 10, 0.136, 1e-3], ["sapphire", 1.06, 0.14, 5e-3],
     ["quartz", 0.6, 0.088, 1e-3], ["fusedSilica", 0.4, 0.07, 1e-3], ["bk7", 0.5875618, 0.081, 1e-3],
-    ["diamond", 0.589, 0.3, 7e-3],
+    ["diamond", 0.589, 0.3, 7e-3], ["krs5", 10, 0.284, 6e-4],
   ];
   for (const [id, l, loss, tol] of cases) {
     assertAbs(1 - fresnelLimitTransmission(windowIndex(WINDOW_MATERIALS[id], l * um)), loss, tol, id);
   }
-  assertAbs(1 - fresnelLimitTransmission(2.371), 0.284, 6e-4, "KRS-5 (data-sheet n 2.371)");
 });
 
 test("domain: n = 1 transmits all, bad n is NaN, bands and fit ranges", () => {
@@ -85,10 +84,11 @@ test("domain: n = 1 transmits all, bad n is NaN, bands and fit ranges", () => {
   assert.ok(Number.isNaN(fresnelLimitTransmission(0)));
   assert.ok(Number.isNaN(fresnelLimitTransmission(NaN)));
   assert.ok(Number.isNaN(surfaceReflectance(-1.5)));
-  // Ge is opaque at 1 µm and outside its formula's 2–14 µm range; data-sheet-only KRS-5 has no formula index.
+  // Ge is opaque at 1 µm and outside its formula's 2–14 µm range; KRS-5 transmits to 40 µm, its formula ends at 39.38 µm.
   assert.equal(transmits(WINDOW_MATERIALS.ge, 1 * um), false);
   assert.ok(Number.isNaN(windowIndex(WINDOW_MATERIALS.ge, 1 * um)));
-  assert.ok(Number.isNaN(windowIndex(WINDOW_MATERIALS.krs5, 10 * um)));
+  assert.equal(transmits(WINDOW_MATERIALS.krs5, 39.8 * um), true);
+  assert.ok(Number.isNaN(windowIndex(WINDOW_MATERIALS.krs5, 39.8 * um)));
   // Diamond windows use Peter's formula and then Palik's table, so the 7–100 µm band has an index to 20 µm.
   assertAbs(windowIndex(WINDOW_MATERIALS.diamond, 10 * um), 2.3765, 1e-12, "diamond 10 µm");
   // Two bands: silicon transmits at 50 µm but not at 20 µm.

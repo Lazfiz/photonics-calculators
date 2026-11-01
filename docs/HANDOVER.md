@@ -1,26 +1,26 @@
-# Handover — 2026-11-01 (session 177 → session 178)
+# Handover — 2026-11-01 (session 178 → session 179)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 177 did 5w-15 (thin-film + polarization, 24 pages, 4 bugs) on `phase-5/5w-15-thin-film-polarization`, PR #214.
-That finishes 5w. PRs #200–#213 are merged to `main` but not released (`release` = `d82602ed`). Next: the KRS-5 Sellmeier box.
+Session 178 did the KRS-5 Sellmeier box on `phase-5/krs5-sellmeier`, PR #215. PRs #200–#214 are merged to `main` but not
+released (`release` = `d82602ed`). Next: the Gemini hero, the last Phase 5 box (ask the user for the files).
 
 ## State
-- depolarization: the Mueller matrix, visibility and chart use R, R_g at λ_c = 1/σ₀ (`centre` in page-client); the cards still
-  show R, R_g at λ₀. 50 µm quartz, 550 ± 137.5 nm flat: |⟨e^{iΓ}⟩ error| 0.0070 (was 0.034).
-- `retarderChainAveraged(P, A, chain, V)` in `interference-colours.ts`: a + V(T − a), a = ½[T(Γ) + T(Γ + π)] of the first plate;
-  `retarderChainColour` takes an optional per-λ visibility. birefringence-imaging uses both with `pixelVisibility`.
-- `wedgeFringeSpacing(λ, n, α)` in `thin-film/interference.ts` (550 nm, 1.5, 0.1° → 1.0504e-4 m). Wedge default n_f 2.35.
-- heat-mirror T is 200–600 K (2.5–50 µm band holds ≥ 91 % of σT⁴; 16 % at 50 K). Fabry-Perot shows c/(2nd) and λ_(m±1).
-- coating-stress and stress-measurement warn past t_f/t_s 5 % and bow 30 % of t_s. 1189 tests.
+- `MATERIALS.krs5` in `sellmeier-data.ts`: Rodney & Malitson 1956 Table III, 25 °C, 0.577–39.38 µm; `WINDOW_MATERIALS.krs5` uses
+  it (band 0.6–40 µm, so 39.38–40 µm shows "outside the formula's range"). No material uses `DataSheetIndex` any more; the type
+  and the pages' `!hasFormula` branches remain for future data-sheet-only entries.
+- chromatic-dispersion compares 17 sets (18 colours). optical-glass-catalog skips KRS-5 (its range misses the F line). 1190 tests.
 
 ## Next actions
-1. `/ship` the 5w-15 PR. Post-merge (on a release only): `thin-film/wedge-film` (default n_f now 2.35),
-   `thin-film/fabry-perot-filter` (FSR card in THz), plus the values in PRs #207–#213 (5w-14: `spectroscopy/stray-light=2.699`,
-   `spectroscopy/dispersive-element=74.7`; 5w-13: nonlinear-crystals K 0.006043 %/W, brillouin T_B ≈ 8 ns).
-2. KRS-5 Sellmeier box (check Rodney & Malitson 1956, JOSA 46, 956, before entering `MATERIALS`).
-3. Last in Phase 5: the Gemini hero (ask the user for the files). Then Phase 4 open findings.
+1. `/ship` the KRS-5 PR. Post-merge (on a release only): `thin-film/wedge-film` (default n_f 2.35), `thin-film/fabry-perot-filter`
+   (FSR card in THz), plus the values in PRs #207–#213 (5w-14: `spectroscopy/stray-light=2.699`,
+   `spectroscopy/dispersive-element=74.7`; 5w-13: nonlinear-crystals K 0.006043 %/W, brillouin T_B ≈ 8 ns). KRS-5 isn't a default,
+   so check `materials/transparency-range?material=krs5` at 10 µm by hand: n 2.3707, loss 28.4 %.
+2. Last in Phase 5: the Gemini hero (ask the user for the files). Then Phase 4 open findings.
 
 ## Non-obvious facts
+- **Session 178:** Optica's abstract page (`opg.optica.org/josa/abstract.cfm?uri=josa-46-11-956`) gives the tables' text through
+  WebFetch even for paywalled 1950s JOSA papers: coefficients, measured and computed indices. refractiveindex.info `?shelf=…`
+  URLs can resolve to the wrong page (it returned Johnson & Christy). `refractiveIndex()` doesn't range-check; `inRange` does.
 - **Session 177:** the 5w-15 reviewers found no wrong formulas in 24 pages; nearly all findings were chart ranges fixed for the
   default while inputs span decades. Check new pages for that. A band average expanded about σ₀ must take its phase at
   1/σ₀, not at the wavelength centre. devctl's CPU gate silently skipped one implementer edit (it re-ran it): keep the
