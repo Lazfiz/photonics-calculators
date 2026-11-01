@@ -67,7 +67,12 @@ export default function SpectralRangePage() {
       { x: xs.map((x) => r6(x * 1e3)), y: xs.map((x) => r6(detectorWavelength(x, d, order, cov.incidence, cov.beta0, f) * 1e9)),
         type: "scatter", mode: "lines", name: "λ (nm)", line: { color: "#60a5fa", width: 2 } },
     ];
-    const densities = Array.from({ length: 200 }, (_, i) => 50 + i * 15);
+    // Grid spans the current density (g/5 … gMax/5 lower bound) up to the largest density that can still reach λ_c,
+    // so the "Current" marker always lies on the curve.
+    const gMax = Math.min(6000, (0.999e-3 * (1 + Math.cos(deviation * DEG))) / (order * lc));
+    const gMin = Math.max(10, Math.min(grooveDensity / 5, gMax / 5));
+    const gHi = Math.max(gMax, grooveDensity);
+    const densities = Array.from({ length: 200 }, (_, i) => r6(gMin + ((gHi - gMin) * i) / 199));
     const ranges = densities.map((g) => {
       const c = detectorCoverage(lc, 1e-3 / g, order, deviation * DEG, W, f);
       return r6((c.lambdaHigh - c.lambdaLow) * 1e9);
@@ -102,10 +107,16 @@ export default function SpectralRangePage() {
         </div>
       ) : (
         <>
-          {(overlaps || !Number.isFinite(cov.lambdaLow) || !Number.isFinite(cov.lambdaHigh)) && (
+          {(overlaps || order >= 2 || !Number.isFinite(cov.lambdaLow) || !Number.isFinite(cov.lambdaHigh)) && (
             <div className="mb-6 rounded-lg border border-yellow-800 bg-yellow-950/40 p-4 text-sm text-yellow-100 space-y-1">
               {!Number.isFinite(cov.lambdaLow) && <p>The short-wavelength edge of the detector lies beyond the zero order: it gets no order-{order} light, and the zero order and order {order + 1} fall on the detector.</p>}
               {!Number.isFinite(cov.lambdaHigh) && <p>The long-wavelength edge lies past grazing diffraction (β ≥ 90°).</p>}
+              {order >= 2 && Number.isFinite(cov.lambdaLow) && Number.isFinite(cov.lambdaHigh) && (
+                <p>
+                  Order {order - 1} also lands here: the detector sees {fmt((cov.lambdaLow * order) / (order - 1) * 1e9)}–{fmt((cov.lambdaHigh * order) / (order - 1) * 1e9)} nm
+                  {" "}from it; block it with a short-pass filter if the source and detector respond there.
+                </p>
+              )}
               {overlaps && (
                 <p>
                   Order overlap: order {order + 1} puts λ where order {order} has {order + 1}λ/{order}, so above

@@ -67,7 +67,18 @@ export default function SpectralResolutionPage() {
   const chartData = useMemo(() => {
     if (calc.kind === "fp") {
       const fsr = fsrNm * 1e-9;
-      const x = Array.from({ length: 1201 }, (_, i) => -1.2 * fsr + (i * 2.4 * fsr) / 1200);
+      const lim = 1.2 * fsr;
+      const base = Array.from({ length: 1201 }, (_, i) => -lim + (i * 2.4 * fsr) / 1200);
+      // Dense samples around each peak (±5 FWHM-ish) so peaks of high finesse are not one-sample spikes.
+      const dense: number[] = [];
+      for (const c of [-fsr, 0, fsr]) {
+        const half = (5 * fsr) / finesse;
+        for (let i = 0; i <= 200; i++) {
+          const v = c - half + (2 * half * i) / 200;
+          if (v >= -lim && v <= lim) dense.push(v);
+        }
+      }
+      const x = [...base, ...dense].sort((a, b) => a - b).filter((v, i, a) => i === 0 || v !== a[i - 1]);
       return [
         { x: x.map((v) => (lambda + v) * 1e9), y: x.map((v) => airyTransmission(v, fsr, finesse)), type: "scatter", mode: "lines",
           name: "Airy transmission", line: { color: "#34d399", width: 2 } },
@@ -88,6 +99,9 @@ export default function SpectralResolutionPage() {
         line: { color: "#fbbf24", width: 1.5, dash: "dot" } },
     ];
   }, [calc, slitWidth, lambda, fsrNm, finesse]);
+
+  // Exact Airy FWHM = (2·FSR/π)·asin(π/(2ℱ)); no half maximum exists for ℱ < π/2.
+  const airyFwhm = (2 * fsrNm * 1e-9 / Math.PI) * Math.asin(Math.PI / (2 * finesse));
 
   const limitedBy = calc.kind === "dispersive" ? (calc.slit >= calc.diff ? "slit-limited" : "diffraction-limited") : "";
 
@@ -132,11 +146,14 @@ export default function SpectralResolutionPage() {
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-3 mb-8">
-          <ResultCard label="Spectral Resolution δλ" value={fmtDl(calc.res)} tone="green" subtext={limitedBy || undefined} />
+          <ResultCard label="Spectral Resolution δλ" value={fmtDl(calc.res)} tone="green"
+            subtext={calc.kind === "fp"
+              ? `FSR/ℱ (ℱ ≫ 1); Airy FWHM ${Number.isFinite(airyFwhm) ? `= ${fmtDl(airyFwhm)}` : "undefined (ℱ < π/2)"}`
+              : limitedBy || undefined} />
           <ResultCard label="Resolving Power λ/δλ" value={fmt(lambda / calc.res, 4)} tone="yellow" />
           <ResultCard label="Resolution (wavenumber)" value={`${fmt((calc.res / lambda ** 2) * 1e-2)} cm⁻¹`} tone="blue" />
           {calc.kind === "dispersive" && <>
-            <ResultCard label="Slit-Limited Bandpass" value={fmtDl(calc.slit)} tone="cyan" subtext="w × reciprocal linear dispersion" />
+            <ResultCard label="Slit-Limited Bandpass" value={fmtDl(calc.slit)} tone="cyan" subtext={mode === "grating" ? "w·cos α/cos β × reciprocal linear dispersion (anamorphic r)" : "w × reciprocal linear dispersion"} />
             <ResultCard label="Diffraction Limit" value={fmtDl(calc.diff)} tone="red"
               subtext={mode === "grating" ? `λ/(mN), N = ${Math.round(gratingWidth * grooveDensity).toLocaleString()} grooves` : "λ/(D · dθ/dλ)"} />
             <ResultCard label="Reciprocal Linear Dispersion" value={`${fmt(calc.recipLinear * 1e6)} nm/mm`} tone="purple"

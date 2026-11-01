@@ -15,7 +15,7 @@ const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digit
 const r6 = (x: number) => Number(x.toPrecision(6));
 const r10 = (x: number) => Number(x.toPrecision(10));
 const MHz = 1e6 / c; // MHz → m⁻¹
-const JPL = 2.99792458e18; // nm²·MHz per cm/molecule
+const JPL = c * 1e10; // nm²·MHz per cm/molecule (= 2.99792458e18)
 
 const co = DIATOMICS.co;
 const presetValues = (k: typeof co) => ({
@@ -99,7 +99,7 @@ export default function MicrowaveSpectroscopyPage() {
           subtext={lines.length ? `2B_v − 4D; λ = ${fmt(1e3 / lines[0].sigma, 4)} mm` : "—"} />
         <ResultCard label="Partition Function Q_rot" value={fmt(Q, 5)} tone="gray"
           subtext={!valid ? "—" : Number.isFinite(Q) ? `kT/hcB + ⅓ = ${fmt((k_B * T) / (h * c * Bv) + 1 / 3, 5)}; most populated J = ${Jpop}`
-            : "sum not converged before the J cap (distortion turns the levels over): lower T or D"} />
+            : "sum not converged before the J cap (distortion turns the levels over, or J = 1000 is reached, as for a very small B at high T): lower T or D"} />
         <ResultCard label="Strongest Line" value={strongest ? `J = ${strongest.J + 1} ← ${strongest.J}` : "—"} tone="purple"
           subtext={strongest ? `${fmt(toGHz(strongest.sigma), 6)} GHz` : "—"} />
         <ResultCard label="Its Intensity S" value={noDipole ? "0 (μ = 0)" : strongest ? `${fmt(strongest.S * 100, 4)} cm/molecule` : "—"} tone={noDipole ? "red" : "orange"}

@@ -26,9 +26,12 @@ const SOLVE = ["width", "ne"] as const;
 type Solve = (typeof SOLVE)[number];
 const solveLabel: Record<Solve, string> = { width: "Stark width from nₑ", ne: "nₑ from measured Stark width" };
 // First ionisation energies (eV) and standard atomic weights (u), NIST Atomic Spectra Database.
-const elements: [string, number, number][] = [
-  ["H", 1.008, 13.598], ["C", 12.011, 11.26], ["Na", 22.99, 5.139], ["Mg", 24.305, 7.646], ["Al", 26.982, 5.986],
-  ["Si", 28.085, 8.152], ["Ca", 40.078, 6.113], ["Ti", 47.867, 6.828], ["Fe", 55.845, 7.902], ["Cu", 63.546, 7.726], ["Ar", 39.948, 15.76],
+// Fourth entry: U⁺/U⁰ from the ground-term statistical weights (2S+1)(2L+1) of ion and neutral, e.g. Ca I ¹S (1) and
+// Ca II ²S (2) give 2; Al I ²P (6) and Al II ¹S (1) give 1/6. A starting value only: partition-function tables are better.
+const elements: [string, number, number, number][] = [
+  ["H", 1.008, 13.598, 0.5], ["C", 12.011, 11.26, 2 / 3], ["Na", 22.99, 5.139, 0.5], ["Mg", 24.305, 7.646, 2], ["Al", 26.982, 5.986, 1 / 6],
+  ["Si", 28.085, 8.152, 2 / 3], ["Ca", 40.078, 6.113, 2], ["Ti", 47.867, 6.828, 4 / 3], ["Fe", 55.845, 7.902, 1.2], ["Cu", 63.546, 7.726, 0.5],
+  ["Ar", 39.948, 15.76, 6],
 ];
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -46,7 +49,7 @@ export default function LibsAnalysisPage() {
   const [wavelengthRaw, setWavelength] = useURLState("wavelength", 500); // nm
   const [massRaw, setMass] = useURLState("mass", 40.078); // u
   const [chiRaw, setChi] = useURLState("chi", 6.113); // eV
-  const [uRatioRaw, setURatio] = useURLState("uRatio", 1); // U⁺/U⁰
+  const [uRatioRaw, setURatio] = useURLState("uRatio", 2); // U⁺/U⁰ (2 = Ca, the default preset)
   const [instrumentRaw, setInstrument] = useURLState("instrument", 0.05); // nm, Gaussian FWHM
   const [deltaERaw, setDeltaE] = useURLState("deltaE", 3); // eV
 
@@ -58,7 +61,7 @@ export default function LibsAnalysisPage() {
   const wavelength = clamp(wavelengthRaw, WL_MIN, WL_MAX, 500);
   const mass = clamp(massRaw, M_MIN, M_MAX, 40.078);
   const chi = clamp(chiRaw, CHI_MIN, CHI_MAX, 6.113);
-  const uRatio = clamp(uRatioRaw, U_MIN, U_MAX, 1);
+  const uRatio = clamp(uRatioRaw, U_MIN, U_MAX, 2);
   const instrument = clamp(instrumentRaw, 0, INST_MAX, 0.05);
   const deltaE = clamp(deltaERaw, DE_MIN, DE_MAX, 3);
 
@@ -94,12 +97,19 @@ export default function LibsAnalysisPage() {
       </div>
 
       <div className="mb-5 flex flex-wrap gap-2" role="group" aria-label="Element presets">
-        {elements.map(([name, m, x]) => (
-          <button key={name} onClick={() => { setMass(m); setChi(x); }} className={chip(mass === m && chi === x)}>
+        {elements.map(([name, m, x, u]) => (
+          <button key={name} onClick={() => { setMass(m); setChi(x); setURatio(u); }} className={chip(mass === m && chi === x)}>
             {name}
           </button>
         ))}
       </div>
+
+      {mass === 1.008 && (
+        <div className="mb-5 rounded-lg border border-yellow-800 bg-yellow-950/40 p-4 text-sm text-yellow-100">
+          The linear Stark width w·nₑ used here does not apply to hydrogen Balmer lines: they are broadened by the linear Stark
+          effect, with Δλ ∝ nₑ^(2/3) (nₑ ∝ Δλ^(3/2)). Use the Gigosos–Cardeñoso tables for nₑ from Hα or Hβ.
+        </div>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Plasma temperature T (K)" value={temperatureRaw} onChange={setTemperature} min={T_MIN} max={T_MAX} step="any" />
@@ -149,8 +159,8 @@ export default function LibsAnalysisPage() {
         <p className="font-mono text-cyan-400">nₑ ≥ 1.6×10¹² √T ΔE³ cm⁻³ (T in K, ΔE in eV)</p>
         <p>
           Electron-impact Stark broadening of an isolated line is Lorentzian with a width linear in nₑ; w is the tabulated
-          electron-impact half-width at 10¹⁶ cm⁻³ for the chosen line and temperature (typically 0.001–0.1 nm; see the
-          Konjević critical reviews), and ion broadening, a few percent for ionic lines, is neglected. Hydrogen Balmer lines
+          electron-impact half-width at 10¹⁶ cm⁻³ for the chosen line and temperature (typically 0.001–0.1 nm; Griem&apos;s 1974 tables give w directly. Tables of measured full widths w_m at a density
+          nₑ,m, such as the Konjević critical reviews, give w = (w_m/2)·10¹⁶ cm⁻³/nₑ,m), and ion broadening, a few percent for ionic lines, is neglected. Hydrogen Balmer lines
           follow the linear Stark effect instead (nₑ ∝ Δλ^(3/2)). The Saha ratio assumes LTE, single ionisation and no
           lowering of the ionisation energy; take U⁺/U⁰ from partition-function tables (the ground-state weights alone give
           ½ for Na, 2 for Ca and ⅙ for Al). The

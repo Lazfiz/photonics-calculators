@@ -51,7 +51,9 @@ export default function TimeResolvedPage() {
   const bw = gaussianPulseBandwidth(pulse, laserNm * 1e-9);
 
   // uniform grid plus a dense window around the IRF, so a narrow IRF is drawn
-  const uniform = Array.from({ length: 601 }, (_, i) => (i / 600) * range);
+  // at least 40 samples per laser period so the pulse train is not aliased when the window spans many periods
+  const nGrid = Math.min(20001, Math.max(601, Math.ceil((40 * range) / period) + 1));
+  const uniform = Array.from({ length: nGrid }, (_, i) => (i / (nGrid - 1)) * range);
   const dense = sigma > 0 ? Array.from({ length: 201 }, (_, i) => t0 + (i / 100 - 1) * 5 * sigma).filter((t) => t >= 0 && t <= range) : [];
   const times = [...uniform, ...dense].sort((x, y) => x - y);
   const single = times.map((t) => convolvedDecay(components, t, sigma, t0));
@@ -87,8 +89,8 @@ export default function TimeResolvedPage() {
           subtext={`decay left at the next pulse e^(−T/τ) = ${fmt(leftover, 3)}; ${fmt(lateFraction * 100, 3)} % of the photons arrive after it`} />
         <ResultCard label="Centroid Shift ⟨t⟩ − t₀" value={`${fmt(tauInt / ns, 4)} ns`} tone="blue"
           subtext={`= intensity-weighted ⟨τ⟩ (one pulse, full decay); amplitude-weighted ${fmt(tauAmp / ns, 4)} ns`} />
-        <ResultCard label="Measured Peak After t₀" value={`${fmt((times[peakIdx] - t0) / ns * 1e3, 3)} ps`} tone="purple"
-          subtext={`IRF σ = ${fmt(sigma * 1e12, 3)} ps; τ₁/FWHM = ${irf > 0 ? fmt(tau1 / irf, 3) : "∞"}`} />
+        <ResultCard label="Measured Peak After t₀" value={t0 < range ? `${fmt((times[peakIdx] - t0) / ns * 1e3, 3)} ps` : "—"} tone="purple"
+          subtext={t0 < range ? `IRF σ = ${fmt(sigma * 1e12, 3)} ps; τ₁/FWHM = ${irf > 0 ? fmt(tau1 / irf, 3) : "∞"}` : "t₀ lies outside the window"} />
         <ResultCard label="Transform-Limited Bandwidth" value={`${fmt(bw.hz / 1e12, 4)} THz`} tone="cyan"
           subtext={`${fmt(bw.lambda * 1e9, 4)} nm at ${fmt(laserNm, 4)} nm (Gaussian, Δν·Δt = 0.4413)`} />
       </div>

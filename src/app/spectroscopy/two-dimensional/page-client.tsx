@@ -91,7 +91,7 @@ export default function TwoDimensionalSpectroscopyPage() {
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p>Dimer: sites ν₀ ∓ Δ/2 coupled by J form excitons E∓ = ν₀ ∓ ½√(Δ² + 4J²) with tan 2θ = 2J/Δ; the doubly excited state lies at 2ν₀ = E₋ + E₊.</p>
         <p>Absorptive spectrum S(ω₁, T_w, ω₃), the sum of rephasing and non-rephasing signals: ground-state bleach and stimulated emission (positive, red) at (Eₐ, E_b), excited-state absorption (negative, blue) at (Eₐ, 2ν₀ − E_b), weighted by the isotropic ⟨μμμμ⟩ for parallel pulse polarisations and by the population transfer P(b|a) during T_w.</p>
-        <p>Lineshape: Lorentzian with FWHM 1/(πcT₂) across the diagonal, stretched along it by static inhomogeneous broadening. With J = 0 the cross peaks vanish: bleach and excited-state absorption cancel.</p>
+        <p>Lineshape: Lorentzian with FWHM 1/(πcT₂) across the diagonal, stretched along it by static inhomogeneous broadening. With J = 0 and T_w = 0 the cross peaks vanish: bleach and excited-state absorption cancel; at T_w &gt; 0 the model&apos;s transfer (an input rate, not derived from J) still builds a cross peak.</p>
         <p className="text-gray-400">Not included: inter-exciton coherences (quantum beats) during T_w, spectral diffusion, ground-state recovery, biexciton binding and vibronic structure. Uphill transfer follows detailed balance at the given temperature.</p>
       </div>
 

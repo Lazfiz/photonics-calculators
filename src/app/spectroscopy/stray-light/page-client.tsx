@@ -6,9 +6,8 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
   absorbanceError, apparentAbsorbanceLimit, maxStrayRatio, measuredAbsorbance, measuredTransmittance, orderSortingWindow,
-  overlappingOrders,
+  overlapFreeBand, overlappingOrders,
 } from "../../../physics/spectroscopy/stray-light";
-import { overlapFreeLimit } from "../../../physics/spectroscopy/spectral-resolution";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const r6 = (x: number) => (Number.isFinite(x) ? Math.round(x * 1e6) / 1e6 : NaN);
@@ -47,18 +46,23 @@ export default function StrayLightPage() {
   const sMax = maxStrayRatio(A, tol, Ts);
   const overlaps = overlappingOrders(wl * 1e-9, order, lo * 1e-9, hi * 1e-9);
   const band = orderSortingWindow(wl * 1e-9, order);
-  const clean = overlapFreeLimit(lo * 1e-9, order) * 1e9;
+  const clean = overlapFreeBand(lo * 1e-9, hi * 1e-9, order);
 
   const charts = (() => {
-    const as = Array.from({ length: 241 }, (_, i) => (6 * i) / 240);
+    const aEnd = Math.max(6, A + 1);
+    const as = Array.from({ length: 241 }, (_, i) => (aEnd * i) / 240);
     const line = (y: number[], name: string, color: string, dash?: string) =>
       ({ x: as, y, type: "scatter", mode: "lines", name, line: { color, width: 2, ...(dash ? { dash } : {}) } });
     return {
       reading: [
         line(as, "True", "#60a5fa", "dash"),
         line(as.map((a) => r6(measuredAbsorbance(a, s, Ts))), `Measured, s = ${fmt(s * 100, 3)} %`, "#f87171"),
+        { x: [A], y: [r6(Am)], type: "scatter", mode: "markers", name: "Current", marker: { color: "#fbbf24", size: 10 } },
       ],
-      error: [line(as.map((a) => r6(absorbanceError(a, s, Ts))), "ΔA", "#34d399")],
+      error: [
+        line(as.map((a) => r6(absorbanceError(a, s, Ts))), "ΔA", "#34d399"),
+        { x: [A], y: [r6(dA)], type: "scatter", mode: "markers", name: "Current", marker: { color: "#fbbf24", size: 10 } },
+      ],
     };
   })();
 
@@ -106,8 +110,11 @@ export default function StrayLightPage() {
         <ResultCard label="Order-Sorting Filter Pass Band" tone="yellow"
           value={`${fmt(band.low * 1e9)} – ${Number.isFinite(band.high) ? `${fmt(band.high * 1e9)} nm` : "∞ (long-pass)"}`}
           subtext={order > 1 ? "block mλ/(m + 1) and mλ/(m − 1)" : "a long-pass above mλ/(m + 1) is enough in first order"} />
-        <ResultCard label={`Overlap-Free Band from ${lo} nm (order ${order})`} value={`${lo} – ${fmt(clean)} nm`} tone="green"
-          subtext="λ_min(m + 1)/m; the free spectral range λ_min/m" />
+        <ResultCard label={`Overlap-Free Band in ${lo}–${hi} nm (order ${order})`} tone="green"
+          value={Number.isFinite(clean.low) ? `${fmt(clean.low * 1e9)} – ${fmt(clean.high * 1e9)} nm` : "none"}
+          subtext={Number.isFinite(clean.low)
+            ? "from max(λ_min, λ_max(m − 1)/m) to λ_min(m + 1)/m or λ_max"
+            : `every λ of order ${order} shares its angle with another order inside the range; narrow it with filters`} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300">

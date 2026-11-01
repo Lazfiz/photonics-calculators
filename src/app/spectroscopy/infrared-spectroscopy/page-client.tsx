@@ -25,7 +25,10 @@ export default function InfraredSpectroscopyPage() {
   const key = molecule === "co" ? "co" : "hcl";
   const p = DIATOMICS[key];
   const vUp = Math.round(clamp(bandRaw, 1, 3, 1));
-  const T = clamp(tRaw, 10, 3000, 300);
+  // One distortion term D turns HCl's levels over near J = 56 (√(B/6D)); above ≈ 1230 K the rotational sum no longer
+  // converges below that J, so HCl stops at 1200 K.
+  const tMax = key === "hcl" ? 1200 : 3000;
+  const T = clamp(tRaw, 10, tMax, 300);
   const fwhm = clamp(resRaw, 0.01, 20, 0.5) * 100; // m⁻¹
   const showMinor = isotopes !== 0;
   const minor = isotopologue(p, p.minor.m1, p.minor.m2);
@@ -48,8 +51,10 @@ export default function InfraredSpectroscopyPage() {
   // Gaussian instrument function of the chosen FWHM over the visible lines
   const visible = main.filter((l) => l.strength >= 1e-3 * norm);
   const lo = Math.min(...visible.map((l) => l.sigma)) - 3 * fwhm, hi = Math.max(...visible.map((l) => l.sigma)) + 3 * fwhm;
-  const N = 2000, s2 = (fwhm / GAUSSIAN_FWHM_PER_SIGMA) ** 2;
-  const grid = Array.from({ length: N }, (_, i) => lo + ((hi - lo) * i) / (N - 1));
+  // ≥ 5 samples per FWHM (capped), plus every line centre so that narrow lines keep their full height
+  const N = Math.min(20000, Math.max(2000, Math.ceil((5 * (hi - lo)) / fwhm))), s2 = (fwhm / GAUSSIAN_FWHM_PER_SIGMA) ** 2;
+  const centres = [...main, ...second].map((l) => l.sigma).filter((x) => x > lo && x < hi);
+  const grid = [...Array.from({ length: N }, (_, i) => lo + ((hi - lo) * i) / (N - 1)), ...centres].sort((a, b) => a - b);
   const envelope = (lines: typeof main, w: number) => grid.map((x) => {
     let y = 0;
     for (const l of lines) { const dx = x - l.sigma; if (dx * dx < 50 * s2) y += l.strength * Math.exp(-(dx * dx) / (2 * s2)); }
@@ -84,9 +89,17 @@ export default function InfraredSpectroscopyPage() {
           <input type="checkbox" checked={showMinor} onChange={(e) => setIsotopes(e.target.checked ? 1 : 0)} />
           Show {p.minor.label} at natural abundance ({fmt((100 * p.minor.abundance) / (p.abundance + p.minor.abundance), 3)} %)
         </label>
-        <ValidatedNumberInput label="Temperature (K)" value={tRaw} onChange={setT} min={10} max={3000} />
+        <ValidatedNumberInput label="Temperature (K)" value={tRaw} onChange={setT} min={10} max={tMax} />
         <ValidatedNumberInput label="Instrument Resolution, FWHM (cm⁻¹)" value={resRaw} onChange={setRes} min={0.01} max={20} step="0.1" />
       </div>
+
+      {(tRaw > tMax || main.length === 0) && (
+        <div className="mb-6 rounded-lg border border-yellow-800 bg-yellow-950/40 p-4 text-sm text-yellow-100">
+          {main.length === 0
+            ? "The rotational sum does not converge at this temperature: the levels turn over before the populations die out."
+            : `${p.label} is shown at ${tMax} K: with one centrifugal-distortion term D its rotational levels turn over near J = 56, and above ≈ 1230 K the partition sum no longer converges below that J.`}
+        </div>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
         <ResultCard label="Band Origin ν₀" value={`${cm1(origin).toFixed(2)} cm⁻¹`} tone="blue"

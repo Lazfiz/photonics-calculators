@@ -34,7 +34,7 @@ test("Jacquinot: FTS field of view, field stop and the étendue ratio to a slit 
 });
 
 test("concave mirror: rim cone, exact vs small-angle solid angle", () => {
-  // f/1 cone (tan α = ½): 2π(1 − 2/√5) = 0.66333 sr; πα² ≈ π/4 is 18.4 % high (part 0 audit finding).
+  // f/1 cone (tan α = ½): 2π(1 − 2/√5) = 0.66333 sr; paraxial π tan²α = π/4 is 18.4 % high (part 0 audit finding).
   close(coneSolidAngle(Math.atan(0.5)), 2 * Math.PI * (1 - 2 / Math.sqrt(5)), 1e-12);
   close(Math.PI / 4 / coneSolidAngle(Math.atan(0.5)), 1.18402, 1e-5);
   close(projectedSolidAngle(Math.atan(0.5)), Math.PI / 5, 1e-12); // π sin²α, sin²α = 1/5

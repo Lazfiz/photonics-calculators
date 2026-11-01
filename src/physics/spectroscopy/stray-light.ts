@@ -72,6 +72,18 @@ export function overlappingOrders(
   return out;
 }
 
+/**
+ * Set wavelengths λ of order m that no other order n ≥ 1 overlaps inside [λ_min, λ_max]: mλ/(m + 1) < λ_min and
+ * mλ/(m − 1) > λ_max, so λ ∈ [max(λ_min, λ_max(m − 1)/m), min(λ_max, λ_min(m + 1)/m)) (Palmer & Loewen ch. 2).
+ * NaN bounds (no band) when the interval is empty, m.
+ */
+export function overlapFreeBand(lambdaMin: number, lambdaMax: number, order: number): { low: number; high: number } {
+  if (!(lambdaMin > 0 && lambdaMax >= lambdaMin && order >= 1)) return { low: NaN, high: NaN };
+  const low = Math.max(lambdaMin, (lambdaMax * (order - 1)) / order);
+  const high = Math.min(lambdaMax, (lambdaMin * (order + 1)) / order);
+  return low < high ? { low, high } : { low: NaN, high: NaN };
+}
+
 /** Pass band (mλ/(m + 1), mλ/(m − 1)) an order-sorting filter must stay inside; upper = ∞ for m = 1, m. */
 export function orderSortingWindow(lambda: number, order: number): { low: number; high: number } {
   if (!(lambda > 0 && order >= 1)) return { low: NaN, high: NaN };

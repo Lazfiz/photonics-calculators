@@ -34,7 +34,10 @@ const PRESETS: Record<string, { label: string; range: [number, number]; modes: {
     modes: [
       { name: "H-bonded OH, ≈ 3200", center: 3200, amplitude: 60, halfWidth: 100 },
       { name: "H-bonded OH, ≈ 3400", center: 3400, amplitude: 50, halfWidth: 100 },
-      { name: "Free OH, ≈ 3700", center: 3700, amplitude: 15, halfWidth: 15 },
+      // Phase-sensitive SFG (Ji, Ostroverkhov, Tian, Shen, Phys. Rev. Lett. 100, 096102 (2008), doi:10.1103/PhysRevLett.100.096102):
+      // Im χ⁽²⁾ of the free OH (pointing out of the water) has the opposite sign to the H-bonded band near 3400 cm⁻¹.
+      // The amplitudes are illustrative.
+      { name: "Free OH, ≈ 3700", center: 3700, amplitude: -15, halfWidth: 15 },
     ],
   },
 };
@@ -50,7 +53,7 @@ export default function SumFrequencyGenPage() {
   const visNm = clamp(visRaw, 300, 1100, 532);
   const presetKey = presetRaw in PRESETS ? presetRaw : "ch";
   const preset = PRESETS[presetKey];
-  const lo = clamp(minRaw, IR_MIN, IR_MAX, preset.range[0]);
+  const lo = clamp(minRaw, IR_MIN, IR_MAX - 10, preset.range[0]); // leave room for a non-zero range when "to" ≤ "from"
   const hiIn = clamp(maxRaw, IR_MIN, IR_MAX, preset.range[1]);
   const hi = hiIn > lo ? hiIn : Math.min(IR_MAX, lo + 250);
   const nrAmp = clamp(nrRaw, 0, 10, 0.3);

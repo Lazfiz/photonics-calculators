@@ -18,7 +18,7 @@
  * sawtooth with a right-angle apex (R. Casini, P. G. Nelson, J. Opt. Soc. Am. A 31, 2179 (2014),
  * doi:10.1364/JOSAA.31.002179, eqs. 18–25):
  *   I = k sinc²(π d ρ [sin(α − φ) + sin(β − φ)]/λ),   ρ = cos α/cos(α − φ) for α ≥ φ, else cos φ,
- *   k = min(1, cos β cos(α − φ)/(cos α cos(β − φ))) when α < β (shadowing), else 1.
+ *   k = min(1, ρ(β)/ρ(α)) (shadowing of the exit beam, ρ as above with α → β; 1 when β ≤ α).
  * The envelopes of all propagating orders are normalised to sum to 1 (energy conservation across orders, which
  * Casini & Nelson apply when they compare with vector theory; the paper gives no explicit formula) before the
  * shadowing loss k. Coating reflectance and polarization are not included (fair for λ/d ≲ 0.2, small blaze angles).
@@ -104,16 +104,21 @@ export function blazeWavelength(grooveSpacing: number, order: number, blazeAngle
 export function blazeEnvelope(lambda: number, grooveSpacing: number, order: number, blazeAngle: number, incidence: number): number {
   const beta = gratingDiffractionAngle(lambda, grooveSpacing, order, incidence);
   if (!Number.isFinite(beta)) return 0;
-  const rho = incidence >= blazeAngle ? Math.cos(incidence) / Math.cos(incidence - blazeAngle) : Math.cos(blazeAngle);
+  const rho = facetFraction(incidence, blazeAngle);
   const x = (Math.PI * grooveSpacing * rho * (Math.sin(incidence - blazeAngle) + Math.sin(beta - blazeAngle))) / lambda;
   return Math.abs(x) < 1e-8 ? 1 : (Math.sin(x) / x) ** 2;
 }
 
-/** Shadowing factor k = min(1, cos β cos(α − φ)/(cos α cos(β − φ))) when α < β, else 1 (Casini & Nelson eq. 23). */
+/** Facet fraction ρ(x) = cos x/cos(x − φ) seen from direction x ≥ φ (the riser shadows the rest), else cos φ (whole facet). */
+const facetFraction = (x: number, blazeAngle: number) =>
+  x >= blazeAngle ? Math.cos(x) / Math.cos(x - blazeAngle) : Math.cos(blazeAngle);
+
+/**
+ * Shadowing factor k = min(1, ρ(β)/ρ(α)) (Casini & Nelson eq. 23): the part of the lit facet ρ(α) that the exit
+ * direction still sees, ρ(β). For α, β ≥ φ this is cos β cos(α − φ)/(cos α cos(β − φ)); 1 when β ≤ α.
+ */
 export function blazeShadowFactor(beta: number, blazeAngle: number, incidence: number): number {
-  return incidence < beta
-    ? Math.min(1, (Math.cos(beta) * Math.cos(incidence - blazeAngle)) / (Math.cos(incidence) * Math.cos(beta - blazeAngle)))
-    : 1;
+  return Math.min(1, facetFraction(beta, blazeAngle) / facetFraction(incidence, blazeAngle));
 }
 
 /**

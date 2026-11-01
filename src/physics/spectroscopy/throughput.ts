@@ -24,7 +24,7 @@
  * s = R_c − √(R_c² − D²/4); from its focus the rim is at axial distance f − s, so the half-angle of the cone is
  * atan((D/2)/(f − s)). Solid angle of a cone 2π(1 − cos α) = 4π sin²(α/2); a flat Lambertian area A sends
  * A·π sin²α of étendue into it (projected solid angle; W. J. Smith, Modern Optical Engineering, 4th ed.,
- * McGraw-Hill 2008, ch. 12). The small-angle πα² overstates both: by 18 % at f/1.
+ * McGraw-Hill 2008, ch. 12). The paraxial π tan²α = π(D/2f)² (no sag) overstates both: by 18 % at f/1.
  */
 
 /** Ω_max = 2π Δν̃/ν̃, sr: the largest FTS field at resolution Δν̃. NaN unless 0 < Δν̃ ≤ ν̃. */
