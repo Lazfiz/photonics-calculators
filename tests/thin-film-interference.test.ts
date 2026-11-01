@@ -8,6 +8,7 @@ import {
   firstReflectionExtrema,
   netReflectionPhase,
   reflectingFinesse,
+  wedgeFringeSpacing,
 } from "../src/physics/thin-film/interference";
 import { stackResponse, type Stack } from "../src/physics/thin-film/transfer-matrix";
 
@@ -120,4 +121,11 @@ test("interference: nearest Airy peak, its FSR and exact width", () => {
   close(far.wavelength / NM, 1500, 1e-9, "λ₁");
   assert.ok(Number.isNaN(airyPeakNear(750 * NM, 550 * NM, 0.5).fwhm), "F < 1");
   assert.ok(Number.isNaN(airyPeakNear(0, 550 * NM, 80).order), "nd = 0");
+});
+
+test("wedgeFringeSpacing: λ/(2 n tan α), Hecht §9.4", () => {
+  // 550e-9 / (3 tan 0.1°) = 550e-9 / 0.0052360 m
+  close(wedgeFringeSpacing(550 * NM, 1.5, (0.1 * Math.PI) / 180), 1.0504e-4, 1e-4, "Δx");
+  assert.ok(Number.isNaN(wedgeFringeSpacing(550 * NM, 1.5, 0)), "α = 0");
+  assert.ok(Number.isNaN(wedgeFringeSpacing(550 * NM, 0, 0.001)), "n = 0");
 });

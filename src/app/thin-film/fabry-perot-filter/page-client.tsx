@@ -5,10 +5,11 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 import { airyPeakNear, coefficientOfFinesse, reflectingFinesse } from "../../../physics/thin-film/interference";
 
 export default function FabryPerotFilterPage() {
-  const [nCavity, setNCavity] = useURLState("nCavity", 1.5, { min: 0.1 });
+  const [nCavity, setNCavity] = useURLState("nCavity", 1.5, { min: 1 });
   const [spacing, setSpacing] = useURLState("spacing", 500, { min: 1 });
   const [reflectance, setReflectance] = useURLState("reflectance", 0.8, { min: 0, max: 0.999 });
   const [wlCenter, setWlCenter] = useURLState("wlCenter", 550, { min: 1 });
@@ -50,12 +51,17 @@ export default function FabryPerotFilterPage() {
   const peak_nm = peak.wavelength * 1e9;
   const fsr_nm = peak.fsr * 1e9;
   const fwhm_nm = peak.fwhm * 1e9;
+  // Exact neighbours λ = 2nd/m and the exact frequency spacing c/(2nd)
+  const opticalThickness = nCavity * spacing * 1e-9;
+  const upper_nm = (2 * opticalThickness * 1e9) / (peak.order + 1);
+  const lower_nm = peak.order - 1 >= 1 ? (2 * opticalThickness * 1e9) / (peak.order - 1) : NaN;
+  const fsrHz = c / (2 * opticalThickness);
 
   return (
     <>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label="n (cavity)" value={nCavity} onChange={setNCavity} min={0.1} step="0.01" />
+        <ValidatedNumberInput label="n (cavity)" value={nCavity} onChange={setNCavity} min={1} step="0.01" />
         <ValidatedNumberInput label="Cavity Spacing (nm)" value={spacing} onChange={setSpacing} min={1} step="10" />
         <ValidatedNumberInput label="Mirror Reflectance" value={reflectance} onChange={setReflectance} min={0} max={0.999} step="0.01" />
         <ValidatedNumberInput label="Wavelength of interest (nm)" value={wlCenter} onChange={setWlCenter} min={1} step="10" />
@@ -69,8 +75,12 @@ export default function FabryPerotFilterPage() {
           </p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">FSR at the peak (λ²/2nd)</p>
-          <p className="text-xl font-bold text-blue-400">{Number.isFinite(fsr_nm) ? `${fsr_nm.toFixed(2)} nm` : "—"}</p>
+          <p className="text-sm text-gray-400">FSR: exact frequency c/(2nd)</p>
+          <p className="text-xl font-bold text-blue-400">{Number.isFinite(fsrHz) ? `${(fsrHz / 1e12).toPrecision(4)} THz` : "—"}</p>
+          <p className="text-xs text-gray-400">
+            Neighbour peaks: λ<sub>m+1</sub> = {Number.isFinite(upper_nm) ? `${upper_nm.toFixed(2)} nm` : "—"}, λ<sub>m−1</sub> = {Number.isFinite(lower_nm) ? `${lower_nm.toFixed(2)} nm` : "—"}
+          </p>
+          <p className="text-xs text-gray-400">≈ λ²/2nd (first order) = {Number.isFinite(fsr_nm) ? `${fsr_nm.toFixed(2)} nm` : "—"}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">FWHM at the peak</p>
@@ -89,7 +99,7 @@ export default function FabryPerotFilterPage() {
           <p>δ = 4πnd/λ</p>
           <p>Peaks: δ = 2πm, i.e. λ_m = 2nd/m</p>
           <p>F = 4R/(1−R)²</p>
-          <p>FSR = λ²/(2nd)</p>
+          <p>FSR ≈ λ²/(2nd) (first order); exactly c/(2nd) in frequency</p>
           <p>ℱ = π√F/2</p>
           <p>FWHM = 4πnd[1/(2πm − w/2) − 1/(2πm + w/2)], w = 4 asin(1/√F)</p>
         </div>

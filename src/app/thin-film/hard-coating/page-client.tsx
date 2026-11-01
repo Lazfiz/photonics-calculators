@@ -38,14 +38,22 @@ export default function HardCoatingPage() {
     const bare = normalIncidenceReflectance(1, nSub);
     const halfWave = designWl / (2 * nCoat);
     const order = Math.max(1, Math.round(thickness / halfWave));
+    // Mean band: the visible for visible designs, else 0.8–1.2 λ₀
+    const bandLo = designWl >= 400 && designWl <= 700 ? 400 : 0.8 * designWl;
+    const bandHi = designWl >= 400 && designWl <= 700 ? 700 : 1.2 * designWl;
+    // Plot window [min(300, 0.55 λ₀), max(900, 1.65 λ₀)]; step ≤ λ²/(20 n d) at the short end (fringe period), ≤ 4000 points
+    const lo = Math.min(300, 0.55 * designWl), hi = Math.max(900, 1.65 * designWl);
+    const step = thickness > 0 ? Math.min(1, (lo * lo) / (20 * nCoat * thickness)) : 1;
+    const count = Math.min(4000, Math.max(601, Math.ceil((hi - lo) / step) + 1));
     return {
       R0: coated(lambda0),
+      bandLo, bandHi, lo, hi,
       bare,
-      vis: intervalStats(coated, 400 * NM, 700 * NM, 300),
+      vis: intervalStats(coated, bandLo * NM, bandHi * NM, 300),
       qw: quarterWaveStackReflectance(1, [nCoat], nSub),
       halfWave,
       nearestAbsentee: order * halfWave,
-      x: Array.from({ length: 601 }, (_, i) => 300 + i),
+      x: Array.from({ length: count }, (_, i) => lo + ((hi - lo) * i) / (count - 1)),
       coated,
     };
   }, [opticsValid, nCoat, nSub, d, designWl, thickness, lambda0]);
@@ -98,7 +106,7 @@ export default function HardCoatingPage() {
             <p className="text-sm text-gray-500 mt-1">Uncoated: {pct(optics.bare)}</p>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-            <p className="text-sm text-gray-400">Mean R, 400–700 nm</p>
+            <p className="text-sm text-gray-400">Mean R, {optics.bandLo.toFixed(0)}–{optics.bandHi.toFixed(0)} nm</p>
             <p className="text-2xl font-bold text-green-400">{pct(optics.vis.mean)}</p>
             <p className="text-sm text-gray-500 mt-1">Range {pct(optics.vis.min)} – {pct(optics.vis.max)}</p>
           </div>
@@ -114,7 +122,7 @@ export default function HardCoatingPage() {
         <div className="grid gap-4 sm:grid-cols-3 mb-6">
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
             <p className="text-sm text-gray-400">Substrate bow over the diameter</p>
-            <p className="text-2xl font-bold text-blue-400">{Number.isFinite(mech.bow) ? `${(Math.abs(mech.bow) * 1e6).toFixed(3)} µm` : "—"}</p>
+            <p className="text-2xl font-bold text-blue-400">{Number.isFinite(mech.bow) ? `${(Math.abs(mech.bow) * 1e6).toPrecision(3)} µm` : "—"}</p>
             <p className="text-sm text-gray-500 mt-1">
               {mech.kappa === 0 ? "Flat" : `Radius ${(1 / Math.abs(mech.kappa)).toFixed(1)} m, film side ${mech.kappa > 0 ? "concave (tensile)" : "convex (compressive)"}`}
             </p>
@@ -152,7 +160,7 @@ export default function HardCoatingPage() {
       {spectrum && optics && (
         <ChartPanel title="Reflectance of the coated face" data={[
           { x: optics.x, y: spectrum, type: "scatter", mode: "lines", name: "Coated", line: { color: "#f87171" } },
-          { x: [300, 900], y: [optics.bare, optics.bare], type: "scatter", mode: "lines", name: "Uncoated", line: { color: "#9ca3af", dash: "dash" } },
+          { x: [optics.lo, optics.hi], y: [optics.bare, optics.bare], type: "scatter", mode: "lines", name: "Uncoated", line: { color: "#9ca3af", dash: "dash" } },
         ]} layout={{
           paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
           xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },

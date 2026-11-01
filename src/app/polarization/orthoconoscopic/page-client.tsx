@@ -58,6 +58,8 @@ export default function OrthoscopicPage() {
   const rho = clamp(rotationIn, 0, 360) * DEG;
   const crossed = polarsIn !== "parallel";
   const red = accessoryIn === "red";
+  const [rangeLo, rangeHi] = crystalRange(id);
+  const outsideRange = rangeLo > 380e-9 || rangeHi < 780e-9;
   const A = crossed ? Math.PI / 2 : 0;
 
   const { no, ne } = crystalIndices(id, clamp(550e-9, ...crystalRange(id)));
@@ -127,6 +129,7 @@ export default function OrthoscopicPage() {
         <InputSlider label="Stage rotation ρ" value={rotationIn} onChange={setRotation} min={0} max={360} step={1} unit="°" />
       </div>
       <CrystalNote material={id} lambda={550e-9} />
+      {outsideRange && <p className="text-sm text-amber-400 mb-4">The Sellmeier fit for this crystal covers {Math.round(rangeLo * 1e9)}–{Math.round(rangeHi * 1e9)} nm: the colour calculation holds the indices at the edge value outside that range.</p>}
       <p className="text-sm text-gray-400 mb-6">θc = 90° puts the optic axis in the section plane (maximum retardance); θc = 0° looks along the axis (none). ρ is the azimuth of the section&apos;s e-wave vibration direction from the polarizer (E–W).</p>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

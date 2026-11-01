@@ -68,7 +68,7 @@ const stoney1909: Reference = {
   url: "https://doi.org/10.1098/rspa.1909.0021",
 };
 const hutchinsonSuo: Reference = {
-  citation: "Hutchinson J. W., Suo Z. (1991). Mixed mode cracking in layered materials. Adv. Appl. Mech., 63–191.",
+  citation: "Hutchinson J. W., Suo Z. (1991). Mixed mode cracking in layered materials. Adv. Appl. Mech. 29, 63–191.",
   url: "https://doi.org/10.1016/S0065-2156(08)70164-9",
 };
 const iapwsSurface: Reference = {
@@ -527,7 +527,10 @@ export const thinFilm: CalculatorEntry[] = [
         citation: "Janssen G. C. A. M. et al. (2009). Celebrating the 100th anniversary of the Stoney equation for film stress: Developments from polycrystalline steel strips to single crystal silicon wafers. Thin Solid Films 517, 1858–1867.",
         url: "https://doi.org/10.1016/j.tsf.2008.07.014",
       },
-      { citation: "Freund L. B., Suresh S. (2003). Thin Film Materials, ch. 2. Thermal mismatch strain." },
+      {
+        citation: "Freund L. B., Suresh S. (2004). Thin Film Materials: Stress, Defect Formation and Surface Evolution, ch. 2. Cambridge University Press.",
+        url: "https://doi.org/10.1017/CBO9780511754715",
+      },
     ],
   },
   {
@@ -564,7 +567,7 @@ export const thinFilm: CalculatorEntry[] = [
     slug: "wedge-film",
     title: "Wedge Thin Film",
     description: "Wedged thin films have a linearly varying thickness across the surface, creating fringes of equal thickness with spacing λ/(2n·tan α).",
-    lede: "Wedged thin films have a linearly varying thickness across the surface, creating spatially varying interference. Used in optical testing (Newton's rings, Fizeau interferometry), anti-reflection edge filters, and precision thickness measurement. The fringe spacing Δx = λ / (2n·tan α) determines the spatial period of constructive interference.",
+    lede: "Wedged thin films have a linearly varying thickness across the surface, creating spatially varying interference. Used in optical testing (Newton's rings, Fizeau interferometry), linear-variable filters, and precision thickness measurement. The fringe spacing Δx = λ / (2n·tan α) determines the spatial period of constructive interference.",
     tier: "textbook",
     modelNote: "Thin-wedge approximation at normal incidence: each point is a plane-parallel film of the local thickness, with exact matrix R. Small angles only; beam tilt, fringe localization and coherence length are ignored.",
     references: [hecht("§9.4 (fringes of equal thickness)"), bornWolf("§7.5"), macleod("ch. 2")],

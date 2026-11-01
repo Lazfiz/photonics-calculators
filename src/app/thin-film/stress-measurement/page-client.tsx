@@ -104,6 +104,15 @@ export default function StressMeasurementPage() {
         concave, which a tensile film produces.
       </p>
 
+      {Math.max(Math.abs(deflectionBefore), Math.abs(deflection)) * 1e-3 > 0.3 * substrateThickness && (
+        <p className="mb-6 text-sm text-amber-400" role="status">
+          The bow is {fmt((100 * Math.max(Math.abs(deflectionBefore), Math.abs(deflection)) * 1e-3) / substrateThickness, 3)} % of
+          the substrate thickness; Stoney&apos;s equation assumes deflections much smaller than t<sub>s</sub>, and larger
+          bows turn geometrically nonlinear (Freund &amp; Suresh, Thin Film Materials, 2004, ch. 2), so treat the stress as
+          an estimate.
+        </p>
+      )}
+
       {results.thicknessRatio >= MAX_THICKNESS_RATIO && (
         <p className="mb-6 text-sm text-yellow-300" role="status">
           t<sub>f</sub>/t<sub>s</sub> = {fmt(results.thicknessRatio, 3)}: Stoney assumes a film much thinner than the

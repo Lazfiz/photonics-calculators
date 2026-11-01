@@ -1,21 +1,23 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { wedgeFringeSpacing } from "../../../physics/thin-film/interference";
 import { stackResponse } from "../../../physics/thin-film/transfer-matrix";
 
 export default function WedgeFilmPage() {
-  const [nFilm, setNFilm] = useURLState("nFilm", 1.5, { min: 1, max: 5 });
+  const [nFilm, setNFilm] = useURLState("nFilm", 2.35, { min: 1, max: 5 });
   const [nSub, setNSub] = useURLState("nSub", 1.52, { min: 1, max: 5 });
   const [nInc, setNInc] = useURLState("nInc", 1.0, { min: 1, max: 5 });
   const [designWl, setDesignWl] = useURLState("designWl", 550, { min: 100, max: 20000 });
   const [wedgeAngleDeg, setWedgeAngleDeg] = useURLState("wedgeAngleDeg", 0.1, { min: 0.001, max: 2 }); // degrees
 
   const chartData = useMemo(() => {
-    const wls = Array.from({ length: 500 }, (_, i) => 300 + i * 600 / 500);
+    // Window 0.5–1.6 λ₀ (500 points)
+    const wls = Array.from({ length: 500 }, (_, i) => designWl * (0.5 + (1.1 * i) / 499));
     const reflectance = (dNm: number, wlNm: number) =>
       stackResponse({ incident: nInc, layers: [{ n: nFilm, thickness: dNm * 1e-9 }], substrate: { n: nSub } }, wlNm * 1e-9).R;
 
@@ -23,7 +25,7 @@ export default function WedgeFilmPage() {
     const slopeNmPerMm = Math.tan(wedgeAngleDeg * Math.PI / 180) * 1e6;
     const dCenter = designWl / (4 * nFilm);
     // Bright-to-bright spacing at λ₀ (thickness step λ₀/2n); the film edge (d = 0) is at −Δx/2.
-    const fringeSpacing = slopeNmPerMm > 0 ? designWl / (2 * nFilm * slopeNmPerMm) : NaN; // mm
+    const fringeSpacing = wedgeFringeSpacing(designWl * 1e-9, nFilm, wedgeAngleDeg * Math.PI / 180) * 1e3; // mm
 
     // Spectra at x = 0, Δx/4, Δx/2, Δx and 2Δx: 1, 1.5, 2, 3 and 5 quarter waves thick.
     const posFractions = [0, 0.25, 0.5, 1, 2];

@@ -65,12 +65,15 @@ export default function DepolarizationPage() {
   const dn = (lam: number) => { const n = crystalIndices(id, lam); return Math.abs(n.ne - n.no); };
   const { phase, group } = plateRetardances(thickness_mm * 1e-3, dn, lambda0);
   const { sigma0, dSigma } = wavenumberBand(lambda0, dLambda_nm * 1e-9);
+  // The linear-phase model expands about the band centre in wavenumber, λ_c = 1/σ₀ (spectral-depolarization.ts).
+  const centre = plateRetardances(thickness_mm * 1e-3, dn, 1 / sigma0);
   const axis = axis_deg * DEG;
-  const M = spectral ? muellerRetarderSpectral(phase, group, sigma0, dSigma, shape, axis) : muellerDepolarizer(d);
+  const M = spectral ? muellerRetarderSpectral(centre.phase, centre.group, sigma0, dSigma, shape, axis) : muellerDepolarizer(d);
   const Sout = applyMueller(M, Sin);
   const dopIn = degreeOfPolarization(Sin), dopOut = degreeOfPolarization(Sout);
-  const visibility = spectralVisibility(group, dSigma, shape);
-  const groupBirefringence = group / (thickness_mm * 1e-3);
+  const visibility = spectralVisibility(centre.group, dSigma, shape);
+  // V is even in R_g, so the plate length scale uses |B_g|.
+  const groupBirefringence = Math.abs(centre.group) / (thickness_mm * 1e-3);
   const halfThickness_mm = groupBirefringence > 0 ? (retardanceForVisibility(0.5, dSigma, shape) / groupBirefringence) * 1e3 : NaN;
 
   const chart = (() => {
@@ -84,7 +87,7 @@ export default function DepolarizationPage() {
       ];
     }
     // Phase and group retardance scale linearly with thickness.
-    const at = (k: number) => dop(muellerRetarderSpectral(phase * k, group * k, sigma0, dSigma, shape, axis));
+    const at = (k: number) => dop(muellerRetarderSpectral(centre.phase * k, centre.group * k, sigma0, dSigma, shape, axis));
     const x = Array.from({ length: n }, (_, i) => (4 * thickness_mm * i) / (n - 1));
     return [
       { x, y: x.map((t) => at(t / thickness_mm)), type: "scatter", mode: "lines", name: "Output DOP", line: { color: "#60a5fa", width: 2 } },

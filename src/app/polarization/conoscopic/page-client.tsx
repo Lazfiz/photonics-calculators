@@ -57,6 +57,9 @@ export default function ConoscopicPage() {
 
   // Uniaxial data: n_o, n_e at the wavelength clamped into the fit range, ordered as n_α ≤ n_β ≤ n_γ.
   const [lo, hi] = id ? crystalRange(id) : [0, 0];
+  const lambdaUsed_nm = Math.round(clamp(lambda, lo, hi) * 1e9);
+  const heldMono = id && light === "mono" && (lambda < lo || lambda > hi);
+  const heldWhite = id && light === "white" && lo > 380e-9;
   const { no, ne } = id ? crystalIndices(id, clamp(lambda, lo, hi)) : { no: NaN, ne: NaN };
   const indices: PrincipalIndices = id
     ? (ne > no ? [no, no, ne] : [ne, no, no])
@@ -132,6 +135,8 @@ export default function ConoscopicPage() {
       </div>
       <CrystalNote material={crystal} lambda={lambda} />
       <p className="text-xs text-gray-500 -mt-4 mb-6">Tilt is that of the optic axis (uniaxial) or the acute bisectrix (biaxial); the stage rotation turns the tilt direction from x.</p>
+      {heldMono && <p className="text-sm text-amber-400 mb-4">Indices held at the data-range edge ({lambdaUsed_nm} nm): the Sellmeier fit does not cover {fix(lambda_nm, 0)} nm.</p>}
+      {heldWhite && <p className="text-sm text-amber-400 mb-4">The Sellmeier fit starts at {Math.round(lo * 1e9)} nm: below it the indices are held at the range edge.</p>}
       {valid && NA < NAin && <p className="text-sm text-yellow-400 mb-4">The NA is limited to 0.98 n<sub>α</sub> = {fix(NA, 3)}, the largest cone the plate accepts.</p>}
       {valid && NA > 1 && <p className="text-sm text-gray-400 mb-4">An NA above 1 needs immersion of index ≥ NA (oil, n ≈ 1.52) between the lenses and the plate.</p>}
       {!valid && <p className="text-sm text-red-400 mb-4" role="alert">{invalidText}</p>}

@@ -75,22 +75,28 @@ export default function ThermalEvaporationPage() {
     const h = sourceSubstrateDist * 1e-2;
     const rs = (sourceDiameter / 2) * 1e-2;
     if (!(h > 0 && rs > 0 && alpha > 0 && alpha <= 1)) return [];
-    // From 10⁻⁶ Pa to 10 Pa (or 2500 K): above ≈ 1 Pa a vapour cloud forms and the free-evaporation rate is only a bound.
+    // From 10⁻⁶ Pa to 10 Pa (or 2500 K), extended to the input temperature if that is hotter: above ≈ 1 Pa a vapour cloud forms and the free-evaporation rate is only a bound.
     const temps: number[] = [];
     const rates: (number | null)[] = [];
     for (let i = 0; i <= 160; i++) {
       const Tk = 0.5 * ev.Tm + ((FIT_T_MAX - 0.5 * ev.Tm) * i) / 160;
       const p = vapourPressure(ev, Tk);
       if (p < 1e-6) continue;
-      if (p > SWEEP_P_MAX) break;
+      if (p > SWEEP_P_MAX && Tk > T + 15) break; // continue past 10 Pa only up to the input temperature
       temps.push(Tk - 273.15);
       rates.push(surfaceSourceRate(evaporationMassFlux(p, ev.M, Tk, alpha), Math.PI * rs * rs, ev.rho, h) * 1e9);
     }
+    const pIn = vapourPressure(ev, T);
+    const marker =
+      T > 0 && T <= FIT_T_MAX && pIn >= 1e-6
+        ? [{ x: [sourceTemp], y: [surfaceSourceRate(evaporationMassFlux(pIn, ev.M, T, alpha), Math.PI * rs * rs, ev.rho, h) * 1e9], type: "scatter" as const, mode: "markers" as const, name: "Input temperature", marker: { color: "#f87171", size: 10 } }]
+        : [];
     return [
       // The vapour pressure has the same shape on a log axis (rate ∝ p/√T), so it isn't drawn too.
       { x: temps, y: rates, type: "scatter" as const, mode: "lines" as const, name: "Growth rate", line: { color: "#60a5fa" } },
+      ...marker,
     ];
-  }, [ev, sourceSubstrateDist, sourceDiameter, alpha]);
+  }, [ev, sourceSubstrateDist, sourceDiameter, alpha, T, sourceTemp]);
 
   return (
     <>

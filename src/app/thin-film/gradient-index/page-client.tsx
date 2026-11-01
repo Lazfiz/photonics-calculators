@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -13,7 +13,8 @@ export default function GradientIndexPage() {
   const [nInc, setNInc] = useURLState("nInc", 1.0, { min: 0.1 });
   const [nSurface, setNSurface] = useURLState("nSurface", 1.1, { min: 0.1 });
   const [thickness, setThickness] = useURLState("thickness", 500, { min: 1 });
-  const [profile, setProfile] = useState<GradedProfile>("cosine");
+  const [profileRaw, setProfile] = useURLState("profile", "cosine");
+  const profile: GradedProfile = profileRaw === "linear" || profileRaw === "exponential" ? profileRaw : "cosine";
   const [designWl, setDesignWl] = useURLState("designWl", 550, { min: 1 });
 
   const tmm = useMemo(() => {
@@ -66,7 +67,7 @@ export default function GradientIndexPage() {
         <ValidatedNumberInput label="Thickness (nm)" value={thickness} onChange={setThickness} min={1} />
         <ValidatedNumberInput label="Design λ (nm)" value={designWl} onChange={setDesignWl} min={1} />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Profile</span>
-          <select value={profile} onChange={e => setProfile(e.target.value as GradedProfile)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
+          <select value={profile} onChange={e => setProfile(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             <option value="linear">Linear</option>
             <option value="cosine">Cosine</option>
             <option value="exponential">Exponential</option>

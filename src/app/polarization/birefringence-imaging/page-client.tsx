@@ -9,7 +9,7 @@ import { fix } from "../../../components/polarization-format";
 import { useURLState } from "../../../hooks/use-url-state";
 import { cssRgb, srgbEncode } from "../../../physics/cie-colour";
 import {
-  type ChainPlate, type ChainRetarder, analyzerOfMinimum, chainTransmissionSlope, retarderChainColour, retarderChainTransmission,
+  type ChainPlate, type ChainRetarder, analyzerOfMinimum, chainTransmissionSlope, pixelVisibility, retarderChainAveraged, retarderChainColour, retarderChainTransmission,
   senarmontRetardance,
 } from "../../../physics/polarization/interference-colours";
 import { C_NBK7, kirschMaxRetardance, kirschRetardanceField } from "../../../physics/polarization/photoelasticity";
@@ -77,7 +77,7 @@ export default function BirefringenceImagingPage() {
   const lambda_nm = clamp(lambdaIn, 200, 2000), lambda = lambda_nm * 1e-9;
   const kind = ["qwp", "full", "custom"].includes(compIn) ? compIn : "none";
   const compR = kind === "qwp" ? lambda / 4 : kind === "full" ? FULL_WAVE : clamp(cRIn, 0, 2000) * 1e-9;
-  const compAxis = kind === "full" ? Math.PI / 4 : kind === "qwp" ? P : clamp(cAxisIn, 0, 180) * DEG;
+  const compAxis = kind === "full" ? P + Math.PI / 4 : kind === "qwp" ? P : clamp(cAxisIn, 0, 180) * DEG;
   const hasComp = kind !== "none";
   const white = lightIn === "white";
 
@@ -122,15 +122,24 @@ export default function BirefringenceImagingPage() {
     const N = p.white ? 101 : 121;
     const field = kirschRetardanceField(p.S, p.a, p.C, p.d, N, 4 * p.a);
     const rgba = new Uint8ClampedArray(N * N * 4);
+    // Retardance change across one pixel (central differences; one-sided next to the hole or the edge).
+    const step = (k: number, s: number, hasB: boolean, hasA: boolean) => {
+      const b = hasB ? field.R[k - s] : NaN, a = hasA ? field.R[k + s] : NaN;
+      if (Number.isFinite(a) && Number.isFinite(b)) return (a - b) / 2;
+      if (Number.isFinite(a)) return a - field.R[k];
+      if (Number.isFinite(b)) return field.R[k] - b;
+      return 0;
+    };
     for (let k = 0; k < N * N; k++) {
       const R = field.R[k];
       let rgb: readonly number[];
       if (!Number.isFinite(R)) rgb = GREY_HOLE;
       else {
-        const az = field.azimuth[k];
-        if (p.white) rgb = retarderChainColour(p.P, p.A, platesOf(R, az, comp)).map((v) => 255 * v);
+        const az = field.azimuth[k], i = k % N, j = Math.floor(k / N);
+        const dRx = step(k, 1, i > 0, i < N - 1), dRy = step(k, N, j > 0, j < N - 1);
+        if (p.white) rgb = retarderChainColour(p.P, p.A, platesOf(R, az, comp), (l) => pixelVisibility(dRx, dRy, l)).map((v) => 255 * v);
         else {
-          const g = 255 * srgbEncode(retarderChainTransmission(p.P, p.A, chainOf(p.lambda, R, az, comp)));
+          const g = 255 * srgbEncode(retarderChainAveraged(p.P, p.A, chainOf(p.lambda, R, az, comp), pixelVisibility(dRx, dRy, p.lambda)));
           rgb = [g, g, g];
         }
       }
@@ -139,7 +148,7 @@ export default function BirefringenceImagingPage() {
     return { rgba, N, maxR: kirschMaxRetardance(p.S, p.C, p.d), lambda: p.lambda };
   }, [deferred]);
 
-  const optionsComp: [string, string][] = [["none", "None"], ["qwp", "λ/4 at λ, axis ∥ polarizer (Sénarmont)"], ["full", "Full wave 550 nm, axis 45°"], ["custom", "Custom"]];
+  const optionsComp: [string, string][] = [["none", "None"], ["qwp", "λ/4 at λ, axis ∥ polarizer (Sénarmont)"], ["full", "Full wave 550 nm, axis P + 45°"], ["custom", "Custom"]];
   return (
     <>
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-gray-300 text-sm font-mono space-y-1">

@@ -7,7 +7,7 @@ import { abs2 } from "../src/physics/complex";
 import { apply, chainMatrix, linearPolarizer, linearRetarder, linearState } from "../src/physics/polarization/jones";
 import {
   analyzerOfMinimum, chainTransmissionSlope, interferenceXyz, michelLevyColour, polariscopeTransmission, retarderChainColour,
-  retarderChainTransmission, senarmontRetardance,
+  retarderChainAveraged, retarderChainTransmission, senarmontRetardance,
 } from "../src/physics/polarization/interference-colours";
 import { applyMueller, chainMueller, muellerRetarder } from "../src/physics/polarization/mueller";
 
@@ -116,4 +116,13 @@ test("Interference colours: Sénarmont — the analyzer minimum turns by Γ/2, s
   assert.ok(Number.isNaN(senarmontRetardance(0, 20 * deg, m20.A, lambda)) && m20.T > 0.02);
   // Circular output (λ/4 sample at 45°, no compensator) has no minimum.
   assert.ok(Number.isNaN(analyzerOfMinimum(0, [{ gamma: Math.PI / 2, axis: 45 * deg }]).A));
+});
+
+test("retarderChainAveraged: visibility 1 is the plain transmission, 0 the fringe mean (Born & Wolf 15.3: T = a + b cos Γ)", () => {
+  const chain = [{ gamma: 1.1, axis: Math.PI / 4 }];
+  const T = retarderChainTransmission(0, Math.PI / 2, chain);
+  assert.equal(retarderChainAveraged(0, Math.PI / 2, chain, 1), T);
+  // crossed polars, plate at 45°: T = sin²(Γ/2), mean over Γ = 1/2
+  assert.ok(Math.abs(retarderChainAveraged(0, Math.PI / 2, chain, 0) - 0.5) < 1e-12);
+  assert.ok(Math.abs(retarderChainAveraged(0, Math.PI / 2, chain, 0.5) - (0.5 + 0.5 * (T - 0.5))) < 1e-12);
 });

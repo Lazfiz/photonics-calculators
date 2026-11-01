@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
+import { blackbodyBandFraction } from "../src/physics/blackbody";
 import { rakicIndex } from "../src/physics/materials/lorentz-drude";
 import { enhancedMetalReflectance, enhancedMirrorLayers } from "../src/physics/thin-film/metal-mirror";
 import {
@@ -65,4 +66,12 @@ test("emittance of opaque metals", () => {
   const gray = totalNormalEmittance([], { material: "dielectric", n: 1, k: 0 }, 300, 2.5e-6, 50e-6);
   assert.ok(Math.abs(gray - 1) < 1e-12);
   assert.ok(Number.isNaN(totalNormalEmittance([], { material: "Ag" }, 0, 2.5e-6, 50e-6)));
+});
+
+test("heat mirror: the 2.5–50 µm emittance band covers the page's 200–600 K", () => {
+  // F(0–λT) tables (Incropera, Fundamentals of Heat and Mass Transfer, Table 12.2): F(10 000 µm·K) = 0.914; F(500) ≈ 0.
+  assert.ok(Math.abs(blackbodyBandFraction(2.5e-6, 50e-6, 200) - 0.9142) < 2e-4);
+  for (const T of [200, 300, 450, 600]) assert.ok(blackbodyBandFraction(2.5e-6, 50e-6, T) >= 0.91, `T ${T} K`);
+  // Below and above the range the band misses the emission (16 % at 50 K, 84 % at 1000 K): why the input stops at 200–600 K.
+  assert.ok(blackbodyBandFraction(2.5e-6, 50e-6, 50) < 0.2 && blackbodyBandFraction(2.5e-6, 50e-6, 1000) < 0.85);
 });

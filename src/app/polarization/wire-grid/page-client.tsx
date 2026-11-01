@@ -18,15 +18,23 @@ const METALS = [
   { name: "Silver", sigma: 6.3e7 },
 ];
 
-/** Transmittances and extinction from 1.1 p to 100 p. */
-function spectralCurves(grid: WireGrid) {
-  const l = Array.from({ length: 200 }, (_, i) => grid.period * 1.1 * (100 / 1.1) ** (i / 199));
+/** Transmittances and extinction from 1.1 p to 100 p, widened to include the current wavelength λ (m), marked on each series. */
+function spectralCurves(grid: WireGrid, lambda: number) {
+  const lo = Math.min(1.1 * grid.period, 0.8 * lambda), hi = Math.max(100 * grid.period, 1.25 * lambda);
+  const l = Array.from({ length: 200 }, (_, i) => lo * (hi / lo) ** (i / 199));
+  const now = wireGridResponse(grid, lambda);
+  const mark = (y: number, name: string, color: string, yaxis?: string) => (
+    { x: [lambda * 1e6], y: [y], type: "scatter" as const, mode: "markers" as const, name, marker: { color, size: 9 }, showlegend: false, ...(yaxis ? { yaxis } : {}) }
+  );
   const r = l.map((x) => wireGridResponse(grid, x));
   const um = l.map((x) => x * 1e6);
   return [
     { x: um, y: r.map((q) => q.perpendicular.T), type: "scatter" as const, mode: "lines" as const, name: "T (E ⟂ strips)", line: { color: "#34d399", width: 2 } },
     { x: um, y: r.map((q) => q.parallel.T), type: "scatter" as const, mode: "lines" as const, name: "T (E ∥ strips)", line: { color: "#f87171", width: 2 } },
     { x: um, y: r.map((q) => dB(q.extinction)), type: "scatter" as const, mode: "lines" as const, name: "Extinction (dB)", line: { color: "#a78bfa", dash: "dash" }, yaxis: "y2" },
+    mark(now.perpendicular.T, "Current λ, T ⟂", "#34d399"),
+    mark(now.parallel.T, "Current λ, T ∥", "#f87171"),
+    mark(dB(now.extinction), "Current λ, extinction", "#a78bfa", "y2"),
   ];
 }
 
@@ -58,7 +66,7 @@ export default function WireGridPage() {
   const widthOk = widthUm < periodUm;
   const diffracts = periodUm >= lambdaUm;
 
-  const spectral = spectralCurves(grid);
+  const spectral = spectralCurves(grid, lambdaUm * 1e-6);
   const fill = fillCurves(grid, lambdaUm * 1e-6);
 
   const layout = (x: string, y: string, y2: string, logX = false, y2Range?: [number, number]) => ({

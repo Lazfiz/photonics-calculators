@@ -22,14 +22,16 @@ export default function AngleShiftPage() {
 
   const chartData = useMemo(() => {
     if (!valid) return [];
-    const angles = Array.from({ length: 201 }, (_, i) => (i * maxAngle) / 200);
+    const xMax = Math.max(maxAngle, angle);
+    const angles = Array.from({ length: 201 }, (_, i) => (i * xMax) / 200);
     // The phase thickness 2πnd·cos θ_film/λ is the same for s and p, so the quarter-wave point of
     // a film moves to λ₀·cos θ_film for both (incidence from air). A multilayer's effective index
     // differs slightly for s and p (Macleod ch. 9), so there the curve is a first-order estimate.
     return [
       { x: angles, y: angles.map((a) => shifted(designWl, nFilm, a)), type: "scatter" as const, mode: "lines" as const, name: "λ₀·cos θ_film (s and p)", line: { color: "#60a5fa" } },
+      { x: [angle], y: [shifted(designWl, nFilm, angle)], type: "scatter" as const, mode: "markers" as const, name: "Current angle", marker: { color: "#f87171", size: 10 } },
     ];
-  }, [valid, nFilm, designWl, maxAngle]);
+  }, [valid, nFilm, designWl, maxAngle, angle]);
 
   const atAngle = valid ? shifted(designWl, nFilm, angle) : NaN;
 

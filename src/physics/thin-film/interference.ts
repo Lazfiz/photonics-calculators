@@ -65,6 +65,16 @@ export function airyPeakNear(opticalThickness: number, wavelength: number, F: nu
 }
 
 /**
+ * Spacing (m) between adjacent bright fringes along an air-wedge-like film of index n and small wedge
+ * angle α (rad): the thickness step λ/(2n) per fringe over a slope tan α, Δx = λ/(2 n tan α)
+ * (Hecht, Optics, 5th ed., §9.4). NaN unless λ, n > 0 and 0 < α < π/2 (no fringes on a flat film).
+ */
+export function wedgeFringeSpacing(wavelength: number, n: number, alpha: number): number {
+  if (!(wavelength > 0 && n > 0 && alpha > 0 && alpha < Math.PI / 2)) return NaN;
+  return wavelength / (2 * n * Math.tan(alpha));
+}
+
+/**
  * Net phase difference, beyond the path 2nd, between the beams reflected at the two faces of a film
  * at normal incidence. A reflection off a higher index adds π, so the result is 0 or π.
  * NaN if the film index equals a neighbour's (that face doesn't reflect) or an index isn't > 0.

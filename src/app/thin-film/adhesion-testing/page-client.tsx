@@ -119,7 +119,8 @@ export default function AdhesionTestingPage() {
       };
     }
     if (method === "bend") {
-      const rMin = Math.max(0.6 * substrateThickness, 0.2 * bendRadius);
+      // keep the input radius inside the plotted range, but stay above the h_s/2 limit
+      const rMin = Math.max(Math.min(Math.max(0.6 * substrateThickness, 0.2 * bendRadius), 0.9 * bendRadius), 0.5 * substrateThickness * 1.001);
       const radii: number[] = [];
       const ch: number[] = [];
       const de: number[] = [];
