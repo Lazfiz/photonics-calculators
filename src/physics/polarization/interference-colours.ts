@@ -154,12 +154,27 @@ const MAX_SUB = 5;
 const SUB_STEP = 0.1;
 
 /**
+ * Transmission of a chain whose first plate (the sample) has a retardance spread across a pixel, with fringe visibility
+ * V (pixelVisibility). T is a + b cos Γ + c sin Γ in the sample Γ, so the pixel mean is a + V·(T − a) with
+ * a = ½[T(Γ) + T(Γ + π)]: fringes finer than a pixel fade to their mean a.
+ */
+export function retarderChainAveraged(P: number, A: number, chain: readonly ChainRetarder[], visibility: number): number {
+  const T = retarderChainTransmission(P, A, chain);
+  if (chain.length === 0 || visibility >= 1) return T;
+  const flipped = chain.map((r, k) => (k === 0 ? { ...r, gamma: r.gamma + Math.PI } : r));
+  const a = (T + retarderChainTransmission(P, A, flipped)) / 2;
+  return a + visibility * (T - a);
+}
+
+/**
  * Display colour of a retarder chain between polarizers under D65. Each 5 nm bin is the midpoint-rule mean of n
  * samples, n = ⌈ΔΓ/0.1 rad⌉ capped at 5, with ΔΓ = 2π Σ|R| · 5 nm/λ² the phase spread across the bin: a relative
  * error ≤ 0.1²/24 ≈ 4 × 10⁻⁴ below the cap, and colours that hold to retardances of about 50 µm (1 nm samples) above
  * it. The single-plate colour uses the exact bin average instead.
  */
-export function retarderChainColour(P: number, A: number, plates: readonly ChainPlate[]): RGB {
+export function retarderChainColour(
+  P: number, A: number, plates: readonly ChainPlate[], visibility?: (lambda: number, bin: number) => number,
+): RGB {
   const T = COLOUR_WAVELENGTHS.map((l, i) => {
     const Rs = plates.map((p) => p.R(l, i));
     const spread = (2 * Math.PI * Rs.reduce((s, R) => s + Math.abs(R), 0) * BIN) / (l * l);
@@ -167,7 +182,8 @@ export function retarderChainColour(P: number, A: number, plates: readonly Chain
     let sum = 0;
     for (let j = 0; j < n; j++) {
       const lam = l + ((j + 0.5) / n - 0.5) * BIN;
-      sum += retarderChainTransmission(P, A, plates.map((p, k) => ({ gamma: (2 * Math.PI * Rs[k]) / lam, axis: p.axis })));
+      const chain = plates.map((p, k) => ({ gamma: (2 * Math.PI * Rs[k]) / lam, axis: p.axis }));
+      sum += visibility ? retarderChainAveraged(P, A, chain, visibility(lam, i)) : retarderChainTransmission(P, A, chain);
     }
     return sum / n;
   });

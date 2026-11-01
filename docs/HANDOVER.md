@@ -1,30 +1,30 @@
-# Handover — 2026-10-31 (session 176 → session 177)
+# Handover — 2026-11-01 (session 177 → session 178)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 176 did 5w-14 (spectroscopy textbook pass, 21 pages, 3 bugs) on `phase-5/5w-14-spectroscopy`, PR #213.
-PRs #200–#212 are merged to `main` but not released (`release` = `d82602ed`). Next: **5w-15 thin-film + polarization** (24).
+Session 177 did 5w-15 (thin-film + polarization, 24 pages, 4 bugs) on `phase-5/5w-15-thin-film-polarization`, PR #214.
+That finishes 5w. PRs #200–#213 are merged to `main` but not released (`release` = `d82602ed`). Next: the KRS-5 Sellmeier box.
 
 ## State
-- Grating shadowing `blazeShadowFactor` = min(1, ρ(β)/ρ(α)), ρ(x) = cos x/cos(x − φ) for x ≥ φ, else cos φ (`facetFraction`
-  in `spectral-resolution.ts`). α = 0, 700 nm, 1200 l/mm, λ_B 550: k 0.728137, η₁ 0.60521 (was 0.6488 / 0.5393). Littrow
-  (grating-efficiency) and the dispersive-element defaults (α 45°) are unchanged: η₁ 0.74724.
-- `overlapFreeBand(λmin, λmax, m)` in `stray-light.ts` = [max(λmin, λmax(m−1)/m), min(λmax, λmin(m+1)/m)) or NaN; stray-light
-  shows "none" for m = 2 on 200–1100 nm. `overlapFreeLimit` stays for spectral-range's m+1 check.
-- infrared-spectroscopy: HCl capped at 1200 K (one D term: levels turn over at J = 56; sum unconverged ≥ ≈ 1230 K); spectrum
-  grid ≥ 5 points/FWHM (≤ 20 000) plus every line centre.
-- Minor: chart spans follow inputs on 8 pages; spectral-range order m−1 note; FP card shows exact Airy FWHM
-  (2FSR/π)asin(π/2ℱ); LIBS presets set U⁺/U⁰ from ground-term weights (default 2 = Ca) and warn for H; SFG free OH −15;
-  2D `transferMatrix` golden 0.56908. 1185 tests.
+- depolarization: the Mueller matrix, visibility and chart use R, R_g at λ_c = 1/σ₀ (`centre` in page-client); the cards still
+  show R, R_g at λ₀. 50 µm quartz, 550 ± 137.5 nm flat: |⟨e^{iΓ}⟩ error| 0.0070 (was 0.034).
+- `retarderChainAveraged(P, A, chain, V)` in `interference-colours.ts`: a + V(T − a), a = ½[T(Γ) + T(Γ + π)] of the first plate;
+  `retarderChainColour` takes an optional per-λ visibility. birefringence-imaging uses both with `pixelVisibility`.
+- `wedgeFringeSpacing(λ, n, α)` in `thin-film/interference.ts` (550 nm, 1.5, 0.1° → 1.0504e-4 m). Wedge default n_f 2.35.
+- heat-mirror T is 200–600 K (2.5–50 µm band holds ≥ 91 % of σT⁴; 16 % at 50 K). Fabry-Perot shows c/(2nd) and λ_(m±1).
+- coating-stress and stress-measurement warn past t_f/t_s 5 % and bow 30 % of t_s. 1189 tests.
 
 ## Next actions
-1. `/ship` the 5w-14 PR. Post-merge (on a release only): `spectroscopy/stray-light=2.699`
-   `spectroscopy/dispersive-element=74.7` plus the values listed in PRs #207–#212 (5w-13: nonlinear-crystals K 0.006043 %/W,
-   brillouin T_B ≈ 8 ns).
-2. 5w-15: thin-film + polarization textbook slugs in registry order (24), skipping the ROADMAP's session-162 slugs:
-   `awk '/slug:/{s=$2} /tier: "textbook"/{print s}' src/registry/calculators/{thin-film,polarization}.ts`.
-3. Then the KRS-5 Sellmeier box, and last in Phase 5 the Gemini hero (ask the user for the files).
+1. `/ship` the 5w-15 PR. Post-merge (on a release only): `thin-film/wedge-film` (default n_f now 2.35),
+   `thin-film/fabry-perot-filter` (FSR card in THz), plus the values in PRs #207–#213 (5w-14: `spectroscopy/stray-light=2.699`,
+   `spectroscopy/dispersive-element=74.7`; 5w-13: nonlinear-crystals K 0.006043 %/W, brillouin T_B ≈ 8 ns).
+2. KRS-5 Sellmeier box (check Rodney & Malitson 1956, JOSA 46, 956, before entering `MATERIALS`).
+3. Last in Phase 5: the Gemini hero (ask the user for the files). Then Phase 4 open findings.
 
 ## Non-obvious facts
+- **Session 177:** the 5w-15 reviewers found no wrong formulas in 24 pages; nearly all findings were chart ranges fixed for the
+  default while inputs span decades. Check new pages for that. A band average expanded about σ₀ must take its phase at
+  1/σ₀, not at the wavelength centre. devctl's CPU gate silently skipped one implementer edit (it re-ran it): keep the
+  `git status --short` check in briefs.
 - **Session 176:** reviewer "UNVERIFIED" claims can be wrong the other way: Scholkmann & Wolf 2013 *do* recommend 0–70 y
   (fitted on 0–50 y). SPIE pages fetch empty; WebFetch of the `.pdf` URL saves it to `tool-results/` for `pdftotext -raw`.
 - **Session 175:** an edit script doing `s.slice(0, start) + newText` drops everything after the block (3 functions

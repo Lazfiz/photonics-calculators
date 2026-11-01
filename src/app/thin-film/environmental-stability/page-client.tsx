@@ -4,7 +4,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  accelerationFactor, cc1246Count, cc1246Obscuration, centreShift, environmentStack, wetIndex,
+  accelerationFactor, cc1246Count, cc1246Obscuration, centreShift, environmentStack, wetIndex, solidIndex,
   type CoatingMaterial, type MixingLaw,
 } from "../../../physics/thin-film/environmental-stability";
 import { reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
@@ -20,7 +20,6 @@ const LAWS: { id: MixingLaw; name: string }[] = [
   { id: "bragg-pippard", name: "Bragg–Pippard columns (eq. 4)" },
 ];
 const SIZES_UM = [1, 2, 5, 15, 25, 50, 100, 250, 500, 750, 1000];
-const WLS_NM = Array.from({ length: 501 }, (_, i) => 300 + i * 1.2);
 const TEMPS_C = Array.from({ length: 51 }, (_, i) => -50 + i * 5);
 const HOURS_PER_YEAR = 8766;
 
@@ -54,6 +53,8 @@ function spectrumTraces(h: CoatingMaterial, l: CoatingMaterial, pairs: number, n
     { name: `${tempC} °C, dry`, dT, fill: 0, color: "#fbbf24" },
     { name: `${tempC} °C, ${fillPct} % filled`, dT, fill, color: "#f87171" },
   ];
+  // Window 0.6–1.6 λ₀ (501 points), so it follows the design wavelength
+  const WLS_NM = Array.from({ length: 501 }, (_, i) => (lambda0 * 1e9) * (0.6 + i * 0.002));
   const lambdas = WLS_NM.map((w) => w * 1e-9);
   return conditions.map((c) => {
     const layers = environmentStack(h, l, pairs, lambda0, c.dT, c.fill);
@@ -113,6 +114,12 @@ export default function EnvironmentalStabilityPage() {
   const shiftBoth = centreShift(H, L, lambda0, dT, fillPct / 100) * 1e9;
   const wetH = wetIndex(H.n, H.p, fillPct / 100, H.law);
   const wetL = wetIndex(L.n, L.p, fillPct / 100, L.law);
+  const solH = solidIndex(H.n, H.p, H.law);
+  const solL = solidIndex(L.n, L.p, L.law);
+  const braggBad = [
+    { name: "H", mat: H, sol: solH },
+    { name: "L", mat: L, sol: solL },
+  ].filter((x) => x.mat.law === "bragg-pippard" && !Number.isFinite(x.sol));
   const shiftVsT = [0, fillPct / 100].map((f, i) => ({
     x: TEMPS_C, y: TEMPS_C.map((t) => round6(centreShift(H, L, lambda0, t - T0_C, f) * 1e9)),
     type: "scatter" as const, mode: "lines" as const, name: i === 0 ? "Dry pores" : `Pores ${fillPct} % filled`,
@@ -162,7 +169,16 @@ export default function EnvironmentalStabilityPage() {
         depends on the humidity, the pore sizes and the time since venting.
       </p>
 
-      <div className="grid gap-4 sm:grid-cols-3 mb-6">
+      <p className="text-xs text-gray-400 mb-2">
+        Solid-column index: n<sub>s,H</sub> = {show(solH, () => solH.toFixed(4))}, n<sub>s,L</sub> = {show(solL, () => solL.toFixed(4))}
+        {" "}(the index of the dense material the pores are mixed into; values far from the bulk material&apos;s index mean the packing density does not fit the film index).
+      </p>
+      {braggBad.map((x) => (
+        <p key={x.name} className="text-sm text-amber-400 mb-2" role="status">
+          {x.name} layer: the packing density p = {x.mat.p} is too low for a film index of {x.mat.n} under Bragg–Pippard (it needs n² &lt; (1 + p)/(1 − p)), so there is no solid-column index and the moisture and shift results are blank. Raise p or use the linear law.
+        </p>
+      ))}
+      <div className="grid gap-4 sm:grid-cols-3 mb-6 mt-4">
         <Card label="Band-centre shift, moisture" value={show(shiftWet, () => `${shiftWet.toFixed(2)} nm`)}
           sub={show(wetH + wetL, () => `n_H ${wetH.toFixed(4)}, n_L ${wetL.toFixed(4)} with ${fillPct} % filled`)} tone="text-emerald-400" />
         <Card label={`Band-centre shift, ${tempC} °C`} value={show(shiftHot, () => `${shiftHot.toFixed(3)} nm`)}

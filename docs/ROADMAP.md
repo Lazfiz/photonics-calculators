@@ -5,11 +5,12 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 176, 2026-10-31)
+## Status (session 177, 2026-11-01)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
-  textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) and 5w-13 (materials) and 5w-14 (spectroscopy) done (sessions 163–176); next 5w-15 (thin-film + polarization); the Gemini hero is last. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) and 5w-13 (materials) and 5w-14 (spectroscopy) and 5w-15 (thin-film + polarization) done (sessions 163–177): 5w is complete; next the KRS-5
+  Sellmeier box; the Gemini hero is last. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -173,6 +174,9 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   would extend it. The Table 3.3 fits' T_e range is unchecked (solve allows 0.5–30 eV).
 - `ellipsometry-measurement` (optional): a film thickness needs a film model, e.g. a known film index and Azzam &
   Bashara's transparent-film inversion.
+- 5w-15 (session 177), unverified or deferred: Benjamin–Weaver τ prefactor k (0.2–1 in reviews, code k = 1) unchecked against
+  the 1960 paper; Fabry-Perot chart at R = 0.999 has ≈ 2.6 points per FWHM (20 000 cap); gradient-index lacks Southwell's quintic;
+  plasma sweep starts at 0.3 mTorr (input 0.1); hard-coating Γ ignores mode mixity.
 - `thermal-evaporation` (low): T_m for Ni, Ti and Pd is 1726, 1930 and 1825 K against CRC's 1728, 1941 and 1828 K
   (unchecked against Alcock's table).
 
@@ -240,6 +244,8 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - `vacuum-photodiode`: S-20 dark emission 0.4 fA/cm² (Burle Table I); a reviewer recalled 0.3 (from memory). `streak-camera` note:
   transit-time prefactor 2.63·√Δε/E ps (Shakya & Chang 2005); first principles √(2m_eΔε)/(qE) give 3.37 ps. Note text only.
 **Polarization**
+- 5w-15 (session 177), unverified: optical-activity 34.614° (NIST SRM 17e) vs ICUMSA 100 °Z 34.626° (from memory); wire-grid uses DC σ at
+  10.6 µm (Al ωτ ≈ 1.4, disclosed); Goldstein *Polarized Light* cited 2011, Crossref dates the DOI 2017; Cloude 1986 has no DOI.
 - `polarization-scrambling` (session 140): near-locked (not exactly locked) stages still use the product of means; only p, q ≤ 4 get a
   beat-period warning (5:7 detuned 0.1 % gets none), and a 1e-9 lock tolerance makes the DOP jump at exact lock.
 
@@ -295,19 +301,6 @@ One box per session, in this order.
 
 ## Phase 5 — after Phase 3 (user plan, session 156)
 - [x] Spot-check (session 162, `phase-5/spot-check`, PR #199): 20 pages, 2 bugs (TIA noise, SIM note), both textbook tier.
-- [ ] **5w: full textbook-tier pass** (user choice, session 162). One box per session: adversarial `physics-reviewer`, 4 agents ×
-  ≈ 5 pages, against primary literature; check every reviewer claim against the source (session 162: both laser-safety
-  claims from memory were wrong). Fix small bugs in the session; bigger ones become boxes. Batch = the category's
-  `tier: "textbook"` slugs in registry order (`git grep -n 'tier: "textbook"' src/registry/calculators/<cat>.ts`), part k
-  of n; skip the slugs already reviewed in session 162: coupling-efficiency, airy-disk, scintillation,
-  photodiode-tia-noise, optical-parametric-oscillator, structured-illumination, readout-noise, raman-scattering,
-  connector-return-loss, fade-probability.
-  - [x] 5w-1 detectors 1/3 (session 163, PR #200) · [x] 5w-2 detectors 2/3 (session 164, PR #201) · [x] 5w-3 detectors 3/3 (session 165, PR #202)
-  - [x] 5w-4 imaging 1/3 (session 166, PR #203) · [x] 5w-5 imaging 2/3 (session 167, PR #204) · [x] 5w-6 imaging 3/3 (session 168, PR #205)
-  - [x] 5w-7 fiber-optics 1/2 (session 169, PR #206) · [x] 5w-8 fiber-optics 2/2 (session 170, PR #207)
-  - [x] 5w-9 wave-optics 1/2 (session 171, PR #208) · [x] 5w-10 wave-optics 2/2 (session 172, PR #209)
-  - [x] 5w-11 free-space-comms (session 173, PR #210) · [x] 5w-12 laser-safety (session 174, PR #211) · [x] 5w-13 materials (session 175)
-  - [x] 5w-14 spectroscopy (session 176, PR #213: 21 pages, 3 bugs) · [ ] 5w-15 thin-film + polarization (24)
 - [ ] transparency-range KRS-5 has only Crystran's n = 2.371 at 10 µm. Add Rodney & Malitson 1956's Sellmeier (from memory: K 1.8293958,
   1.6675593, 1.1210424, 0.04513366, 12.380234; λ² 0.0225, 0.0625, 0.1225, 0.2025, 27089.737 µm²; gives 2.3707 at 10 µm) once checked
   against the paper (JOSA 46, 956). It enters the shared `MATERIALS`, so check the other pages that list them.
@@ -330,6 +323,10 @@ One box per session, in this order.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 5w full textbook-tier pass (sessions 163–177, PRs #200–#214): every textbook-tier page reviewed against primary literature.
+  - 5w-15 thin-film + polarization (session 177, `phase-5/5w-15-thin-film-polarization`, PR #214): 24 pages, 4 bugs: depolarization
+    Γ₀ at λ₀ not 1/σ₀ (2.8° → 0.6°), Kirsch image aliased (pixel-averaged now), environmental-stability and wedge-film spectra missed λ₀;
+    heat-mirror T 200–600 K; ≈ 15 chart ranges/markers, Stoney warnings, FP exact FSR, wedge default n_f 2.35.
   - 5w-12 laser-safety (session 174, `phase-5/5w-12-laser-safety`, PR #211): 20 pages, 2 bugs: enclosure-class classed a beam
     clipped by the opening at its full width (1M for 3B; new `escapingBeam`), retinal-hazard's verdict ignored the anterior
     segment (binds from ≈ 1.3 µm); sub-ns cornea ≤ 10 % of the 1 ns limit (ICNIRP p. 287) in `pulseLimits`; note c on the

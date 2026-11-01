@@ -69,12 +69,14 @@ export default function LiquidCrystalPolarizerPage() {
         const g = retardance(extraordinaryIndex(no, no + dn, x * DEG) - no, d, lambda);
         return lcTransmission(0, g, pol, ana);
       });
-      return { x: t, y, title: "Director tilt from the normal (°)", minima: [] as number[] };
+      return { x: t, y, title: "Director tilt from the normal (°)", minima: [] as number[], current: tilt / DEG };
     }
-    const r = Array.from({ length: 301 }, (_, i) => i * 0.01);
+    const current = (dn * d) / lambda;
+    const xMax = Math.max(3, 1.2 * current);
+    const r = Array.from({ length: 601 }, (_, i) => (i * xMax) / 600);
     const y = r.map((x) => lcTransmission(twist, 2 * Math.PI * x, pol, ana));
     const minima = Math.abs(Math.abs(twist) - Math.PI / 2) < 1e-9 ? [1, 2, 3].map(goochTarryMinimum) : [];
-    return { x: r, y, title: "Δn·d/λ", minima };
+    return { x: r, y, title: "Δn·d/λ", minima, current };
   })();
 
   const layout = (x: string) => ({
@@ -98,7 +100,7 @@ export default function LiquidCrystalPolarizerPage() {
             {p.label}
           </button>
         ))}
-        {!va && (
+        {!va && Math.abs(Math.abs(twist) - Math.PI / 2) < 1e-9 && (
           <button onClick={() => setThickness(Number((firstMin * 1e6).toFixed(3)))} className="text-xs bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded px-2 py-1 text-gray-300">
             d at the first Gooch-Tarry minimum
           </button>
@@ -161,6 +163,7 @@ export default function LiquidCrystalPolarizerPage() {
           <ChartPanel data={[
             { x: second.x, y: second.y, type: "scatter" as const, mode: "lines" as const, name: "Transmission", line: { color: "#f87171", width: 2 } },
             ...(second.minima.length ? [{ x: second.minima, y: second.minima.map((x) => lcTransmission(twist, 2 * Math.PI * x, pol, ana)), type: "scatter" as const, mode: "markers" as const, name: "Gooch-Tarry points (√3/2, √15/2, √35/2)", marker: { color: "#fbbf24", size: 8 } }] : []),
+            { x: [second.current], y: [T], type: "scatter" as const, mode: "markers" as const, name: "Current setting", marker: { color: "#34d399", size: 10 } },
           ]} layout={layout(second.title)} />
         </div>
       </div>

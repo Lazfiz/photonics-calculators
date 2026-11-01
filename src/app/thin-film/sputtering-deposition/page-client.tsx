@@ -72,13 +72,18 @@ export default function SputteringDepositionPage() {
     const ds: number[] = [];
     const rates: number[] = [];
     const a = targetRadius * 1e-2;
+    const dLo = Math.min(2, distance / 2); // cm, range always brackets the input distance
+    const dHi = Math.max(30, 2 * distance);
     for (let i = 0; i <= 120; i++) {
-      const dcm = 2 + (28 * i) / 120;
+      const dcm = dLo + ((dHi - dLo) * i) / 120;
       ds.push(dcm);
       rates.push(growthRate(diskOnAxisFlux(r.Phi, a, dcm * 1e-2), t.M, t.rho) * 1e9);
     }
-    return [{ x: ds, y: rates, type: "scatter" as const, mode: "lines" as const, name: "On-axis rate", line: { color: "#60a5fa" } }];
-  }, [r, targetRadius, t]);
+    return [
+      { x: ds, y: rates, type: "scatter" as const, mode: "lines" as const, name: "On-axis rate", line: { color: "#60a5fa" } },
+      { x: [distance], y: [r.rate * 1e9], type: "scatter" as const, mode: "markers" as const, name: "Input distance", marker: { color: "#f87171", size: 10 } },
+    ];
+  }, [r, targetRadius, t, distance]);
 
   return (
     <>

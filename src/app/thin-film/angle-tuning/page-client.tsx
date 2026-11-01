@@ -6,7 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { clampToRange } from "../../../lib/number-input";
-import { stopBandCentreAtAngle } from "../../../physics/thin-film/quarter-wave-stack";
+import { stopBandCentreAtAngle, stopBandHalfWidth } from "../../../physics/thin-film/quarter-wave-stack";
 import { quarterWaveLayers, reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
 
 export default function AngleTuningPage() {
@@ -21,8 +21,12 @@ export default function AngleTuningPage() {
   const numPairs = Math.round(clampToRange(numPairsRaw, 1, 30));
 
   const chartData = useMemo(() => {
-    // Window 0.6–1.3 λ₀ (701 points)
-    const wls = Array.from({ length: 701 }, (_, i) => designWl * (0.6 + (0.7 * i) / 700));
+    // Window follows the stop band (g = λ₀/λ in 1 ± Δg, with margin) but is never narrower than 0.6–1.3 λ₀
+    const dg = stopBandHalfWidth(nH, nL);
+    const gLong = 1 - (Number.isFinite(dg) ? dg : 0) - 0.05;
+    const lo = Math.min(0.6, 1 / (1 + (Number.isFinite(dg) ? dg : 0) + 0.15));
+    const hi = gLong > 0.05 ? Math.max(1.3, 1 / gLong) : 20;
+    const wls = Array.from({ length: 701 }, (_, i) => designWl * (lo + ((hi - lo) * i) / 700));
     const lambdas = wls.map((wl) => wl * 1e-9);
     const indices = Array.from({ length: numPairs * 2 }, (_, j) => (j % 2 === 0 ? nH : nL));
     const stack = { incident: nInc, layers: quarterWaveLayers(indices, designWl * 1e-9), substrate: { n: nSub } };

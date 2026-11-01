@@ -18,9 +18,9 @@ export default function HeatMirrorPage() {
   const [dAg, setDAg] = useURLState("dAg", 12, { min: 0, max: 100 });
   const [dInner, setDInner] = useURLState("dInner", 30, { min: 0, max: 500 });
   const [nSub, setNSub] = useURLState("nSub", 1.52, { min: 1, max: 4 });
-  const [temp, setTemp] = useURLState("temp", 300, { min: 50, max: 1000 });
+  const [temp, setTemp] = useURLState("temp", 300, { min: 200, max: 600 }); // K; the fixed 2.5–50 µm band holds ≥ 91 % of σT⁴ here
 
-  const valid = nD > 0 && nSub > 0 && dOuter >= 0 && dAg >= 0 && dInner >= 0 && temp >= 50 && temp <= 1000;
+  const valid = nD > 0 && nSub > 0 && dOuter >= 0 && dAg >= 0 && dInner >= 0 && temp >= 200 && temp <= 600;
 
   const coating = useMemo<CoatingLayer[]>(() => [
     { material: "dielectric", n: nD, thickness: dOuter * NM },
@@ -55,7 +55,7 @@ export default function HeatMirrorPage() {
         <ValidatedNumberInput label="Outer dielectric (nm)" value={dOuter} onChange={setDOuter} min={0} max={500} step="1" />
         <ValidatedNumberInput label="Inner dielectric, on the glass (nm)" value={dInner} onChange={setDInner} min={0} max={500} step="1" />
         <ValidatedNumberInput label={<>n<sub>glass</sub></>} value={nSub} onChange={setNSub} min={1} max={4} step="0.01" />
-        <ValidatedNumberInput label="Surface temperature for ε (K)" value={temp} onChange={setTemp} min={50} max={1000} step="1" />
+        <ValidatedNumberInput label="Surface temperature for ε (K)" value={temp} onChange={setTemp} min={200} max={600} step="1" />
       </div>
 
       {!valid && <p className="text-yellow-400 text-sm mb-6">Set positive indices, non-negative thicknesses and a temperature in 50–1000 K.</p>}
@@ -82,11 +82,12 @@ export default function HeatMirrorPage() {
 
       <div className="bg-gray-900 rounded p-4 mb-6">
         <p className="text-gray-300 text-xs">
-          A heat mirror passes visible light and reflects thermal infrared: a silver film thin enough to see through (≈ 10–20 nm) reflects
+          A heat mirror passes visible light and reflects thermal infrared: a silver film thin enough to see through (≈ 10–15 nm) reflects
           like a metal beyond about 2 µm, and the two high-index layers cancel its visible reflection (an induced-transmission filter).
           τ<sub>v</sub> and ρ<sub>v</sub> weight the pane&apos;s T and R with D65 × V(λ) (ISO 9050, EN 410), τ<sub>e</sub> with the ASTM G173 AM1.5
           global spectrum, 280–4000 nm; the glass&apos;s back face is included, its absorption isn&apos;t. ε<sub>n</sub> is the Planck-weighted
-          1 − R of the coated face over 2.5–50 µm (Kirchhoff, glass opaque there); glazing standards use the hemispherical value, which for a
+          1 − R of the coated face over 2.5–50 µm (Kirchhoff, glass opaque there), a band that holds 91–98 % of the blackbody emission
+          for 200–600 K; glazing standards use the hemispherical value, which for a
           low-e surface is somewhat higher. Ag uses the n, k Yang et al. (2015) measured on template-stripped silver (0.27–24.9 µm, a matched Drude term
           beyond), the dielectric a constant index. Real Ag films this thin conduct worse than the model, which raises ε. The bare-glass ε here is too high: glass
           with a constant index lacks the strong reflection real glass has near 9 µm.

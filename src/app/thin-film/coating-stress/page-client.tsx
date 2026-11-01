@@ -20,7 +20,8 @@ export default function CoatingStressPage() {
   const [eSub, setESub] = useURLState("eSub", 70, { min: 0.1, max: 1500 }); // GPa, substrate Young's modulus
   const [nuSub, setNuSub] = useURLState("nuSub", 0.17, { min: 0, max: 0.5 }); // substrate Poisson's ratio
   const [tSub, setTSub] = useURLState("tSub", 1.0, { min: 0.01, max: 100 }); // mm, substrate thickness
-  const [numLayers, setNumLayers] = useURLState("numLayers", 10, { min: 1, max: 100 });
+  const [numLayersRaw, setNumLayers] = useURLState("numLayers", 10, { min: 1, max: 100 });
+  const numLayers = Math.max(1, Math.round(numLayersRaw));
 
   const curvature = useMemo(() => {
     const perLayer = (d_nm: number) => stoneyCurvature(sigmaFilm * 1e6, d_nm * 1e-9, eSub * 1e9, nuSub, tSub * 1e-3);
@@ -30,7 +31,7 @@ export default function CoatingStressPage() {
   const kappaN = kappa1 * numLayers;
 
   const layerData = useMemo(() => {
-    const layers = Array.from({ length: 20 }, (_, i) => i + 1);
+    const layers = Array.from({ length: Math.max(20, numLayers) }, (_, i) => i + 1);
     const kappas = layers.map((n) => kappa1 * n);
     return [
       {
@@ -42,15 +43,19 @@ export default function CoatingStressPage() {
         type: "scatter", mode: "lines+markers", name: "Radius of curvature (m)", line: { color: "#60a5fa" }, yaxis: "y2",
       },
     ];
-  }, [kappa1]);
+  }, [kappa1, numLayers]);
 
   const thicknessData = useMemo(() => {
-    const thicknesses = Array.from({ length: 101 }, (_, i) => 100 + i * 20);
+    const dMax = Math.max(2000, 2 * dFilm); // nm, keeps the input thickness on the chart
+    const thicknesses = Array.from({ length: 101 }, (_, i) => (i * dMax) / 100);
     return [{
       x: thicknesses, y: thicknesses.map((d) => curvature.perLayer(d) * numLayers),
       type: "scatter", mode: "lines", name: "κ", line: { color: "#a78bfa" },
     }];
-  }, [curvature, numLayers]);
+  }, [curvature, numLayers, dFilm]);
+
+  // Stoney's t_f ≪ t_s condition; its error grows with t_f/t_s (Freund & Suresh, Thin Film Materials, 2004, ch. 2)
+  const thicknessRatio = (numLayers * dFilm * 1e-9) / (tSub * 1e-3);
 
   const shape = (kappa: number) => (kappa > 0 ? "film side concave" : kappa < 0 ? "film side convex" : "flat");
 
@@ -69,6 +74,14 @@ export default function CoatingStressPage() {
         <ResultCard label="Curvature, 1 layer" value={`${fmtKappa(kappa1)} m⁻¹`} tone="blue" subtext={`R = ${fmtRadius(kappa1)}, ${shape(kappa1)}`} />
         <ResultCard label={`Curvature, ${numLayers} layers`} value={`${fmtKappa(kappaN)} m⁻¹`} tone="green" subtext={`R = ${fmtRadius(kappaN)}, ${shape(kappaN)}`} />
       </div>
+
+      {thicknessRatio > 0.05 && (
+        <p className="text-sm text-amber-400 mb-6">
+          The coating is {(thicknessRatio * 100).toPrecision(2)} % as thick as the substrate. Stoney&apos;s equation assumes
+          t<sub>f</sub> ≪ t<sub>s</sub>, and its error grows with t<sub>f</sub>/t<sub>s</sub>, so treat the curvature as an
+          estimate.
+        </p>
+      )}
 
       <h3 className="text-lg font-semibold mb-3 text-gray-200">Curvature vs Number of Layers</h3>
       <ChartPanel data={layerData} layout={{

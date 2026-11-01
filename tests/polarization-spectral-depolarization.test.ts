@@ -68,3 +68,24 @@ test("Spectral depolarization: 5 mm of quartz, the linear-phase model against th
     assert.ok(err < 0.01, `Δλ ${dl * 1e9} nm: |error| ${err}`);
   }
 });
+
+test("Spectral depolarization: thin quartz over a wide band, phase taken at the wavenumber centre", () => {
+  // 50 µm of quartz, 550 ± 137.5 nm flat: R, R_g at λ_c = 1/σ₀ put ⟨e^{iΓ}⟩ within 0.01 of the direct integral
+  // (probe: 0.0070, angle −0.6°); R at λ₀ misses by 0.034 (−2.8°), the 2π(R − R_g)(σ₀ − 1/λ₀) term.
+  const dn = (lambda: number) => {
+    const { no, ne } = crystalIndices("quartz", lambda);
+    return ne - no;
+  };
+  const d = 50e-6;
+  const { sigma0, dSigma } = wavenumberBand(550e-9, 275e-9);
+  const lo = sigma0 - dSigma / 2, hi = sigma0 + dSigma / 2;
+  const exactCos = simpsonMean((s) => Math.cos(2 * Math.PI * d * dn(1 / s) * s), lo, hi, 40000);
+  const exactSin = simpsonMean((s) => Math.sin(2 * Math.PI * d * dn(1 / s) * s), lo, hi, 40000);
+  const err = (lambda: number) => {
+    const { phase, group } = plateRetardances(d, dn, lambda);
+    const m = bandMeanRetardance(phase, group, sigma0, dSigma, "flat");
+    return Math.hypot(m.meanCos - exactCos, m.meanSin - exactSin);
+  };
+  assert.ok(err(1 / sigma0) < 0.01, `centre: ${err(1 / sigma0)}`);
+  assert.ok(err(550e-9) > 0.03, `λ₀: ${err(550e-9)}`);
+});

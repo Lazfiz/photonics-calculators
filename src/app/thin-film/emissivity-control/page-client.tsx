@@ -129,7 +129,7 @@ export default function EmissivityControlPage() {
           it. A thin metal film is the low-e layer: its free electrons reflect the thermal IR. The overcoat is lossless with a constant
           index; real oxides absorb in parts of the thermal IR, which adds emittance. Ag uses the n, k Yang et al. (2015) measured on
           template-stripped silver (a matched Drude term beyond 24.9 µm), Al and Cr the Rakić et al. (1998) Lorentz–Drude model; real
-          films, thin ones above all, emit more. Hemispherical emittance, which radiative heat
+          films, thin ones above all, emit more. Cr&apos;s fit was made to about 62 µm (0.02 eV); beyond that it is a Drude extrapolation. The default substrate is a lossless n = 1.52 stand-in, so its bare emittance is higher than real soda-lime glass (≈ 0.84 – 0.89, which has a reststrahlen band near 9–10 µm); enter n, κ for the thermal IR for real glass. Hemispherical emittance, which radiative heat
           loss uses, differs from ε<sub>n</sub>: higher for metals, lower for dielectrics.
         </p>
       </div>

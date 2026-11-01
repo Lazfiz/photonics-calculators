@@ -53,6 +53,8 @@ export function plateRetardances(
 
 /**
  * Mean cos Γ and sin Γ for Γ(σ) = 2πRσ₀ + 2πR_g(σ − σ₀) over the spectrum: V cos Γ₀ and V sin Γ₀ with Γ₀ = 2πRσ₀.
+ * Take R and R_g at the band centre λ_c = 1/σ₀, not at the wavelength centre λ₀: Γ₀ = 2πR(λ₀)σ₀ is off by
+ * 2π(R − R_g)(σ₀ − 1/λ₀), 2° for 50 µm of quartz over 550 ± 137.5 nm.
  */
 export function bandMeanRetardance(
   R: number, Rg: number, sigma0: number, dSigma: number, shape: SpectrumShape,

@@ -196,7 +196,7 @@ export const polarization: CalculatorEntry[] = [
     title: "Birefringence Imaging",
     description: "Simulate quantitative birefringence imaging with polarizer/analyzer rotation and compensators. Visualize stress-induced birefringence patterns.",
     tier: "textbook",
-    modelNote: "Ideal polarizers and linear retarders chained in Stokes space; white-light colours from D65 and CIE 1931 at constant retardance. Sénarmont R = λΔθ/180°. Kirsch hole in an infinite plate, R = C·d·(σ₁ − σ₂).",
+    modelNote: "Ideal polarizers and linear retarders chained in Stokes space; white-light colours from D65 and CIE 1931 at constant retardance. Sénarmont R = λΔθ/180°. Kirsch hole in an infinite plate, R = C·d·(σ₁ − σ₂), averaged over each pixel so fringes finer than a pixel fade instead of aliasing.",
     references: [goldsteinMueller, sorensen2013, cie1931, timoshenkoGoodier, dallyRiley, schottStressOptic],
   },
   {
