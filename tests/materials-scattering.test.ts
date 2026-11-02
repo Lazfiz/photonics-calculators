@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { BRILLOUIN_MEDIA, FUSED_SILICA_BRILLOUIN, acousticWavelength, brillouinGain, phononLifetime } from "../src/physics/materials/brillouin";
 import { RAMAN_LINES, dephasingTime, lorentzianGain, ramanGainAtPump, ramanGainExponent } from "../src/physics/materials/raman-gain";
 import {
-  TPA_MEDIA, indirectBeta, indirectF2, mediumBeta, mediumRegime, nearEdgeReference, scaledBeta, scalingBeta, tpaF2, tpaRegime, tpaTransmission,
+  TPA_MEDIA, effectiveScalingValid, indirectBeta, indirectF2, mediumBeta, mediumRegime, nearEdgeReference, scaledBeta, scalingBeta, tpaF2, tpaRegime, tpaTransmission,
   twoPhotonRatio,
 } from "../src/physics/materials/two-photon";
 import { brillouinShift } from "../src/physics/fiber-optics/fiber-nonlinear";
@@ -183,9 +183,21 @@ test("DeSalvo 1996 wide-gap rows: effective gaps, measured β and the near-edge 
   assert.equal(mediumBeta(fs, 355e-9), 0);
   // BBO: 0.9 cm/GW at 266 nm, E′_g = 6.8 eV. F₂(x) at 266 nm: x = 9.32212/6.8 = 1.370900, F₂ = 0.225884/4.842046 = 0.046651;
   // at 355 nm: x = 6.985026/6.8 = 1.027210, F₂ = 0.0044884/1.143657 = 0.0039246; β = 0.9 · 0.084127 = 0.075714 cm/GW,
-  // against 0.010 ± 0.002 measured (Table I): the divergence near the 2PA edge that DeSalvo et al. report.
+  // against 0.010 ± 0.002 measured (Table I): the divergence near the 2PA edge that DeSalvo et al. report. 355 nm is
+  // within 10 % of the edge (x = 1.0272 < 1.1), so the preset gives no estimate there.
   const bbo = TPA_MEDIA.bbo;
-  assertRel(mediumBeta(bbo, 355e-9), 0.075714e-11, 1e-4, "BBO 355");
+  assertRel(scaledBeta(bbo.beta, bbo.lambda, 355e-9, bbo.bandGap_eV), 0.075714e-11, 1e-4, "BBO 355 by F₂");
+  assert.ok(Number.isNaN(mediumBeta(bbo, 355e-9)), "BBO 355: near the edge");
+  // 300 nm: x = 8.26563/6.8 = 1.215532, F₂ = 0.100062/2.653560 = 0.037709; β = 0.9 · 0.037709/0.046651 = 0.72749 cm/GW.
+  assertRel(mediumBeta(bbo, 300e-9), 0.72749e-11, 1e-4, "BBO 300");
+  // Scaling stops at 2ħω = 1.1 E′_g: λ = 2 · 1239.842/(1.1 · 6.8) = 331.51 nm.
+  assert.ok(effectiveScalingValid(bbo, 331e-9) && !effectiveScalingValid(bbo, 332e-9), "BBO limit 331.5 nm");
+  // The other five rows were measured within 10 % of their 2PA edge (x_ref: KTP 1.0133, LiNbO₃ 1.0593, fused silica and
+  // BaF₂ 1.0358, sapphire 1.0715): measured β at λ_ref only (KTP 520 nm would scale to 4× its 532 nm value).
+  assertRel(mediumBeta(TPA_MEDIA.ktp, 532e-9), 0.10e-11, 1e-12, "KTP 532");
+  assert.ok(Number.isNaN(mediumBeta(TPA_MEDIA.ktp, 520e-9)), "KTP 520");
+  assert.ok(Number.isNaN(mediumBeta(TPA_MEDIA.linbo3, 520e-9)), "LiNbO₃ 520");
+  assert.ok(Number.isNaN(mediumBeta(TPA_MEDIA.sapphire, 250e-9)), "sapphire 250");
   // KTP 0.10 cm/GW at 532 nm, LiNbO₃ 0.38 cm/GW at 532 nm.
   assertRel(TPA_MEDIA.ktp.beta, 0.10e-11, 1e-12, "KTP");
   assertRel(TPA_MEDIA.linbo3.beta, 0.38e-11, 1e-12, "LiNbO₃");

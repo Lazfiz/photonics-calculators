@@ -6,7 +6,8 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { hc_eV_nm } from "../../../physics/constants";
 import {
-  SI_FIT_MIN_LAMBDA, TPA_MEDIA, indirectBeta, linearEdge_eV, mediumBeta, mediumRegime, nearEdgeReference, scaledBeta, scalingBeta, tpaRegime, tpaTransmission,
+  NEAR_EDGE_RATIO, SI_FIT_MIN_LAMBDA, TPA_MEDIA, indirectBeta, linearEdge_eV, mediumBeta, mediumRegime, nearEdgeReference, scaledBeta, scalingBeta,
+  tpaRegime, tpaTransmission, twoPhotonRatio,
   type TpaMediumId,
 } from "../../../physics/materials/two-photon";
 
@@ -30,11 +31,14 @@ const sig = (x: number, digits: number) => (Number.isFinite(x) ? String(+x.toPre
 
 /**
  * β (cm/GW) across the 2PA window E_g/2 < ħω < edge: scaled from the measurement and the Eq. 1 prediction. A measurement
- * at the 2PA edge (ZnTe) is drawn as a point instead of being scaled.
+ * at the 2PA edge (ZnTe, most DeSalvo rows) is drawn as a point instead of being scaled; the scaled curve stops at
+ * 2ħω = xMin·E_g (1.1 for DeSalvo rows).
  */
-function betaCurves(betaRef: number, lambdaRef: number, bandGap_eV: number, edge_eV: number, n: number | null, Ep_eV: number | null, nearEdge = false) {
+function betaCurves(
+  betaRef: number, lambdaRef: number, bandGap_eV: number, edge_eV: number, n: number | null, Ep_eV: number | null, nearEdge = false, xMin = 1,
+) {
   const lambdaLo = (hc_eV_nm / edge_eV) * 1.002;
-  const lambdaHi = (2 * hc_eV_nm) / bandGap_eV;
+  const lambdaHi = (2 * hc_eV_nm) / (xMin * bandGap_eV);
   const x = Array.from({ length: 121 }, (_, i) => +(lambdaLo + (i / 120) * (lambdaHi - lambdaLo)).toFixed(3));
   const curves = [nearEdge ? {
     x: [+(lambdaRef * 1e9).toFixed(3)], y: [+(betaRef / 1e-11).toFixed(6)], type: "scatter" as const, mode: "markers" as const,
@@ -103,11 +107,15 @@ export default function TwoPhotonAbsorptionPage() {
   const betaEq1 = eq1 ? scalingBeta(lambda, eq1.n, bandGap_eV, eq1.Ep_eV) : NaN;
   const indirect = medium?.gap === "indirect";
   const nearEdge = medium ? nearEdgeReference(medium) : false;
+  const effective = medium?.gap === "effective";
+  const effectiveRefNearEdge = effective && twoPhotonRatio(medium.lambda, bandGap_eV) < NEAR_EDGE_RATIO;
   const edge_eV = medium ? linearEdge_eV(medium) : bandGap_eV;
   const T = tpaTransmission(beta, intensity_GWcm2 * 1e13, L);
   const curves = indirect
     ? indirectCurves(bandGap_eV, betaRef, lambdaRef)
-    : refRegime === "two-photon" ? betaCurves(betaRef, lambdaRef, bandGap_eV, edge_eV, eq1?.n ?? null, eq1?.Ep_eV ?? null, nearEdge) : null;
+    : refRegime === "two-photon" ? betaCurves(
+      betaRef, lambdaRef, bandGap_eV, edge_eV, eq1?.n ?? null, eq1?.Ep_eV ?? null, nearEdge || effectiveRefNearEdge, effective ? NEAR_EDGE_RATIO : 1,
+    ) : null;
   const tCurve = Number.isFinite(beta) ? transmissionCurve(beta, L, intensity_GWcm2) : null;
   const select = (id: Choice) => {
     setMaterial(id);
@@ -149,8 +157,16 @@ export default function TwoPhotonAbsorptionPage() {
         {nearEdge && regime === "two-photon" && (
           <span className="text-yellow-400">Measured only 3 % above the 2PA edge, where band-tail and exciton absorption exceed the two-band model ({sig(medium!.beta / 1e-11, 3)} vs {sig(scalingBeta(medium!.lambda, medium!.n!, bandGap_eV, medium!.Ep_eV!) / 1e-11, 2)} cm/GW from Eq. 1), so β here is Eq. 1, not scaled from the measurement. </span>
         )}
-        {medium?.gap === "effective" && regime === "two-photon" && Math.abs(lambda - medium.lambda) > 0.01 * medium.lambda && (
+        {effective && regime === "two-photon" && Number.isFinite(beta) && Math.abs(lambda - medium.lambda) > 1e-3 * medium.lambda && (
           <span className="text-yellow-400">Away from the measured wavelength the two-band scaling of wide-gap solids is order-of-magnitude (DeSalvo et al.). </span>
+        )}
+        {effective && regime === "two-photon" && !Number.isFinite(beta) && (
+          <span className="text-yellow-400">
+            {effectiveRefNearEdge
+              ? `Measured at 2ħω = ${sig(twoPhotonRatio(medium.lambda, bandGap_eV), 3)} E′_g, within 10 % of the fitted 2PA edge`
+              : "This wavelength lies within 10 % of the fitted 2PA edge"}, where β hangs on E′_g (BBO at 355 nm: F₂ scaling gives
+            0.076 cm/GW, measured 0.010): no estimate away from the measured wavelength.{" "}
+          </span>
         )}
         {refRegime !== "two-photon" && <span className="text-yellow-400">The measurement wavelength lies outside the 2PA window, so β cannot be scaled.</span>}
         {refRegime === "two-photon" && regime && regime !== "two-photon" && <span className="text-yellow-400">{REGIME_NOTE[regime]}</span>}
@@ -158,7 +174,7 @@ export default function TwoPhotonAbsorptionPage() {
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">
         <ResultCard label="β at this wavelength" value={`${sig(beta / 1e-11, 4)} cm/GW`} tone="blue"
-          subtext={eq1 ? `Eq. 1 predicts ${sig(betaEq1 / 1e-11, 3)} cm/GW` : indirect ? "Bristow et al. fit, C = 43 cm/GW" : medium ? "scaled by F₂(2ħω/E′_g)" : "scaled by F₂(2ħω/E_g)"} />
+          subtext={eq1 ? `Eq. 1 predicts ${sig(betaEq1 / 1e-11, 3)} cm/GW` : indirect ? "Bristow et al. fit, C = 43 cm/GW" : medium ? (Math.abs(lambda - medium.lambda) <= 1e-3 * medium.lambda ? "measured (DeSalvo et al.)" : "scaled by F₂(2ħω/E′_g)") : "scaled by F₂(2ħω/E_g)"} />
         <ResultCard label="Induced absorption α₂ = βI₀" value={`${sig((beta * intensity_GWcm2 * 1e13) / 100, 4)} cm⁻¹`} tone="orange" />
         <ResultCard label="Transmission T = 1/(1 + βI₀L)" value={`${sig(T * 100, 4)} %`} tone="green" subtext="plane wave, no linear loss" />
         <ResultCard label="2PA loss" value={`${sig(-10 * Math.log10(T), 4)} dB`} tone="red" />
@@ -202,7 +218,8 @@ export default function TwoPhotonAbsorptionPage() {
           <p>
             Wide-gap solids (DeSalvo et al. 1996) use the effective direct gap E′_g the authors fitted to their 2PA data; they
             found the two-band dispersion diverges near the 2PA edge (BBO: F₂ scaling from 0.9 cm/GW at 266 nm gives 0.076 at
-            355 nm, measured 0.010). Indirect-gap silicon follows Bristow et al.&apos;s fit, β = Σₙ 2C F₂⁽ⁿ⁾(ħω/E_gi) over
+            355 nm, measured 0.010). These rows are scaled only where 2ħω is at least 1.1 E′_g at both the measured and the
+            chosen wavelength; five of the six were measured closer to the edge, so they give only the measured β. Indirect-gap silicon follows Bristow et al.&apos;s fit, β = Σₙ 2C F₂⁽ⁿ⁾(ħω/E_gi) over
             allowed and forbidden phonon-assisted transitions (n = 0, 1, 2), C = 43 cm/GW, E_gi = 1.12 eV, from 850 nm to
             2214 nm (2ħω = E_gi).
           </p>

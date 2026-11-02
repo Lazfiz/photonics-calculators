@@ -20,7 +20,10 @@
  * 32, 1324 (1996), doi:10.1109/3.511545, Table I: β at 532, 355 and 266 nm (Z-scan, picosecond pulses) with the
  * effective direct gap E′_g they fit to the two-band model, and n from Table II. They find the two-band dispersion
  * diverges near the 2PA edge, so F₂ scaling of these rows away from the measured wavelength is order-of-magnitude
- * (BBO: 0.9 cm/GW at 266 nm scales to 0.076 at 355 nm, measured 0.010). Their E′_g lies above the linear absorption edge
+ * (BBO: 0.9 cm/GW at 266 nm scales to 0.076 at 355 nm, measured 0.010). Near the edge F₂ ≈ (x − 1)^1.5, so β there hangs
+ * on the fitted E′_g (BBO's 0.010 at 355 nm needs E′_g ≈ 6.94 instead of 6.8 eV); five of the six rows were measured
+ * there (x_ref = 2ħω_ref/E′_g: KTP 1.013, fused silica and BaF₂ 1.036, LiNbO₃ 1.059, sapphire 1.072; BBO 1.371). These rows
+ * are scaled only where both x_ref and x are at least 1.1 (`effectiveScalingValid`); elsewhere only the measured β is given. Their E′_g lies above the linear absorption edge
  * E_g of Table I (KTP 3.8, LiNbO₃ 3.9 eV), so one-photon absorption is taken to start at min(E_g, E′_g).
  *
  * Indirect-gap silicon: A. D. Bristow, N. Rotenberg, H. M. van Driel, Appl. Phys. Lett. 90, 191104 (2007),
@@ -169,13 +172,28 @@ export function nearEdgeReference(m: TpaMedium): boolean {
   return m.gap === "direct" && m.n !== null && m.Ep_eV !== null && twoPhotonRatio(m.lambda, m.bandGap_eV) < NEAR_EDGE_RATIO;
 }
 
+/** Relative tolerance on λ for giving a preset's measured β as is. */
+const SAME_LAMBDA = 1e-3;
+
+/** True when a DeSalvo (effective-gap) row may be F₂-scaled to λ: 2ħω/E′_g ≥ 1.1 at both λ_ref and λ. */
+export function effectiveScalingValid(m: TpaMedium, lambda: number): boolean {
+  return m.gap === "effective"
+    && twoPhotonRatio(m.lambda, m.bandGap_eV) >= NEAR_EDGE_RATIO && twoPhotonRatio(lambda, m.bandGap_eV) >= NEAR_EDGE_RATIO;
+}
+
 /**
  * β of a preset at λ, m/W: F₂ scaling from its measurement (direct or effective gap), Eq. 1 for a row measured at the
- * edge (`nearEdgeReference`), or Bristow's fit for silicon (NaN below 850 nm, outside the measured range).
+ * edge (`nearEdgeReference`), or Bristow's fit for silicon (NaN below 850 nm, outside the measured range). DeSalvo rows
+ * give the measured β at λ_ref and NaN in the 2PA band where `effectiveScalingValid` fails.
  */
 export function mediumBeta(m: TpaMedium, lambda: number): number {
   if (m.gap === "indirect") return lambda >= SI_FIT_MIN_LAMBDA ? indirectBeta(lambda, m.bandGap_eV) : NaN;
-  if (mediumRegime(m, lambda) === "linear") return NaN;
+  const regime = mediumRegime(m, lambda);
+  if (regime === "linear") return NaN;
+  if (m.gap === "effective") {
+    if (Math.abs(lambda - m.lambda) <= SAME_LAMBDA * m.lambda) return m.beta;
+    if (regime === "two-photon" && !effectiveScalingValid(m, lambda)) return NaN;
+  }
   if (nearEdgeReference(m)) return scalingBeta(lambda, m.n!, m.bandGap_eV, m.Ep_eV!);
   return scaledBeta(m.beta, m.lambda, lambda, m.bandGap_eV);
 }
