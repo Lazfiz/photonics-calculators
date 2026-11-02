@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 181, 2026-11-02)
+## Status (session 182, 2026-11-02)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
@@ -132,9 +132,11 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   Ce:TAG, TSLAG, Ho₂O₃ and Pr/Ho:TGG fits don’t reproduce their own tabulated values, so they are left out.
 - `photoelastic`: the Schott sheet doesn’t state the wavelength of K, so the page claims none.
 **Wave optics**
-- `optical-parametric-oscillator` (session 162): L_eff = min(L, l_a) for walk-off; Boyd–Kleinman 1968 (doi:10.1063/1.1656831)
-  low-gain scaling ∝ L·l_a (reviewer, from memory) would cut P_th ≈ 10× at defaults. Read BK §2 h(B, ξ) before changing.
-- `injection-locking` (session 149): k_c is estimated as (1 − R)/(τ_rt√R) (Kondratiev 2023 Eq. 4; Kondratiev's B/A normalisation unread);
+- `optical-parametric-oscillator` (session 182): the walk-off overlap length is our own near-field derivation (pump and signal
+  mode of equal radius, pump centred mid-crystal; pump on the signal axis at entry gives 1.07 against 1.94 mm); SRO focusing papers
+  (Guha 1998, doi:10.1007/s003400050453) unread. BK's h(B, ξ) is the SHG function, not used.
+- `injection-locking` (session 182): the dynamically stable band (Hopf edge, needs f_R and damping inputs) is not computed; Henry–Olsson–Dutta
+  1985 and Petitbon 1988 unread. (Session 149) k_c is estimated as (1 − R)/(τ_rt√R) (Kondratiev 2023 Eq. 4; Kondratiev's B/A normalisation unread);
   α 1 is Berger et al. CLEO 1991 (conference abstract, below-threshold?); a journal α (Banerjee et al. APL 58, 2198 (1991)) unchecked. `four-wave-mixing`: no fiber loss in the gain (lossless OPA).
 - `slow-light`: one isolated Lorentzian, no pulse distortion or saturation (a warning shows when the signal is wider than the line).
   Old `/wave-optics/interferometer?wavelength=633` links land on michelson-interferometer's µm input (clamped to 50 µm).
@@ -150,14 +152,13 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   only N > 2.5e18); diode and dye modelNotes are ≈ 470–560 characters.
 - `dye-laser-resonator` (session 171): τ_eff (erfcx closed form) is our own small-signal derivation; no textbook defines the jet
   transit time precisely (Hollberg 1990 gives only the regime). The slope uses Laporta–Brussard's near-threshold overlap.
-- `thin-disk-laser` (session 150): Chanteloup's σ_e values are literature (Fan 2007, Brown 2005), σ_a measured; κ 7 is 8 at.%
-  while the default doping is 10 at.% (Beil 2010 via Koerner 2012 Table 4: 5.7 at 12 at.%). Nd heat fraction 0.32 (Fan 1993,
+- `thin-disk-laser` (session 150): Chanteloup's σ_e values are literature (Fan 2007, Brown 2005), σ_a measured; κ 6.3 at 10 at.% is
+  interpolated (no direct 10 at.% value read). Nd heat fraction 0.32 (Fan 1993,
   doi 10.1109/3.234394, paywalled) is still unsourced where it's used.
-- Session 172 (5w-10, unverified, from memory): supercontinuum "N > 16 = MI-dominated" threshold and the 835 nm PCF defaults
-  (Dudley 2006 Fig. 3; the femto-st PDF link is dead); DW cubic uses P₀, not the ≈ 4× ejected-soliton power. `q-switched-laser`:
-  r is the input, so the Degnan optimum coupling can't show; a g₀l input would. `thin-disk` "heat higher below threshold" and
-  `slab-laser` 0.32 heat fraction (Fan 1993, non-lasing?) unsourced. `ring-cavity` Siegman ch. 11/21 unchecked. `injection-locking`
-  stable band at weak injection (Henry–Olsson–Dutta 1985, Mogensen 1985 Fig. 2) unchecked. `soliton` default T₀ 57 fs sits at the
+- Session 172 (5w-10): supercontinuum DW is the β₂β₃ estimate, ≈ 90 nm redder than a GNLSE run at the defaults (session 182 probe);
+  Dudley 2006 full text unread (defaults confirmed via gnlse-python's transcription). `q-switched-laser`:
+  r is the input, so the Degnan optimum coupling can't show; a g₀l input would. `slab-laser` 0.32 heat fraction (Fan 1993, non-lasing?) unsourced. `ring-cavity` Siegman ch. 11/21 unchecked.
+  `soliton` default T₀ 57 fs sits at the
   edge of Raman-free NLS. Kerr-lens title "Kerr Lens Mode Locking" while the page computes only the lens.
 **Free-space comms**
 - `aperture-averaging`: only the Gaussian aperture is modelled; a hard circular aperture gives a 5–11 % lower A at d² = 1–30 (two reviewers' quadrature),
@@ -310,9 +311,7 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
   the 10 cm near point; note c threshold on d₆₃; TRT attribution. See Done.
 - [x] 6a-b laser safety (session 180, `phase-6/6a-b-note-c`): Table 5 note c and Table 7 note b in the shared limits. See Done.
 - [x] 6a-c laser safety (session 181, `phase-6/6a-c-scanned`, PR #219): scanned passes at the peak; anterior segment with note b. See Done.
-- [ ] 6b lasers: `optical-parametric-oscillator` threshold with Boyd–Kleinman h(B, ξ) (L_eff = min(L, l_a) may put P_th ≈ 10× high);
-  `supercontinuum` DW with the ejected-soliton power and the N > 16 threshold (Dudley 2006); `thin-disk-laser` κ at the default
-  10 at.% (Beil 2010: 5.7 at 12 at.%); `injection-locking` stable band at weak injection (Henry–Olsson–Dutta 1985).
+- [x] 6b lasers (session 182, `phase-6/6b-lasers`, PR #220): OPO walk-off overlap, ejected-soliton DW, κ 6.3, static locking range. See Done.
 - [ ] 6c free-space comms: `beam-wander` with the diffracting W(z) (factor 0.90 at the defaults, 0.49 at L/z_R 12; Andrews & Phillips
   2005 §6.5); FSO `adaptive-optics` actuator count through `nollResidual` / `dmFittingVariance`; `point-ahead` LEO station rotation
   (≈ 3 µrad); `DB_PER_NEPER` misnamed (ISO 80000-3: 1 Np = 8.686 dB); QKD eq. (10)'s −Y₀(1 − e^(−ημ)) term instead of the Y₀ cap.
@@ -348,6 +347,9 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 6b lasers (session 182, `phase-6/6b-lasers`, PR #220): OPO L_eff from the near-field walk-off overlap (→ 2^¼ l_a; P_th 4086 → 2889 W;
+  BK h is SHG-only, the "10×" claim rejected); supercontinuum DW at P_s = (2N − 1)²P₀/N² (667.7 → 633.3 nm); thin-disk κ 6.3 at 10 at.%
+  (ΔT 33.3 → 37.1 K; Körner 2012 Table 4 read); injection-locking "In static range" (Hopf band not computed).
 - 6a-c laser safety (session 181, `phase-6/6a-c-scanned`, PR #219): scanned passes under note c/b at the peak, τ = d√(ln2/2)/v,
   H₁ = P√(8/π)/(d v) (1550 nm 0.5 mm 10 m/s 0.25 s: 1.2533 W, was ≈ 3.1 W averaged). `anteriorSegment` carries Table 7 note b
   (user: IR always, visible only for α > α_min per note d's "large retinal spot sizes"): 1300 nm 0.5 mm 10 s 188 → 1.92 mW;

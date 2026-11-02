@@ -313,7 +313,7 @@ export const waveOptics: CalculatorEntry[] = [
     description: "Locking range of an injection-locked laser from the injection ratio, coupling rate and linewidth enhancement factor α: Adler's symmetric range and the asymmetric semiconductor-laser range, with a locking map.",
     keywords: ["injection locking", "Adler", "locking range", "linewidth enhancement factor", "alpha factor", "master slave laser"],
     tier: "textbook",
-    modelNote: "Static locking range −k_c√ρ√(1 + α²) ≤ Δω ≤ k_c√ρ of the single-mode rate equations, weak injection. The coupling rate k_c is an input; the page estimates it as (1 − R)/(τ_rt√R) (Kondratiev et al. 2023), and other authors' expressions differ by factors of order unity. Defaults: a 300 µm GaAs-based diode (R 0.32, n_g 3.9, k_c/2π 24.51 GHz) with the α ≈ 1 Berger et al. measured at 0.98 µm. Dynamic instabilities inside the static range are not computed.",
+    modelNote: "Static locking range −k_c√ρ√(1 + α²) ≤ Δω ≤ k_c√ρ of the single-mode rate equations, weak injection. The coupling rate k_c is an input; the page estimates it as (1 − R)/(τ_rt√R) (Kondratiev et al. 2023), and other authors' expressions differ by factors of order unity. Defaults: a 300 µm GaAs-based diode (R 0.32, n_g 3.9, k_c/2π 24.51 GHz) with the α ≈ 1 Berger et al. measured at 0.98 µm. The dynamically stable band (Hopf edge, set by the relaxation frequency and damping) is not computed: it can end well inside the positive edge or, at very weak injection, reach past it.",
     references: [
       { citation: "Adler R. (1946). A study of locking phenomena in oscillators. Proc. IRE 34, 351.", url: "https://doi.org/10.1109/JRPROC.1946.229930" },
       { citation: "Lang R. (1982). Injection locking properties of a semiconductor laser. IEEE J. Quantum Electron. 18, 976.", url: "https://doi.org/10.1109/JQE.1982.1071632" },
@@ -437,7 +437,7 @@ export const waveOptics: CalculatorEntry[] = [
     title: "Optical Parametric Oscillator",
     description: "Parametric gain, walk-off-limited interaction length and singly-resonant OPO threshold from pump wavelength, d_eff, beam radius and cavity loss.",
     tier: "textbook",
-    modelNote: "Plane-wave estimate: perfect phase matching, no pump depletion, no focusing optimisation, idler not resonated. Walk-off enters only by capping the crystal length at the aperture length.",
+    modelNote: "Plane-wave estimate: perfect phase matching, no pump depletion, no focusing optimisation, idler not resonated. Pump walk-off enters through a near-field overlap length (pump and signal mode of equal radius, pump centred at mid-crystal), our own derivation: L for no walk-off, 2^¼·√π·w/ρ for a long crystal.",
     references: [
       {
         citation: "Boyd R. W. (2008). Nonlinear Optics, 3rd ed., §2.8 and §2.9. Academic Press. Parametric gain coefficient and singly resonant threshold.",
@@ -617,10 +617,12 @@ export const waveOptics: CalculatorEntry[] = [
     description: "Length scales of supercontinuum generation in a photonic crystal fibre: soliton number, dispersion length, soliton fission length and the dispersive-wave wavelength from β₂ and β₃.",
     keywords: ["supercontinuum", "soliton fission", "photonic crystal fiber", "dispersive wave", "soliton number"],
     tier: "textbook",
-    modelNote: "Sech² pump pulse. Fission length L_D/N is a scaling estimate. Dispersive-wave offset from the β₂, β₃ phase-matching cubic with the soliton wavenumber γP₀/2 at the input peak power (solitons ejected at fission are stronger, so the true wave lies further out); higher-order dispersion and Raman are left out. N > 16 is labelled modulation-instability dominated. The spectrum needs a generalised NLS simulation and is not computed. Defaults: the 835 nm PCF example of Dudley et al. 2006.",
+    modelNote: "Sech² pump pulse. Fission length L_D/N is a scaling estimate. Dispersive-wave offset from the β₂, β₃ phase-matching cubic with the wavenumber γP_s/2 of the first soliton ejected at fission, P_s = (2N − 1)²P₀/N² (Satsuma–Yajima); higher-order dispersion, Raman and self-steepening, left out, put the wave further into the blue (≈ 90 nm at the defaults in a generalised NLS run). N > 16 is labelled modulation-instability dominated (Sylvestre 2021); coherence degrades from N ≈ 10. The spectrum needs a generalised NLS simulation and is not computed. Defaults: the 835 nm PCF example of Dudley et al. 2006.",
     references: [
       { citation: "Dudley J. M., Genty G., Coen S. (2006). Supercontinuum generation in photonic crystal fiber. Rev. Mod. Phys. 78, 1135–1184.", url: "https://doi.org/10.1103/RevModPhys.78.1135" },
       { citation: "Akhmediev N., Karlsson M. (1995). Cherenkov radiation emitted by solitons in optical fibers. Phys. Rev. A 51, 2602.", url: "https://doi.org/10.1103/PhysRevA.51.2602" },
+      { citation: "Skryabin D. V., Gorbach A. V. (2010). Colloquium: Looking at a soliton through the prism of optical supercontinuum. Rev. Mod. Phys. 82, 1287, Eqs. 3, 7, 10: resonance with the radiating soliton's wavenumber.", url: "https://doi.org/10.1103/RevModPhys.82.1287" },
+      { citation: "Sylvestre T., Genier E., Ghosh A. N. et al. (2021). Recent advances in supercontinuum generation in specialty optical fibers. J. Opt. Soc. Am. B 38, F90: modulation instability for N > 16.", url: "https://doi.org/10.1364/JOSAB.439330" },
       { citation: "Agrawal G. P. (2019). Nonlinear Fiber Optics, 6th ed. Academic Press. Dispersion and nonlinear lengths, soliton order, the normalised NLS.", url: "https://doi.org/10.1016/C2018-0-01168-8" },
     ],
   },
@@ -630,7 +632,7 @@ export const waveOptics: CalculatorEntry[] = [
     description: "Yb:YAG thin-disk laser: quasi-three-level threshold inversion, multipass pump absorption with bleaching, threshold pump power, slope efficiency, output power and temperature rise through the disk.",
     keywords: ["Yb:YAG", "thin disk laser", "quasi-three-level laser", "multipass pumping", "reabsorption", "pump bleaching"],
     tier: "textbook",
-    modelNote: "Quasi-three-level rate equations with a top-hat pump and mode of equal area, inversion uniform through the disk and clamped above threshold; reabsorption and pump bleaching included, ASE and temperature-dependent cross-sections not. One-dimensional heat flow to the back face. Defaults: 300 K Yb:YAG cross sections (Chanteloup 2014 Table 1), τ 0.951 ms (Sumida & Fan), heat fraction 1 − λ_p/λ (lasing), κ 7 W/(m K) of 8 at.% Yb:YAG (Chénais 2006); check them against your crystal.",
+    modelNote: "Quasi-three-level rate equations with a top-hat pump and mode of equal area, inversion uniform through the disk and clamped above threshold; reabsorption and pump bleaching included, ASE and temperature-dependent cross-sections not. One-dimensional heat flow to the back face. Defaults: 300 K Yb:YAG cross sections (Chanteloup 2014 Table 1), τ 0.951 ms (Sumida & Fan), heat fraction 1 − λ_p/λ (lasing), κ 6.3 W/(m K) for 10 at.% Yb:YAG, between 7 at 8 at.% (Chénais 2006) and 5.7 at 12 at.% (Körner 2012); check them against your crystal.",
     references: [
       { citation: "Giesen A., Hügel H., Voss A., Wittig K., Brauch U., Opower H. (1994). Scalable concept for diode-pumped high-power solid-state lasers. Appl. Phys. B 58, 365–372.", url: "https://doi.org/10.1007/BF01081875" },
       { citation: "Fan T. Y., Byer R. L. (1987). Modeling and CW operation of a quasi-three-level 946 nm Nd:YAG laser. IEEE J. Quantum Electron. 23, 605–612.", url: "https://doi.org/10.1109/JQE.1987.1073371" },
@@ -640,6 +642,7 @@ export const waveOptics: CalculatorEntry[] = [
       { citation: "Sumida D. S., Fan T. Y. (1994). Effect of radiation trapping on fluorescence lifetime and emission cross section measurements in solid-state laser media. Opt. Lett. 19, 1343. Yb:YAG τ = 0.951 ms.", url: "https://doi.org/10.1364/OL.19.001343" },
       { citation: "Chénais S., Druon F., Forget S., Balembois F., Georges P. (2006). On thermal effects in solid-state lasers: the case of ytterbium-doped materials. Prog. Quantum Electron. 30, 89–153. Thermal load (Eq. V.1); κ 7 W/(m K) at 8 at.% Yb, 11 undoped (§II).", url: "https://arxiv.org/abs/0704.0701" },
       { citation: "Chanteloup J.-C., Arzakantsyan M., Marrazzo S. (2014). Defining the optimal gradient doped Yb:YAG disk for room and low temperature diode pumped solid-state laser operations. High Power Laser Sci. Eng. 2, e35, Table 1. Cross sections at 940 and 1030 nm, 300 K.", url: "https://doi.org/10.1017/hpl.2014.38" },
+      { citation: "Körner J., Vorholt C., Liebetrau H. et al. (2012). Measurement of temperature-dependent absorption and emission spectra of Yb:YAG, Yb:LuAG, and Yb:CaF₂ between 20 °C and 200 °C and predictions on their influence on laser performance. J. Opt. Soc. Am. B 29, 2493, Table 4: κ 5.7 W/(m K) at 12 at.% Yb.", url: "https://doi.org/10.1364/JOSAB.29.002493" },
     ],
   },
 ];

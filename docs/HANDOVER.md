@@ -1,23 +1,26 @@
-# Handover — 2026-11-02 (session 181 → session 182)
+# Handover — 2026-11-02 (session 182 → session 183)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 181 did 6a-c laser safety on `phase-6/6a-c-scanned` (PR #219): scanned passes at the beam's peak under note c/b,
-and the anterior-segment limit with Table 7 note b. Phase 6a is done. Next: 6b lasers (OPO threshold, supercontinuum DW, …).
+Session 182 did 6b lasers on `phase-6/6b-lasers` (PR #220): OPO walk-off overlap length, supercontinuum DW from the first ejected
+soliton, thin-disk κ 6.3 at 10 at.%, injection-locking "In static range". Next: 6c free-space comms (beam-wander W(z), AO, point-ahead, QKD).
 
 ## State
-- `ScannedLimit.actual`: a pass under the 1 mm rule lasts d√(ln2/2)/v and gives G(t) = H(t)·d v √(π/8) wherever the rule holds
-  at t (`rule.t1` 0.35 s on the cornea, T_MAX on the anterior segment); the averaged L/v form beyond. d = 0 → pMax 0.
-- `eyeLimits`: `anteriorSegment` has a 3.5 mm aperture with `actualBelow` (note b) and exists below 700 nm only for α > α_min
-  (user's choice, note d "for large retinal spot sizes"). Classes still drop it (`laser-classes.ts`).
-- Tests that need "all of the beam inside" in the near IR now use d = 1.5 mm (1/e 1.06 mm), not d = 0.
+- `walkOffEffectiveLength(L, w, ρ)` (OPO module): L_eff² = ∫₀^L e^(−a d²) √(π/b) erf(√b(L − d)) dd, a = ρ²/2w², b = ρ²/4w² (our
+  derivation; equal pump/signal radius, pump centred mid-crystal); ρ = 0 → L, long → 2^¼ √π w/ρ. Page chart uses it per length.
+- Supercontinuum: P_s = solitonContent(N).amplitude² · P₁; NaN for N < ½; the P₀ value and leading order shown in the subtext.
+- Defaults changed: supercontinuum energy 0.5673 nJ and β₃ 0.081038; thin-disk κ 6.3.
 
 ## Next actions
-1. `/ship`; merge on the user's yes. No default value changes in 6a-c (visible pages just lose the anterior row). After a release
-   (on request): `node scripts/post-merge-check.mjs <sha> laser-safety/multiple-wavelength=0.637` (6a-b's 1550 nm share).
-2. 6b lasers (see ROADMAP): adversarial `physics-reviewer` pass against primary literature first.
+1. `/ship`; merge on the user's yes. After a release (on request): `node scripts/post-merge-check.mjs <sha>
+   wave-optics/optical-parametric-oscillator=2.89 wave-optics/supercontinuum=633.3 wave-optics/thin-disk-laser=37.0`.
+2. 6c free-space comms (see ROADMAP): adversarial `physics-reviewer` pass against primary literature first.
 3. KRS-5 by hand: `materials/transparency-range?material=krs5` at 10 µm: n 2.3707, loss 28.4 %.
 
 ## Non-obvious facts
+- **Session 182:** a reviewer's "from memory" fix (BK h ∝ L·l_a, 10× lower P_th) was wrong for an SRO: derive the overlap for the
+  actual geometry and check it by brute 2-D quadrature before trusting a scaling. Optica abstract pages via WebFetch gave
+  Körner 2012 Table 4; reviewers must not try to get past captchas (classifier denies it). Reviewer goldens computed at an old
+  default (0.567 nJ) failed at the new one: recompute goldens after changing defaults. Two reviewers in parallel took ≈ 11 and 24 min.
 - **Session 181:** ICNIRP 2013 PDF text: `curl -A "Mozilla/5.0 …"` then `pdftotext -layout`; Table 5 notes at ≈ line 910, Table 7
   at ≈ 990, Table 8 at ≈ 1200. Note d's IR sentence is unconditional, the visible one conditional. Old test comments' hand values can be mis-rounded (1.264 vs 1.2622 mm): recompute.
 - **Session 180:** note c applies to "exposures up to t" at piece ends x ≤ 0.35 s even when t ≥ 0.35 s; applying it only for
@@ -55,8 +58,6 @@ and the anterior-segment limit with Table 7 note b. Phase 6a is done. Next: 6b l
   using `replace(a, () => b)`. Goodman 2nd ed. (4-24) is the Fraunhofer condition, (4-25) the integral; Siegman ch. 26 is
   Q-switching. Physics reviewers can't write scratchpad probes inside a worktree; read-only reviewers need no worktree. A
   reviewer's fix formula can be wrong while the finding is right. New warnings can fire at defaults: check each.
-- **Session 170:** `SimpleChart` ignores layout `shapes`/`annotations` (use a `mode: "markers"` trace). Check EOLs with
-  `git ls-files --eol <f>`, not grep for CR. Implementers widening chart spans can blow up point counts: bound them.
 - **Sessions 163–173 (5w, 141 pages, 13 bugs):** useful reviewer catches are defaults that hide the page's effect,
   stated-but-false conditions, results that ignore an input, fixed chart ranges that miss the input, and formulas past
   their limit. Brief: verdict + BUG/MINOR/UNVERIFIED, file:line, hand calcs, "(from memory)", probe prefixes, don't edit.
@@ -64,8 +65,6 @@ and the anterior-segment limit with Table 7 note b. Phase 6a is done. Next: 6b l
   per category: `shuf | awk -F/ '!seen[$1]++'`.
 - **Session 160:** Chrome extension screenshots time out on this site; use a headless CDP script (pattern in
   `scripts/ui-check.mjs`). In the Bash tool a bare `python -` or `cat > file` with no input hangs until timeout.
-- **Session 155:** React Compiler is off: a `preserve-manual-memoization` error is fixed by dropping the `useMemo`. Plotly
-  data: cast to `PlotParams["data"]`, never `any[]`.
 - **Sessions 151–153:** write regex-heavy scripts with the Write tool. ts-morph `sf.insertText` forgets every node: insert
   last-to-first. A `next start` left on 3100 survives TaskStop: `curl`, then `taskkill //PID <pid> //T //F`.
 - **Sessions 137–138:** ITU-T PDFs: `https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-…!!PDF-E&type=items`. Optica

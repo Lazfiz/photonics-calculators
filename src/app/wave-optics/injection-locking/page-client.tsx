@@ -82,8 +82,8 @@ export default function InjectionLockingPage() {
         <ResultCard label="Locking range" value={`${fmt(lower)} to +${fmt(upper)} GHz`} subtext={`width ${fmt(upper - lower)} GHz`} tone="blue" />
         <ResultCard label="Injection ratio ρ" value={`${fmt(rhoDb, 4)} dB`} subtext={`P_inj/P = ${fmt(rho)}; √ρ = ${fmt(Math.sqrt(rho))}`} tone="purple" />
         <ResultCard label="Adler range (α = 0)" value={`±${fmt(adler.upper)} GHz`} subtext={`α widens the red side by √(1+α²) = ${fmt(Math.hypot(1, alpha))}`} tone="orange" />
-        <ResultCard label="At this detuning" value={locked ? "Locked" : "Unlocked"}
-          subtext={locked ? "inside the static locking range" : "the slave beats with the master (four-wave mixing, pulsations)"} tone={locked ? "green" : "red"} />
+        <ResultCard label="At this detuning" value={locked ? "In static range" : "Unlocked"}
+          subtext={locked ? "a locked steady state exists; it can still be dynamically unstable" : "the slave beats with the master (four-wave mixing, pulsations)"} tone={locked ? "green" : "red"} />
       </div>
 
       <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6">
@@ -96,8 +96,9 @@ export default function InjectionLockingPage() {
           k_c = (1 − R)/(τ_rt√R) (Kondratiev et al. 2023, Eq. 4), sets the default for a 300 µm cleaved GaAs-based diode
           (R 0.32, n_g 3.9 from Wenzel et al. 2021); other authors define it with different factors of order unity. It pairs with ρ = P_inj/P when both powers
           are taken outside the injection facet; entering the total output of a symmetric slave halves ρ. The
-          static range is necessary, not sufficient: near its positive edge, relaxation-oscillation
-          dynamics can make the locked state unstable.</p>
+          static range is not the stable band: relaxation-oscillation dynamics (a Hopf bifurcation, set by the relaxation
+          frequency and damping, which are not inputs here) can make the lock unstable well inside its positive edge, and
+          at very weak injection the stable band can reach slightly past it. The negative edge, a saddle-node, holds.</p>
       </div>
 
       <SimpleLineChart title="Locking map" xLabel="Injection ratio ρ (dB)" yLabel="Detuning (GHz)" series={series} />
