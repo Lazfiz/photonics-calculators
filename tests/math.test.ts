@@ -12,6 +12,7 @@ import {
   besselK,
   erf,
   erfc,
+  expE1Scaled,
   firstCrossing,
   GAUSSIAN_FWHM_PER_SIGMA,
   integrateTanhSinh,
@@ -241,4 +242,18 @@ test("GAUSSIAN_FWHM_PER_SIGMA = 2√(2 ln 2)", () => {
   assertRel(GAUSSIAN_FWHM_PER_SIGMA, 2.354820045, 1e-9, "FWHM/σ");
   // Edge: a Gaussian at half the FWHM from the centre is at exactly half its peak.
   assertRel(Math.exp(-((GAUSSIAN_FWHM_PER_SIGMA / 2) ** 2) / 2), 0.5, 1e-14, "half maximum");
+});
+
+test("expE1Scaled = eˣ E₁(x)", () => {
+  // A&S Table 5.1: E₁(0.01) = 4.0379295765, E₁(0.5) = 0.5597735948, E₁(1) = 0.2193839344, E₁(2) = 0.04890051071,
+  // 10·e¹⁰E₁(10) = 0.9156333394.
+  assertRel(expE1Scaled(0.01) * Math.exp(-0.01), 4.0379295765, 1e-10, "E₁(0.01)");
+  assertRel(expE1Scaled(0.5) * Math.exp(-0.5), 0.5597735948, 1e-10, "E₁(0.5)");
+  assertRel(expE1Scaled(1) * Math.exp(-1), 0.2193839344, 1e-10, "E₁(1)");
+  assertRel(expE1Scaled(2) * Math.exp(-2), 0.04890051071, 1e-10, "E₁(2)");
+  assertRel(10 * expE1Scaled(10), 0.9156333394, 1e-10, "x eˣE₁(x) at 10");
+  // Edge: the tail eˣE₁ → (1/x)(1 − 1/x + 2/x²) with no underflow, and the series meets the continued fraction at 1.
+  assertRel(expE1Scaled(1e6), 1e-6 * (1 - 1e-6 + 2e-12), 1e-15, "tail");
+  assertRel(expE1Scaled(1 - 1e-12), expE1Scaled(1 + 1e-12), 1e-11, "continuity at 1");
+  assert.ok(Number.isNaN(expE1Scaled(0)));
 });

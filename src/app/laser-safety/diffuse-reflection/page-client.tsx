@@ -9,7 +9,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { correctionCE, T_MAX, T_MIN } from "../../../physics/laser-safety/eye-exposure-limits";
-import { diffuseExposure, diffuseHazardDistance } from "../../../physics/laser-safety/hazard-distance";
+import { diffuseExposure, diffuseHazardDistance, NEAR_POINT } from "../../../physics/laser-safety/hazard-distance";
 
 export default function DiffuseReflectionPage() {
   const [powerRaw, setPower] = useURLState("power", 5000); // mW
@@ -48,7 +48,7 @@ export default function DiffuseReflectionPage() {
     [lambda, reflected, d, exposure],
   );
   const hazardFinite = Number.isFinite(haz.distance) && haz.distance > 0;
-  const rMin = Math.max(d * 2, 1e-3);
+  const rMin = Math.max(d / 5, 1e-3);
   const rMax = Math.max(10 * viewingDistance, hazardFinite ? 10 * haz.distance : 0, 1);
   const markers = useMemo(() => {
     const list: { r: number; y?: number; label: string }[] = [];
@@ -76,14 +76,9 @@ export default function DiffuseReflectionPage() {
 
       {covered ? (
         <>
-          {viewingDistance < 10 * d ? (
+          {retinal && viewingDistance < NEAR_POINT ? (
             <p className="rounded-lg border border-amber-700/60 bg-amber-950/30 p-3 text-sm text-amber-200 mb-4">
-              Closer than 10 spot diameters ρP/(πr²) overstates the irradiance (it treats the spot as a point).
-            </p>
-          ) : null}
-          {hazardFinite && haz.distance < 10 * d ? (
-            <p className="rounded-lg border border-amber-700/60 bg-amber-950/30 p-3 text-sm text-amber-200 mb-4">
-              The hazard distance lies within 10 spot diameters, where ρP/(πr²) overstates the irradiance.
+              Nearer than 10 cm the eye can&apos;t focus the spot, so the retinal limits are assessed at 10 cm.
             </p>
           ) : null}
 
@@ -98,7 +93,7 @@ export default function DiffuseReflectionPage() {
               label="Apparent source size α"
               value={`${fmtNum(at.alpha * 1e3)} mrad`}
               tone="cyan"
-              subtext={retinal ? `C_E = ${fmtNum(cE)}` : "C_E: — (applies from 400 to 1400 nm)"}
+              subtext={retinal ? `C_E = ${fmtNum(cE)}${viewingDistance < NEAR_POINT ? ", at 10 cm" : ""}` : "C_E: — (applies from 400 to 1400 nm)"}
             />
             <ResultCard
               label="Governing limit"
@@ -154,7 +149,10 @@ export default function DiffuseReflectionPage() {
       )}
 
       <p className="text-sm text-gray-400 mb-8">
-        A matte (Lambertian) surface reflecting ρP gives ρP/(πr²) at distance r on its normal. The spot is an extended
+        A matte (Lambertian) surface reflecting ρP gives ρP/(πr²) at distance r on its normal, once r is a few spot
+        diameters. Nearer, the Gaussian spot gives ρP/(πr²) · x(1 − x eˣE₁(x)) with x = 8r²/d², which tends to the
+        peak exitance 8ρP/(πd²) in contact. The eye focuses from 10 cm (ICNIRP 2013), so the retinal limits are assessed
+        no nearer: closer up their ratio is the one at 10 cm, while the corneal limits keep rising. The spot is an extended
         source of angular size α = d₆₃/r, where d₆₃ = d/√2 is the diameter holding 63 % of the power (IEC 60825-1); this
         raises the retinal thermal limit through C_E (ICNIRP 2013, Table 2). The whole spot is counted (open field of
         view), so above α_max C_E = α²/(α_min α_max) (ICNIRP 2013, eqn 5) and close up the ratio stops rising. The
