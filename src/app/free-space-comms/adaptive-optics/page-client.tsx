@@ -6,7 +6,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  fittingErrorVariance, friedParameter, greenwoodFrequency, isoplanaticAngle, servoLagVariance, strehlRatio,
+  actuatorPitch, dmFittingVariance, friedParameter, greenwoodFrequency, isoplanaticAngle, servoLagVariance, strehlRatio,
   rytovVariance, uncorrectedPhaseVariance, aoResidualVariance,
 } from "../../../physics/free-space-comms/turbulence";
 
@@ -18,7 +18,7 @@ export default function AdaptiveOpticsPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 200, max: 20000 }); // nm
   const [range, setRange] = useURLState("range", 1, { min: 0.001, max: 1000 }); // km
   const [diameter, setDiameter] = useURLState("diameter", 10, { min: 0.1, max: 1000 }); // cm
-  const [aoActuators, setAoActuators] = useURLState("aoActuators", 127, { min: 1, max: 100000 });
+  const [aoActuators, setAoActuators] = useURLState("aoActuators", 127, { min: 10, max: 100000 });
   const [aoBandwidth, setAoBandwidth] = useURLState("aoBandwidth", 500, { min: 1, max: 100000 }); // Hz, closed-loop −3 dB
   const [windSpeed, setWindSpeed] = useURLState("windSpeed", 10, { min: 0.1, max: 100 }); // m/s
 
@@ -29,14 +29,15 @@ export default function AdaptiveOpticsPage() {
     const r0 = friedParameter(c2n, lambda, L);
     const fG = greenwoodFrequency(windSpeed, r0);
     const sigma2Open = uncorrectedPhaseVariance(D, r0);
-    const sigma2Fit = fittingErrorVariance(aoActuators, D, r0);
+    const pitch = actuatorPitch(D, aoActuators);
+    const sigma2Fit = dmFittingVariance(pitch, r0);
     const sigma2Servo = servoLagVariance(fG, aoBandwidth);
     const sigma2AO = aoResidualVariance(sigma2Fit, sigma2Servo, sigma2Open);
     const rytov = rytovVariance(c2n, lambda, L);
     const strehlNoAO = strehlRatio(sigma2Open, D, r0);
     const strehlAO = strehlRatio(sigma2AO, D, r0);
     return {
-      r0, DoverR0: D / r0, fG, rytov, theta0: isoplanaticAngle(c2n, lambda, L),
+      r0, DoverR0: D / r0, pitch, fG, rytov, theta0: isoplanaticAngle(c2n, lambda, L),
       sigma2Open, sigma2Fit, sigma2Servo, sigma2AO, strehlNoAO, strehlAO, improvement: strehlAO / strehlNoAO,
     };
   }, [c2n, wavelength, range, diameter, aoActuators, aoBandwidth, windSpeed]);
@@ -63,7 +64,7 @@ export default function AdaptiveOpticsPage() {
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={200} max={20000} />
         <ValidatedNumberInput label="Range (km)" value={range} onChange={setRange} min={0.001} max={1000} step="0.1" />
         <ValidatedNumberInput label="Aperture Diameter (cm)" value={diameter} onChange={setDiameter} min={0.1} max={1000} />
-        <ValidatedNumberInput label="AO Actuators (≈ modes corrected)" value={aoActuators} onChange={setAoActuators} min={1} max={100000} step="1" />
+        <ValidatedNumberInput label="DM Actuators in the Pupil" value={aoActuators} onChange={setAoActuators} min={10} max={100000} step="1" />
         <ValidatedNumberInput label="AO Bandwidth f₃dB (Hz)" value={aoBandwidth} onChange={setAoBandwidth} min={1} max={100000} />
         <ValidatedNumberInput label="Wind Speed (m/s)" value={windSpeed} onChange={setWindSpeed} min={0.1} max={100} step="0.5" />
       </div>
@@ -74,7 +75,7 @@ export default function AdaptiveOpticsPage() {
         <ResultCard label="Isoplanatic angle θ₀" value={`${fmt(calc.theta0 * 1e6)} µrad`} tone="purple" />
         <ResultCard label="Strehl (no AO)" value={fmt(calc.strehlNoAO)} tone="red" subtext={`σ² = 1.03 (D/r₀)^5/3 = ${fmt(calc.sigma2Open)} rad²`} />
         <ResultCard label="Strehl (with AO)" value={fmt(calc.strehlAO)} tone="green"
-          subtext={`σ²_fit = ${fmt(calc.sigma2Fit)}, σ²_servo = ${fmt(calc.sigma2Servo)} rad²`} />
+          subtext={`pitch ${fmt(calc.pitch * 1e3)} mm; σ²_fit = ${fmt(calc.sigma2Fit)}, σ²_servo = ${fmt(calc.sigma2Servo)} rad²`} />
         <ResultCard label="AO improvement" value={`${fmt(calc.improvement)}×`} tone="yellow" />
         <ResultCard label="Rytov variance σ_R²" value={fmt(calc.rytov)} tone="purple" />
       </div>
@@ -106,13 +107,16 @@ export default function AdaptiveOpticsPage() {
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 text-sm text-gray-300 space-y-2">
         <h3 className="text-lg font-semibold">Model</h3>
         <p className="font-mono">r₀ = (0.423 k² Cn² L)^(−3/5),   θ₀ = (2.91 · 3/8 · k² Cn² L^(8/3))^(−3/5),   f_G = 0.427 v/r₀</p>
-        <p className="font-mono">σ²_fit ≈ 0.2944 J^(−√3/2) (D/r₀)^(5/3),   σ²_servo = (f_G/f₃dB)^(5/3)</p>
+        <p className="font-mono">d = D√(π/4N),   σ²_fit = 0.28 (d/r₀)^(5/3),   σ²_servo = (f_G/f₃dB)^(5/3)</p>
         <p className="font-mono">S ≈ e^(−σ²) + (1 − e^(−σ²)) / (1 + (D/r₀)²)</p>
         <p>
           Plane-wave r₀ and θ₀ for a horizontal path with constant Cn² (Andrews &amp; Phillips, <em>Laser Beam
-          Propagation through Random Media</em>, 2nd ed., 2005). The uncorrected variance 1.03 (D/r₀)^(5/3) and the
-          residual after J corrected Zernike modes are Noll&apos;s (JOSA 66, 207, 1976); here J ≈ the actuator count,
-          a rough equivalence. The servo-lag variance of a first-order loop depends only on f_G/f₃dB (Greenwood,
+          Propagation through Random Media</em>, 2nd ed., 2005). The uncorrected variance 1.03 (D/r₀)^(5/3) is Noll&apos;s (JOSA 66, 207, 1976). The N actuators of a
+          continuous-facesheet mirror fill the pupil on a square grid of pitch d, and its fitting error is 0.28 (d/r₀)^(5/3)
+          (Hudgin, JOSA 67, 393, 1977; Hardy, <em>Adaptive Optics for Astronomical Telescopes</em>, 1998). κ = 0.28 is for
+          pyramid-shaped influence functions; Gaussian ones give ≈ 0.23 (Tyson&apos;s table in Berdeu et al., A&amp;A 674,
+          A112, 2023). The zonal law sits about 10 % below Noll&apos;s residual after the first N Zernike modes and needs
+          many actuators (N ≥ 10 here); a hexagonal grid has a 7.5 % larger pitch. The servo-lag variance of a first-order loop depends only on f_G/f₃dB (Greenwood,
           JOSA 67, 390, 1977). The Strehl ratio adds the seeing halo to the Maréchal core (Parenti &amp; Sasiela,
           JOSA A 11, 288, 1994), so it tends to (r₀/D)² without correction instead of underflowing.
         </p>

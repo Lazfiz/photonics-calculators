@@ -458,10 +458,35 @@ export function diversityThreshold(pOut: number, n: number, sigmaI2: number, rho
  * Beam-wander variance of a collimated Gaussian beam, ⟨r_c²⟩ = 2.42 C_n² L³ W₀^(−1/3), m² (W₀ the 1/e² radius at
  * the transmitter; infinite outer scale). It is the Θ₀ = 1 case of 2.42 C_n² L³ W₀^(−1/3) ₂F₁(1/3, 1; 4; 1 − |Θ₀|)
  * (Andrews & Phillips 2005 ch. 6), the weak-fluctuation result from the large eddies; in strong fluctuations, with W₀
- * near or above r₀, it overestimates the wander. A finite outer scale also reduces it.
+ * near or above r₀, it overestimates the wander. A finite outer scale also reduces it. It takes the beam radius as W₀
+ * along the whole path; `beamWanderVarianceDiffracting` keeps the diffraction.
  */
 export function beamWanderVariance(cn2: number, pathLength: number, waist: number): number {
   return 2.42 * cn2 * pathLength ** 3 * waist ** (-1 / 3);
+}
+
+/**
+ * Diffraction factor F = 3∫₀¹ ξ² (1 + ((1 − ξ)L/z_R)²)^(−1/6) dξ of the collimated beam wander, ξ = 1 − z/L. The wander
+ * integral of Andrews & Phillips (2005, ch. 6) in the geometric-optics limit is ⟨r_c²⟩ = 7.25 Cn² L² ∫₀^L ξ² W(z)^(−1/3) dz;
+ * with W(z) = W₀ it gives 2.42 Cn² L³ W₀^(−1/3) (F = 1), and keeping the diffracting W(z) = W₀√(1 + (z/z_R)²) gives F
+ * (our derivation; the same integral is eqs. (12)–(13) of G. P. Berman, A. A. Chumak, V. N. Gorshkov, Phys. Rev. E 76,
+ * 056606 (2007)). F = 0.979 at L/z_R = 1.23, 0.738 at 12; far field F → 3B(2/3, 3)(L/z_R)^(−1/3) = 2.025 (L/z_R)^(−1/3)
+ * (Berman eq. (14), ⟨r_c²⟩ ∝ L^(8/3)). NaN for L/z_R < 0.
+ */
+export function beamWanderDiffractionFactor(lOverZr: number): number {
+  if (!(lOverZr >= 0)) return NaN;
+  if (lOverZr < 1e-6) return 1;
+  // u = 1 − ξ = sinh(t)/a spreads the knee at u ≈ 1/a: F = (3/a)∫₀^asinh(a) (1 − u)² cosh(t)^(2/3) dt. 2000 Simpson
+  // panels agree with a 4·10⁵-point log-grid sum to < 1e-8 for L/z_R up to 1e9.
+  const a = lOverZr;
+  const g = (t: number) => (1 - Math.sinh(t) / a) ** 2 * Math.cosh(t) ** (2 / 3);
+  return (3 / a) * integrateSimpson(g, 0, Math.asinh(a), 2000);
+}
+
+/** Beam-wander variance with the diffracting beam, 2.42 Cn² L³ W₀^(−1/3)·F(L/z_R), z_R = πW₀²/λ, m². */
+export function beamWanderVarianceDiffracting(cn2: number, pathLength: number, waist: number, lambda: number): number {
+  const zR = (Math.PI * waist ** 2) / lambda;
+  return beamWanderVariance(cn2, pathLength, waist) * beamWanderDiffractionFactor(pathLength / zR);
 }
 
 /**
@@ -518,6 +543,15 @@ export const DM_FITTING_COEFFICIENT = { continuous: 0.28, segmentedTipTilt: 0.13
 export function dmFittingVariance(pitch: number, r0: number, kappa: number = DM_FITTING_COEFFICIENT.continuous): number {
   if (!(pitch >= 0) || !(r0 > 0) || !(kappa >= 0)) return NaN;
   return kappa * (pitch / r0) ** (5 / 3);
+}
+
+/**
+ * Actuator pitch d = D√(π/(4N)) of N actuators on a square grid filling a circular pupil of diameter D (N d² = πD²/4),
+ * m; NaN unless D ≥ 0 and N ≥ 1.
+ */
+export function actuatorPitch(diameter: number, actuators: number): number {
+  if (!(diameter >= 0) || !(actuators >= 1)) return NaN;
+  return diameter * Math.sqrt(Math.PI / (4 * actuators));
 }
 
 /** Greenwood frequency f_G = 0.427 v/r₀, Hz. */

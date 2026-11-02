@@ -4,9 +4,12 @@
  * (infinite decoy states, infinite key, no finite-size or intensity-fluctuation corrections).
  *
  * Channel model of X. Ma, B. Qi, Y. Zhao, H.-K. Lo, Phys. Rev. A 72, 012326 (2005), §2, eqs. (5)–(11): overall
- * transmittance η = η_ch·η_Bob; i-photon yield Y_i = Y₀ + η_i − Y₀η_i with η_i = 1 − (1 − η)^i; gain
- * Q_μ = Y₀ + 1 − e^(−ημ); error E_μQ_μ = e₀Y₀ + e_d(1 − e^(−ημ)), e₀ = ½; single photons Q₁ = Y₁μe^(−μ),
- * e₁ = (e₀Y₀ + e_dη)/Y₁. Key rate, their eq. (1) (GLLP, D. Gottesman et al., Quantum Inf. Comput. 4, 325 (2004)):
+ * transmittance η = η_ch·η_Bob; i-photon yield Y_i = Y₀ + η_i − Y₀η_i with η_i = 1 − (1 − η)^i (their eq. (7)). Summed
+ * over the Poisson photon number this gives Q_μ = 1 − (1 − Y₀)e^(−ημ) = Y₀ + 1 − e^(−ημ) − Y₀(1 − e^(−ημ)); their eq. (10)
+ * drops the last term, which matters only when Y₀ is not ≪ 1. Errors, kept exact in Y₀ the same way: a background click
+ * alone gives a random bit (e₀ = ½), a photon click an error e_d, so E_μQ_μ = e₀Y₀e^(−ημ) + e_d(1 − e^(−ημ)) and
+ * e₁Y₁ = e₀Y₀(1 − η) + e_dη (their eqs. (9), (11) have e₀Y₀ in place of e₀Y₀e^(−ημ) and e₀Y₀(1 − η)); single photons
+ * Q₁ = Y₁μe^(−μ). The GYS cutoff below moves by 0.0006 km. Key rate, their eq. (1) (GLLP, D. Gottesman et al., Quantum Inf. Comput. 4, 325 (2004)):
  *   R = q·{−Q_μ f(E_μ) H₂(E_μ) + Q₁[1 − H₂(e₁)]},  q = ½ for standard BB84.
  * With the GYS parameters of their Table 1 (α = 0.21 dB/km, e_d = 3.3 %, Y₀ = 1.7×10⁻⁶, η_Bob = 0.045), μ = 0.48 and
  * f = 1.22, the key vanishes at 142.05 km (their Fig. 2).
@@ -54,11 +57,11 @@ export function decoyBb84(p: DecoyBb84Params): DecoyBb84Result {
   const { mu, eta, y0, eDetector, fEc } = p;
   const q = p.q ?? 0.5;
   const detected = -Math.expm1(-eta * mu);
-  const gain = y0 + detected;
-  const qber = gain > 0 ? (0.5 * y0 + eDetector * detected) / gain : 0.5;
+  const gain = y0 + detected - y0 * detected;
+  const qber = gain > 0 ? (0.5 * y0 * (1 - detected) + eDetector * detected) / gain : 0.5;
   const y1 = y0 + eta - y0 * eta;
   const q1 = y1 * mu * Math.exp(-mu);
-  const e1 = y1 > 0 ? Math.min(0.5, (0.5 * y0 + eDetector * eta) / y1) : 0.5;
+  const e1 = y1 > 0 ? Math.min(0.5, (0.5 * y0 * (1 - eta) + eDetector * eta) / y1) : 0.5;
   const r = q * (-gain * fEc * binaryEntropy(Math.min(0.5, qber)) + q1 * (1 - binaryEntropy(e1)));
   return { gain, qber, y1, q1, e1, rawRate: r, keyPerPulse: Math.max(0, r) };
 }

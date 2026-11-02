@@ -2,8 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  andrewsApertureFactor, aoResidualVariance, apertureParameter, beamWanderLossDb, beamWanderVariance, diversityOutage, diversityThreshold,
-  fittingErrorVariance, friedParameter, gammaGammaCdf, gammaGammaParameters, greenwoodFrequency, irradianceCorrelation,
+  actuatorPitch, andrewsApertureFactor, aoResidualVariance, apertureParameter, beamWanderDiffractionFactor, beamWanderLossDb, beamWanderVariance,
+  beamWanderVarianceDiffracting, diversityOutage, diversityThreshold,
+  dmFittingVariance, fittingErrorVariance, friedParameter, gammaGammaCdf, gammaGammaParameters, greenwoodFrequency, irradianceCorrelation,
   isoplanaticAngle, logIrradianceCorrelation, logIrradianceVariances, lognormalFadeProbability, rytovVariance,
   scintillationIndex, servoLagVariance, sphericalRytovVariance, strehlRatio, uncorrectedPhaseVariance, weakApertureFactor,
 } from "../src/physics/free-space-comms/turbulence";
@@ -55,6 +56,18 @@ test("log-normal fade probability: P(I < ⟨I⟩) = Φ(σ_ln/2)", () => {
   close(lognormalFadeProbability(1, Math.E - 1), 0.691462, 1e-6);
   // F = 10^(−1) (−10 dB), σ_ln² = ln 2: Φ((−2.302585 + 0.346574)/0.832555) = Φ(−2.349412) = 0.009402.
   close(lognormalFadeProbability(0.1, 1), 0.009402, 1e-3);
+});
+
+test("adaptive optics: actuator pitch from the count, Hudgin fitting error at the FSO page defaults", () => {
+  // Hand: N d² = πD²/4, so d = 0.1 m · √(π/508) = 0.1 · √0.0061842 = 7.8640 mm for 127 actuators over 10 cm.
+  close(actuatorPitch(0.1, 127), 7.86399e-3, 1e-5);
+  assert.equal(actuatorPitch(0.1, 1), 0.1 * Math.sqrt(Math.PI / 4));
+  for (const bad of [0, 0.5, NaN]) assert.ok(Number.isNaN(actuatorPitch(0.1, bad)), `N = ${bad}`);
+  // Defaults (Cn² 1e-14, 1550 nm, 1 km): r₀ = 78.483 mm; Hudgin JOSA 67, 393 (1977): 0.28 (d/r₀)^(5/3) =
+  // 0.28 · 0.10020^(5/3) = 0.28 · 0.021616 = 0.0060525 rad² (Noll's fit with J = 127 gave 0.006643, 10 % higher).
+  const r0 = friedParameter(1e-14, lambda, 1000);
+  close(r0, 0.0784834, 1e-5);
+  close(dmFittingVariance(actuatorPitch(0.1, 127), r0), 0.0060525, 1e-4);
 });
 
 test("adaptive optics: Noll variances, Greenwood servo lag without a D/r₀ factor, Parenti-Sasiela Strehl", () => {
@@ -270,4 +283,18 @@ test("numerics at the edges: huge α, β, the large-aperture asymptote, exact N 
   }
   // SC far below the median: the true value is 9e-56; the integral is only claimed to 1e-31 absolute (no Φ(−12) floor).
   assert.ok(diversityOutage(0.05, 2, 0.05, 0.5, "sc") < 1e-31);
+});
+
+test("beam wander with the diffracting beam: F = 3∫ξ²(1 + ((1 − ξ)L/z_R)²)^(−1/6)dξ", () => {
+  // Two independent quadratures (session 183: a 4·10⁵-point log-grid sum and a reviewer's Simpson, n = 2·10⁴):
+  // F = 0.97919 at the page defaults (W₀ 2 cm, 1550 nm, L 1 km: z_R = 810.73 m, L/z_R = 1.2335) and 0.73799 at 12.
+  assert.equal(beamWanderDiffractionFactor(0), 1);
+  close(beamWanderDiffractionFactor(1000 / 810.7336), 0.97919, 1e-5);
+  close(beamWanderDiffractionFactor(12), 0.73799, 1e-5);
+  // Far field: F → 3B(2/3, 3)(L/z_R)^(−1/3) = 2.025 (L/z_R)^(−1/3) (Berman, Chumak, Gorshkov, PRE 76, 056606 (2007),
+  // eq. (14): I₁ → 27/40); it converges slowly (4.4 % low at L/z_R = 100, 0.2 % at 1e4).
+  close(beamWanderDiffractionFactor(1e9) * 1e3, 2.025, 2e-3);
+  assert.ok(Number.isNaN(beamWanderDiffractionFactor(-1)));
+  // Defaults: 2.42 · 1e-14 · 1000³ · 0.02^(−1/3) = 8.9154e-5 m², times F = 8.7299e-5 m².
+  close(beamWanderVarianceDiffracting(1e-14, 1000, 0.02, 1550e-9), 8.7299e-5, 1e-4);
 });

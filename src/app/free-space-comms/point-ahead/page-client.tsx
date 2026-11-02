@@ -6,7 +6,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  GEO_SUBSATELLITE_VPERP, GM_EARTH, R_EARTH_EQ, R_GEO, airyHalfAngle, lightTime, pointAheadAngle,
+  GEO_SUBSATELLITE_VPERP, R_EARTH_EQ, R_GEO, airyHalfAngle, lightTime, pointAheadAngle, zenithPassVelocity,
 } from "../../../physics/free-space-comms/point-ahead";
 
 const fmt = (x: number, digits = 3) =>
@@ -15,8 +15,9 @@ const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.i
 
 const LEO_ALTITUDE = 500e3;
 const PRESETS: { name: string; range: number; v: number }[] = [
-  // Satellite at zenith: range = altitude, transverse velocity = circular orbital velocity √(GM/r).
-  { name: "LEO 500 km at zenith", range: LEO_ALTITUDE, v: Math.sqrt(GM_EARTH / (R_EARTH_EQ + LEO_ALTITUDE)) },
+  // Satellite at the zenith of an equatorial station: range = altitude, v⊥ = orbital velocity relative to the rotating station.
+  { name: "LEO 500 km at zenith, prograde equatorial", range: LEO_ALTITUDE, v: zenithPassVelocity(LEO_ALTITUDE, 0) },
+  { name: "LEO 500 km at zenith, polar", range: LEO_ALTITUDE, v: zenithPassVelocity(LEO_ALTITUDE, 90) },
   // GEO over the station: zero in the Earth-fixed frame, ω_E(r_GEO − R_E) in the inertial frame.
   { name: "GEO to station beneath", range: R_GEO - R_EARTH_EQ, v: GEO_SUBSATELLITE_VPERP },
 ];
@@ -90,7 +91,10 @@ export default function PointAheadPage() {
           The beacon from the far terminal shows where it was R/c ago, and the transmitted beam arrives R/c later, so the
           transmit direction must lead the received beacon by θ<sub>PA</sub> = 2v⊥/c. Use the transverse velocity in an
           inertial frame: a GEO satellite is fixed in the sky, yet relative to the stars it moves 2.61 km/s faster than a
-          station beneath it, which gives 17.4 µrad. The LEO preset uses the orbital velocity alone, as the cited chapter does; the station&apos;s own rotation (up to 0.465 km/s at the equator) changes θ<sub>PA</sub> by up to ≈ ±3 µrad (2 × 0.465 km/s / c = 3.1 µrad), depending on the pass geometry.
+          station beneath it, which gives 17.4 µrad. The cited chapter takes a LEO satellite&apos;s orbital velocity, 7.61 km/s
+          at 500 km (51 µrad); the LEO presets subtract the station&apos;s own rotation, 0.465 km/s eastward at the equator,
+          as a vector: √((v cos i − ω<sub>E</sub>R<sub>E</sub>)² + (v sin i)²) for inclination i. A prograde equatorial pass
+          gives 47.7 µrad, a polar one 50.9 µrad, and a retrograde one 53.9 µrad.
         </p>
         <p>
           Point-ahead matters when θ<sub>PA</sub> is a sizeable fraction of the beam half-angle; a 10 cm aperture at
