@@ -17,6 +17,12 @@
  *   2016, no. 1, 102–106 (CC BY 4.0, vestifm.belnauka.by/jour/article/view/15).
  * - Ba(NO₃)₂ 11 cm/GW and KGW 3.3 (901 cm⁻¹) and 4.4 cm/GW (768 cm⁻¹) at 1064 nm: EKSMA Optics KGW / Ba(NO₃)₂ data
  *   sheet (vendor values; KGW 901 cm⁻¹ for p[mm]p and 768 cm⁻¹ for p[gg]p, the same polarizations as at 532 nm).
+ *   The two sets disagree: g ∝ ω_s would take the 532 nm gains to 20 (Ba(NO₃)₂), 6.6 and 5.3 cm/GW at 1064 nm, about
+ *   2× the vendor values (Savitski's diamond falls 42 → 17, 0.40 against ω_s's 0.46). Basiev 1999 Table 1 peak
+ *   cross-sections relative to diamond (Ba(NO₃)₂ 63, KGW 901 cm⁻¹ 25, 768 cm⁻¹ 29 in their strongest geometry; diamond 100)
+ *   times Savitski's 17 cm/GW and the ω_s ratio give 11.1, 4.5 and 5.3 cm/GW at 1064 nm, close to the vendor set. So the
+ *   2× is a spread between measurements (Markevich: KGW g₀ "nearly doubles" for a 2.8 % lower R_c), not a scaling error;
+ *   both sets are kept as measured, and interpolated gains between 532 and 1064 nm carry that spread.
  * - As₂S₃ glass at 1064 nm, parallel polarizations: 74 ± 15e-13 m/W at 10 THz (R. Stegeman et al., Opt. Express 14,
  *   11702 (2006), doi:10.1364/OE.14.011702, Table 1; silica 0.9 ± 0.2e-13 m/W in the same table). Broad glass line.
  *   A deep-red glass whose absorption tail reaches into the visible (same paper, p. 11705): pumps below 650 nm are
