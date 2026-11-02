@@ -1,23 +1,27 @@
-# Handover — 2026-11-01 (session 178 → session 179)
+# Handover — 2026-11-02 (session 179 → session 180)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 178 did KRS-5 (PR #215, merged and released: `release` = `fbc4e714`, post-merge check all pass) and triaged the ≈ 88
-open findings into ROADMAP Phase 6 (`phase-6/findings-triage`, PR #216). Next: 6a (laser safety). The user wants the fixes
-before the Gemini hero ("accuracy matters").
+Session 179 did 6a-a laser safety on `phase-6/6a-laser-safety` (PR #217): diffuse near zone, note c threshold, TRT text. The
+reviewer's wider note-c finding became 6a-b (next). PR #216 (triage) is merged.
 
 ## State
-- `MATERIALS.krs5` in `sellmeier-data.ts`: Rodney & Malitson 1956 Table III, 25 °C, 0.577–39.38 µm; `WINDOW_MATERIALS.krs5` uses
-  it (band 0.6–40 µm, so 39.38–40 µm shows "outside the formula's range"). No material uses `DataSheetIndex` any more; the type
-  and the pages' `!hasFormula` branches remain for future data-sheet-only entries.
+- `lambertianSpotIrradiance(ρP, d, r)` and `NEAR_POINT` (0.1 m) in `hazard-distance.ts`; `diffuseExposure` limits now carry
+  their own `irradiance` and the result a `retinalRange`. `expE1Scaled` (eˣE₁) in `math.ts`. Tests 1192 pass.
+- ICNIRP 2013 full text: `pdftotext` of the icnirp.org PDF (session 179 scratchpad, gone after /clear; re-fetch it). Table 5
+  p. 283, notes p. 284, the 1/e diameter rule p. 288, the 10 cm near point p. 275, Table 7 note b (skin) p. 285.
 
 ## Next actions
-1. Merge PR #216 (triage, docs only) on the user's yes, if not done.
-2. 6a laser safety on `phase-6/6a-laser-safety`: physics-reviewer pass on the three items first (primary sources), then fixes
-   with golden tests. Then 6b–6i in order; the hero last.
-3. KRS-5 isn't a default, so it was not in the post-merge check: `materials/transparency-range?material=krs5` at 10 µm should show
-   n 2.3707, loss 28.4 % (not yet looked at by hand).
+1. `/ship`: PR #217, CI, merge on the user's yes. Post-merge (only after a release, on the user's request):
+   `laser-safety/diffuse-reflection=1.86 mm` (was 2.85 mm: the anterior-segment distance with the near zone).
+2. 6a-b on a new branch: note c on optical-density, nohd, multiple-wavelength (binds at its defaults: 1550 nm line ×2.31),
+   `pulse-train.ts` single-pulse and `scanned-beam` rules, `exposureDuration` < 0.35 s; skin Table 7 note b. Use
+   `requiredOpticalDensity`'s `actualExposure` pattern (now on d₆₃ = d/√2). Then 6b–6i; the hero last.
+3. KRS-5 by hand: `materials/transparency-range?material=krs5` at 10 µm: n 2.3707, loss 28.4 %.
 
 ## Non-obvious facts
+- **Session 179:** with a near-zone irradiance that saturates, C_E ∝ α² (open field) makes the retinal ratio *fall* close up;
+  hence the 10 cm floor with ρP/(πr²) for the retinal limits (errs high ≈ d²/(4r²)) and the exact spot form only for the
+  corneal ones. Unread "(from memory)" ranges (planar TRT) stay off pages; A&P 1983 and Altshuler 2001 are paywalled (403).
 - **Session 178:** Optica's abstract page (`opg.optica.org/josa/abstract.cfm?uri=josa-46-11-956`) gives the tables' text through
   WebFetch even for paywalled 1950s JOSA papers: coefficients, measured and computed indices. refractiveindex.info `?shelf=…`
   URLs can resolve to the wrong page (it returned Johnson & Christy). `refractiveIndex()` doesn't range-check; `inRange` does.
@@ -25,8 +29,6 @@ before the Gemini hero ("accuracy matters").
   default while inputs span decades. Check new pages for that. A band average expanded about σ₀ must take its phase at
   1/σ₀, not at the wavelength centre. devctl's CPU gate silently skipped one implementer edit (it re-ran it): keep the
   `git status --short` check in briefs.
-- **Session 176:** reviewer "UNVERIFIED" claims can be wrong the other way: Scholkmann & Wolf 2013 *do* recommend 0–70 y
-  (fitted on 0–50 y). SPIE pages fetch empty; WebFetch of the `.pdf` URL saves it to `tool-results/` for `pdftotext -raw`.
 - **Session 175:** an edit script doing `s.slice(0, start) + newText` drops everything after the block (3 functions
   vanished): replace a delimited block or append the tail. `crystal-properties.ts` imports `window-materials.ts`, so
   shared code goes in the latter. `useURLState` can't hold NaN: use an out-of-range sentinel. NIST-JANAF tables fetch as
@@ -49,12 +51,10 @@ before the Gemini hero ("accuracy matters").
   using `replace(a, () => b)`. Goodman 2nd ed. (4-24) is the Fraunhofer condition, (4-25) the integral; Siegman ch. 26 is
   Q-switching. Physics reviewers can't write scratchpad probes inside a worktree; read-only reviewers need no worktree. A
   reviewer's fix formula can be wrong while the finding is right. New warnings can fire at defaults: check each.
-- **Session 170:** `ChartPanel` → `SimpleChart` ignores layout `shapes`/`annotations`: mark points with a `mode: "markers"`
-  trace. connector-insertion-loss still uses a `shapes` line. In Git Bash `grep -c $'\r'` is unreliable: use
-  `git ls-files --eol <f>`. Implementers widening chart spans can blow up point counts: bound per-trace samples.
-- **Sessions 167–169:** implementers' page text needs a physics read; they may write CRLF (git normalises). Reviewers'
-  "(from memory)" attributions need checking (crossref `/works/<doi>`). `npx eslint <file>` can take > 2 min; devctl queues
-  gated commands under other projects' load (eslint/tests waited ≈ 20 min this session).
+- **Session 170:** `SimpleChart` ignores layout `shapes`/`annotations` (use a `mode: "markers"` trace). Check EOLs with
+  `git ls-files --eol <f>`, not grep for CR. Implementers widening chart spans can blow up point counts: bound them.
+- **Sessions 167–169:** implementers' page text needs a physics read. Reviewers' "(from memory)" attributions need checking
+  (crossref `/works/<doi>`). devctl queues gated commands (eslint, tests) under other projects' load, up to ≈ 20 min.
 - **Sessions 163–173 (5w, 141 pages, 13 bugs):** useful reviewer catches are defaults that hide the page's effect,
   stated-but-false conditions, results that ignore an input, fixed chart ranges that miss the input, and formulas past
   their limit. Brief: verdict + BUG/MINOR/UNVERIFIED, file:line, hand calcs, "(from memory)", probe prefixes, don't edit.

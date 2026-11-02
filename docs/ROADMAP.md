@@ -252,12 +252,9 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 **Laser safety** (optional)
 - A scanned-lidar mode on `lidar-safety`.
 - Re-check the classes when IEC 60825-1 Ed. 4 is published (only a BSI draft in 2026).
-- Session 174 (deferred): ICNIRP Table 5 note c (peak of a beam < 1 mm for t < 0.35 s) is applied only to the medical
-  page's focus OD (`requiredOpticalDensity(…, { actualExposure: true })`); other pages average over 1 mm. `diffuse-reflection`
-  only warns inside 10 spot diameters; the on-axis disk ρP/(π(r² + a²)) would fix the near zone. Outside 400–1400 nm the
-  pages assume 10 s with a note (ICNIRP p. 285: the longest exposure expected). Unverified: the TRT shape factors
-  (/27 sphere, 3/16 layer) against Anderson & Parrish 1983; the ANSI differences quoted from Schulmeister 2017 on
-  `ansi-iec-comparison`; ICAO Doc 9815 levels and EN 207 test conditions (from memory).
+- Session 174 (deferred): ICNIRP Table 5 note c is applied only to the medical page's focus OD; the rest is 6a-b. Outside
+  400–1400 nm the pages assume 10 s with a note (ICNIRP p. 285: the longest exposure expected). Unverified: the ANSI
+  differences quoted from Schulmeister 2017 on `ansi-iec-comparison`; ICAO Doc 9815 levels and EN 207 test conditions (from memory).
 
 **Codex review 2026-10-24** (each reproduced in session 144 with the repo's functions; golden cases for the tests)
 - Fixed in 4g-b (session 146). Leftovers: the OPA page's linear-GVM spectrum can run past degeneracy ν_p/2 when |δ_si| is tiny,
@@ -308,9 +305,12 @@ One box per session, in this order.
 Triage of the ≈ 88 "Open findings" below (session 178). Each stage: an adversarial `physics-reviewer` pass against primary
 literature first, then fixes with golden tests citing the source. Values that might be wrong come first, then unread citations,
 then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
-- [ ] 6a laser safety: `diffuse-reflection` near zone (on-axis disk ρP/(π(r² + a²)) instead of a warning inside 10 spot diameters);
-  ICNIRP Table 5 note c (peak of a beam < 1 mm, t < 0.35 s) beyond the medical page: decide where it binds; TRT shape factors
-  (/27 sphere, 3/16 layer) against Anderson & Parrish 1983.
+- [x] 6a-a laser safety (session 179, `phase-6/6a-laser-safety`, PR #217): diffuse near zone exact for the Gaussian spot, retinal limits from
+  the 10 cm near point; note c threshold on d₆₃; TRT attribution. See Done.
+- [ ] 6a-b laser safety: ICNIRP Table 5 note c (1/e diameter < 1 mm, t < 0.35 s: the actual exposure, ICNIRP p. 284/288) on
+  `optical-density`, `nohd` (`limitSafeDiameter`/`limitMaxPower`), `multiple-wavelength` (binds at defaults: 1550 nm line ×2.31),
+  the single-pulse/scan rules in `pulse-train.ts` (`limitMaxEnergy`, `scanned-beam`) and `exposureDuration` when < 0.35 s;
+  Table 7 note b on `skin-mpe` (beam < 1 mm, any t: actual exposure, not the 3.5 mm average; ×98 at 0.5 mm). Session 179 review.
 - [ ] 6b lasers: `optical-parametric-oscillator` threshold with Boyd–Kleinman h(B, ξ) (L_eff = min(L, l_a) may put P_th ≈ 10× high);
   `supercontinuum` DW with the ejected-soliton power and the N > 16 threshold (Dudley 2006); `thin-disk-laser` κ at the default
   10 at.% (Beil 2010: 5.7 at 12 at.%); `injection-locking` stable band at weak injection (Henry–Olsson–Dutta 1985).
@@ -349,6 +349,10 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 6a-a laser safety (session 179, `phase-6/6a-laser-safety`, PR #217): `diffuse-reflection` near zone exact for a Lambertian Gaussian spot,
+  ρP/(πr²)·x(1 − x eˣE₁(x)), x = 8r²/d² (new `expE1Scaled`, A&S Table 5.1 goldens), retinal limits assessed from the 10 cm near
+  point (ICNIRP p. 275; a 532 nm 0.5 W point spot: 7.9 cm → none); note c threshold on d₆₃ = d/√2 (ICNIRP p. 288; 1–1.41 mm
+  beams had OD 0.20–0.36 low); TRT text credits A&P only for the vessel d²/(16κ).
 - KRS-5 Sellmeier (session 178, `phase-5/krs5-sellmeier`, PR #215): Rodney & Malitson 1956 Table III (25 °C, 0.577–39.38 µm) in
   `MATERIALS.krs5`, checked to 1e-5 against Table IV (2.37069 at 10 µm); window pages and chromatic-dispersion now use it.
 - 5w full textbook-tier pass (sessions 163–177, PRs #200–#214): every textbook-tier page reviewed against primary literature.
