@@ -7,7 +7,7 @@ import { useURLState } from "../../../hooks/use-url-state";
 import {
   efficiencyBeyondStokes, optimumOutputCoupler, rigrodOutput, stokesEfficiency,
 } from "../../../physics/fiber-optics/doped-fiber-gain";
-import { DB_PER_NEPER, lp11CutoffWavelength, vNumber } from "../../../physics/fiber-optics/macro-bending-loss";
+import { DB_PER_E_FOLD, lp11CutoffWavelength, vNumber } from "../../../physics/fiber-optics/macro-bending-loss";
 import { guidedModeCount, MAX_EXACT_MODE_V, petermannIIRadius } from "../../../physics/fiber-optics/step-index-modes";
 
 const clamp = (x: number, lo: number, hi: number) => Math.min(Math.max(x, lo), hi);
@@ -53,7 +53,7 @@ export default function FiberLaserCalculator() {
 
   const calc = useMemo(() => {
     const out = pump > threshold ? slope * (pump - threshold) : 0;
-    const g0L = gain_dB / DB_PER_NEPER;
+    const g0L = gain_dB / DB_PER_E_FOLD;
     // Internal round-trip loss lumped into the rear mirror: R₁ = 10^(−loss/10).
     const R1 = 10 ** (-loss_dB / 10);
     const opt = optimumOutputCoupler(g0L, R1);

@@ -21,7 +21,7 @@
 
 import { c, h, N_A } from "../constants";
 import { besselK } from "../math";
-import { DB_PER_NEPER, lp01Mode, vNumber, type StepIndexFiber } from "./macro-bending-loss";
+import { DB_PER_E_FOLD, lp01Mode, vNumber, type StepIndexFiber } from "./macro-bending-loss";
 
 /** Silica density (kg/m³) for converting a weight fraction into an ion density. */
 export const SILICA_DENSITY = 2201;
@@ -99,12 +99,12 @@ export function ionDensityFromWtPpm(ppm: number, molarMass: number, density = SI
 
 /** Small-signal (unpumped) absorption Γσ_aN in dB/m. */
 export function absorptionDbPerM(overlap: number, sigmaA: number, N: number): number {
-  return DB_PER_NEPER * overlap * sigmaA * N;
+  return DB_PER_E_FOLD * overlap * sigmaA * N;
 }
 
 /** Gain Γσ_eNL in dB at full inversion: an upper bound no pump reaches with σ_a > 0 at the pump. */
 export function fullInversionGainDb(overlap: number, sigmaE: number, N: number, L: number): number {
-  return DB_PER_NEPER * overlap * sigmaE * N * L;
+  return DB_PER_E_FOLD * overlap * sigmaE * N * L;
 }
 
 /** Intrinsic saturation power hνA/(Γ(σ_a + σ_e)τ), W (Giles & Desurvire). */

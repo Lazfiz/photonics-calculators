@@ -13,7 +13,7 @@
  */
 
 import { DOPANT_PRESETS, type DopantPreset } from "../fiber-optics/doped-fiber-gain";
-import { DB_PER_NEPER } from "../fiber-optics/macro-bending-loss";
+import { DB_PER_E_FOLD } from "../fiber-optics/macro-bending-loss";
 
 export interface AbsorptionResult {
   /** Absorption coefficient Γσ_aN, m⁻¹. */
@@ -36,9 +36,9 @@ export function dopantAbsorption(sigmaA: number, N: number, length: number, over
   const alpha = overlap * sigmaA * N;
   return {
     alpha,
-    dbPerM: DB_PER_NEPER * alpha,
+    dbPerM: DB_PER_E_FOLD * alpha,
     absorptionLength: alpha > 0 ? 1 / alpha : Infinity,
-    lossDb: DB_PER_NEPER * alpha * length,
+    lossDb: DB_PER_E_FOLD * alpha * length,
     transmission: Math.exp(-alpha * length),
   };
 }

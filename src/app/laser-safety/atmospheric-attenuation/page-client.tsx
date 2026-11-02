@@ -7,7 +7,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  DB_PER_NEPER, aerosolExtinction, kimExponent, rayleighExtinction,
+  DB_PER_E_FOLD, aerosolExtinction, kimExponent, rayleighExtinction,
 } from "../../../physics/free-space-comms/atmospheric-attenuation";
 
 const fmt = (x: number, digits = 3) =>
@@ -26,7 +26,7 @@ export default function AtmosphericAttenuationPage() {
     const transmission = Math.exp((-alphaTotal * distance) / 1000);
     return {
       alphaRayleigh, alphaAerosol, alphaTotal, transmission,
-      attenuation_dB: (alphaTotal * distance * DB_PER_NEPER) / 1000, q: kimExponent(visibility * 1e3),
+      attenuation_dB: (alphaTotal * distance * DB_PER_E_FOLD) / 1000, q: kimExponent(visibility * 1e3),
     };
   }, [wavelength, distance, visibility]);
 
@@ -35,7 +35,7 @@ export default function AtmosphericAttenuationPage() {
     return [
       { x: distances, y: distances.map((d) => Math.exp((-results.alphaTotal * d) / 1000) * 100), type: "scatter" as const, mode: "lines" as const,
         name: "Transmission (%)", yaxis: "y", line: { color: "#60a5fa", width: 2 } },
-      { x: distances, y: distances.map((d) => (results.alphaTotal * d * DB_PER_NEPER) / 1000), type: "scatter" as const, mode: "lines" as const,
+      { x: distances, y: distances.map((d) => (results.alphaTotal * d * DB_PER_E_FOLD) / 1000), type: "scatter" as const, mode: "lines" as const,
         name: "Attenuation (dB)", yaxis: "y2", line: { color: "#f87171", width: 2 } },
     ];
   }, [results.alphaTotal, distance]);
@@ -52,7 +52,7 @@ export default function AtmosphericAttenuationPage() {
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ResultCard label="Transmission" value={`${fmt(results.transmission * 100, 4)} %`} tone="blue" subtext={`at ${distance} m`} />
         <ResultCard label="Attenuation" value={`${fmt(results.attenuation_dB)} dB`} tone="yellow" />
-        <ResultCard label="Total extinction α" value={`${fmt(results.alphaTotal)} km⁻¹`} tone="green" subtext={`${fmt(results.alphaTotal * DB_PER_NEPER)} dB/km`} />
+        <ResultCard label="Total extinction α" value={`${fmt(results.alphaTotal)} km⁻¹`} tone="green" subtext={`${fmt(results.alphaTotal * DB_PER_E_FOLD)} dB/km`} />
         <ResultCard label="Rayleigh" value={`${fmt(results.alphaRayleigh)} km⁻¹`} tone="purple" subtext="standard air, 15 °C, 1013 hPa" />
         <ResultCard label="Aerosol (visibility)" value={`${fmt(results.alphaAerosol)} km⁻¹`} tone="red" subtext={`Kim q = ${fmt(results.q)}`} />
       </div>
