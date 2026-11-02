@@ -1,21 +1,21 @@
 # Handover — 2026-11-01 (session 178 → session 179)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 178 did the KRS-5 Sellmeier box on `phase-5/krs5-sellmeier`, PR #215. PRs #200–#214 are merged to `main` but not
-released (`release` = `d82602ed`). Next: the Gemini hero, the last Phase 5 box (ask the user for the files).
+Session 178 did KRS-5 (PR #215, merged and released: `release` = `fbc4e714`, post-merge check all pass) and triaged the ≈ 88
+open findings into ROADMAP Phase 6 (`phase-6/findings-triage`, PR #216). Next: 6a (laser safety). The user wants the fixes
+before the Gemini hero ("accuracy matters").
 
 ## State
 - `MATERIALS.krs5` in `sellmeier-data.ts`: Rodney & Malitson 1956 Table III, 25 °C, 0.577–39.38 µm; `WINDOW_MATERIALS.krs5` uses
   it (band 0.6–40 µm, so 39.38–40 µm shows "outside the formula's range"). No material uses `DataSheetIndex` any more; the type
   and the pages' `!hasFormula` branches remain for future data-sheet-only entries.
-- chromatic-dispersion compares 17 sets (18 colours). optical-glass-catalog skips KRS-5 (its range misses the F line). 1190 tests.
 
 ## Next actions
-1. `/ship` the KRS-5 PR. Post-merge (on a release only): `thin-film/wedge-film` (default n_f 2.35), `thin-film/fabry-perot-filter`
-   (FSR card in THz), plus the values in PRs #207–#213 (5w-14: `spectroscopy/stray-light=2.699`,
-   `spectroscopy/dispersive-element=74.7`; 5w-13: nonlinear-crystals K 0.006043 %/W, brillouin T_B ≈ 8 ns). KRS-5 isn't a default,
-   so check `materials/transparency-range?material=krs5` at 10 µm by hand: n 2.3707, loss 28.4 %.
-2. Last in Phase 5: the Gemini hero (ask the user for the files). Then Phase 4 open findings.
+1. Merge PR #216 (triage, docs only) on the user's yes, if not done.
+2. 6a laser safety on `phase-6/6a-laser-safety`: physics-reviewer pass on the three items first (primary sources), then fixes
+   with golden tests. Then 6b–6i in order; the hero last.
+3. KRS-5 isn't a default, so it was not in the post-merge check: `materials/transparency-range?material=krs5` at 10 µm should show
+   n 2.3707, loss 28.4 % (not yet looked at by hand).
 
 ## Non-obvious facts
 - **Session 178:** Optica's abstract page (`opg.optica.org/josa/abstract.cfm?uri=josa-46-11-956`) gives the tables' text through

@@ -10,7 +10,7 @@ goes in the PR description.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
   textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) and 5w-13 (materials) and 5w-14 (spectroscopy) and 5w-15 (thin-film + polarization) done (sessions 163–177): 5w is complete; KRS-5
-  Sellmeier done (session 178); next the Gemini hero. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  Sellmeier done (session 178). Phase 6 (open findings, accuracy first) is next, from 6a; the Gemini hero comes after it. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -302,7 +302,35 @@ One box per session, in this order.
 ## Phase 5 — after Phase 3 (user plan, session 156)
 - [x] Spot-check (session 162, `phase-5/spot-check`, PR #199): 20 pages, 2 bugs (TIA noise, SIM note), both textbook tier.
 - [x] KRS-5 Sellmeier (session 178, `phase-5/krs5-sellmeier`, PR #215): see Done.
-- [ ] Last: replace the home-page hero with the one the user made in Gemini, and wire it in (ask the user for the files).
+- Hero: moved after Phase 6 (user, session 178).
+
+## Phase 6 — open findings, accuracy first (user, session 178: "do the fixes, hero later; accuracy matters")
+Triage of the ≈ 88 "Open findings" below (session 178). Each stage: an adversarial `physics-reviewer` pass against primary
+literature first, then fixes with golden tests citing the source. Values that might be wrong come first, then unread citations,
+then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
+- [ ] 6a laser safety: `diffuse-reflection` near zone (on-axis disk ρP/(π(r² + a²)) instead of a warning inside 10 spot diameters);
+  ICNIRP Table 5 note c (peak of a beam < 1 mm, t < 0.35 s) beyond the medical page: decide where it binds; TRT shape factors
+  (/27 sphere, 3/16 layer) against Anderson & Parrish 1983.
+- [ ] 6b lasers: `optical-parametric-oscillator` threshold with Boyd–Kleinman h(B, ξ) (L_eff = min(L, l_a) may put P_th ≈ 10× high);
+  `supercontinuum` DW with the ejected-soliton power and the N > 16 threshold (Dudley 2006); `thin-disk-laser` κ at the default
+  10 at.% (Beil 2010: 5.7 at 12 at.%); `injection-locking` stable band at weak injection (Henry–Olsson–Dutta 1985).
+- [ ] 6c free-space comms: `beam-wander` with the diffracting W(z) (factor 0.90 at the defaults, 0.49 at L/z_R 12; Andrews & Phillips
+  2005 §6.5); FSO `adaptive-optics` actuator count through `nollResidual` / `dmFittingVariance`; `point-ahead` LEO station rotation
+  (≈ 3 µrad); `DB_PER_NEPER` misnamed (ISO 80000-3: 1 Np = 8.686 dB); QKD eq. (10)'s −Y₀(1 − e^(−ημ)) term instead of the Y₀ cap.
+- [ ] 6d-a materials values: Brillouin diamond p² convention (4×); Raman KGW/Ba(NO₃)₂ 1064 nm vendor gains vs 1/λ_p from 532 nm (2×);
+  TPA DeSalvo E′_g scaling (BBO 355 nm 0.076 vs 0.010; KTP 520 nm 4× its 532 nm β).
+- [ ] 6d-b materials values: heat-capacity GaAs (Crystran 360 > 6R/M 345; Blakemore 1982) and diamond θ_D (266 vs 502 J/(kg·K));
+  x-ray β Compton term (Hubbell incoherent scattering; Be +28 % at 10 keV); thermal-evaporation T_m (CRC/Alcock).
+- [ ] 6e fiber + detectors: `photonic-crystal` MFD, Marcuse vs Nielsen et al. OL 28, 2309 (2003) (6.69 vs 5.08 µm); `photodiode-speed`
+  diffusion tail (Si 850 nm: 1/α 19 µm > W); `detectivity` D* from current density or R₀A; `linear-mode-avalanche` default I_d vs the
+  C30902EH spec; streak transit prefactor 2.63 vs first-principles 3.37.
+- [ ] 6f citation sweep a (thin film, polarization, imaging, spectroscopy, detectors): every "unverified" / "from memory" entry read in
+  its source (crossref, Optica abstract pages, ITU/ICNIRP PDFs); fix or confirm, one line each.
+- [ ] 6g citation sweep b (fiber, free-space comms, wave optics, materials, laser safety).
+- [ ] 6h accepted limitations: move the missing-feature and missing-data entries from "Open findings" to a "Known limitations" list;
+  check that each page states its limit.
+- [ ] 6i cross-cutting UI (not accuracy): stale `ui-check` checks, chart double padding, export-row height, metal-page JS size.
+- [ ] Then (Phase 5 leftover): replace the home-page hero with the one the user made in Gemini, and wire it in (ask the user for the files).
 
 ## Decisions (keep)
 - **Polarization:** Goldstein/Collett convention site-wide.
