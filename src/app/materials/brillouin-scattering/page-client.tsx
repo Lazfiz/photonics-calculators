@@ -138,10 +138,11 @@ export default function BrillouinScatteringPage() {
             6.09e-9 from the formula, and ν_B = 2nv_A/λ gives 8.10 GHz against the measured 7.95 GHz (+1.9 %); its ρ, v_A and p₁₂ are the paper&apos;s Table 1, after Uchida &amp; Niizeki 1973. As₂S₃
             waveguide (Pant et al. 2011): 0.715e-9 m/W measured, 0.78e-9 from the formula (0.74e-9 with their mode overlap 0.95).
             Diamond (Bai et al. 2020, 532 nm; longitudinal phonons along [110], pump polarized along ⟨111⟩): 60 ± 9 cm/GW
-            measured from the laser threshold, 74 cm/GW from the formula at the measured Δν_B of 11.9 ± 4.3 MHz and 60 cm/GW at
-            14.7 MHz. Its p is the effective value √0.0153 the paper takes from Grimsditch &amp; Ramdas without stating the
-            convention, so treat the diamond gain as ±40 %. For As₂S₃ and diamond, v_A follows from the measured shift,
-            v_A = ν_Bλ/(2n).
+            measured from the laser threshold (79 cm/GW in the abstract), 17.4 cm/GW from the formula at the measured Δν_B of
+            11.9 ± 4.3 MHz. Its effective p = (p₁₁ + 2p₁₂ − 2p₄₄)/3 = 0.0600 comes from Grimsditch &amp; Ramdas&apos;s
+            photoelastic constants; no backscatter polarization gives more than p² = 0.0047. Bai et al.&apos;s p² = 0.0153 is
+            about (2p)², a strain tensor without its factor ½, so the measured gain is 3–4× the elasto-optic estimate. For As₂S₃
+            and diamond, v_A follows from the measured shift, v_A = ν_Bλ/(2n).
           </p>
         </div>
       </div>

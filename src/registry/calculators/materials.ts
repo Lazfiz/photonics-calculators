@@ -80,8 +80,12 @@ export const materials: CalculatorEntry[] = [
         url: "https://doi.org/10.1364/OE.19.008285",
       },
       {
-        citation: "Bai Z., Williams R. J., Kitzler O., et al. (2020). Diamond Brillouin laser in the visible. APL Photonics 5, 031301. Longitudinal phonons along [110], pump polarized along ⟨111⟩: effective p² 0.0153 (after Grimsditch & Ramdas, convention not stated), ν_B 167 GHz, Δν_B 11.9 ± 4.3 MHz, g 60 ± 9 cm/GW from the threshold at 532 nm.",
+        citation: "Bai Z., Williams R. J., Kitzler O., et al. (2020). Diamond Brillouin laser in the visible. APL Photonics 5, 031301. Longitudinal phonons along [110], pump polarized along ⟨111⟩: ν_B 167 GHz, Δν_B 11.9 ± 4.3 MHz, g 60 ± 9 cm/GW from the threshold at 532 nm (79 cm/GW in the abstract). Their p² 0.0153 is about (2p)²; the page uses p = (p₁₁ + 2p₁₂ − 2p₄₄)/3 = 0.0600.",
         url: "https://doi.org/10.1063/1.5134907",
+      },
+      {
+        citation: "Grimsditch M. H., Ramdas A. K. (1975). Brillouin scattering in diamond. Phys. Rev. B 11, 3139–3148. Photoelastic constants p₄₄ = −0.172, p₁₁ − p₁₂ = −0.292, p₁₁ + 2p₁₂ = −0.1640 (abstract).",
+        url: "https://doi.org/10.1103/PhysRevB.11.3139",
       },
     ],
     related: [
