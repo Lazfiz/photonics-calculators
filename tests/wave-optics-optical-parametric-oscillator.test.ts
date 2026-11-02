@@ -7,7 +7,7 @@ import { refractiveIndex } from "../src/physics/materials/sellmeier";
 import { BBO_TAMOSAUSKAS } from "../src/physics/materials/uniaxial-data";
 import {
   bboTypeICut, idlerWavelength, parametricGainCoefficient, phaseMismatch, qpmPeriod, sroThresholdGainLength,
-  sroThresholdIntensity, threeWaveMismatch, walkOffApertureLength,
+  sroThresholdIntensity, threeWaveMismatch, walkOffApertureLength, walkOffEffectiveLength,
 } from "../src/physics/wave-optics/optical-parametric-oscillator";
 
 function assertRel(actual: number, expected: number, tol: number, label: string) {
@@ -47,6 +47,31 @@ test("SRO threshold: cosh²(gL)(1 − α) = 1", () => {
   assertRel(Ith * Math.PI * 50e-6 ** 2, 96.15, 1e-3, "P_th");
   // At threshold intensity, g L_eff equals g_th L.
   assertRel(parametricGainCoefficient(p, Ith) * la, 0.174969, 1e-5, "g(I_th) L");
+});
+
+test("walk-off effective length: limits and 2-D quadrature", () => {
+  const w = 50e-6;
+  const rho = (3.114 * Math.PI) / 180; // page default
+  const la = walkOffApertureLength(w, rho); // 1.63061 mm
+  // Long crystal: the diamond |s| + |d| ≤ L covers both Gaussians, L_eff² = ½·(2w√π/ρ)(w√(2π)/ρ) = √2 π w²/ρ².
+  assertRel(walkOffEffectiveLength(20e-3, w, rho), 2 ** 0.25 * la, 1e-9, "L ≫ l_a");
+  assertRel(walkOffEffectiveLength(20e-3, w, rho), 1.939128e-3, 1e-6, "L_eff at the defaults");
+  // Midpoint sum of the 2-D integral over the square (1500², independent of the 1-D form): 1.363808 mm, 4.203662 mm.
+  assertRel(walkOffEffectiveLength(1.63e-3, w, rho), 1.363808e-3, 1e-6, "L ≈ l_a");
+  assertRel(walkOffEffectiveLength(5e-3, w, Math.PI / 180), 4.203662e-3, 1e-6, "ρ = 1°");
+  // No walk-off: the full length; tiny ρ tends to it.
+  assert.equal(walkOffEffectiveLength(20e-3, w, 0), 20e-3);
+  assertRel(walkOffEffectiveLength(20e-3, w, 1e-9), 20e-3, 1e-9, "ρ → 0");
+  assert.ok(Number.isNaN(walkOffEffectiveLength(0, w, rho)));
+  assert.ok(Number.isNaN(walkOffEffectiveLength(20e-3, w, -1e-3)));
+  // Page defaults (BBO 532 → 800 nm, 50 µm, 20 mm, 3 %): P_th falls from 4086 W (min(L, l_a)) by (l_a/L_eff)² = 1/√2.
+  const cut = bboTypeICut(532e-9, 800e-9);
+  const q = { lambdaPump: 532e-9, lambdaSignal: 800e-9, dEff: cut.dEff, nPump: cut.nPump, nSignal: cut.nSignal, nIdler: cut.nIdler };
+  const area = Math.PI * w * w;
+  const pOld = sroThresholdIntensity(q, la, 0.03) * area;
+  const pNew = sroThresholdIntensity(q, walkOffEffectiveLength(20e-3, w, rho), 0.03) * area;
+  assertRel(pNew / pOld, Math.SQRT1_2, 1e-9, "P_th ratio");
+  assertRel(pNew, 2889, 1e-3, "P_th");
 });
 
 test("phase mismatch and QPM period (hand calculation)", () => {

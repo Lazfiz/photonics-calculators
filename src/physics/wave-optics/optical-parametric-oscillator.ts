@@ -1,7 +1,7 @@
 /**
  * Optical parametric amplification and the threshold of a singly resonant OPO (SRO). SI units in and out.
  * Model tier: textbook approximation: plane waves of intensity I = P/(πw²), perfect phase matching, no
- * pump depletion, walk-off handled only by capping the length at the aperture length.
+ * pump depletion; pump walk-off through the near-field overlap length `walkOffEffectiveLength`.
  *
  * Energy conservation: ω_p = ω_s + ω_i, so λ_i = λ_p λ_s/(λ_s − λ_p).
  * Gain coefficient (R. W. Boyd, Nonlinear Optics, 3rd ed., §2.8, in SI with I = 2nε₀c|A|²):
@@ -19,6 +19,7 @@
  * `nonlinear-crystals.ts`; EKSMA d₂₂ 2.2, d₃₁ 0.08 pm/V at 1064 nm, no Miller scaling).
  */
 import { c, epsilon_0 } from "../constants";
+import { erf } from "../math";
 import { BBO_D, typeIPhaseMatchingAngle, uniaxialWalkOff } from "../materials/nonlinear-crystals";
 import { inRange, refractiveIndex } from "../materials/sellmeier";
 import { BBO_TAMOSAUSKAS } from "../materials/uniaxial-data";
@@ -64,6 +65,31 @@ export function parametricGainCoefficient(p: ParametricProcess, intensity: numbe
 export function walkOffApertureLength(w: number, rho: number): number {
   if (!(w > 0) || !(rho >= 0)) return NaN;
   return rho === 0 ? Infinity : (Math.sqrt(Math.PI) * w) / rho;
+}
+
+/**
+ * Walk-off effective length L_eff, m, of a low-gain SRO: crystal length L (m), Gaussian pump and signal mode of the same
+ * radius w (m) in the near field, pump walk-off ρ (rad), idler free and not walking off (type I e → o + o), pump centred on
+ * the signal axis at mid-crystal. The idler generated up to z feeds the signal from z on, so the signal gain projected on
+ * its mode is ∝ ⟨(∫A_p dz)²⟩ over |u_s|², which defines L_eff² (our own derivation, checked against 2-D quadrature):
+ *   L_eff² = ∫∫ exp(−ρ²[(u + v)² + 2(u − v)²]/(4w²)) du dv over |u|, |v| ≤ L/2
+ *          = ∫₀^L e^(−a d²) √(π/b) erf(√b (L − d)) dd,  a = ρ²/(2w²), b = ρ²/(4w²)  (s = u + v, d = u − v).
+ * Limits: ρ → 0 gives L; L ≫ w/ρ gives (√2 π)^(1/2) w/ρ = 2^(1/4) l_a with l_a = √π w/ρ (Boyd & Kleinman's aperture
+ * length; their h(B, ξ) is for SHG, where the free harmonic gains ∝ L·l_a, not for a resonated signal mode).
+ * Simpson's rule, 400 intervals over [0, min(L, 8/√a)] (e^(−64) beyond), relative error < 1e-8.
+ */
+export function walkOffEffectiveLength(L: number, w: number, rho: number): number {
+  if (!(L > 0) || !Number.isFinite(L) || !(w > 0) || !(rho >= 0) || !Number.isFinite(rho)) return NaN;
+  if (rho === 0) return L;
+  const a = (rho * rho) / (2 * w * w);
+  const sb = Math.sqrt(a / 2);
+  const f = (d: number) => Math.exp(-a * d * d) * (Math.sqrt(Math.PI) / sb) * erf(sb * (L - d));
+  const top = Math.min(L, 8 / Math.sqrt(a));
+  const n = 400;
+  const h = top / n;
+  let sum = f(0) + f(top);
+  for (let i = 1; i < n; i++) sum += (i % 2 ? 4 : 2) * f(i * h);
+  return Math.sqrt((sum * h) / 3);
 }
 
 /** g_th L for an SRO with round-trip signal power loss α (0 < α < 1): arccosh(1/√(1 − α)). */

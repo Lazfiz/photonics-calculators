@@ -78,6 +78,22 @@ test("dispersive wave: full phase matching β₂Ω²/2 + β₃Ω³/6 = γP/2 (Ak
   assert.ok(Number.isNaN(dispersiveWaveShiftNonlinear(-1e-26, 0, 0.1, 1)), "β₃ = 0");
 });
 
+test("supercontinuum defaults: dispersive wave of the first ejected soliton (Skryabin & Gorbach 2010, Eq. 10)", () => {
+  // Dudley et al. 2006 PCF: 835 nm, 50 fs FWHM sech², 0.5673 nJ, β₂ −11.83 ps²/km, β₃ 0.081038 ps³/km, γ 0.11 /(W·m).
+  const t0 = sechT0(50e-15); // 28.365 fs
+  const P0 = sechPeakPower(0.5673e-9, t0); // 10.000 kW
+  const N = solitonOrder(P0, -11.83e-27, 0.11, t0);
+  assertRel(N, 8.6494, 1e-4, "N");
+  // P_s = (2N − 1)² P₁ = (2N − 1)² P₀/N² = 16.2988² · 10.0001 kW/74.812 = 35.509 kW.
+  const Ps = solitonContent(N).amplitude ** 2 * fundamentalSolitonPower(-11.83e-27, 0.11, t0);
+  assertRel(Ps, ((2 * N - 1) ** 2 * P0) / N ** 2, 1e-12, "P_s");
+  assertRel(Ps, 35.509e3, 1e-4, "P_s (W)");
+  // λ values checked by an independent Newton solve of the cubic (scratchpad probe, agrees to 1e-13).
+  const lambdaOf = (P: number) => (2 * Math.PI * c) / ((2 * Math.PI * c) / 835e-9 + dispersiveWaveShiftNonlinear(-11.83e-27, 8.1038e-41, 0.11, P));
+  assertRel(lambdaOf(Ps), 633.349e-9, 1e-5, "λ_DW, ejected soliton");
+  assertRel(lambdaOf(P0), 667.673e-9, 1e-5, "λ_DW, input P₀ (the page's old value)");
+});
+
 test("soliton content of N sech τ: ⌊N + ½⌋ solitons, strongest amplitude 2N − 1 (Satsuma & Yajima 1974)", () => {
   assert.deepEqual(solitonContent(1), { count: 1, amplitude: 1 });
   assert.deepEqual(solitonContent(2), { count: 2, amplitude: 3 });

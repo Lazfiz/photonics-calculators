@@ -5,7 +5,7 @@ import { useURLState } from "../../../hooks/use-url-state";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import {
   bboTypeICut, idlerWavelength, parametricGainCoefficient, phaseMismatch, qpmPeriod, sroThresholdGainLength,
-  sroThresholdIntensity, walkOffApertureLength,
+  sroThresholdIntensity, walkOffApertureLength, walkOffEffectiveLength,
 } from "../../../physics/wave-optics/optical-parametric-oscillator";
 
 const fmt = (x: number, digits: number, unit: string) => (Number.isFinite(x) ? `${x.toFixed(digits)} ${unit}` : "—");
@@ -44,10 +44,11 @@ export default function OPOCalculator() {
   };
   const w = beamRadius * 1e-6;
   const area = Math.PI * w * w;
-  const apertureLength = walkOffApertureLength(w, (walkOff * Math.PI) / 180);
+  const rho = (walkOff * Math.PI) / 180;
+  const apertureLength = walkOffApertureLength(w, rho);
 
   const r = useMemo(() => {
-    const Leff = Math.min(crystalLength * 1e-3, apertureLength);
+    const Leff = walkOffEffectiveLength(crystalLength * 1e-3, w, rho);
     const intensity = pumpPower / area;
     const g = parametricGainCoefficient(process, intensity);
     const gThL = sroThresholdGainLength(cavityLoss / 100);
@@ -58,14 +59,14 @@ export default function OPOCalculator() {
       intensity, g, Leff, gL: g * Leff, gThL, Pth, dk,
       singlePassGain: Math.cosh(g * Leff) ** 2 - 1,
     };
-  }, [process, crystalLength, pumpPower, area, apertureLength, cavityLoss]);
+  }, [process, crystalLength, pumpPower, area, w, rho, cavityLoss]);
 
   const valid = Number.isFinite(r.g) && Number.isFinite(r.Pth);
 
   const gainVsLength = useMemo(() => {
     const lengths = Array.from({ length: 99 }, (_, i) => 1 + i * 0.5);
-    return { x: lengths, y: lengths.map((L) => parametricGainCoefficient(process, pumpPower / area) * Math.min(L * 1e-3, apertureLength)) };
-  }, [process, pumpPower, area, apertureLength]);
+    return { x: lengths, y: lengths.map((L) => parametricGainCoefficient(process, pumpPower / area) * walkOffEffectiveLength(L * 1e-3, w, rho)) };
+  }, [process, pumpPower, area, w, rho]);
 
   const gainVsPower = useMemo(() => {
     const Pmax = 2 * Math.max(pumpPower, Number.isFinite(r.Pth) ? r.Pth : 0);
@@ -93,13 +94,13 @@ export default function OPOCalculator() {
         <p className="font-mono text-gray-400 text-sm leading-relaxed">
           ωₚ = ωₛ + ωᵢ &nbsp;|&nbsp; λᵢ = λₚ·λₛ / (λₛ − λₚ)<br />
           g² = 2ωₛωᵢ d_eff² Iₚ / (nₚnₛnᵢ ε₀ c³), &nbsp; Iₚ = P/(πw²)<br />
-          L_eff = min(L, √π·w/ρ) &nbsp;|&nbsp; single-pass signal gain cosh²(g·L_eff) − 1<br />
+          L_eff² = ∬ exp(−ρ²[(u+v)² + 2(u−v)²]/4w²) du dv over the crystal → 2^¼·√π·w/ρ &nbsp;|&nbsp; single-pass signal gain cosh²(g·L_eff) − 1<br />
           SRO threshold: cosh²(g·L_eff)·(1 − α) = 1 &nbsp;(g·L_eff ≈ √α)<br />
           Δk = kₚ − kₛ − kᵢ &nbsp;|&nbsp; QPM period Λ = 2π/|Δk|
         </p>
         <p className="text-gray-500 text-xs mt-2">
           Plane-wave estimate (Boyd, Nonlinear Optics §2.8–2.9): perfect phase matching assumed, no pump depletion,
-          no focusing optimisation (Boyd–Kleinman). α is the signal&apos;s round-trip power loss, output coupling included;
+          no focusing optimisation (Boyd–Kleinman). Walk-off: pump and signal mode of equal radius in the near field, pump centred on the signal axis at mid-crystal. α is the signal&apos;s round-trip power loss, output coupling included;
           the idler is not resonated.
         </p>
       </div>

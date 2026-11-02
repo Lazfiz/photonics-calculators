@@ -34,7 +34,7 @@ export default function ThinDiskLaserPage() {
   const [sigmaEPRaw, setSigmaEP] = useURLState("sigmaEP", 0.22); // at λ_p
   const [tauRaw, setTau] = useURLState("tau", 0.951); // ms, Sumida & Fan 1994
   const [heatRaw, setHeat] = useURLState("heatFraction", 0.087); // 1 − 940/1030 (lasing, Chénais 2006 Eq. V.1)
-  const [kappaRaw, setKappa] = useURLState("kappa", 7); // W/(m K), 8 at.% Yb:YAG (Chénais 2006 §II)
+  const [kappaRaw, setKappa] = useURLState("kappa", 6.3); // W/(m K), 10 at.% Yb:YAG: between 7 at 8 at.% (Chénais 2006 §II) and 5.7 at 12 at.% (Körner 2012 Table 4)
 
   const d = clamp(thicknessRaw, 10, 5000, 200) * 1e-6;
   const diskD = clamp(diameterRaw, 0.1, 1000, 10) * 1e-3;
@@ -53,7 +53,7 @@ export default function ThinDiskLaserPage() {
   const sigmaEP = clamp(sigmaEPRaw, 0, 1e4, 0.22) * 1e-24;
   const tau = clamp(tauRaw, 1e-4, 1e4, 0.951) * 1e-3;
   const heat = clamp(heatRaw, 0, 1, 0.087);
-  const kappa = clamp(kappaRaw, 0.1, 2000, 7);
+  const kappa = clamp(kappaRaw, 0.1, 2000, 6.3);
 
   const area = Math.PI * (spotD / 2) ** 2;
   const delta = roundTripLoss(1, R_oc, otherLoss / 2);
@@ -150,8 +150,9 @@ export default function ThinDiskLaserPage() {
           ΔT = η_h I_abs d/(2κ) for uniform heating with the back face cooled.</p>
         <p>Defaults: cross sections at 300 K from Chanteloup et al. 2014, Table 1 (σ_a measured; σ_e from Fan 2007 and Brown 2005);
           τ = 0.951 ms (Sumida &amp; Fan 1994, radiation trapping suppressed); heat fraction 1 − λ_p/λ = 0.087, Fan&apos;s thermal load
-          with every excited ion extracted by the laser (Chénais et al. 2006, Eq. V.1; higher below threshold); κ = 7 W/(m K) measured
-          on 8 at.% Yb:YAG (11 W/(m K) undoped; Chénais et al. 2006, §II). κ falls further with doping.</p>
+          with every excited ion extracted by the laser (Chénais et al. 2006, Eq. V.1; without lasing it is 1 − η_r λ_p/λ_f with λ_f 1007 nm, higher only when quenching makes the
+          radiative efficiency η_r &lt; 0.98); κ ≈ 6.3 W/(m K) for the 10 at.% default, between 7 W/(m K) measured on 8 at.% Yb:YAG
+          (11 W/(m K) undoped; Chénais et al. 2006, §II) and 5.7 W/(m K) at 12 at.% (Körner et al. 2012, Table 4).</p>
       </div>
 
       <div className="space-y-6">

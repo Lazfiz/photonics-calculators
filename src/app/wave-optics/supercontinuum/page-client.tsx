@@ -6,33 +6,34 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { c } from "../../../physics/constants";
 import {
-  dispersionLength, dispersiveWaveShift, dispersiveWaveShiftNonlinear, fissionLength, fundamentalSolitonPower, sechPeakPower, sechT0, solitonOrder,
+  dispersionLength, dispersiveWaveShift, dispersiveWaveShiftNonlinear, fissionLength, fundamentalSolitonPower, sechPeakPower, sechT0, solitonContent, solitonOrder,
 } from "../../../physics/wave-optics/soliton";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
 const round6 = (x: number) => Number(x.toPrecision(6));
 
-// Large N: noise-seeded modulation instability competes with fission and coherence is lost (Dudley et al. 2006).
+// Large N: noise-seeded modulation instability competes with fission and coherence is lost; Sylvestre et al., JOSA B 38, F90
+// (2021): "for injected pulses with soliton number N > 16, noise is stimulated through ... MI" (coherence falls from N ≈ 10).
 const MI_ORDER = 16;
 
 // Defaults: the 835 nm photonic-crystal-fibre example of Dudley et al. 2006 (50 fs sech², 10 kW peak, 15 cm).
 export default function SupercontinuumPage() {
   const [wavelengthRaw, setWavelength] = useURLState("wavelength", 835); // nm
-  const [energyRaw, setEnergy] = useURLState("pulseEnergy", 0.567); // nJ
+  const [energyRaw, setEnergy] = useURLState("pulseEnergy", 0.5673); // nJ, 10.00 kW peak
   const [fwhmRaw, setFwhm] = useURLState("pulseDuration", 50); // fs, sech² FWHM
   const [lengthRaw, setLength] = useURLState("fiberLength", 15); // cm
   const [gammaRaw, setGamma] = useURLState("gamma", 110); // 1/(W·km)
   const [beta2Raw, setBeta2] = useURLState("beta2", -11.83); // ps²/km
-  const [beta3Raw, setBeta3] = useURLState("beta3", 0.081); // ps³/km
+  const [beta3Raw, setBeta3] = useURLState("beta3", 0.081038); // ps³/km
 
   const lambda = clamp(wavelengthRaw, 200, 5000, 835) * 1e-9;
-  const energy = clamp(energyRaw, 0, 1e6, 0.567) * 1e-9;
+  const energy = clamp(energyRaw, 0, 1e6, 0.5673) * 1e-9;
   const fwhm = clamp(fwhmRaw, 1, 1e5, 50) * 1e-15;
   const fibre = clamp(lengthRaw, 0, 1e7, 15) * 1e-2;
   const gamma = clamp(gammaRaw, 0.01, 1e5, 110) * 1e-3;
   const beta2 = clamp(beta2Raw, -1000, 1000, -11.83) * 1e-27;
-  const beta3 = clamp(beta3Raw, -100, 100, 0.081) * 1e-39;
+  const beta3 = clamp(beta3Raw, -100, 100, 0.081038) * 1e-39;
 
   const t0 = sechT0(fwhm);
   const peak = sechPeakPower(energy, t0);
@@ -43,11 +44,16 @@ export default function SupercontinuumPage() {
   const anomalous = beta2 < 0;
   const omega0 = (2 * Math.PI * c) / lambda;
   const shift0 = dispersiveWaveShift(beta2, beta3);
-  // Phase matching to the soliton's nonlinear wavenumber γP/2 with the input peak power; the leading order drops it.
-  const shift = dispersiveWaveShiftNonlinear(beta2, beta3, gamma, peak);
+  // Phase matching to the radiating soliton's nonlinear wavenumber γP_s/2 (Skryabin & Gorbach 2010, Eqs. 3, 7, 10): the first
+  // soliton ejected at fission has P_s = (2N − 1)²P₁ (Satsuma–Yajima); the input P₀ bounds later, weaker ones. The leading order drops it.
+  const content = solitonContent(N);
+  const Ps = content.count > 0 ? content.amplitude ** 2 * P1 : NaN;
+  const shift = dispersiveWaveShiftNonlinear(beta2, beta3, gamma, Ps);
+  const shiftP0 = dispersiveWaveShiftNonlinear(beta2, beta3, gamma, peak);
   const toWavelength = (w: number) => (anomalous && omega0 + w > 0 ? (2 * Math.PI * c) / (omega0 + w) : NaN);
   const lambdaDW = toWavelength(shift);
   const lambdaDW0 = toWavelength(shift0);
+  const lambdaDWP0 = toWavelength(shiftP0);
 
   const regime = !anomalous
     ? "Normal dispersion: no soliton fission; SPM and optical wave breaking broaden the spectrum."
@@ -99,8 +105,8 @@ export default function SupercontinuumPage() {
           subtext={!anomalous
             ? "needs a soliton (β₂ < 0)"
             : Number.isFinite(lambdaDW)
-              ? `β₂Ω²/2 + β₃Ω³/6 = γP₀/2: Ω = 2π × ${fmt(shift / (2 * Math.PI * 1e12))} THz from the pump; leading order −3β₂/β₃ gives ${fmt(lambdaDW0 * 1e9)} nm`
-              : beta3 === 0 ? "β₃ = 0: no phase-matched dispersive wave" : "the phase-matched Ω lies beyond zero frequency"}
+              ? `β₂Ω²/2 + β₃Ω³/6 = γP_s/2, first ejected soliton P_s = ${fmt(Ps / 1e3)} kW: Ω = 2π × ${fmt(shift / (2 * Math.PI * 1e12))} THz from the pump; with P₀: ${fmt(lambdaDWP0 * 1e9)} nm, leading order −3β₂/β₃: ${fmt(lambdaDW0 * 1e9)} nm. A full GNLSE puts it bluer still.`
+              : beta3 === 0 ? "β₃ = 0: no phase-matched dispersive wave" : N < 0.5 ? "N < ½: no soliton forms" : "the phase-matched Ω lies beyond zero frequency"}
           tone="purple"
         />
         <ResultCard label="Regime" value={!anomalous ? "Normal dispersion" : N < 1 ? "Linear" : fibre < Lfiss ? "Before fission" : N > MI_ORDER ? "Modulation instability" : "Soliton fission"} subtext={regime} tone="cyan" />
@@ -111,8 +117,11 @@ export default function SupercontinuumPage() {
           N = √(γP₀T₀²/|β₂|). Higher-order dispersion and the Raman response break it up near the fission length
           L_fiss ≈ L_D/N into about N fundamental solitons. They shift to longer wavelengths, and each one radiates a
           phase-matched dispersive wave on the other side of the zero-dispersion wavelength. Its offset Ω solves
-          β₂Ω²/2 + β₃Ω³/6 = γP/2, with the input peak power here; the leading order Ω ≈ −3β₂/β₃ holds only when
-          γP ≪ |β₂|Ω². Solitons ejected at fission are up to ≈ 4× stronger, which pushes the wave further out. The spectrum itself needs a generalised NLS simulation and isn&apos;t shown; these scales tell
+          β₂Ω²/2 + β₃Ω³/6 = γP_s/2 with the radiating soliton&apos;s peak power. The first one ejected at fission has
+          P_s = (2N − 1)²P₀/N², up to 4× the input; later, weaker solitons radiate between this and the input-power value.
+          The leading order Ω ≈ −3β₂/β₃ holds only when γP_s ≪ |β₂|Ω². Higher-order dispersion, Raman and self-steepening put
+          the simulated wave further into the blue (≈ 545 nm at the defaults against 633 nm here), so read it as the least shift.
+          Coherence degrades from N ≈ 10; above N ≈ 16 modulation instability takes over. The spectrum itself needs a generalised NLS simulation and isn&apos;t shown; these scales tell
           whether the fibre is long enough for fission. Pulse shape: sech², so P₀ = E/(2T₀).</p>
       </div>
 

@@ -2,12 +2,13 @@
  * Static locking range of an injection-locked laser. Rates in rad/s (or any frequency unit, consistently).
  * Model tier: textbook approximation (single-mode rate equations, weak injection ρ ≪ 1, steady state only).
  *
- * Locked solutions with detuning Δω = ω_master − ω_free-running slave exist and are stable against phase slips for
+ * Locked steady states on the branch with carrier change ΔN ≤ 0 (detuning Δω = ω_master − ω_free-running slave) exist for
  *   −k_c √ρ √(1 + α²) ≤ Δω ≤ k_c √ρ,   ρ = P_inj/P_slave,
  * with k_c the injection coupling rate and α the linewidth enhancement factor (R. Lang, IEEE J. Quantum Electron. 18,
  * 976 (1982), doi:10.1109/JQE.1982.1071632; F. Mogensen, H. Olesen, G. Jacobsen, IEEE J. Quantum Electron. 21, 784 (1985),
  * doi:10.1109/JQE.1985.1072760). For α = 0 it is Adler's symmetric range ±k_c√ρ (R. Adler, Proc. IRE 34, 351 (1946),
- * doi:10.1109/JRPROC.1946.229930).
+ * doi:10.1109/JRPROC.1946.229930). The negative edge is a saddle-node; the positive one is only the ΔN = 0 line. Dynamic
+ * stability (a Hopf bifurcation set by the relaxation-oscillation frequency and damping) is not part of this range.
  */
 import { c } from "../constants";
 

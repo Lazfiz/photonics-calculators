@@ -152,9 +152,10 @@ test("thin disk: quasi-three-level threshold and slope at the page defaults (Fan
   assertRel(pTh, 41.679, 1e-4, "P_th (W)");
   // Slope η_abs (λ_p/λ)(−ln R)/δ = 0.94826 · 0.91262 · 0.75190 = 0.65070.
   assertRel(quasiThreeLevelSlope(eta, 940e-9, 1030e-9, 0.97, delta), 0.65070, 1e-4, "slope");
-  // 200 W pump, heat fraction 1 − 940/1030 = 0.087 (lasing, Chénais Eq. V.1), κ = 7:
-  // ΔT = 0.087 · (0.94826 · 200 W/7.0686e-6 m²) · 200 µm/(2 · 7) = 33.35 K.
-  assertRel(diskTemperatureRise((eta * 200) / A, 0.087, 200e-6, 7), 33.346, 1e-4, "ΔT (K)");
+  // 200 W pump, heat fraction 1 − 940/1030 = 0.087 (lasing, Chénais Eq. V.1), κ = 6.3 W/(m K) for the 10 at.% default
+  // (between 7 at 8 at.%, Chénais 2006 §II, and 5.7 at 12 at.%, Körner et al. 2012 Table 4):
+  // ΔT = 0.087 · (0.94826 · 200 W/7.0686e-6 m²) · 200 µm/(2 · 6.3) = 37.05 K (33.35 K with κ 7).
+  assertRel(diskTemperatureRise((eta * 200) / A, 0.087, 200e-6, 6.3), 37.051, 1e-4, "ΔT (K)");
   // No absorbed pump: no threshold.
   assert.ok(Number.isNaN(quasiThreeLevelThreshold(N, 200e-6, beta, A, 940e-9, 0.951e-3, 0)));
 });
