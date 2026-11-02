@@ -137,7 +137,7 @@ export default function SlowLightPage() {
         <p>
           The group index sets the delay over the structure; the delay-bandwidth product counts how many bits (or pulses)
           the structure holds at once, which is what limits slow-light buffers. A Lorentzian resonance of power gain G
-          (nepers) has the causal phase (G/2)γΔ/(γ² + Δ²), whose slope is the delay: gain lines and transparency windows
+          (power e-folds, e^G) has the causal phase (G/2)γΔ/(γ² + Δ²), whose slope is the delay: gain lines and transparency windows
           slow light, absorption lines (negative gain) speed it up. Its delay times its width is fixed at G/2π, so a narrow
           line gives long delay over a small bandwidth. Lossless background, one isolated line, signal narrower than the line.
         </p>

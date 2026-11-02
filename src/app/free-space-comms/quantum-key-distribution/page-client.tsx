@@ -41,7 +41,7 @@ export default function QuantumKeyDistributionPage() {
   const alpha = clamp(attenuationRaw, 0, 100, 0.21);
   const fixedLoss = clamp(fixedLossRaw, 0, 300, 0);
   const etaBob = clamp(etaBobRaw, 1e-9, 1, 0.045);
-  const y0 = clamp(y0Raw, 0, 0.01, 1.7e-6); // the model assumes Y₀ ≪ 1 (Ma et al. eq. (10) drops −Y₀(1 − e^(−ημ)))
+  const y0 = clamp(y0Raw, 0, 1, 1.7e-6);
   const eDetector = clamp(eDetRaw, 0, 0.5, 0.033);
   const fEc = clamp(fEcRaw, 1, 10, 1.22);
   const repRate = clamp(repRateRaw, 1, 1e12, 1e9);
@@ -106,7 +106,7 @@ export default function QuantumKeyDistributionPage() {
         <ValidatedNumberInput label="Channel Attenuation (dB/km)" value={attenuationRaw} onChange={setAttenuation} min={0} max={100} step="any" />
         <ValidatedNumberInput label="Fixed Link Loss (dB)" value={fixedLossRaw} onChange={setFixedLoss} min={0} max={300} step="any" />
         <ValidatedNumberInput label="Bob's Efficiency η_Bob (optics × detector)" value={etaBobRaw} onChange={setEtaBob} min={1e-9} max={1} step="any" />
-        <ValidatedNumberInput label="Background Probability per Pulse Y₀" value={y0Raw} onChange={setY0} min={0} max={0.01} step="any" />
+        <ValidatedNumberInput label="Background Probability per Pulse Y₀" value={y0Raw} onChange={setY0} min={0} max={1} step="any" />
         <ValidatedNumberInput label="Optical Error e_d" value={eDetRaw} onChange={setEDet} min={0} max={0.5} step="any" />
         <ValidatedNumberInput label="Error-Correction Inefficiency f" value={fEcRaw} onChange={setFEc} min={1} max={10} step="any" />
         <ValidatedNumberInput label="Pulse Rate (Hz)" value={repRateRaw} onChange={setRepRate} min={1} max={1e12} step="any" />
@@ -149,8 +149,10 @@ export default function QuantumKeyDistributionPage() {
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 text-sm text-gray-400 space-y-2">
         <p>
           Key rate (GLLP with infinitely many decoy states, Ma et al. 2005):
-          {"R = ½·{−f·Q_μ·H₂(E_μ) + Q₁[1 − H₂(e₁)]}"} per pulse, where Q_μ = Y₀ + 1 − e^(−ημ),
-          E_μQ_μ = ½Y₀ + e_d(1 − e^(−ημ)), Q₁ = Y₁μe^(−μ) and e₁ = (½Y₀ + e_dη)/Y₁ with Y₁ = Y₀ + η − Y₀η.
+          {"R = ½·{−f·Q_μ·H₂(E_μ) + Q₁[1 − H₂(e₁)]}"} per pulse, where Q_μ = 1 − (1 − Y₀)e^(−ημ),
+          E_μQ_μ = ½Y₀e^(−ημ) + e_d(1 − e^(−ημ)), Q₁ = Y₁μe^(−μ) and e₁ = (½Y₀(1 − η) + e_dη)/Y₁ with Y₁ = Y₀ + η − Y₀η.
+          A background click alone gives a random bit and a photon click an error e_d; Ma et al.&apos;s eqs. (10)–(11) are
+          the same for Y₀ ≪ 1.
           The first term pays for error correction; without it the key never ends.
         </p>
         <p>

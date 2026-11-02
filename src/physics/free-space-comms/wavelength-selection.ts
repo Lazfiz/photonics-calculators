@@ -12,7 +12,7 @@
  * The total is Σ wᵢsᵢ / Σ wᵢ, so it stays on 0–100 whatever the weights.
  */
 import { cwClassLimit } from "../laser-safety/laser-classes";
-import { DB_PER_NEPER, totalExtinction } from "./atmospheric-attenuation";
+import { DB_PER_E_FOLD, totalExtinction } from "./atmospheric-attenuation";
 
 export interface Candidate {
   readonly lambda: number; // m
@@ -67,7 +67,7 @@ export function scoreWavelengths(
   const sumW = weights.eyeSafety + weights.atmosphere + weights.components + weights.cost;
   return candidates.map((c) => {
     const classOneLimit = cwClassLimit("1", c.lambda, 0).power;
-    const lossDb = range >= 0 ? totalExtinction(c.lambda, visibility) * range * DB_PER_NEPER : NaN;
+    const lossDb = range >= 0 ? totalExtinction(c.lambda, visibility) * range * DB_PER_E_FOLD : NaN;
     const s = { eyeSafety: eyeSafetyScore(classOneLimit), atmosphere: atmosphereScore(lossDb) };
     const total = sumW > 0
       ? (weights.eyeSafety * s.eyeSafety + weights.atmosphere * s.atmosphere + weights.components * c.components

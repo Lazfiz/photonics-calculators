@@ -20,14 +20,18 @@ export const freeSpaceComms: CalculatorEntry[] = [
     description: "Fried parameter r₀, Greenwood frequency, isoplanatic angle and Strehl ratio with and without adaptive optics for a free-space optical link.",
     keywords: ["Adaptive Optics Strehl Gain"],
     tier: "textbook",
-    modelNote: "One uniform turbulent layer with one wind speed; the corrected Zernike modes are taken as about the actuator count; the servo residual is capped at the open-loop variance. Not modelled: wavefront-sensor noise, anisoplanatism and scintillation.",
+    modelNote: "One uniform turbulent layer with one wind speed; the actuators fill the pupil on a square grid and set the fitting error of a continuous-facesheet mirror; the servo residual is capped at the open-loop variance. Not modelled: wavefront-sensor noise, anisoplanatism and scintillation.",
     references: [
       {
         citation: "Andrews L. C., Phillips R. L. (2005). Laser Beam Propagation through Random Media, 2nd ed. SPIE. Plane-wave Fried parameter and isoplanatic angle for constant Cn².",
       },
       {
-        citation: "Noll R. J. (1976). Zernike polynomials and atmospheric turbulence. J. Opt. Soc. Am. 66, 207. Uncorrected phase variance and the residual after correcting J Zernike modes.",
+        citation: "Noll R. J. (1976). Zernike polynomials and atmospheric turbulence. J. Opt. Soc. Am. 66, 207. Uncorrected phase variance.",
         url: "https://doi.org/10.1364/josa.66.000207",
+      },
+      {
+        citation: "Hudgin R. H. (1977). Wave-front compensation error due to finite corrector-element size. J. Opt. Soc. Am. 67, 393–395. Fitting error 0.28 (d/r₀)^(5/3) for a continuous mirror of actuator pitch d.",
+        url: "https://doi.org/10.1364/josa.67.000393",
       },
       {
         citation: "Greenwood D. P. (1977). Bandwidth specification for adaptive optics systems. J. Opt. Soc. Am. 67, 390. Greenwood frequency and servo-lag variance of a first-order loop.",
@@ -103,7 +107,7 @@ export const freeSpaceComms: CalculatorEntry[] = [
     title: "Beam Wander",
     description: "RMS turbulence-induced wander of a collimated Gaussian beam, its angular jitter and the mean on-axis loss versus Cn², path length and beam radius.",
     tier: "textbook",
-    modelNote: "Weak fluctuations (σ_R² < 1, 2W₀ < r₀), collimated Gaussian beam, constant Cn², infinite outer scale: ⟨r_c²⟩ = 2.42 Cn²L³W₀^(−1/3), independent of λ. Mean on-axis loss 10 log(1 + 2⟨r_c²⟩/W²), W the diffracted beam radius.",
+    modelNote: "Weak fluctuations (σ_R² < 1, 2W₀ < r₀), collimated Gaussian beam, constant Cn², infinite outer scale: ⟨r_c²⟩ = 2.42 Cn²L³W₀^(−1/3)·F, where F (our derivation) keeps the beam's diffraction along the path: F = 0.98 at L = 1.2 z_R, 0.74 at 12 z_R. Mean on-axis loss 10 log(1 + 2⟨r_c²⟩/W²), W the diffracted beam radius.",
     references: [
       {
         citation: "Churnside J. H., Lataitis R. J. (1990). Wander of an optical beam in the turbulent atmosphere. Appl. Opt. 29(7), 926.",
@@ -111,6 +115,10 @@ export const freeSpaceComms: CalculatorEntry[] = [
       },
       {
         citation: "Andrews L. C., Phillips R. L. (2005). Laser Beam Propagation through Random Media, 2nd ed. SPIE. Beam wander of a Gaussian beam, ⟨r_c²⟩ = 2.42 C_n² L³ W₀^(−1/3) for a collimated beam.",
+      },
+      {
+        citation: "Berman G. P., Chumak A. A., Gorshkov V. N. (2007). Beam wandering in the atmosphere: the effect of partial coherence. Phys. Rev. E 76, 056606. Eqs. (12)–(14): the wander integral with the diffracting beam radius and its L^(8/3) far-field limit.",
+        url: "https://doi.org/10.1103/PhysRevE.76.056606",
       },
     ],
   },
@@ -340,10 +348,10 @@ export const freeSpaceComms: CalculatorEntry[] = [
     title: "Point-Ahead Angle",
     description: "Point-ahead angle 2v⊥/c from the transverse relative velocity, compared with the diffraction half-angle, with the miss distance and light time for LEO and GEO laser links.",
     tier: "textbook",
-    modelNote: "θ = 2v⊥/c to first order in v/c, with v⊥ the inertial transverse velocity (GEO preset: ω_E(r_GEO − R_E) = 2.61 km/s). Straight-line light path, no refraction; uniform-aperture 1.22λ/D for comparison.",
+    modelNote: "θ = 2v⊥/c to first order in v/c, with v⊥ the inertial transverse velocity (GEO preset: ω_E(r_GEO − R_E) = 2.61 km/s; LEO presets: orbital velocity less the equatorial station's rotation, 7.15 km/s prograde, 7.63 km/s polar). Straight-line light path, no refraction; uniform-aperture 1.22λ/D for comparison.",
     references: [
       {
-        citation: "Carrasco-Casado A., Mata-Calvo R. (2020). Space optical links for communication networks. In Springer Handbook of Optical Networks, 1057–1103. Eq. (8.4), point-ahead angle 2v/c; ≈ 51 µrad for LEO 500 km, 18 µrad for GEO.",
+        citation: "Carrasco-Casado A., Mata-Calvo R. (2020). Space optical links for communication networks. In Springer Handbook of Optical Networks, 1057–1103. Eq. (8.4), point-ahead angle 2v/c with the orbital velocity; ≈ 51 µrad for LEO 500 km, 18 µrad for GEO (§8.1.2; preprint arXiv:2012.13166).",
         url: "https://doi.org/10.1007/978-3-030-16250-4_34",
       },
       {

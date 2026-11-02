@@ -6,7 +6,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  DB_PER_NEPER, LP11_CUTOFF_V, MFD_FIT_V_RANGE, MIN_V, bendLossCoefficient, bendLossPerTurnDb, elastoOpticBendRadius, lp01Mode,
+  DB_PER_E_FOLD, LP11_CUTOFF_V, MFD_FIT_V_RANGE, MIN_V, bendLossCoefficient, bendLossPerTurnDb, elastoOpticBendRadius, lp01Mode,
   lp11CutoffWavelength, modeFieldRadius, vNumber,
 } from "../../../physics/fiber-optics/macro-bending-loss";
 import { claddingIndex } from "../../../physics/fiber-optics/step-index-modes";
@@ -49,7 +49,7 @@ export default function MacrobendingLossPage() {
     return {
       V,
       n2: claddingIndex(fiber),
-      dBPerMetre: DB_PER_NEPER * bendLossCoefficient(fiber, lambda, eo ? elastoOpticBendRadius(R, fiber.n1) : R, mode),
+      dBPerMetre: DB_PER_E_FOLD * bendLossCoefficient(fiber, lambda, eo ? elastoOpticBendRadius(R, fiber.n1) : R, mode),
       perTurn,
       total: perTurn * numBends,
       mfd_um: 2 * modeFieldRadius(fiber, lambda) * 1e6,

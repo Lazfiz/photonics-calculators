@@ -1,34 +1,37 @@
-# Handover — 2026-11-02 (session 182 → session 183)
+# Handover — 2026-11-02 (session 183 → session 184)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 182 did 6b lasers on `phase-6/6b-lasers` (PR #220): OPO walk-off overlap length, supercontinuum DW from the first ejected
-soliton, thin-disk κ 6.3 at 10 at.%, injection-locking "In static range". Next: 6c free-space comms (beam-wander W(z), AO, point-ahead, QKD).
+Session 183 did 6c free-space comms on `phase-6/6c-fso` (PR #221): diffracting beam wander, FSO AO fitting from the DM pitch,
+LEO point-ahead with the station's rotation, QKD exact in Y₀, `DB_PER_NEPER` → `DB_PER_E_FOLD`. Next: 6d-a materials values.
 
 ## State
-- `walkOffEffectiveLength(L, w, ρ)` (OPO module): L_eff² = ∫₀^L e^(−a d²) √(π/b) erf(√b(L − d)) dd, a = ρ²/2w², b = ρ²/4w² (our
-  derivation; equal pump/signal radius, pump centred mid-crystal); ρ = 0 → L, long → 2^¼ √π w/ρ. Page chart uses it per length.
-- Supercontinuum: P_s = solitonContent(N).amplitude² · P₁; NaN for N < ½; the P₀ value and leading order shown in the subtext.
-- Defaults changed: supercontinuum energy 0.5673 nJ and β₃ 0.081038; thin-disk κ 6.3.
+- `turbulence.ts`: `beamWanderDiffractionFactor(L/z_R)` = 3∫ξ²(1 + ((1 − ξ)L/z_R)²)^(−1/6)dξ (asinh substitution, 2000 Simpson panels,
+  < 1e-8 to 1e9) and `beamWanderVarianceDiffracting(cn2, L, W₀, λ)`; `actuatorPitch(D, N)` = D√(π/4N). FSO AO uses
+  `dmFittingVariance(actuatorPitch(D, N), r₀)`, N ≥ 10. `fittingErrorVariance` (Noll fit) stays for tests and the cap test.
+- `point-ahead.ts`: `zenithPassVelocity(altitude, inclinationDeg)` (equatorial station); presets prograde 47.68, polar 50.88 µrad.
+- `qkd.ts`: Q_μ = 1 − (1 − Y₀)e^(−ημ), E_μQ_μ = ½Y₀e^(−ημ) + e_d(1 − e^(−ημ)), e₁Y₁ = ½Y₀(1 − η) + e_dη; page Y₀ ≤ 1.
+- Codemod `scripts/codemods/2026-11-02-db-per-e-fold.ts` (language-service rename, 14 files). Gate: 1203 tests, 5 eslint warnings.
 
 ## Next actions
 1. `/ship`; merge on the user's yes. After a release (on request): `node scripts/post-merge-check.mjs <sha>
-   wave-optics/optical-parametric-oscillator=2.89 wave-optics/supercontinuum=633.3 wave-optics/thin-disk-laser=37.0`.
-2. 6c free-space comms (see ROADMAP): adversarial `physics-reviewer` pass against primary literature first.
+   free-space-comms/beam-wander=8.73e-5 free-space-comms/adaptive-optics=6.05e-3 free-space-comms/point-ahead=46.7`
+   (beam-wander variance m²; AO σ²_fit in the Strehl subtext; point-ahead default 7 km/s → 46.7 µrad, unchanged).
+2. 6d-a materials (see ROADMAP): adversarial `physics-reviewer` pass against primary literature first.
 3. KRS-5 by hand: `materials/transparency-range?material=krs5` at 10 µm: n 2.3707, loss 28.4 %.
 
 ## Non-obvious facts
+- **Session 183:** the ROADMAP's own beam-wander factor (0.90) put the ξ² lever arm at the receiver: the large eddies near the
+  transmitter matter (ξ = 1 − z/L), F = 0.979. Hudgin's zonal law is ≈ 10 % *below* exact Noll Δ_N for every N ≤ 5000, so
+  max(zonal, Δ_N) just jumps at 5001; use one law. A Bash call that appends with a heredoc and then runs a gated test is
+  swallowed whole by devctl (append lost): write with node/Write, test in a separate call. The point-ahead chapter is
+  arXiv:2012.13166 (§8.1.2: eq. 8.4, 51 and 18 µrad). Near the QKD cutoff the key is a 1e-4 difference of two terms, so
+  O(Y₀η) terms move it 3 %: recheck such goldens with a from-scratch scan.
 - **Session 182:** a reviewer's "from memory" fix (BK h ∝ L·l_a, 10× lower P_th) was wrong for an SRO: derive the overlap for the
   actual geometry and check it by brute 2-D quadrature before trusting a scaling. Optica abstract pages via WebFetch gave
   Körner 2012 Table 4; reviewers must not try to get past captchas (classifier denies it). Reviewer goldens computed at an old
   default (0.567 nJ) failed at the new one: recompute goldens after changing defaults. Two reviewers in parallel took ≈ 11 and 24 min.
 - **Session 181:** ICNIRP 2013 PDF text: `curl -A "Mozilla/5.0 …"` then `pdftotext -layout`; Table 5 notes at ≈ line 910, Table 7
   at ≈ 990, Table 8 at ≈ 1200. Note d's IR sentence is unconditional, the visible one conditional. Old test comments' hand values can be mis-rounded (1.264 vs 1.2622 mm): recompute.
-- **Session 180:** note c applies to "exposures up to t" at piece ends x ≤ 0.35 s even when t ≥ 0.35 s; applying it only for
-  t < 0.35 s (6a-a's OD) makes OD fall as t grows past 0.35 s. The safe diameter has three branches (peak below √2 mm 1/e²,
-  edge = √2 mm, averaged above); 6334 inversions passed. PDF: icnirp.org/cms/upload/publications/ICNIRPLaser180gdl_2013.pdf (browser UA).
-- **Session 179:** with a near-zone irradiance that saturates, C_E ∝ α² (open field) makes the retinal ratio *fall* close up;
-  hence the 10 cm floor with ρP/(πr²) for the retinal limits (errs high ≈ d²/(4r²)) and the exact spot form only for the
-  corneal ones. Unread "(from memory)" ranges (planar TRT) stay off pages; A&P 1983 and Altshuler 2001 are paywalled (403).
 - **Session 178:** Optica's abstract page (`opg.optica.org/josa/abstract.cfm?uri=josa-46-11-956`) gives the tables' text through
   WebFetch even for paywalled 1950s JOSA papers: coefficients, measured and computed indices. refractiveindex.info `?shelf=…`
   URLs can resolve to the wrong page (it returned Johnson & Christy). `refractiveIndex()` doesn't range-check; `inRange` does.
@@ -65,8 +68,6 @@ soliton, thin-disk κ 6.3 at 10 at.%, injection-locking "In static range". Next:
   per category: `shuf | awk -F/ '!seen[$1]++'`.
 - **Session 160:** Chrome extension screenshots time out on this site; use a headless CDP script (pattern in
   `scripts/ui-check.mjs`). In the Bash tool a bare `python -` or `cat > file` with no input hangs until timeout.
-- **Sessions 151–153:** write regex-heavy scripts with the Write tool. ts-morph `sf.insertText` forgets every node: insert
-  last-to-first. A `next start` left on 3100 survives TaskStop: `curl`, then `taskkill //PID <pid> //T //F`.
 - **Sessions 137–138:** ITU-T PDFs: `https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-…!!PDF-E&type=items`. Optica
   full text reads in Chrome via `get_page_text`. **Port 3000 can be another project**: use 3100.
 - **Session 107:** prefix `MSYS_NO_PATHCONV=1` for ui-check and chrome. Registry/JSX text can't hold `{…}`. `npm run dev`

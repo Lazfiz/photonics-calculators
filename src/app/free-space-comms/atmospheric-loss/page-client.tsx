@@ -6,7 +6,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  DB_PER_NEPER, aerosolExtinction, kimExponent, rayleighExtinction,
+  DB_PER_E_FOLD, aerosolExtinction, kimExponent, rayleighExtinction,
 } from "../../../physics/free-space-comms/atmospheric-attenuation";
 
 // International visibility code classes (upper visibility limit of each class).
@@ -24,8 +24,8 @@ const fmt = (x: number, digits = 3) =>
 /** Attenuation coefficients in dB/km for λ in nm and visibility in km. */
 function alphaDbPerKm(wavelengthNm: number, visibilityKm: number) {
   const lambda = wavelengthNm * 1e-9;
-  const rayleigh = rayleighExtinction(lambda) * 1e3 * DB_PER_NEPER;
-  const aerosol = aerosolExtinction(lambda, visibilityKm * 1e3) * 1e3 * DB_PER_NEPER;
+  const rayleigh = rayleighExtinction(lambda) * 1e3 * DB_PER_E_FOLD;
+  const aerosol = aerosolExtinction(lambda, visibilityKm * 1e3) * 1e3 * DB_PER_E_FOLD;
   return { rayleigh, aerosol, total: rayleigh + aerosol };
 }
 
@@ -78,7 +78,7 @@ export default function AtmosphericLossPage() {
       )}
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <ResultCard label="Attenuation α" value={`${fmt(calc.total)} dB/km`} tone="cyan" subtext={`β = ${fmt(calc.total / DB_PER_NEPER)} km⁻¹`} />
+        <ResultCard label="Attenuation α" value={`${fmt(calc.total)} dB/km`} tone="cyan" subtext={`β = ${fmt(calc.total / DB_PER_E_FOLD)} km⁻¹`} />
         <ResultCard label="Path loss" value={`${fmt(calc.totalLoss)} dB`} tone="orange" subtext={`over ${linkLength} km`} />
         <ResultCard label="Transmittance" value={`${fmt(calc.transmittance * 100, 4)} %`} tone="green" />
         <ResultCard label="Aerosol (Kim)" value={`${fmt(calc.aerosol)} dB/km`} tone="yellow" subtext={`q = ${fmt(calc.q)}`} />

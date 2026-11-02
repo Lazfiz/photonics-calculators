@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  GEO_SUBSATELLITE_VPERP, GM_EARTH, R_EARTH_EQ, R_GEO, airyHalfAngle, lightTime, pointAheadAngle,
+  GEO_SUBSATELLITE_VPERP, GM_EARTH, R_EARTH_EQ, R_GEO, airyHalfAngle, lightTime, pointAheadAngle, zenithPassVelocity,
 } from "../src/physics/free-space-comms/point-ahead";
 import { quadCellNea, rasterScan, squareCoverage, stareProbability } from "../src/physics/free-space-comms/acquisition";
 import { decoyBb84, maxChannelLossDb, maxChannelLossDbOptimalMu, optimalMu, plobBound } from "../src/physics/free-space-comms/qkd";
@@ -64,11 +64,12 @@ test("decoy BB84 (Ma, Qi, Zhao, Lo 2005): GYS, μ = 0.48 → key up to 142.05 km
   assert.ok(Math.abs(optimalMu({ ...GYS, eta: etaAt(50) }) - 0.48) < 0.01);
   assert.ok(Math.abs(optimalMu({ ...GYS, fEc: 1, eta: etaAt(50) }) - 0.54) < 0.01);
   // Near the cutoff (29.86 dB) max(0, R) is zero over most of [0.01, 1]; a 1e-4 scan of μ peaks at 0.4264 with
-  // 2.0400e-9 per pulse (2.04 bit/s at 1 GHz), above μ = 0.43 (1.937e-9). The search must use the unclipped rate.
+  // 2.1040e-9 per pulse (2.10 bit/s at 1 GHz; 2.0400e-9 with Ma et al.’s eqs. (10)–(11), which keep e₀Y₀ unweighted:
+  // near the cutoff the key is a 1e-4 difference, so O(Y₀η) terms move it 3 %). The search must use the unclipped rate.
   const etaEdge = 0.045 * 10 ** (-29.86 / 10);
   const muEdge = optimalMu({ ...GYS, eta: etaEdge });
   close(muEdge, 0.4264, 5e-4);
-  close(decoyBb84({ ...GYS, mu: muEdge, eta: etaEdge }).keyPerPulse, 2.0400e-9, 1e-4);
+  close(decoyBb84({ ...GYS, mu: muEdge, eta: etaEdge }).keyPerPulse, 2.1040e-9, 1e-4);
   assert.ok(decoyBb84({ ...GYS, mu: 0.48, eta: etaAt(200) }).rawRate < 0);
   // QBER → e_d when the background is negligible; the key falls ≈ 0.21 dB/km in the linear regime.
   const r0 = decoyBb84({ ...GYS, mu: 0.48, eta: etaAt(0) });
@@ -129,4 +130,43 @@ test("physical-layer security: exact Gaussian capture never exceeds P; wiretap c
   });
   assert.ok(s.bobPower > s.evePower && s.evePower > 0);
   close(s.secrecy, 1e9 * (Math.log2(1 + s.snrBob) - Math.log2(1 + s.snrEve)), 1e-12);
+});
+
+test("decoy BB84: gain and errors exact in Y₀ (Ma et al. 2005 eq. (7) summed over the Poisson photon number)", () => {
+  // Hand, Y₀ = 0.1, η = 0.5, μ = 1, e_d = 0: Q_μ = 1 − 0.9·e^(−0.5) = 1 − 0.9·0.606531 = 0.454122 (eq. (10) gives
+  // 0.493469); E_μ = ½·0.1·0.606531/0.454122 = 0.066780; Y₁ = 0.55, e₁ = ½·0.1·0.5/0.55 = 0.045455.
+  const r = decoyBb84({ mu: 1, eta: 0.5, y0: 0.1, eDetector: 0, fEc: 1 });
+  close(r.gain, 0.454122, 1e-5);
+  close(r.qber, 0.066780, 1e-4);
+  close(r.y1, 0.55, 1e-12);
+  close(r.e1, 0.045455, 1e-4);
+  // The same as the sums Σ P_i Y_i and Σ P_i [½Y₀(1 − η)^i + e_d η_i] over i photons, P_i = e^(−μ)μ^i/i!.
+  const p = { mu: 0.7, eta: 0.3, y0: 0.05, eDetector: 0.02, fEc: 1 };
+  let q = 0, eq = 0, pi = Math.exp(-p.mu);
+  for (let i = 0; i < 60; i++) {
+    if (i > 0) pi *= p.mu / i;
+    const miss = (1 - p.eta) ** i;
+    q += pi * (1 - (1 - p.y0) * miss);
+    eq += pi * (0.5 * p.y0 * miss + p.eDetector * (1 - miss));
+  }
+  const s = decoyBb84(p);
+  close(s.gain, q, 1e-12);
+  close(s.qber * s.gain, eq, 1e-12);
+  // Y₀ = 1: every pulse clicks at random, no key.
+  assert.equal(decoyBb84({ ...p, y0: 1 }).keyPerPulse, 0);
+});
+
+test("point-ahead, LEO 500 km at the zenith of an equatorial station: orbital velocity less the station's rotation", () => {
+  // Hand: v = √(3.986004418e14 / 6 878 137 m) = 7612.6 m/s, ω_E R_E = 7.292115e-5 · 6 378 137 = 465.10 m/s.
+  // Prograde equatorial 7147.5 m/s → 47.68 µrad; polar √(7612.6² + 465.1²) = 7626.8 m/s → 50.88 µrad; retrograde
+  // 8077.7 m/s → 53.89 µrad. Carrasco-Casado & Mata-Calvo (arXiv:2012.13166 §8.1.2) quote ≈ 51 µrad from v alone.
+  close(zenithPassVelocity(500e3, 0), 7147.5, 1e-4);
+  close(zenithPassVelocity(500e3, 90), 7626.8, 1e-4);
+  close(pointAheadAngle(zenithPassVelocity(500e3, 0)), 47.68e-6, 2e-4);
+  close(pointAheadAngle(zenithPassVelocity(500e3, 90)), 50.88e-6, 2e-4);
+  close(pointAheadAngle(zenithPassVelocity(500e3, 180)), 53.89e-6, 2e-4);
+  // Station rotation alone: 2 · 465.10 / c = 3.103 µrad between prograde and the orbital velocity.
+  const vOrbit = Math.sqrt(GM_EARTH / (R_EARTH_EQ + 500e3));
+  close(pointAheadAngle(vOrbit) - pointAheadAngle(zenithPassVelocity(500e3, 0)), 3.103e-6, 1e-3);
+  assert.ok(Number.isNaN(zenithPassVelocity(-1, 0)));
 });

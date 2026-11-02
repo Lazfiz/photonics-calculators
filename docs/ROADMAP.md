@@ -5,12 +5,12 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 182, 2026-11-02)
+## Status (session 183, 2026-11-02)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
   textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) and 5w-13 (materials) and 5w-14 (spectroscopy) and 5w-15 (thin-film + polarization) done (sessions 163–177): 5w is complete; KRS-5
-  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a done (sessions 179–181), 6b next; the Gemini hero comes after it. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6c done (sessions 179–183), 6d-a next; the Gemini hero comes after it. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -163,11 +163,10 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 **Free-space comms**
 - `aperture-averaging`: only the Gaussian aperture is modelled; a hard circular aperture gives a 5–11 % lower A at d² = 1–30 (two reviewers' quadrature),
   crossing near d² ≈ 100 and → 1.13× as d² → ∞ (checked in session 173 with GR 6.574.2). The page states this; a hard-aperture option could add it.
-- `beam-wander` (unverified): 2.42 Cn²L³W₀^(−1/3) uses the exit radius W₀ in the large-scale filter; with diffraction W(z) the factor is
-  3∫ξ²(1 + (ξL/z_R)²)^(−1/6)dξ (0.90 at the defaults, 0.49 at L/z_R = 12). Check Andrews & Phillips 2005 §6.5 for a near-field condition.
-- `adaptive-optics` (FSO): the actuator count is fed to Noll's fit 0.2944 J^(−√3/2) as a mode count (input up to 10⁵). The
-  exact residual falls as J^(−5/6): 8 % above the fit at J = 1000, 12 % at 4000. Use `nollResidual` (J ≤ 5000) or Hudgin's
-  `dmFittingVariance` with the pitch, as the imaging page now does.
+- `beam-wander` (low): F keeps the geometric-optics expansion of 1 − exp(−ΛLκ²ξ²/k) (≈ 1.3 % high at the defaults, reviewer's
+  exact κ-integral); Berman 2007's 1.919 (2r₀)^(−1/3) and Vasylyev PRL 117, 090501 (0.94 per axis, focused) don't match A&P's 2.42 (filter models).
+- `adaptive-optics` (FSO, low): Hudgin's zonal 0.28 (d/r₀)^(5/3) sits ≈ 10 % below Noll's Δ_N for all N ≤ 5000 (no crossing); κ spans 0.23–0.30 by
+  influence function (Berdeu et al. A&A 674, A112 (2023) Table 1); square-grid pitch (hex 7.5 % larger). Hudgin and Hardy unread (captcha).
 **Thin film**
 - `sputtering-deposition` (low): no gas scattering (defaults sit at d ≈ 5.7 λ_Ar, rate is an upper bound); Westwood
   thermalisation could add it. Cr and Nb dropped: no sourced 500 eV Ar⁺ yield (M&G 600 eV: 1.3, 0.65).
@@ -182,8 +181,7 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   (unchecked against Alcock's table).
 
 **Free-space comms**
-- `point-ahead` (low): the "≈ 18 µrad for GEO" chapter quote and eq. (8.4) in `point-ahead.ts` are unread (the 17.4 µrad value is derived).
-- `DB_PER_NEPER` (low): 4.343 dB per power e-fold is called a neper; ISO 80000-3 has 1 Np = 8.686 dB. The atmospheric-loss page now says km⁻¹; other pages still use the name.
+- Code comments in `laser-resonator.ts`, `doped-fiber-gain.ts`, `fiber-nonlinear.ts` and four resonator pages still call power log-ratios "nepers" (low, wording only).
 - `snow-attenuation` (low): the sources never define S (read as water-equivalent), and the 2005 ICTON origin of the law
   is unverified (joanneum PDF is an HTML wall). Check Awan et al. WOCN 2009 / ICTON 2005 in Chrome; tier could drop to illustrative.
 - `geometric-loss` (low): the top-hat law (d_t + θR) is cited to Kim & Korevaar, SPIE 4530, 84 (2001) by DOI only; full text
@@ -192,8 +190,7 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - `receiver-fov` (low): field-stop clipping of the signal and turbulence spot growth (λ/r₀) are not modelled; only a 1.22λ/D warning.
 - `channel-capacity` (low): the 3.8×10⁻³ pre-FEC default for 7 % HD-FEC is not checked against the ITU-T G.975.1 text (input, labelled typical).
 - `acquisition-tracking` (low): Tyler & Fried NEA (3π/16)(λ/D)/SNR read from the JOSA 72, 804 abstract only; "rms per axis" is unconfirmed in the full text.
-- `quantum-key-distribution` (low): asymptotic decoy BB84 only (no finite-key or intensity fluctuations); Y₀ capped at 0.01 because eq. (10) drops −Y₀(1 − e^(−ημ)).
-- `point-ahead` (low): the LEO preset uses orbital velocity alone (as the cited chapter does); station rotation lowers it by ≈ 3 µrad.
+- `quantum-key-distribution` (low): asymptotic decoy BB84 only (no finite-key or intensity fluctuations); the GYS cutoff is 142.015 km against Ma's 142.05 (gap not from Y₀ terms).
 - `optical-antenna` (low): M² is capped at 2 (θ × M², gain / M⁴). A Gaussian Schell-model far field would cover multimode beams.
 
 **Imaging (session 166, unverified or deferred)**
@@ -312,9 +309,7 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - [x] 6a-b laser safety (session 180, `phase-6/6a-b-note-c`): Table 5 note c and Table 7 note b in the shared limits. See Done.
 - [x] 6a-c laser safety (session 181, `phase-6/6a-c-scanned`, PR #219): scanned passes at the peak; anterior segment with note b. See Done.
 - [x] 6b lasers (session 182, `phase-6/6b-lasers`, PR #220): OPO walk-off overlap, ejected-soliton DW, κ 6.3, static locking range. See Done.
-- [ ] 6c free-space comms: `beam-wander` with the diffracting W(z) (factor 0.90 at the defaults, 0.49 at L/z_R 12; Andrews & Phillips
-  2005 §6.5); FSO `adaptive-optics` actuator count through `nollResidual` / `dmFittingVariance`; `point-ahead` LEO station rotation
-  (≈ 3 µrad); `DB_PER_NEPER` misnamed (ISO 80000-3: 1 Np = 8.686 dB); QKD eq. (10)'s −Y₀(1 − e^(−ημ)) term instead of the Y₀ cap.
+- [x] 6c free-space comms (session 183, `phase-6/6c-fso`, PR #221): diffracting beam wander, DM pitch fitting, LEO point-ahead, QKD exact in Y₀, `DB_PER_E_FOLD`. See Done.
 - [ ] 6d-a materials values: Brillouin diamond p² convention (4×); Raman KGW/Ba(NO₃)₂ 1064 nm vendor gains vs 1/λ_p from 532 nm (2×);
   TPA DeSalvo E′_g scaling (BBO 355 nm 0.076 vs 0.010; KTP 520 nm 4× its 532 nm β).
 - [ ] 6d-b materials values: heat-capacity GaAs (Crystran 360 > 6R/M 345; Blakemore 1982) and diamond θ_D (266 vs 502 J/(kg·K));
@@ -347,6 +342,11 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 6c free-space comms (session 183, `phase-6/6c-fso`, PR #221): beam wander × F(L/z_R) with the diffracting W(z), lever arm at the
+  transmitter (0.979 at the defaults, 0.738 at 12; the old note's 0.90/0.49 had ξ at the wrong end; Berman PRE 76, 056606 eq. 14 far
+  field 2.025 (L/z_R)^(−1/3)); FSO AO Hudgin 0.28 (d/r₀)^(5/3), d = D√(π/4N), N ≥ 10 (6.64e-3 → 6.05e-3 at 127); LEO zenith presets
+  47.68 / 50.88 µrad (chapter eq. 8.4, 51 and 18 µrad read on arXiv); QKD Q_μ = 1 − (1 − Y₀)e^(−ημ), Y₀ cap 0.01 → 1 (edge key
+  2.0400 → 2.1040e-9); `DB_PER_NEPER` → `DB_PER_E_FOLD` (codemod, 14 files).
 - 6b lasers (session 182, `phase-6/6b-lasers`, PR #220): OPO L_eff from the near-field walk-off overlap (→ 2^¼ l_a; P_th 4086 → 2889 W;
   BK h is SHG-only, the "10×" claim rejected); supercontinuum DW at P_s = (2N − 1)²P₀/N² (667.7 → 633.3 nm); thin-disk κ 6.3 at 10 at.%
   (ΔT 33.3 → 37.1 K; Körner 2012 Table 4 read); injection-locking "In static range" (Hopf band not computed).

@@ -5,12 +5,13 @@
  * Light from the far terminal shows where it was a time R/c ago, and the outgoing beam reaches it a time R/c later, so
  * the transmit direction must lead the received beacon by θ_PA = 2v⊥/c, v⊥ the relative transverse velocity in an
  * inertial frame: A. Carrasco-Casado, R. Mata-Calvo, "Space optical links for communication networks", Springer
- * Handbook of Optical Networks (2020), eq. (8.4). The range cancels; the lateral miss distance at the far end is
- * θ_PA·R.
+ * Handbook of Optical Networks (2020), eq. (8.4), arXiv:2012.13166 §8.1.2. The range cancels; the lateral miss distance
+ * at the far end is θ_PA·R. The chapter takes v as the satellite's orbital velocity at the zenith, ≈ 51 µrad for a 500 km
+ * LEO; relative to a ground station that rotates with the Earth, a prograde equatorial pass is 3.1 µrad lower.
  *
  * A geostationary satellite and a ground station co-rotate, so their relative velocity in the Earth-fixed frame is
  * zero, but in the inertial frame it is ω_E(r_GEO − R_E) for a station under the satellite: 2.61 km/s, θ_PA = 17.4 µrad
- * (the chapter quotes ≈ 18 µrad for GEO).
+ * (the chapter quotes ≈ 18 µrad for GEO; its orbital velocity ω_E r_GEO alone would give 20.5 µrad).
  */
 
 import { c } from "../constants";
@@ -26,6 +27,18 @@ export const R_GEO = Math.cbrt(GM_EARTH / OMEGA_EARTH ** 2);
 
 /** Inertial transverse velocity between a GEO satellite and a ground station directly beneath it, m/s. */
 export const GEO_SUBSATELLITE_VPERP = OMEGA_EARTH * (R_GEO - R_EARTH_EQ);
+
+/**
+ * Inertial relative velocity of a satellite in a circular orbit at the zenith of an equatorial ground station, m/s. The
+ * satellite moves at √(GM_E/r) with heading set by the inclination i (0 prograde equatorial, 90° polar, > 90°
+ * retrograde) and the station eastward at ω_E R_E, so v⊥ = √((v cos i − ω_E R_E)² + (v sin i)²). NaN for altitude < 0.
+ */
+export function zenithPassVelocity(altitude: number, inclinationDeg: number): number {
+  if (!(altitude >= 0)) return NaN;
+  const v = Math.sqrt(GM_EARTH / (R_EARTH_EQ + altitude));
+  const i = (inclinationDeg * Math.PI) / 180;
+  return Math.hypot(v * Math.cos(i) - OMEGA_EARTH * R_EARTH_EQ, v * Math.sin(i));
+}
 
 /** Point-ahead angle 2v⊥/c, rad. */
 export function pointAheadAngle(vPerp: number): number {

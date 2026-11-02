@@ -5,7 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { DB_PER_NEPER, MIN_V, lp01Mode, modeFieldRadius, vNumber } from "../../../physics/fiber-optics/macro-bending-loss";
+import { DB_PER_E_FOLD, MIN_V, lp01Mode, modeFieldRadius, vNumber } from "../../../physics/fiber-optics/macro-bending-loss";
 import {
   criticalPeriod, gaussianMicrobendLoss, peakTiltLoss, sinusoidalMicrobendLoss,
 } from "../../../physics/fiber-optics/microbend";
@@ -39,10 +39,10 @@ export default function MicroBendPage() {
     const curvature = A * ((2 * Math.PI) / P) ** 2;
     return {
       V,
-      gaussian: DB_PER_NEPER * gaussianMicrobendLoss(fiber, lambda, A, P, mode),
+      gaussian: DB_PER_E_FOLD * gaussianMicrobendLoss(fiber, lambda, A, P, mode),
       firstOrder: Math.max(peakTiltLoss(fiber, lambda, A, P), alpha * P),
-      dBPerMetre: DB_PER_NEPER * alpha,
-      total: DB_PER_NEPER * alpha * length,
+      dBPerMetre: DB_PER_E_FOLD * alpha,
+      total: DB_PER_E_FOLD * alpha * length,
       Lc_mm: criticalPeriod(fiber, lambda, mode) * 1e3,
       minBendRadius_mm: curvature > 0 ? 1e3 / curvature : Infinity,
       mfd_um: 2e6 * modeFieldRadius(fiber, lambda),
@@ -58,7 +58,7 @@ export default function MicroBendPage() {
     const pHi = 1.05 * Math.max(Number.isFinite(LcAxis_mm) ? LcAxis_mm : 0, period, 0.1);
     const periods_mm = Array.from({ length: 241 }, (_, i) => pLo + ((pHi - pLo) * i) / 240);
     const curve = (loss: typeof sinusoidalMicrobendLoss) => {
-      const ys = periods_mm.map((p) => DB_PER_NEPER * loss(fiber, lambda, amplitudeNm * 1e-9, p * 1e-3, mode));
+      const ys = periods_mm.map((p) => DB_PER_E_FOLD * loss(fiber, lambda, amplitudeNm * 1e-9, p * 1e-3, mode));
       const keep = ys.map((y) => Number.isFinite(y) && y >= MIN_PLOTTED_DB);
       return { x: periods_mm.filter((_, i) => keep[i]), y: ys.filter((_, i) => keep[i]) };
     };
@@ -72,7 +72,7 @@ export default function MicroBendPage() {
     if (y.length > 0 && Number.isFinite(Lc_mm)) {
       traces.push({ x: [Lc_mm, Lc_mm], y: [Math.min(...y), Math.max(...y)], type: "scatter" as const, mode: "lines" as const, name: "Λc", line: { color: "#fbbf24", width: 1 } });
     }
-    const opDb = DB_PER_NEPER * sinusoidalMicrobendLoss(fiber, lambda, amplitudeNm * 1e-9, period * 1e-3, mode);
+    const opDb = DB_PER_E_FOLD * sinusoidalMicrobendLoss(fiber, lambda, amplitudeNm * 1e-9, period * 1e-3, mode);
     if (Number.isFinite(opDb) && opDb >= MIN_PLOTTED_DB) {
       traces.push({ x: [period], y: [opDb], type: "scatter" as const, mode: "markers" as const, name: "Operating point", marker: { color: "#ffffff", size: 9, line: { color: "#111827", width: 1 } } });
     }

@@ -147,8 +147,8 @@ export function bendLossCoefficient(
   return (SQRT_PI * kappa ** 2 * decay) / (2 * gamma ** 1.5 * V ** 2 * Math.sqrt(R) * K1s * K1s);
 }
 
-/** dB per neper of power: 10 log₁₀(e). */
-export const DB_PER_NEPER = 10 / Math.LN10;
+/** dB per e-fold of power, 10 log₁₀ e ≈ 4.343 (not a neper: ISO 80000-3 has 1 Np = 8.686 dB, a field ratio). */
+export const DB_PER_E_FOLD = 10 / Math.LN10;
 
 /** Equivalent bend radius R/(1 − p_e) with the elasto-optic correction (see the header), m. */
 export function elastoOpticBendRadius(R: number, n1: number): number {
@@ -167,5 +167,5 @@ export function bendLossPerTurnDb(
   elastoOptic = false,
 ): number {
   const Ralpha = elastoOptic ? elastoOpticBendRadius(R, f.n1) : R;
-  return DB_PER_NEPER * bendLossCoefficient(f, lambda, Ralpha, mode) * 2 * Math.PI * R;
+  return DB_PER_E_FOLD * bendLossCoefficient(f, lambda, Ralpha, mode) * 2 * Math.PI * R;
 }

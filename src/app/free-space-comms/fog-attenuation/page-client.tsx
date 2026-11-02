@@ -6,7 +6,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  AL_NABOULSI_LAMBDA, AL_NABOULSI_VISIBILITY, DB_PER_NEPER, aerosolExponent, alNaboulsiFogExtinction, totalExtinction,
+  AL_NABOULSI_LAMBDA, AL_NABOULSI_VISIBILITY, DB_PER_E_FOLD, aerosolExponent, alNaboulsiFogExtinction, totalExtinction,
   type AerosolLaw, type FogType,
 } from "../../../physics/free-space-comms/atmospheric-attenuation";
 
@@ -44,7 +44,7 @@ export default function FogAttenuationPage() {
 
   const calc = useMemo(() => {
     const sigma = extinctionPerKm(model, wavelength, visibility); // km⁻¹
-    const alpha = sigma * DB_PER_NEPER; // dB/km
+    const alpha = sigma * DB_PER_E_FOLD; // dB/km
     const loss = alpha * range;
     const q = isAlNaboulsi(model) ? NaN : aerosolExponent(visibility * 1e3, model);
     const outside = isAlNaboulsi(model)
@@ -60,7 +60,7 @@ export default function FogAttenuationPage() {
     const lines = MODELS.map((m) => {
       const vis = isAlNaboulsi(m.id) ? logSpan(0.05, 1, 60) : logSpan(Math.min(0.05, visibility), Math.max(10, visibility), 160);
       return {
-        x: vis, y: vis.map((v) => extinctionPerKm(m.id, wavelength, v) * DB_PER_NEPER),
+        x: vis, y: vis.map((v) => extinctionPerKm(m.id, wavelength, v) * DB_PER_E_FOLD),
         type: "scatter", mode: "lines", name: m.label,
         line: { color: m.color, width: m.id === model ? 3 : 1.5, dash: isAlNaboulsi(m.id) ? "dash" : "solid" },
       };
@@ -118,7 +118,7 @@ export default function FogAttenuationPage() {
         <p className="font-mono">Kim, Kruse: σ = σ_R(λ) + [3.912/V − σ_R(550 nm)] · (λ/550 nm)^(−q)</p>
         <p className="font-mono">Al Naboulsi: σ = (0.11478λ + 3.8367)/V (advection), (0.18126λ² + 0.13709λ + 3.7502)/V (radiation)</p>
         <p>
-          σ is the extinction in km⁻¹ (nepers per km), with λ in µm and V in km; the attenuation in dB/km is
+          σ is the extinction in km⁻¹ (e-folds of power per km), with λ in µm and V in km; the attenuation in dB/km is
           10 log₁₀(e) ≈ 4.343 times larger. The visibility V (Koschmieder, 2 % contrast at 550 nm) fixes σ at 550 nm.
           Kim&apos;s exponent q is 1.6 (V &gt; 50 km), 1.3 (6–50 km), 0.16V + 0.34 (1–6 km), V − 0.5 (0.5–1 km) and 0 in
           fog below 0.5 km, where droplets are much larger than the wavelength. Kruse&apos;s older law keeps q = 0.585V^(1/3)

@@ -5,7 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { DB_PER_NEPER, KOSCHMIEDER } from "../../../physics/free-space-comms/atmospheric-attenuation";
+import { DB_PER_E_FOLD, KOSCHMIEDER } from "../../../physics/free-space-comms/atmospheric-attenuation";
 import {
   MM_PER_HOUR, type SnowType, snowPowerLaw, snowSpecificAttenuation,
 } from "../../../physics/free-space-comms/precipitation";
@@ -29,7 +29,7 @@ export default function SnowAttenuationPage() {
     const specific = snowSpecificAttenuation(snowRate * MM_PER_HOUR, lambda, snowType) * 1e3; // dB/km
     const total = specific * range;
     // Visibility whose Koschmieder extinction 3.912/V equals this (wavelength-flat) extinction.
-    const visibility = specific > 0 ? KOSCHMIEDER / (specific / DB_PER_NEPER) : Infinity;
+    const visibility = specific > 0 ? KOSCHMIEDER / (specific / DB_PER_E_FOLD) : Infinity;
     return { ...snowPowerLaw(lambda, snowType), specific, total, transmittance: 10 ** (-total / 10), visibility };
   }, [snowRate, wavelength, range, snowType]);
 

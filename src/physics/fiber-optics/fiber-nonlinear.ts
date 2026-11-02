@@ -22,7 +22,7 @@
  * - Four-wave mixing efficiency: K. Inoue, J. Lightwave Technol. 10, 1553 (1992), doi:10.1109/50.184893.
  */
 import { c } from "../constants";
-import { DB_PER_NEPER } from "./macro-bending-loss";
+import { DB_PER_E_FOLD } from "./macro-bending-loss";
 
 /** Smith's threshold gain-length product for forward SRS, g_R P L_eff/A_eff (co-polarized). */
 export const SMITH_SRS_FACTOR = 16;
@@ -46,7 +46,7 @@ export const SILICA_MODE_INDEX = 1.45;
 
 /** Power attenuation in 1/m from dB/km. */
 export function alphaFromDbPerKm(alphaDbPerKm: number): number {
-  return alphaDbPerKm / DB_PER_NEPER / 1e3;
+  return alphaDbPerKm / DB_PER_E_FOLD / 1e3;
 }
 
 /**
