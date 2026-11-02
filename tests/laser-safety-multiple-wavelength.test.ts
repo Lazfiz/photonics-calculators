@@ -14,10 +14,6 @@ function assertRel(actual: number, expected: number, tol: number, label: string)
 
 // 400–700 nm, 0.25 s, all the power inside the 7 mm aperture: 18 t^0.75 J/m² / t × π(3.5 mm)² = 0.97966 mW.
 const P_VIS_025 = 18 * Math.pow(0.25, -0.25) * Math.PI * 3.5e-3 * 3.5e-3;
-// The anterior eye's limit in the visible is the skin's (Table 5 note d): 1.1×10⁴ t^0.25 J/m² / t over 3.5 mm, 0.299 W
-// at 0.25 s. The module adds it to the other anterior-eye shares (the cornea's in the IR): the same tissue, and adding
-// is the conservative reading of p. 279 for thermal effects.
-const P_ANTERIOR_VIS_025 = 1.1e4 * Math.pow(0.25, -0.75) * Math.PI * 1.75e-3 * 1.75e-3;
 
 test("visible lines add at the retina", () => {
   const lines = [450e-9, 520e-9, 638e-9].map((lambda) => ({ lambda, P: 0.4e-3 }));
@@ -28,7 +24,8 @@ test("visible lines add at the retina", () => {
   assertRel(x.sites.retina, 1.2e-3 / P_VIS_025, 1e-12, "sum");
   assert.ok(x.ratio > 1 && x.lines.every((l) => l.sites.retina < 1), "each line alone is within the limit, together not");
   assert.equal(x.limiting, "retina");
-  assertRel(x.sites.anteriorEye, 1.2e-3 / P_ANTERIOR_VIS_025, 1e-12, "anterior eye: 0.4 %");
+  // No anterior-eye limit in the visible for a point source (Table 5 note d: "for large retinal spot sizes").
+  assert.equal(x.sites.anteriorEye, 0);
 });
 
 test("retina and cornea count independently", () => {
@@ -38,14 +35,14 @@ test("retina and cornea count independently", () => {
   const x = multipleWavelengthExposure([{ lambda: 532e-9, P: 0.5e-3 }, { lambda: 1550e-9, P: 10e-3 }], 1e-3, 0.25);
   assertRel(x.lines[1].sites.anteriorEye, 10e-3 / p1550, 1e-12, "1550 nm share");
   assertRel(x.lines[1].sites.anteriorEye, 2 / Math.PI, 1e-12, "1550 nm share, value");
-  // 532 nm adds its anterior share (the 1 mm beam is all inside 3.5 mm to 1e-10); 1550 nm adds nothing at the retina.
-  assertRel(x.sites.anteriorEye, 10e-3 / p1550 + 0.5e-3 / P_ANTERIOR_VIS_025, 1e-9, "anterior-eye sum");
+  // 532 nm adds nothing at the anterior eye (a point source), 1550 nm nothing at the retina.
+  assertRel(x.sites.anteriorEye, 10e-3 / p1550, 1e-12, "anterior-eye sum");
   assertRel(x.sites.retina, 0.5e-3 / limitMaxPower(eyeLimits(532e-9)[0], 1e-3, 0.25), 1e-12, "532 nm share");
   assert.equal(x.ratio, Math.max(x.sites.retina, x.sites.anteriorEye));
   // 0.1 mW at 532 nm and 30 mW at 1550 nm: the cornea governs.
   const y = multipleWavelengthExposure([{ lambda: 532e-9, P: 0.1e-3 }, { lambda: 1550e-9, P: 30e-3 }], 1e-3, 0.25);
   assert.equal(y.limiting, "anteriorEye");
-  assertRel(y.ratio, 30e-3 / p1550 + 0.1e-3 / P_ANTERIOR_VIS_025, 1e-9, "anterior-eye sum");
+  assertRel(y.ratio, 30e-3 / p1550, 1e-12, "anterior-eye sum");
 });
 
 test("one line's dual retinal limits are met separately; the same limit adds across lines", () => {
@@ -62,7 +59,8 @@ test("one line's dual retinal limits are met separately; the same limit adds acr
 });
 
 test("1064 nm at 1 ms uses 90 C_C t^0.75 (the old page had a flat 0.01 J/cm², 198× higher)", () => {
-  const x = multipleWavelengthExposure([{ lambda: 1064e-9, P: 1e-3 }], 0, 1e-3);
+  // A 1.5 mm beam: all of it inside 7 mm, and the anterior segment averaged (1/e diameter over 1 mm).
+  const x = multipleWavelengthExposure([{ lambda: 1064e-9, P: 1e-3 }], 1.5e-3, 1e-3);
   const H = 90 * Math.pow(1e-3, 0.75); // 0.506 J/m²
   assertRel(100 / H, 197.6, 1e-3, "ratio to the old value");
   assertRel(x.ratio, 1e-3 / ((H / 1e-3) * Math.PI * 3.5e-3 * 3.5e-3), 1e-12, "share");

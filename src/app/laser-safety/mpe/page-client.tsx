@@ -147,7 +147,8 @@ export default function MPEPage() {
         on for t, or a single pulse. Each limit is a radiant exposure at the cornea, averaged over its aperture: 7 mm for
         the retina, 3.5 mm for the anterior eye, 1 mm growing to 3.5 mm at 10 s in the UV and from 1.4 µm to 100 µm, and
         11 mm beyond. From 400 to 600 nm the thermal and photochemical limits both apply. From 1150 nm C_C raises the
-        retinal limit, and towards 1400 nm the anterior-eye limit (twice the skin limit) is the lower one. IEC 60825-1:2014 builds its
+        retinal limit, and towards 1400 nm the anterior-eye limit (twice the skin limit, from 700 nm; in the visible only for
+        a large source) is the lower one; for a beam under 1 mm it compares the beam&apos;s peak (ICNIRP Table 7 note b). IEC 60825-1:2014 builds its
         emission limits on the same values, except in the UV (see{" "}
         <Link href="/laser-safety/ansi-iec-comparison" className={linkClass}>MPE vs AEL</Link>). Not covered here: pulse
         trains (<Link href="/laser-safety/pulsed-mpe" className={linkClass}>pulsed MPE</Link>), extended sources (

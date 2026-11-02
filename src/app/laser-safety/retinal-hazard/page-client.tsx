@@ -91,7 +91,8 @@ export default function RetinalHazardPage() {
         upper bound; ICNIRP puts the gain over the corneal irradiance at about 100 000. The limits are what to compare
         with: ICNIRP&apos;s retinal limits (thermal, and photochemical from 10 s at 400–600 nm) for a point source, as
         corneal exposure over 7 mm, and its anterior-segment limit, which ICNIRP has checked from 1150 nm and which
-        binds from about 1300 nm, where the retinal limit has risen with C_C. A smaller pupil lowers the retinal irradiance but not the limits: ICNIRP allows no
+        binds from about 1300 nm, where the retinal limit has risen with C_C, or earlier for a beam under 1 mm, held
+        to its peak. A smaller pupil lowers the retinal irradiance but not the limits: ICNIRP allows no
         credit for a pupil under 7 mm.
       </p>
 

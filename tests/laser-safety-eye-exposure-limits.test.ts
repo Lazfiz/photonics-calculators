@@ -43,8 +43,12 @@ test("correction factors, ICNIRP 2013 Table 3", () => {
 test("which limits apply, and their apertures (Tables 5, 7, 8)", () => {
   const kinds = (l: number) => eyeLimits(nm(l)).map((x) => x.kind).sort().join(",");
   assert.equal(kinds(399.9), "cornealUv");
-  assert.equal(kinds(400), "anteriorSegment,retinalPhotochemical,retinalThermal");
-  assert.equal(kinds(600), "anteriorSegment,retinalThermal");
+  // Table 5 note d: the anterior-segment (skin) limit in the visible only for large retinal spots (α > α_min).
+  assert.equal(kinds(400), "retinalPhotochemical,retinalThermal");
+  assert.equal(kinds(699.9), "retinalThermal");
+  assert.equal(kinds(700), "anteriorSegment,retinalThermal");
+  assert.equal(eyeLimits(nm(532), ALPHA_MIN).map((x) => x.kind).join(","), "retinalThermal,retinalPhotochemical");
+  assert.equal(eyeLimits(nm(532), 2e-3).map((x) => x.kind).join(","), "retinalThermal,retinalPhotochemical,anteriorSegment");
   assert.equal(kinds(1149), "anteriorSegment,retinalThermal");
   assert.equal(kinds(1150), "anteriorSegment,retinalThermal");
   assert.equal(kinds(1400), "cornealIr");
@@ -147,15 +151,18 @@ test("visible: Class 2 at 0.25 s, the page default, photochemical and the 10 s j
 });
 
 test("near IR: C_A, C_C and the anterior-segment limit", () => {
+  // A 1.5 mm beam (1/e 1.06 mm, so Table 7 note b doesn't apply): all of it inside 7 mm (1 − e⁻⁴³·⁶), 3.5 mm to 2e-5.
+  const d = 1.5e-3;
   // 1064 nm, 10 mW inside 7 mm: 90 t^0.75 → t = (90/E)⁴ (the page used C_A ≈ 1.0 instead of 5).
   const E = 0.01 / area(7e-3);
-  assertRel(exposureDuration(nm(1064), 0.01, 0).tMax, Math.pow(90 / E, 4), 1e-9, "1064 nm");
+  assertRel(exposureDuration(nm(1064), 0.01, d).tMax, Math.pow(90 / E, 4), 1e-9, "1064 nm");
   // 808 nm, 15 W/m²: below 10 C_A = 16.4 W/m², so within the limit (the page capped t at 100 s).
-  assert.equal(exposureDuration(nm(808), 15 * area(7e-3), 0).tMax, Infinity);
+  assert.equal(exposureDuration(nm(808), 15 * area(7e-3), d).tMax, Infinity);
   // 1350 nm, 0.2 W: C_C = 8 + 10⁴ puts the retina out of reach; 2 × skin over 3.5 mm: 1.1×10⁵ t^0.25 J/m².
-  const r = exposureDuration(nm(1350), 0.2, 0);
+  const r = exposureDuration(nm(1350), 0.2, d);
   assert.equal(r.limiting, "anteriorSegment");
-  assertRel(r.tMax, Math.pow(1.1e5 / (0.2 / area(3.5e-3)), 4 / 3), 1e-9, "1350 nm");
+  const E35 = (0.2 * -Math.expm1((-2 * 3.5e-3 * 3.5e-3) / (d * d))) / area(3.5e-3);
+  assertRel(r.tMax, Math.pow(1.1e5 / E35, 4 / 3), 1e-9, "1350 nm");
   assertRel(r.tMax, 9.22, 1e-3, "1350 nm, 9.22 s");
   assert.equal(r.limits.find((l) => l.kind === "retinalThermal")?.tMax, Infinity);
 });
@@ -163,18 +170,37 @@ test("near IR: C_A, C_C and the anterior-segment limit", () => {
 test("anterior eye: the skin limit in the visible, twice it in the IR (Table 5 note d)", () => {
   // Table 7, 400–1400 nm: 200 C_A J/m² to 100 ns, 1.1×10⁴ C_A t^0.25 J/m² to 10 s, then 2×10³ C_A W/m².
   const skin = (t: number) => (t < 1e-7 ? 200 : t < 10 ? 1.1e4 * Math.pow(t, 0.25) : 2e3 * t);
+  // In the visible only for large retinal spots: here α = 2 mrad.
+  const vis = eyeLimits(nm(532), 2e-3).find((x) => x.kind === "anteriorSegment");
+  assert.ok(vis);
   for (const t of [1e-8, 0.25, 100]) {
-    assertRel(exposureLimit(limitOf(nm(532), "anteriorSegment"), t), skin(t), 1e-12, `532 nm, ${t} s`);
+    assertRel(exposureLimit(vis, t), skin(t), 1e-12, `532 nm, ${t} s`);
     assertRel(exposureLimit(limitOf(nm(905), "anteriorSegment"), t), 2 * correctionCA(nm(905)) * skin(t), 1e-12, `905 nm, ${t} s`);
   }
-  assertRel(exposureLimit(limitOf(nm(532), "anteriorSegment"), 0.25), 7778.2, 1e-4, "7.78 kJ/m² at 0.25 s");
-  // A point source never reaches it below 1150 nm: the retinal limit allows less power, even through 7 mm vs 3.5 mm.
-  for (const l of [400, 532, 699, 700, 905, 1064, 1149]) {
+  assertRel(exposureLimit(vis, 0.25), 7778.2, 1e-4, "7.78 kJ/m² at 0.25 s");
+  // Averaged (a beam of 1/e diameter over 1 mm) it never binds for a point source below 1150 nm: the retinal limit
+  // allows less power, even through 7 mm vs 3.5 mm.
+  for (const l of [700, 905, 1064, 1149]) {
     for (const t of [1e-9, 1e-6, 1e-3, 0.25, 10, 100, 3e4]) {
-      const pAnterior = limitMaxPower(limitOf(nm(l), "anteriorSegment"), 0, t);
-      assert.ok(pAnterior > limitMaxPower(limitOf(nm(l), "retinalThermal"), 0, t), `${l} nm, ${t} s`);
+      const pAnterior = limitMaxPower(limitOf(nm(l), "anteriorSegment"), 1.5e-3, t);
+      assert.ok(pAnterior > limitMaxPower(limitOf(nm(l), "retinalThermal"), 1.5e-3, t), `${l} nm, ${t} s`);
     }
   }
+  // Table 7 note b comes with the skin limit (Table 5 note d applies "the skin exposure limit"; Table 7 restricts its
+  // 3.5 mm aperture with note b): 1300 nm, 0.5 mm (1/e 0.35 mm), 10 s, the peak 8P/(πd²) against the least H(x)/x up
+  // to 10 s, 2·1.1×10⁴·C_A·10^0.25 J/m² / 10 s = 19.56 kW/m² (C_A = 5): P_max = 19.56 kW/m²·π(0.5 mm)²/8
+  // = 1.920 mW, against 188 mW averaged over 3.5 mm and 208 mW for the retina.
+  const a1300 = limitOf(nm(1300), "anteriorSegment");
+  const p1300 = ((1.1e5 * Math.pow(10, 0.25)) / 10) * ((Math.PI * 0.25e-6) / 8);
+  assertRel(limitMaxPower(a1300, 0.5e-3, 10), p1300, 1e-12, "1300 nm, 0.5 mm, 10 s");
+  assertRel(p1300, 1.920e-3, 1e-3, "1.92 mW");
+  assertRel(limitMaxPower(averaged(a1300), 0.5e-3, 10), 0.188, 0.01, "188 mW averaged");
+  // 1064 nm, 10 s: the anterior segment binds below d ≈ 0.5 mm (2·2×10³·5 W/m²·πd²/8 = 50 W/m²·π(3.5 mm)², d = 0.4995 mm).
+  const retina1064 = limitMaxPower(limitOf(nm(1064), "retinalThermal"), 0.4e-3, 10);
+  assert.ok(limitMaxPower(limitOf(nm(1064), "anteriorSegment"), 0.4e-3, 10) < retina1064, "0.4 mm: anterior");
+  assert.ok(limitMaxPower(limitOf(nm(1064), "anteriorSegment"), 0.6e-3, 10) > retina1064, "0.6 mm: retina");
+  // A point beam (d = 0) has an unbounded peak.
+  assert.equal(limitMaxPower(a1300, 0, 10), 0);
   // A 10 cm diffuse spot seen from 10 cm (α = 0.707 rad) with an open field of view at 0.25 s: C_E = α²/(α_min α_max)
   // = 3333, so the retinal limit 18 C_E t^0.75 = 21.2 kJ/m² is above the skin's 7.78 kJ/m², which then binds.
   const alpha = 0.1 / Math.SQRT2 / 0.1;
@@ -367,10 +393,12 @@ test("Table 5 note c: below 0.35 s a beam under 1 mm (1/e) on the 1 mm aperture 
   assert.ok(limitMaxPower(ir, 1e-3, 0.5) < limitMaxPower(ir, 1e-3, 0.25));
   // Same in limitMaxDuration: 5 mW lasts until E_peak·t = H(t), t = (H(1)·πd²/(8P))^(4/3) = 0.334 s (< 0.35 s).
   assertRel(limitMaxDuration(ir, 5e-3, 1e-3), Math.pow((5.6e3 * Math.PI * 1e-6) / (8 * 5e-3), 4 / 3), 1e-9, "0.334 s");
-  // Not the retinal (7 mm) or anterior-segment (3.5 mm) apertures, nor the 11 mm one above 100 µm.
-  for (const limit of [...eyeLimits(nm(1300)), ...eyeLimits(2e-4)]) {
+  // Not the retinal (7 mm) aperture, nor the 11 mm one above 100 µm; the anterior segment's 3.5 mm one at every
+  // duration (Table 7 note b): 1300 nm, 0.25 s, P_max = 2·1.1×10⁴·5·0.25^0.25 J/m²·π(0.5 mm)²/(8·0.25 s) = 30.5 mW.
+  for (const limit of [eyeLimits(nm(1300))[0], ...eyeLimits(2e-4)]) {
     assert.equal(limitMaxPower(limit, 0.5e-3, 0.25), limitMaxPower(averaged(limit), 0.5e-3, 0.25), limit.kind);
   }
+  assertRel(limitMaxPower(limitOf(nm(1300), "anteriorSegment"), 0.5e-3, 0.25), (1.1e5 * Math.pow(0.25, 0.25) * Math.PI * 0.25e-6) / (8 * 0.25), 1e-12, "1300 nm anterior");
   // UV the same: 350 nm, 0.1 s, 0.4 mm: 5.6×10³·0.1^0.25 J/m² at the peak.
   assertRel(limitMaxPower(eyeLimits(nm(350))[0], 0.4e-3, 0.1), (5.6e3 * Math.pow(0.1, 0.25) * Math.PI * 0.16e-6) / (8 * 0.1), 1e-12, "UV");
 });

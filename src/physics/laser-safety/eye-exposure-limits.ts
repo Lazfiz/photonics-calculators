@@ -17,11 +17,13 @@
  *   photochemical, from 10 s: 100 C_B J/m² to 100 s, then C_B W/m². Both apply (Table 5's "dual limits").
  * - 700–1050 nm: 2×10⁻³ C_A J/m² to 5 µs, 18 C_A t^0.75 J/m² to 10 s, then 10 C_A W/m². 1050–1400 nm:
  *   2×10⁻² C_C J/m² to 13 µs, 90 C_C t^0.75 J/m² to 10 s, then 10 C_A C_C W/m² (C_A = 5).
- * - 400–1400 nm, anterior segment (cornea, lens): the skin limit below 700 nm, twice it above, for an eye-only
- *   exposure (Table 5 note d): skin 200 C_A J/m² to 100 ns, 1.1×10⁴ C_A t^0.25 J/m² to 10 s, then 2×10³ C_A W/m²
- *   (Table 7). Both limits are checked from 1150 nm ("both retinal damage and damage to the anterior segment has to
- *   be considered", p. 281), but it binds only from about 1300 nm (t ≥ 10 s; about 1360 nm for ns pulses) to
- *   1400 nm, where C_C raises the retinal limit, and for a large source with an open field of view.
+ * - 400–1400 nm, anterior segment (cornea, lens): the skin limit (Table 7) also applies to the eye (Table 5 note d):
+ *   at 700–1400 nm twice it, for an eye-only exposure; below 700 nm once, "for large retinal spot sizes", so only for
+ *   α > α_min (for a point source it never binds there). Skin 200 C_A J/m² to 100 ns, 1.1×10⁴ C_A t^0.25 J/m² to
+ *   10 s, then 2×10³ C_A W/m², on the skin's 3.5 mm aperture with its note b (below). Both limits are checked from
+ *   1150 nm ("both retinal damage and damage to the anterior segment has to be considered", p. 281). Averaged, it
+ *   binds from about 1300 nm (t ≥ 10 s), where C_C raises the retinal limit, and for a large source with an open
+ *   field of view; under note b also for narrow infrared beams (1064 nm, 10 s: below d ≈ 0.5 mm).
  * - 1400 nm – 1 mm, cornea: 10³ J/m² to 1 ms, then 5.6×10³ t^0.25 J/m² (1400–1500 and 1800–2600 nm); 10⁴ J/m²
  *   (1500–1800 nm); 100 J/m² to 100 ns, then 5.6×10³ t^0.25 J/m² (2600 nm – 1 mm); from 10 s, 10³ W/m².
  * - Averaging apertures (Table 8; Table 7 for the skin limit): 7 mm for the retinal limits; 3.5 mm for the anterior
@@ -30,7 +32,8 @@
  *   size less than 7 mm" (ICNIRP 2013).
  * - Actual exposure (Table 5 note c, Table 7 note b): a beam narrower than 1 mm is compared by its actual radiant
  *   exposure, not its average over the aperture: on the 1 mm corneal aperture below 0.35 s ("pulse durations less than
- *   0.35 s") and on the skin's 3.5 mm aperture at every duration. The diameter is the 1/e one (p. 288), d₆₃ = d/√2
+ *   0.35 s") and on the skin's 3.5 mm aperture at every duration, which the anterior-segment limit takes with the
+ *   skin limit (note d applies "the skin exposure limit", whose aperture Table 7 restricts with note b). The diameter is the 1/e one (p. 288), d₆₃ = d/√2
  *   for a 1/e² diameter d, and a Gaussian beam's actual exposure is its peak, 8P/(πd²) = P/(πd₆₃²/4). A limit held
  *   "for every exposure up to t" applies the note at each duration below 0.35 s, so a longer t is never less strict.
  *   The averaged irradiance jumps to the peak at d₆₃ = 1 mm (×1.58 on the 1 mm aperture, ×12.3 on 3.5 mm).
@@ -184,8 +187,9 @@ function retinalThermalPieces(nm: number, ca: number, cc: number, alpha: number,
 
 /**
  * The limits that apply to the eye at λ (m), 180 nm ≤ λ ≤ 1 mm; empty outside. α (rad) is the angular subtense of the
- * apparent source; it only changes the retinal thermal limit, and up to α_min (the default) it is a point source. The
- * field of view matters only above α_max (see correctionCE).
+ * apparent source; it changes the retinal thermal limit and, below 700 nm, adds the anterior-segment limit above α_min
+ * (Table 5 note d); up to α_min (the default) it is a point source. The field of view matters only above α_max (see
+ * correctionCE).
  */
 export function eyeLimits(lambda: number, alpha = 0, fieldOfView: FieldOfView = "limited"): EyeLimit[] {
   const nm = toNm(lambda);
@@ -213,12 +217,14 @@ export function eyeLimits(lambda: number, alpha = 0, fieldOfView: FieldOfView = 
         apertures: fixedAperture(7e-3),
       });
     }
-    // Table 5 note d: the skin limit in the visible, twice it in the infrared (eye-only exposure).
+    // Table 5 note d: the skin limit in the visible for large retinal spots, twice it in the infrared (eye-only
+    // exposure), with the skin's 3.5 mm aperture and Table 7 note b.
+    if (nm < 700 && !(alpha > ALPHA_MIN)) return limits;
     const f = nm < 700 ? 1 : 2;
     limits.push({
       kind: "anteriorSegment",
       pieces: pieces([T_MIN, 1e-7, 10, T_MAX], [[f * 200 * ca, 0], [f * 1.1e4 * ca, 0.25], [f * 2e3 * ca, 1]]),
-      apertures: fixedAperture(3.5e-3),
+      apertures: [{ ...fixedAperture(3.5e-3)[0], actualBelow: ACTUAL_EXPOSURE_BELOW }],
     });
     return limits;
   }
