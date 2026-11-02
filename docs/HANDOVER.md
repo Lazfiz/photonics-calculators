@@ -1,24 +1,26 @@
-# Handover — 2026-11-02 (session 179 → session 180)
+# Handover — 2026-11-02 (session 180 → session 181)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 179 did 6a-a laser safety on `phase-6/6a-laser-safety` (PR #217): diffuse near zone, note c threshold, TRT text. The
-reviewer's wider note-c finding became 6a-b (next). PR #216 (triage) is merged.
+Session 180 did 6a-b laser safety on `phase-6/6a-b-note-c`: ICNIRP Table 5 note c and Table 7 note b in the shared limits.
+PR #217 (6a-a) is merged. Next: 6a-c (scanned passes, anterior-segment note b), then 6b–6i; the hero last.
 
 ## State
-- `lambertianSpotIrradiance(ρP, d, r)` and `NEAR_POINT` (0.1 m) in `hazard-distance.ts`; `diffuseExposure` limits now carry
-  their own `irradiance` and the result a `retinalRange`. `expE1Scaled` (eˣE₁) in `math.ts`. Tests 1192 pass.
-- ICNIRP 2013 full text: `pdftotext` of the icnirp.org PDF (session 179 scratchpad, gone after /clear; re-fetch it). Table 5
-  p. 283, notes p. 284, the 1/e diameter rule p. 288, the 10 cm near point p. 275, Table 7 note b (skin) p. 285.
+- `AperturePiece.actualBelow` (1 mm, `ACTUAL_EXPOSURE_BELOW`) marks the corneal pieces to 0.35 s and the 3.5 mm skin piece;
+  `comparedIrradiance`/`limitIrradiance` give the peak 8P/(πd²) when d/√2 is under it, else the aperture average.
+  `averagedOnly` strips it (classes, the `mpe` page's fills-aperture power). d = 0 is now a point beam: P_max = 0.
+- `limitMaxEnergy` caps a pulse/group ≥ 0.35 s at t·`limitMaxPower` when the rule is active (reviewer B1: ×6–105 high);
+  `requiredOpticalDensity` lost its `actualExposure` option: every page gets the rule from the limits.
 
 ## Next actions
-1. `/ship`: PR #217, CI, merge on the user's yes. Post-merge (only after a release, on the user's request):
-   `laser-safety/diffuse-reflection=1.86 mm` (was 2.85 mm: the anterior-segment distance with the near zone).
-2. 6a-b on a new branch: note c on optical-density, nohd, multiple-wavelength (binds at its defaults: 1550 nm line ×2.31),
-   `pulse-train.ts` single-pulse and `scanned-beam` rules, `exposureDuration` < 0.35 s; skin Table 7 note b. Use
-   `requiredOpticalDensity`'s `actualExposure` pattern (now on d₆₃ = d/√2). Then 6b–6i; the hero last.
+1. `/ship`; merge on the user's yes. After a release (on request): `laser-safety/multiple-wavelength` 1550 nm share 0.637 (was 0.275).
+2. 6a-c (see ROADMAP). The reviewer reads Table 5 note d as carrying Table 7 note b to `anteriorSegment` (1250–1400 nm);
+   check the ICNIRP text (p. 284–285) before changing it.
 3. KRS-5 by hand: `materials/transparency-range?material=krs5` at 10 µm: n 2.3707, loss 28.4 %.
 
 ## Non-obvious facts
+- **Session 180:** note c applies to "exposures up to t" at piece ends x ≤ 0.35 s even when t ≥ 0.35 s; applying it only for
+  t < 0.35 s (6a-a's OD) makes OD fall as t grows past 0.35 s. The safe diameter has three branches (peak below √2 mm 1/e²,
+  edge = √2 mm, averaged above); 6334 inversions passed. PDF: icnirp.org/cms/upload/publications/ICNIRPLaser180gdl_2013.pdf (browser UA).
 - **Session 179:** with a near-zone irradiance that saturates, C_E ∝ α² (open field) makes the retinal ratio *fall* close up;
   hence the 10 cm floor with ρP/(πr²) for the retinal limits (errs high ≈ d²/(4r²)) and the exact spot form only for the
   corneal ones. Unread "(from memory)" ranges (planar TRT) stay off pages; A&P 1983 and Altshuler 2001 are paywalled (403).
@@ -62,8 +64,6 @@ reviewer's wider note-c finding became 6a-b (next). PR #216 (triage) is merged.
   per category: `shuf | awk -F/ '!seen[$1]++'`.
 - **Session 160:** Chrome extension screenshots time out on this site; use a headless CDP script (pattern in
   `scripts/ui-check.mjs`). In the Bash tool a bare `python -` or `cat > file` with no input hangs until timeout.
-- **Session 157:** a new Plotly trace type goes in both `plotly-traces.ts` and `plotly-bundle.ts`. `ui-check <base> load
-  /a /b` prints `plotly svg` or `svg+gl` per chart.
 - **Session 155:** React Compiler is off: a `preserve-manual-memoization` error is fixed by dropping the `useMemo`. Plotly
   data: cast to `PlotParams["data"]`, never `any[]`.
 - **Sessions 151–153:** write regex-heavy scripts with the Write tool. ts-morph `sf.insertText` forgets every node: insert

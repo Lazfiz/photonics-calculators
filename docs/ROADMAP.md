@@ -252,7 +252,7 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 **Laser safety** (optional)
 - A scanned-lidar mode on `lidar-safety`.
 - Re-check the classes when IEC 60825-1 Ed. 4 is published (only a BSI draft in 2026).
-- Session 174 (deferred): ICNIRP Table 5 note c is applied only to the medical page's focus OD; the rest is 6a-b. Outside
+- Session 180: ICNIRP Table 5 note c and Table 7 note b apply in the shared limits (6a-b); scanned passes are 6a-c. Outside
   400–1400 nm the pages assume 10 s with a note (ICNIRP p. 285: the longest exposure expected). Unverified: the ANSI
   differences quoted from Schulmeister 2017 on `ansi-iec-comparison`; ICAO Doc 9815 levels and EN 207 test conditions (from memory).
 
@@ -307,10 +307,10 @@ literature first, then fixes with golden tests citing the source. Values that mi
 then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - [x] 6a-a laser safety (session 179, `phase-6/6a-laser-safety`, PR #217): diffuse near zone exact for the Gaussian spot, retinal limits from
   the 10 cm near point; note c threshold on d₆₃; TRT attribution. See Done.
-- [ ] 6a-b laser safety: ICNIRP Table 5 note c (1/e diameter < 1 mm, t < 0.35 s: the actual exposure, ICNIRP p. 284/288) on
-  `optical-density`, `nohd` (`limitSafeDiameter`/`limitMaxPower`), `multiple-wavelength` (binds at defaults: 1550 nm line ×2.31),
-  the single-pulse/scan rules in `pulse-train.ts` (`limitMaxEnergy`, `scanned-beam`) and `exposureDuration` when < 0.35 s;
-  Table 7 note b on `skin-mpe` (beam < 1 mm, any t: actual exposure, not the 3.5 mm average; ×98 at 0.5 mm). Session 179 review.
+- [x] 6a-b laser safety (session 180, `phase-6/6a-b-note-c`): Table 5 note c and Table 7 note b in the shared limits. See Done.
+- [ ] 6a-c laser safety: scanned-beam passes under note c (actual-exposure pass H = P√(8/π)/(d v), FWHM d√(ln2/2)/v; passes
+  are still averaged while `stationaryMaxPower` uses the peak); does Table 7 note b reach `anteriorSegment` via Table 5 note d
+  (1300 nm, 0.5 mm, 10 s: 188 mW averaged vs 1.92 mW, retinal 208 mW)?; the skin A11 aperture is unverified.
 - [ ] 6b lasers: `optical-parametric-oscillator` threshold with Boyd–Kleinman h(B, ξ) (L_eff = min(L, l_a) may put P_th ≈ 10× high);
   `supercontinuum` DW with the ejected-soliton power and the N > 16 threshold (Dudley 2006); `thin-disk-laser` κ at the default
   10 at.% (Beil 2010: 5.7 at 12 at.%); `injection-locking` stable band at weak injection (Henry–Olsson–Dutta 1985).
@@ -349,6 +349,11 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 6a-b laser safety (session 180, `phase-6/6a-b-note-c`): ICNIRP Table 5 note c (1/e < 1 mm, corneal pieces to 0.35 s: the peak
+  8P/(πd²)) and Table 7 note b (skin, 1/e < 1 mm: the peak, ×98 at 0.5 mm) via `AperturePiece.actualBelow` and
+  `comparedIrradiance`; exposures up to t keep it at 0.35⁻, so OD is monotone in t; pulses/groups ≥ 0.35 s capped at
+  t·`limitMaxPower`; `limitSafeDiameter` inverts the peak/edge/averaged branches; classes stay averaged (`averagedOnly`).
+  `multiple-wavelength` default 1550 nm share 0.275 → 0.637. Beam inputs floored at 10 µm.
 - 6a-a laser safety (session 179, `phase-6/6a-laser-safety`, PR #217): `diffuse-reflection` near zone exact for a Lambertian Gaussian spot,
   ρP/(πr²)·x(1 − x eˣE₁(x)), x = 8r²/d² (new `expE1Scaled`, A&S Table 5.1 goldens), retinal limits assessed from the 10 cm near
   point (ICNIRP p. 275; a 532 nm 0.5 W point spot: 7.9 cm → none); note c threshold on d₆₃ = d/√2 (ICNIRP p. 288; 1–1.41 mm
