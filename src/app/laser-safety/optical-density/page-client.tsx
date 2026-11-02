@@ -18,14 +18,14 @@ const linkClass = "underline hover:text-white";
 export default function OpticalDensityPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 532, { min: 180, max: 1000000 }); // nm
   const [powerRaw, setPower] = useURLState("power", 500); // mW
-  const [beamDiamRaw, setBeamDiam] = useURLState("beamDiam", 3); // mm
+  const [beamDiamRaw, setBeamDiam] = useURLState("beamDiam", 3, { min: 0.01 }); // mm
   const [exposureRaw, setExposure] = useURLState("exposure", 0.25); // s
   const [safetyFactorRaw, setSafetyFactor] = useURLState("safetyFactor", 10);
   const [beamDefinitionRaw, setBeamDefinition] = useURLState("beamDefinition", "1/e2");
 
   // URL values aren't range-checked: clamp them here; outside 180 nm – 1 mm there are no limits and the page says so.
   const power = Math.max(powerRaw, 0);
-  const beamDiam = Math.max(beamDiamRaw, 0);
+  const beamDiam = Math.max(beamDiamRaw, 0.01);
   const exposure = Math.min(Math.max(exposureRaw, T_MIN), T_MAX);
   const safetyFactor = Math.max(safetyFactorRaw, 1);
   const beamDefinition = parseBeamDefinition(beamDefinitionRaw);
@@ -60,7 +60,7 @@ export default function OpticalDensityPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={180} max={1000000} step="any" />
         <ValidatedNumberInput label="Beam power (mW)" value={power} onChange={setPower} min={0} step="any" />
-        <ValidatedNumberInput label="Beam diameter (mm)" value={beamDiam} onChange={setBeamDiam} min={0} step="any" />
+        <ValidatedNumberInput label="Beam diameter (mm)" value={beamDiam} onChange={setBeamDiam} min={0.01} step="any" />
         <ValidatedNumberInput label="Exposure time (s)" value={exposure} onChange={setExposure} min={1e-9} max={30000} step="any" />
         <ValidatedNumberInput label="Safety factor" value={safetyFactor} onChange={setSafetyFactor} min={1} step="any" />
         <LaserSafetyBeamDefinition value={beamDefinition} onChange={setBeamDefinition} withDivergence={false} />
@@ -135,7 +135,7 @@ export default function OpticalDensityPage() {
         Optical density a filter needs so that a CW beam stays within every ICNIRP 2013 eye limit (Health Phys.
         105:271) for exposures up to t: OD = log₁₀(P / P_max), where P_max is the largest power of this beam whose
         irradiance, averaged over each limit&apos;s aperture (7 mm for the retina, 3.5 mm for the anterior eye, 1 → 3.5 mm
-        on the cornea in the UV and from 1.4 µm), stays within the limit. A filter scales the power, not the beam
+        on the cornea in the UV and from 1.4 µm), stays within the limit. A beam under 1 mm (1/e diameter, d/√2 for the 1/e² d) is held to its peak on the cornea below 0.35 s (ICNIRP 2013 Table 5 note c). A filter scales the power, not the beam
         profile, so this is the same as log₁₀(H/MPE) in ANSI Z136.1 and EN 207. Typical exposure times: 0.25 s for
         visible beams (aversion response), 10 s for invisible ones, longer for staring. Not modelled: pulses (see{" "}
         <Link href="/laser-safety/pulsed-mpe" className={linkClass}>pulsed MPE</Link>), EN 207 / EN 208 scale numbers,

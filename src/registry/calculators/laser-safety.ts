@@ -207,7 +207,7 @@ export const laserSafety: CalculatorEntry[] = [
     title: "Diode Laser Safety Calculator",
     description: "NOHD and eyewear OD for a diode laser beam with different slow- and fast-axis divergence (1/e² or FWHM), on the ICNIRP 2013 eye limits.",
     tier: "textbook",
-    modelNote: "Elliptical beam as the round beam of equal peak irradiance (√(d_x d_y)), each axis a + rφ; ICNIRP 2013 point-source eye limits averaged over each aperture, one exposure up to t. Not modelled: extended-source bars, pulses.",
+    modelNote: "Elliptical beam as the round beam of equal peak irradiance (√(d_x d_y)), each axis a + rφ; ICNIRP 2013 point-source eye limits averaged over each aperture (its peak if under 1 mm (1/e) on the cornea below 0.35 s, ICNIRP Table 5 note c), one exposure up to t. Not modelled: extended-source bars, pulses.",
     references: [
       {
         citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 5 and 8.",
@@ -247,7 +247,7 @@ export const laserSafety: CalculatorEntry[] = [
     description: "Calculate the maximum safe exposure time for a CW laser beam based on MPE limits.",
     keywords: ["Maximum Exposure Duration"],
     tier: "exact",
-    modelNote: "ICNIRP point-source eye limits (180 nm – 1 mm, 1 ns – 30 ks) for a CW round TEM₀₀ beam centred on the averaging aperture. Not modelled: extended sources, pulses, and the actual-irradiance advice for beams under 1 mm.",
+    modelNote: "ICNIRP point-source eye limits (180 nm – 1 mm, 1 ns – 30 ks) for a CW round TEM₀₀ beam centred on the averaging aperture (its peak if under 1 mm (1/e) on the cornea below 0.35 s, ICNIRP Table 5 note c). Not modelled: extended sources, pulses.",
     references: [
       {
         citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 3, 5, 7 and 8.",
@@ -278,7 +278,7 @@ export const laserSafety: CalculatorEntry[] = [
     description: "Largest energy per pulse within the ICNIRP 2013 eye limits across the spectrum for your pulse width, repetition rate and beam: why 1.4–2.6 µm lasers are called eye-safe, and how a pulse train narrows the margin.",
     heading: "Eye-Safe Wavelength Region",
     tier: "exact",
-    modelNote: "ICNIRP 2013 point-source eye limits with the repetitive-pulse rules (single pulse, pulse groups, C_P) and the sub-ns rows; round Gaussian beam averaged over each aperture.",
+    modelNote: "ICNIRP 2013 point-source eye limits with the repetitive-pulse rules (single pulse, pulse groups, C_P) and the sub-ns rows; round Gaussian beam averaged over each aperture (its peak if under 1 mm (1/e) on the cornea below 0.35 s, ICNIRP Table 5 note c).",
     references: [
       {
         citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 3, 5 and 8; repetitive pulse exposures (p. 287).",
@@ -291,7 +291,7 @@ export const laserSafety: CalculatorEntry[] = [
     title: "Fiber Laser Safety Calculator",
     description: "Output power, NOHD and eyewear OD of a bare fiber end (single-mode or multimode), on the ICNIRP 2013 eye limits.",
     tier: "textbook",
-    modelNote: "Fiber end as a Gaussian waist: single-mode diffracts at λ/(πw₀), multimode fills the NA; ICNIRP 2013 eye limits averaged over each aperture, one exposure up to t. Real multimode profiles aren't Gaussian.",
+    modelNote: "Fiber end as a Gaussian waist: single-mode diffracts at λ/(πw₀), multimode fills the NA; ICNIRP 2013 eye limits averaged over each aperture (its peak if under 1 mm (1/e) on the cornea below 0.35 s, ICNIRP Table 5 note c), one exposure up to t. Real multimode profiles aren't Gaussian.",
     references: [
       {
         citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 5 and 8.",
@@ -350,7 +350,7 @@ export const laserSafety: CalculatorEntry[] = [
     description: "ICNIRP 2013 eye exposure limits at any wavelength from 180 nm to 1 mm: corneal, anterior-eye and retinal limits with their apertures, and the largest safe power for an exposure time.",
     keywords: ["Corneal Exposure Limits", "IR Corneal Exposure", "Infrared Thermal Limits", "Infrared Hazard Calculator"],
     tier: "exact",
-    modelNote: "ICNIRP 2013 point-source eye limits (180 nm – 1 mm, 1 ns – 30 ks) for a round TEM₀₀ beam centred on each averaging aperture. Not modelled: pulse trains, extended sources, beams under 1 mm.",
+    modelNote: "ICNIRP 2013 point-source eye limits (180 nm – 1 mm, 1 ns – 30 ks) for a round TEM₀₀ beam centred on each averaging aperture (its peak if under 1 mm (1/e) on the cornea below 0.35 s, ICNIRP Table 5 note c). Not modelled: pulse trains, extended sources.",
     references: [
       {
         citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 3, 5, 7 and 8.",
@@ -381,7 +381,7 @@ export const laserSafety: CalculatorEntry[] = [
     title: "LiDAR Laser Safety Calculator",
     description: "Eye safety of a stationary lidar beam (905 or 1550 nm) on the ICNIRP 2013 limits: the repetitive-pulse rule that binds, NOHD, exposure at a viewing distance and eyewear OD.",
     tier: "textbook",
-    modelNote: "ICNIRP 2013 repetitive-pulse rules on the eye limits; round Gaussian beam widening as a + rφ, averaged over each aperture. Stationary beam (the worst case, a scanner failure); scanning not modelled.",
+    modelNote: "ICNIRP 2013 repetitive-pulse rules on the eye limits; round Gaussian beam widening as a + rφ, averaged over each aperture (its peak if under 1 mm (1/e) on the cornea below 0.35 s, ICNIRP Table 5 note c). Stationary beam (the worst case, a scanner failure); scanning not modelled.",
     references: [
       {
         citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Repetitive pulse exposures (p. 287), Tables 4, 5 and 8.",
@@ -412,12 +412,12 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "mpe",
     title: "Maximum Permissible Exposure (MPE)",
-    description: "Maximum permissible exposure of the eye at any wavelength from 180 nm to 1 mm and exposure time from 1 ns to 30 000 s, on the ICNIRP 2013 limits: radiant exposure, irradiance and the power of a narrow beam.",
+    description: "Maximum permissible exposure of the eye at any wavelength from 180 nm to 1 mm and exposure time from 1 ns to 30 000 s, on the ICNIRP 2013 limits: radiant exposure, irradiance and the power through each aperture.",
     lede: "Every eye exposure limit in force at a wavelength and exposure time, with the aperture it is averaged over. The lowest is the MPE.",
     keywords: ["maximum permissible exposure"],
     priority: 92,
     tier: "exact",
-    modelNote: "ICNIRP 2013 point-source eye limits (180 nm – 1 mm, 1 ns – 30 ks) and their apertures, for one exposure of duration t. Not modelled: pulse trains, extended sources, skin, the actual-irradiance advice under 1 mm.",
+    modelNote: "ICNIRP 2013 point-source eye limits (180 nm – 1 mm, 1 ns – 30 ks) and their apertures, for one exposure of duration t; the power fills the aperture (a beam under 1 mm (1/e) on the cornea below 0.35 s is held to its peak, ICNIRP Table 5 note c). Not modelled: pulse trains, extended sources, skin.",
     references: [
       {
         citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 3, 5 and 8.",
@@ -433,7 +433,7 @@ export const laserSafety: CalculatorEntry[] = [
     title: "Multiple Wavelength MPE",
     description: "Eye exposure to a beam with several wavelengths on the ICNIRP 2013 limits: lines absorbed in the same tissue add, while the retina and the cornea count independently.",
     tier: "exact",
-    modelNote: "ICNIRP 2013 eye limits per line (point source, averaged over each aperture, exposures up to t); shares add per tissue (retina; cornea and lens) as on p. 279. Not modelled: skin, pulses, lines of different beam size.",
+    modelNote: "ICNIRP 2013 eye limits per line (point source, averaged over each aperture or, under 1 mm (1/e) on the cornea below 0.35 s, the peak (Table 5 note c), exposures up to t); shares add per tissue (retina; cornea and lens) as on p. 279. Not modelled: skin, pulses, lines of different beam size.",
     references: [
       {
         citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. p. 279 (multiple wavelengths), Tables 5 and 8.",
@@ -449,7 +449,7 @@ export const laserSafety: CalculatorEntry[] = [
     keywords: ["nominal ocular hazard distance", "Beam Divergence Hazards", "Safe Viewing Distance"],
     priority: 90,
     tier: "exact",
-    modelNote: "ICNIRP 2013 eye limits (180 nm – 1 mm, one exposure up to t) for a Gaussian beam averaged over each limit's aperture, spreading as a + rφ or √(a² + (rφ)²). Not modelled: atmosphere, optical aids, pulse trains.",
+    modelNote: "ICNIRP 2013 eye limits (180 nm – 1 mm, one exposure up to t) for a Gaussian beam averaged over each limit's aperture (its peak if under 1 mm (1/e) on the cornea below 0.35 s, ICNIRP Table 5 note c), spreading as a + rφ or √(a² + (rφ)²). Not modelled: atmosphere, optical aids, pulse trains.",
     references: [
       {
         citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 2, 5 and 8.",
@@ -489,7 +489,7 @@ export const laserSafety: CalculatorEntry[] = [
     keywords: ["laser eyewear", "od calculator"],
     priority: 88,
     tier: "exact",
-    modelNote: "ICNIRP 2013 eye limits (180 nm – 1 mm, exposures up to t) for a round Gaussian beam averaged over each limit's aperture; OD = log₁₀(P/P_max). Not modelled: pulses, EN 207 scale numbers, filter damage.",
+    modelNote: "ICNIRP 2013 eye limits (180 nm – 1 mm, exposures up to t) for a round Gaussian beam averaged over each limit's aperture (its peak if under 1 mm (1/e) on the cornea below 0.35 s, ICNIRP Table 5 note c); OD = log₁₀(P/P_max). Not modelled: pulses, EN 207 scale numbers, filter damage.",
     references: [
       {
         citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 5 and 8.",
@@ -629,7 +629,7 @@ export const laserSafety: CalculatorEntry[] = [
     description: "ICNIRP 2013 skin exposure limit from 180 nm to 1 mm: the limit for your exposure time, the beam's irradiance over 3.5 mm and the largest safe power.",
     keywords: ["Skin Hazard Assessment", "Skin MPE Calculator"],
     tier: "exact",
-    modelNote: "ICNIRP 2013 Table 7 skin limit, 1 ns – 30 ks, with the large-area rule above 1400 nm; round Gaussian beam averaged over 3.5 mm. Not modelled: pulse trains, and beams under 1 mm.",
+    modelNote: "ICNIRP 2013 Table 7 skin limit, 1 ns – 30 ks, with the large-area rule above 1400 nm; round Gaussian beam averaged over 3.5 mm, or its peak if under 1 mm (1/e; Table 7 note b). Not modelled: pulse trains.",
     references: [
       {
         citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 3, 5, 7 and 8.",

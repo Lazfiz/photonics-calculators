@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import ChartPanel from "./chart-panel";
 import { finiteXY, LIMIT_COLORS, LIMIT_LABELS } from "./eye-limit-labels";
 import {
-  apertureIrradiance, exposureDuration, exposureLimit, eyeLimits, limitingAperture, T_MAX, T_MIN,
+  ACTUAL_EXPOSURE_BELOW, exposureDuration, exposureLimit, eyeLimits, limitIrradiance, T_MAX, T_MIN,
 } from "../physics/laser-safety/eye-exposure-limits";
 
 export interface ExposureMark {
@@ -48,9 +48,11 @@ export default function ExposureTimeChart({
       seen.add(key);
       const fixed = limit.apertures.length === 1;
       traces.push({
-        ...finiteXY(times, times.map((t) => apertureIrradiance(P, d, limitingAperture(limit, t)))),
+        ...finiteXY(times, times.map((t) => limitIrradiance(limit, P, d, t))),
         type: "scatter", mode: "lines",
-        name: fixed ? `Beam over ${(limit.apertures[0].d * 1e3).toFixed(1)} mm` : "Beam over 1 → 3.5 mm",
+        name: fixed
+          ? `Beam over ${(limit.apertures[0].d * 1e3).toFixed(1)} mm`
+          : d / Math.SQRT2 < ACTUAL_EXPOSURE_BELOW ? "Beam peak to 0.35 s, then over 1.5 → 3.5 mm" : "Beam over 1 → 3.5 mm",
         line: { color: "#f87171", dash: seen.size === 1 ? "dash" : "dot" },
       });
     }
@@ -65,7 +67,7 @@ export default function ExposureTimeChart({
     const onBeam = limits.find((l) => l.kind === (result.limiting ?? limits[0]?.kind));
     for (const m of marks) {
       if (!onBeam || !(m.t >= T_MIN && m.t <= T_MAX)) continue;
-      const y = apertureIrradiance(P, d, limitingAperture(onBeam, m.t));
+      const y = limitIrradiance(onBeam, P, d, m.t);
       if (y > 0) traces.push({ x: [m.t], y: [y], type: "scatter", mode: "markers", name: m.name, marker: { color: m.color, size: 11, symbol: "diamond" } });
     }
     return traces;

@@ -25,7 +25,8 @@
  * Not modelled: an eye off the centre of the scan line (passes come in unevenly spaced pairs near the turning points,
  * where the beam also slows), sinusoidal (resonant) scans, raster scans (several lines per frame cross the pupil),
  * pulsed lasers (each pass a group of pulses), a moving retinal image (accommodation to infinity: less restrictive),
- * and IEC 60825-1's angle-of-acceptance analysis of extended images.
+ * IEC 60825-1's angle-of-acceptance analysis of extended images, and the actual exposure of passes narrower than 1 mm
+ * (ICNIRP 2013 Table 5 note c): the passes are averaged over the aperture, while `stationaryMaxPower` applies the note.
  */
 
 import { normalCdf } from "../math";

@@ -77,9 +77,8 @@ export default function ExposureDurationPage() {
         power is averaged over the limiting aperture: 7 mm for the retina; 1 mm, growing to 3.5 mm at 10 s, in the UV and
         from 1.4 µm to 100 µm; 11 mm beyond. A smaller pupil does not raise the limits. From 400 to 600 nm the thermal
         and the photochemical limits both apply; from 400 to 1400 nm the skin limit (twice it from 700 nm) protects
-        the cornea and lens, which matters only from 1150 nm, where C_C raises the retinal limit. Not covered: pulses,
-        extended sources, and beams under 1 mm, for which ICNIRP advises using the actual irradiance rather than the
-        aperture average.
+        the cornea and lens, which matters only from 1150 nm, where C_C raises the retinal limit. Not covered: pulses
+        and extended sources. A beam under 1 mm (1/e diameter, d/√2 for the 1/e² d) is held to its peak on the cornea below 0.35 s (ICNIRP 2013 Table 5 note c).
       </p>
 
       <div className="bg-gray-900 rounded-lg p-4">

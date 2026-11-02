@@ -10,7 +10,9 @@
  *
  * A train: pulses of energy Q and duration τ at the repetition rate f, for an exposure T from the start of the first
  * pulse to the end of the last, so N = ⌊(T − τ)f⌋ + 1 pulses. G(t) is the largest beam energy within a limit when
- * delivered in t: H(t) over the aperture's average, H(t)·(πD²/4) / (1 − exp(−2D²/d²)). Per limit, the energy per
+ * delivered in t: H(t) over the aperture's average, H(t)·(πD²/4) / (1 − exp(−2D²/d²)), or over the beam's peak,
+ * H(t)·πd²/8, where the actual-exposure rule applies (1/e diameter d/√2 < 1 mm and t < 0.35 s on the cornea, Table 5
+ * note c; `comparedIrradiance`). Per limit, the energy per
  * pulse is the least of:
  * 1. Single pulse: G(τ), the limit for one pulse of that duration.
  * 2. Pulse groups: G(T_n)/n for every n = 2 … N consecutive pulses, spanning T_n = τ + (n − 1)/f. The full train is
@@ -39,12 +41,13 @@
  *
  * Rule 1 uses the limit at τ alone, as written. (`limitMaxPower`·τ, the CW reading, also holds every shorter part of
  * the pulse to its limit; the two differ only by the tables' rounding at joints and on an extended source's t^1.25
- * piece.) Scanned beams: `scanned-beam.ts`. Not modelled: irregular trains and bursts, skin, the advice to use the actual radiant exposure
- * of beams narrower than 1 mm (Table 5 note c).
+ * piece.) The exception is the actual-exposure rule (Table 5 note c): it holds a narrow beam to its peak below 0.35 s
+ * only, so a delivery of 0.35 s or longer, averaged at its own duration, could carry 6–100× more than its first 0.35 s
+ * may. There G(t) is also at most t·`limitMaxPower`, as on the CW pages. Scanned beams: `scanned-beam.ts`. Not modelled: irregular trains and bursts, skin.
  */
 
 import {
-  alphaMax, apertureIrradiance, correctionCC, correctionCE, eyeLimits, exposureLimit, limitingAperture, timeT2,
+  alphaMax, correctionCC, correctionCE, eyeLimits, exposureLimit, limitIrradiance, limitMaxPower, timeT2,
   T_MAX, T_MIN, type EyeLimit, type EyeLimitKind, type Piece, type TabulatedLimit,
 } from "./eye-exposure-limits";
 
@@ -90,10 +93,19 @@ export function pulseLimits(lambda: number, alpha = 0): EyeLimit[] {
   });
 }
 
-/** G(t), J: the largest energy of a beam (1/e² diameter d, m) delivered in t (s) within the limit; Infinity where the limit doesn't apply. */
+/**
+ * G(t), J: the largest energy of a beam (1/e² diameter d, m) delivered in t (s) within the limit; Infinity where the
+ * limit doesn't apply. Where the actual-exposure rule holds d to its peak and t reaches past the rule's piece (0.35 s),
+ * the parts of the delivery below 0.35 s count too: at most t·`limitMaxPower` (tabulated pieces from 1 ns).
+ */
 export function limitMaxEnergy(limit: TabulatedLimit, d: number, t: number): number {
   const H = exposureLimit(limit, t);
-  return Number.isNaN(H) ? Infinity : H / apertureIrradiance(1, d, limitingAperture(limit, t));
+  if (Number.isNaN(H)) return Infinity;
+  const G = H / limitIrradiance(limit, 1, d, t);
+  const rule = limit.apertures.find((ap) => ap.actualBelow !== undefined && d / Math.SQRT2 < ap.actualBelow);
+  if (!rule || t < rule.t1) return G;
+  const tabulated = { ...limit, pieces: limit.pieces.filter((s) => s.t0 >= T_MIN) };
+  return Math.min(G, t * limitMaxPower(tabulated, d, Math.min(t, T_MAX)));
 }
 
 /** A regular train of identical pulses. */
@@ -266,8 +278,9 @@ export function pulseTrainLimits(lambda: number, d: number, train: PulseTrain, a
 
 /**
  * Smallest 1/e² diameter, m, at which pulses of energy Q (J) in this train stay within every eye limit at λ (m); 0 if
- * they do with all the energy inside each aperture. Each rule's energy is G ∝ 1/(1 − exp(−2D²/d²)), which grows with
- * d, so Q/qMax falls with d: the diameter is bracketed by doubling and found by bisection in log d (relative 1e-10).
+ * they do with all the energy inside each aperture. Each rule's energy is G ∝ 1/(1 − exp(−2D²/d²)), or ∝ d² under
+ * the actual-exposure rule, which grows with d and steps up where the rule ends (d = √2 mm), so Q/qMax falls with d:
+ * the diameter is bracketed by doubling and found by bisection in log d (relative 1e-10).
  * NaN for Q < 0 or an invalid train.
  */
 export function pulseTrainSafeDiameter(lambda: number, Q: number, train: PulseTrain, alpha = 0): number {

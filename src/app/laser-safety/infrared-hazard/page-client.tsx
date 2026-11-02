@@ -8,7 +8,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  apertureIrradiance, exposureLimit, eyeLimits, limitingAperture, limitMaxPower, T_MAX, T_MIN,
+  exposureLimit, eyeLimits, limitIrradiance, limitingAperture, limitMaxPower, T_MAX, T_MIN,
 } from "../../../physics/laser-safety/eye-exposure-limits";
 
 export default function InfraredHazardPage() {
@@ -29,7 +29,7 @@ export default function InfraredHazardPage() {
         const H = exposureLimit(limit, t);
         const D = limitingAperture(limit, t);
         const pMax = limitMaxPower(limit, d, t);
-        return { limit, H, D, E: apertureIrradiance(P, d, D), pMax };
+        return { limit, H, D, E: limitIrradiance(limit, P, d, t), pMax };
       }),
     [lambda, P, d, t],
   );
@@ -77,7 +77,7 @@ export default function InfraredHazardPage() {
                   <th className="py-2 pr-4 font-normal">Aperture (mm)</th>
                   <th className="py-2 pr-4 font-normal">H at t (J/m²)</th>
                   <th className="py-2 pr-4 font-normal">H/t (W/m²)</th>
-                  <th className="py-2 pr-4 font-normal">Beam over aperture (W/m²)</th>
+                  <th className="py-2 pr-4 font-normal">Beam irradiance compared (W/m²)</th>
                   <th className="py-2 font-normal">Max power</th>
                 </tr>
               </thead>
@@ -111,8 +111,8 @@ export default function InfraredHazardPage() {
         near IR and C_C from 1150 nm; twice the skin limit protects the cornea and lens (3.5 mm) and takes over as C_C
         rises towards 1400 nm. The beam is
         a round Gaussian centred on each aperture; the max power is the largest that stays within the limit at every
-        duration up to t. A smaller pupil does not raise the limits. Not covered: pulse trains, extended sources, and
-        ICNIRP&apos;s advice to use the actual irradiance of beams under 1 mm.
+        duration up to t. A smaller pupil does not raise the limits. Not covered: pulse trains and extended sources.
+        A beam under 1 mm (1/e diameter, d/√2 for the 1/e² d) is held to its peak on the cornea below 0.35 s (ICNIRP 2013 Table 5 note c).
       </p>
 
       <div className="bg-gray-900 rounded-lg p-4">

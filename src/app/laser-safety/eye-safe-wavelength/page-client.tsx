@@ -104,7 +104,7 @@ export default function EyeSafeWavelengthPage() {
         &quot;Limited by&quot; column names the rule that binds. Above 1400 nm only the single-pulse and average rules apply,
         so at higher repetition rates the corneal average limit takes over. Limits from ICNIRP 2013 (Health Phys.
         105:271, Tables 3, 5 and 8, repetitive pulses p. 287, with the sub-ns rows) and a round Gaussian beam centred on
-        the aperture; the{" "}
+        the aperture. A beam under 1 mm (1/e diameter, d/√2 for the 1/e² d) is held to its peak on the cornea below 0.35 s (ICNIRP 2013 Table 5 note c). The{" "}
         <Link href="/laser-safety/pulsed-mpe" className="underline hover:text-white">pulsed MPE page</Link> shows the rules in detail.
       </p>
 

@@ -2,9 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  correctionCP, limitMaxEnergy, pulseCount, pulseLimits, pulseTrainLimits, pulseTrainSafeDiameter, timeTi,
+  correctionCP, limitMaxEnergy, pulseCount, pulseLimits, pulseTrainLimits, pulseTrainSafeDiameter, timeTi, trainLimit,
   type PulseTrain,
 } from "../src/physics/laser-safety/pulse-train";
+import { averagedOnly } from "../src/physics/laser-safety/eye-exposure-limits";
 
 // ICNIRP, "Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm", Health
 // Phys. 105(3), 271–295 (2013), doi:10.1097/HP.0b013e3182983fd4: "Repetitive pulse exposures" (p. 287, rules 1–3 and
@@ -22,6 +23,14 @@ const A7 = Math.PI * 3.5e-3 * 3.5e-3; // m², 7 mm aperture
 const A1 = Math.PI * 0.5e-3 * 0.5e-3; // m², 1 mm aperture
 const A35 = Math.PI * 1.75e-3 * 1.75e-3; // m², 3.5 mm aperture
 const single = (tau: number): PulseTrain => ({ duration: tau, prf: 0, exposure: tau });
+/** The train's limit with all of the beam inside each aperture and no Table 5 note c (the tabulated energies). */
+const averagedTrain = (lambda: number, train: PulseTrain) => {
+  const limits = pulseLimits(lambda).map((l) => {
+    const a = { ...l, apertures: averagedOnly(l.apertures) };
+    return trainLimit(lambda, a, train, (t) => limitMaxEnergy(a, 0, t));
+  });
+  return limits.reduce((w, l) => (l.qMax < w.qMax ? l : w));
+};
 const retina = (lambda: number, d: number, train: PulseTrain, alpha = 0) => {
   const l = pulseTrainLimits(lambda, d, train, alpha).limits.find((x) => x.kind === "retinalThermal");
   assert.ok(l, "retinal thermal limit");
@@ -58,10 +67,10 @@ test("Single pulse: Table 5's energies through 7 mm", () => {
   // Shorter than tabulated, the irradiance is held: 10 fs gets a tenth of 100 fs; 355 nm at 100 ps a tenth of the
   // 1 ns value 5.6×10³·(10⁻⁹)^0.25 = 31.5 J/m² over 1 mm.
   assertRel(pulseTrainLimits(nm(800), 0, single(1e-14)).qMax, 1e-4 * A7, 1e-12, "800 nm, 10 fs");
-  assertRel(pulseTrainLimits(nm(355), 0, single(1e-10)).qMax, 0.1 * 5.6e3 * Math.pow(1e-9, 0.25) * A1, 1e-12, "355 nm, 100 ps");
+  assertRel(averagedTrain(nm(355), single(1e-10)).qMax, 0.1 * 5.6e3 * Math.pow(1e-9, 0.25) * A1, 1e-12, "355 nm, 100 ps");
   // 1550 nm below 1 ms: 10⁴ J/m² (1500–1800 nm) over 1 mm, so 7.85 mJ at 1 ns and 0.785 mJ at 100 ps.
-  assertRel(pulseTrainLimits(nm(1550), 0, single(1e-9)).qMax, 1e4 * A1, 1e-12, "1550 nm, 1 ns");
-  assertRel(pulseTrainLimits(nm(1550), 0, single(1e-10)).qMax, 1e3 * A1, 1e-12, "1550 nm, 100 ps");
+  assertRel(averagedTrain(nm(1550), single(1e-9)).qMax, 1e4 * A1, 1e-12, "1550 nm, 1 ns");
+  assertRel(averagedTrain(nm(1550), single(1e-10)).qMax, 1e3 * A1, 1e-12, "1550 nm, 100 ps");
   // The sub-ns pieces join the 1 ns ones.
   const l = pulseLimits(nm(633))[0];
   assertRel(limitMaxEnergy(l, 0, 0.999e-9), limitMaxEnergy(l, 0, 1e-9), 1e-12, "633 nm at 1 ns");
@@ -145,7 +154,7 @@ test("Pulses within T_i: rule 2 adds them, rule 3 counts them as one", () => {
 
 test("Rule 2 on the cornea: UV doses add; groups found as by enumeration", () => {
   // 308 nm (630 J/m² from 160 µs to 30 ks), 20 ns at 100 Hz for 100 s: 10⁴ pulses share 630 J/m² over 3.5 mm.
-  const uv = pulseTrainLimits(nm(308), 0, { duration: 2e-8, prf: 100, exposure: 100 });
+  const uv = averagedTrain(nm(308), { duration: 2e-8, prf: 100, exposure: 100 });
   assertRel(uv.qMax, (630 * A35) / 1e4, 1e-12, "308 nm");
   assert.equal(uv.rule, 2);
   // While the corneal aperture grows (0.35–10 s) the least group can sit inside a piece: compare with every n.
@@ -157,7 +166,9 @@ test("Rule 2 on the cornea: UV doses add; groups found as by enumeration", () =>
     [1064, 5e-3, { duration: 1e-4, prf: 1000, exposure: 3 }],
     // Least group inside the piece (n = 69 of 500 at 1.36 s), and the first pair on an irradiance piece (n = 2).
     [355, 1e-3, { duration: 1e-6, prf: 50, exposure: 10 }],
-    [1550, 0, { duration: 15, prf: 0.05, exposure: 100 }],
+    [1550, 2e-3, { duration: 15, prf: 0.05, exposure: 100 }],
+    // A narrow beam (note c) whose groups run past 0.35 s.
+    [10600, 0.5e-3, { duration: 1e-2, prf: 50, exposure: 12 }],
   ];
   for (const [lam, d, train] of cases) {
     const N = pulseCount(train);
@@ -183,10 +194,25 @@ test("Safe diameter: the inverse in d", () => {
 test("Below 1 ns at the cornea: the lower of the held irradiance and 10 % of the 1 ns limit", () => {
   // ICNIRP 2013 p. 287: below 400 nm and above 1400 nm, keep sub-ns exposures below 10 % of the 1 ns limit (an interim
   // guideline); p. 282 holds the 1 ns irradiance. At 1550 nm H(1 ns) = 10⁴ J/m² over 1 mm (Tables 5, 8).
-  assertRel(pulseTrainLimits(nm(1550), 0, single(5e-10)).qMax, 0.1 * 1e4 * A1, 1e-12, "1550 nm, 500 ps: 10 %");
-  assertRel(pulseTrainLimits(nm(1550), 0, single(1e-11)).qMax, 1e4 * A1 * 1e-2, 1e-12, "1550 nm, 10 ps: irradiance held");
-  assertRel(pulseTrainLimits(nm(1550), 0, single(1e-9)).qMax, 1e4 * A1, 1e-12, "1550 nm, 1 ns unchanged");
-  assertRel(pulseTrainLimits(nm(355), 0, single(5e-10)).qMax, 0.1 * 5.6e3 * Math.pow(1e-9, 0.25) * A1, 1e-12, "355 nm, 500 ps");
+  assertRel(averagedTrain(nm(1550), single(5e-10)).qMax, 0.1 * 1e4 * A1, 1e-12, "1550 nm, 500 ps: 10 %");
+  assertRel(averagedTrain(nm(1550), single(1e-11)).qMax, 1e4 * A1 * 1e-2, 1e-12, "1550 nm, 10 ps: irradiance held");
+  assertRel(averagedTrain(nm(1550), single(1e-9)).qMax, 1e4 * A1, 1e-12, "1550 nm, 1 ns unchanged");
+  assertRel(averagedTrain(nm(355), single(5e-10)).qMax, 0.1 * 5.6e3 * Math.pow(1e-9, 0.25) * A1, 1e-12, "355 nm, 500 ps");
   // The retina keeps Table 5's rows: 2 C_A mJ/m² from 10 ps at 633 nm (C_A = 1), over 7 mm.
   assertRel(pulseTrainLimits(nm(633), 0, single(5e-10)).qMax, 2e-3 * A7, 1e-12, "633 nm, 500 ps");
+});
+
+test("Table 5 note c on pulses: a beam under 1 mm (1/e) is held to its peak below 0.35 s", () => {
+  // ICNIRP 2013 p. 284 note c, p. 288 (1/e diameter). 1550 nm, one 1 ns pulse, 0.5 mm beam (1/e 0.35 mm): the peak
+  // 8Q/(πd²) against 10⁴ J/m², so Q_max = 10⁴·π(0.5 mm)²/8 = 0.982 mJ (7.85 mJ over 1 mm with all of it inside).
+  assertRel(pulseTrainLimits(nm(1550), 0.5e-3, single(1e-9)).qMax, (1e4 * Math.PI * 0.25e-6) / 8, 1e-12, "0.982 mJ");
+  // The safe diameter for 1 mJ is then √(8Q/(πH)) = 0.505 mm, below the √2 mm edge.
+  assertRel(pulseTrainSafeDiameter(nm(1550), 1e-3, single(1e-9)), Math.sqrt((8 * 1e-3) / (Math.PI * 1e4)), 1e-9, "0.505 mm");
+  // A 0.5 s pulse also holds its first 0.35 s to the peak, as limitMaxPower does for CW: 10.6 µm, 0.2 mm,
+  // Q_max = 0.5 s · 5.6×10³·0.35^0.25/0.35 J/(m²·s) · π(0.2 mm)²/8 = 0.0967 mJ (4.95 mJ averaged at 0.5 s).
+  const q05 = pulseTrainLimits(10.6e-6, 0.2e-3, single(0.5)).qMax;
+  assertRel(q05, (0.5 * 5.6e3 * Math.pow(0.35, 0.25) * Math.PI * 4e-8) / (0.35 * 8), 1e-12, "0.0967 mJ");
+  assert.ok(q05 < pulseTrainLimits(10.6e-6, 0.2e-3, single(0.3)).qMax * (0.5 / 0.3), "no more power in a longer pulse");
+  // A 2 mm beam (1/e 1.41 mm) is averaged over 1 mm: 1 − e^(−0.5) of it inside.
+  assertRel(pulseTrainLimits(nm(1550), 2e-3, single(1e-9)).qMax, (1e4 * A1) / -Math.expm1(-0.5), 1e-12, "2 mm");
 });

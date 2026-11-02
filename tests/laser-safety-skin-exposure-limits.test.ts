@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { eyeLimits, exposureLimit, limitingAperture, limitMaxPower } from "../src/physics/laser-safety/eye-exposure-limits";
+import { averagedOnly, eyeLimits, exposureLimit, limitingAperture, limitMaxPower } from "../src/physics/laser-safety/eye-exposure-limits";
 import { skinLimit, type SkinLimit } from "../src/physics/laser-safety/skin-exposure-limits";
 
 // Limits: ICNIRP, Health Phys. 105(3), 271–295 (2013), doi:10.1097/HP.0b013e3182983fd4, Table 7 (skin) and Table 8.
@@ -60,10 +60,20 @@ test("large exposed area above 1400 nm beyond 10 s (Table 7 note c)", () => {
 });
 
 test("max power and edges", () => {
-  // 1064 nm, 100 s, a beam much narrower than 3.5 mm. The CW piece alone allows 1e4 W/m² · π(3.5 mm)²/4 = 96.2 mW,
+  // 1064 nm, 100 s, all of the beam inside 3.5 mm. The CW piece alone allows 1e4 W/m² · π(3.5 mm)²/4 = 96.2 mW,
   // but the rounded t^0.25 piece just before 10 s is 2 % lower: 5.5e4 · 10^0.25 / 10 s = 9.78 kW/m², 94.1 mW.
-  assertRel(limitMaxPower(skin(1064), 0, 100), 5.5e4 * Math.pow(10, 0.25) / 10 * Math.PI * 3.5e-3 ** 2 / 4, 1e-12, "94.1 mW");
-  assertRel(limitMaxPower(skin(1064), 0, 5), 5.5e4 * Math.pow(5, -0.75) * Math.PI * 3.5e-3 ** 2 / 4, 1e-12, "5 s");
+  const s1064 = skin(1064);
+  const averaged = { ...s1064, apertures: averagedOnly(s1064.apertures) };
+  assertRel(limitMaxPower(averaged, 0, 100), 5.5e4 * Math.pow(10, 0.25) / 10 * Math.PI * 3.5e-3 ** 2 / 4, 1e-12, "94.1 mW");
+  assertRel(limitMaxPower(averaged, 0, 5), 5.5e4 * Math.pow(5, -0.75) * Math.PI * 3.5e-3 ** 2 / 4, 1e-12, "5 s");
+  // Table 7 note b (p. 285), at every duration: a beam of 1/e diameter under 1 mm is held to its peak 8P/(πd²). d = 0.5 mm:
+  // 9.78 kW/m² · π(0.5 mm)²/8 = 0.960 mW, 1/98 of the 3.5 mm average (2(D/d)² = 98).
+  assertRel(limitMaxPower(s1064, 0.5e-3, 100), 5.5e4 * Math.pow(10, 0.25) / 10 * Math.PI * 0.25e-6 / 8, 1e-12, "0.960 mW");
+  assertRel(limitMaxPower(averaged, 0.5e-3, 100) / limitMaxPower(s1064, 0.5e-3, 100), 98, 1e-12, "×98");
+  // A 2 mm beam (1/e 1.41 mm) is averaged; so is the 11 mm aperture above 100 µm.
+  assert.equal(limitMaxPower(s1064, 2e-3, 100), limitMaxPower(averaged, 2e-3, 100));
+  assert.equal(skin(2e5).apertures[0].actualBelow, undefined);
+  assert.equal(limitMaxPower(s1064, 0, 100), 0, "d = 0: no largest power");
   assert.equal(skinLimit(nm(179)), null);
   assert.equal(skinLimit(1.1e-3), null);
   assert.equal(skinLimit(nm(1064), -1), null);

@@ -42,7 +42,7 @@
  * European Amendment A11:2021 to EN 60825-1" (white paper, 2022).
  */
 import {
-  CORNEAL_APERTURE, correctionCA, correctionCE, eyeLimits, exposureLimit, fixedAperture, limitingAperture,
+  averagedOnly, CORNEAL_APERTURE, correctionCA, correctionCE, eyeLimits, exposureLimit, fixedAperture, limitingAperture,
   limitMaxPower, T_MAX, T_MIN, type EyeLimitKind, type Piece, type TabulatedLimit,
 } from "./eye-exposure-limits";
 import { axisDiameterAt } from "./hazard-distance";
@@ -139,7 +139,10 @@ function class3B(nm: number, ca: number): Ael {
 
 function class1(lambda: number, nm: number, opts: ClassOptions): Ael[] {
   if (nm < 400) return [ultravioletClass1(nm)];
-  const aels: Ael[] = eyeLimits(lambda, opts.alpha ?? 0).flatMap((l) => (l.kind === "anteriorSegment" ? [] : [{ ...l, kind: l.kind }]));
+  // AELs are measured through the stops: no actual-exposure rule (ICNIRP Table 5 note c is for exposure limits).
+  const aels: Ael[] = eyeLimits(lambda, opts.alpha ?? 0).flatMap((l) =>
+    l.kind === "anteriorSegment" ? [] : [{ ...l, kind: l.kind, apertures: averagedOnly(l.apertures) }],
+  );
   if (nm >= 1250 && nm < 1400) {
     aels.push(class3B(nm, correctionCA(lambda)));
     const skin = opts.euA11 ? skinLimit(lambda) : null;

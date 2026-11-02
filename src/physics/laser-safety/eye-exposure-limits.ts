@@ -28,14 +28,19 @@
  *   segment; 1 mm below 0.35 s, 1.5 t^0.375 mm to 10 s, then 3.5 mm for 180–400 nm and 1400 nm – 0.1 mm; 11 mm for
  *   0.1–1 mm. "No modifications of the exposure limits are permitted for reduced energy entering an assumed pupil
  *   size less than 7 mm" (ICNIRP 2013).
+ * - Actual exposure (Table 5 note c, Table 7 note b): a beam narrower than 1 mm is compared by its actual radiant
+ *   exposure, not its average over the aperture: on the 1 mm corneal aperture below 0.35 s ("pulse durations less than
+ *   0.35 s") and on the skin's 3.5 mm aperture at every duration. The diameter is the 1/e one (p. 288), d₆₃ = d/√2
+ *   for a 1/e² diameter d, and a Gaussian beam's actual exposure is its peak, 8P/(πd²) = P/(πd₆₃²/4). A limit held
+ *   "for every exposure up to t" applies the note at each duration below 0.35 s, so a longer t is never less strict.
+ *   The averaged irradiance jumps to the peak at d₆₃ = 1 mm (×1.58 on the 1 mm aperture, ×12.3 on 3.5 mm).
  *
  * Field of view: by default the exposure of a source larger than α_max is measured with γ = α_max and C_E stops at
  * α_max/α_min. With an open field of view (all of a homogeneous, circular source counted) C_E = α²/(α_min α_max)
  * above α_max (eqn 5), and between 625 µs and t_α the thermal limit goes as t^0.25 instead of t^1.25.
  *
- * Not modelled: repetitive pulses (a single pulse is an exposure of its own duration), the advice to use the actual
- * irradiance of beams narrower than 1 mm (ICNIRP Table 5 note c), and the photochemical field of view γ_ph: it sets
- * how an extended source's exposure is measured, not the limit, which C_E doesn't raise.
+ * Not modelled: repetitive pulses (a single pulse is an exposure of its own duration) and the photochemical field of
+ * view γ_ph: it sets how an extended source's exposure is measured, not the limit, which C_E doesn't raise.
  */
 
 /** Shortest and longest exposure durations the limits are tabulated for, s. */
@@ -53,12 +58,16 @@ export interface Piece {
   readonly p: number;
 }
 
-/** On [t0, t1) the averaging aperture has the diameter D(t) = d·t^q, m. */
+/**
+ * On [t0, t1) the averaging aperture has the diameter D(t) = d·t^q, m. A beam whose 1/e diameter is below
+ * `actualBelow` (m) is compared by its actual radiant exposure instead (ICNIRP 2013 Table 5 note c, Table 7 note b).
+ */
 export interface AperturePiece {
   readonly t0: number;
   readonly t1: number;
   readonly d: number;
   readonly q: number;
+  readonly actualBelow?: number;
 }
 
 /** A limit in time pieces and the aperture it is averaged over (eye here, skin in `skin-exposure-limits.ts`). */
@@ -85,6 +94,18 @@ export const CORNEAL_APERTURE: AperturePiece[] = [
   { t0: 0.35, t1: 10, d: 1.5e-3, q: 0.375 },
   { t0: 10, t1: T_MAX, d: 3.5e-3, q: 0 },
 ];
+
+/** 1/e beam diameter, m, below which the actual exposure counts (ICNIRP 2013 Table 5 note c, Table 7 note b, p. 288). */
+export const ACTUAL_EXPOSURE_BELOW = 1e-3;
+
+/** `CORNEAL_APERTURE` with Table 5 note c on its 1 mm piece (below 0.35 s). */
+const CORNEAL_APERTURE_NOTE_C: AperturePiece[] = CORNEAL_APERTURE.map((ap) =>
+  ap.t1 <= 0.35 ? { ...ap, actualBelow: ACTUAL_EXPOSURE_BELOW } : ap,
+);
+
+/** The apertures without the actual-exposure rule: plain averages, as for IEC 60825-1's measurement stops. */
+export const averagedOnly = (apertures: readonly AperturePiece[]): AperturePiece[] =>
+  apertures.map(({ t0, t1, d, q }) => ({ t0, t1, d, q }));
 
 /** ICNIRP 2013 Table 5, 302–315 nm: [lower edge (nm), J/m²]; each step runs to the next edge, the last to 315 nm. */
 const UVB_STEPS: readonly (readonly [number, number])[] = [
@@ -177,7 +198,7 @@ export function eyeLimits(lambda: number, alpha = 0, fieldOfView: FieldOfView = 
       for (const [edge, value] of UVB_STEPS) if (nm >= edge) H = value;
       uv = pieces([T_MIN, Math.max(T_MIN, Math.pow(H / 5.6e3, 4)), T_MAX], [[5.6e3, 0.25], [H, 0]]);
     } else uv = pieces([T_MIN, 10, T_MAX], [[5.6e3, 0.25], [1e4, 0]]);
-    return [{ kind: "cornealUv", pieces: uv, apertures: CORNEAL_APERTURE }];
+    return [{ kind: "cornealUv", pieces: uv, apertures: CORNEAL_APERTURE_NOTE_C }];
   }
   if (nm < 1400) {
     const ca = correctionCA(lambda);
@@ -207,7 +228,7 @@ export function eyeLimits(lambda: number, alpha = 0, fieldOfView: FieldOfView = 
       : nm < 2600
         ? pieces([T_MIN, 1e-3, 10, T_MAX], [[1e3, 0], [5.6e3, 0.25], [1e3, 1]])
         : pieces([T_MIN, 1e-7, 10, T_MAX], [[100, 0], [5.6e3, 0.25], [1e3, 1]]);
-  return [{ kind: "cornealIr", pieces: ir, apertures: nm < 1e5 ? CORNEAL_APERTURE : fixedAperture(11e-3) }];
+  return [{ kind: "cornealIr", pieces: ir, apertures: nm < 1e5 ? CORNEAL_APERTURE_NOTE_C : fixedAperture(11e-3) }];
 }
 
 const findPiece = <T extends { t0: number; t1: number }>(list: readonly T[], t: number): T | undefined =>
@@ -235,6 +256,25 @@ export function apertureIrradiance(P: number, d: number, D: number): number {
 }
 
 /**
+ * Irradiance, W/m², that a limit compares for a round Gaussian beam (P in W, 1/e² diameter d in m) on the aperture
+ * piece `ap` at duration t (s): the average over the aperture (`apertureIrradiance`), or, where the actual-exposure
+ * rule applies (d/√2 < `ap.actualBelow`), the beam's peak 8P/(πd²) (Infinity for d = 0 and P > 0). NaN for P < 0 or d < 0.
+ */
+export function comparedIrradiance(P: number, d: number, ap: AperturePiece, t: number): number {
+  if (ap.actualBelow !== undefined && d / Math.SQRT2 < ap.actualBelow) {
+    if (!(P >= 0 && d >= 0)) return NaN;
+    return d > 0 ? (8 * P) / (Math.PI * d * d) : P > 0 ? Infinity : 0;
+  }
+  return apertureIrradiance(P, d, ap.d * Math.pow(t, ap.q));
+}
+
+/** `comparedIrradiance` on the limit's aperture at duration t (s); NaN where the limit has no aperture. */
+export function limitIrradiance(limit: TabulatedLimit, P: number, d: number, t: number): number {
+  const ap = findPiece(limit.apertures, t);
+  return ap ? comparedIrradiance(P, d, ap, t) : NaN;
+}
+
+/**
  * Longest exposure, s, before a CW beam (P in W, 1/e² diameter d in m) first exceeds the limit: the first t with
  * E(t)·t > H(t). Infinity if it stays within the limit for 30 ks; NaN if it already exceeds it at 1 ns, or for
  * P < 0 or d < 0.
@@ -253,7 +293,7 @@ export function limitMaxDuration(limit: TabulatedLimit, P: number, d: number): n
       const t0 = Math.max(s.t0, ap.t0);
       const t1 = Math.min(s.t1, ap.t1);
       if (!(t1 > t0)) continue;
-      const ratio = (t: number) => (apertureIrradiance(P, d, ap.d * Math.pow(t, ap.q)) * t) / (s.a * Math.pow(t, s.p));
+      const ratio = (t: number) => (comparedIrradiance(P, d, ap, t) * t) / (s.a * Math.pow(t, s.p));
       if (ratio(t0) > 1) return t0 === T_MIN ? NaN : t0;
       if (ratio(t1) <= 1) continue;
       let lo = t0;
@@ -273,7 +313,8 @@ export function limitMaxDuration(limit: TabulatedLimit, P: number, d: number): n
  * Largest CW power, W, of a beam (1/e² diameter d, m) that stays within the limit for an exposure of t (s): the least
  * H(t′) / (t′·E₁(t′)) over 1 ns ≤ t′ ≤ t, with E₁ the irradiance per watt over the aperture at t′. limitMaxDuration
  * of that power is t. The ratio is monotonic on each piece (see limitMaxDuration), so only the ends of every piece,
- * cut at t, are evaluated, each with its own piece's formula (the value just before a joint counts too).
+ * cut at t, are evaluated, each with its own piece's formula (the value just before a joint counts too). E₁ is the
+ * compared irradiance (`comparedIrradiance`): the peak where the actual-exposure rule applies.
  * For a single pulse of duration t the largest energy is t times this. NaN for d < 0 or t outside 1 ns – 30 ks.
  */
 export function limitMaxPower(limit: TabulatedLimit, d: number, t: number): number {
@@ -285,7 +326,7 @@ export function limitMaxPower(limit: TabulatedLimit, d: number, t: number): numb
       const end = Math.min(s.t1, ap.t1);
       if (!(end > t0 && t0 <= t)) continue;
       for (const x of [t0, Math.min(end, t)]) {
-        pMax = Math.min(pMax, (s.a * Math.pow(x, s.p)) / (x * apertureIrradiance(1, d, ap.d * Math.pow(x, ap.q))));
+        pMax = Math.min(pMax, (s.a * Math.pow(x, s.p)) / (x * comparedIrradiance(1, d, ap, x)));
       }
     }
   }
@@ -336,7 +377,7 @@ export interface LimitDuration {
   readonly tEval: number;
   /** Averaging aperture diameter at tEval, m. */
   readonly aperture: number;
-  /** Beam irradiance averaged over that aperture, W/m². */
+  /** Irradiance the limit compares at tEval, W/m²: averaged over that aperture, or the peak (`comparedIrradiance`). */
   readonly irradiance: number;
   /** The limit at tEval, J/m². */
   readonly limit: number;
@@ -359,7 +400,7 @@ export function exposureDuration(lambda: number, P: number, d: number, alpha = 0
     const tMax = limitMaxDuration(limit, P, d);
     const tEval = Number.isNaN(tMax) ? T_MIN : Math.min(Math.max(tMax, limit.pieces[0].t0), T_MAX);
     const aperture = limitingAperture(limit, tEval);
-    return { kind: limit.kind, tMax, tEval, aperture, irradiance: apertureIrradiance(P, d, aperture), limit: exposureLimit(limit, tEval) };
+    return { kind: limit.kind, tMax, tEval, aperture, irradiance: limitIrradiance(limit, P, d, tEval), limit: exposureLimit(limit, tEval) };
   });
   if (limits.length === 0) return { tMax: NaN, limiting: null, limits };
   let first = limits[0];

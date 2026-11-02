@@ -2,12 +2,15 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  ALPHA_MIN, alphaMax, apertureIrradiance, correctionCA, correctionCB, correctionCC, correctionCE, exposureDuration,
+  ALPHA_MIN, alphaMax, apertureIrradiance, averagedOnly, correctionCA, correctionCB, correctionCC, correctionCE, exposureDuration,
   exposureLimit, eyeLimits, limitMaxPower, photochemicalCrossover, timeT2,
-  limitingAperture, limitMaxDuration, T_MAX, T_MIN, type EyeLimit, type EyeLimitKind,
+  limitingAperture, limitIrradiance, limitMaxDuration, T_MAX, T_MIN, type EyeLimit, type EyeLimitKind,
 } from "../src/physics/laser-safety/eye-exposure-limits";
 
 // Limits: ICNIRP, Health Phys. 105(3), 271–295 (2013), doi:10.1097/HP.0b013e3182983fd4, Tables 3, 5, 7 and 8.
+
+/** The limit averaged over its apertures, without Table 5 note c: the tabulated value through the aperture. */
+const averaged = (limit: EyeLimit): EyeLimit => ({ ...limit, apertures: averagedOnly(limit.apertures) });
 
 function assertRel(actual: number, expected: number, tol: number, label: string) {
   assert.ok(Math.abs(actual / expected - 1) < tol, `${label}: ${actual} vs ${expected}`);
@@ -183,18 +186,22 @@ test("anterior eye: the skin limit in the visible, twice it in the IR (Table 5 n
 });
 
 test("mid and far IR: limits with the time-dependent aperture", () => {
-  // 1550 nm, 1 W, d = 0.5 mm: over 1 mm, E = (1 − e⁻⁸)/(π·0.25 mm²); 10⁴ J/m² at 7.86 ms (the page: 0.2 ms).
+  // 1550 nm, 1 W, d = 0.5 mm (1/e diameter 0.35 mm < 1 mm): Table 5 note c compares the peak 8P/(πd²) = 10.2 MW/m²,
+  // so 10⁴ J/m² at 0.982 ms; over 1 mm, E = (1 − e⁻⁸)/(π·0.25 mm²), it would be 7.86 ms.
+  const ir1550 = averaged(eyeLimits(nm(1550))[0]);
+  assertRel(exposureDuration(nm(1550), 1, 0.5e-3).tMax, (1e4 * Math.PI * 0.25e-6) / 8, 1e-9, "1550 nm, 1 W, note c");
+  assertRel(exposureDuration(nm(1550), 1, 0.5e-3).limits[0].irradiance, 8 / (Math.PI * 0.25e-6), 1e-12, "the peak");
   const E = (1 - Math.exp(-8)) / area(1e-3);
-  assertRel(exposureDuration(nm(1550), 1, 0.5e-3).tMax, 1e4 / E, 1e-9, "1550 nm, 1 W");
+  assertRel(limitMaxDuration(ir1550, 1, 0.5e-3), 1e4 / E, 1e-9, "1550 nm, 1 W, averaged");
   // 1550 nm, 10 mW inside the aperture: past 0.35 s, E·t = 0.04 t^0.25/(π·(1.5 mm)²) reaches 10⁴ J/m² at
   // t = (10⁴·π·(1.5 mm)²/0.04)⁴ = 9.75 s.
   const t1550 = Math.pow((1e4 * Math.PI * 2.25e-6) / 0.04, 4);
   assertRel(t1550, 9.7517, 1e-4, "closed form");
-  assertRel(exposureDuration(nm(1550), 0.01, 0).tMax, t1550, 1e-9, "1550 nm, 10 mW");
+  assertRel(limitMaxDuration(ir1550, 0.01, 0), t1550, 1e-9, "1550 nm, 10 mW");
   // 10.6 µm, 10 mW: 12 732 W/m² over 1 mm meets 5.6×10³ t^0.25 at t = (5600·π(0.5 mm)²/0.01)^(4/3) = 0.335 s.
-  assertRel(exposureDuration(10.6e-6, 0.01, 0).tMax, Math.pow((5600 * area(1e-3)) / 0.01, 4 / 3), 1e-9, "10.6 µm");
+  assertRel(limitMaxDuration(averaged(eyeLimits(10.6e-6)[0]), 0.01, 0), Math.pow((5600 * area(1e-3)) / 0.01, 4 / 3), 1e-9, "10.6 µm");
   // 1450 nm, 10 W: 10³ J/m² below 1 ms.
-  assertRel(exposureDuration(nm(1450), 10, 0).tMax, 1e3 / (10 / area(1e-3)), 1e-9, "1450 nm");
+  assertRel(limitMaxDuration(averaged(eyeLimits(nm(1450))[0]), 10, 0), 1e3 / (10 / area(1e-3)), 1e-9, "1450 nm");
 });
 
 test("UV durations at a uniform irradiance", () => {
@@ -234,7 +241,7 @@ test("the solver agrees with a scan of E(t)·t > H(t) over 1 ns – 30 ks", () =
   for (const [l, P, d] of cases) {
     for (const limit of eyeLimits(nm(l))) {
       const tMax = limitMaxDuration(limit, P, d);
-      const i = grid.findIndex((t) => apertureIrradiance(P, d, limitingAperture(limit, t)) * t > exposureLimit(limit, t));
+      const i = grid.findIndex((t) => limitIrradiance(limit, P, d, t) * t > exposureLimit(limit, t));
       const label = `${limit.kind} at ${l} nm, ${P} W, ${d} m: ${tMax}`;
       if (i === -1) assert.equal(tMax, Infinity, label);
       else if (i === 0) assert.ok(Number.isNaN(tMax), label);
@@ -318,14 +325,16 @@ test("max power: Table 5's power column, and agreement with limitMaxDuration", (
   assertRel(limitMaxPower(limitOf(nm(532), "retinalThermal"), 0, 100), 10 * area(7e-3), 1e-12, "0.385 mW");
   // Class 2 at 0.25 s: 18 t^0.75 J/m² over 7 mm, 3 mm beam: 0.980 mW (as aversion-response.ts).
   assertRel(limitMaxPower(limitOf(nm(532), "retinalThermal"), 3e-3, 0.25), 0.9797e-3, 1e-4, "0.980 mW");
-  // UV 350 nm, 1 s, a point-like beam: the 1 mm aperture just before 0.35 s sets it, 5.6e3 · 0.35^−0.75 · π(1 mm)²/4.
+  // UV 350 nm, 1 s, all of the beam inside the aperture: the 1 mm aperture just before 0.35 s sets it,
+  // 5.6e3 · 0.35^−0.75 · π(1 mm)²/4. With note c a point-like beam has no largest power.
   const uv = eyeLimits(nm(350))[0];
-  assertRel(limitMaxPower(uv, 0, 1), 5.6e3 * Math.pow(0.35, -0.75) * area(1e-3), 1e-12, "9.67 mW");
+  assertRel(limitMaxPower(averaged(uv), 0, 1), 5.6e3 * Math.pow(0.35, -0.75) * area(1e-3), 1e-12, "9.67 mW");
+  assert.equal(limitMaxPower(uv, 0, 1), 0, "note c, d = 0");
   assert.ok(Number.isNaN(limitMaxPower(uv, -1, 1)) && Number.isNaN(limitMaxPower(uv, 1e-3, 1e5)), "domain");
   const cases: [number, number, number, number][] = [
-    [254, 0, 1e-6, 0], [310, 2e-3, 3, 0], [350, 0, 1, 0], [350, 5e-3, 100, 0], [445, 0, 50, 0], [480, 4e-3, 300, 0],
+    [254, 0.5e-3, 1e-6, 0], [310, 2e-3, 3, 0], [350, 0.5e-3, 1, 0], [350, 5e-3, 100, 0], [445, 0, 50, 0], [480, 4e-3, 300, 0],
     [532, 1e-3, 0.25, 0], [532, 3e-3, 1e-3, 0.05], [808, 2e-3, 10, 0], [905, 1e-3, 1e-5, 0.2], [1064, 1e-3, 1e4, 0.01],
-    [1300, 2e-3, 0.5, 0], [1550, 0, 5, 0], [1550, 8e-3, 1e-8, 0], [2000, 0.5e-3, 20, 0], [10600, 4e-3, 0.3, 0],
+    [1300, 2e-3, 0.5, 0], [1550, 0.8e-3, 5, 0], [1550, 8e-3, 1e-8, 0], [2000, 0.5e-3, 20, 0], [10600, 4e-3, 0.3, 0],
     [2e5, 5e-3, 3e3, 0],
   ];
   for (const [l, d, t, a] of cases) {
@@ -340,6 +349,30 @@ test("max power: Table 5's power column, and agreement with limitMaxDuration", (
       assert.ok(limitMaxDuration(limit, p * (1 + 1e-6), d) <= t * (1 + 1e-9), `${label} is the most`);
     }
   }
+});
+
+test("Table 5 note c: below 0.35 s a beam under 1 mm (1/e) on the 1 mm aperture is held to its peak", () => {
+  // ICNIRP 2013 p. 284 note c; p. 288: the 1/e diameter, d/√2 for a 1/e² diameter d; a Gaussian's actual exposure is
+  // its peak 8P/(πd²). 10.6 µm, 0.25 s: H = 5.6×10³·0.25^0.25 = 3.96 kJ/m² (Table 5); d = 1 mm: P_max = H·πd²/(8t) = 6.22 mW.
+  const ir = eyeLimits(10.6e-6)[0];
+  const H = (t: number) => 5.6e3 * Math.pow(t, 0.25);
+  assertRel(limitMaxPower(ir, 1e-3, 0.25), (H(0.25) * Math.PI * 1e-6) / (8 * 0.25), 1e-12, "6.22 mW");
+  // At d = √2 mm (1/e diameter 1 mm) the average counts, (1 − e⁻¹) of P over π(1 mm)²/4; just below, the peak, 1.582× as high.
+  const edge = Math.SQRT2 * 1e-3;
+  assertRel(limitMaxPower(ir, edge, 0.25), (H(0.25) * area(1e-3)) / (0.25 * -Math.expm1(-1)), 1e-12, "averaged at the edge");
+  assertRel(limitMaxPower(ir, edge, 0.25) / limitMaxPower(ir, edge * (1 - 1e-12), 0.25), 1 / -Math.expm1(-1), 1e-9, "×1.582");
+  // From 0.35 s the aperture grows and averages, but the exposures up to t include those below 0.35 s: at t = 0.5 s
+  // the peak just before 0.35 s binds (4.83 mW < 6.22 mW), so a longer exposure is never allowed more.
+  assertRel(limitMaxPower(ir, 1e-3, 0.5), (H(0.35) * Math.PI * 1e-6) / (8 * 0.35), 1e-12, "0.35 s binds at 0.5 s");
+  assert.ok(limitMaxPower(ir, 1e-3, 0.5) < limitMaxPower(ir, 1e-3, 0.25));
+  // Same in limitMaxDuration: 5 mW lasts until E_peak·t = H(t), t = (H(1)·πd²/(8P))^(4/3) = 0.334 s (< 0.35 s).
+  assertRel(limitMaxDuration(ir, 5e-3, 1e-3), Math.pow((5.6e3 * Math.PI * 1e-6) / (8 * 5e-3), 4 / 3), 1e-9, "0.334 s");
+  // Not the retinal (7 mm) or anterior-segment (3.5 mm) apertures, nor the 11 mm one above 100 µm.
+  for (const limit of [...eyeLimits(nm(1300)), ...eyeLimits(2e-4)]) {
+    assert.equal(limitMaxPower(limit, 0.5e-3, 0.25), limitMaxPower(averaged(limit), 0.5e-3, 0.25), limit.kind);
+  }
+  // UV the same: 350 nm, 0.1 s, 0.4 mm: 5.6×10³·0.1^0.25 J/m² at the peak.
+  assertRel(limitMaxPower(eyeLimits(nm(350))[0], 0.4e-3, 0.1), (5.6e3 * Math.pow(0.1, 0.25) * Math.PI * 0.16e-6) / (8 * 0.1), 1e-12, "UV");
 });
 
 test("thermal vs photochemical: the crossover is ICNIRP's T₁ for a point source (Table 4)", () => {

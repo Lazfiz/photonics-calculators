@@ -163,7 +163,7 @@ export default function ScanningMPEPage() {
           exposure (the average power), (3) for the retinal thermal limit, each pass within C_P times the single-pass
           limit. The pass lasts from half power to half power through the aperture (W/v, about 7 mm/v for a beam narrower
           than the pupil); its energy is all the light that gets through. The cornea&apos;s 1 mm aperture sees a shorter
-          pass than the retina&apos;s 7 mm one.
+          pass than the retina&apos;s 7 mm one. The stationary beam is held to its peak when under 1 mm (ICNIRP Table 5 note c); the passes are still averaged over the aperture, which can understate a narrow scanned beam&apos;s hazard.
         </p>
         <p>
           The beam is taken to sweep through the centre of the pupil, with the eye on the centre of the scan line and

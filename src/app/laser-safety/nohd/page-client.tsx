@@ -191,7 +191,7 @@ export default function NOHDPage() {
         Nominal ocular hazard distance of a direct beam on the ICNIRP 2013 eye limits (Health Phys. 105:271), at any
         wavelength from 180 nm to 1 mm, for one exposure of up to t. For each limit the beam is safe once the
         irradiance averaged over that limit&apos;s aperture (7 mm for the retina; 1–3.5 mm on the cornea) stays within it for
-        every exposure up to t; the NOHD is where the beam&apos;s diameter reaches that size. For beams much wider than the
+        every exposure up to t. A beam under 1 mm (1/e diameter, d/√2 for the 1/e² d) is held to its peak on the cornea below 0.35 s (ICNIRP 2013 Table 5 note c). The NOHD is where the beam&apos;s diameter reaches that size. For beams much wider than the
         aperture this is the standards&apos; NOHD = (√(4P/(πE)) − a)/φ with 1/e values; at the defaults it gives 97.8 m
         where the peak-irradiance formula gives 98.0 m. Not modelled: atmospheric attenuation, optical aids (binoculars
         and telescopes lengthen it), pulse trains, and elliptical beams (see the{" "}

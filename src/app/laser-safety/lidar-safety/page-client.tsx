@@ -133,7 +133,7 @@ export default function LidarSafetyPage() {
           This is the stationary beam: the worst case, and what a scanner failure leaves. A scanning lidar sweeps the beam
           across the pupil, so each pass is a short pulse group and the limits are higher (not modelled here). NOHD is
           the distance where the beam&apos;s 1/e² diameter a + rφ has grown enough for every rule, on the averaging apertures
-          (7 mm on the retina). Not modelled: scanning, several beams overlapping, optical aids (binoculars lengthen the
+          (7 mm on the retina). A beam under 1 mm (1/e diameter, d/√2 for the 1/e² d) is held to its peak on the cornea below 0.35 s (ICNIRP 2013 Table 5 note c). Not modelled: scanning, several beams overlapping, optical aids (binoculars lengthen the
           NOHD), atmospheric attenuation, the IEC 60825-1 class of the product.
         </p>
       </div>

@@ -9,12 +9,16 @@
  * - Above 1400 nm, beyond 10 s, on a large area A (Table 7 note c): 1000 W/m² up to 0.01 m², 10/A W/m² to 0.1 m²,
  *   then 100 W/m².
  * - Averaged over a 3.5 mm aperture at every duration (the eye's 1 mm → 3.5 mm ramp doesn't apply), 11 mm from
- *   100 µm (Table 8).
- * Not modelled: Table 7 note b, comparing the actual (unaveraged) exposure for beams narrower than 1 mm.
+ *   100 µm (Table 8). Table 7 note b: "For beam diameters less than 1 mm, the actual radiant exposure, i.e., not
+ *   averaged over of the limiting aperture of 3.5 mm, should be compared", at every duration; the 1/e diameter (p. 288),
+ *   so a Gaussian beam with d/√2 < 1 mm is held to its peak 8P/(πd²) (`comparedIrradiance`), up to 98× its 3.5 mm
+ *   average at d = 0.5 mm.
  * The anterior-eye limit in `eye-exposure-limits.ts` is this one at 400–700 nm and twice it at 700–1400 nm (Table 5
  * note d).
  */
-import { correctionCA, eyeLimits, fixedAperture, T_MAX, T_MIN, type Piece, type TabulatedLimit } from "./eye-exposure-limits";
+import {
+  ACTUAL_EXPOSURE_BELOW, correctionCA, eyeLimits, fixedAperture, T_MAX, T_MIN, type AperturePiece, type Piece, type TabulatedLimit,
+} from "./eye-exposure-limits";
 
 export interface SkinLimit extends TabulatedLimit {
   readonly kind: "skin";
@@ -30,7 +34,7 @@ const toNm = (lambda: number) => Math.round(lambda * 1e15) / 1e6;
 export function skinLimit(lambda: number, exposedArea = 0): SkinLimit | null {
   const nm = toNm(lambda);
   if (!(nm >= 180 && nm <= 1e6 && exposedArea >= 0)) return null;
-  const apertures = fixedAperture(nm < 1e5 ? 3.5e-3 : 11e-3);
+  const apertures: AperturePiece[] = nm < 1e5 ? [{ ...fixedAperture(3.5e-3)[0], actualBelow: ACTUAL_EXPOSURE_BELOW }] : fixedAperture(11e-3);
   if (nm >= 400 && nm < 1400) {
     const ca = correctionCA(lambda);
     const pieces: Piece[] = [
