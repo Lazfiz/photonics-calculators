@@ -6,9 +6,12 @@
  * Direct beam (intrabeam viewing): a TEM₀₀ beam of power P leaves the output aperture with 1/e² diameters a_x, a_y and
  * 1/e² full-angle divergences φ_x, φ_y. At range r each axis is a + rφ (linear, as in the NOHD formula of ANSI Z136.1
  * and IEC TR 60825-14) or √(a² + (rφ)²) (a Gaussian beam with its waist at the aperture). An elliptical beam counts as
- * the round beam of the same peak irradiance, diameter √(d_x d_y). The beam is safe once the irradiance averaged over
+ * the round beam of the same peak irradiance, diameter √(d_x d_y), also for the 1 mm test of Table 5 note c (ICNIRP
+ * doesn't say which diameter of an elliptical beam counts; a 1.2 × 2 mm beam is averaged though its narrow axis is
+ * under 1 mm at 1/e). The beam is safe once the irradiance averaged over
  * each limit's aperture D, P(1 − exp(−2D²/d²))/(πD²/4), stays within the limit for every exposure up to t (as in
- * `limitMaxPower`). NOHD is the range where the diameter reaches the smallest safe one. For d ≫ D this is the
+ * `limitMaxPower`); a beam of 1/e diameter below 1 mm is held to its peak on the cornea below 0.35 s (ICNIRP 2013
+ * Table 5 note c). NOHD is the range where the diameter reaches the smallest safe one. For d ≫ D this is the
  * standards' NOHD = (1/φ)(√(4P/(πE)) − a) with 1/e values (E the limit as an irradiance).
  *
  * Diffuse reflection: a Lambertian spot reflecting ρP gives the irradiance ρP/(πr²) at range r on its normal (r ≫ the
@@ -23,7 +26,7 @@
  * converge after the aperture.
  */
 import {
-  ALPHA_MIN, apertureIrradiance, eyeLimits, limitingAperture, limitMaxPower, T_MAX, T_MIN, type EyeLimitKind, type TabulatedLimit,
+  ALPHA_MIN, eyeLimits, limitMaxPower, T_MAX, T_MIN, type EyeLimitKind, type TabulatedLimit,
 } from "./eye-exposure-limits";
 import { expE1Scaled } from "../math";
 
@@ -73,7 +76,10 @@ export function rangeToDiameter(beam: BeamGeometry, D: number): number {
  * Smallest 1/e² diameter, m, at which a round beam of power P (W) stays within the limit for every exposure up to t
  * (s); 0 if even all of P inside the aperture does. The inverse of `limitMaxPower` in d: at each piece end x ≤ t (the
  * points limitMaxPower checks) the beam is within the limit while 1 − exp(−2D²/d²) ≤ q = H(x)·πD²/(4Px), i.e.
- * d ≥ D·√(2 / −ln(1 − q)) when q < 1. NaN for P < 0 or t outside 1 ns – 30 ks.
+ * d ≥ D·√(2 / −ln(1 − q)) when q < 1. Where the actual-exposure rule applies (d/√2 below `actualBelow`, ICNIRP 2013
+ * Table 5 note c) the peak 8P/(πd²) is compared instead, safe from d_pk = √(8Px/(πH)). The peak exceeds the average,
+ * so the beam is safe from d_pk if that is below the rule's edge √2·actualBelow, and otherwise from the larger of the
+ * edge and the averaged diameter. NaN for P < 0 or t outside 1 ns – 30 ks.
  */
 export function limitSafeDiameter(limit: TabulatedLimit, P: number, t: number): number {
   if (!(P >= 0 && t >= T_MIN && t <= T_MAX)) return NaN;
@@ -85,8 +91,15 @@ export function limitSafeDiameter(limit: TabulatedLimit, P: number, t: number): 
       if (!(end > t0 && t0 <= t)) continue;
       for (const x of [t0, Math.min(end, t)]) {
         const D = ap.d * Math.pow(x, ap.q);
-        const q = (s.a * Math.pow(x, s.p) * Math.PI * D * D) / (4 * P * x);
-        if (q < 1) dSafe = Math.max(dSafe, D * Math.sqrt(-2 / Math.log1p(-q)));
+        const H = s.a * Math.pow(x, s.p);
+        const q = (H * Math.PI * D * D) / (4 * P * x);
+        const averaged = q < 1 ? D * Math.sqrt(-2 / Math.log1p(-q)) : 0;
+        if (ap.actualBelow === undefined) dSafe = Math.max(dSafe, averaged);
+        else {
+          const edge = ap.actualBelow * Math.SQRT2;
+          const peak = Math.sqrt((8 * P * x) / (Math.PI * H));
+          dSafe = Math.max(dSafe, peak < edge ? peak : Math.max(edge, averaged));
+        }
       }
     }
   }
@@ -157,19 +170,13 @@ export interface OpticalDensity {
 /**
  * Optical density a filter needs for a beam of power P (W) and 1/e² diameter d (m) at λ (m) to stay within every eye
  * limit for exposures up to t (s): log10(P/P_max) with P_max from `limitMaxPower` (a filter scales the power, not the
- * profile). OD = log10(H/EL) as in ANSI Z136.1 and EN 207; the filter also has to survive the beam.
- * With `actualExposure`, ICNIRP 2013 Table 5 note c: a beam narrower than 1 mm, for t < 0.35 s, is compared by its
- * actual radiant exposure, not its average over the 1 mm aperture. The diameter is the 1/e one (ICNIRP p. 288), d₆₃ = d/√2. Then P_max shrinks by the peak-to-average ratio
- * (8/(πd²)) / ((1 − exp(−2D²/d²))/(πD²/4)) = 2(D/d)²/(1 − exp(−2D²/d²)), D = 1 mm: the same for every t′ ≤ t, as the
- * aperture is 1 mm throughout.
+ * profile). OD = log10(H/EL) as in ANSI Z136.1 and EN 207; the filter also has to survive the beam. A beam of 1/e
+ * diameter d/√2 < 1 mm is held to its peak on the cornea below 0.35 s (ICNIRP 2013 Table 5 note c, in `limitMaxPower`):
+ * P_max shrinks by the peak-to-average ratio 2(D/d)²/(1 − exp(−2D²/d²)), D = 1 mm, where that duration binds.
  */
-export function requiredOpticalDensity(
-  lambda: number, P: number, d: number, t: number, opts: { actualExposure?: boolean } = {},
-): OpticalDensity {
+export function requiredOpticalDensity(lambda: number, P: number, d: number, t: number): OpticalDensity {
   const limits = eyeLimits(lambda).map((limit): LimitOpticalDensity => {
-    const D = limitingAperture(limit, t);
-    const noteC = opts.actualExposure === true && d > 0 && d / Math.SQRT2 < 1e-3 && t < 0.35 && Math.abs(D - 1e-3) < 1e-12;
-    const pMax = limitMaxPower(limit, d, t) / (noteC ? 8 / (Math.PI * d * d) / apertureIrradiance(1, d, D) : 1);
+    const pMax = limitMaxPower(limit, d, t);
     return { kind: limit.kind, pMax, od: Math.max(0, Math.log10(P / pMax)) };
   });
   if (limits.length === 0 || limits.some((l) => Number.isNaN(l.od))) return { od: NaN, limiting: null, limits };

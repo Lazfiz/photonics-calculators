@@ -52,7 +52,7 @@ export default function MedicalLaserSafetyPage() {
   const limits = useMemo(() => eyeLimits(lambda), [lambda]);
   const nohd = useMemo(() => nominalOcularHazardDistance(lambda, P, beam, tEye), [lambda, P, beam, tEye]);
   // ICNIRP 2013 Table 5 note c: a focus under 1 mm viewed for < 0.35 s counts by its actual radiant exposure.
-  const odFocus = useMemo(() => requiredOpticalDensity(lambda, P, spot, tEye, { actualExposure: true }), [lambda, P, spot, tEye]);
+  const odFocus = useMemo(() => requiredOpticalDensity(lambda, P, spot, tEye), [lambda, P, spot, tEye]);
   const odLens = useMemo(() => requiredOpticalDensity(lambda, P, b0, tEye), [lambda, P, b0, tEye]);
   const valid = limits.length > 0 && !Number.isNaN(nohd.distance) && !Number.isNaN(odFocus.od);
 

@@ -19,7 +19,7 @@ export default function PulsedMPEPage() {
   const [pulseDurationRaw, setPulseDuration] = useURLState("pulseDuration", 10, { min: 1e-6, max: 3e13 }); // ns
   const [prfRaw, setPrf] = useURLState("prf", 1000, { min: 0 }); // Hz
   const [exposureRaw, setExposure] = useURLState("exposureTime", 10, { min: 1e-15, max: 30000 }); // s
-  const [beamDiamRaw, setBeamDiam] = useURLState("beamDiam", 2, { min: 0 }); // mm, 1/e² at the eye
+  const [beamDiamRaw, setBeamDiam] = useURLState("beamDiam", 2, { min: 0.01 }); // mm, 1/e² at the eye
   const [alphaRaw, setAlpha] = useURLState("alpha", 1.5, { min: 0 }); // mrad
 
   // URL values aren't range-checked: clamp them here. SI inside; physics in src/physics/laser-safety/pulse-train.ts.
@@ -28,7 +28,7 @@ export default function PulsedMPEPage() {
   const tau = Math.min(Math.max(pulseDurationRaw, 1e-6), T_MAX * 1e9) * 1e-9;
   const prf = Math.max(prfRaw, 0);
   const T = Math.min(Math.max(exposureRaw, tau), T_MAX);
-  const d = Math.max(beamDiamRaw, 0) * 1e-3;
+  const d = Math.max(beamDiamRaw, 0.01) * 1e-3;
   const alpha = Math.max(alphaRaw, 0) * 1e-3;
   const overlap = prf * tau > 1;
 
@@ -47,7 +47,7 @@ export default function PulsedMPEPage() {
         <ValidatedNumberInput label="Pulse duration (ns)" value={pulseDurationRaw} onChange={setPulseDuration} min={1e-6} max={3e13} step="any" />
         <ValidatedNumberInput label="Repetition rate (Hz, 0 = one pulse)" value={prfRaw} onChange={setPrf} min={0} step="any" />
         <ValidatedNumberInput label="Exposure time (s)" value={exposureRaw} onChange={setExposure} min={1e-15} max={30000} step="any" />
-        <ValidatedNumberInput label="Beam diameter at the eye, 1/e² (mm)" value={beamDiamRaw} onChange={setBeamDiam} min={0} step="any" />
+        <ValidatedNumberInput label="Beam diameter at the eye, 1/e² (mm)" value={beamDiamRaw} onChange={setBeamDiam} min={0.01} step="any" />
         <ValidatedNumberInput label="Source subtense α (mrad)" value={alphaRaw} onChange={setAlpha} min={0} step="any" />
       </div>
 
@@ -108,7 +108,7 @@ export default function PulsedMPEPage() {
           Below 1 ns ICNIRP Table 5 gives retinal limits of 1 mJ/m² (× C_C above 1050 nm) from 100 fs to 10 ps; shorter
           pulses, and the corneal limits below 1 ns, keep the irradiance of the shortest tabulated duration; the cornea is
           also kept below 10 % of its 1 ns limit, ICNIRP&apos;s conservative interim guideline (p. 287). The beam is a
-          round Gaussian centred on each aperture (7 mm for the retina, 1–3.5 mm for the cornea). Not modelled:
+          round Gaussian centred on each aperture (7 mm for the retina, 1–3.5 mm for the cornea). A beam under 1 mm (1/e diameter, d/√2 for the 1/e² d) is held to its peak on the cornea below 0.35 s (ICNIRP 2013 Table 5 note c). Not modelled:
           irregular trains and bursts, scanned beams, skin.
         </p>
       </div>

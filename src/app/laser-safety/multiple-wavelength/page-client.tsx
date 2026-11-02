@@ -21,13 +21,13 @@ const parseList = (s: string) =>
 export default function MultipleWavelengthPage() {
   const [wavelengths, setWavelengths] = useURLState("wavelengths", "450, 520, 638, 1550"); // nm
   const [powers, setPowers] = useURLState("powers", "0.4, 0.4, 0.4, 10"); // mW
-  const [beamDia, setBeamDia] = useURLState("beamDia", 1, { min: 0 }); // mm, 1/e², shared by every line
+  const [beamDia, setBeamDia] = useURLState("beamDia", 1, { min: 0.01 }); // mm, 1/e², shared by every line
   const [exposure, setExposure] = useURLState("exposure", 0.25, { min: 1e-9, max: 30000 }); // s
 
   // ICNIRP 2013 eye limits and its multiple-wavelength rule: src/physics/laser-safety/multiple-wavelength.ts. SI inside.
   const wls = useMemo(() => parseList(wavelengths), [wavelengths]);
   const pws = useMemo(() => parseList(powers), [powers]);
-  const d = Math.max(beamDia, 0) * 1e-3;
+  const d = Math.max(beamDia, 0.01) * 1e-3;
   const t = Math.min(Math.max(exposure, T_MIN), T_MAX);
 
   const listError =
@@ -71,7 +71,7 @@ export default function MultipleWavelengthPage() {
             className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white"
           />
         </label>
-        <ValidatedNumberInput label="Beam diameter at the eye, 1/e² (mm)" value={beamDia} onChange={setBeamDia} min={0} step="any" />
+        <ValidatedNumberInput label="Beam diameter at the eye, 1/e² (mm)" value={beamDia} onChange={setBeamDia} min={0.01} step="any" />
         <div>
           <ValidatedNumberInput label="Exposure time (s)" value={exposure} onChange={setExposure} min={1e-9} max={30000} step="any" />
           <p className="text-xs text-gray-500 mt-2">
@@ -182,7 +182,7 @@ export default function MultipleWavelengthPage() {
           different tissues, such as the retina and the cornea, are assessed independently. Each line&apos;s share of a
           limit is its power over the largest power that stays within that limit for every exposure up to t, averaged
           over the limit&apos;s aperture (7 mm for the retina; 1–3.5 mm for the cornea; 3.5 mm for the anterior-segment
-          limit at 1150–1400 nm). A line&apos;s share of a tissue is its largest share there (one line&apos;s thermal and
+          limit at 1150–1400 nm). A beam under 1 mm (1/e diameter, d/√2 for the 1/e² d) is held to its peak on the cornea below 0.35 s (ICNIRP 2013 Table 5 note c). A line&apos;s share of a tissue is its largest share there (one line&apos;s thermal and
           blue-light retinal limits are met separately); the shares then add over the lines, and each tissue&apos;s sum
           must stay at or below 1.
         </p>

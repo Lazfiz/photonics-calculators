@@ -8,7 +8,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  apertureIrradiance, exposureLimit, limitingAperture, limitMaxPower, T_MAX, T_MIN,
+  ACTUAL_EXPOSURE_BELOW, exposureLimit, limitingAperture, limitIrradiance, limitMaxPower, T_MAX, T_MIN,
 } from "../../../physics/laser-safety/eye-exposure-limits";
 import { skinLimit } from "../../../physics/laser-safety/skin-exposure-limits";
 import { peakIrradiance } from "../../../physics/laser-safety/visual-interference";
@@ -31,7 +31,7 @@ export default function SkinMpePage() {
     if (!limit) return null;
     const H = exposureLimit(limit, t);
     const D = limitingAperture(limit, t);
-    const E = apertureIrradiance(P, d, D);
+    const E = limitIrradiance(limit, P, d, t);
     const pMax = limitMaxPower(limit, d, t);
     return { H, D, E, pMax, ratio: P / pMax };
   }, [lambda, exposedArea, P, d, t]);
@@ -44,19 +44,19 @@ export default function SkinMpePage() {
     });
     const beam = wls.map((nm) => {
       const l = skinLimit(nm * 1e-9, exposedArea);
-      return l ? apertureIrradiance(P, d, limitingAperture(l, t)) * t : NaN;
+      return l ? limitIrradiance(l, P, d, t) * t : NaN;
     });
     const traces: Record<string, unknown>[] = [
       { ...finiteXY(wls, limits), type: "scatter", mode: "lines", name: "Skin limit", line: { color: "#60a5fa" } },
     ];
     if (P > 0) {
-      traces.push({ ...finiteXY(wls, beam), type: "scatter", mode: "lines", name: "Beam, 3.5 mm avg", line: { color: "#f87171", dash: "dash" } });
+      traces.push({ ...finiteXY(wls, beam), type: "scatter", mode: "lines", name: d / Math.SQRT2 < ACTUAL_EXPOSURE_BELOW ? "Beam peak" : "Beam, 3.5 mm avg", line: { color: "#f87171", dash: "dash" } });
     }
     if (r) traces.push({ x: [wavelength], y: [r.H], type: "scatter", mode: "markers", name: "λ", marker: { color: "#fbbf24", size: 9 } });
     return traces;
   }, [exposedArea, t, P, d, r, wavelength]);
 
-  const narrow = d > 0 && d < 1e-3;
+  const narrow = d > 0 && d / Math.SQRT2 < ACTUAL_EXPOSURE_BELOW;
   const peak = peakIrradiance(P, d);
 
   return (
@@ -74,7 +74,7 @@ export default function SkinMpePage() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-4">
             <ResultCard label="Skin limit H" value={`${fmt(r.H)} J/m² (${fmt(r.H * 1e-4)} J/cm²)`} tone="blue" />
             <ResultCard label="As irradiance H/t" value={`${fmt(r.H / t)} W/m² (${fmt((r.H / t) * 1e-4)} W/cm²)`} tone="blue" />
-            <ResultCard label="Beam over 3.5 mm" value={`${fmt(r.E)} W/m² (${fmt(r.E * 1e-4)} W/cm²)`} tone="yellow" />
+            <ResultCard label={narrow ? "Beam peak" : "Beam over 3.5 mm"} value={`${fmt(r.E)} W/m² (${fmt(r.E * 1e-4)} W/cm²)`} tone="yellow" />
             <ResultCard label="Max power for this time" value={fmtPower(r.pMax)} tone="green" />
           </div>
           <div className={`rounded-lg border p-4 mb-4 ${r.ratio > 1 ? "border-red-800 bg-red-950/40" : "border-green-800 bg-green-950/30"}`}>
@@ -85,8 +85,8 @@ export default function SkinMpePage() {
           </div>
           {narrow && (
             <p className="text-sm text-amber-300 mb-4">
-              The beam is under 1 mm. ICNIRP (Table 7 note b) says to compare the actual exposure, not the 3.5 mm average,
-              with the limit. The peak irradiance 8P/(πd²) is {fmt(peak)} W/m², {fmt((peak * t) / r.H)}× the limit.
+              The beam is under 1 mm (1/e diameter d/√2). ICNIRP Table 7 note b compares its actual exposure, the peak 8P/(πd²),
+              not the 3.5 mm average; the results here use the peak, {fmt(peak)} W/m², {fmt((peak * t) / r.H)}× the limit.
             </p>
           )}
         </>

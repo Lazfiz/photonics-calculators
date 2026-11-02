@@ -32,11 +32,12 @@ test("visible lines add at the retina", () => {
 });
 
 test("retina and cornea count independently", () => {
-  // 1550 nm, 0.25 s, 1 mm beam: 10⁴ J/m² over the 1 mm aperture, 1 − e⁻² of the power inside it (hand calculation).
-  const p1550 = ((1e4 / 0.25) * Math.PI * 0.25e-6) / -Math.expm1(-2);
+  // 1550 nm, 0.25 s, 1 mm beam (1/e diameter 0.71 mm): Table 5 note c holds its peak 8P/(πd²) to 10⁴ J/m², so
+  // P_max = 10⁴/0.25 · π(1 mm)²/8 = 15.7 mW and 10 mW is 2/π of it (hand calculation; 0.275 averaged over 1 mm).
+  const p1550 = ((1e4 / 0.25) * Math.PI * 1e-6) / 8;
   const x = multipleWavelengthExposure([{ lambda: 532e-9, P: 0.5e-3 }, { lambda: 1550e-9, P: 10e-3 }], 1e-3, 0.25);
   assertRel(x.lines[1].sites.anteriorEye, 10e-3 / p1550, 1e-12, "1550 nm share");
-  assertRel(x.lines[1].sites.anteriorEye, 0.2753, 1e-3, "1550 nm share, value");
+  assertRel(x.lines[1].sites.anteriorEye, 2 / Math.PI, 1e-12, "1550 nm share, value");
   // 532 nm adds its anterior share (the 1 mm beam is all inside 3.5 mm to 1e-10); 1550 nm adds nothing at the retina.
   assertRel(x.sites.anteriorEye, 10e-3 / p1550 + 0.5e-3 / P_ANTERIOR_VIS_025, 1e-9, "anterior-eye sum");
   assertRel(x.sites.retina, 0.5e-3 / limitMaxPower(eyeLimits(532e-9)[0], 1e-3, 0.25), 1e-12, "532 nm share");

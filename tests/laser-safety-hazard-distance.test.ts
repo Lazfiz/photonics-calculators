@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { exposureLimit, eyeLimits, limitMaxPower } from "../src/physics/laser-safety/eye-exposure-limits";
+import { averagedOnly, exposureLimit, eyeLimits, limitMaxPower } from "../src/physics/laser-safety/eye-exposure-limits";
 import {
   diffuseExposure, diffuseHazardDistance, effectiveDiameterAt, lambertianIrradiance, lambertianSpotIrradiance, limitMaxIrradiance,
   limitSafeDiameter, nominalOcularHazardDistance, rangeToDiameter, requiredOpticalDensity, roundBeam,
@@ -162,14 +162,40 @@ test("OD with ICNIRP Table 5 note c: a beam under 1 mm for under 0.35 s counts b
   // 10 W at 10.6 µm in a 0.2 mm spot, 0.25 s: the peak radiant exposure 8Pt/(πd²) = 1.59 × 10⁸ J/m² against
   // 5.6 × 10³ t^0.25 = 3.96 × 10³ J/m² (Table 5): OD 4.604. The 1 mm average gives 2.905.
   const peak = (8 * 10 * 0.25) / (Math.PI * 4e-8);
-  assertRel(requiredOpticalDensity(10.6e-6, 10, 0.2e-3, 0.25, { actualExposure: true }).od, Math.log10(peak / (5.6e3 * Math.pow(0.25, 0.25))), 1e-9, "note c");
-  assertRel(requiredOpticalDensity(10.6e-6, 10, 0.2e-3, 0.25).od, 2.9051770981, 1e-9, "aperture average");
-  // Not applied from 0.35 s, nor to a beam of 1 mm or more.
-  assert.equal(requiredOpticalDensity(10.6e-6, 10, 0.2e-3, 0.5, { actualExposure: true }).od, requiredOpticalDensity(10.6e-6, 10, 0.2e-3, 0.5).od);
-  assert.equal(requiredOpticalDensity(10.6e-6, 10, 2e-3, 0.25, { actualExposure: true }).od, requiredOpticalDensity(10.6e-6, 10, 2e-3, 0.25).od);
+  assertRel(requiredOpticalDensity(10.6e-6, 10, 0.2e-3, 0.25).od, Math.log10(peak / (5.6e3 * Math.pow(0.25, 0.25))), 1e-9, "note c");
+  // OD over the plain 1 mm average, for comparison (a single cornea limit at these wavelengths).
+  const odAveraged = (lambda: number, P: number, d: number, t: number) =>
+    Math.log10(P / limitMaxPower({ ...eyeLimits(lambda)[0], apertures: averagedOnly(eyeLimits(lambda)[0].apertures) }, d, t));
+  assertRel(odAveraged(10.6e-6, 10, 0.2e-3, 0.25), 2.9051770981, 1e-9, "aperture average");
+  // From 0.35 s the exposures up to t still include those below it: at 0.5 s the peak at 0.35 s binds,
+  // 8Pt/(πd²) against 5.6×10³·0.35^0.25 J/m² at t = 0.35 s, so the OD doesn't drop with a longer exposure.
+  const od05 = requiredOpticalDensity(10.6e-6, 10, 0.2e-3, 0.5).od;
+  assertRel(od05, Math.log10((8 * 10 * 0.35) / (Math.PI * 4e-8) / (5.6e3 * Math.pow(0.35, 0.25))), 1e-9, "0.5 s");
+  assert.ok(od05 > requiredOpticalDensity(10.6e-6, 10, 0.2e-3, 0.25).od);
+  // A 2 mm beam (1/e 1.41 mm) is averaged.
+  assertRel(requiredOpticalDensity(10.6e-6, 10, 2e-3, 0.25).od, odAveraged(10.6e-6, 10, 2e-3, 0.25), 1e-12, "2 mm");
   // The 1 mm is the 1/e diameter (ICNIRP p. 288): a 1.2 mm 1/e² beam (d₆₃ 0.85 mm) counts by its peak, raised over the
   // 1 mm average by 2(D/d)²/(1 − exp(−2D²/d²)) = 1.3889/0.7512 = 1.849 (OD + 0.267); a 1.5 mm one (d₆₃ 1.06 mm) doesn't.
-  const od12 = (opts = {}) => requiredOpticalDensity(1550e-9, 1, 1.2e-3, 0.25, opts).od;
-  assertRel(od12({ actualExposure: true }) - od12(), Math.log10(2 / 1.44 / (1 - Math.exp(-2 / 1.44))), 1e-9, "d₆₃ < 1 mm");
-  assert.equal(requiredOpticalDensity(1550e-9, 1, 1.5e-3, 0.25, { actualExposure: true }).od, requiredOpticalDensity(1550e-9, 1, 1.5e-3, 0.25).od);
+  const od12 = requiredOpticalDensity(1550e-9, 1, 1.2e-3, 0.25).od;
+  assertRel(od12 - odAveraged(1550e-9, 1, 1.2e-3, 0.25), Math.log10(2 / 1.44 / (1 - Math.exp(-2 / 1.44))), 1e-9, "d₆₃ < 1 mm");
+  assertRel(requiredOpticalDensity(1550e-9, 1, 1.5e-3, 0.25).od, odAveraged(1550e-9, 1, 1.5e-3, 0.25), 1e-12, "1.5 mm");
+});
+
+test("Safe diameter with Table 5 note c: the peak below the 1/e edge of 1 mm", () => {
+  // 10.6 µm, 0.25 s, H = 5.6×10³·0.25^0.25 = 3.96 kJ/m². 5 mW: the peak is within H from d_pk = √(8Pt/(πH)) = 0.897 mm,
+  // below the edge √2 mm, so that is the safe diameter.
+  const ir = eyeLimits(10.6e-6)[0];
+  const H = 5.6e3 * Math.pow(0.25, 0.25);
+  assertRel(limitSafeDiameter(ir, 5e-3, 0.25), Math.sqrt((8 * 5e-3 * 0.25) / (Math.PI * H)), 1e-12, "5 mW: 0.897 mm");
+  // 15 mW: d_pk = 1.55 mm is past the edge, where the 1 mm average holds from 1.06 mm; so safe from the edge, √2 mm.
+  assertRel(limitSafeDiameter(ir, 15e-3, 0.25), Math.SQRT2 * 1e-3, 1e-12, "15 mW: the edge");
+  // 20 mW: d_pk 1.79 mm; the average needs 1 − exp(−2D²/d²) ≤ H·π(1 mm)²/(4Pt) = 0.622, d ≥ 1.434 mm > the edge.
+  const q = (H * Math.PI * 1e-6) / (4 * 20e-3 * 0.25);
+  assertRel(limitSafeDiameter(ir, 20e-3, 0.25), 1e-3 * Math.sqrt(-2 / Math.log1p(-q)), 1e-12, "20 mW: averaged");
+  // The inverse of limitMaxPower in each case.
+  for (const P of [5e-3, 15e-3, 20e-3, 1]) {
+    const d = limitSafeDiameter(ir, P, 0.25);
+    assert.ok(limitMaxPower(ir, d, 0.25) >= P * (1 - 1e-9), `${P} W at ${d} m is within`);
+    assert.ok(limitMaxPower(ir, d * (1 - 1e-6), 0.25) < P, `${P} W just below ${d} m is not`);
+  }
 });

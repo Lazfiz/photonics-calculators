@@ -99,7 +99,7 @@ export default function UltrafastLaserSafetyPage() {
           7 mm pupil from 100 fs to 10 ps (× C_C above 1050 nm; no C_A), 2 C_A mJ/m² from 10 ps (20 C_C mJ/m² at 1050–1400 nm); shorter than 100 fs, and
           on the cornea below 1 ns, the irradiance is held at the shortest tabulated value. For the cornea (below 400 nm and
           above 1400 nm) ICNIRP 2013 (p. 287) also advises, as a conservative interim guideline, keeping sub-ns exposures
-          below 10 % of the 1 ns limit; the page applies it.
+          below 10 % of the 1 ns limit; the page applies it. A beam under 1 mm (1/e diameter, d/√2 for the 1/e² d) is held to its peak on the cornea below 0.35 s (ICNIRP 2013 Table 5 note c).
         </p>
         <p>
           Below 10 ps the retina is damaged by non-linear effects (laser-induced breakdown) rather than heat, which is why

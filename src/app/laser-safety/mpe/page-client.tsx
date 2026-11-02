@@ -10,7 +10,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  exposureLimit, eyeLimits, limitingAperture, limitMaxPower, T_MAX, T_MIN,
+  averagedOnly, exposureLimit, eyeLimits, limitingAperture, limitMaxPower, T_MAX, T_MIN,
 } from "../../../physics/laser-safety/eye-exposure-limits";
 
 const wavelengthPresets = [355, 532, 905, 1064, 1550, 10600]; // nm
@@ -34,7 +34,7 @@ export default function MPEPage() {
       limits
         .map((limit) => {
           const H = exposureLimit(limit, exposure);
-          return { limit, D: limitingAperture(limit, exposure), H, pMax: limitMaxPower(limit, 0, exposure) };
+          return { limit, D: limitingAperture(limit, exposure), H, pMax: limitMaxPower({ ...limit, apertures: averagedOnly(limit.apertures) }, 0, exposure) };
         })
         .filter((r) => Number.isFinite(r.H)),
     [limits, exposure],
@@ -116,7 +116,7 @@ export default function MPEPage() {
             </table>
             <p className="text-xs text-gray-500 mt-2">
               Every limit listed applies; the photochemical limit starts at 10 s. The max power is for a beam narrower than the aperture and holds for every
-              exposure up to t (a limit can step down at a joint, e.g. at 10 s). For a given beam size see{" "}
+              exposure up to t (a limit can step down at a joint, e.g. at 10 s). Powers assume the beam fills the aperture; a beam under 1 mm (1/e) on the cornea below 0.35 s, or on the skin, is held to its peak instead (ICNIRP 2013 Table 5 note c). For a given beam size see{" "}
               <Link href="/laser-safety/exposure-duration" className={linkClass}>exposure duration</Link>.
             </p>
           </div>
