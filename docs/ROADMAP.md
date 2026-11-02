@@ -5,12 +5,12 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 183, 2026-11-02)
+## Status (session 184, 2026-11-02)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
   textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) and 5w-13 (materials) and 5w-14 (spectroscopy) and 5w-15 (thin-film + polarization) done (sessions 163–177): 5w is complete; KRS-5
-  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6c done (sessions 179–183), 6d-a next; the Gemini hero comes after it. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6d-a done (sessions 179–184), 6d-b next; the Gemini hero comes after it. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -109,17 +109,20 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - `nonlinear-index` (session 147: + DeSalvo 1064 nm rows, Si at 1800 nm): GaAs, AlGaAs, CS₂, air, chalcogenide and SF glasses still out
   (Sheik-Bahae 1991 JQE has no open copy; CREOL hosts only the 1990 PRL, figures only). DeSalvo calcite dropped: Table II n 1.59 fits neither axis.
   Candidates: Dinu 2003 / Bristow 2007 (Si), Sheik-Bahae 1991 (semiconductors), Milam 1998 (silica 1064 nm).
-- `brillouin-scattering` (session 148: + As₂Se₃ Abedin 2005, As₂S₃ Pant 2011, diamond Bai 2020): diamond's p² 0.0153 has no stated
-  convention (standard p_eff² ≈ 0.0036 would give 4× less than measured). SMF-28/Ge-doped have only measured g (Niklès 1997);
+- `brillouin-scattering` (session 148: + As₂Se₃ Abedin 2005, As₂S₃ Pant 2011, diamond Bai 2020): diamond's p now (p₁₁ + 2p₁₂ − 2p₄₄)/3
+  = 0.0600 (session 184; Bai's 0.0153 ≈ (2p)²): 17.4 cm/GW, 3.4× below the measured 60 ± 9. The abstract says 79 cm/GW at 12 MHz;
+  the body's 60 ± 9 is unrechecked (pubs.aip.org is behind Cloudflare). SMF-28/Ge-doped have only measured g (Niklès 1997);
   tellurite only M₁; Bi₂O₃ and PMMA second-hand. Candidates: Ogusu 2004 JOSA B, Kobyakov 2010.
 - `raman-scattering` (session 148: KGW/Ba(NO₃)₂ 532 nm Markevich 2016, As₂S₃ Stegeman 2006): the 1064 nm KGW/Ba(NO₃)₂ gains are EKSMA
-  vendor values and disagree with 1/λ_p from 532 nm by ≈ 2×. CS₂/benzene have only calculated g (Grun 1969) with Clements &
+  vendor values, ≈ 2× below ω_s scaling from 532 nm; Basiev 1999 cross-sections × Savitski diamond support them (session 184:
+  documented as measurement spread, ±50 %). No primary 1064 nm KGW source read (Pask 2003 may swap the 901/768 values). CS₂/benzene have only calculated g (Grun 1969) with Clements &
   Stoicheff linewidths; doped silica, water and KYW (no gain) still out. As₂S₃ below 650 nm is flagged, not cut.
 - `low-water-peak` (session 132): the 1246 and 2212 nm OH combination bands are listed without a strength and not
   modelled (Humbach 1996 Table is paywalled; no open source found). Band widths are assumed (30 nm at 1383 nm, same in
   wavenumber elsewhere). The 1383 nm 62.7 dB/km/ppm is Humbach as quoted by arXiv:2303.17814.
-- `two-photon-absorption` (session 147: + DeSalvo wide-gap rows, Si indirect fit): BK7, CS₂, water still out. DeSalvo E′_g scaling
-  is order-of-magnitude off the measured λ (BBO 355 nm 0.076 vs 0.010); KTP at 520 nm gives 4× its 532 nm β (x_ref at the edge).
+- `two-photon-absorption` (session 147: + DeSalvo wide-gap rows, Si indirect fit): BK7, CS₂, water still out. DeSalvo rows scale only
+  where 2ħω ≥ 1.1 E′_g at both λ_ref and λ (session 184): BBO to 331.5 nm, the other five give only the measured β. DeSalvo Table I's
+  other wavelengths (BBO 355 nm 0.010) are not added; KTP's 3.8 eV linear edge vs the usual ≈ 350 nm cutoff is unverified.
 - `infrared-glass` (session 144: AMTIR-1, As₂S₃ from AMI's archived sheets): ZBLAN has no sourced band, dn/dT, conductivity or
   hardness (only reseller pages found); AMTIR-1's single dn/dT is 2× low below 1.5 µm. Gan's ZBLAN formula gives n_d 1.5011, the audit's
   1.499 is unverified (Gan 1995 is paywalled). Crystran's fused-silica "1.47012 at 4 µm" is n at 0.4 µm (Malitson).
@@ -310,8 +313,7 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - [x] 6a-c laser safety (session 181, `phase-6/6a-c-scanned`, PR #219): scanned passes at the peak; anterior segment with note b. See Done.
 - [x] 6b lasers (session 182, `phase-6/6b-lasers`, PR #220): OPO walk-off overlap, ejected-soliton DW, κ 6.3, static locking range. See Done.
 - [x] 6c free-space comms (session 183, `phase-6/6c-fso`, PR #221): diffracting beam wander, DM pitch fitting, LEO point-ahead, QKD exact in Y₀, `DB_PER_E_FOLD`. See Done.
-- [ ] 6d-a materials values: Brillouin diamond p² convention (4×); Raman KGW/Ba(NO₃)₂ 1064 nm vendor gains vs 1/λ_p from 532 nm (2×);
-  TPA DeSalvo E′_g scaling (BBO 355 nm 0.076 vs 0.010; KTP 520 nm 4× its 532 nm β).
+- [x] 6d-a materials values (session 184, `phase-6/6d-a-materials`, PR #222): diamond p 0.0600, Raman spread documented, DeSalvo 1.1 rule. See Done.
 - [ ] 6d-b materials values: heat-capacity GaAs (Crystran 360 > 6R/M 345; Blakemore 1982) and diamond θ_D (266 vs 502 J/(kg·K));
   x-ray β Compton term (Hubbell incoherent scattering; Be +28 % at 10 keV); thermal-evaporation T_m (CRC/Alcock).
 - [ ] 6e fiber + detectors: `photonic-crystal` MFD, Marcuse vs Nielsen et al. OL 28, 2309 (2003) (6.69 vs 5.08 µm); `photodiode-speed`
@@ -342,6 +344,9 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 6d-a materials values (session 184, `phase-6/6d-a-materials`, PR #222): diamond Brillouin p = (p₁₁ + 2p₁₂ − 2p₄₄)/3 = 0.0600 (Grimsditch &
+  Ramdas abstract; Bai's 0.0153 ≈ (2p)², tensor without ½): 74.0 → 17.4 cm/GW; Raman 532/1064 nm 2× is measurement spread (Basiev
+  cross-sections side with 1064), ±50 % noted; DeSalvo 2PA rows scale only where 2ħω ≥ 1.1 E′_g at λ_ref and λ (BBO 300 nm 0.72749).
 - 6c free-space comms (session 183, `phase-6/6c-fso`, PR #221): beam wander × F(L/z_R) with the diffracting W(z), lever arm at the
   transmitter (0.979 at the defaults, 0.738 at 12; the old note's 0.90/0.49 had ξ at the wrong end; Berman PRE 76, 056606 eq. 14 far
   field 2.025 (L/z_R)^(−1/3)); FSO AO Hudgin 0.28 (d/r₀)^(5/3), d = D√(π/4N), N ≥ 10 (6.64e-3 → 6.05e-3 at 127); LEO zenith presets
