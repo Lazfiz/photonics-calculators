@@ -3,14 +3,14 @@ import assert from "node:assert/strict";
 
 import { exposureLimit, eyeLimits, limitMaxPower } from "../src/physics/laser-safety/eye-exposure-limits";
 import {
-  diffuseExposure, diffuseHazardDistance, effectiveDiameterAt, lambertianIrradiance, limitMaxIrradiance,
+  diffuseExposure, diffuseHazardDistance, effectiveDiameterAt, lambertianIrradiance, lambertianSpotIrradiance, limitMaxIrradiance,
   limitSafeDiameter, nominalOcularHazardDistance, rangeToDiameter, requiredOpticalDensity, roundBeam,
 } from "../src/physics/laser-safety/hazard-distance";
 
 // Limits: ICNIRP, Health Phys. 105(3), 271–295 (2013), doi:10.1097/HP.0b013e3182983fd4, Table 5 (eye), Table 2 (C_E,
 // eqn 5 for an open field of view), Table 8 (apertures). NOHD formula: ANSI Z136.1-2014 App. B and IEC TR 60825-14,
 // NOHD = (1/φ)(√(4P/(πE)) − a) with 1/e values; OD = log10(H/EL) (ANSI Z136.1, EN 207). Diffuse: Lambertian
-// ρP/(πr²); α from the 63 % (1/e) diameter (IEC 60825-1:2014 3.10).
+// ρP/(πr²); α from the 63 % (1/e) diameter (IEC 60825-1:2014 3.10); retinal limits from the 10 cm near point (ICNIRP p. 275).
 
 function assertRel(actual: number, expected: number, tol: number, label: string) {
   assert.ok(Math.abs(actual / expected - 1) < tol, `${label}: ${actual} vs ${expected}`);
@@ -100,9 +100,12 @@ test("optical density: log10(P / P_max)", () => {
 
 test("diffuse reflection: Lambertian irradiance, open field of view", () => {
   assertRel(lambertianIrradiance(1, 1), 1 / Math.PI, 1e-15, "ρP/(πr²)");
-  // Point-like spot, 532 nm, 0.5 W reflected, 0.25 s: r = √(ρP/(πE)) = 0.07907 m.
-  const point = diffuseHazardDistance(532e-9, 0.5, 0, 0.25);
-  assertRel(point.distance, Math.sqrt(0.5 / (Math.PI * E_VIS_025)), 1e-12, "point source");
+  // Point-like spot, 532 nm, 5 W reflected, 0.25 s: r = √(ρP/(πE)) = 0.2500 m.
+  const point = diffuseHazardDistance(532e-9, 5, 0, 0.25);
+  assertRel(point.distance, Math.sqrt(5 / (Math.PI * E_VIS_025)), 1e-12, "point source");
+  // 0.5 W gives 0.0791 m, nearer than the eye focuses: assessed at 10 cm, where 0.5/(π·0.01) = 15.9 W/m² < 25.5, none (the
+  // anterior-segment limit still binds within millimetres).
+  assert.equal(diffuseHazardDistance(532e-9, 0.5, 0, 0.25).limits.find((l) => l.kind === "retinalThermal")?.distance, 0);
   // 1064 nm, 120 W reflected from a 5 mm spot, 10 s. Hand: α = 3.536 mm / r; E_max = 90 C_E 10^−0.25 with
   // C_E = α/α_min (T₂ = 12.5 s > 10 s), so 120/(πr²) = 119.29/r: r = 0.3202 m (α = 11 mrad).
   const ext = diffuseHazardDistance(1064e-9, 120, 5e-3, 10);
@@ -110,14 +113,41 @@ test("diffuse reflection: Lambertian irradiance, open field of view", () => {
   assertRel(ext.distance, 120 / (Math.PI * k), 1e-9, "extended source");
   const at = diffuseExposure(1064e-9, 120, 5e-3, ext.distance, 10);
   assertRel(at.limits[0].ratio, 1, 1e-9, "ratio 1 at the diffuse NOHD");
-  // 0.5 W: above α_max the retinal limit grows as α² like the irradiance; the ratio stays at 0.038, so no retinal
-  // hazard at any range. Only the anterior eye's 2 × skin limit (Table 5 note d) is exceeded, within millimetres:
-  // √(ρP/(πE)) with E = 2 · 1.1×10⁴ C_A 10^0.25 J/m² / 10 s (just below the 2 × 2×10³ C_A W/m² from 10 s).
+  // 0.5 W: no retinal hazard from 10 cm on. Only the anterior eye's 2 × skin limit (Table 5 note d),
+  // E = 2 · 1.1×10⁴ C_A 10^0.25 J/m² / 10 s = 19 563 W/m², is exceeded, within millimetres: below the point range
+  // √(ρP/(πE)) = 2.85 mm, as the spot's peak exitance is 8ρP/(πd²) = 50 930 W/m². Hand: at r = 1.8604 mm, x = 8r²/d²
+  // = 1.1076, eˣE₁(x) = 0.5560 (A&S Table 5.1), F = x(1 − x eˣE₁) = 0.4255, E = 45 983 · 0.4255 = 19 566 W/m².
   const weak = diffuseHazardDistance(1064e-9, 0.5, 5e-3, 10);
+  const eAnterior = (2 * 1.1e4 * 5 * Math.pow(10, 0.25)) / 10;
   assert.equal(weak.limits.find((l) => l.kind === "retinalThermal")?.distance, 0);
   assert.equal(weak.limiting, "anteriorSegment");
-  assertRel(weak.distance, Math.sqrt(0.5 / (Math.PI * ((2 * 1.1e4 * 5 * Math.pow(10, 0.25)) / 10))), 1e-12, "2.85 mm");
-  assertRel(diffuseExposure(1064e-9, 0.5, 5e-3, 5e-3, 10).limits[0].ratio, 0.0377, 2e-3, "plateau");
+  assertRel(weak.distance, 1.8604e-3, 1e-4, "1.86 mm");
+  assertRel(lambertianSpotIrradiance(0.5, 5e-3, weak.distance), eAnterior, 1e-9, "E = limit at the distance");
+  // Nearer than 10 cm the retinal ratio is the one at 10 cm; the anterior-segment one keeps rising.
+  const near = diffuseExposure(1064e-9, 0.5, 5e-3, 0.05, 10);
+  const nearPoint = diffuseExposure(1064e-9, 0.5, 5e-3, 0.1, 10);
+  assert.equal(near.limits[0].ratio, nearPoint.limits[0].ratio);
+  assert.ok(near.limits[1].ratio > 3.9 * nearPoint.limits[1].ratio);
+  // A 50 mm spot: above α_max (100 mrad from 0.25 s) C_E ∝ α² like the irradiance, so the ratio is flat with range.
+  assertRel(diffuseExposure(1064e-9, 0.5, 50e-3, 0.15, 10).limits[0].ratio, diffuseExposure(1064e-9, 0.5, 50e-3, 0.3, 10).limits[0].ratio, 1e-12, "plateau");
+});
+
+test("Lambertian Gaussian spot: on-axis irradiance near and far", () => {
+  // E = M₀ eˣE₂(x), M₀ = 8ρP/(πd²), x = 8r²/d². r = w = d/2: x = 2, 1 − 2e²E₁(2) = 1 − 2 · 0.3613286169 = 0.2773428
+  // (A&S Table 5.1, E₁(2) = 0.04890051071).
+  const d = 5e-3;
+  const m0 = 8 / (Math.PI * d * d);
+  assertRel(lambertianSpotIrradiance(1, d, d / 2) / m0, 1 - 2 * Math.exp(2) * 0.04890051071, 1e-9, "r = w");
+  // r = 10 d: x = 800, F = 1 − 2/x + 6/x² − 24/x³ + 120/x⁴ = 0.99750933 of ρP/(πr²) (next term 2e-12).
+  assertRel(lambertianSpotIrradiance(1, d, 10 * d) / lambertianIrradiance(1, 10 * d), 1 - 2 / 800 + 6 / 800 ** 2 - 24 / 800 ** 3 + 120 / 800 ** 4, 1e-11, "r = 10 d");
+  // x = 1: F = 1 − e E₁(1) = 1 − 0.5963473623 (A&S Table 5.1).
+  assertRel(lambertianSpotIrradiance(1, d, d / Math.sqrt(8)) / lambertianIrradiance(1, d / Math.sqrt(8)), 0.4036526377, 1e-9, "x = 1");
+  // Edges: contact gives the peak exitance, a point spot gives ρP/(πr²), and the series meets 1 − x eˣE₁ at x = 50.
+  assertRel(lambertianSpotIrradiance(1, d, 0), m0, 1e-15, "r = 0");
+  assertRel(lambertianSpotIrradiance(1, 0, 0.3), lambertianIrradiance(1, 0.3), 1e-15, "d = 0");
+  const r50 = Math.sqrt(50 / 8) * d;
+  assertRel(lambertianSpotIrradiance(1, d, r50 * (1 - 1e-12)), lambertianSpotIrradiance(1, d, r50 * (1 + 1e-12)), 1e-10, "x = 50");
+  assert.ok(Number.isNaN(lambertianSpotIrradiance(1, 0, 0)));
 });
 
 test("uniform-irradiance limit", () => {
@@ -137,4 +167,9 @@ test("OD with ICNIRP Table 5 note c: a beam under 1 mm for under 0.35 s counts b
   // Not applied from 0.35 s, nor to a beam of 1 mm or more.
   assert.equal(requiredOpticalDensity(10.6e-6, 10, 0.2e-3, 0.5, { actualExposure: true }).od, requiredOpticalDensity(10.6e-6, 10, 0.2e-3, 0.5).od);
   assert.equal(requiredOpticalDensity(10.6e-6, 10, 2e-3, 0.25, { actualExposure: true }).od, requiredOpticalDensity(10.6e-6, 10, 2e-3, 0.25).od);
+  // The 1 mm is the 1/e diameter (ICNIRP p. 288): a 1.2 mm 1/e² beam (d₆₃ 0.85 mm) counts by its peak, raised over the
+  // 1 mm average by 2(D/d)²/(1 − exp(−2D²/d²)) = 1.3889/0.7512 = 1.849 (OD + 0.267); a 1.5 mm one (d₆₃ 1.06 mm) doesn't.
+  const od12 = (opts = {}) => requiredOpticalDensity(1550e-9, 1, 1.2e-3, 0.25, opts).od;
+  assertRel(od12({ actualExposure: true }) - od12(), Math.log10(2 / 1.44 / (1 - Math.exp(-2 / 1.44))), 1e-9, "d₆₃ < 1 mm");
+  assert.equal(requiredOpticalDensity(1550e-9, 1, 1.5e-3, 0.25, { actualExposure: true }).od, requiredOpticalDensity(1550e-9, 1, 1.5e-3, 0.25).od);
 });

@@ -155,9 +155,11 @@ export default function MedicalLaserSafetyPage() {
       <div className="text-sm text-gray-400 space-y-2">
         <p>
           Tissue: the power density is the clinical P/A over the 1/e² spot (the peak of a Gaussian spot is twice it). The
-          thermal relaxation time is the time for the centre temperature of a target of size d to halve (selective
-          photothermolysis, Anderson &amp; Parrish 1983): d²/(16κ) for a cylinder, d²/(27κ) for a sphere, 3d²/(16κ) for
-          a layer, with κ = {fmtNum(TISSUE_DIFFUSIVITY * 1e6)} mm²/s for soft tissue.
+          thermal relaxation time is the time for the centre of a Gaussian temperature profile of 1/e diameter d to cool
+          to half: d²/(16κ) for a cylinder (a vessel; selective photothermolysis, Anderson &amp; Parrish 1983), and by
+          the same rule d²/(27κ) for a sphere and 3d²/(16κ) for a layer, with κ = {fmtNum(TISSUE_DIFFUSIVITY * 1e6)}{" "}
+          mm²/s for soft tissue. A uniformly heated target instead gives times about 1.45× longer: take τ as an order of
+          magnitude.
         </p>
         <p>
           Eyes: beyond the focus the beam spreads at b₀/f, so the hazard distance is the standards&apos;

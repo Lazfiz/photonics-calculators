@@ -665,3 +665,36 @@ export function fresnelIntegrals(x: number): [number, number] {
   }
   return x < 0 ? [-c, -s] : [c, s];
 }
+
+/**
+ * Scaled exponential integral eˣ E₁(x) for x > 0, with no underflow in the tail (→ 1/x): for x ≤ 1 the series
+ * E₁ = −γ − ln x + Σ (−1)^(k+1) x^k/(k·k!) (A&S 5.1.11), above it the continued fraction (A&S 5.1.22, modified Lentz).
+ * Tolerance 1e-16. NaN for x ≤ 0.
+ */
+export function expE1Scaled(x: number): number {
+  if (!(x > 0)) return NaN;
+  if (x <= 1) {
+    let sum = 0;
+    let term = 1;
+    for (let k = 1; k < 40; k++) {
+      term *= -x / k;
+      sum -= term / k;
+      if (Math.abs(term / k) < 1e-17 * Math.abs(sum)) break;
+    }
+    return Math.exp(x) * (-EULER_GAMMA - Math.log(x) + sum);
+  }
+  let b = x + 1;
+  let c = 1e300;
+  let d = 1 / b;
+  let h = d;
+  for (let i = 1; i < 200; i++) {
+    const a = -i * i;
+    b += 2;
+    d = 1 / (a * d + b);
+    c = b + a / c;
+    const del = c * d;
+    h *= del;
+    if (Math.abs(del - 1) < 1e-16) break;
+  }
+  return h;
+}

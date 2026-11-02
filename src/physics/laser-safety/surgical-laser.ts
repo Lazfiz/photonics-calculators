@@ -8,10 +8,12 @@
  * which for a spot much smaller than the safe diameter is the standards' (f/b₀)·√(4P/(πE)) with 1/e values. A Gaussian
  * beam can't focus below 4λf/(πb₀) (M² = 1).
  *
- * Thermal relaxation time (Anderson & Parrish, Science 220, 524, 1983): the time for the centre temperature of a
- * Gaussian profile whose 1/e width is the target size d to halve. In n dimensions it falls as (1 + 4κt/(d/2)²)^(−n/2),
- * so τ = (2^(2/n) − 1)·d²/(16κ): d²/(16κ) for a cylinder (a vessel, n = 2), d²/(27.2κ) for a sphere (n = 3) and
- * 3d²/(16κ) for a layer of thickness d (n = 1). Heat stays in the target (thermal confinement) for pulses shorter than τ.
+ * Thermal relaxation time: the time for the centre temperature of a Gaussian profile whose 1/e width is the target size
+ * d to halve. Anderson & Parrish (Science 220, 524, 1983) give d²/(16κ) for a vessel; the sphere and layer factors
+ * follow by the same rule (a uniform target gives factors ≈ 1.45× smaller: 3.64, 11.1, 18.9). In n dimensions the centre
+ * falls as (1 + 4κt/(d/2)²)^(−n/2), so τ = (2^(2/n) − 1)·d²/(16κ): d²/(16κ) for a cylinder (a vessel, n = 2),
+ * d²/(27.2κ) for a sphere (n = 3) and 3d²/(16κ) for a layer of thickness d (n = 1). Heat stays in the target (thermal
+ * confinement) for pulses shorter than τ.
  */
 
 /** Thermal diffusivity of soft tissue, m²/s (water: 1.43×10⁻⁷ at 20 °C). */

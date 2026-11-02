@@ -188,7 +188,7 @@ export const laserSafety: CalculatorEntry[] = [
     title: "Diffuse Reflection Hazard",
     description: "Eye hazard of viewing a laser spot on a matte (Lambertian) surface: corneal irradiance, extended-source limit, diffuse hazard distance and OD, on the ICNIRP 2013 limits.",
     tier: "textbook",
-    modelNote: "Lambertian spot ρP/(πr²) (r ≫ spot), an extended source of α = d₆₃/r with ICNIRP 2013 C_E (open field of view, eqn 5); one exposure up to t. Errs high close up, and for blue light from spots over 11 mrad.",
+    modelNote: "Lambertian Gaussian spot: exact on-axis irradiance ρP/(πr²) · x(1 − x eˣE₁(x)), x = 8r²/d², tending to ρP/(πr²) far off; an extended source of α = d₆₃/r with ICNIRP 2013 C_E (open field of view, eqn 5), the retinal limits assessed no nearer than 10 cm (the eye's near point, ICNIRP p. 275); one exposure up to t. Errs high for blue light from spots over 11 mrad.",
     references: [
       {
         citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Table 2 and eqn 5 (C_E), Tables 5 and 8.",
@@ -394,7 +394,7 @@ export const laserSafety: CalculatorEntry[] = [
     title: "Medical Laser Safety Calculator",
     description: "Surgical laser with a focusing handpiece: NOHD beyond the focus and eyewear OD on the ICNIRP 2013 eye limits, with the spot's power density, fluence and the target's thermal relaxation time.",
     tier: "textbook",
-    modelNote: "Lens-on-laser beam spreading at b₀/f from the focus; ICNIRP 2013 point-source eye limits over each aperture, exposures up to t; focus under 1 mm and 0.35 s by its peak (Table 5 note c); TRT: a Gaussian centre temperature halves. Not modelled: bare fibres, pulses, skin.",
+    modelNote: "Lens-on-laser beam spreading at b₀/f from the focus; ICNIRP 2013 point-source eye limits over each aperture, exposures up to t; focus under 1 mm and 0.35 s by its peak (Table 5 note c); TRT: a Gaussian centre temperature (1/e diameter d) halves, A&P d²/(16κ) for a vessel, sphere and layer by the same rule. Not modelled: bare fibres, pulses, skin.",
     references: [
       {
         citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 5 and 8.",

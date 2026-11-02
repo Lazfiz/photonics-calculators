@@ -12,7 +12,8 @@
  * standards' NOHD = (1/φ)(√(4P/(πE)) − a) with 1/e values (E the limit as an irradiance).
  *
  * Diffuse reflection: a Lambertian spot reflecting ρP gives the irradiance ρP/(πr²) at range r on its normal (r ≫ the
- * spot; nearer, it overstates). The spot is an extended source of α = d₆₃/r, d₆₃ = d/√2 the diameter holding 63 % of
+ * spot; nearer, the Gaussian spot's exact on-axis form, which tends to its peak exitance). The retinal limits are assessed
+ * no nearer than 10 cm, the eye's near point. The spot is an extended source of α = d₆₃/r, d₆₃ = d/√2 the diameter holding 63 % of
  * the power (IEC 60825-1:2014 3.10), which raises the retinal thermal limit through C_E. All of the spot counts (an open
  * field of view), so above α_max C_E = α²/(α_min α_max) (ICNIRP 2013 eqn 5, for a homogeneous circular source; for a
  * Gaussian spot it errs high, as counting the tails outside γ = α_max does). The photochemical limit's field of view
@@ -24,6 +25,7 @@
 import {
   ALPHA_MIN, apertureIrradiance, eyeLimits, limitingAperture, limitMaxPower, T_MAX, T_MIN, type EyeLimitKind, type TabulatedLimit,
 } from "./eye-exposure-limits";
+import { expE1Scaled } from "../math";
 
 /** How a beam widens with range: a + rφ (the standards' formula) or √(a² + (rφ)²) (Gaussian, waist at the aperture). */
 export type BeamGrowth = "linear" | "gaussian";
@@ -157,7 +159,7 @@ export interface OpticalDensity {
  * limit for exposures up to t (s): log10(P/P_max) with P_max from `limitMaxPower` (a filter scales the power, not the
  * profile). OD = log10(H/EL) as in ANSI Z136.1 and EN 207; the filter also has to survive the beam.
  * With `actualExposure`, ICNIRP 2013 Table 5 note c: a beam narrower than 1 mm, for t < 0.35 s, is compared by its
- * actual radiant exposure, not its average over the 1 mm aperture. Then P_max shrinks by the peak-to-average ratio
+ * actual radiant exposure, not its average over the 1 mm aperture. The diameter is the 1/e one (ICNIRP p. 288), d₆₃ = d/√2. Then P_max shrinks by the peak-to-average ratio
  * (8/(πd²)) / ((1 − exp(−2D²/d²))/(πD²/4)) = 2(D/d)²/(1 − exp(−2D²/d²)), D = 1 mm: the same for every t′ ≤ t, as the
  * aperture is 1 mm throughout.
  */
@@ -166,7 +168,7 @@ export function requiredOpticalDensity(
 ): OpticalDensity {
   const limits = eyeLimits(lambda).map((limit): LimitOpticalDensity => {
     const D = limitingAperture(limit, t);
-    const noteC = opts.actualExposure === true && d > 0 && d < 1e-3 && t < 0.35 && Math.abs(D - 1e-3) < 1e-12;
+    const noteC = opts.actualExposure === true && d > 0 && d / Math.SQRT2 < 1e-3 && t < 0.35 && Math.abs(D - 1e-3) < 1e-12;
     const pMax = limitMaxPower(limit, d, t) / (noteC ? 8 / (Math.PI * d * d) / apertureIrradiance(1, d, D) : 1);
     return { kind: limit.kind, pMax, od: Math.max(0, Math.log10(P / pMax)) };
   });
@@ -180,6 +182,37 @@ export function lambertianIrradiance(reflectedPower: number, r: number): number 
   return r > 0 && reflectedPower >= 0 ? reflectedPower / (Math.PI * r * r) : NaN;
 }
 
+/**
+ * Irradiance, W/m², at range r (m) on the normal of a Lambertian Gaussian spot of 1/e² diameter d (m) reflecting ρP (W).
+ * The exitance M(s) = M₀ exp(−8s²/d²), M₀ = 8ρP/(πd²), has radiance M/π, so E = ∫ M(s) r² 2s ds/(r² + s²)²
+ * = ρP/(πr²) · F(x), x = 8r²/d², F(x) = x(1 − x eˣE₁(x)) = x eˣE₂(x) (A&S 5.1.14). F → 1 − 2/x far off (the point
+ * source; 0.25 % high at r = 10 d) and E → M₀ in contact. Above x = 50 F is the asymptotic series Σ (−1)^k (k+1)!/x^k
+ * (A&S 5.1.51), which avoids the cancellation in 1 − x eˣE₁; its smallest term there is < 1e-18.
+ */
+export function lambertianSpotIrradiance(reflectedPower: number, d: number, r: number): number {
+  if (!(reflectedPower >= 0 && d >= 0 && r >= 0) || (d === 0 && r === 0)) return NaN;
+  if (r === 0) return (8 * reflectedPower) / (Math.PI * d * d);
+  if (d === 0) return lambertianIrradiance(reflectedPower, r);
+  const x = (8 * r * r) / (d * d);
+  let f: number;
+  if (x > 50) {
+    f = 0;
+    let term = 1;
+    for (let k = 0; k < 60 && Math.abs(term) > 1e-18; k++) {
+      f += term;
+      term *= -(k + 2) / x;
+    }
+  } else {
+    f = x * (1 - x * expE1Scaled(x));
+  }
+  return lambertianIrradiance(reflectedPower, r) * f;
+}
+
+/** Nearest range, m, at which the retinal limits are assessed: the eye accommodates from 10 cm (ICNIRP 2013 p. 275). */
+export const NEAR_POINT = 0.1;
+
+const RETINAL: ReadonlySet<EyeLimitKind> = new Set(["retinalThermal", "retinalPhotochemical"]);
+
 /** Angular subtense, rad, of a diffuse spot of 1/e² diameter d (m) seen from r (m): d₆₃ / r with d₆₃ = d/√2. */
 export function diffuseSpotSubtense(d: number, r: number): number {
   return d >= 0 && r > 0 ? d / Math.SQRT2 / r : NaN;
@@ -189,27 +222,42 @@ export interface DiffuseLimitExposure {
   readonly kind: EyeLimitKind;
   /** Largest irradiance within this limit, W/m². */
   readonly eMax: number;
+  /** Irradiance this limit compares, W/m²: at the viewer, or at `NEAR_POINT` for a retinal limit viewed closer. */
+  readonly irradiance: number;
   /** Irradiance / eMax: above 1 the reflection exceeds the limit. */
   readonly ratio: number;
 }
 
-/** Each eye limit for viewing a Lambertian spot (reflected power ρP in W, 1/e² diameter d in m) from r (m), exposures up to t. */
+/**
+ * Each eye limit for viewing a Lambertian spot (reflected power ρP in W, 1/e² diameter d in m) from r (m), exposures up
+ * to t. The corneal and anterior-segment limits take the spot's on-axis irradiance at r (`lambertianSpotIrradiance`).
+ * The retinal limits take ρP/(πr²) and α at r_ret = max(r, `NEAR_POINT`): nearer, the eye can't focus the spot, so its
+ * retinal image is no sharper than from 10 cm. ρP/(πr²) keeps irradiance / limit monotone in r (with the spot's E and
+ * C_E ∝ α² it would fall again close up) and errs high by ≈ d²/(4r²), 1 % for a 20 mm spot at 10 cm.
+ * Returns `irradiance` at r, the retinal `alpha` at r_ret, and r_ret.
+ */
 export function diffuseExposure(lambda: number, reflectedPower: number, d: number, r: number, t: number) {
-  const alpha = diffuseSpotSubtense(d, r);
-  const irradiance = lambertianIrradiance(reflectedPower, r);
+  const retinalRange = Math.max(r, NEAR_POINT);
+  const alpha = diffuseSpotSubtense(d, retinalRange);
+  const irradiance = lambertianSpotIrradiance(reflectedPower, d, r);
+  const retinalIrradiance = lambertianIrradiance(reflectedPower, retinalRange);
   const limits = eyeLimits(lambda, alpha, "open").map((limit): DiffuseLimitExposure => {
     const eMax = limitMaxIrradiance(limit, t);
-    return { kind: limit.kind, eMax, ratio: irradiance / eMax };
+    const e = RETINAL.has(limit.kind) ? retinalIrradiance : irradiance;
+    return { kind: limit.kind, eMax, irradiance: e, ratio: e / eMax };
   });
-  return { alpha, irradiance, limits };
+  return { alpha, irradiance, retinalRange, limits };
 }
 
 /**
  * Range, m, beyond which viewing the Lambertian spot stays within every eye limit (the diffuse NOHD); 0 if it never
- * exceeds one. Without α the per-limit range is √(ρP/(πE_max)). The retinal thermal limit grows with α ∝ 1/r: as α
- * (with T₂(α)) up to α_max, more slowly than the irradiance's r⁻², and as α² beyond, like it. So irradiance / limit
- * doesn't rise with r, and bisection in log r (relative 1e-12, ≤ 200 steps) finds the crossing below the point-source
- * range; if the ratio is ≤ 1 even at 10⁻¹² of that range, it never exceeds the limit.
+ * exceeds one. Without α the per-limit range is √(ρP/(πE_max)) for a point source. The spot's irradiance falls
+ * monotonically from M₀ = 8ρP/(πd²) and stays below ρP/(πr²), so a corneal limit is never exceeded if M₀ ≤ E_max and
+ * otherwise crosses below the point range (bisection in r, relative 1e-12, ≤ 200 steps). A retinal limit is assessed
+ * from `NEAR_POINT`, so a crossing nearer than that is none. The retinal thermal limit grows with α ∝ 1/r: as α (with
+ * T₂(α)) up to α_max, more slowly than the irradiance's r⁻², and as α² beyond, like it. So irradiance / limit doesn't
+ * rise with r, and bisection in log r finds the crossing below the point-source range; if the ratio is ≤ 1 even at 10⁻¹²
+ * of that range (that is, at 10 cm), it never exceeds the limit.
  */
 export function diffuseHazardDistance(lambda: number, reflectedPower: number, d: number, t: number): HazardDistance {
   if (!(reflectedPower >= 0 && d >= 0 && t >= T_MIN && t <= T_MAX)) return summarize([]);
@@ -221,7 +269,21 @@ export function diffuseHazardDistance(lambda: number, reflectedPower: number, d:
       if (reflectedPower === 0) return { kind, distance: 0 };
       // At the point-source range the spot subtends less or has a limit at least as high, so the ratio is ≤ 1 there.
       const pointLimit = eyeLimits(lambda).find((l) => l.kind === kind)!;
-      const rPoint = Math.sqrt(reflectedPower / (Math.PI * limitMaxIrradiance(pointLimit, t)));
+      const eMax = limitMaxIrradiance(pointLimit, t);
+      const rPoint = Math.sqrt(reflectedPower / (Math.PI * eMax));
+      if (!RETINAL.has(kind)) {
+        if (d === 0) return { kind, distance: rPoint };
+        if (lambertianSpotIrradiance(reflectedPower, d, 0) <= eMax) return { kind, distance: 0 };
+        let a = 0;
+        let b = rPoint;
+        for (let i = 0; i < 200 && b - a > 1e-12 * b; i++) {
+          const mid = (a + b) / 2;
+          if (lambertianSpotIrradiance(reflectedPower, d, mid) > eMax) a = mid;
+          else b = mid;
+        }
+        return { kind, distance: b };
+      }
+      if (!(rPoint > NEAR_POINT)) return { kind, distance: 0 };
       if (!(diffuseSpotSubtense(d, rPoint) > ALPHA_MIN) || kind !== "retinalThermal") return { kind, distance: rPoint };
       let lo = rPoint * 1e-12;
       let hi = rPoint;
