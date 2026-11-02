@@ -22,11 +22,17 @@
  * t is held to H(t) over the aperture at t. In units of beam power, G(t) = H(t)·(πD²/4)·v/L is the largest power for
  * one pass delivered within t, and the rules of `trainLimit` apply to it.
  *
+ * Actual exposure (ICNIRP 2013 Table 5 note c below 0.35 s on the cornea; Table 7 note b, which the anterior-segment
+ * limit carries, at every duration): a beam with a 1/e diameter d/√2 under 1 mm is held to its actual radiant exposure,
+ * the peak on the line the axis sweeps. There the irradiance is (8P/(πd²))·exp(−8v²t²/d²), a pulse of duration
+ * (FWHM) d√(ln 2/2)/v and radiant exposure H₁ = P√(8/π)/(d v), so G(t) = H(t)·d v √(π/8) wherever the rule holds at
+ * t, and the averaged form beyond it. Groups of passes within 0.35 s are among rule 2's groups (its joints include
+ * 0.35 s), so a longer group, averaged, needs no cap.
+ *
  * Not modelled: an eye off the centre of the scan line (passes come in unevenly spaced pairs near the turning points,
  * where the beam also slows), sinusoidal (resonant) scans, raster scans (several lines per frame cross the pupil),
  * pulsed lasers (each pass a group of pulses), a moving retinal image (accommodation to infinity: less restrictive),
- * IEC 60825-1's angle-of-acceptance analysis of extended images, and the actual exposure of passes narrower than 1 mm
- * (ICNIRP 2013 Table 5 note c): the passes are averaged over the aperture, while `stationaryMaxPower` applies the note.
+ * and IEC 60825-1's angle-of-acceptance analysis of extended images.
  */
 
 import { normalCdf } from "../math";
@@ -152,7 +158,9 @@ export function angularScan(theta: number, f: number, r: number, bidirectional: 
 export interface ScannedLimit extends TrainLimit {
   /** Averaging aperture at the pass duration, m. */
   readonly aperture: number;
-  /** Pass duration W/v, s. */
+  /** The pass is compared by the beam's actual (peak) exposure, not its average over the aperture. */
+  readonly actual: boolean;
+  /** Pass duration, s: W/v, or the peak's d√(ln 2/2)/v where `actual` (0 for d = 0). */
   readonly passDuration: number;
   /** Energy through that aperture per pass, per watt of beam power: L/v, J/W. */
   readonly passEnergy: number;
@@ -175,7 +183,8 @@ export interface ScannedLimits {
 /**
  * Every eye limit at λ (m) for a CW beam of 1/e² diameter d (m) at the eye, scanned as `scan`, from a source subtending
  * α (rad; default a point source): the pass each limit sees, the largest beam power under each rule, and the one
- * that binds. Invalid (NaN) for d < 0, a speed or rate ≤ 0, or an exposure shorter than a pass or over 30 ks.
+ * that binds. Invalid (NaN) for d < 0, a speed or rate ≤ 0, or an exposure shorter than a pass or over 30 ks. A point
+ * beam (d = 0) under the actual-exposure rule has an unbounded exposure: that limit's power is 0.
  */
 export function scannedBeamLimits(lambda: number, d: number, scan: Scan, alpha = 0): ScannedLimits {
   const { speed: v, rate: f, sweep, exposure: T } = scan;
@@ -195,6 +204,9 @@ export function scannedBeamLimits(lambda: number, d: number, scan: Scan, alpha =
     // The pass duration sets the aperture and the aperture the pass duration: iterate (the aperture grows as t^0.375).
     // Apertures are looked up within 1 ns – 30 ks (the photochemical limit's table starts at 1 ns).
     const apertureAt = (t: number) => limitingAperture(limit, Math.min(Math.max(t, T_MIN), T_MAX));
+    // The rule's piece starts at 0 (`pulseLimits` extends the first aperture below 1 ns).
+    const rule = limit.apertures.find((ap) => ap.actualBelow !== undefined && d / Math.SQRT2 < ap.actualBelow);
+    const actualAt = (t: number) => rule !== undefined && t >= rule.t0 && (t < rule.t1 || rule.t1 === T_MAX);
     let D = apertureAt(T_MIN);
     let tau = widthAt(D) / v;
     for (let i = 0; i < 100; i++) {
@@ -203,17 +215,24 @@ export function scannedBeamLimits(lambda: number, d: number, scan: Scan, alpha =
       D = next;
       tau = widthAt(D) / v;
     }
+    const tauPeak = (d * Math.sqrt(Math.LN2 / 2)) / v;
+    const actual = actualAt(tauPeak);
+    if (actual) D = apertureAt(tauPeak);
     if (sweep < apertureAt(T) + d) return { ...invalid, status: "noClearance" };
-    const train = { duration: tau, prf: f, exposure: T };
+    // A point beam's pass has no duration: 1 ns stands in for it, inside the rule, so its G is 0.
+    const train = { duration: actual ? (d > 0 ? tauPeak : T_MIN) : tau, prf: f, exposure: T };
     const passes = pulseCount(train);
     if (Number.isNaN(passes)) return invalid;
     const G = (t: number) => {
       const H = exposureLimit(limit, t);
+      if (Number.isNaN(H)) return Infinity;
+      if (actualAt(t)) return H * d * v * Math.sqrt(Math.PI / 8);
       const Dt = limitingAperture(limit, t);
-      return Number.isNaN(H) ? Infinity : (H * (Math.PI * Dt * Dt) / 4) * (v / lengthAt(Dt));
+      return (H * (Math.PI * Dt * Dt) / 4) * (v / lengthAt(Dt));
     };
     const rules = trainLimit(lambda, limit, train, G, alpha);
-    limits.push({ ...rules, aperture: D, passDuration: tau, passEnergy: lengthAt(D) / v, passes });
+    const passDuration = actual ? tauPeak : tau;
+    limits.push({ ...rules, aperture: D, actual, passDuration, passEnergy: lengthAt(D) / v, passes });
   }
   if (limits.length === 0) return invalid;
   const worst = limits.reduce((a, b) => (b.qMax < a.qMax ? b : a));

@@ -5,12 +5,12 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 178, 2026-11-01)
+## Status (session 181, 2026-11-02)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
   textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) and 5w-13 (materials) and 5w-14 (spectroscopy) and 5w-15 (thin-film + polarization) done (sessions 163–177): 5w is complete; KRS-5
-  Sellmeier done (session 178). Phase 6 (open findings, accuracy first) is next, from 6a; the Gemini hero comes after it. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a done (sessions 179–181), 6b next; the Gemini hero comes after it. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -252,7 +252,8 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 **Laser safety** (optional)
 - A scanned-lidar mode on `lidar-safety`.
 - Re-check the classes when IEC 60825-1 Ed. 4 is published (only a BSI draft in 2026).
-- Session 180: ICNIRP Table 5 note c and Table 7 note b apply in the shared limits (6a-b); scanned passes are 6a-c. Outside
+- Sessions 180–181: ICNIRP Table 5 note c and Table 7 note b apply in the shared limits, scanned passes and the anterior
+  segment (IR; visible only for α > α_min). Outside
   400–1400 nm the pages assume 10 s with a note (ICNIRP p. 285: the longest exposure expected). Unverified: the ANSI
   differences quoted from Schulmeister 2017 on `ansi-iec-comparison`; ICAO Doc 9815 levels and EN 207 test conditions (from memory).
 
@@ -308,9 +309,7 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - [x] 6a-a laser safety (session 179, `phase-6/6a-laser-safety`, PR #217): diffuse near zone exact for the Gaussian spot, retinal limits from
   the 10 cm near point; note c threshold on d₆₃; TRT attribution. See Done.
 - [x] 6a-b laser safety (session 180, `phase-6/6a-b-note-c`): Table 5 note c and Table 7 note b in the shared limits. See Done.
-- [ ] 6a-c laser safety: scanned-beam passes under note c (actual-exposure pass H = P√(8/π)/(d v), FWHM d√(ln2/2)/v; passes
-  are still averaged while `stationaryMaxPower` uses the peak); does Table 7 note b reach `anteriorSegment` via Table 5 note d
-  (1300 nm, 0.5 mm, 10 s: 188 mW averaged vs 1.92 mW, retinal 208 mW)?; the skin A11 aperture is unverified.
+- [x] 6a-c laser safety (session 181, `phase-6/6a-c-scanned`, PR #219): scanned passes at the peak; anterior segment with note b. See Done.
 - [ ] 6b lasers: `optical-parametric-oscillator` threshold with Boyd–Kleinman h(B, ξ) (L_eff = min(L, l_a) may put P_th ≈ 10× high);
   `supercontinuum` DW with the ejected-soliton power and the N > 16 threshold (Dudley 2006); `thin-disk-laser` κ at the default
   10 at.% (Beil 2010: 5.7 at 12 at.%); `injection-locking` stable band at weak injection (Henry–Olsson–Dutta 1985).
@@ -349,6 +348,10 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 6a-c laser safety (session 181, `phase-6/6a-c-scanned`, PR #219): scanned passes under note c/b at the peak, τ = d√(ln2/2)/v,
+  H₁ = P√(8/π)/(d v) (1550 nm 0.5 mm 10 m/s 0.25 s: 1.2533 W, was ≈ 3.1 W averaged). `anteriorSegment` carries Table 7 note b
+  (user: IR always, visible only for α > α_min per note d's "large retinal spot sizes"): 1300 nm 0.5 mm 10 s 188 → 1.92 mW;
+  1064 nm 10 s binds below d ≈ 0.5 mm. Skin 11 mm above 100 µm confirmed (Table 8). scanning-mpe beam floored at 10 µm.
 - 6a-b laser safety (session 180, `phase-6/6a-b-note-c`): ICNIRP Table 5 note c (1/e < 1 mm, corneal pieces to 0.35 s: the peak
   8P/(πd²)) and Table 7 note b (skin, 1/e < 1 mm: the peak, ×98 at 0.5 mm) via `AperturePiece.actualBelow` and
   `comparedIrradiance`; exposures up to t keep it at 0.35⁻, so OD is monotone in t; pulses/groups ≥ 0.35 s capped at

@@ -1,23 +1,25 @@
-# Handover — 2026-11-02 (session 180 → session 181)
+# Handover — 2026-11-02 (session 181 → session 182)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 180 did 6a-b laser safety on `phase-6/6a-b-note-c`: ICNIRP Table 5 note c and Table 7 note b in the shared limits.
-PR #217 (6a-a) is merged. Next: 6a-c (scanned passes, anterior-segment note b), then 6b–6i; the hero last.
+Session 181 did 6a-c laser safety on `phase-6/6a-c-scanned` (PR #219): scanned passes at the beam's peak under note c/b,
+and the anterior-segment limit with Table 7 note b. Phase 6a is done. Next: 6b lasers (OPO threshold, supercontinuum DW, …).
 
 ## State
-- `AperturePiece.actualBelow` (1 mm, `ACTUAL_EXPOSURE_BELOW`) marks the corneal pieces to 0.35 s and the 3.5 mm skin piece;
-  `comparedIrradiance`/`limitIrradiance` give the peak 8P/(πd²) when d/√2 is under it, else the aperture average.
-  `averagedOnly` strips it (classes, the `mpe` page's fills-aperture power). d = 0 is now a point beam: P_max = 0.
-- `limitMaxEnergy` caps a pulse/group ≥ 0.35 s at t·`limitMaxPower` when the rule is active (reviewer B1: ×6–105 high);
-  `requiredOpticalDensity` lost its `actualExposure` option: every page gets the rule from the limits.
+- `ScannedLimit.actual`: a pass under the 1 mm rule lasts d√(ln2/2)/v and gives G(t) = H(t)·d v √(π/8) wherever the rule holds
+  at t (`rule.t1` 0.35 s on the cornea, T_MAX on the anterior segment); the averaged L/v form beyond. d = 0 → pMax 0.
+- `eyeLimits`: `anteriorSegment` has a 3.5 mm aperture with `actualBelow` (note b) and exists below 700 nm only for α > α_min
+  (user's choice, note d "for large retinal spot sizes"). Classes still drop it (`laser-classes.ts`).
+- Tests that need "all of the beam inside" in the near IR now use d = 1.5 mm (1/e 1.06 mm), not d = 0.
 
 ## Next actions
-1. `/ship`; merge on the user's yes. After a release (on request): `laser-safety/multiple-wavelength` 1550 nm share 0.637 (was 0.275).
-2. 6a-c (see ROADMAP). The reviewer reads Table 5 note d as carrying Table 7 note b to `anteriorSegment` (1250–1400 nm);
-   check the ICNIRP text (p. 284–285) before changing it.
+1. `/ship`; merge on the user's yes. No default value changes in 6a-c (visible pages just lose the anterior row). After a release
+   (on request): `node scripts/post-merge-check.mjs <sha> laser-safety/multiple-wavelength=0.637` (6a-b's 1550 nm share).
+2. 6b lasers (see ROADMAP): adversarial `physics-reviewer` pass against primary literature first.
 3. KRS-5 by hand: `materials/transparency-range?material=krs5` at 10 µm: n 2.3707, loss 28.4 %.
 
 ## Non-obvious facts
+- **Session 181:** ICNIRP 2013 PDF text: `curl -A "Mozilla/5.0 …"` then `pdftotext -layout`; Table 5 notes at ≈ line 910, Table 7
+  at ≈ 990, Table 8 at ≈ 1200. Note d's IR sentence is unconditional, the visible one conditional. Old test comments' hand values can be mis-rounded (1.264 vs 1.2622 mm): recompute.
 - **Session 180:** note c applies to "exposures up to t" at piece ends x ≤ 0.35 s even when t ≥ 0.35 s; applying it only for
   t < 0.35 s (6a-a's OD) makes OD fall as t grows past 0.35 s. The safe diameter has three branches (peak below √2 mm 1/e²,
   edge = √2 mm, averaged above); 6334 inversions passed. PDF: icnirp.org/cms/upload/publications/ICNIRPLaser180gdl_2013.pdf (browser UA).
@@ -55,8 +57,6 @@ PR #217 (6a-a) is merged. Next: 6a-c (scanned passes, anterior-segment note b), 
   reviewer's fix formula can be wrong while the finding is right. New warnings can fire at defaults: check each.
 - **Session 170:** `SimpleChart` ignores layout `shapes`/`annotations` (use a `mode: "markers"` trace). Check EOLs with
   `git ls-files --eol <f>`, not grep for CR. Implementers widening chart spans can blow up point counts: bound them.
-- **Sessions 167–169:** implementers' page text needs a physics read. Reviewers' "(from memory)" attributions need checking
-  (crossref `/works/<doi>`). devctl queues gated commands (eslint, tests) under other projects' load, up to ≈ 20 min.
 - **Sessions 163–173 (5w, 141 pages, 13 bugs):** useful reviewer catches are defaults that hide the page's effect,
   stated-but-false conditions, results that ignore an input, fixed chart ranges that miss the input, and formulas past
   their limit. Brief: verdict + BUG/MINOR/UNVERIFIED, file:line, hand calcs, "(from memory)", probe prefixes, don't edit.

@@ -23,6 +23,8 @@ const A7 = Math.PI * 3.5e-3 * 3.5e-3; // m², 7 mm aperture
 const A1 = Math.PI * 0.5e-3 * 0.5e-3; // m², 1 mm aperture
 const A35 = Math.PI * 1.75e-3 * 1.75e-3; // m², 3.5 mm aperture
 const single = (tau: number): PulseTrain => ({ duration: tau, prf: 0, exposure: tau });
+/** 1/e² diameter, m: all of the beam inside 7 mm, and its 1/e diameter (1.06 mm) above Table 7 note b's 1 mm. */
+const WIDE = 1.5e-3;
 /** The train's limit with all of the beam inside each aperture and no Table 5 note c (the tabulated energies). */
 const averagedTrain = (lambda: number, train: PulseTrain) => {
   const limits = pulseLimits(lambda).map((l) => {
@@ -54,19 +56,20 @@ test("T_i and the pulse count", () => {
 });
 
 test("Single pulse: Table 5's energies through 7 mm", () => {
-  // 1050–1400 nm, 10 ps – 13 µs: 20 C_C mJ/m², 7.7×10⁻⁷ C_C J; C_C = 1 at 1064 nm.
-  const ns = pulseTrainLimits(nm(1064), 0, single(1e-8));
+  // 1050–1400 nm, 10 ps – 13 µs: 20 C_C mJ/m², 7.7×10⁻⁷ C_C J; C_C = 1 at 1064 nm. In the near IR the beam is
+  // 1.5 mm: all of it inside 7 mm (1 − e⁻⁴³·⁶), and 1/e 1.06 mm, so the anterior segment averages (Table 7 note b).
+  const ns = pulseTrainLimits(nm(1064), WIDE, single(1e-8));
   assertRel(ns.qMax, 2e-2 * A7, 1e-12, "1064 nm, 10 ns");
   assertRel(ns.qMax, 7.7e-7, 0.01, "1064 nm vs Table 5");
   assert.equal(ns.rule, 1);
   // 100 fs – 10 ps: 1.0 C_C C_E mJ/m², 3.8×10⁻⁸ J; 700–1050 nm without C_A (800 nm: 2.0 C_A mJ/m² from 10 ps).
-  assertRel(pulseTrainLimits(nm(1064), 0, single(1e-12)).qMax, 1e-3 * A7, 1e-12, "1064 nm, 1 ps");
-  assertRel(pulseTrainLimits(nm(800), 0, single(1e-13)).qMax, 1e-3 * A7, 1e-12, "800 nm, 100 fs");
-  assertRel(pulseTrainLimits(nm(800), 0, single(1e-11)).qMax, 2e-3 * Math.pow(10, 0.2) * A7, 1e-12, "800 nm, 10 ps");
+  assertRel(pulseTrainLimits(nm(1064), WIDE, single(1e-12)).qMax, 1e-3 * A7, 1e-12, "1064 nm, 1 ps");
+  assertRel(pulseTrainLimits(nm(800), WIDE, single(1e-13)).qMax, 1e-3 * A7, 1e-12, "800 nm, 100 fs");
+  assertRel(pulseTrainLimits(nm(800), WIDE, single(1e-11)).qMax, 2e-3 * Math.pow(10, 0.2) * A7, 1e-12, "800 nm, 10 ps");
   assertRel(pulseTrainLimits(nm(1300), 0, single(1e-12)).limits[0].singlePulse, 1e-3 * (8 + Math.pow(10, 2)) * A7, 1e-12, "1300 nm, 1 ps");
   // Shorter than tabulated, the irradiance is held: 10 fs gets a tenth of 100 fs; 355 nm at 100 ps a tenth of the
   // 1 ns value 5.6×10³·(10⁻⁹)^0.25 = 31.5 J/m² over 1 mm.
-  assertRel(pulseTrainLimits(nm(800), 0, single(1e-14)).qMax, 1e-4 * A7, 1e-12, "800 nm, 10 fs");
+  assertRel(pulseTrainLimits(nm(800), WIDE, single(1e-14)).qMax, 1e-4 * A7, 1e-12, "800 nm, 10 fs");
   assertRel(averagedTrain(nm(355), single(1e-10)).qMax, 0.1 * 5.6e3 * Math.pow(1e-9, 0.25) * A1, 1e-12, "355 nm, 100 ps");
   // 1550 nm below 1 ms: 10⁴ J/m² (1500–1800 nm) over 1 mm, so 7.85 mJ at 1 ns and 0.785 mJ at 100 ps.
   assertRel(averagedTrain(nm(1550), single(1e-9)).qMax, 1e4 * A1, 1e-12, "1550 nm, 1 ns");
@@ -186,8 +189,12 @@ test("Safe diameter: the inverse in d", () => {
   const q = (1e-2 * A7) / 1e-3;
   assertRel(pulseTrainSafeDiameter(nm(1064), 1e-3, train), 7e-3 * Math.sqrt(2 / -Math.log1p(-q)), 1e-9, "1064 nm");
   assertRel(pulseTrainLimits(nm(1064), pulseTrainSafeDiameter(nm(1064), 1e-3, train), train).qMax, 1e-3, 1e-9, "at d");
-  // Already within with all of it inside: 0.
-  assert.equal(pulseTrainSafeDiameter(nm(1064), 1e-7, train), 0);
+  // 0.1 µJ: the anterior segment (Table 7 note b) holds the peak 8Q/(πd²) to H(T_N)/N = 1.1×10⁵·(9.999 s)^0.25/10⁴
+  // = 19.56 J/m² per pulse, so d = √(8Q/(π·19.56 J/m²)) = 0.1141 mm. A point beam is never within it.
+  const h = (1.1e5 * Math.pow(1e-8 + 9.999, 0.25)) / 1e4;
+  assertRel(pulseTrainSafeDiameter(nm(1064), 1e-7, train), Math.sqrt((8 * 1e-7) / (Math.PI * h)), 1e-9, "1064 nm, 0.1 µJ");
+  // Already within with all of it inside: 0 (532 nm, a point source: no anterior-segment limit; retina 38.5 nJ, C_P = 0.5).
+  assert.equal(pulseTrainSafeDiameter(nm(532), 1e-8, train), 0);
   assert.ok(Number.isNaN(pulseTrainSafeDiameter(nm(1064), -1, train)));
 });
 

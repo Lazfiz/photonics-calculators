@@ -18,7 +18,7 @@ const selectClass = "mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3
 export default function ScanningMPEPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 532, { min: 180, max: 1000000 }); // nm
   const [powerRaw, setPower] = useURLState("power", 5, { min: 0 }); // mW
-  const [beamDiamRaw, setBeamDiam] = useURLState("beamDiam", 1, { min: 0 }); // mm, 1/e² at the scanner
+  const [beamDiamRaw, setBeamDiam] = useURLState("beamDiam", 1, { min: 0.01 }); // mm, 1/e² at the scanner
   const [divergenceRaw, setDivergence] = useURLState("divergence", 1, { min: 0 }); // mrad, 1/e² full angle
   const [distanceRaw, setDistance] = useURLState("workingDistance", 100, { min: 0.1 }); // cm from the scan's pivot
   const [scanAngleRaw, setScanAngle] = useURLState("scanAngle", 30, { min: 0.01, max: 360 }); // °, full angle
@@ -30,7 +30,7 @@ export default function ScanningMPEPage() {
   // URL values aren't range-checked: clamp them here. SI inside; physics in src/physics/laser-safety/scanned-beam.ts.
   const lambda = wavelength * 1e-9;
   const P = Math.max(powerRaw, 0) * 1e-3;
-  const d0 = Math.max(beamDiamRaw, 0) * 1e-3;
+  const d0 = Math.max(beamDiamRaw, 0.01) * 1e-3;
   const phi = Math.max(divergenceRaw, 0) * 1e-3;
   const r = Math.max(distanceRaw, 0.1) * 1e-2;
   const theta = (Math.min(Math.max(scanAngleRaw, 0.01), 360) * Math.PI) / 180;
@@ -75,7 +75,7 @@ export default function ScanningMPEPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={180} max={1000000} step="any" />
         <ValidatedNumberInput label="Beam power (mW)" value={powerRaw} onChange={setPower} min={0} step="any" />
-        <ValidatedNumberInput label="Beam diameter at the scanner, 1/e² (mm)" value={beamDiamRaw} onChange={setBeamDiam} min={0} step="any" />
+        <ValidatedNumberInput label="Beam diameter at the scanner, 1/e² (mm)" value={beamDiamRaw} onChange={setBeamDiam} min={0.01} step="any" />
         <ValidatedNumberInput label="Divergence, 1/e² full angle (mrad)" value={divergenceRaw} onChange={setDivergence} min={0} step="any" />
         <ValidatedNumberInput label="Eye distance from the scanner (cm)" value={distanceRaw} onChange={setDistance} min={0.1} step="any" />
         <ValidatedNumberInput label="Scan angle, full (°)" value={scanAngleRaw} onChange={setScanAngle} min={0.01} max={360} step="any" />
@@ -121,7 +121,7 @@ export default function ScanningMPEPage() {
               label="Pass over the eye"
               value={fmtTime(binding.passDuration)}
               tone="blue"
-              subtext={`${fmtNum(scan.speed)} m/s across ${fmtNum(binding.aperture * 1e3)} mm, ${binding.passes.toLocaleString("en-US")} passes in ${fmtNum(T)} s; beam ${fmtNum(d * 1e3)} mm`}
+              subtext={`${fmtNum(scan.speed)} m/s across ${binding.actual ? "the beam's peak" : `${fmtNum(binding.aperture * 1e3)} mm`}, ${binding.passes.toLocaleString("en-US")} passes in ${fmtNum(T)} s; beam ${fmtNum(d * 1e3)} mm`}
             />
             <ResultCard
               label="Scanning allows"
@@ -163,7 +163,10 @@ export default function ScanningMPEPage() {
           exposure (the average power), (3) for the retinal thermal limit, each pass within C_P times the single-pass
           limit. The pass lasts from half power to half power through the aperture (W/v, about 7 mm/v for a beam narrower
           than the pupil); its energy is all the light that gets through. The cornea&apos;s 1 mm aperture sees a shorter
-          pass than the retina&apos;s 7 mm one. The stationary beam is held to its peak when under 1 mm (ICNIRP Table 5 note c); the passes are still averaged over the aperture, which can understate a narrow scanned beam&apos;s hazard.
+          pass than the retina&apos;s 7 mm one. A beam under 1 mm (1/e diameter) is held to its peak instead: on the
+          cornea below 0.35 s (ICNIRP Table 5 note c) and, in the infrared, on the anterior segment (Table 7 note b with
+          note d). Each pass then lasts d·√(ln 2/2)/v at a point on the line the beam axis sweeps, and delivers
+          P·√(8/π)/(d·v) there.
         </p>
         <p>
           The beam is taken to sweep through the centre of the pupil, with the eye on the centre of the scan line and

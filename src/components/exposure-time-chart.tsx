@@ -51,7 +51,9 @@ export default function ExposureTimeChart({
         ...finiteXY(times, times.map((t) => limitIrradiance(limit, P, d, t))),
         type: "scatter", mode: "lines",
         name: fixed
-          ? `Beam over ${(limit.apertures[0].d * 1e3).toFixed(1)} mm`
+          ? limit.apertures[0].actualBelow !== undefined && d / Math.SQRT2 < limit.apertures[0].actualBelow
+            ? "Beam peak (under 1 mm)"
+            : `Beam over ${(limit.apertures[0].d * 1e3).toFixed(1)} mm`
           : d / Math.SQRT2 < ACTUAL_EXPOSURE_BELOW ? "Beam peak to 0.35 s, then over 1.5 → 3.5 mm" : "Beam over 1 → 3.5 mm",
         line: { color: "#f87171", dash: seen.size === 1 ? "dash" : "dot" },
       });

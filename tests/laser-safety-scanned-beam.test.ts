@@ -139,25 +139,32 @@ test("extended source: C_P = 0.2 binds", () => {
   const thermal = eyeLimits(nm(532), alpha).find((x) => x.kind === "retinalThermal");
   assert.ok(thermal);
   assertRel(l.reduced, (0.2 * exposureLimit(thermal, tau) * A7) / tau, 1e-9, "rule 3");
-  assert.equal(r.rule, 3);
+  assert.equal(l.rule, 3);
+  // A large source adds the anterior-segment limit in the visible (Table 5 note d), which holds a point beam to its
+  // unbounded peak (Table 7 note b): 0.
+  assert.equal(limit(r, "anteriorSegment").qMax, 0);
+  assert.equal(r.limiting, "anteriorSegment");
 });
 
 test("cornea at 1550 nm: the aperture grows with the group", () => {
-  // 1 m/s across 1 mm: τ = 1 ms. 10 passes/s for 10 s: N = 100 over T_N = 9.901 s, where the aperture is
-  // 1.5 T^0.375 mm = 3.544 mm, so each pass puts 3.544 mJ per watt through it. Rule 2, full train:
-  // 10⁴ J/m² · (π/4)·D(T_N)² / (100 · D(T_N)/v) = 0.2783 W. (With the 1 mm pass energy it would be 3.5× too high.)
-  const r = scannedBeamLimits(nm(1550), 0, scan(1, 10, 10));
+  // A 1.5 mm beam (1/e 1.06 mm: averaged, Table 5 note c doesn't apply) at 1 m/s across 1 mm: τ = W/v. 10 passes/s
+  // for 10 s: N = 100 over T_N = 9.9 s + τ, where the aperture is 1.5 T^0.375 mm = 3.544 mm, so each pass puts L/v
+  // per watt through it. Rule 2, full train: 10⁴ J/m² · (π/4)·D(T_N)² / (100 · L(D(T_N))/v) = 0.29 W. (With the 1 mm
+  // pass energy it would be 3× too high.)
+  const d = 1.5e-3;
+  const r = scannedBeamLimits(nm(1550), d, scan(1, 10, 10));
   const l = limit(r, "cornealIr");
-  assertRel(l.passDuration, 1e-3, 1e-12, "τ");
+  assert.equal(l.actual, false);
+  const tau = passWidth(d, 1e-3);
+  assertRel(l.passDuration, tau, 1e-12, "τ");
   assert.equal(l.aperture, 1e-3);
   assert.equal(l.passes, 100);
-  const TN = 1e-3 + 9.9;
+  const TN = tau + 9.9;
   const D = 1.5e-3 * Math.pow(TN, 0.375);
-  assertRel(l.group, (1e4 * (Math.PI / 4) * D * D) / (100 * D), 1e-9, "rule 2");
-  assertRel(l.group, 0.27833, 1e-4, "rule 2 (W)");
+  assertRel(l.group, (1e4 * (Math.PI / 4) * D * D) / (100 * passLength(d, D)), 1e-9, "rule 2");
   assert.equal(r.rule, 2);
-  // Rule 1: 10⁴ J/m² over 1 mm in 1 ms: 7.854 W.
-  assertRel(l.singlePulse, (1e4 * Math.PI * 0.25e-6) / 1e-3, 1e-9, "rule 1");
+  // Rule 1: 10⁴ J/m² over 1 mm, L(1 mm)/v per watt.
+  assertRel(l.singlePulse, (1e4 * Math.PI * 0.25e-6) / passLength(d, 1e-3), 1e-9, "rule 1");
 });
 
 test("scans that don't leave the eye, and invalid input", () => {
@@ -183,13 +190,55 @@ test("a finite beam: pass duration from W, energy from L", () => {
 });
 
 test("a pass slower than 0.35 s at the cornea sets its own aperture", () => {
-  // 2 mm/s across the cornea: the pass lasts D/v while D = 1.5 mm·(D/v)^0.375 (t in s), so
-  // D = (1.5×10⁻³)^1.6 · v^−0.6 m = 1.264 mm and τ = 0.632 s.
+  // 2 mm/s across the cornea: for a beam much narrower than the aperture the pass lasts D/v while
+  // D = 1.5 mm·(D/v)^0.375 (t in s), so D = (1.5×10⁻³)^1.6 · v^−0.6 m = 1.262 mm and τ = 0.631 s. A 1.2 mm beam
+  // (1/e 0.85 mm) is under note c's 1 mm, but its peak pass lasts d√(ln 2/2)/v = 0.353 s, past 0.35 s, so the
+  // passes are averaged: τ = W(d, D)/v with D = 1.5 mm·τ^0.375.
   const v = 2e-3;
   const D = Math.pow(1.5e-3, 1.6) * Math.pow(v, -0.6);
-  const l = limit(scannedBeamLimits(nm(1550), 0, scan(v, 0.1, 30)), "cornealIr");
-  assertRel(l.aperture, D, 1e-9, "aperture");
-  assertRel(l.passDuration, D / v, 1e-9, "τ");
+  assertRel(D, 1.2622e-3, 1e-4, "1.262 mm");
+  const d = 1.2e-3;
+  const l = limit(scannedBeamLimits(nm(1550), d, scan(v, 0.1, 30)), "cornealIr");
+  assert.equal(l.actual, false);
+  assertRel(l.passDuration, passWidth(d, l.aperture) / v, 1e-12, "τ = W/v");
+  assertRel(l.aperture, 1.5e-3 * Math.pow(l.passDuration, 0.375), 1e-9, "D at τ");
+});
+
+test("Table 5 note c: a pass under 1 mm is held to the beam's peak", () => {
+  // ICNIRP 2013 p. 284 note c, p. 288 (1/e diameter). On the line the axis sweeps the irradiance is
+  // (8P/(πd²))·exp(−8v²t²/d²): a pulse of FWHM d√(ln 2/2)/v and H₁ = ∫ = P√(8/π)/(d v). 1550 nm, d = 0.5 mm
+  // (1/e 0.35 mm), 10 m/s, 100 passes/s for 0.25 s: τ = 29.4 µs, N = 25, all within 0.35 s, so the 25 passes add
+  // up to 10⁴ J/m² (Table 5, 1500–1800 nm): P_max = 10⁴·d v/(25√(8/π)) = 1.2533 W (3.1 W averaged over 1 mm).
+  const d = 0.5e-3;
+  const r = scannedBeamLimits(nm(1550), d, scan(10, 100, 0.25));
+  const l = limit(r, "cornealIr");
+  assert.equal(l.actual, true);
+  assertRel(l.passDuration, (d * Math.sqrt(Math.LN2 / 2)) / 10, 1e-12, "τ");
+  assertRel(l.passDuration, 2.9435e-5, 1e-4, "29.4 µs");
+  assert.equal(l.passes, 25);
+  assertRel(l.singlePulse, (1e4 * d * 10) / Math.sqrt(8 / Math.PI), 1e-12, "rule 1");
+  assertRel(r.pMax, (1e4 * d * 10) / (25 * Math.sqrt(8 / Math.PI)), 1e-12, "rule 2");
+  assertRel(r.pMax, 1.2533, 1e-4, "1.2533 W");
+  assert.equal(r.rule, 2);
+  // At d = √2 mm (1/e diameter 1 mm) the passes are averaged again.
+  assert.equal(limit(scannedBeamLimits(nm(1550), Math.SQRT2 * 1e-3, scan(10, 100, 0.25)), "cornealIr").actual, false);
+  // A point beam's peak is unbounded.
+  assert.equal(scannedBeamLimits(nm(1550), 0, scan(10, 100, 0.25)).pMax, 0);
+});
+
+test("Table 7 note b on the anterior segment: a narrow infrared pass at every duration", () => {
+  // 1300 nm, d = 0.5 mm, 10 m/s, 100 passes/s for 10 s: N = 1000 over T_N = 9.99 s + τ, on the 1.1×10⁴·2·C_A t^0.25
+  // piece (C_A = 5, Table 5 note d, Table 7). Rule 2, full train: 1.1×10⁵·T_N^0.25·d v √(π/8)/1000 = 0.6128 W, below
+  // the retinal thermal limit's 2.30 W, which binds without the note.
+  const d = 0.5e-3;
+  const r = scannedBeamLimits(nm(1300), d, scan(10, 100, 10));
+  const l = limit(r, "anteriorSegment");
+  assert.equal(l.actual, true);
+  const TN = (d * Math.sqrt(Math.LN2 / 2)) / 10 + 9.99;
+  assertRel(l.group, (1.1e5 * Math.pow(TN, 0.25) * d * 10 * Math.sqrt(Math.PI / 8)) / 1000, 1e-12, "rule 2");
+  assertRel(r.pMax, 0.6128, 1e-4, "0.6128 W");
+  assert.equal(r.limiting, "anteriorSegment");
+  assert.equal(limit(r, "retinalThermal").actual, false);
 });
 
 test("blue light over 1000 s: the photochemical limit binds", () => {

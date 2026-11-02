@@ -10,10 +10,10 @@
  * wavelengths absorbed mainly in different tissues "have to be considered independently".
  *
  * Each line's share of a limit is P / P_max, with P_max from `limitMaxPower` (the beam within that limit for every
- * exposure up to t, averaged over the limit's aperture). A line's share of a site is its largest share among the limits
+ * exposure up to t, averaged over the limit's aperture, or the beam's peak under the 1 mm rule). A line's share of a site is its largest share among the limits
  * at that site (one line's dual limits, retinal thermal and photochemical, are met separately, not summed). The sites:
  * the retina (retinal thermal and photochemical, 400–1400 nm) and the anterior eye (cornea and lens: the UV limit,
- * 180–400 nm; the anterior-segment limit, 1150–1400 nm; the IR limit, 1400 nm – 1 mm). The beam is within the limits
+ * 180–400 nm; the anterior-segment limit, 700–1400 nm; the IR limit, 1400 nm – 1 mm). The beam is within the limits
  * when each site's sum is at most 1. Adding the UV limit (photochemical below 315 nm) to the thermal IR ones is
  * ICNIRP's practical rule for one tissue with different mechanisms, and errs safe.
  *
