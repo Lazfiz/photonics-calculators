@@ -97,6 +97,10 @@ export const thinFilm: CalculatorEntry[] = [
         url: "https://doi.org/10.1098/rspa.1960.0012",
       },
       {
+        citation: "Bull S. J., Berasetegui E. G. (2006). An overview of the potential of quantitative coating adhesion measurement by scratch testing. Tribol. Int. 39, 99–114. Eq. 1: τ = kHa/√(R² − a²), k = 0.2–1.",
+        url: "https://doi.org/10.1016/j.triboint.2005.04.013",
+      },
+      {
         citation: "Kendall K. (1975). Thin-film peeling — the elastic term. J. Phys. D 8, 1449–1452.",
         url: "https://doi.org/10.1088/0022-3727/8/13/005",
       },
@@ -426,7 +430,7 @@ export const thinFilm: CalculatorEntry[] = [
     modelNote: "Argon global model in a cylinder: Maxwellian electrons, ground-state ionisation, floating walls, h-factors for λᵢ > (Tᵢ/Tₑ)·size (flagged). No deposition chemistry; P is the power absorbed by the plasma.",
     references: [
       {
-        citation: "Lieberman M. A., Lichtenberg A. J. (2005). Principles of Plasma Discharges and Materials Processing, 2nd ed., Table 3.3 and §10.2 (global model). Wiley.",
+        citation: "Lieberman M. A., Lichtenberg A. J. (2005). Principles of Plasma Discharges and Materials Processing, 2nd ed., Table 3.3 (fits for 1 < T_e ≤ 7 V) and §10.2 (global model). Wiley.",
         url: "https://doi.org/10.1002/0471724254",
       },
     ],

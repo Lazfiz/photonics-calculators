@@ -137,7 +137,7 @@ export const detectors: CalculatorEntry[] = [
     description: "Compare CCD, sCMOS, phone CMOS and EMCCD pixels: SNR from photons × QE, saturation and dynamic range.",
     keywords: ["CCD vs CMOS Comparison"],
     tier: "textbook",
-    modelNote: "Poisson signal (photons × QE) and dark charge plus Gaussian read noise; the EMCCD adds the Robbins–Hadwen excess noise of a 604-stage register and divides the read noise by the gain. Its dynamic range uses the gain-register well, so for G ≳ 4.4 (= 800 000/180 000, register well limited) it stays near 20·log₁₀(800 000/89) = 79 dB, while G = 1 gives 66.1 dB. The sensor values are representative; the EMCCD follows the iXon Ultra 897 sheet. Clock-induced charge, fixed-pattern noise, sCMOS read-noise tails and dual-gain readout are left out.",
+    modelNote: "Poisson signal (photons × QE) and dark charge plus Gaussian read noise; the EMCCD adds the Robbins–Hadwen excess noise of the CCD97's 536-stage register and divides the read noise by the gain. Its dynamic range uses the gain-register well, so for G ≳ 4.4 (= 800 000/180 000, register well limited) it stays near 20·log₁₀(800 000/89) = 79 dB, while G = 1 gives 66.1 dB. The sensor values are representative; the EMCCD follows the iXon Ultra 897 sheet. Clock-induced charge, fixed-pattern noise, sCMOS read-noise tails and dual-gain readout are left out.",
     references: [
       {
         citation: "Janesick J. R. (2007). Photon Transfer: DN → λ. SPIE Press. Shot, dark and read noise of a sensor pixel; full well and dynamic range.",
@@ -150,6 +150,10 @@ export const detectors: CalculatorEntry[] = [
       {
         citation: "Andor (Oxford Instruments). iXon Ultra EMCCD specifications. iXon Ultra 897: 180 000 e⁻ pixel well, 800 000 e⁻ gain-register well, 89 e⁻ read noise at 17 MHz without EM gain.",
         url: "https://andor.oxinst.com/downloads/uploads/andor-ixon-ultra-emccd-specifications.pdf",
+      },
+      {
+        citation: "Teledyne e2v. CCD97-00 Back Illuminated 2-Phase IMO Series Electron Multiplying CCD Sensor, data sheet A1A-CCD97BI-2P-IMO v6 (2017), p. 5: 536 gain-register elements.",
+        url: "https://teledyneimaging.com/download/f68f9696-ff81-45c2-80e0-3fc83fac6c67",
       },
     ],
   },
@@ -364,7 +368,7 @@ export const detectors: CalculatorEntry[] = [
     title: "Gain vs Temperature",
     description: "APD gain drift at fixed bias from the breakdown-voltage temperature coefficient, and PMT gain drift.",
     tier: "textbook",
-    modelNote: "APD at fixed bias: Miller's law with n fitted through the entered operating point and a breakdown voltage linear in temperature. The defaults are the Excelitas C30662 InGaAs APD (M = 10 at 4 V below a 50 V breakdown, 0.14 V/°C), which reaches breakdown below −6.6 °C; V_br(T) scales the whole Miller curve (M = 1/[1 − (V/V_br(T))^n]); a bias that tracks γ·ΔT still leaves a residual drift of order (V_br − V)/V_br. The PMT branch applies an entered constant coefficient.",
+    modelNote: "APD at fixed bias: Miller's law with n fitted through the entered operating point and a breakdown voltage linear in temperature. The defaults are the Excelitas C30662 InGaAs APD (M = 10 at 4 V below a 50 V breakdown, 0.14 V/°C), which reaches breakdown below −6.6 °C; V_br(T) scales the whole Miller curve (M = 1/[1 − (V/V_br(T))^n]); a bias that tracks γ·ΔT still leaves a residual drift of order (V_br − V)/V_br. The PMT branch applies an entered constant coefficient; the −0.3 %/°C default is a mid value between about −0.1 %/°C (CuBe dynodes, Photonis 2002) and −0.5 %/°C (nine Cs-Sb stages at −0.06 %/°C each, Burle 1980).",
     references: [
       {
         citation: "Miller S. L. (1955). Avalanche breakdown in germanium. Phys. Rev. 99, 1234–1241. Empirical gain M = 1/[1 − (V/V_br)^n].",
@@ -384,6 +388,14 @@ export const detectors: CalculatorEntry[] = [
       },
       {
         citation: "Hamamatsu Photonics (2006). Photomultiplier Tubes: Basics and Applications, 3rd ed., §13.1.1. The gain's temperature characteristic hardly depends on wavelength or supply voltage; Fig. 13-1 plots photocathode anode-sensitivity coefficients on a −1 to +1.5 %/°C scale.",
+      },
+      {
+        citation: "Photonis (2002). Photomultiplier tubes: principles and applications, p. 28. Gain temperature coefficient about −0.1 %/°C for CuBe dynodes with bialkali and trialkali cathodes.",
+        url: "https://psec.uchicago.edu/library/photomultipliers/Photonis_PMT_basics.pdf",
+      },
+      {
+        citation: "Burle Industries (1980). Photomultiplier Handbook TP-136, p. 48, Fig. 53. Stage gain of Cs-Sb dynodes changes by about −0.06 %/°C.",
+        url: "https://psec.uchicago.edu/links/Photomultiplier_Handbook.pdf",
       },
     ],
   },

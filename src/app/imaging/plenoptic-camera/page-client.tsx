@@ -102,7 +102,7 @@ export default function PlenopticCameraPage() {
             A plenoptic camera (Ng et al. 2005) puts a microlens array where the sensor would be and the sensor one
             microlens focal length f_µ behind it. Each lenslet is one spatial sample, and the N pixels across its
             micro-image sample the main-lens aperture: N × N views of the scene. The defaults are close to Ng&apos;s
-            prototype (125 µm f/4 lenslets, 9 µm pixels), where the paper reports 12 usable pixels across.
+            prototype (125 µm f/4 lenslets, 9 µm pixels), whose micro-images are 12 pixels across (§6.3).
           </p>
           <p>
             The micro-image of the aperture has diameter f_µ/N_w, so the microlens f-number f_µ/p_µ must equal the main
@@ -113,7 +113,7 @@ export default function PlenopticCameraPage() {
           <p>
             Refocusing sums shifted sub-aperture views, each seen through an aperture N times narrower, so a refocused
             image is sharp (blur within one lenslet) over the depth of field of an f/(N·N_w) lens: ±N·N_w·p_µ on the image
-            side, mapped to object distances by the thin-lens equation. Ng&apos;s prototype reached about half this.
+            side, mapped to object distances by the thin-lens equation. Ng&apos;s prototype refocused within the depth of field of f/22 against the ideal f/45, about half this (§6.3).
           </p>
         </div>
       </div>

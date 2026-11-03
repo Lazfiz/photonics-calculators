@@ -246,7 +246,7 @@ export default function AdhesionTestingPage() {
         {method === "scratch" && (
           <p>
             Benjamin–Weaver: a spherical stylus sinks into a fully plastic substrate until the mean contact pressure equals the
-            hardness H, and τ is the shear stress at the leading edge of the contact. It ranks coatings tested with one stylus;
+            hardness H, and τ is the shear stress at the leading edge of the contact, with the prefactor k = 1 (later analyses give 0.2–1, Bull &amp; Berasetegui 2006, so τ is an upper estimate). It ranks coatings tested with one stylus;
             the critical load also depends on friction, film thickness, the stylus wear and the failure mode, so τ is not a work
             of adhesion. Use the substrate hardness from indentation at a similar depth (optical glasses ≈ 5–7 GPa).
           </p>

@@ -12,6 +12,8 @@ import {
   kEx,
   kIz,
   lowPressureRegime,
+  TE_FIT_MAX,
+  TE_FIT_MIN,
 } from "../src/physics/thin-film/plasma-global-model";
 
 function assertRel(actual: number, expected: number, tol: number, label: string) {
@@ -50,6 +52,16 @@ test("global model, R = 15 cm, l = 30 cm, 1 mTorr, 293 K, 800 W", () => {
   assertRel(d.n0, 2.0e17, 0.1, "n₀ vs example");
   assertRel(1.602176634e-19 * d.ionFluxAxial * 0.1, 2.9, 0.1, "J (mA/cm²) vs example");
   assertRel(d.Te, 3.5, 0.1, "Tₑ vs example");
+});
+
+test("rate-constant fit range (Lieberman & Lichtenberg Table 3.3 note a: Gudmundsson, 1 < T_e ≤ 7 V)", () => {
+  assert.equal(TE_FIT_MIN, 1);
+  assert.equal(TE_FIT_MAX, 7);
+  // The page defaults (500 W, 5 mTorr, R 15 cm, l 30 cm, 300 K) solve to T_e ≈ 2.59 eV, inside the fits;
+  // 0.3 mTorr gives 5.54 eV, still inside, so the extrapolation warning needs a smaller or thinner chamber.
+  const Te = argonDischarge(500, 0.15, 0.3, 5e-3 * TORR, 300).Te;
+  assert.ok(Te > TE_FIT_MIN && Te <= TE_FIT_MAX, `T_e ${Te}`);
+  assertRel(Te, 2.59, 2e-3, "T_e at the defaults");
 });
 
 test("limits and guards", () => {

@@ -8,9 +8,11 @@
  *   stress relaxation time d_c/v_s of the feature size d_c. M. Xu, L. V. Wang, Rev. Sci. Instrum. 77, 041101 (2006),
  *   doi:10.1063/1.2195024.
  * - Fluence at depth z in a diffusive background: F(z) ≈ F₀ exp(−μ_eff z), μ_eff = √(3μ_a(μ_a + μ_s′)) (diffusion
- *   theory). The true fluence is k F₀ exp(−μ_eff z) with a build-up factor k ≈ 2–5 at every depth (larger with an
- *   index-mismatched surface); k = 1 is used here, so fluence and p₀ at depth are underestimated by that factor.
- *   L. V. Wang, H.-I. Wu, Biomedical Optics: Principles and Imaging (Wiley, 2007), ch. 5.
+ *   theory; L. V. Wang, H.-I. Wu, Biomedical Optics: Principles and Imaging (Wiley, 2007), ch. 5). Below a broad
+ *   beam the fluence is k F₀ exp(−z/δ), δ = 1/μ_eff, with k = 3 + 5.1R_d − 2 exp(−9.7R_d) ≈ 2.8–6 for a diffuse
+ *   reflectance R_d = 0.1–0.6 at a tissue/air surface, n ≈ 1.37 (S. L. Jacques, Photochem. Photobiol. 67, 23 (1998),
+ *   doi:10.1111/j.1751-1097.1998.tb05161.x, eqs. 11–12, a Monte Carlo fit for depths beyond ≈ δ; it overestimates the
+ *   fluence near the surface). k = 1 is used here, so fluence and p₀ at depth are underestimated by that factor.
  * - Acoustic-resolution photoacoustic microscopy and partial-view tomography: axial R_A = 0.88 v_s/Δf (Δf the
  *   photoacoustic bandwidth), lateral R_L = 0.71 v_s/(NA f₀) (f₀ the centre frequency, NA the acoustic aperture).
  *   Detection is one-way, so there is no factor 2 as in pulse-echo ultrasound. L. V. Wang, S. Hu, Science 335, 1458

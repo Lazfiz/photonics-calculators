@@ -34,8 +34,10 @@ const PRESETS: Record<string, { label: string; range: [number, number]; modes: {
     modes: [
       { name: "H-bonded OH, ≈ 3200", center: 3200, amplitude: 60, halfWidth: 100 },
       { name: "H-bonded OH, ≈ 3400", center: 3400, amplitude: 50, halfWidth: 100 },
-      // Phase-sensitive SFG (Ji, Ostroverkhov, Tian, Shen, Phys. Rev. Lett. 100, 096102 (2008), doi:10.1103/PhysRevLett.100.096102):
-      // Im χ⁽²⁾ of the free OH (pointing out of the water) has the opposite sign to the H-bonded band near 3400 cm⁻¹.
+      // Im χ⁽²⁾ = −AΓ/(Δ² + Γ²): A > 0 gives Im χ⁽²⁾ < 0. Heterodyne-detected SFG puts the free OH (pointing to the vapour)
+      // positive and the whole H-bonded band negative (Nihonyanagi et al., J. Chem. Phys. 143, 124707 (2015),
+      // doi:10.1063/1.4931485). Earlier phase-sensitive data (Ji et al., PRL 100, 096102 (2008)) showed a positive band near
+      // 3200 cm⁻¹, now attributed to phase-reference artefacts and still debated (Tang et al., Chem. Rev. 120, 3633 (2020)).
       // The amplitudes are illustrative.
       { name: "Free OH, ≈ 3700", center: 3700, amplitude: -15, halfWidth: 15 },
     ],
@@ -148,7 +150,9 @@ export default function SumFrequencyGenPage() {
         </table>
         <p className="mt-2 text-xs text-gray-500">
           Assignments from Lambert et al. (2005) and Du et al. (1993). Amplitudes and widths are illustrative: real
-          values come from fitting a measured spectrum with this model. The nearest peak can belong to a neighbouring
+          values come from fitting a measured spectrum with this model. The water preset gives the whole H-bonded band one sign, opposite to
+          the free OH, as heterodyne-detected spectra show (Nihonyanagi et al. 2015); an early positive 3200 cm⁻¹ band is still debated
+          (Tang et al. 2020). The nearest peak can belong to a neighbouring
           mode when lines overlap.
         </p>
       </div>

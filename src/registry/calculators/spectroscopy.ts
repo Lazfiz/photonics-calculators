@@ -473,6 +473,7 @@ export const spectroscopy: CalculatorEntry[] = [
     references: [
       { citation: "Palmer C., Loewen E. (2005). Diffraction Grating Handbook, 6th ed., ch. 2. Newport." },
       { citation: "Kramida A., Ralchenko Yu., Reader J., NIST ASD Team. NIST Atomic Spectra Database (Hg I air wavelengths).", url: "https://doi.org/10.18434/T4W30F" },
+      { citation: "Sansonetti C. J., Salit M. L., Reader J. (1996). Wavelengths of spectral lines in mercury pencil lamps. Appl. Opt. 35, 74–77. Source of the ASD Hg I lines, ±0.1 pm.", url: "https://doi.org/10.1364/AO.35.000074" },
     ],
   },
   {
@@ -597,6 +598,8 @@ export const spectroscopy: CalculatorEntry[] = [
       { citation: "Shen Y. R. (1989). Surface properties probed by second-harmonic and sum-frequency generation. Nature 337, 519–525.", url: "https://doi.org/10.1038/337519a0" },
       { citation: "Lambert A. G., Davies P. B., Neivandt D. J. (2005). Implementing the Theory of Sum Frequency Generation Vibrational Spectroscopy: A Tutorial Review. Appl. Spectrosc. Rev. 40, 103–145. Lineshape model and CH stretch assignments.", url: "https://doi.org/10.1081/ASR-200038326" },
       { citation: "Du Q., Superfine R., Freysz E., Shen Y. R. (1993). Vibrational spectroscopy of water at the vapor/water interface. Phys. Rev. Lett. 70, 2313–2316. OH stretch bands.", url: "https://doi.org/10.1103/PhysRevLett.70.2313" },
+      { citation: "Nihonyanagi S. et al. (2015). Accurate determination of complex χ(2) spectrum of the air/water interface. J. Chem. Phys. 143, 124707. Signs of Im χ(2): free OH positive, H-bonded band negative.", url: "https://doi.org/10.1063/1.4931485" },
+      { citation: "Tang F. et al. (2020). Molecular structure and modeling of water–air and ice–air interfaces monitored by sum-frequency generation. Chem. Rev. 120, 3633–3667. The 3200 cm⁻¹ sign debate.", url: "https://doi.org/10.1021/acs.chemrev.9b00512" },
     ],
   },
   {

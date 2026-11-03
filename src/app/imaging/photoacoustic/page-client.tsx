@@ -133,7 +133,7 @@ export default function PhotoacousticPage() {
           {musp < 10 * muaBg && <p className="text-sm text-yellow-300">Diffusion theory needs μ_s′ ≫ μ_a; here the attenuation is closer to Beer–Lambert e^(−μ_a z).</p>}
           <div className="text-xs text-gray-500 mt-2 space-y-1">
             <p>p₀ = Γ μ_a F, valid when the pulse is shorter than the stress relaxation time d_c/v_s (Xu &amp; Wang, Rev. Sci. Instrum. 77, 041101, 2006). Wang &amp; Hu (2012) give about 800 Pa per mK of heating; over ρC ≈ 4.2 MJ m⁻³ K⁻¹ that is Γ ≈ 0.19.</p>
-            <p>F(z) = F₀ exp(−μ_eff z), μ_eff = √(3μ_a(μ_a + μ_s′)) in the background. Diffusion theory&apos;s fluence is k·F₀·e^(−μ_eff z) with a build-up factor k ≈ 2–5 that applies at every depth (larger with an index-mismatched surface); this page sets k = 1, so the fluence and p₀ at depth are underestimated by that factor.</p>
+            <p>F(z) = F₀ exp(−μ_eff z), μ_eff = √(3μ_a(μ_a + μ_s′)) in the background. Below a broad beam the fluence is k·F₀·e^(−μ_eff z) with a build-up factor k = 3 + 5.1R_d − 2e^(−9.7R_d) ≈ 2.8–6 for a diffuse reflectance R_d = 0.1–0.6 at a tissue/air surface (Jacques 1998, eq. 12, for depths beyond about 1/μ_eff); this page sets k = 1, so the fluence and p₀ at depth are underestimated by that factor.</p>
             <p>R_A = 0.88 v/Δf and R_L = 0.71 v/(NA f₀) for acoustic-resolution PAM and partial-view tomography; detection is one-way, so there is no pulse-echo factor 2 (Wang &amp; Hu, Science 335, 1458, 2012).</p>
             <p>Skin limits: ICNIRP 2013 Table 7 at the pulse width, and 2.0 C_A kW/m² for 10 s or more, for a beam wider than the 3.5 mm averaging aperture. The repetitive-pulse rules are not applied.</p>
           </div>

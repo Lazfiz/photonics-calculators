@@ -16,7 +16,7 @@ const collett: Reference = {
   url: "https://doi.org/10.1117/3.626141",
 };
 const cloude: Reference = {
-  citation: "Cloude S. R. (1986). Group theory and polarisation algebra. Optik 75(1), 26–36: a Mueller matrix is physical when its coherency matrix has no negative eigenvalue.",
+  citation: "Cloude S. R. (1986). Group theory and polarisation algebra. Optik 75, 26–36: a Mueller matrix is physical when its coherency matrix has no negative eigenvalue.",
 };
 const goldsteinJones = goldstein("ch. The Jones Matrix Formalism, pp. 201–231");
 const goldsteinStokes = goldstein("chs. The Polarization Ellipse, pp. 49–58, and Stokes Polarization Parameters, pp. 59–91");
@@ -117,7 +117,7 @@ const ulrich1967: Reference = {
 
 // Optical activity and circular dichroism.
 const nistSrm17e: Reference = {
-  citation: "NIST (2003). Certificate of Analysis, SRM 17e Sucrose (optical rotation): [α] at 589.44 nm and 20 °C, ICUMSA rotatory dispersion equation 546–883 nm.",
+  citation: "NIST (2003). Certificate of Analysis, SRM 17e Sucrose (optical rotation): [α] at 589.44 nm and 20 °C (lot at 99.965 °Z), ICUMSA rotatory dispersion equation 546–883 nm.",
   url: "https://tsapps.nist.gov/srmext/certificates/archives/17e_COA_2003-09-16.pdf",
 };
 const batesBlake1907: Reference = {

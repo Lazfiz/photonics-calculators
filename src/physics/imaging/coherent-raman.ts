@@ -14,8 +14,8 @@
  *
  * SRS detection: one beam is modulated and the other is detected; a Stokes gain (SRG) or a pump loss (SRL) of
  * relative size δ = ΔP/P appears on it. With shot noise of the detected beam alone, the N = ηPτλ/(hc) photoelectrons
- * counted in τ give SNR = δN/√N = δ√N (Y. Ozeki et al., Opt. Express 17, 3651 (2009), doi:10.1364/OE.17.003651:
- * shot-noise-limited sensitivity). Not modelled: laser excess noise, detector noise and the demodulation loss of the
+ * counted in τ give the amplitude SNR δN/√N = δ√N (Y. Ozeki et al., Opt. Express 17, 3651 (2009),
+ * doi:10.1364/OE.17.003651: their Eq. 12 is the energy ratio S²/N = δ²N, the square of this). Not modelled: laser excess noise, detector noise and the demodulation loss of the
  * lock-in, which make real systems worse.
  */
 

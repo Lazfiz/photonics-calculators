@@ -25,7 +25,8 @@
  *   exact Δ_J (D/r₀)^(5/3) from Noll's diagonal covariance, ⟨a_j²⟩ ∝ (n + 1) Γ(n − 5/6)/Γ(n + 23/6) for radial
  *   order n, scaled so that all modes sum to 1.0299 (his Table IV: Δ₃ 0.134, Δ₁₅ 0.0279, Δ₂₁ 0.0208);
  * - fitting error of a deformable mirror with actuator pitch d, κ (d/r₀)^(5/3): κ 0.28 for a continuous facesheet
- *   with Gaussian influence functions, 0.134 for piston-tip-tilt segments and 1.26 for piston-only segments
+ *   with pyramid (bilinear) influence functions (≈ 0.23 for Gaussian ones; Tyson's values in A. Berdeu et al.,
+ *   A&A 674, A112 (2023), Table 1), 0.134 for piston-tip-tilt segments and 1.26 for piston-only segments
  *   (R. H. Hudgin, JOSA 67, 393 (1977); tabulated in R. K. Tyson, Principles of Adaptive Optics, and J. W. Hardy,
  *   Adaptive Optics for Astronomical Telescopes (Oxford, 1998));
  * - Greenwood frequency f_G = 0.427 v/r₀, servo-lag variance (f_G/f_3dB)^(5/3) for a first-order loop with

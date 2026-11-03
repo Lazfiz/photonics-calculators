@@ -13,7 +13,7 @@
  *   R. Wilhelm, B. Gröbler, M. Gluch, H. Heinz, "Confocal Laser Scanning Microscopy: Principles"
  *   (Carl Zeiss, 2003). λ is the emission wavelength (the geometric term) or the mean wavelength.
  * - Two-photon excitation: the axial 1/e radius of the squared illumination intensity is
- *     ω_z = (0.532 λ/√2) / (n − √(n² − NA²))  (fit for NA > 0.7),
+ *     ω_z = (0.532 λ/√2) / (n − √(n² − NA²)),
  *   W. R. Zipfel, R. M. Williams, W. W. Webb, Nat. Biotechnol. 21, 1369 (2003); FWHM = 2√(ln 2) ω_z.
  * - Total depth of field of a widefield microscope with a detector (Inoué & Spring, Video Microscopy, 2nd ed.,
  *   Plenum 1997, ch. 2, doi:10.1007/978-1-4615-5859-0_2):
