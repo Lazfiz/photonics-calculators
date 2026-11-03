@@ -7,13 +7,19 @@ import {
   TRANSIT_FACTOR,
   combinedBandwidth,
   depletionWidth,
+  diffusionBandwidth,
+  diffusionResponse,
+  driftFraction,
   junctionCapacitance,
+  photodiodeBandwidth,
   rcBandwidth,
   rcFilteredNoise,
   transitBandwidth,
 } from "../src/physics/detectors/photodiode-rc";
 import { closedLoopMagnitude, singlePoleClosedLoop, tiaBandwidth, tiaFilteredNoise, tiaButterworthCf } from "../src/physics/detectors/tia";
 import { darkCurrentRatio, intrinsicDensityRatio } from "../src/physics/detectors/dark-current";
+import { abs as cabs } from "../src/physics/complex";
+import { siliconAbsorption } from "../src/physics/materials/silicon-absorption";
 
 const close = (actual: number, expected: number, rel: number, msg = "") =>
   assert.ok(Math.abs(actual - expected) <= rel * Math.abs(expected), `${msg} ${actual} vs ${expected}`);
@@ -74,6 +80,55 @@ test("transit-time factor 0.443 is the root of sin x/x = 1/√2 and the quadratu
     close(combinedBandwidth(1, ratio), lo, 0.04, `ratio ${ratio}`);
   }
   close(combinedBandwidth(1, 1), Math.SQRT1_2, 1e-12);
+});
+
+test("diffusion tail: Si 850 nm (α 534 cm⁻¹), W 10.54 µm, L 35 µm, D 36 cm²/s: drift share 53.7 %, −3 dB at 13.60 MHz", () => {
+  const alpha = 5.34e4, W = 10.54e-6, L = 35e-6, D = 36e-4;
+  // Hand calculation (Gärtner 1959): αW = 0.562836, e^−αW = 0.569591, αL = 1.869;
+  // (1 − 0.569591)/(1 − 0.569591/2.869) = 0.430409/0.801467 = 0.537026.
+  close(driftFraction(alpha, W, L), 0.537026, 1e-5);
+  // Independent finite-difference solution of D·p'' − (1/τ + iω)·p = −α·e^(−αx), p = 0 at the depletion edge and 30 L
+  // below it (200 000 nodes, current from a second-order one-sided p'), normalised to the Gärtner DC current.
+  const fd = [
+    { f: 1e6, re: 0.92999435, im: -0.10239109 },
+    { f: 1e9, re: 0.55731113, im: -0.01918023 },
+  ];
+  for (const { f, re, im } of fd) {
+    const h = diffusionResponse(f, alpha, W, L, D);
+    close(h.re, re, 1e-6, `re at ${f}`);
+    close(h.im, im, 2e-5, `im at ${f}`);
+  }
+  // The same solver gives |H| = 0.7071067 at the returned corner.
+  const f3 = diffusionBandwidth(alpha, W, L, D);
+  close(f3, 13.6023e6, 1e-5);
+  close(cabs(diffusionResponse(f3, alpha, W, L, D)), Math.SQRT1_2, 1e-10);
+  // Limits: DC is 1; at high frequency only the drift plateau is left; no substrate (L = 0) or a short L leaves the
+  // drift share above 1/√2 and no diffusion corner.
+  close(diffusionResponse(0, alpha, W, L, D).re, 1, 1e-15);
+  close(cabs(diffusionResponse(1e15, alpha, W, L, D)), 0.537026, 1e-4);
+  assert.equal(driftFraction(alpha, W, 0), 1);
+  close(driftFraction(alpha, W, 1e-6), 0.937132, 1e-5);
+  assert.equal(diffusionBandwidth(alpha, W, 1e-6, D), Infinity);
+  assert.ok(Number.isNaN(driftFraction(0, W, L)));
+  // A drift share 1e-7 below 1/√2 puts the corner beyond the 16-decade scan: Infinity ("none"), not NaN.
+  let lo = 1e-6, hi = 1e-4;
+  for (let k = 0; k < 200; k++) { const m = (lo + hi) / 2; if (driftFraction(alpha, m, L) < Math.SQRT1_2 - 1e-7) lo = m; else hi = m; }
+  assert.equal(diffusionBandwidth(alpha, lo, L, D), Infinity);
+});
+
+test("photodiode-speed defaults: total −3 dB of drift + diffusion × transit × RC at 1 mm² (13.47 MHz at 50 Ω)", () => {
+  // Page defaults: 850 nm Si (Green 2008 α = 53 399.7 m⁻¹), W = ε₀·11.9/(10 pF/mm²) = 10.5365 µm, L 35 µm, D 36 cm²/s.
+  const alpha = siliconAbsorption(850e-9), W = depletionWidth(1e-5, 11.9), L = 35e-6, D = 36e-4;
+  close(driftFraction(alpha, W, L), 0.536916, 1e-5);
+  close(diffusionBandwidth(alpha, W, L, D), 13.5900e6, 1e-5);
+  // Independent check: a 0.0001-decade forward scan of the same product (session 187 probe, and the reviewer's own
+  // bisection) brackets the first 1/√2 crossing at 13.4745, 6.6333 and 1.3076 MHz for R_L = 50 Ω, 1 kΩ, 10 kΩ.
+  const fTransit = transitBandwidth(8.4e4, W);
+  for (const [R, f3] of [[50, 13.4745e6], [1000, 6.6336e6], [1e4, 1.30760e6]]) {
+    close(photodiodeBandwidth({ alpha, width: W, diffusionLength: L, diffusivity: D, fTransit, fRC: rcBandwidth(R, 10e-12) }), f3, 1e-4, `R ${R}`);
+  }
+  // Without a substrate (L = 0) the product is the exact RC × transit response: 0.6828·f_RC at f_tr = f_RC.
+  close(photodiodeBandwidth({ alpha: 1, width: W, diffusionLength: 0, diffusivity: D, fTransit: 1, fRC: 1 }), 0.682756, 1e-5);
 });
 
 test("RC-filtered Johnson noise 4kTR·f_c·atan(B/f_c) tends to √(kT/C) = 20.35 µV (1 kΩ, 10 pF, 300 K)", () => {
