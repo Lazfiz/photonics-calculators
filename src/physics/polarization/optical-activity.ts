@@ -27,7 +27,8 @@ export const MOLAR_ROTATION_CONV_PER_SI = (180 / Math.PI) * 1e3;
 /** 20 °C in K, the reference temperature of specific rotations. */
 export const T_REF = 293.15;
 
-/** Sucrose [α] at 20 °C, 589.4400 nm, deg·mL·g⁻¹·dm⁻¹ (NIST SRM 17e, Table 1c). */
+/** Sucrose [α] at 20 °C, 589.4400 nm, deg·mL·g⁻¹·dm⁻¹ (NIST SRM 17e, Table 1c; that lot is 99.965 °Z, Table 1b. An ideal
+ * 100 °Z solution reads 40.777° at 546.2271 nm in 200 mm, SRM 17g certificate, ≈ 34.626° at 589.44 nm). */
 export const SUCROSE_SPECIFIC_ROTATION_D = 66.524;
 /** Wavelength of the SRM 17e sodium value, m (in vacuo). */
 export const SUCROSE_LAMBDA_D = 589.44e-9;

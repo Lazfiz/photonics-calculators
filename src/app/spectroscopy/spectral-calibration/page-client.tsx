@@ -15,7 +15,7 @@ const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.i
 const r6 = (x: number) => (Number.isFinite(x) ? Math.round(x * 1e6) / 1e6 : NaN);
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits) : "—");
 
-// Hg I air wavelengths, NIST Atomic Spectra Database.
+// Hg I air wavelengths, ±0.1 pm: NIST Atomic Spectra Database, from Sansonetti, Salit & Reader, Appl. Opt. 35, 74 (1996).
 const HG_LINES = "404.6565, 407.7837, 435.8335, 546.0750, 576.9610, 579.0670";
 const DEGREES = [1, 2, 3] as const;
 const COLORS = ["#f87171", "#fbbf24", "#34d399"];
@@ -180,7 +180,8 @@ export default function SpectralCalibrationPage() {
         </p>
         <p className="text-gray-500">
           References: C. Palmer, E. Loewen, <em>Diffraction Grating Handbook</em>, 6th ed. (Newport, 2005), ch. 2;
-          A. Kramida, Yu. Ralchenko, J. Reader and NIST ASD Team, NIST Atomic Spectra Database (Hg I lines).
+          A. Kramida, Yu. Ralchenko, J. Reader and NIST ASD Team, NIST Atomic Spectra Database (Hg I lines);
+          C. J. Sansonetti, M. L. Salit, J. Reader, Appl. Opt. 35, 74 (1996).
         </p>
       </div>
     </>

@@ -97,6 +97,10 @@ export const thinFilm: CalculatorEntry[] = [
         url: "https://doi.org/10.1098/rspa.1960.0012",
       },
       {
+        citation: "Bull S. J., Berasetegui E. G. (2006). An overview of the potential of quantitative coating adhesion measurement by scratch testing. Tribol. Int. 39, 99–114. Eq. 1: τ = kHa/√(R² − a²), k = 0.2–1.",
+        url: "https://doi.org/10.1016/j.triboint.2005.04.013",
+      },
+      {
         citation: "Kendall K. (1975). Thin-film peeling — the elastic term. J. Phys. D 8, 1449–1452.",
         url: "https://doi.org/10.1088/0022-3727/8/13/005",
       },

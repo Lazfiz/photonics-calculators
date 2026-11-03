@@ -25,7 +25,9 @@ export interface ScratchResult {
 /**
  * Benjamin–Weaver scratch test: a stylus of tip radius R under load L sinks into a substrate of
  * indentation hardness H until the contact pressure equals H, so a = √(L/(πH)), and the shear stress at
- * the edge of the contact is τ = H a / √(R² − a²). NaN unless L ≥ 0, R, H > 0 and a < R.
+ * the edge of the contact is τ = k H a / √(R² − a²) with k = 1 here; later analyses put k between 0.2 and 1
+ * (S. J. Bull, E. G. Berasetegui, Tribol. Int. 39, 99 (2006), doi:10.1016/j.triboint.2005.04.013, eq. 1), so k = 1
+ * is the upper estimate. NaN unless L ≥ 0, R, H > 0 and a < R.
  */
 export function benjaminWeaver(L: number, R: number, H: number): ScratchResult {
   const nan = { contactRadius: NaN, shearStress: NaN };

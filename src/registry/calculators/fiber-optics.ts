@@ -835,7 +835,7 @@ export const fiberOptics: CalculatorEntry[] = [
         citation: "Ulrich R., Rashleigh S. C., Eickhoff W. (1980). Bending-induced birefringence in single-mode fibers. Opt. Lett. 5, 273. B = 0.133 (r/R)².",
         url: "https://doi.org/10.1364/ol.5.000273",
       },
-      { citation: "Goldstein D. H. (2011). Polarized Light, 3rd ed. CRC Press. Mueller matrices of rotated retarders." },
+      { citation: "Goldstein D. H. (2011). Polarized Light, 3rd ed. CRC Press. Mueller matrices of rotated retarders.", url: "https://doi.org/10.1201/b10436" },
     ],
   },
   {
