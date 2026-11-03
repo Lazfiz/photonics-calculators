@@ -99,7 +99,7 @@ export default function GeometricLossPage() {
         <h3 className="text-lg font-semibold">Model</h3>
         <p className="font-mono">Top-hat: L = 20 log₁₀((d_t + θR)/d_r) ≥ 0     Gaussian: η = 1 − exp(−2a²/w(R)²), w(R)² = w₀² + (θR/2)²</p>
         <p>
-          The top-hat form (Kim &amp; Korevaar 2001) spreads the power evenly over a disc that starts at the exit
+          The top-hat form (Sheikh Muhammad et al. 2005, eq. 1) spreads the power evenly over a disc that starts at the exit
           aperture d_t and grows with the full divergence θ; once that disc is no wider than the receiver, nothing is
           lost. A real laser beam is closer to Gaussian. Here the Gaussian leaves the exit aperture with w₀ = max(d_t/2, λ/(πθ/2))
           (an embedded Gaussian, M² ≥ 1) and its 1/e² radius grows as w(R)² = w₀² + (θR/2)², so the far-field half-angle is θ/2.

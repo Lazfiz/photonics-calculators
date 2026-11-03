@@ -260,8 +260,12 @@ export const freeSpaceComms: CalculatorEntry[] = [
     modelNote: "Top-hat d_t + θR footprint (≥ 0 dB) beside the exact capture 1 − exp(−2a²/w²) of a Gaussian beam with half-angle θ/2 leaving the exit aperture (w² = w₀² + (θR/2)², w₀ = max(d_t/2, λ/(πθ/2))), 3.01 dB better for a small receiver once θR ≫ d_t. Perfect pointing, no turbulence.",
     references: [
       {
-        citation: "Kim I. I., Korevaar E. (2001). Availability of free-space optics (FSO) and hybrid FSO/RF systems. Proc. SPIE 4530, 84.",
-        url: "https://doi.org/10.1117/12.449800",
+        citation: "Sheikh Muhammad S., Köhldorfer P., Leitgeb E. (2005). Channel modeling for terrestrial free space optical links. Proc. ICTON 2005, Tu.B3.5, 407–410. Eq. (1): P_geo = 10 log₁₀(d_r/(d_t + lθ))².",
+        url: "https://doi.org/10.1109/ICTON.2005.1505832",
+      },
+      {
+        citation: "Kim I. I. et al. (1998). Wireless optical transmission of fast ethernet, FDDI, ATM, and ESCON protocol data using the TerraLink laser communication system. Opt. Eng. 37(12), 3143. Eq. (1): the area form SA_R/(SA_T + π(θR)²/4), θ full angle.",
+        url: "https://doi.org/10.1117/1.601981",
       },
       {
         citation: "Degnan J. J., Klein B. J. (1974). Optical antenna gain. 2: Receiving antennas. Appl. Opt. 13(10), 2397.",
@@ -463,6 +467,10 @@ export const freeSpaceComms: CalculatorEntry[] = [
     tier: "textbook",
     modelNote: "Empirical γ = a·S^b (dry/wet snow) from TU Graz FSO work; S read as liquid-water-equivalent rate (the source is not explicit). Flake type and density scatter real attenuation by a factor of several.",
     references: [
+      {
+        citation: "Sheikh Muhammad S., Köhldorfer P., Leitgeb E. (2005). Channel modeling for terrestrial free space optical links. Proc. ICTON 2005, Tu.B3.5, 407–410. Eqs. (6)–(8): the snow law, S in mm/h (earliest print found).",
+        url: "https://doi.org/10.1109/ICTON.2005.1505832",
+      },
       {
         citation: "Awan M. S., Leitgeb E., Nebuloni R., Nadeem F., Khan M. S. (2009). Optical wireless ground-link attenuation statistics of fog and snow conditions. Proc. IFIP WOCN 2009, 1–5.",
         url: "https://doi.org/10.1109/WOCN.2009.5010571",

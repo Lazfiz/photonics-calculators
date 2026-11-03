@@ -70,7 +70,8 @@ test("Klein–Degnan transmit efficiency (Appl. Opt. 13, 2134 (1974))", () => {
 });
 
 test("geometric loss, 5 mm exit, 1 mrad, 1 km, 10 cm receiver: top-hat 20.04 dB vs Gaussian 17.03 dB (hand)", () => {
-  // Top-hat: 20·log₁₀((0.005 + 1)/0.1) = 20.0433 dB (Kim & Korevaar 2001).
+  // Top-hat: 20·log₁₀((0.005 + 1)/0.1) = 20.0433 dB (Sheikh Muhammad et al., ICTON 2005, eq. (1)); Kim et al. 1998's
+  // area form gives 20.00 dB.
   close(topHatGeometricLoss(0.005, 1e-3, 1000, 0.1), 20.0433, 1e-4);
   // Gaussian, 0.5 mrad half-angle: w₀ = 0.98676 mm, z_R = 1.9735 m, w(1 km) = 0.500001 m;
   // 1 − exp(−2·0.05²/0.25) = 0.0198013 → 17.0331 dB, 3.01 dB less than the top-hat.
