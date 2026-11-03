@@ -26,7 +26,8 @@
  * 4. Accelerated ageing (Arrhenius, with Peck's humidity term: D. S. Peck, Proc. 24th IRPS, 44 (1986),
  *    doi:10.1109/IRPS.1986.362110):
  *        AF = (RH_test / RH_use)ⁿ · exp[(E_a / k_B)(1/T_use − 1/T_test)]
- *    n = 0 is plain Arrhenius. Peck fitted n and E_a to epoxy-packaged circuits, not to coatings: both are
+ *    n = 0 is plain Arrhenius. Peck fitted n = 2.66 and E_a = 0.79 eV ("nearly equivalent": 2.50/0.81, 3.00/0.77 eV)
+ *    to epoxy-packaged circuits, not to coatings: both are
  *    inputs. Model tier: exact for the model; its validity rests on the single activation energy.
  */
 import { k_B_eV } from "../constants";

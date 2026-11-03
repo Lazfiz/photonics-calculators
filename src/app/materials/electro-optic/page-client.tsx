@@ -238,7 +238,8 @@ export default function ElectroOpticPage() {
           <p>
             r is taken at its reference wavelength (633 nm for LiNbO₃ and KTP) and only n follows the Sellmeier fit, so V_π far from
             it is approximate. LiNbO₃&apos;s r₃₃ and r₁₃ are the clamped (high-frequency) values; below the acoustic resonances
-            the unclamped ones are a few per cent larger.
+            the unclamped ones are a few per cent larger. KTP&apos;s r₃₃ and r₂₃ are the unclamped (low-frequency) values; vendor
+            tables give 35.0 and 13.8 pm/V clamped.
           </p>
         </div>
       </div>

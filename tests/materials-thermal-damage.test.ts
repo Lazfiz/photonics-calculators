@@ -92,6 +92,13 @@ test("GaAs: c_p from Chatillon et al. 1990 (GB3GAAS) and θ_D = 344 K", () => {
   const molar = (T: number) => scaledHeatCapacity(gaas.cRef, gaas.tRef, gaas.thetaD, T) * 144.645e-3;
   assertRel(molar(500), chatillon(500) * (1 - 0.0196), 1e-3, "500 K, 2.0 % low (documented)");
   assertRel(molar(1000), chatillon(1000) * (1 - 0.0947), 1e-3, "1000 K, 9.5 % low (documented)");
+  // Piesbergen, Z. Naturforsch. 18a, 141 (1963), Tab. 3, c_p in cal/(g-atom·K) → × 2 × 4.184 J/(mol GaAs·K):
+  // 100 K 3.448, 200 K 5.112, 273.2 K 5.481, 50 K 1.562.
+  const piesbergen = (cal: number) => cal * 2 * 4.184;
+  assertRel(molar(100), piesbergen(3.448) * 1.024, 2e-3, "100 K, 2.4 % high (documented)");
+  assertRel(molar(200), piesbergen(5.112) * 1.013, 2e-3, "200 K, 1.3 % high (documented)");
+  assertRel(molar(273.2), piesbergen(5.481) * 1.009, 2e-3, "273 K, 0.9 % high (documented)");
+  assertRel(molar(50), piesbergen(1.562) * (1 - 0.24), 3e-3, "50 K, 24 % low (documented)");
 });
 
 test("LiF c_p from NIST-JANAF F-021 and Ge c_p from SGTE GHSERGE (Dinsdale 1991)", () => {

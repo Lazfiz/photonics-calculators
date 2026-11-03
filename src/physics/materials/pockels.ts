@@ -15,7 +15,9 @@
  * - KTP (mm2) in the same geometry, light along x: the z and y polarizations see n_z³ r₃₃ and n_y³ r₂₃, so the
  *   retardation uses n_z³ r₃₃ − n_y³ r₂₃ (D. Xie & O. Pfister, arXiv:physics/0507123 (2005), eqs. 3–4). r₃₃ = 36.3 and
  *   r₂₃ = 15.7 pm/V at 633 nm are L. K. Cheng et al.'s values (J. Cryst. Growth 137, 107 (1994),
- *   doi:10.1016/0022-0248(94)91256-4) as quoted there; n_y, n_z from Kato & Takaoka 2002 (`biaxial-data.ts`).
+ *   doi:10.1016/0022-0248(94)91256-4) as quoted there; n_y, n_z from Kato & Takaoka 2002 (`biaxial-data.ts`). They are
+ *   the low-frequency (unclamped, r^T) values: vendor tables (Laser Components KTP sheet) list them beside high-frequency
+ *   r₃₃ 35.0, r₂₃ 13.8 pm/V, and Xie & Pfister's kHz measurements agree with them. LiNbO₃'s Weis & Gaylord r are clamped.
  * - Photorefractive grating (N. V. Kukhtarev et al., Ferroelectrics 22, 949 (1978), doi:10.1080/00150197908239450),
  *   diffusion only, no applied field and no photovoltaic current, small fringe modulation m: the space-charge field
  *   per unit m is E_sc = E_D / (1 + E_D / E_q), E_D = k_B T K / q, E_q = q N_eff / (ε₀ ε K), K = 2π/Λ, shifted by a
@@ -84,7 +86,7 @@ export const POCKELS: Record<PockelsId, PockelsCrystal> = {
       return { no: ny, ne: nz };
     },
     range: biaxialRange("ktp"), epsilon: NaN, perp: { n: "n_y", nz: "n_z", r: "r₂₃" },
-    source: "r₃₃, r₂₃ (633 nm) Cheng et al. 1994 via Xie & Pfister 2005; n_y, n_z Kato & Takaoka 2002",
+    source: "r₃₃, r₂₃ (unclamped, 633 nm) Cheng et al. 1994 via Xie & Pfister 2005; n_y, n_z Kato & Takaoka 2002",
   },
 };
 

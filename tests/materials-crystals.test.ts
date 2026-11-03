@@ -38,10 +38,12 @@ test("BBO (Eimerl 1987): n_o, n_e at 589.3 nm; agrees with Tamošauskas' indepen
   }
 });
 
-test("BBO and KDP: type-I SHG of 1064 nm phase-matches at the measured angles (BBO 22.8°, KDP 41°)", () => {
-  // Dmitriev, Gurzadyan & Nikogosyan, Handbook of Nonlinear Optical Crystals, 3rd ed. (Springer, 1999), experimental θ_pm.
+test("BBO and KDP: type-I SHG of 1064 nm phase-matches at the published angles (BBO 22.8°, KDP 41.2°)", () => {
+  // BBO: Dmitriev, Gurzadyan & Nikogosyan, Handbook of Nonlinear Optical Crystals, 3rd ed. (Springer, 1999), experimental θ_pm.
+  // KDP: EKSMA KDP/DKDP data sheet, "Phase matching angles … SHG of 1064 nm", type 1 ooe cut 41.2°, from the same Zernike
+  // 1964 Sellmeier (hand: n_o(1064) 1.493780, n_o(532) 1.512424, n_e(532) 1.470471 → 41.207°). Not an independent measurement.
   assertAbs(typeIAngle("bbo", 1064e-9) / deg, 22.8, 0.2, "BBO");
-  assertAbs(typeIAngle("kdp", 1064e-9) / deg, 41, 0.5, "KDP");
+  assertAbs(typeIAngle("kdp", 1064e-9) / deg, 41.2, 0.05, "KDP");
 });
 
 test("Sellmeier λ² term: the analytic dn/dλ of BBO matches a central difference", () => {
