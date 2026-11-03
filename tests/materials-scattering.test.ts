@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { BRILLOUIN_MEDIA, FUSED_SILICA_BRILLOUIN, acousticWavelength, brillouinGain, phononLifetime } from "../src/physics/materials/brillouin";
 import { RAMAN_LINES, dephasingTime, lorentzianGain, ramanGainAtPump, ramanGainExponent } from "../src/physics/materials/raman-gain";
 import {
-  TPA_MEDIA, indirectBeta, indirectF2, mediumBeta, mediumRegime, nearEdgeReference, scaledBeta, scalingBeta, tpaF2, tpaRegime, tpaTransmission,
+  TPA_MEDIA, effectiveScalingValid, indirectBeta, indirectF2, mediumBeta, mediumRegime, nearEdgeReference, scaledBeta, scalingBeta, tpaF2, tpaRegime, tpaTransmission,
   twoPhotonRatio,
 } from "../src/physics/materials/two-photon";
 import { brillouinShift } from "../src/physics/fiber-optics/fiber-nonlinear";
@@ -40,11 +40,13 @@ test("Brillouin presets reproduce the papers' own gains (Abedin 2005, Pant 2011,
   const s3 = BRILLOUIN_MEDIA.as2s3;
   assertRel(0.95 * brillouinGain(1544.775e-9, s3, 34e6), 0.74e-9, 0.01, "As₂S₃ Γg_B");
   assertRel(brillouinShift(1544.775e-9, s3.vA, s3.n), 7.7e9, 1e-3, "As₂S₃ ν_B");
-  // Bai 2020, phonon ∥ [110] at 532 nm, p² 0.0153: hand calculation 2π·2.43⁷·0.0153/(c·532e-9²·3520·18280·11.9e6)
-  // = 74.0 cm/GW (1 cm/GW = 1e-11 m/W), within the 11.9 ± 4.3 MHz linewidth error of the measured 60 ± 9; ν_B 167 GHz.
+  // Bai 2020, phonon ∥ [110] at 532 nm, E ∥ ⟨111⟩: p = (p₁₁ + 2p₁₂ − 2p₄₄)/3 = (−0.1640 + 0.344)/3 = 0.0600 from Grimsditch
+  // & Ramdas 1975 (abstract). Bai's own p² 0.0153 gives 2π·2.43⁷·0.0153/(c·532e-9²·3520·18280·11.9e6) = 74.03 cm/GW
+  // (1 cm/GW = 1e-11 m/W); p² = 0.0036 gives 74.03 · 0.0036/0.0153 = 17.42 cm/GW, 3.4× below the measured 60 ± 9.
   const d = BRILLOUIN_MEDIA.diamond;
-  assertRel(brillouinGain(532e-9, d, 11.9e6), 74.0e-11, 2e-3, "diamond g");
-  assert.ok(Math.abs(brillouinGain(532e-9, d, 11.9e6) / 60e-11 - 1) < 4.3 / 11.9, "diamond g within the Δν_B error");
+  assertRel(d.p12, 0.0600, 1e-9, "diamond p");
+  assertRel(brillouinGain(532e-9, { ...d, p12: Math.sqrt(0.0153) }, 11.9e6), 74.03e-11, 2e-4, "Bai's p²");
+  assertRel(brillouinGain(532e-9, d, 11.9e6), 17.42e-11, 2e-4, "diamond g");
   assertRel(brillouinShift(532e-9, d.vA, d.n), 167e9, 1e-3, "diamond ν_B");
   // Every preset's measured shift agrees with its own n and v_A to 2 %.
   for (const m of Object.values(BRILLOUIN_MEDIA)) {
@@ -181,9 +183,21 @@ test("DeSalvo 1996 wide-gap rows: effective gaps, measured β and the near-edge 
   assert.equal(mediumBeta(fs, 355e-9), 0);
   // BBO: 0.9 cm/GW at 266 nm, E′_g = 6.8 eV. F₂(x) at 266 nm: x = 9.32212/6.8 = 1.370900, F₂ = 0.225884/4.842046 = 0.046651;
   // at 355 nm: x = 6.985026/6.8 = 1.027210, F₂ = 0.0044884/1.143657 = 0.0039246; β = 0.9 · 0.084127 = 0.075714 cm/GW,
-  // against 0.010 ± 0.002 measured (Table I): the divergence near the 2PA edge that DeSalvo et al. report.
+  // against 0.010 ± 0.002 measured (Table I): the divergence near the 2PA edge that DeSalvo et al. report. 355 nm is
+  // within 10 % of the edge (x = 1.0272 < 1.1), so the preset gives no estimate there.
   const bbo = TPA_MEDIA.bbo;
-  assertRel(mediumBeta(bbo, 355e-9), 0.075714e-11, 1e-4, "BBO 355");
+  assertRel(scaledBeta(bbo.beta, bbo.lambda, 355e-9, bbo.bandGap_eV), 0.075714e-11, 1e-4, "BBO 355 by F₂");
+  assert.ok(Number.isNaN(mediumBeta(bbo, 355e-9)), "BBO 355: near the edge");
+  // 300 nm: x = 8.26563/6.8 = 1.215532, F₂ = 0.100062/2.653560 = 0.037709; β = 0.9 · 0.037709/0.046651 = 0.72749 cm/GW.
+  assertRel(mediumBeta(bbo, 300e-9), 0.72749e-11, 1e-4, "BBO 300");
+  // Scaling stops at 2ħω = 1.1 E′_g: λ = 2 · 1239.842/(1.1 · 6.8) = 331.51 nm.
+  assert.ok(effectiveScalingValid(bbo, 331e-9) && !effectiveScalingValid(bbo, 332e-9), "BBO limit 331.5 nm");
+  // The other five rows were measured within 10 % of their 2PA edge (x_ref: KTP 1.0133, LiNbO₃ 1.0593, fused silica and
+  // BaF₂ 1.0358, sapphire 1.0715): measured β at λ_ref only (KTP 520 nm would scale to 4× its 532 nm value).
+  assertRel(mediumBeta(TPA_MEDIA.ktp, 532e-9), 0.10e-11, 1e-12, "KTP 532");
+  assert.ok(Number.isNaN(mediumBeta(TPA_MEDIA.ktp, 520e-9)), "KTP 520");
+  assert.ok(Number.isNaN(mediumBeta(TPA_MEDIA.linbo3, 520e-9)), "LiNbO₃ 520");
+  assert.ok(Number.isNaN(mediumBeta(TPA_MEDIA.sapphire, 250e-9)), "sapphire 250");
   // KTP 0.10 cm/GW at 532 nm, LiNbO₃ 0.38 cm/GW at 532 nm.
   assertRel(TPA_MEDIA.ktp.beta, 0.10e-11, 1e-12, "KTP");
   assertRel(TPA_MEDIA.linbo3.beta, 0.38e-11, 1e-12, "LiNbO₃");

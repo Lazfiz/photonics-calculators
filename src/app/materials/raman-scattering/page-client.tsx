@@ -139,8 +139,10 @@ export default function RamanScatteringPage() {
           </p>
           <p>
             The diamond gain falls with pump wavelength faster than 1/λ_p (Savitski 2013: 17 cm/GW at 1064 nm, 7.6 at 1280 nm);
-            between measured points it is interpolated in pump wavenumber. Silica fibre gains and thresholds are on the fibre
-            SRS pages.
+            between measured points it is interpolated in pump wavenumber. The KGW and Ba(NO₃)₂ gains at 532 nm (Markevich &amp;
+            Chulkov 2016) and 1064 nm (EKSMA) come from different measurements and disagree by about 2× with the expected
+            ω_s scaling; Basiev et al.&apos;s spontaneous cross-sections relative to diamond side with the 1064 nm values, so
+            treat gains between the two as ±50 %. Silica fibre gains and thresholds are on the fibre SRS pages.
           </p>
         </div>
       </div>

@@ -19,10 +19,15 @@
  *   p₁₂ 0.24; ν_B ≈ 7.7 GHz and Δν_B 34 MHz at 1544.8 nm, g_B 0.715e-9 m/W (0.74e-9 calculated with overlap 0.95).
  *   v_A = ν_Bλ/(2n) = 2509 m/s from the measured shift.
  * - Diamond, longitudinal phonons along [110], pump polarized along ⟨111⟩: Z. Bai et al., APL Photonics 5, 031301
- *   (2020), doi:10.1063/1.5134907: n 2.43, ρ 3520, effective p² 0.0153 (their value, after Grimsditch & Ramdas 1975; the
- *   paper does not state its contraction convention), ν_B 167 ± 1 GHz and Δν_B 11.9 ± 4.3 MHz at 532 nm, g 60 ± 9 cm/GW
- *   measured from the laser threshold. With that p² the formula gives 74 cm/GW at 11.9 MHz and 60 at 14.7 MHz, inside
- *   the linewidth's error; v_A = ν_Bλ/(2n) = 18 280 m/s from the measured shift.
+ *   (2020), doi:10.1063/1.5134907: n 2.43, ρ 3520, ν_B 167 ± 1 GHz and Δν_B 11.9 ± 4.3 MHz at 532 nm, g 60 ± 9 cm/GW
+ *   measured from the laser threshold (the abstract: "measured to be 79 cm GW⁻¹ with a linewidth of 12 MHz");
+ *   v_A = ν_Bλ/(2n) = 18 280 m/s from the measured shift. Effective p from M. H. Grimsditch, A. K. Ramdas, Phys. Rev. B
+ *   11, 3139 (1975), doi:10.1103/PhysRevB.11.3139, abstract: p₄₄ = −0.172, p₁₁ − p₁₂ = −0.292, p₁₁ + 2p₁₂ = −0.1640 (so
+ *   p₁₁ = −0.2493, p₁₂ = 0.0427). A unit longitudinal strain along [110] has S_xx = S_yy = S_xy = ½, so
+ *   Δ(1/n²) = diag((p₁₁ + p₁₂)/2, (p₁₁ + p₁₂)/2, p₁₂) with p₄₄ off-diagonal in xy, and for E ∥ [1̄11]
+ *   p = (p₁₁ + 2p₁₂ − 2p₄₄)/3 = 0.0600, p² = 0.0036 (E ∥ [1̄10]: 0.0047, the backscatter maximum; E ∥ [001]: p₁₂).
+ *   Bai et al. use p² = 0.0153 ≈ (2p)² = 0.0144: their group's tensor (arXiv:1807.00240, supplement eq. 3) omits the ½.
+ *   The formula then gives 17.4 cm/GW at 11.9 MHz, 3.4× below the measured gain.
  * `brillouinShift` and `stokesWavelength` are in fiber-optics/fiber-nonlinear.ts; the threshold (`sbsThreshold`) is
  * there too and has its own page, fiber-optics/sbs-threshold.
  */
@@ -78,7 +83,8 @@ export const BRILLOUIN_MEDIA: Record<BrillouinMediumId, BrillouinMedium> = {
     measured: { lambda: 1544.775e-9, nuB: 7.7e9, fwhm: 34e6, gB: 0.715e-9 },
   },
   diamond: {
-    name: "Diamond, phonon ∥ [110]", n: 2.43, vA: 18280, rho: 3520, p12: Math.sqrt(0.0153), source: "Bai et al. 2020",
+    name: "Diamond, phonon ∥ [110]", n: 2.43, vA: 18280, rho: 3520, p12: (-0.164 + 2 * 0.172) / 3,
+    source: "Bai et al. 2020; p from Grimsditch & Ramdas 1975",
     measured: { lambda: 532e-9, nuB: 167e9, fwhm: 11.9e6, gB: 60e-11 },
   },
 };
