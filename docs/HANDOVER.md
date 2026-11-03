@@ -1,34 +1,39 @@
-# Handover — 2026-11-02 (session 184 → session 185)
+# Handover — 2026-11-03 (session 185 → session 186)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 184 did 6d-a materials values on `phase-6/6d-a-materials` (PR #222): diamond Brillouin p, Raman 532/1064 nm spread,
-DeSalvo 2PA scaling rule. Next: 6d-b materials values (heat capacity GaAs/diamond, x-ray Compton term, evaporation T_m).
+Session 185 did 6d-b materials values on `phase-6/6d-b-materials` (PR #223): x-ray Compton term, GaAs and diamond heat-capacity
+presets, SGTE melting points for evaporation. Next: 6e fiber + detectors (see ROADMAP).
 
 ## State
-- `brillouin.ts`: diamond `p12` = (p₁₁ + 2p₁₂ − 2p₄₄)/3 = (−0.1640 + 2·0.172)/3 = 0.0600 (Grimsditch & Ramdas 1975 abstract:
-  p₄₄ −0.172, p₁₁ − p₁₂ −0.292, p₁₁ + 2p₁₂ −0.1640); g_B 532 nm, 11.9 MHz = 17.42 cm/GW (Bai's p² 0.0153 gives 74.03).
-- `two-photon.ts`: `effectiveScalingValid(m, λ)` (DeSalvo rows: 2ħω ≥ 1.1 E′_g at λ_ref and λ); `mediumBeta` gives the measured β
-  within 1e-3 of λ_ref, NaN in the 2PA band otherwise. BBO 300 nm 0.72749, limit 331.5 nm; the page draws the other five as points.
-- `raman-gain.ts`: values unchanged; header and page note the 2× 532/1064 spread (±50 %). Gate: 1203 tests, 5 eslint warnings.
+- `x-ray-optics.ts`: `incoherentCrossSection(id, E)` (m², log-log) from the new `xcom-incoherent.ts` (NIST XCOM σ_inc, barn/atom,
+  34 energies 1–30 keV); `xrayIndex` returns `betaCompton` and β = photo + Compton. Within 0.2 % of CXRO: Be 10 keV β 1.02840e-9,
+  Be 30 keV L 33354.8 µm, C (3.515) 20 keV L 7794.74 µm, Kapton 30 keV β 1.15305e-10, Si 30 keV β 9.89384e-10. Rayleigh out, as in CXRO.
+- `heat-capacity.ts`: + `gaas` (46.855/144.645e-3, θ 344 K, 5317) and `diamond` (6.1197/12.011e-3, θ 1860 K caloric, 3515); Ge 23.347
+  (SGTE GHSERGE) and LiF 41.815 (JANAF F-021) per mol. Tests evaluate the Calphad c_p = −T G″ in the test file.
+- `thermal-evaporation.ts`: T_m from SGTE breakpoints (Al 933.47, Ag 1234.93, Au 1337.33, Cu 1357.77, Ni 1728, Ti 1941, Pd 1828,
+  In 429.75 K); the solid/liquid jump at T_m is ≤ 4.1 % (Al). Gate: 1209 tests, 5 eslint warnings.
 
 ## Next actions
 1. `/ship`; merge on the user's yes. After a release (on request): `node scripts/post-merge-check.mjs <sha>
-   materials/brillouin-scattering materials/two-photon-absorption materials/raman-scattering` (load checks only: the defaults,
-   silica and GaAs, are unchanged and prerendered HTML shows defaults; check diamond and BBO 300 nm by hand).
-2. Bai 2020 (APL Photonics 5, 031301, CC BY): the abstract says "measured to be 79 cm GW⁻¹ with a linewidth of 12 MHz"; the code
-   keeps 60 ± 9 from the threshold (session 148's reading of the body). pubs.aip.org shows a Cloudflare check to curl and
-   Chrome: ask the user for the PDF, then settle the measured value.
-3. 6d-b materials (see ROADMAP): adversarial `physics-reviewer` pass against primary literature first.
+   materials/x-ray-optics materials/heat-capacity thin-film/thermal-evaporation` (load checks: prerendered HTML shows defaults; check
+   Be at 30 keV, L ≈ 33.4 mm, and the diamond preset at 600 K, 1341 J/(kg·K), by hand).
+2. Bai 2020 (APL Photonics 5, 031301): abstract says measured 79 cm/GW, 12 MHz; code keeps 60 ± 9. Ask the user for the PDF.
+3. 6e fiber + detectors: adversarial `physics-reviewer` pass against primary literature first.
 4. KRS-5 by hand: `materials/transparency-range?material=krs5` at 10 µm: n 2.3707, loss 28.4 %.
 
 ## Non-obvious facts
-- **Session 184:** Bai's group writes the [110] Brillouin tensor without the ½ of a unit strain (arXiv:1807.00240 supplement eq. 3,
-  readable on arXiv), so their p² is 4× the standard one. APS abstract pages via WebFetch give Grimsditch & Ramdas's constants.
-  Optica abstract pages give Basiev 1999 Table 1 (relative peak cross-sections, diamond = 100; Ba(NO₃)₂ 63). Raman gain checks:
-  g ∝ ω_s, and Savitski's diamond falls faster (532 → 1064: 0.40 vs 0.46). OpenAlex `abstract_inverted_index` rebuilds abstracts
-  of paywalled papers. Inline `node -e` with backticks inside a bash double-quoted string runs them as command substitution:
-  write edit scripts to the scratchpad with a quoted heredoc. To split one file's hunks across commits: `git hash-object -w` a
-  partial version and `git update-index --cacheinfo`.
+- **Session 185:** NIST XCOM answers a plain curl POST: `curl -s -X POST https://physics.nist.gov/cgi-bin/Xcom/xcom3_1
+  --data-urlencode ZNum=4 --data-urlencode OutOpt=CSBA --data-urlencode NumAdd=1 --data-urlencode $'Energies=0.001
+0.01'
+  --data-urlencode WindowXmin=0.001 --data-urlencode WindowXmax=100000 --data-urlencode ResizeFlag=on` (MeV, one per line; columns
+  E, coh, incoh, photo, pair-nuc, pair-el, total with/without coh). CXRO: POST `/cgi-bin/atten.pl` or `getdb.pl` (`Material=Enter+Formula&
+  Formula=Be&Density=1.848&Scan=Energy&Min=..&Max=..&Npts=1&Output=Text+File`), then GET the `/tmp/xray*.dat` it links. Calphad TDB
+  files (SGTE unary 5.0, Chatillon GaAs) give c_p = −T ∂²G/∂T² exactly; GHSER breakpoints are the melting points. Pässler 2021
+  (Recent Prog. Mater., open access) has diamond's caloric θ_D(T). A Debye preset's θ_D must be the caloric one at the working T, not
+  the elastic/low-T one. To split one file's hunks across commits, rerun the edit script on a `git show HEAD:` copy, `git hash-object -w`.
+- **Session 184:** Bai's group writes the [110] Brillouin tensor without the ½ of a unit strain (arXiv:1807.00240 supp. eq. 3), so
+  their p² is 4× the standard one. APS and Optica abstract pages via WebFetch give tables' text. OpenAlex `abstract_inverted_index`
+  rebuilds paywalled abstracts. Inline `node -e` with backticks inside bash double quotes runs them: write scripts with a quoted heredoc.
 - **Session 183:** the beam-wander ξ² lever arm sits at the transmitter (ξ = 1 − z/L), F = 0.979. Hudgin's zonal law is ≈ 10 %
   *below* exact Noll Δ_N for every N ≤ 5000: use one law. A Bash call that appends with a heredoc and then runs a gated test is
   swallowed whole by devctl: write files and run gates in separate calls. Point-ahead chapter: arXiv:2012.13166 §8.1.2. Near the

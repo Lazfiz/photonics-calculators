@@ -25,7 +25,11 @@ export interface Evaporant {
   M: number;
   /** Bulk density at room temperature (kg/m³), CRC Handbook. */
   rho: number;
-  /** Melting point (K), as tabulated by Alcock et al. */
+  /**
+   * Melting point (K), where the solid and liquid fits meet: the SGTE values (A. T. Dinsdale, Calphad 15, 317 (1991),
+   * doi:10.1016/0364-5916(91)90030-N; ITS-90 fixed points for Al, Ag, Au, Cu and In). The two fits cross within 2.6 %
+   * of it (In 441 K, Ti 1899 K, Al 953 K), so p jumps by at most 4.1 % there (Al), inside their ±5 %.
+   */
   Tm: number;
   solid: VapourFit;
   liquid: VapourFit;
@@ -37,14 +41,14 @@ export interface Evaporant {
  * leaves a jump at the melting point; 9.152 meets the liquid line there.
  */
 export const EVAPORANTS = {
-  Al: { name: "Aluminium", M: 26.982e-3, rho: 2700, Tm: 933, solid: [9.459, -17342, -0.7927], liquid: [5.911, -16211, 0] },
-  Ag: { name: "Silver", M: 107.868e-3, rho: 10490, Tm: 1234, solid: [9.127, -14999, -0.7845], liquid: [5.752, -13827, 0] },
-  Au: { name: "Gold", M: 196.967e-3, rho: 19300, Tm: 1337, solid: [9.152, -19343, -0.7479], liquid: [5.832, -18024, 0] },
-  Cu: { name: "Copper", M: 63.546e-3, rho: 8960, Tm: 1358, solid: [9.123, -17748, -0.7317], liquid: [5.849, -16415, 0] },
-  Ni: { name: "Nickel", M: 58.693e-3, rho: 8908, Tm: 1726, solid: [10.557, -22606, -0.8717], liquid: [6.666, -20765, 0] },
-  Ti: { name: "Titanium", M: 47.867e-3, rho: 4506, Tm: 1930, solid: [11.925, -24991, -1.3376], liquid: [6.358, -22747, 0] },
-  Pd: { name: "Palladium", M: 106.42e-3, rho: 12023, Tm: 1825, solid: [9.502, -19813, -0.9258], liquid: [5.426, -17899, 0] },
-  In: { name: "Indium", M: 114.818e-3, rho: 7310, Tm: 429, solid: [5.991, -12548, 0], liquid: [5.374, -12276, 0] },
+  Al: { name: "Aluminium", M: 26.982e-3, rho: 2700, Tm: 933.47, solid: [9.459, -17342, -0.7927], liquid: [5.911, -16211, 0] },
+  Ag: { name: "Silver", M: 107.868e-3, rho: 10490, Tm: 1234.93, solid: [9.127, -14999, -0.7845], liquid: [5.752, -13827, 0] },
+  Au: { name: "Gold", M: 196.967e-3, rho: 19300, Tm: 1337.33, solid: [9.152, -19343, -0.7479], liquid: [5.832, -18024, 0] },
+  Cu: { name: "Copper", M: 63.546e-3, rho: 8960, Tm: 1357.77, solid: [9.123, -17748, -0.7317], liquid: [5.849, -16415, 0] },
+  Ni: { name: "Nickel", M: 58.693e-3, rho: 8908, Tm: 1728, solid: [10.557, -22606, -0.8717], liquid: [6.666, -20765, 0] },
+  Ti: { name: "Titanium", M: 47.867e-3, rho: 4506, Tm: 1941, solid: [11.925, -24991, -1.3376], liquid: [6.358, -22747, 0] },
+  Pd: { name: "Palladium", M: 106.42e-3, rho: 12023, Tm: 1828, solid: [9.502, -19813, -0.9258], liquid: [5.426, -17899, 0] },
+  In: { name: "Indium", M: 114.818e-3, rho: 7310, Tm: 429.75, solid: [5.991, -12548, 0], liquid: [5.374, -12276, 0] },
 } as const satisfies Record<string, Evaporant>;
 
 export type EvaporantId = keyof typeof EVAPORANTS;

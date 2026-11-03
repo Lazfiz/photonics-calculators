@@ -68,6 +68,41 @@ test("MgO: θ_D = 945 K against NIST-JANAF table Mg-008", () => {
   assertRel(molar(1000), 51.208 * 1.092, 2e-3, "1000 K, 9 % high");
 });
 
+test("Diamond: caloric θ_D = 1860 K (Pässler 2021) against the SGTE diamond c_p (Dinsdale 1991, GDIAC)", () => {
+  const dia = HEAT_CAPACITY_MATERIALS.diamond;
+  // c_p = −T ∂²G/∂T² of GDIAC = −16359.441 + 175.61T − 24.31 T ln T − 0.4723e-3 T² + 2698000/T − 2.61e8/T² + 1.11e10/T³:
+  const sgte = (T: number) => 24.31 + 2 * 0.4723e-3 * T - (2 * 2698000) / T ** 2 + (6 * 2.61e8) / T ** 3 - (12 * 1.11e10) / T ** 4;
+  assertRel(sgte(298.15), 6.1197, 1e-4, "SGTE 298.15 K (Victor 1962: 6.117)");
+  assertRel(sgte(600), 16.110, 1e-4, "SGTE 600 K");
+  const molar = (T: number) => scaledHeatCapacity(dia.cRef, dia.tRef, dia.thetaD, T) * 12.011e-3;
+  for (const T of [400, 600, 800]) assertRel(molar(T), sgte(T), 5e-3, `${T} K within 0.5 %`);
+  assertRel(molar(1000), sgte(1000) * (1 - 0.0088), 1e-3, "1000 K, 0.9 % low (documented)");
+  // The unscaled Debye value at θ_D = 1860 K already gives the measured c_p at room temperature (self-consistent θ):
+  assertRel(debyeMolarHeatCapacity(1860, 298.15), 6.1197, 1e-3, "Debye 3R·D(1860/298.15)");
+});
+
+test("GaAs: c_p from Chatillon et al. 1990 (GB3GAAS) and θ_D = 344 K", () => {
+  const gaas = HEAT_CAPACITY_MATERIALS.gaas;
+  // c_p per mole of GaAs = 2 × (−T ∂²G/∂T²) of GB3GAAS = −52176 + 132.71628T − 24.340629 T ln T − 5.579e-4 T²
+  // + 63835/T − 3.5689e-7 T³ (per mole of atoms):
+  const chatillon = (T: number) => 2 * (24.340629 + 2 * 5.579e-4 * T - (2 * 63835) / T ** 2 + 6 * 3.5689e-7 * T ** 2);
+  assertRel(chatillon(298.15), 46.855, 1e-4, "Chatillon 298.15 K");
+  assertRel(gaas.cRef, 46.855 / 144.645e-3, 1e-12, "c_ref 323.9 J/(kg·K)");
+  assert.ok(gaas.cRef < (6 * 8.314462618) / 144.645e-3, "below Dulong–Petit 6R/M = 344.9 J/(kg·K)");
+  const molar = (T: number) => scaledHeatCapacity(gaas.cRef, gaas.tRef, gaas.thetaD, T) * 144.645e-3;
+  assertRel(molar(500), chatillon(500) * (1 - 0.0196), 1e-3, "500 K, 2.0 % low (documented)");
+  assertRel(molar(1000), chatillon(1000) * (1 - 0.0947), 1e-3, "1000 K, 9.5 % low (documented)");
+});
+
+test("LiF c_p from NIST-JANAF F-021 and Ge c_p from SGTE GHSERGE (Dinsdale 1991)", () => {
+  assertRel(HEAT_CAPACITY_MATERIALS.lif.cRef, 41.815 / 25.938e-3, 1e-12, "LiF 1612 J/(kg·K)");
+  // GHSERGE below 900 K: −T ∂²G/∂T² = 29.5337682 − 2 · 5.568297e-3 T + 6 · 1.513694e-6 T² − 2 · 163298/T².
+  const T = 298.15;
+  const ge = 29.5337682 - 2 * 5.568297e-3 * T + 6 * 1.513694e-6 * T ** 2 - (2 * 163298) / T ** 2;
+  assertRel(ge, 23.347, 1e-4, "SGTE Ge 298.15 K");
+  assertRel(HEAT_CAPACITY_MATERIALS.ge.cRef, 23.347 / 72.630e-3, 1e-12, "Ge 321.5 J/(kg·K)");
+});
+
 test("Heat to warm 10 g of silicon from 20 °C to 200 °C: m∫c_p dT ≈ 1.39 kJ", () => {
   const si = HEAT_CAPACITY_MATERIALS.si;
   const q = heatInput(si.cRef, si.tRef, si.thetaD, 0.01, 293.15, 473.15);

@@ -108,13 +108,14 @@ export default function XRayOpticsPage() {
         <Card label="Decrement δ" value={show(r.delta, () => r.delta.toExponential(4))}
           sub={`n = 1 − δ − iβ at λ = ${(lambda * 1e9).toFixed(5)} nm`} tone="text-blue-400" />
         <Card label="Absorption index β" value={show(r.beta, () => r.beta.toExponential(4))}
-          sub={show(r.beta, () => `β/δ = ${(r.beta / r.delta).toExponential(3)}`)} tone="text-red-400" />
+          sub={show(r.beta, () => `β/δ = ${(r.beta / r.delta).toExponential(3)}, Compton ${((r.betaCompton / r.beta) * 100).toFixed(1)} %`)}
+          tone="text-red-400" />
         <Card label="Critical angle θ_c" value={show(r.thetaC, () => `${(r.thetaC * 1e3).toFixed(4)} mrad`)}
           sub={show(r.thetaC, () => `${((r.thetaC * 180) / Math.PI).toFixed(4)}° grazing, √(2δ)`)} tone="text-green-400" />
         <Card label="Attenuation length" value={show(r.attenuationLength, () => lengthText(r.attenuationLength))}
           sub="intensity 1/e, λ/(4πβ)" tone="text-yellow-400" />
         <Card label="Mass attenuation μ/ρ" value={show(r.massAttenuation, () => `${(r.massAttenuation * 10).toPrecision(4)} cm²/g`)}
-          sub="photoabsorption" tone="text-purple-400" />
+          sub="photoabsorption + Compton" tone="text-purple-400" />
         <Card label="Transmission" value={show(T, () => (T < 1e-4 ? T.toExponential(3) : `${(T * 100).toFixed(2)} %`))}
           sub={`through ${(t * 1e6).toPrecision(4)} µm`} tone="text-orange-400" />
       </div>
@@ -137,16 +138,16 @@ export default function XRayOpticsPage() {
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h3 className="text-lg font-semibold mb-3">Model</h3>
         <div className="text-sm text-gray-300 space-y-2 font-mono">
-          <p>δ = (r_e λ²/2π) Σ n_q f₁,q,   β = (r_e λ²/2π) Σ n_q f₂,q</p>
+          <p>δ = (r_e λ²/2π) Σ n_q f₁,q,   β = (r_e λ²/2π) Σ n_q f₂,q + (λ/4π) Σ n_q σ_inc,q</p>
           <p>θ_c = √(2δ),   μ = 4πβ/λ,   T = exp(−μt)</p>
         </div>
         <p className="text-xs text-gray-400 mt-3">
           f₁ and f₂ are the Henke scattering factors (CXRO tables, 1–30 keV) of independent atoms, so values within
-          about 50 eV of an absorption edge depend on the chemical state and are only approximate. β counts
-          photoabsorption only: Compton (incoherent) scattering adds about 28 % to the attenuation of beryllium and 6 % for carbon
-          at 10 keV, and under 1 % for silicon and heavier elements at 10 keV. Scattering grows with energy: at 30 keV Compton
-          and Rayleigh together are about a fifth of silicon&apos;s total attenuation (NIST XCOM), so T here is an upper bound
-          at high energy.
+          about 50 eV of an absorption edge depend on the chemical state and are only approximate. β adds Compton
+          (incoherent) scattering to photoabsorption, with the NIST XCOM cross-sections σ_inc (Hubbell et al. 1975), as CXRO
+          does: at 10 keV it is 22 % of β for beryllium and 6 % for carbon, at 30 keV 93 % for beryllium and 12 % for silicon.
+          Rayleigh (coherent) scattering is left out, as in CXRO: in a narrow-beam measurement it would add 18 % to
+          beryllium&apos;s attenuation and 2 % to silicon&apos;s at 10 keV, about 10 % for both at 30 keV.
         </p>
       </div>
     </>

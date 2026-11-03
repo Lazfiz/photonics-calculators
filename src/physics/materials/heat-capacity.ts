@@ -10,8 +10,12 @@
  * c_p − c_V or anharmonic term, so above room temperature the scaled curve runs low: Si at 1000 K gives 0.87 against
  * the measured 0.946 J/(g·K) (P. D. Desai, J. Phys. Chem. Ref. Data 15, 967 (1986), doi:10.1063/1.555761, Table 5).
  *
- * Diamond is left out: with its low-temperature θ_D = 2250 K the Debye value at 273 K is 266 J/(kg·K), about half of
- * the measured 502, so one θ_D cannot carry its steep rise through room temperature.
+ * Diamond uses its caloric (effective) Debye temperature, 1860 K, not the elastic 2250 K: the θ_D(T) that reproduces
+ * the measured c_p is 1857 ± 12 K from 140 to 700 K (R. Pässler, Recent Prog. Mater. 3(4), 042 (2021),
+ * doi:10.21926/rpm.2104042, Fig. 2, from the data of Desnoyers & Morrison 1958 and Victor 1962). With 1860 K the scaled
+ * curve is within 0.5 % of the SGTE diamond c_p (A. T. Dinsdale, Calphad 15, 317 (1991),
+ * doi:10.1016/0364-5916(91)90030-N, function GDIAC) from 298 to 800 K and 0.9 % low at 1000 K; below about 120 K the
+ * effective θ_D climbs toward 2250 K and the curve runs more than 5 % high. With 2250 K it would be 29 % high at 600 K.
  *
  * Sources of the presets:
  * - θ_D: experimental values from Landolt–Börnstein (O. Madelung, U. Rössler, M. Schulz), as tabulated in
@@ -20,10 +24,17 @@
  *   doi:10.1063/1.555931, §2. Against NIST-JANAF (M. W. Chase, J. Phys. Chem. Ref. Data Monograph 9, 1998, table
  *   Al-096) the scaled curve is within 1.1 % from 300 to 1000 K, 5.1 % low at 200 K and 21 % low at 100 K. MgO with
  *   its 945 K runs high instead: against JANAF table Mg-008 it is 12 % low at 200 K, 8 % high at 500 K and 9 % at 1000 K.
- * - GaAs has no preset: Crystran's 360 J/(kg·K) is above the Dulong–Petit limit 6R/M = 345 J/(kg·K).
+ * - GaAs: c_p 46.855 J/(mol·K) = 323.9 J/(kg·K) at 298.15 K from the zinc-blende Gibbs energy GB3GAAS of C. Chatillon,
+ *   I. Ansara, A. Watson, B. B. Argent, Calphad 14, 203 (1990), doi:10.1016/0364-5916(90)90021-Q (Crystran's
+ *   360 J/(kg·K) is above the Dulong–Petit limit 6R/M = 345 J/(kg·K)). θ_D 344 K (Råsander & Moram Table VII). Against
+ *   Chatillon the scaled curve is 2.0 % low at 500 K, 3.2 % at 600 K and 9.5 % at 1000 K. Density: X-ray density
+ *   4M/(N_A a³) with a = 5.65325 Å (O. Madelung, Semiconductors: Data Handbook, 3rd ed., Springer 2004).
+ * - Diamond: c_p 6.1197 J/(mol·K) at 298.15 K from SGTE GDIAC (Victor 1962: 6.117); density 3515 kg/m³ (CRC Handbook).
  * - Si c_p: Desai 1986 Table 4, 20.007 J/(mol·K) at 298.15 K. Sapphire: JANAF Al-096, 79.416 J/(mol·K) at 300 K
  *   (Crystran: 763 J/(kg·K) at 293 K). MgO: JANAF Mg-008, 37.106 J/(mol·K) at 298.15 K (Crystran: 877 J/(kg·K)).
- *   CaF₂: JANAF Ca-014, 68.588 J/(mol·K) at 298.15 K (Crystran: 854 J/(kg·K)). Ge, LiF and all densities: Crystran.
+ *   CaF₂: JANAF Ca-014, 68.588 J/(mol·K) at 298.15 K (Crystran: 854 J/(kg·K)). LiF: JANAF F-021, 41.815 J/(mol·K)
+ *   (Crystran: 1562 J/(kg·K)). Ge: SGTE GHSERGE (Dinsdale 1991), 23.347 J/(mol·K) at 298.15 K (Crystran: 310 J/(kg·K)).
+ *   Other densities: Crystran.
  */
 
 import { R_gas } from "../constants";
@@ -75,7 +86,7 @@ export function heatInput(cRef: number, tRef: number, thetaD: number, mass: numb
   return (mass * sum * dT) / 3;
 }
 
-export type HeatCapacityMaterialId = "si" | "ge" | "caf2" | "lif" | "mgo" | "sapphire";
+export type HeatCapacityMaterialId = "si" | "ge" | "gaas" | "caf2" | "lif" | "mgo" | "sapphire" | "diamond";
 
 export interface HeatCapacityMaterial {
   readonly name: string;
@@ -91,9 +102,11 @@ export interface HeatCapacityMaterial {
 
 export const HEAT_CAPACITY_MATERIALS: Record<HeatCapacityMaterialId, HeatCapacityMaterial> = {
   si: { name: "Silicon", cRef: 20.007 / 28.0855e-3, tRef: 298.15, thetaD: 645, density: 2330 },
-  ge: { name: "Germanium", cRef: 310, tRef: 298.15, thetaD: 373, density: 5330 },
+  ge: { name: "Germanium", cRef: 23.347 / 72.630e-3, tRef: 298.15, thetaD: 373, density: 5330 },
+  gaas: { name: "GaAs", cRef: 46.855 / 144.645e-3, tRef: 298.15, thetaD: 344, density: 5317 },
   caf2: { name: "CaF₂", cRef: 68.588 / 78.0748e-3, tRef: 298.15, thetaD: 510, density: 3180 },
-  lif: { name: "LiF", cRef: 1562, tRef: 298.15, thetaD: 732, density: 2639 },
+  lif: { name: "LiF", cRef: 41.815 / 25.938e-3, tRef: 298.15, thetaD: 732, density: 2639 },
   mgo: { name: "MgO", cRef: 37.106 / 40.304e-3, tRef: 298.15, thetaD: 945, density: 3580 },
   sapphire: { name: "Sapphire (Al₂O₃)", cRef: 79.416 / 101.9613e-3, tRef: 300, thetaD: 990, density: 3970 },
+  diamond: { name: "Diamond", cRef: 6.1197 / 12.011e-3, tRef: 298.15, thetaD: 1860, density: 3515 },
 };

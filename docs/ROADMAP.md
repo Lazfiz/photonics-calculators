@@ -5,12 +5,12 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 184, 2026-11-02)
+## Status (session 185, 2026-11-03)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
   textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) and 5w-13 (materials) and 5w-14 (spectroscopy) and 5w-15 (thin-film + polarization) done (sessions 163–177): 5w is complete; KRS-5
-  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6d-a done (sessions 179–184), 6d-b next; the Gemini hero comes after it. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6d done (sessions 179–185), 6e next; the Gemini hero comes after it. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -83,8 +83,8 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 **Materials**
 - `raman-scattering` (session 162): no sourced UV edges for KGW, Ba(NO₃)₂ (pump input goes to 200 nm); the header calls the
   diamond gain linear in 1/λp, but the Savitski points aren't (42/41 at 532/670 nm).
-- `x-ray-optics` (session 136): β is photoabsorption only (Henke f₂); CXRO adds Compton (Be +28 %, C +6 % at 10 keV). Hubbell's
-  incoherent scattering functions could add it. Range 1–30 keV (Henke tables); Al, W, Ge filters/targets not in the presets.
+- `x-ray-optics` (session 185: Compton added, within 0.2 % of CXRO): Rayleigh left out as in CXRO (Be +18 % at 10 keV). Range 1–30 keV
+  (Henke tables); Al, W, Ge filters/targets not in the presets. Si₃N₄ preset 3.44 g/cm³ is CXRO's list value; bulk ≈ 3.17–3.19 (from memory).
 - `polymer-optics` (session 136): dropped PDMS (Schneider 2009 Sylgard 184 fit 1.431 vs Zhang 2020 1.397 at 550 nm), CYTOP, OrmoComp
   and all loss, T_g, dn/dT and stress-optic data (unsourced). NOA 61 checked (session 144) against Norland's archived sheet.
 - `thermal-expansion` (session 144: every α sourced): conventions are mixed (glasses: mean over a range; Kaye & Laby/NIST: 293 K).
@@ -92,8 +92,8 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - `thin-film/environmental-stability` (session 135): the H-layer (TiO₂ film) dn/dT 20 and α 8 × 10⁻⁶/K defaults are unsourced
   placeholders; free-film expansion ignores the substrate constraint and Poisson term. Peck's n and Eₐ (≈ 2.7, 0.79 eV in
   secondary sources) are unverified: the IRPS PDF 403s, so the page defaults to n = 0.
-- `heat-capacity` (session 144: + sapphire, MgO): MgF₂, ZnSe, BaF₂ and fused silica have no cited θ_D. GaAs: Crystran's 360 J/(kg·K)
-  exceeds 6R/M = 345 (Blakemore 1982 ≈ 327, unread). Diamond: θ_D 2250 K gives 266 vs 502 J/(kg·K) at 273 K. `damage-threshold` and `radiation-damage` have user inputs, no presets.
+- `heat-capacity` (session 185: + GaAs, diamond): MgF₂, ZnSe, BaF₂ and fused silica have no cited θ_D. GaAs below 298 K unchecked
+  (Piesbergen 1963 unread); above 600 K data sets spread by up to 10 J/(mol·K) (Pässler, AIP Adv. 3, 082108 (2013), abstract). `damage-threshold` and `radiation-damage` have user inputs, no presets.
 - `electro-optic`, `photorefractive` (session 143: KTP added): BaTiO₃, SBN, BSO and LiTaO₃ are still out. BaTiO₃ unclamped r₁₃ 8,
   r₃₃ 105, r₄₂ 1300 pm/V at 633 nm (Zgonik 1994 PRB 50, 5941, quoted in Petraru's thesis, `kups.ub.uni-koeln.de/1050/1/thesis_petraru_final.pdf`
   Table 2.2) needs ε and an r_eff(β) geometry on the photorefractive page; LiTaO₃ has only a vendor r₃₃ (Crylink 30.4, no r₁₃ or λ;
@@ -180,8 +180,7 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - 5w-15 (session 177), unverified or deferred: Benjamin–Weaver τ prefactor k (0.2–1 in reviews, code k = 1) unchecked against
   the 1960 paper; Fabry-Perot chart at R = 0.999 has ≈ 2.6 points per FWHM (20 000 cap); gradient-index lacks Southwell's quintic;
   plasma sweep starts at 0.3 mTorr (input 0.1); hard-coating Γ ignores mode mixity.
-- `thermal-evaporation` (low): T_m for Ni, Ti and Pd is 1726, 1930 and 1825 K against CRC's 1728, 1941 and 1828 K
-  (unchecked against Alcock's table).
+- `thermal-evaporation` (low): the CRC "Equations" table text is unread; CalebBell/chemicals refits of Alcock agree within 6.4 % (Ti solid).
 
 **Free-space comms**
 - Code comments in `laser-resonator.ts`, `doped-fiber-gain.ts`, `fiber-nonlinear.ts` and four resonator pages still call power log-ratios "nepers" (low, wording only).
@@ -314,8 +313,7 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - [x] 6b lasers (session 182, `phase-6/6b-lasers`, PR #220): OPO walk-off overlap, ejected-soliton DW, κ 6.3, static locking range. See Done.
 - [x] 6c free-space comms (session 183, `phase-6/6c-fso`, PR #221): diffracting beam wander, DM pitch fitting, LEO point-ahead, QKD exact in Y₀, `DB_PER_E_FOLD`. See Done.
 - [x] 6d-a materials values (session 184, `phase-6/6d-a-materials`, PR #222): diamond p 0.0600, Raman spread documented, DeSalvo 1.1 rule. See Done.
-- [ ] 6d-b materials values: heat-capacity GaAs (Crystran 360 > 6R/M 345; Blakemore 1982) and diamond θ_D (266 vs 502 J/(kg·K));
-  x-ray β Compton term (Hubbell incoherent scattering; Be +28 % at 10 keV); thermal-evaporation T_m (CRC/Alcock).
+- [x] 6d-b materials values (session 185, `phase-6/6d-b-materials`, PR #223): x-ray Compton term, GaAs and diamond c_p presets, SGTE T_m. See Done.
 - [ ] 6e fiber + detectors: `photonic-crystal` MFD, Marcuse vs Nielsen et al. OL 28, 2309 (2003) (6.69 vs 5.08 µm); `photodiode-speed`
   diffusion tail (Si 850 nm: 1/α 19 µm > W); `detectivity` D* from current density or R₀A; `linear-mode-avalanche` default I_d vs the
   C30902EH spec; streak transit prefactor 2.63 vs first-principles 3.37.
@@ -344,6 +342,9 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 6d-b materials values (session 185, `phase-6/6d-b-materials`, PR #223): x-ray β adds n σ_inc λ/4π (NIST XCOM, 34 energies), within
+  0.2 % of CXRO (Be L at 30 keV was 14× too long); heat-capacity diamond θ_D 1860 K caloric (Pässler 2021; ≤ 0.9 % vs SGTE 298–1000 K),
+  GaAs 46.855 J/(mol·K) (Chatillon 1990), θ 344 K; Ge 23.347 (SGTE), LiF 41.815 (JANAF F-021); evaporation T_m SGTE (Ti 1941 K).
 - 6d-a materials values (session 184, `phase-6/6d-a-materials`, PR #222): diamond Brillouin p = (p₁₁ + 2p₁₂ − 2p₄₄)/3 = 0.0600 (Grimsditch &
   Ramdas abstract; Bai's 0.0153 ≈ (2p)², tensor without ½): 74.0 → 17.4 cm/GW; Raman 532/1064 nm 2× is measurement spread (Basiev
   cross-sections side with 1064), ±50 % noted; DeSalvo 2PA rows scale only where 2ħω ≥ 1.1 E′_g at λ_ref and λ (BBO 300 nm 0.72749).
