@@ -83,8 +83,9 @@ function check(name, actual, expected) {
   console.log(`${ok ? "PASS" : "FAIL"} ${name}${ok ? "" : `: got ${JSON.stringify(actual)}, want ${JSON.stringify(expected)}`}`);
 }
 
-// React attaches fibers to DOM nodes while hydrating; then wait for an idle period.
-const hydrated = `document.readyState === "complete" && [...document.querySelectorAll("input")].some((el) => Object.keys(el).some((k) => k.startsWith("__reactFiber")))`;
+// React attaches fibers to DOM nodes while hydrating; then wait for an idle period. A page without
+// inputs (a catalog table, a fixed demo) is checked on its other controls or, failing those, its heading.
+const hydrated = `document.readyState === "complete" && (() => { const els = ["input", "main select, main button", "h1"].map((q) => [...document.querySelectorAll(q)]).find((l) => l.length) ?? []; return els.some((el) => Object.keys(el).some((k) => k.startsWith("__reactFiber"))); })()`;
 async function waitHydrated(label) {
   for (let i = 0; i < 300; i++) {
     await sleep(200);
@@ -157,12 +158,12 @@ try {
     check("boxcar: typed 50 stays 50", await field(pw), { value: "50", invalid: "false", warning: null });
     check("share: shown once a param is set", await evaluate(shareShown), true);
     check("boxcar: URL pulseWidth=50", await param("pulseWidth"), "50");
-    await typeInto(pw, "5");
-    check("boxcar: 5 held back with warning", await field(pw), { value: "5", invalid: "true", warning: "Min: 10" });
+    await typeInto(pw, "0.005");
+    check("boxcar: 0.005 held back with warning", await field(pw), { value: "0.005", invalid: "true", warning: "Min: 0.01" });
     check("boxcar: URL keeps 50 while out of range", await param("pulseWidth"), "50");
     await pressEnter();
-    check("boxcar: Enter clamps to 10", (await field(pw)).value, "10");
-    check("boxcar: URL pulseWidth=10", await param("pulseWidth"), "10");
+    check("boxcar: Enter clamps to 0.01", (await field(pw)).value, "0.01");
+    check("boxcar: URL pulseWidth=0.01", await param("pulseWidth"), "0.01");
     await typeInto(pw, "500");
     check("boxcar: reset to default removes param", await evaluate("location.search"), "");
     await typeInto(pw, "");
@@ -182,6 +183,8 @@ try {
     await waitHydrated("back");
     check("nav: back restores pulseWidth=42", (await field(pw)).value, "42");
     check("nav: URL still pulseWidth=42", await param("pulseWidth"), "42");
+    // A remount with the chart chunk cached once called the chart as a useState initializer (session 192).
+    check("nav: no console errors after navigating back", logs.length, 0);
 
     // 3. A shared link applies after hydration; a reset removes the stale param, keeps others.
     await open("/free-space-comms/ber?photons=50&utm_source=test");
@@ -199,8 +202,8 @@ try {
     const valueLabelled = (text) =>
       evaluate(`(() => { const l = [...document.querySelectorAll("label")].find((l) => l.querySelector("input") && l.querySelector("span")?.textContent === ${JSON.stringify(text)}); return l ? l.querySelector("input").value : null; })()`);
     await open("/wave-optics/gas-laser-resonator");
-    check("labels: 'Wavelength (nm)' holds the wavelength", await valueLabelled("Wavelength (nm)"), "632.8");
-    check("labels: 'Tube Length (mm)' holds the length", await valueLabelled("Tube Length (mm)"), "500");
+    check("labels: 'Wavelength λ (nm)' holds the wavelength", await valueLabelled("Wavelength λ (nm)"), "632.8");
+    check("labels: 'Mirror spacing' holds the tube length", await valueLabelled("Mirror spacing = gain length L (mm)"), "500");
     check(
       "labels: no caption <label> before a number input's own label",
       await evaluate(`[...document.querySelectorAll("label")].filter((l) => !l.htmlFor && !l.querySelector("input, select, textarea") && l.nextElementSibling?.matches("label") && l.nextElementSibling.querySelector('input[type="number"]')).length`),
@@ -229,10 +232,10 @@ try {
     check("slider: blur clamps to 0.1", (await field(ff)).value, "0.1");
     check("slider: shown value 0.1", await evaluate(ffShown), "0.1");
     const pwl = byAria("Probe wavelength exact value");
-    await typeInto(pwl, "1550");
-    check("slider: URL probeWavelength=1550", await param("probeWavelength"), "1550");
+    await typeInto(pwl, "1064"); // inside the default silicon range, 250–1450 nm
+    check("slider: URL probeWavelength=1064", await param("probeWavelength"), "1064");
     const range = `document.getElementById([...document.querySelectorAll("label")].find((l) => l.textContent === "Probe wavelength").htmlFor)`;
-    check("slider: range follows typed value", await evaluate(`${range}.value`), "1550");
+    check("slider: range follows typed value", await evaluate(`${range}.value`), "1064");
     await evaluate(`(() => { const s = ${range}; Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set.call(s, "850"); s.dispatchEvent(new Event("input", { bubbles: true })); })()`);
     await sleep(300);
     check("slider: drag to default removes param", await param("probeWavelength"), null);

@@ -5,12 +5,12 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 191, 2026-11-03)
+## Status (session 192, 2026-11-03)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
   textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) and 5w-13 (materials) and 5w-14 (spectroscopy) and 5w-15 (thin-film + polarization) done (sessions 163–177): 5w is complete; KRS-5
-  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6h done (sessions 179–191), 6i next; the Gemini hero comes after it. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6h and 6i-a done (sessions 179–192), 6i-b next; the Gemini hero comes after it. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -89,24 +89,11 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - `spectroscopy/conc-mirror` and `jacquinot` (session 104) both show the Jacquinot ratio π f/(h tan θ) from `throughput.ts`;
   conc-mirror adds the mirror cone and slit étendue. Merge into jacquinot only if the user asks.
 
-**Performance (6i)**
-- 5w-1 (session 163): `cosmic-rays` `poissonQuantile` ≈ 13 ms per call at the max inputs (μ ≈ 1.7e9), ≈ 0.7 s per render.
-- Codex leftovers: graded-index spectra take ≈ 0.35 s at the 4000-step cap; `periodicDecay` takes up to ≈ 7e4 terms per chart
-  point when σ ≫ T (could return Σαᵢτᵢ/T).
-- 5w-15 (session 177): Fabry-Perot chart at R = 0.999 has ≈ 2.6 points per FWHM (20 000 cap).
-
-**Cross-cutting (6i)**
-- `ui-check` (session 158): 9 checks fail on production too, stale since the pages changed: boxcar `pulseWidth` min is now
-  0.01 (checks want "Min: 10"); gas-laser-resonator 'Wavelength (nm)' / 'Tube Length (mm)' labels not found; the
-  `probeWavelength` slider page doesn't write the URL as expected. Update the checks to the current pages.
-- Initial JS (session 158): thin-film metal pages (enhanced-aluminum, protected-silver, emissivity-control, heat-mirror)
-  carry 24–28 KB gz of their own JS, likely n,k tables in the client chunk; the median page carries 14 KB.
+**Cross-cutting (6i-b)**
 - Charts (session 159): many pages wrap ChartPanel in their own bordered
   `p-4` box: double padding leaves a 245 px plot at 360 px.
 - Charts (session 160): the PNG/CSV row adds ≈ 32 px above every SVG chart, including those whose page already prints a
   heading above the ChartPanel. Plotly-routed charts (heatmap, 3-D, polar) have Plotly's own hover but no export buttons.
-- `ui-check` can't hydrate a page that has no `<input>` (`optical-glass-catalog`; `jones-calculus` until an element is
-  added).
 
 ## Known limitations (accepted in 6h, session 191: missing features and missing data; each page's modelNote or text states its limit)
 Evidence for a later extension. Reopen an item only with a new source or a user request.
@@ -254,6 +241,13 @@ Evidence for a later extension. Reopen an item only with a new source or a user 
   beat-period warning (5:7 detuned 0.1 % gets none), and a 1e-9 lock tolerance makes the DOP jump at exact lock. Codex leftover
   (session 145): relations above order 12 count as incommensurate (11/13/24 kHz at Γm 10: 4.4e-3 off; negligible at the J₀ zero).
 
+**Performance and page weight** (accepted in 6i-a, session 192)
+- `gradient-index`: a spectrum takes ≈ 0.35 s at the 4000-sublayer cap (layers thicker than ≈ 400 λ_min/n); it's memoised
+  and runs in the shared transfer-matrix core (26 pages import it directly, more through 14 physics modules).
+- Thin-film metal pages (enhanced-aluminum, protected-silver, emissivity-control, heat-mirror) carry 24–28 KB gz of their own
+  JS against a 14 KB median: `low-emissivity.ts` pulls in the ASTM G173 table (8.3 KB gz), the transfer matrix (5.2 KB) and
+  the Rakić and silver n,k (3.7 KB). The client needs them to recompute on every input.
+
 **Laser safety**
 - No scanned-lidar mode on `lidar-safety` (the modelNote says scanning isn't modelled).
 - Sessions 180–181: ICNIRP Table 5 note c and Table 7 note b apply in the shared limits, scanned passes and the anterior
@@ -305,7 +299,8 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - [x] 6g-a citation sweep b, part a (session 189, `phase-6/6g-a-citations`, PR #227): ≈ 15 entries read; Yb 1064 σ, FBG K_T slope. See Done.
 - [x] 6g-b citation sweep b, part b (session 190, `phase-6/6g-b-citations`, PR #228): 18 entries read; Si₃N₄ x-ray density 3.18. See Done.
 - [x] 6h accepted limitations (session 191, `phase-6/6h-limitations`, PR #229): ≈ 60 entries moved to "Known limitations"; 4 notes added, Brillouin note fixed. See Done.
-- [ ] 6i cross-cutting UI (not accuracy): stale `ui-check` checks, chart double padding, export-row height, metal-page JS size.
+- [x] 6i-a (session 192, `phase-6/6i-a-ui-check`, PR #230): chart remount crash, ui-check current, three hot spots faster. See Done.
+- [ ] 6i-b cross-cutting UI: chart double padding, export-row height, Plotly export buttons ("Cross-cutting (6i-b)").
 - [ ] Then (Phase 5 leftover): replace the home-page hero with the one the user made in Gemini, and wire it in (ask the user for the files).
 
 ## Decisions (keep)
@@ -325,6 +320,11 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 6i-a UI and performance (session 192, `phase-6/6i-a-ui-check`, PR #230): `ChartPanel` passed the cached SimpleChart to
+  `useState`, so every chart remounted by client navigation or Back threw into the error boundary (live on production until a
+  release); ui-check's 9 stale checks updated, no-input pages hydrate, console errors after Back now fail it. `poissonQuantile`
+  Cornish–Fisher start (6–10×), `periodicDecay` Fourier branch (σ ≫ T: Σαᵢτᵢ/T, was NaN), Fabry-Perot peak-clustered points.
+  Graded-index 0.35 s and metal-page JS accepted (Known limitations).
 - 6h accepted limitations (session 191, `phase-6/6h-limitations`, PR #229): "Open findings" split into actionable items (physics
   wording, perf, 6i UI) and "Known limitations"; every limit checked against its page's modelNote or text. Brillouin modelNote
   said diamond 74 cm/GW (now 17.4, as code and page); limits added to soliton, background-noise, infrared-glass, raman-scattering

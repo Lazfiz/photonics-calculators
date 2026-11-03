@@ -70,6 +70,10 @@ test("TCSPC pulse train is periodic (Codex review 2026-10-24)", () => {
     for (let n = -60; n <= 60; n++) s += emgDecay(t + n * T, tau, 4 * ns, 0);
     close(periodicDecay(comp, t + 30 * ns, 4 * ns, 0, T), s, 1e-12);
   }
+  // σ ≫ T (the Fourier branch): the train smears to its mean Σ αᵢτᵢ/T. 10 GHz, IRF FWHM 1 µs, τ 1 ps and 100 ns:
+  // (1e-12 + 1e-7)/1e-10 = 1000.01. The direct sum needed ≈ 1e9 terms here and returned NaN.
+  const wide = 1e-6 / (2 * Math.sqrt(2 * Math.LN2)), two = [{ amplitude: 1, lifetime: 1e-12 }, { amplitude: 1, lifetime: 1e-7 }];
+  for (const t of [0, 37 * ns]) close(periodicDecay(two, t, wide, 0, 1e-10), 1000.01, 1e-12);
 });
 
 test("pump-probe: sequential A → B → GS populations", () => {

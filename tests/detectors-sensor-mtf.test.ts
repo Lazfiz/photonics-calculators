@@ -118,5 +118,13 @@ test("Poisson quantile", () => {
     const k = poissonQuantile(0.99, mu);
     assert.ok(poissonCdf(k, mu) >= 0.99 && (k === 0 || poissonCdf(k - 1, mu) < 0.99), `μ = ${mu}`);
   }
+  // Large μ starts from the Cornish–Fisher estimate μ + z√μ + (z² − 1)/6: z(0.99) = 2.326348, so μ = 1e8 gives
+  // 1e8 + 23263.48 + 0.735 → 100023264; the CDF steps confirm it. μ = 1.7e9 is the cosmic-rays page's maximum.
+  assert.equal(poissonQuantile(0.99, 1e8), 100023264);
+  for (const [p, mu] of [[0.99, 1.7e9], [1e-9, 2.5], [1 - 1e-12, 30], [0.05, 1e6]]) {
+    const k = poissonQuantile(p, mu);
+    assert.ok(poissonCdf(k, mu) >= p && (k === 0 || poissonCdf(k - 1, mu) < p), `p = ${p}, μ = ${mu}`);
+  }
+  assert.equal(poissonQuantile(0, 5), 0, "p = 0 gives k = 0");
   assert.ok(Number.isNaN(poissonQuantile(1, 1)), "p = 1 is NaN");
 });
