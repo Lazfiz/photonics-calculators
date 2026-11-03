@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 188, 2026-11-03)
+## Status (session 189, 2026-11-03)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
@@ -293,7 +293,7 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
   C30902EH bulk I_d 0.22 pA, streak 3.37 ps bound. See Done.
 - [x] 6e-b photodiode diffusion tail (session 187, `phase-6/6e-b-photodiode-diffusion`, PR #225): drift share 53.7 %, total −3 dB 13.47 MHz. See Done.
 - [x] 6f-a citation sweep a (session 188, `phase-6/6f-a-citations`, PR #226): 20 entries read; 3 value fixes. See Done.
-- [ ] 6g-a citation sweep b, part a (fiber, free-space comms, laser safety).
+- [x] 6g-a citation sweep b, part a (session 189, `phase-6/6g-a-citations`, PR #227): ≈ 15 entries read; Yb 1064 σ, FBG K_T slope. See Done.
 - [ ] 6g-b citation sweep b, part b (wave optics, materials).
 - [ ] 6h accepted limitations: move the missing-feature and missing-data entries from "Open findings" to a "Known limitations" list;
   check that each page states its limit.
@@ -317,7 +317,7 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
-- 6g-a citation sweep b, part a (session 189, `phase-6/6g-a-citations`): Yb 1064 nm σ from Melkumov's 1064 row (was the 1068 row:
+- 6g-a citation sweep b, part a (session 189, `phase-6/6g-a-citations`, PR #227): Yb 1064 nm σ from Melkumov's 1064 row (was the 1068 row:
   σ_a 5.7e-27, σ_e 3.1e-25 m²); FBG K_T slope 1.431e-8/K² (Cosme Table 3) added, +5.8 % shift at ΔT 50 K, warning outside
   −20…100 °C (the old ±50 K wasn't in the paper); geometric-loss top-hat re-cited to ICTON 2005 eq. 1 (SPIE 4530 has no formula);
   snow law origin ICTON 2005. Confirmed: PCF DOIs, OH 62.7 dB/km/ppm, G.653/G.655.C/G.650.1, Agrawal 5th-ed. sections,
