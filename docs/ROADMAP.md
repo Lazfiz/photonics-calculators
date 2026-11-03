@@ -206,8 +206,7 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - `low-coherence`, `optical-coherence`: SNR prefactors ρP/(2eB) and ρPΔt/(2e) not checked against Choma 2003 eqs. 9/10 (PDF unread).
 - `plenoptic-camera`: "12 usable pixels" and "prototype reached about half" (Ng 2005 tech report) unverified.
 **Fiber optics (sessions 169–170, unverified or deferred)**
-- `photonic-crystal`: Marcuse step-index MFD fit with V_SK vs Nielsen et al. OL 28, 2309 (2003) PCF fit (from memory: 6.69 vs 5.08 µm
-  at the defaults; NKT LMA-5 ≈ 4.1 µm agrees with the page). Read the paper before changing. Mortensen OL 28, 1879 DOI unchecked (429).
+- `photonic-crystal`: Mortensen OL 28, 1879 DOI unchecked (429).
 - `fiber-optic-sensor`: K_T 9.56 pm/K (Cosme 2026) vs ≈ 10–13 pm/K in Kersey-era texts (from memory). `rare-earth-doped`: preset σ
   (Er 1480, Yb 976) unchecked against Barnes Fig. 6(c) / Melkumov App. 2. `splice-loss`: air-gap Fresnel loss (≤ 0.59 dB) not
   included (`gapEtalonTransmission` exists); the page says so. `nonlinear-effects`: SBS card is narrow-CW only (no K/linewidth option).
@@ -235,14 +234,12 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - `imaging/fluorophores.ts` (session 84): log-normal bands are exactly 0 past their anti-Stokes cutoff (EGFP emission below 480 nm, mCherry excitation above 622 nm), so tail-only bleed-through reads 0; sampled FPbase spectra would fix it. Disclosed on the pages.
 - 5w-1 (session 163), not fixed: `cosmic-rays` `poissonQuantile` ≈ 13 ms per call at the max inputs (μ ≈ 1.7e9), ≈ 0.7 s per render;
   `camera-snr.ts` 604 register stages are the CCD201 (iXon 888), the page models an 897 (CCD97, unverified count; F² changes < 0.2 %);
-  `detectivity` D* uses the entered I_d at any area (no current density or R₀A); `em-gain` has no conventional-amplifier read-noise input.
-- 5w-2 (session 164), not fixed: `linear-mode-avalanche` default bulk I_d 50 pA = total/M (upper bound; C30902EH noise-current spec
-  unchecked, ≈ 1.5 pA from memory, M_opt ±3 %); `photodiode-speed` models no diffusion tail (Si 850 nm: 1/α 19 µm > W 10.5 µm);
+  `em-gain` has no conventional-amplifier read-noise input.
+- 5w-2 (session 164), not fixed: `photodiode-speed` models no diffusion tail (6e-b);
   `gain-temperature` scales the Miller curve with V_br (shift model differs 8 %); `pmt` Hamamatsu eq. numbers unverified.
 - `detectors/gain-temperature` PMT branch: the −0.3 %/°C default is an entered value; source a typical dynode-gain coefficient in part 7 (Hamamatsu handbook §13.1.1 gives no number).
 **Detectors (session 165, unverified, sources unreachable)**
-- `vacuum-photodiode`: S-20 dark emission 0.4 fA/cm² (Burle Table I); a reviewer recalled 0.3 (from memory). `streak-camera` note:
-  transit-time prefactor 2.63·√Δε/E ps (Shakya & Chang 2005); first principles √(2m_eΔε)/(qE) give 3.37 ps. Note text only.
+- `vacuum-photodiode`: S-20 dark emission 0.4 fA/cm² (Burle Table I); a reviewer recalled 0.3 (from memory).
 **Polarization**
 - 5w-15 (session 177), unverified: optical-activity 34.614° (NIST SRM 17e) vs ICUMSA 100 °Z 34.626° (from memory); wire-grid uses DC σ at
   10.6 µm (Al ωτ ≈ 1.4, disclosed); Goldstein *Polarized Light* cited 2011, Crossref dates the DOI 2017; Cloude 1986 has no DOI.
@@ -314,9 +311,14 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - [x] 6c free-space comms (session 183, `phase-6/6c-fso`, PR #221): diffracting beam wander, DM pitch fitting, LEO point-ahead, QKD exact in Y₀, `DB_PER_E_FOLD`. See Done.
 - [x] 6d-a materials values (session 184, `phase-6/6d-a-materials`, PR #222): diamond p 0.0600, Raman spread documented, DeSalvo 1.1 rule. See Done.
 - [x] 6d-b materials values (session 185, `phase-6/6d-b-materials`, PR #223): x-ray Compton term, GaAs and diamond c_p presets, SGTE T_m. See Done.
-- [ ] 6e fiber + detectors: `photonic-crystal` MFD, Marcuse vs Nielsen et al. OL 28, 2309 (2003) (6.69 vs 5.08 µm); `photodiode-speed`
-  diffusion tail (Si 850 nm: 1/α 19 µm > W); `detectivity` D* from current density or R₀A; `linear-mode-avalanche` default I_d vs the
-  C30902EH spec; streak transit prefactor 2.63 vs first-principles 3.37.
+- [x] 6e-a fiber + detectors (session 186, `phase-6/6e-fiber-detectors`, PR #224): PCF MFD from Nielsen 2003, detector D* from J_d and R₀A,
+  C30902EH bulk I_d 0.22 pA, streak 3.37 ps bound. See Done.
+- [ ] 6e-b `photodiode-speed` diffusion tail. Reviewer (session 186): Si 850 nm, α 534 cm⁻¹ (1/α 18.7 µm), W 10.54 µm: only 43 % absorbed
+  in W; Gärtner drift share (1 − e^−αW)/(1 − e^−αW/(1 + αL)) = 0.538 with L 34.6 µm (η 0.8, R = 0), so the plateau is −5.4 dB and
+  f_3dB ≈ 14 MHz (diffusion), not ≈ 317 MHz. Diffusion response with L_ω = L/√(1 + iωτ), τ = L²/D (reviewer's derivation, find a
+  source: Sze & Ng ch. 13, Bowers & Burrus JLT 5, 1339 (1987), Lucovsky/Schwarz/Emmons JAP 35, 622 (1964)?); corner 2.43·D/(2πd²)
+  checked numerically. Design: `driftFraction`, `diffusionResponse`, `diffusionBandwidth` in `photodiode-rc.ts`; inputs 1/α (from
+  `siliconAbsorption`), L, D (36 cm²/s); cards "Drift share", "Diffusion −3 dB"; warning when the drift share < 1/√2.
 - [ ] 6f citation sweep a (thin film, polarization, imaging, spectroscopy, detectors): every "unverified" / "from memory" entry read in
   its source (crossref, Optica abstract pages, ITU/ICNIRP PDFs); fix or confirm, one line each.
 - [ ] 6g citation sweep b (fiber, free-space comms, wave optics, materials, laser safety).
@@ -342,6 +344,10 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 6e-a fiber + detectors (session 186, `phase-6/6e-fiber-detectors`, PR #224): PCF MFD from Nielsen et al. OL 28, 2309 (2003), w/Λ at V_PCF = √3 W
+  (5.109 µm at the defaults vs Marcuse 5.076; HF1 A_eff 194 vs FEM 200 µm²; the "6.69 µm" finding was wrong); detectivity splits detector
+  D* = ℛM/√(2qJ_dM²F + 4kT/R₀A) (2.616e12, Rogalski 2003) from system D* with R_L (2.668e9); C30902EH I_DB 0.2175 pA from i_N 0.1 pA/√Hz
+  (M_opt 215.45); streak 2.63 verified in Shakya & Chang (E in kV/mm), 3.37 ps bound added with Chang 1996.
 - 6d-b materials values (session 185, `phase-6/6d-b-materials`, PR #223): x-ray β adds n σ_inc λ/4π (NIST XCOM, 34 energies), within
   0.2 % of CXRO (Be L at 30 keV was 14× too long); heat-capacity diamond θ_D 1860 K caloric (Pässler 2021; ≤ 0.9 % vs SGTE 298–1000 K),
   GaAs 46.855 J/(mol·K) (Chatillon 1990), θ 344 K; Ge 23.347 (SGTE), LiF 41.815 (JANAF F-021); evaporation T_m SGTE (Ti 1941 K).
