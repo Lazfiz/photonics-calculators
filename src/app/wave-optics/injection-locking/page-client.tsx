@@ -93,7 +93,7 @@ export default function InjectionLockingPage() {
           refractive index change together, which stretches the range towards negative detuning: Berger et al. (1991) measured
           α ≈ 1 in 0.98 µm InGaAs/GaAs quantum-well lasers (the default), against ≈ 3.5 for InGaAsP/InP quantum wells and ≈ 5.7
           for InGaAsP/InP double heterostructures. The coupling rate k_c is an input. The estimate above,
-          k_c = (1 − R)/(τ_rt√R) (Kondratiev et al. 2023, Eq. 4), sets the default for a 300 µm cleaved GaAs-based diode
+          k_c = (1 − R)/(τ_rt√R) (Kondratiev et al. 2023, Eq. 4), sets the default for a 300 µm cleaved InGaAs/GaAs diode
           (R 0.32, n_g 3.9 from Wenzel et al. 2021); other authors define it with different factors of order unity. It pairs with ρ = P_inj/P when both powers
           are taken outside the injection facet; entering the total output of a symmetric slave halves ρ. The
           static range is not the stable band: relaxation-oscillation dynamics (a Hopf bifurcation, set by the relaxation

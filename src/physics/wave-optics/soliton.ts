@@ -74,7 +74,8 @@ export function fissionLength(t0: number, beta2: number, order: number): number 
 
 /**
  * Frequency offset Ω = ω_DW − ω_s, rad/s, of the dispersive wave a soliton radiates when β₃ ≠ 0, to leading order
- * Ω ≈ −3β₂/β₃ (Akhmediev & Karlsson 1995, Phys. Rev. A 51, 2602; Dudley et al. 2006 eq. 8 without the γP term).
+ * Ω ≈ −3β₂/β₃ (Akhmediev & Karlsson 1995, Phys. Rev. A 51, 2602; the phase-matching relation of Dudley et al. 2006,
+ * p. 1151, inline and unnumbered, without its (1 − f_R)γP_s term; the full form below uses γP_s/2 instead).
  * NaN for β₃ = 0.
  */
 export function dispersiveWaveShift(beta2: number, beta3: number): number {
