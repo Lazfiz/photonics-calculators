@@ -1,33 +1,32 @@
-# Handover — 2026-11-03 (session 190 → session 191)
+# Handover — 2026-11-03 (session 191 → session 192)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 190 did 6g-b on `phase-6/6g-b-citations` (PR #228): 18 wave-optics and materials entries read in their sources.
-That closes 6g. Next: 6h, accepted limitations (move missing-feature and missing-data findings to a "Known limitations" list).
+Session 191 did 6h on `phase-6/6h-limitations` (PR #229): "Open findings" now holds only actionable items; accepted
+missing features and missing data sit in a new "Known limitations" section. Next: 6i cross-cutting UI and performance.
 
 ## State
-- Value fix: `x-ray-optics` Si₃N₄ preset 3.18 g/cm³ (α-Si₃N₄, Kaloyeros 2020 Table I; CXRO's 3.44 is above the crystal density).
-  `photoemission.ts` keeps 3.44: it reproduces the NIST SRD 71 Appendix B example.
-- New golden checks: GaAs c_p vs Piesbergen 1963 Tab. 3 (+2.4 % at 100 K, +1.3 % at 200 K, +0.9 % at 273 K, −24 % at 50 K);
-  KDP type-I θ 41.2 ± 0.05° (EKSMA, same Zernike Sellmeier); Si₃N₄ δ at 5 keV scales with ρ.
-- Re-cited / annotated: Peck n 2.66, Eₐ 0.79 eV (equivalent 2.50/0.81, 3.00/0.77); KTP r₃₃ 36.3, r₂₃ 15.7 are unclamped
-  (clamped 35.0, 13.8 in vendor tables); KTP 3.8 eV is DeSalvo's transmission cutoff (bulk 350 nm); ZBLAN n_d 1.499 (Zhu 2010)
-  beside Gan's 1.5011; Wilson & Hawkes 3rd ed. 1998; injection locking: strained InGaAs default, Banerjee α 0.34–0.54, Henry
-  1985 (doi 10.1109/JQE.1985.1072787); slab heat fraction 0.32 = Fan's lasing estimate (non-lasing 0.37–0.43); Dudley's DW
-  relation is inline on p. 1151 with (1 − f_R)γP_s (616 nm vs our γP_s/2 633 nm at the defaults).
-- Unreadable: Guha 1998 (our OPO walk-off length re-derived instead), Patel 2001 JQE 37, 135 (κ of 10 at.% Yb:YAG), Siegman's
-  text (ring-cavity formulas re-derived), Cheng 1994 (KTP r), Petitbon 1988.
+- ROADMAP: "Open findings" = physics/data (thermal-expansion table test, "nepers" wording, kerr-lens title, two Codex
+  leftovers, IEC Ed. 4 watch, conc-mirror merge on request), "Performance (6i)" and "Cross-cutting (6i)".
+- Each Known limitation was checked against its page's modelNote or page text. Fixes: Brillouin modelNote said diamond
+  74 cm/GW (code and page give 17.4); notes added to soliton (Raman shift near the 57 fs default), background-noise
+  (850–1550 nm daytime, no night sky or Moon), infrared-glass (AMTIR-1 dn/dT 2× low below 1.5 µm), raman-scattering (no UV
+  edge for KGW, Ba(NO₃)₂); raman-gain.ts header no longer calls Savitski's gain linear. No formula or default changed.
 - Gate: 1215 tests, 5 eslint warnings.
 
 ## Next actions
 1. `/ship`; merge on the user's yes. After a release (on request): `node scripts/post-merge-check.mjs <sha>
    fiber-optics/fiber-bragg-grating-sensor=195.6 imaging/low-coherence=97.2 detectors/photodiode-speed=13.47`
-   (FBG default temperature shift 195.6 pm from session 189; this PR changes no default output).
-2. 6h accepted limitations, then 6i cross-cutting UI; the Gemini hero after Phase 6 (ask the user for the files).
-3. Ask the user for PDFs: Bai 2020 (APL Photonics 5, 031301: abstract 79 cm/GW vs code 60 ± 9), Patel 2001 (Yb:YAG κ at
+   (no default output changed since session 189).
+2. 6i cross-cutting UI and performance (ROADMAP "Performance (6i)" and "Cross-cutting (6i)"); split into a/b if needed.
+   Then the Gemini hero (ask the user for the files).
+3. Ask the user for PDFs: Bai 2020 (APL Photonics 5, 031301: abstract 79 cm/GW vs body 60 ± 9), Patel 2001 (Yb:YAG κ at
    10 at.%), Siegman "Lasers" ch. 11/21 pages.
 4. KRS-5 by hand: `materials/transparency-range?material=krs5` at 10 µm: n 2.3707, loss 28.4 %.
 
 ## Non-obvious facts
+- **Session 191:** a registry modelNote can lag its page text after a value fix (Brillouin "74"): when a value
+  changes, grep the registry entry too. Print notes for many slugs with a scratchpad script importing
+  `src/registry/index` (`calculators`, filter by slug).
 - **Session 190:** four parallel `general-purpose` agents (≈ 4 items each) took 6–11 min. Wayback `id_` URLs
   (`web.archive.org/web/<ts>id_/<url>`) open PDFs that sit behind bot checks (zfn.mpdl.mpg.de, pdx.edu, Hindawi). CREOL hosts
   DeSalvo 1996 at `api.creol.ucf.edu/Publications/1814.pdf`; Dudley RMP 2006 at members.femto-st.fr (john-dudley). archive.org

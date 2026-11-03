@@ -5,12 +5,12 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 190, 2026-11-03)
+## Status (session 191, 2026-11-03)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
   textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) and 5w-13 (materials) and 5w-14 (spectroscopy) and 5w-15 (thin-film + polarization) done (sessions 163–177): 5w is complete; KRS-5
-  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6g done (sessions 179–190), 6h next; the Gemini hero comes after it. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6h done (sessions 179–191), 6i next; the Gemini hero comes after it. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -77,22 +77,66 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   thin to rank, and 408/411 pages already ran on tested modules. The last 3 moved to modules: `dispersion-map` (on
   `dispersion-comp`), `power-density` (new `laser-safety/power-density`), `polarizer-extinction` (new; Mueller cross-check).
 
-## Open findings (evidence; fix during that category's audit)
+## Open findings (actionable; accepted model limits are under "Known limitations")
+**Physics / data**
+- `thermal-expansion`: the α table is page data without a test (move it to a physics module with a golden check).
+- Code comments in `laser-resonator.ts`, `doped-fiber-gain.ts`, `fiber-nonlinear.ts` and four resonator pages still call power log-ratios "nepers" (low, wording only).
+- `kerr-lens`: title "Kerr Lens Mode Locking" while the page computes only the lens (the modelNote says cavity design isn't modelled).
+- Codex review 2026-10-24 leftovers (each reproduced in session 144; golden cases for the tests): the OPA page's linear-GVM
+  spectrum can run past degeneracy ν_p/2 when |δ_si| is tiny, and its default δ_si (−97.7 fs/mm) is for 1550/3393 nm; lock-in
+  f_s = 2f_r ties the 1f and 3f beats at one Δf (coherent sum 0.6–1.2× the shown envelope).
+- Laser safety (watch): re-check the classes when IEC 60825-1 Ed. 4 is published (only a BSI draft in 2026).
+- `spectroscopy/conc-mirror` and `jacquinot` (session 104) both show the Jacquinot ratio π f/(h tan θ) from `throughput.ts`;
+  conc-mirror adds the mirror cone and slit étendue. Merge into jacquinot only if the user asks.
+
+**Performance (6i)**
+- 5w-1 (session 163): `cosmic-rays` `poissonQuantile` ≈ 13 ms per call at the max inputs (μ ≈ 1.7e9), ≈ 0.7 s per render.
+- Codex leftovers: graded-index spectra take ≈ 0.35 s at the 4000-step cap; `periodicDecay` takes up to ≈ 7e4 terms per chart
+  point when σ ≫ T (could return Σαᵢτᵢ/T).
+- 5w-15 (session 177): Fabry-Perot chart at R = 0.999 has ≈ 2.6 points per FWHM (20 000 cap).
+
+**Cross-cutting (6i)**
+- `ui-check` (session 158): 9 checks fail on production too, stale since the pages changed: boxcar `pulseWidth` min is now
+  0.01 (checks want "Min: 10"); gas-laser-resonator 'Wavelength (nm)' / 'Tube Length (mm)' labels not found; the
+  `probeWavelength` slider page doesn't write the URL as expected. Update the checks to the current pages.
+- Initial JS (session 158): thin-film metal pages (enhanced-aluminum, protected-silver, emissivity-control, heat-mirror)
+  carry 24–28 KB gz of their own JS, likely n,k tables in the client chunk; the median page carries 14 KB.
+- Charts (session 159): many pages wrap ChartPanel in their own bordered
+  `p-4` box: double padding leaves a 245 px plot at 360 px.
+- Charts (session 160): the PNG/CSV row adds ≈ 32 px above every SVG chart, including those whose page already prints a
+  heading above the ChartPanel. Plotly-routed charts (heatmap, 3-D, polar) have Plotly's own hover but no export buttons.
+- `ui-check` can't hydrate a page that has no `<input>` (`optical-glass-catalog`; `jones-calculus` until an element is
+  added).
+
+## Known limitations (accepted in 6h, session 191: missing features and missing data; each page's modelNote or text states its limit)
+Evidence for a later extension. Reopen an item only with a new source or a user request.
+
 **Fiber optics**
 - `photonic-crystal`: confinement loss isn't modelled (it needs the ring count N); an empirical fit could add it. The Saitoh–Koshiba fit is ≈ 20 % off the multipole D for Λ ≤ 1 µm.
+- `low-water-peak` (session 132): the 1246 and 2212 nm OH combination bands are listed without a strength and not
+  modelled (Humbach 1996 Table is paywalled; no open source found). Band widths are assumed (30 nm at 1383 nm, same in
+  wavenumber elsewhere). The 1383 nm 62.7 dB/km/ppm is Humbach as quoted by arXiv:2303.17814.
+- `rare-earth-doped`, `fiber-amplifier`: Er preset σ: 980 nm from Barnes 1991 Table V, 1480/1550 nm read off Fig. 6(c)
+  (session 148; the Southampton eprint has a proof-of-work wall). `splice-loss`: air-gap Fresnel loss (≤ 0.59 dB) not
+  included (`gapEtalonTransmission` exists); the page says so. `nonlinear-effects`: SBS card is narrow-CW only (no K/linewidth option).
+- `dispersion-comp`: Agrawal 5th-ed. §2.4.3/§5.4.4 titles confirmed (Wiley TOC); the BL|D|σ_λ ≤ 1/4 body text unread.
+
 **Materials**
-- `raman-scattering` (session 162): no sourced UV edges for KGW, Ba(NO₃)₂ (pump input goes to 200 nm); the header calls the
-  diamond gain linear in 1/λp, but the Savitski points aren't (42/41 at 532/670 nm).
+- `raman-scattering` (session 162): no sourced UV edges for KGW, Ba(NO₃)₂ (pump input goes to 200 nm; stated since session 191).
+  (Session 148: KGW/Ba(NO₃)₂ 532 nm Markevich 2016, As₂S₃ Stegeman 2006): the 1064 nm KGW/Ba(NO₃)₂ gains are EKSMA
+  vendor values, ≈ 2× below ω_s scaling from 532 nm; Basiev 1999 cross-sections × Savitski diamond support them (session 184:
+  documented as measurement spread, ±50 %). No primary 1064 nm KGW source read (Pask 2003 may swap the 901/768 values). CS₂/benzene have only calculated g (Grun 1969) with Clements &
+  Stoicheff linewidths; doped silica, water and KYW (no gain) still out. As₂S₃ below 650 nm is flagged, not cut.
 - `x-ray-optics` (session 185: Compton added, within 0.2 % of CXRO): Rayleigh left out as in CXRO (Be +18 % at 10 keV). Range 1–30 keV
   (Henke tables); Al, W, Ge filters/targets not in the presets. Si₃N₄ preset 3.18 g/cm³ (α-Si₃N₄, Kaloyeros 2020 Table I, session 190; CXRO's 3.44 exceeds the crystal); CVD membranes ≈ 2.8–3.0.
 - `polymer-optics` (session 136): dropped PDMS (Schneider 2009 Sylgard 184 fit 1.431 vs Zhang 2020 1.397 at 550 nm), CYTOP, OrmoComp
   and all loss, T_g, dn/dT and stress-optic data (unsourced). NOA 61 checked (session 144) against Norland's archived sheet.
 - `thermal-expansion` (session 144: every α sourced): conventions are mixed (glasses: mean over a range; Kaye & Laby/NIST: 293 K).
-  Invar is an endpoint fit slope (± 20 %). The table is page data without a test. No α(T) model (Okada & Tokumaru 1984 for Si).
+  Invar is an endpoint fit slope (± 20 %). No α(T) model (Okada & Tokumaru 1984 for Si).
 - `thin-film/environmental-stability` (session 135): the H-layer (TiO₂ film) dn/dT 20 and α 8 × 10⁻⁶/K defaults are unsourced
   placeholders; free-film expansion ignores the substrate constraint and Poisson term. Peck's own fit (read session 190 via a
   Wayback copy): n 2.66, Eₐ 0.79 eV; fitted to epoxy packages, so the page still defaults to n = 0.
-- `heat-capacity` (session 185: + GaAs, diamond): MgF₂, ZnSe, BaF₂ and fused silica have no cited θ_D. GaAs below 298 K unchecked
+- `heat-capacity` (session 185: + GaAs, diamond): MgF₂, ZnSe, BaF₂ and fused silica are not offered (no cited θ_D). GaAs below 298 K unchecked
   (session 190: Piesbergen 1963 Tab. 3, within 2.4 % at 100–273 K, 24 % low at 50 K); above 600 K data sets spread by up to 10 J/(mol·K) (Pässler, AIP Adv. 3, 082108 (2013), abstract). `damage-threshold` and `radiation-damage` have user inputs, no presets.
 - `electro-optic`, `photorefractive` (session 143: KTP added): BaTiO₃, SBN, BSO and LiTaO₃ are still out. BaTiO₃ unclamped r₁₃ 8,
   r₃₃ 105, r₄₂ 1300 pm/V at 633 nm (Zgonik 1994 PRB 50, 5941, quoted in Petraru's thesis, `kups.ub.uni-koeln.de/1050/1/thesis_petraru_final.pdf`
@@ -110,22 +154,16 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
   (Sheik-Bahae 1991 JQE has no open copy; CREOL hosts only the 1990 PRL, figures only). DeSalvo calcite dropped: Table II n 1.59 fits neither axis.
   Candidates: Dinu 2003 / Bristow 2007 (Si), Sheik-Bahae 1991 (semiconductors), Milam 1998 (silica 1064 nm).
 - `brillouin-scattering` (session 148: + As₂Se₃ Abedin 2005, As₂S₃ Pant 2011, diamond Bai 2020): diamond's p now (p₁₁ + 2p₁₂ − 2p₄₄)/3
-  = 0.0600 (session 184; Bai's 0.0153 ≈ (2p)²): 17.4 cm/GW, 3.4× below the measured 60 ± 9. The abstract says 79 cm/GW at 12 MHz;
+  = 0.0600 (session 184; Bai's 0.0153 ≈ (2p)²): 17.4 cm/GW, 3.4× below the measured 60 ± 9 (modelNote corrected from a stale
+  "74" in session 191). The abstract says 79 cm/GW at 12 MHz;
   the body's 60 ± 9 is unrechecked (pubs.aip.org is behind Cloudflare). SMF-28/Ge-doped have only measured g (Niklès 1997);
   tellurite only M₁; Bi₂O₃ and PMMA second-hand. Candidates: Ogusu 2004 JOSA B, Kobyakov 2010.
-- `raman-scattering` (session 148: KGW/Ba(NO₃)₂ 532 nm Markevich 2016, As₂S₃ Stegeman 2006): the 1064 nm KGW/Ba(NO₃)₂ gains are EKSMA
-  vendor values, ≈ 2× below ω_s scaling from 532 nm; Basiev 1999 cross-sections × Savitski diamond support them (session 184:
-  documented as measurement spread, ±50 %). No primary 1064 nm KGW source read (Pask 2003 may swap the 901/768 values). CS₂/benzene have only calculated g (Grun 1969) with Clements &
-  Stoicheff linewidths; doped silica, water and KYW (no gain) still out. As₂S₃ below 650 nm is flagged, not cut.
-- `low-water-peak` (session 132): the 1246 and 2212 nm OH combination bands are listed without a strength and not
-  modelled (Humbach 1996 Table is paywalled; no open source found). Band widths are assumed (30 nm at 1383 nm, same in
-  wavenumber elsewhere). The 1383 nm 62.7 dB/km/ppm is Humbach as quoted by arXiv:2303.17814.
 - `two-photon-absorption` (session 147: + DeSalvo wide-gap rows, Si indirect fit): BK7, CS₂, water still out. DeSalvo rows scale only
   where 2ħω ≥ 1.1 E′_g at both λ_ref and λ (session 184): BBO to 331.5 nm, the other five give only the measured β. DeSalvo Table I's
   other wavelengths (BBO 355 nm 0.010) are not added; KTP's 3.8 eV is DeSalvo's own transmission cutoff (Table I);
   bulk KTP transmits from ≈ 350 nm (Bierlein 1989), noted in the module.
 - `infrared-glass` (session 144: AMTIR-1, As₂S₃ from AMI's archived sheets): ZBLAN has no sourced band, dn/dT, conductivity or
-  hardness (only reseller pages found); AMTIR-1's single dn/dT is 2× low below 1.5 µm. Gan's ZBLAN formula gives n_d 1.5011; Zhu &
+  hardness (only reseller pages found); AMTIR-1's single dn/dT is 2× low below 1.5 µm (stated since session 191). Gan's ZBLAN formula gives n_d 1.5011; Zhu &
   Peyghambarian 2010 Table 1 gives 1.499 (composition spread, both cited). Crystran's fused-silica "1.47012 at 4 µm" is n at 0.4 µm (Malitson).
 - `crystal-properties`: old quartz-crystal and sapphire-properties links land on the calcite default (a redirect can't add
   `?crystal=`). `birefringent-crystals`: KDP type-I SHG 41.21° at 1064 nm matches EKSMA's 41.2°
@@ -135,124 +173,93 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - `magneto-optic`: the CeF₃ fit (Vojna Table 1) stops at 700 nm (39.5 against 46.3 rad/(T·m) measured at 1064 nm); Vojna’s
   Ce:TAG, TSLAG, Ho₂O₃ and Pr/Ho:TGG fits don’t reproduce their own tabulated values, so they are left out.
 - `photoelastic`: the Schott sheet doesn’t state the wavelength of K, so the page claims none.
+
 **Wave optics**
 - `optical-parametric-oscillator` (session 182): the walk-off overlap length is our own near-field derivation (pump and signal
   mode of equal radius, pump centred mid-crystal; pump on the signal axis at entry gives 1.07 against 1.94 mm); Guha 1998
   (doi:10.1007/s003400050453) unreadable; a UPC thesis's summary of it has no walk-off length (session 190 re-derived ours). BK's h(B, ξ) is the SHG function, not used.
+  (Session 150) BBO type I only (d_eff from EKSMA d₂₂/d₃₁ at 1064 nm, no Miller scaling; d₃₁ sign taken as adding); no KTP/LBO/PPLN presets.
 - `injection-locking` (session 182): the dynamically stable band (Hopf edge, needs f_R and damping inputs) is not computed; Henry–Olsson–Dutta
   1985's range form is cited (session 190, from a snippet; ω₁'s definition unread); Petitbon 1988 abstract only. (Session 149) k_c is estimated as (1 − R)/(τ_rt√R) (Kondratiev 2023 Eq. 4; B is the reflected intracavity field, so ρ is
   relative to the intracavity power); α 1 is Berger's below-threshold value, Banerjee 1991 gives 0.34–0.54 (both cited). `four-wave-mixing`: no fiber loss in the gain (lossless OPA).
 - `slow-light`: one isolated Lorentzian, no pulse distortion or saturation (a warning shows when the signal is wider than the line).
   Old `/wave-optics/interferometer?wavelength=633` links land on michelson-interferometer's µm input (clamped to 50 µm).
 - χ⁽²⁾ pages (session 149): d_eff 12.4 pm/V from Shoji Table 10 (read on the Optica abstract page); Miller's rule gives ×0.87 for the
-  3.39 µm idler (Shoji: Miller Δ not constant, so not applied). `optical-parametric-oscillator` (session 150): BBO type I only
-  (d_eff from EKSMA d₂₂/d₃₁ at 1064 nm, no Miller scaling; d₃₁ sign taken as adding); no KTP/LBO/PPLN presets.
+  3.39 µm idler (Shoji: Miller Δ not constant, so not applied).
 - `dye-laser-resonator`: (session 150) σₑ(590) 1.1e-16 cm² is read off Falkenstein 1978 Fig. 6 (±0.05);
-  σ_T is a 77 K-glass value (no room-temperature liquid ε_T found); τ_T 0.25 µs is air-saturated (no degassed/COT value found). `gas-laser-resonator`: g₀ 0.15 /m and I_sat 25 W/cm² come from one
+  σ_T is a 77 K-glass value (no room-temperature liquid ε_T found); τ_T 0.25 µs is air-saturated (no degassed/COT value found).
+  (Session 171) τ_eff (erfcx closed form) is our own small-signal derivation; no textbook defines the jet
+  transit time precisely (Hollberg 1990 gives only the regime). The slope uses Laporta–Brussard's near-threshold overlap.
+- `gas-laser-resonator`: g₀ 0.15 /m and I_sat 25 W/cm² come from one
   HeNe course report (Ng et al. 2015); no sourced g₀/I_sat for Ar⁺ or CO₂, so the line buttons set λ only.
 - `diode-laser-resonator` (session 149): hybrid set (De Koninck g₀/N_tr/B/C, Wenzel A/n_g); De Koninck's g₀ is Tsvid's dg/d ln J used as
   is (≈ 1750/cm in the N law); η_i·share 35 % vs Tsvid's 40–54 %. Coldren's gain tables have no open copy. Session 171: the
   log-gain cap g/g₀ ≤ 3 (N ≤ e³ N_tr) is a judgement, not a sourced fit range (Coldren, McIlroy paywalled; WIAS 2002 gives
-  only N > 2.5e18); diode and dye modelNotes are ≈ 470–560 characters.
-- `dye-laser-resonator` (session 171): τ_eff (erfcx closed form) is our own small-signal derivation; no textbook defines the jet
-  transit time precisely (Hollberg 1990 gives only the regime). The slope uses Laporta–Brussard's near-threshold overlap.
+  only N > 2.5e18); the page states the cap when it blanks. Diode and dye modelNotes are ≈ 470–560 characters.
 - `thin-disk-laser` (session 150): Chanteloup's σ_e values are literature (Fan 2007, Brown 2005), σ_a measured; κ 6.3 at 10 at.% is
   interpolated (no direct 10 at.% value read). Patel 2001 (JQE 37, 135) measured 10 at.%
   but is paywalled; Chénais 2006 confirms 7 W/(m·K) at 8 at.%.
 - Session 172 (5w-10): supercontinuum DW is the β₂β₃ estimate, ≈ 90 nm redder than a GNLSE run at the defaults (session 182 probe);
   Dudley 2006 read (session 190): defaults confirmed; its DW relation (p. 1151) uses (1 − f_R)γP_s (616 nm vs our 633 nm). `q-switched-laser`:
   r is the input, so the Degnan optimum coupling can't show; a g₀l input would. `slab-laser` 0.32 is Fan 1993's lasing estimate (non-lasing 0.37–0.43; abstract). `ring-cavity` formulas re-derived;
-  Siegman's text unread (ch. 11 fits finesse/FSR, ray matrices are ch. 15).
-  `soliton` default T₀ 57 fs sits at the
-  edge of Raman-free NLS. Kerr-lens title "Kerr Lens Mode Locking" while the page computes only the lens.
+  Siegman's text unread (ch. 11 fits finesse/FSR, ray matrices are ch. 15). `soliton` default T₀ 57 fs sits at the
+  edge of Raman-free NLS (stated since session 191).
+
 **Free-space comms**
 - `aperture-averaging`: only the Gaussian aperture is modelled; a hard circular aperture gives a 5–11 % lower A at d² = 1–30 (two reviewers' quadrature),
   crossing near d² ≈ 100 and → 1.13× as d² → ∞ (checked in session 173 with GR 6.574.2). The page states this; a hard-aperture option could add it.
-- `beam-wander` (low): F keeps the geometric-optics expansion of 1 − exp(−ΛLκ²ξ²/k) (≈ 1.3 % high at the defaults, reviewer's
+- `beam-wander`: F keeps the geometric-optics expansion of 1 − exp(−ΛLκ²ξ²/k) (≈ 1.3 % high at the defaults, reviewer's
   exact κ-integral); Berman 2007's 1.919 (2r₀)^(−1/3) and Vasylyev PRL 117, 090501 (0.94 per axis, focused) don't match A&P's 2.42 (filter models).
-- `adaptive-optics` (FSO, low): Hudgin's zonal 0.28 (d/r₀)^(5/3) sits ≈ 10 % below Noll's Δ_N for all N ≤ 5000 (no crossing); κ spans 0.23–0.30 by
+- `adaptive-optics`: Hudgin's zonal 0.28 (d/r₀)^(5/3) sits ≈ 10 % below Noll's Δ_N for all N ≤ 5000 (no crossing); κ spans 0.23–0.30 by
   influence function (Berdeu et al. A&A 674, A112 (2023) Table 1); square-grid pitch (hex 7.5 % larger). Hudgin and Hardy unread (captcha).
-**Thin film**
-- `sputtering-deposition` (low): no gas scattering (defaults sit at d ≈ 5.7 λ_Ar, rate is an upper bound); Westwood
-  thermalisation could add it. Cr and Nb dropped: no sourced 500 eV Ar⁺ yield (M&G 600 eV: 1.3, 0.65).
-- `plasma-deposition` (low): h-factors are low-pressure only (flagged, chart cut); L&L's high-pressure diffusion term
-  would extend it.
-- `ellipsometry-measurement` (optional): a film thickness needs a film model, e.g. a known film index and Azzam &
-  Bashara's transparent-film inversion.
-- 5w-15 (session 177), deferred: Fabry-Perot chart at R = 0.999 has ≈ 2.6 points per FWHM (20 000 cap); gradient-index lacks Southwell's quintic;
-  plasma sweep starts at 0.3 mTorr (input 0.1); hard-coating Γ ignores mode mixity.
-- `thermal-evaporation` (low): all 8 metals match the CRC table (6f-a); the fits use one 298–2500 K range, not CRC's per-phase T_max.
-
-**Free-space comms**
-- Code comments in `laser-resonator.ts`, `doped-fiber-gain.ts`, `fiber-nonlinear.ts` and four resonator pages still call power log-ratios "nepers" (low, wording only).
-- `snow-attenuation` (low): ICTON 2005 (eqs. 6–8) and Awan's thesis say only "snow rate in mm/h"; S stays read as water-equivalent
+- `snow-attenuation`: ICTON 2005 (eqs. 6–8) and Awan's thesis say only "snow rate in mm/h"; S stays read as water-equivalent
   (Awan p. 101: 50 dB/km at ≈ 5 mm/h, the page gives 51).
-- `background-noise`, `receiver-fov` (low): sky radiances are Giggenbach 2022 Table 1 typical values (×10 spread), 850–1550 nm only, log-log across the 1.13/1.38 µm water bands; no night sky or Moon (his Moon row is ≈ 10× E_sun·albedo/π at 850/1064 nm). A sourced sky model (MODTRAN tables, ITU-R P.1621) would extend it.
-- `receiver-fov` (low): field-stop clipping of the signal and turbulence spot growth (λ/r₀) are not modelled; only a 1.22λ/D warning.
-- `acquisition-tracking` (low): Tyler & Fried's abstract says "rms angular measurement error"; "per axis" is our reading (full text unread).
-- `quantum-key-distribution` (low): asymptotic decoy BB84 only (no finite-key or intensity fluctuations); the GYS cutoff is 142.015 km against Ma's 142.05 (gap not from Y₀ terms).
-- `optical-antenna` (low): M² is capped at 2 (θ × M², gain / M⁴). A Gaussian Schell-model far field would cover multimode beams.
+- `background-noise`, `receiver-fov`: sky radiances are Giggenbach 2022 Table 1 typical values (×10 spread), 850–1550 nm only, log-log across the 1.13/1.38 µm water bands; no night sky or Moon (his Moon row is ≈ 10× E_sun·albedo/π at 850/1064 nm; stated since session 191). A sourced sky model (MODTRAN tables, ITU-R P.1621) would extend it.
+- `receiver-fov`: field-stop clipping of the signal and turbulence spot growth (λ/r₀) are not modelled; only a 1.22λ/D warning.
+- `acquisition-tracking`: Tyler & Fried's abstract says "rms angular measurement error"; "per axis" is our reading (full text unread).
+- `quantum-key-distribution`: asymptotic decoy BB84 only (no finite-key or intensity fluctuations); the GYS cutoff is 142.015 km against Ma's 142.05 (gap not from Y₀ terms).
+- `optical-antenna`: M² is capped at 2 (θ × M², gain / M⁴). A Gaussian Schell-model far field would cover multimode beams.
 
-**Imaging (session 166, unverified or deferred)**
+**Thin film**
+- `sputtering-deposition`: no gas scattering (defaults sit at d ≈ 5.7 λ_Ar, rate is an upper bound); Westwood
+  thermalisation could add it. Cr and Nb dropped: no sourced 500 eV Ar⁺ yield (M&G 600 eV: 1.3, 0.65).
+- `plasma-deposition`: h-factors are low-pressure only (flagged, chart cut); L&L's high-pressure diffusion term
+  would extend it. 5w-15: the sweep starts at 0.3 mTorr (input 0.1).
+- `ellipsometry-measurement`: a film thickness needs a film model, e.g. a known film index and Azzam &
+  Bashara's transparent-film inversion.
+- 5w-15 (session 177): gradient-index lacks Southwell's quintic; hard-coating Γ ignores mode mixity.
+- `thermal-evaporation`: all 8 metals match the CRC table (6f-a); the fits use one 298–2500 K range, not CRC's per-phase T_max.
+
+**Imaging and spectroscopy**
 - `fcs`: SNR uses G = 1/N and ignores the triplet amplitude (≈ 9 % at defaults, within Koppel's estimate).
-**Imaging (session 167, unverified or deferred)**
 - `mtf`: high-NA defocus is only warned about; an exact-phase OTF (reviewer's scalar quadrature: Strehl 0.27 vs paraxial 0.555
   at NA 0.95, Δz 0.5 µm) is not modelled.
-**Fiber optics (sessions 169–170, unverified or deferred)**
-- `rare-earth-doped`, `fiber-amplifier`: Er preset σ (980/1480/1550 nm) unchecked against Barnes 1991 (JQE 27, 1004; closed, the
-  Southampton eprint has a proof-of-work wall). `splice-loss`: air-gap Fresnel loss (≤ 0.59 dB) not
-  included (`gapEtalonTransmission` exists); the page says so. `nonlinear-effects`: SBS card is narrow-CW only (no K/linewidth option).
-- `dispersion-comp`: Agrawal 5th-ed. §2.4.3/§5.4.4 titles confirmed (Wiley TOC); the BL|D|σ_λ ≤ 1/4 body text unread.
-
-**Imaging (session 168, unverified or deferred)**
 - `spinning-disk`: crosstalk through neighbouring pinholes (the pitch) is not modelled; the pitch in AU is shown only.
 - `three-photon`/`two-photon`: Zipfel's NA^0.91 lateral fit is used up to NA 1.7; Fig. 4c states no upper NA bound (main text paywalled).
-- `super-resolution`: one wavelength input for STED (excitation) and PALM (emission); a separate STED λ would be cleaner.
-
-**Imaging / spectroscopy** (found in the detectors part 0, session 63)
+- `super-resolution`: one wavelength input for STED (excitation) and PALM (emission), as its label says; a separate STED λ would be cleaner.
 - Spectroscopy part 11 (session 107): `infrared-spectroscopy` has no Herman–Wallis factor or absolute band strength; `electron-spectroscopy` graphite ρ 2.2 (SRD 71 table value) vs 2.26 g/cm³ crystal; LHM water ε₂ = 3.52 + 7.52θ kept (fits Table I with RMS 0.43, against 0.49 with −), and the page allows only −5 to 40 °C.
-- `spectroscopy/conc-mirror` and `jacquinot` (session 104) both show the Jacquinot ratio π f/(h tan θ) from `throughput.ts`;
-  conc-mirror adds the mirror cone and slit étendue. Merge into jacquinot only if the user asks.
 - Imaging part 8 (session 86): `photoacoustic` applies only the single-pulse and ≥ 10 s skin limits (`pulse-train.ts` has no skin rules); `sum-frequency-microscopy` withholds the power for L > b (no non-degenerate Boyd–Kleinman); SRS δ is an input (no cross-section model).
+- `imaging/fluorophores.ts` (session 84): log-normal bands are exactly 0 past their anti-Stokes cutoff (EGFP emission below 480 nm, mCherry excitation above 622 nm), so tail-only bleed-through reads 0; sampled FPbase spectra would fix it. Disclosed on the pages.
+
+**Detectors**
 - `streak-camera` (session 142): M taken equal on the time axis (no source); the data-sheet allowance holds only at the
   spec's sweep (C16910 fastest range factory-set 60–80 ps; at 80 ps it is 0.48 ps, under the 0.5 ps default).
 - `intensified-ccd` (session 141): the gain sweep holds the data-sheet K_f down to unity gain (noted on the page).
-- `imaging/fluorophores.ts` (session 84): log-normal bands are exactly 0 past their anti-Stokes cutoff (EGFP emission below 480 nm, mCherry excitation above 622 nm), so tail-only bleed-through reads 0; sampled FPbase spectra would fix it. Disclosed on the pages.
-- 5w-1 (session 163), not fixed: `cosmic-rays` `poissonQuantile` ≈ 13 ms per call at the max inputs (μ ≈ 1.7e9), ≈ 0.7 s per render;
-  `em-gain` has no conventional-amplifier read-noise input.
-- 5w-2 (session 164), not fixed: `gain-temperature` scales the Miller curve with V_br (shift model differs 8 %).
+- 5w-1 (session 163): `em-gain` has no conventional-amplifier read-noise input (stated in its modelNote).
+- 5w-2 (session 164): `gain-temperature` scales the Miller curve with V_br (shift model differs 8 %).
+
 **Polarization**
 - 5w-15 (session 177): wire-grid uses DC σ at 10.6 µm (Al ωτ ≈ 1.4, disclosed).
 - `polarization-scrambling` (session 140): near-locked (not exactly locked) stages still use the product of means; only p, q ≤ 4 get a
-  beat-period warning (5:7 detuned 0.1 % gets none), and a 1e-9 lock tolerance makes the DOP jump at exact lock.
+  beat-period warning (5:7 detuned 0.1 % gets none), and a 1e-9 lock tolerance makes the DOP jump at exact lock. Codex leftover
+  (session 145): relations above order 12 count as incommensurate (11/13/24 kHz at Γm 10: 4.4e-3 off; negligible at the J₀ zero).
 
-**Laser safety** (optional)
-- A scanned-lidar mode on `lidar-safety`.
-- Re-check the classes when IEC 60825-1 Ed. 4 is published (only a BSI draft in 2026).
+**Laser safety**
+- No scanned-lidar mode on `lidar-safety` (the modelNote says scanning isn't modelled).
 - Sessions 180–181: ICNIRP Table 5 note c and Table 7 note b apply in the shared limits, scanned passes and the anterior
   segment (IR; visible only for α > α_min). Outside
   400–1400 nm the pages assume 10 s with a note (ICNIRP p. 285: the longest exposure expected). EN 207 test conditions
   (5 s CW / 50 pulses) are from secondary sources only (Wikipedia, Laser 2000); ISO 19818-1:2021 supersedes EN 207.
-
-**Codex review 2026-10-24** (each reproduced in session 144 with the repo's functions; golden cases for the tests)
-- Fixed in 4g-b (session 146). Leftovers: the OPA page's linear-GVM spectrum can run past degeneracy ν_p/2 when |δ_si| is tiny,
-  and its default δ_si (−97.7 fs/mm) is for 1550/3393 nm; graded-index spectra take ≈ 0.35 s at the 4000-step cap.
-- Leftovers of 4g-a (session 145 review): scrambler relations above order 12 count as incommensurate (11/13/24 kHz at
-  Γm 10: 4.4e-3 off; negligible at the J₀ zero); lock-in f_s = 2f_r ties the 1f and 3f beats at one Δf (coherent sum
-  0.6–1.2× the shown envelope); `periodicDecay` takes up to ≈ 7e4 terms per chart point when σ ≫ T (could return Σαᵢτᵢ/T).
-
-**Cross-cutting**
-- `ui-check` (session 158): 9 checks fail on production too, stale since the pages changed: boxcar `pulseWidth` min is now
-  0.01 (checks want "Min: 10"); gas-laser-resonator 'Wavelength (nm)' / 'Tube Length (mm)' labels not found; the
-  `probeWavelength` slider page doesn't write the URL as expected. Update the checks to the current pages.
-- Initial JS (session 158): thin-film metal pages (enhanced-aluminum, protected-silver, emissivity-control, heat-mirror)
-  carry 24–28 KB gz of their own JS, likely n,k tables in the client chunk; the median page carries 14 KB.
-- Charts (session 159): many pages wrap ChartPanel in their own bordered
-  `p-4` box: double padding leaves a 245 px plot at 360 px.
-- Charts (session 160): the PNG/CSV row adds ≈ 32 px above every SVG chart, including those whose page already prints a
-  heading above the ChartPanel. Plotly-routed charts (heatmap, 3-D, polar) have Plotly's own hover but no export buttons.
-- `ui-check` can't hydrate a page that has no `<input>` (`optical-glass-catalog`; `jones-calculus` until an element is
-  added).
 
 ## Phase 2 — architecture (open)
 - 2-inline-b: formulas inside page component bodies. `scripts/inline-inventory.ts` lists ≈ 550 math lines on 248 pages
@@ -297,8 +304,7 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - [x] 6f-a citation sweep a (session 188, `phase-6/6f-a-citations`, PR #226): 20 entries read; 3 value fixes. See Done.
 - [x] 6g-a citation sweep b, part a (session 189, `phase-6/6g-a-citations`, PR #227): ≈ 15 entries read; Yb 1064 σ, FBG K_T slope. See Done.
 - [x] 6g-b citation sweep b, part b (session 190, `phase-6/6g-b-citations`, PR #228): 18 entries read; Si₃N₄ x-ray density 3.18. See Done.
-- [ ] 6h accepted limitations: move the missing-feature and missing-data entries from "Open findings" to a "Known limitations" list;
-  check that each page states its limit.
+- [x] 6h accepted limitations (session 191, `phase-6/6h-limitations`, PR #229): ≈ 60 entries moved to "Known limitations"; 4 notes added, Brillouin note fixed. See Done.
 - [ ] 6i cross-cutting UI (not accuracy): stale `ui-check` checks, chart double padding, export-row height, metal-page JS size.
 - [ ] Then (Phase 5 leftover): replace the home-page hero with the one the user made in Gemini, and wire it in (ask the user for the files).
 
@@ -319,6 +325,10 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 6h accepted limitations (session 191, `phase-6/6h-limitations`, PR #229): "Open findings" split into actionable items (physics
+  wording, perf, 6i UI) and "Known limitations"; every limit checked against its page's modelNote or text. Brillouin modelNote
+  said diamond 74 cm/GW (now 17.4, as code and page); limits added to soliton, background-noise, infrared-glass, raman-scattering
+  notes; raman-gain.ts header no longer calls Savitski's gain linear in 1/λ_p.
 - 6g-b citation sweep b, part b (session 190, `phase-6/6g-b-citations`, PR #228): Si₃N₄ x-ray preset 3.18 g/cm³ (was CXRO's 3.44,
   above the crystal; Kaloyeros 2020 Table I); GaAs c_p vs Piesbergen 1963 tested (≤ 2.4 % at 100–273 K, −24 % at 50 K); Peck n 2.66,
   Eₐ 0.79 eV; KTP r unclamped; KDP 41.2° (EKSMA); ZBLAN 1.499 (Zhu 2010); Wilson & Hawkes 3rd ed.; injection-locking α (Banerjee,
