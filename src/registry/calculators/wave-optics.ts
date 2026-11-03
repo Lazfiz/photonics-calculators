@@ -570,7 +570,7 @@ export const waveOptics: CalculatorEntry[] = [
     description: "Fibre soliton order N, dispersion and nonlinear lengths, fundamental soliton power and soliton period, with a split-step Fourier simulation of a sech pulse along the fibre.",
     keywords: ["optical soliton", "soliton order", "nonlinear Schrödinger equation", "split-step Fourier", "dispersion length", "higher-order soliton"],
     tier: "textbook",
-    modelNote: "Scalar nonlinear Schrödinger equation with β₂ and the Kerr term, solved by the symmetric split-step Fourier method for a sech input (N ≤ 4, up to 10 L_D). Fibre loss, β₃, self-steepening and the Raman response are left out.",
+    modelNote: "Scalar nonlinear Schrödinger equation with β₂ and the Kerr term, solved by the symmetric split-step Fourier method for a sech input (N ≤ 4, up to 10 L_D). Fibre loss, β₃, self-steepening and the Raman response are left out; the Raman self-frequency shift grows as T₀⁻⁴ and becomes visible within a few L_D near the 57 fs default.",
     references: [
       { citation: "Agrawal G. P. (2019). Nonlinear Fiber Optics, 6th ed. Academic Press. Dispersion and nonlinear lengths, soliton order, the normalised NLS.", url: "https://doi.org/10.1016/C2018-0-01168-8" },
       { citation: "Satsuma J., Yajima N. (1974). Initial value problems of one-dimensional self-modulation of nonlinear waves in dispersive media. Prog. Theor. Phys. Suppl. 55, 284–306.", url: "https://doi.org/10.1143/PTPS.55.284" },
