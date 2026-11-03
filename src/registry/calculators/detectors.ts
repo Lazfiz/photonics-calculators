@@ -963,6 +963,10 @@ export const detectors: CalculatorEntry[] = [
         citation: "Shakya M. M., Chang Z. (2005). Achieving 280 fs resolution with a streak camera by reducing the deflection dispersion. Appl. Phys. Lett. 87, 041103. Transit-time dispersion 2.63·√Δε/E ps (Δε in eV, E in kV/mm) and deflection dispersion as tube terms.",
         url: "https://doi.org/10.1063/1.2001732",
       },
+      {
+        citation: "Chang Z., Rundquist A., Zhou J., et al. (1996). Demonstration of a sub-picosecond x-ray streak camera. Appl. Phys. Lett. 69, 133. Source of the 2.63·√Δε/E transit-time estimate.",
+        url: "https://doi.org/10.1063/1.118099",
+      },
     ],
   },
   {

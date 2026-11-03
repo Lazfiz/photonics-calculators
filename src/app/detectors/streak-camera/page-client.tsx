@@ -112,7 +112,7 @@ export default function StreakCameraPage() {
         <p>Δt = FWHM of rect(Δt<sub>slit</sub>) ⊗ rect(Δt<sub>pixel</sub>) ⊗ Gauss(Δt<sub>G</sub>); no Gaussian: max(Δt<sub>slit</sub>, Δt<sub>pixel</sub>)</p>
         <p>T<sub>window</sub> = min(N<sub>pixels</sub>·p, L<sub>screen</sub>) / v<sub>sweep</sub>; a FWHM below 2p/v is undersampled</p>
         <p>Blur: Gaussian MTF exp(−2π²σ²f²) = 5 % at the limiting resolution f, FWHM = 2.3548·√(ln 20 / 2)/(π f) at the cathode (26.2 µm at 35 lp/mm), times M on the screen</p>
-        <p>Tube spread: the tube&apos;s own Gaussian term, chiefly transit-time dispersion from the photoelectron energy spread, ≈ 2.63·√Δε / E ps (Δε FWHM in eV, extraction field E in kV/mm; Shakya &amp; Chang 2005), plus deflection dispersion. A data-sheet resolution includes the slit and readout, so it bounds the tube term from above.</p>
+        <p>Tube spread: the tube&apos;s own Gaussian term, chiefly transit-time dispersion from the photoelectron energy spread, ≈ 2.63·√Δε / E ps (Δε FWHM of the photoelectron energy distribution in eV, extraction field E in kV/mm; Shakya &amp; Chang 2005 after Chang et al. 1996), plus deflection dispersion. The delay between electrons leaving the cathode with 0 and with Δε, √(2m_eΔε)/(eE) = 3.37·√Δε / E ps, bounds it from above. A data-sheet resolution includes the slit and readout, so it bounds the tube term from above.</p>
       </div>
 
       <ChartPanel data={chartData} layout={{
