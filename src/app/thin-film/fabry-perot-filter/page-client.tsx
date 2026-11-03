@@ -26,14 +26,30 @@ export default function FabryPerotFilterPage() {
     const wls: number[] = [];
     const T: number[] = [];
     const Rcurve: number[] = [];
-    // Window: the peak ± 1.2 FSR, sampled finely enough to resolve the peak (step ≤ FWHM/10, 500–20000 points).
+    // Window: the peak ± 1.2 FSR, uniform with step ≤ FWHM/10 (500–2000 points). When that cap is too coarse (high
+    // finesse), each peak λ_m = 2nd/m in the window adds 161 points at λ_m + w sinh(s)/2, |s| ≤ asinh 80: 0.03 FWHM
+    // apart at the top, widening to ≈ 2.5 FWHM at ±40 FWHM, where the uniform grid takes over.
     const lo = Math.max(1, centre_nm - 1.2 * fsr_nm);
     const hi = centre_nm + 1.2 * fsr_nm;
     if (Number.isFinite(F) && Number.isFinite(lo) && Number.isFinite(hi) && hi > lo) {
       const wanted = Number.isFinite(fwhm_nm) && fwhm_nm > 0 ? Math.ceil((hi - lo) / (fwhm_nm / 10)) + 1 : 500;
-      const count = Math.min(20000, Math.max(500, wanted));
-      for (let i = 0; i < count; i++) {
-        const wl = lo + ((hi - lo) * i) / (count - 1);
+      const count = Math.min(2000, Math.max(500, wanted));
+      const grid: number[] = [];
+      for (let i = 0; i < count; i++) grid.push(lo + ((hi - lo) * i) / (count - 1));
+      if (wanted > count) {
+        const twoNd_nm = 2 * opticalThickness * 1e9;
+        const sMax = Math.asinh(80);
+        for (let m = Math.ceil(twoNd_nm / hi); m <= Math.floor(twoNd_nm / lo); m++) {
+          const peak_nm = twoNd_nm / m;
+          const w = fwhm_nm * (peak_nm / centre_nm) ** 2; // FWHM ∝ λ² at fixed finesse
+          for (let j = -80; j <= 80; j++) {
+            const wl = peak_nm + (w * Math.sinh((sMax * j) / 80)) / 2;
+            if (wl > lo && wl < hi) grid.push(wl);
+          }
+        }
+        grid.sort((p, q) => p - q);
+      }
+      for (const wl of grid) {
         const delta = (4 * Math.PI * opticalThickness) / (wl * 1e-9);
         const s = F * Math.sin(delta / 2) ** 2;
         wls.push(wl);
