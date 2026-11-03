@@ -34,13 +34,14 @@ test("Er presets: Barnes et al. 1991, GeO₂–Al₂O₃–SiO₂ fibre", () => 
   assert.deepEqual([pick("Er980")?.sigmaA, pick("Er980")?.sigmaE], [1.7e-25, 0]);
   assert.deepEqual([pick("Er1480")?.sigmaA, pick("Er1480")?.sigmaE], [1.7e-25, 0.5e-25]);
   assert.deepEqual([pick("Er1550")?.sigmaA, pick("Er1550")?.sigmaE], [2.2e-25, 3.0e-25]);
-  // Melkumov 2004 at 1064 nm: σ_e 0.30 pm², σ_a 0.0046 pm² (65× below σ_e, 585× below σ_a at 976 nm).
-  assert.deepEqual([pick("Yb1064")?.sigmaA, pick("Yb1064")?.sigmaE], [4.6e-27, 3.0e-25]);
+  // Melkumov 2004 (arXiv:1502.02885 App. 2, Al fibre) 1064 nm row: σ_e 0.31 pm², σ_a 0.0057 pm² (54× below σ_e, 472× below
+  // σ_a at 976 nm). The 1068 nm row (0.30, 0.0046) was used before session 189.
+  assert.deepEqual([pick("Yb1064")?.sigmaA, pick("Yb1064")?.sigmaE], [5.7e-27, 3.1e-25]);
 });
 
 test("The five preset lines and the domain guards", () => {
   assert.deepEqual(DOPANT_LINES.map((l) => l.id), ["Er980", "Er1480", "Er1550", "Yb976", "Yb1064"]);
-  // The old page counted Nd's 1064 nm emission as absorption; σ_a of Yb at 1064 nm is 4.6e-27 m², 585× below 976 nm.
+  // The old page counted Nd's 1064 nm emission as absorption; σ_a of Yb at 1064 nm is 5.7e-27 m², 472× below 976 nm.
   assert.equal(DOPANT_LINES.find((l) => l.id === "Yb1064")?.role, "signal");
   const none = dopantAbsorption(2.5e-25, 0, 1);
   assert.equal(none.alpha, 0);
