@@ -251,16 +251,16 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "heat-capacity",
     title: "Heat Capacity of Optical Materials",
-    description: "Specific heat c_p(T) of Si, Ge, CaF₂, LiF, MgO and sapphire from the Debye model scaled to the measured room-temperature value, volumetric heat capacity, and the heat to warm a part from T₁ to T₂.",
+    description: "Specific heat c_p(T) of Si, Ge, GaAs, CaF₂, LiF, MgO, sapphire and diamond from the Debye model scaled to the measured room-temperature value, volumetric heat capacity, and the heat to warm a part from T₁ to T₂.",
     tier: "textbook",
-    modelNote: "c_p(T) = c_p(T_ref)·D(θ_D/T)/D(θ_D/T_ref) with the Debye function D and one Debye temperature; Q = m∫c_p dT. Harmonic, so it runs low above room temperature (Si at 1000 K: 8 % below Desai's value) and misses the dip of θ_D near 40 K; sapphire is within 1.1 % of JANAF from 300 to 1000 K (5 % low at 200 K, 21 % at 100 K), MgO 8–9 % above JANAF from 500 to 1000 K. No presets for glasses, diamond or GaAs.",
+    modelNote: "c_p(T) = c_p(T_ref)·D(θ_D/T)/D(θ_D/T_ref) with the Debye function D and one Debye temperature; Q = m∫c_p dT. Harmonic, so it runs low above room temperature (Si at 1000 K: 8 % below Desai's value) and misses the dip of θ_D near 40 K; sapphire is within 1.1 % of JANAF from 300 to 1000 K (5 % low at 200 K, 21 % at 100 K), MgO 8–9 % above JANAF from 500 to 1000 K. Diamond takes its caloric θ_D of 1860 K (Pässler 2021), not the elastic 2250 K: within 0.9 % of the SGTE c_p from 298 to 1000 K. GaAs: 2 % low at 500 K, 9.5 % at 1000 K against Chatillon et al. 1990. No presets for glasses.",
     references: [
       {
         citation: "Debye P. (1912). Zur Theorie der spezifischen Wärmen. Ann. Phys. 344, 789–839.",
         url: "https://doi.org/10.1002/andp.19123441404",
       },
       {
-        citation: "Råsander M., Moram M. A. (2015). On the accuracy of commonly used density functional approximations in determining the elastic constants of insulators and semiconductors. J. Chem. Phys. 143, 144104. Table VII: experimental Debye temperatures (Landolt–Börnstein): Si 645, Ge 373, LiF 732, CaF₂ 510, MgO 945 K.",
+        citation: "Råsander M., Moram M. A. (2015). On the accuracy of commonly used density functional approximations in determining the elastic constants of insulators and semiconductors. J. Chem. Phys. 143, 144104. Table VII: experimental Debye temperatures (Landolt–Börnstein): Si 645, Ge 373, GaAs 344, LiF 732, CaF₂ 510, MgO 945 K.",
         url: "https://doi.org/10.1063/1.4932334",
       },
       {
@@ -268,7 +268,7 @@ export const materials: CalculatorEntry[] = [
         url: "https://doi.org/10.1063/1.555931",
       },
       {
-        citation: "Chase M. W. (1998). NIST-JANAF Thermochemical Tables, 4th ed. J. Phys. Chem. Ref. Data Monograph 9. MgO (cr), table Mg-008: c_p 37.106 J/(mol·K) at 298.15 K, 45.544 at 500 K; α-Al₂O₃, table Al-096: 79.416 J/(mol·K) at 300 K; CaF₂, table Ca-014: 68.588 J/(mol·K) at 298.15 K.",
+        citation: "Chase M. W. (1998). NIST-JANAF Thermochemical Tables, 4th ed. J. Phys. Chem. Ref. Data Monograph 9. MgO (cr), table Mg-008: c_p 37.106 J/(mol·K) at 298.15 K, 45.544 at 500 K; α-Al₂O₃, table Al-096: 79.416 J/(mol·K) at 300 K; CaF₂, table Ca-014: 68.588 J/(mol·K) at 298.15 K; LiF, table F-021: 41.815 J/(mol·K) at 298.15 K.",
         url: "https://janaf.nist.gov/tables/Mg-008.txt",
       },
       {
@@ -276,7 +276,19 @@ export const materials: CalculatorEntry[] = [
         url: "https://doi.org/10.1063/1.555761",
       },
       {
-        citation: "Crystran. Handbook of Infrared and Ultraviolet Optical Materials, data sheets: specific heat and density of Ge and LiF; density of Si, CaF₂, MgO and sapphire.",
+        citation: "Pässler R. (2021). Efficient Debye function interpolation formulae: sample applications to diamond. Recent Prog. Mater. 3(4), 042. Fig. 2: caloric θ_D of diamond 1857 ± 12 K from 140 to 700 K.",
+        url: "https://doi.org/10.21926/rpm.2104042",
+      },
+      {
+        citation: "Dinsdale A. T. (1991). SGTE data for pure elements. Calphad 15, 317–425. Gibbs energies GDIAC (diamond: c_p 6.1197 J/(mol·K) at 298.15 K) and GHSERGE (Ge: 23.347 J/(mol·K)).",
+        url: "https://doi.org/10.1016/0364-5916(91)90030-N",
+      },
+      {
+        citation: "Chatillon C., Ansara I., Watson A., Argent B. B. (1990). Re-assessment of the thermodynamic properties and phase diagrams of the Ga-As and In-As systems. Calphad 14, 203–214. GaAs Gibbs energy GB3GAAS: c_p 46.855 J/(mol·K) at 298.15 K.",
+        url: "https://doi.org/10.1016/0364-5916(90)90021-Q",
+      },
+      {
+        citation: "Crystran. Handbook of Infrared and Ultraviolet Optical Materials, data sheets: density of Si, Ge, CaF₂, LiF, MgO and sapphire.",
         url: "https://www.crystran.com/optical-materials",
       },
     ],
