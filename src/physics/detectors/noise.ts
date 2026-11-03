@@ -154,6 +154,33 @@ export function specificDetectivity(area_cm2: number, bandwidth: number, nep: nu
   return Math.sqrt(area_cm2 * bandwidth) / nep;
 }
 
+export interface DetectorDetectivityInputs {
+  /** Unity-gain responsivity ℛ, A/W. */
+  responsivity: number;
+  /** Dark-current density J_d = I_d/A of the unmultiplied dark current, A/cm². */
+  darkCurrentDensity: number;
+  /** Zero-bias resistance-area product R₀A, Ω·cm² (Infinity drops the detector's Johnson term). */
+  r0a: number;
+  /** Detector temperature, K. */
+  temperature: number;
+  gain?: number;
+  excessNoiseFactor?: number;
+}
+
+/**
+ * Detector-limited specific detectivity from its dark-current density and R₀A, independent of area and bandwidth:
+ * D* = ℛ·M/√(2q·J_d·M²·F + 4k_B·T/(R₀A)), Jones (cm·√Hz/W), the read-out circuit's noise left out. A. Rogalski,
+ * Infrared detectors: status and trends, Prog. Quantum Electron. 27, 59 (2003), D* = ℛ(4kT/R₀A + 2qJ)^−½. At zero bias
+ * the R₀A term already holds the junction's own shot noise (4k_B·T/R₀ = 4q·I_s for an ideal diode), so there J_d = 0.
+ */
+export function detectorDetectivity({
+  responsivity: R, darkCurrentDensity: J, r0a, temperature: T, gain: M = 1, excessNoiseFactor: F = 1,
+}: DetectorDetectivityInputs): number {
+  if (!(R >= 0) || !(J >= 0) || !(r0a > 0) || !(T > 0) || !(M >= 1) || !(F >= 1)) return NaN;
+  const variance = 2 * q * J * M * M * F + (4 * k_B * T) / r0a; // A²/(Hz·cm²)
+  return variance > 0 ? (R * M) / Math.sqrt(variance) : R > 0 ? Infinity : NaN;
+}
+
 /**
  * Photodiode SNR I_s/√((2q·(I_s + I_d) + i_amp²)·B) of a signal photocurrent I_s (A) over its own shot noise, the shot
  * noise of a dark current I_d (A) and a white amplifier input noise i_amp (A/√Hz) in a bandwidth B (Hz). An amplitude

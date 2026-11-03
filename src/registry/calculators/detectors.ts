@@ -255,10 +255,14 @@ export const detectors: CalculatorEntry[] = [
     title: "Detectivity (D*)",
     description: "Specific detectivity from NEP, area, and bandwidth. D* = √(A·Δf) / NEP",
     tier: "textbook",
-    modelNote: "Constant quantum efficiency up to the cutoff λ_c = hc/E_g; multiplied dark-current shot noise 2q·I_d·M²·F and load Johnson noise. The temperature chart scales dark current as n_i or n_i² with a fixed band gap and constant responsivity, with the load held at the entered temperature. D* includes the load: with I_d fixed and load noise dominant it grows as √A.",
+    modelNote: "Constant quantum efficiency up to the cutoff λ_c = hc/E_g. Detector D* from the dark-current density J_d = I_d/A (multiplied shot noise 2q·J_d·M²·F) and the zero-bias R₀A (Johnson 4kT/R₀A): area-independent. System D* adds the load's Johnson noise instead of R₀A; with I_d fixed and load noise dominant it grows as √A. The default R₀A is illustrative. The temperature chart scales I_d as n_i or n_i² and R₀A inversely, with a fixed band gap and constant responsivity, the load held at the entered temperature.",
     references: [
       {
         citation: "Dereniak E. L., Boreman G. D. (1996). Infrared Detectors and Systems. Wiley. Ch. 5: responsivity, noise-equivalent power and specific detectivity D* = √(A·Δf)/NEP.",
+      },
+      {
+        citation: "Rogalski A. (2003). Infrared detectors: status and trends. Prog. Quantum Electron. 27, 59–210. Photodiode D* = ℛ(4kT/R₀A + 2qJ)^−½.",
+        url: "https://doi.org/10.1016/S0079-6727(02)00024-1",
       },
       {
         citation: "Saleh B. E. A., Teich M. C. (1991). Fundamentals of Photonics. Wiley. §17.5 Noise in photodetectors: shot noise 2qīB and circuit noise.",
