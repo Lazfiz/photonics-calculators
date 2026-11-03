@@ -14,9 +14,13 @@
  * Then n_eff² = n_co² − U²/(k a_eff)² with U² = V² − W², and n_co(λ) is fused silica (Malitson 1965), so
  * D = −(λ/c) d²n_eff/dλ² includes material and waveguide dispersion together. Single-mode while V < 2.405, with
  * a_eff = Λ/√3 (Koshiba & Saitoh, Opt. Lett. 29, 1739 (2004); Saitoh et al., Opt. Express 13, 10833 (2005),
- * which finds the endlessly single-mode limit d/Λ = 0.424 by FEM). The mode-field radius uses Marcuse's
- * step-index fit w/a_eff = 0.65 + 1.619 V^−1.5 + 2.879 V^−6 (Bell Syst. Tech. J. 56, 703 (1977)) and the
- * Gaussian area A_eff = πw². Confinement loss depends on the number of hole rings and is not modelled.
+ * which finds the endlessly single-mode limit d/Λ = 0.424 by FEM). The mode-field radius uses the PCF fit of
+ * Nielsen et al., Opt. Lett. 28, 2309 (2003), Eq. (2) with g = 8 (arXiv:physics/0309030, Fig. 2), for
+ * 0.3 ≤ d/Λ ≤ 0.7 and computed for 0.5 ≲ V_PCF ≲ 5, within 1 %:
+ *   w/Λ = 0.7078 V_PCF^−0.2 + 0.2997 V_PCF^−1.5 + 0.0037 V_PCF^−6,  V_PCF = (2πΛ/λ)√(n_eff² − n_FSM²) = √3 W,
+ * where w is defined by the mode's effective area A_eff = (∫I)²/∫I² = πw². Marcuse's step-index fit with the
+ * Saitoh–Koshiba V overestimates w by up to ≈ 10 % near V_PCF ≈ 2. Confinement loss depends on the number of
+ * hole rings and is not modelled.
  */
 import { c } from "../constants";
 import { refractiveIndex, dispersionParameter } from "../materials/sellmeier";
@@ -43,8 +47,11 @@ const W_FIT: Fit = [
 export const V_CUTOFF = 2.405;
 export const FIT_D_OVER_PITCH: readonly [number, number] = [0.2, 0.8];
 export const FIT_MAX_LAMBDA_OVER_PITCH = 2;
-/** Below this V Marcuse's spot-size fit is no longer accurate (≈ 1 % for 1.2 ≤ V ≤ 2.4 in step-index fibre). */
-export const MARCUSE_MIN_V = 1.2;
+/** V_PCF range of the mode-field data behind Nielsen et al.'s fit (OL 28, 2309, Fig. 2); no MFD below the minimum. */
+export const NIELSEN_V_RANGE: readonly [number, number] = [0.5, 5];
+
+/** Nielsen et al. (2003) mode-field radius over pitch, w/Λ, at V_PCF (Mortensen's V, built on Λ and n_eff). */
+export const nielsenSpotSize = (vPcf: number) => 0.7078 * vPcf ** -0.2 + 0.2997 * vPcf ** -1.5 + 0.0037 * vPcf ** -6;
 
 /** 0.2 ≤ d/Λ ≤ 0.8, with a 1e-9 relative margin so that d/Λ = 1e-6/5e-6 = 0.19999999999999998 counts as 0.2. */
 export const inDRange = (r: number) => r >= FIT_D_OVER_PITCH[0] * (1 - 1e-9) && r <= FIT_D_OVER_PITCH[1] * (1 + 1e-9);
@@ -162,9 +169,11 @@ export interface PcfMode {
   endlesslySingleMode: boolean;
   /** Second-mode cut-off wavelength, m (0 when endlessly single-mode). */
   cutoffWavelength: number;
-  /** Marcuse mode-field diameter 2w, m (NaN for V < 1.2). */
+  /** Mortensen's V_PCF = (2πΛ/λ)√(n_eff² − n_FSM²) = √3 W. */
+  vPcf: number;
+  /** Nielsen et al. mode-field diameter 2w, m (NaN for V_PCF < 0.5). */
   mfd: number;
-  /** Gaussian effective area πw², m². */
+  /** Effective area πw², m². */
   effectiveArea: number;
   /** Total, material (bulk silica) and waveguide (difference) dispersion, s/m². */
   dispersion: number;
@@ -192,7 +201,8 @@ export function pcfMode(pitch: number, holeDiameter: number, lambda: number): Pc
   const ok = dOk && physicalVW(V, W);
   const nFsm = ok && fsm2 >= 1 ? Math.sqrt(fsm2) : NaN;
   const nEff = effectiveIndex(pitch, holeDiameter, lambda);
-  const w = !ok || V < MARCUSE_MIN_V ? NaN : aEff * (0.65 + 1.619 * V ** -1.5 + 2.879 * V ** -6);
+  const vPcf = Math.sqrt(3) * W;
+  const w = !ok || vPcf < NIELSEN_V_RANGE[0] ? NaN : pitch * nielsenSpotSize(vPcf);
   const dispersion = pcfDispersion(pitch, holeDiameter, lambda);
   const materialDispersion = dispersionParameter(SILICA, lambda);
   return {
@@ -209,6 +219,7 @@ export function pcfMode(pitch: number, holeDiameter: number, lambda: number): Pc
     singleMode: V < V_CUTOFF,
     endlesslySingleMode: dOk && isEndlesslySingleMode(r),
     cutoffWavelength: cutoffWavelength(pitch, r),
+    vPcf,
     mfd: 2 * w,
     effectiveArea: Math.PI * w * w,
     dispersion,

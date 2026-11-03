@@ -792,7 +792,7 @@ export const fiberOptics: CalculatorEntry[] = [
     title: "Photonic Crystal Fiber",
     description: "Effective V-number, single-mode cutoff, effective index, mode-field diameter and chromatic dispersion of a solid-core photonic crystal fiber from hole pitch Λ and diameter d (Saitoh–Koshiba relations).",
     tier: "textbook",
-    modelNote: "Saitoh–Koshiba empirical V and W (FEM fits, 0.2 ≤ d/Λ ≤ 0.8, λ/Λ ≤ 2), a_eff = Λ/√3, silica Sellmeier core; V < 2.405 single-mode; Marcuse spot size (V ≥ 1.2). Blank where the fit gives W ≤ 0. No confinement loss.",
+    modelNote: "Saitoh–Koshiba empirical V and W (FEM fits, 0.2 ≤ d/Λ ≤ 0.8, λ/Λ ≤ 2), a_eff = Λ/√3, silica Sellmeier core; V < 2.405 single-mode; Nielsen et al. PCF spot size from V_PCF = √3 W (V_PCF ≥ 0.5). Blank where the fit gives W ≤ 0. No confinement loss.",
     references: [
       {
         citation: "Saitoh K., Koshiba M. (2005). Empirical relations for simple design of photonic crystal fibers. Opt. Express 13, 267. Eqs. (1)–(4), Tables 1–2.",
@@ -811,8 +811,8 @@ export const fiberOptics: CalculatorEntry[] = [
         url: "https://doi.org/10.1364/ol.22.000961",
       },
       {
-        citation: "Marcuse D. (1977). Loss analysis of single-mode fiber splices. Bell Syst. Tech. J. 56, 703. w/a = 0.65 + 1.619V^−1.5 + 2.879V^−6.",
-        url: "https://doi.org/10.1002/j.1538-7305.1977.tb00534.x",
+        citation: "Nielsen M. D., Mortensen N. A., Folkenberg J. R., Bjarklev A. (2003). Mode-field radius of photonic crystal fibers expressed by the V parameter. Opt. Lett. 28, 2309. w/Λ = 0.7078V^−0.2 + 0.2997V^−1.5 + 0.0037V^−6.",
+        url: "https://doi.org/10.1364/ol.28.002309",
       },
       {
         citation: "Malitson I. H. (1965). Interspecimen comparison of the refractive index of fused silica. J. Opt. Soc. Am. 55, 1205.",

@@ -6,7 +6,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  FIT_D_OVER_PITCH, FIT_MAX_LAMBDA_OVER_PITCH, MARCUSE_MIN_V, V_CUTOFF, cutoffWavelength, endlesslySingleModeLimit, inDRange, pcfDispersion, pcfMode, saitohKoshibaV,
+  FIT_D_OVER_PITCH, FIT_MAX_LAMBDA_OVER_PITCH, NIELSEN_V_RANGE, V_CUTOFF, cutoffWavelength, endlesslySingleModeLimit, inDRange, pcfDispersion, pcfMode, saitohKoshibaV,
 } from "../../../physics/fiber-optics/photonic-crystal";
 
 const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
@@ -149,9 +149,10 @@ export default function PhotonicCrystalFiberCalculator() {
           label="Mode-field diameter"
           value={fmt((mode?.mfd ?? NaN) * 1e6, 2, " µm")}
           tone="purple"
-          subtext={mode && mode.physical && mode.V < MARCUSE_MIN_V
-            ? `V < ${MARCUSE_MIN_V}: Marcuse's fit doesn't apply (weakly confined mode)`
-            : `A_eff ≈ πw² = ${fmt((mode?.effectiveArea ?? NaN) * 1e12, 1, " µm²")} (Marcuse fit)`}
+          subtext={mode && mode.physical && mode.vPcf < NIELSEN_V_RANGE[0]
+            ? `V_PCF ${fmt(mode.vPcf, 2)} < ${NIELSEN_V_RANGE[0]}: below Nielsen's fit (weakly confined mode)`
+            : `A_eff = πw² = ${fmt((mode?.effectiveArea ?? NaN) * 1e12, 1, " µm²")}; Nielsen fit at V_PCF ${fmt(mode?.vPcf ?? NaN, 2)}${
+              (mode?.vPcf ?? 0) > NIELSEN_V_RANGE[1] ? " (extrapolated past 5)" : ""}`}
         />
         <ResultCard
           label="Dispersion D"
