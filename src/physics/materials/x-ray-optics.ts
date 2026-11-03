@@ -71,7 +71,9 @@ export interface XRayMaterial {
 /**
  * Densities: the CXRO defaults (https://henke.lbl.gov/optical_constants/getdb2.html and its compound list), except
  * diamond (3.515 g/cm³, CRC Handbook of Chemistry and Physics; CXRO's carbon default is graphite, 2.2).
- * Polyimide is Kapton, C₂₂H₁₀N₂O₅. Si₃N₄ 3.44 is the CXRO value; LPCVD membranes are less dense, so enter a measured one.
+ * Polyimide is Kapton, C₂₂H₁₀N₂O₅. Si₃N₄ 3.18 is crystalline α-Si₃N₄ (Kaloyeros et al., ECS J. Solid State Sci.
+ * Technol. 9, 063006 (2020), doi:10.1149/2162-8777/aba447, Table I: bulk 3.10–3.20, α 3.184, β 3.187; X-ray density of
+ * β 3.20). CXRO's list value 3.44 is above the crystal density. CVD membranes are ≈ 2.8–3.0, so enter a measured one.
  */
 export const XRAY_MATERIALS: Record<XRayMaterialId, XRayMaterial> = {
   Be: { label: "Beryllium (Be)", formula: { Be: 1 }, rho_gcc: 1.848 },
@@ -83,7 +85,7 @@ export const XRAY_MATERIALS: Record<XRayMaterialId, XRayMaterial> = {
   Pt: { label: "Platinum (Pt)", formula: { Pt: 1 }, rho_gcc: 21.45 },
   Au: { label: "Gold (Au)", formula: { Au: 1 }, rho_gcc: 19.32 },
   polyimide: { label: "Kapton (C₂₂H₁₀N₂O₅)", formula: { C: 22, H: 10, N: 2, O: 5 }, rho_gcc: 1.43 },
-  Si3N4: { label: "Silicon nitride (Si₃N₄)", formula: { Si: 3, N: 4 }, rho_gcc: 3.44 },
+  Si3N4: { label: "Silicon nitride (Si₃N₄)", formula: { Si: 3, N: 4 }, rho_gcc: 3.18 },
 };
 
 /** Photon wavelength, m, at energy E (eV). */

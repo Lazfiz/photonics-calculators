@@ -228,7 +228,7 @@ export const materials: CalculatorEntry[] = [
     modelNote: "Principal-axis geometries with r fixed at its reference wavelength; only n follows the Sellmeier fits (Zernike KDP, Zelmon LiNbO₃, Kato KTP), and KD*P and ADP use one published index. LiNbO₃ uses clamped (high-frequency) coefficients; KTP's 633 nm r₃₃ and r₂₃ are low-frequency measurements whose clamping the source doesn't state. The z–o retardation of a transverse modulator adds to the natural birefringence.",
     references: [
       {
-        citation: "Wilson J., Hawkes J. Optoelectronics: An Introduction. Prentice Hall. Table 3.1 (r₆₃ of KDP, KD*P, ADP) and Example 3.2 (KDP V_π = 14.5 kV at 1.06 µm).",
+        citation: "Wilson J., Hawkes J. F. B. (1998). Optoelectronics: An Introduction, 3rd ed. Prentice Hall Europe, ISBN 0-13-103961-X (the same Table 3.1 in the 1983 and 1989 editions). Table 3.1 (r₆₃ of KDP, KD*P, ADP) and Example 3.2 (KDP V_π = 14.5 kV at 1.06 µm).",
       },
       {
         citation: "Weis R. S., Gaylord T. K. (1985). Lithium niobate: summary of physical properties and crystal structure. Appl. Phys. A 37, 191–203.",
@@ -239,7 +239,7 @@ export const materials: CalculatorEntry[] = [
         url: "https://doi.org/10.1364/JOSAB.14.003319",
       },
       {
-        citation: "Xie D., Pfister O. (2005). Low-frequency measurements of electro-optic coefficients of Na:KTiOPO₄ and RbTiOAsO₄. arXiv:physics/0507123. Eqs. 3–4 (Δn_y, Δn_z of a z field) and KTP r₂₃ = 15.7, r₃₃ = 36.3 pm/V at 633 nm, quoted from Cheng L. K. et al. (1994), J. Cryst. Growth 137, 107–115.",
+        citation: "Xie D., Pfister O. (2005). Low-frequency measurements of electro-optic coefficients of Na:KTiOPO₄ and RbTiOAsO₄. arXiv:physics/0507123. Eqs. 3–4 (Δn_y, Δn_z of a z field) and KTP r₂₃ = 15.7, r₃₃ = 36.3 pm/V at 633 nm (low-frequency, unclamped), quoted from Cheng L. K. et al. (1994), J. Cryst. Growth 137, 107–115.",
         url: "https://arxiv.org/abs/physics/0507123",
       },
       {
@@ -288,6 +288,10 @@ export const materials: CalculatorEntry[] = [
         url: "https://doi.org/10.1016/0364-5916(90)90021-Q",
       },
       {
+        citation: "Piesbergen U. (1963). Die durchschnittlichen Atomwärmen der AIIIBV-Halbleiter AlSb, GaAs, GaSb, InP, InAs, InSb und die Atomwärme des Elements Germanium zwischen 12 und 273 °K. Z. Naturforsch. 18a, 141. Tab. 3: the GaAs preset is within 2.4 % from 100 to 273 K, 24 % low at 50 K.",
+        url: "https://doi.org/10.1515/zna-1963-0206",
+      },
+      {
         citation: "Crystran. Handbook of Infrared and Ultraviolet Optical Materials, data sheets: density of Si, Ge, CaF₂, LiF, MgO and sapphire.",
         url: "https://www.crystran.com/optical-materials",
       },
@@ -314,8 +318,12 @@ export const materials: CalculatorEntry[] = [
         url: "https://doi.org/10.1364/JOSA.48.000633",
       },
       {
-        citation: "Gan F. (1995). Optical properties of fluoride glasses: a review. J. Non-Cryst. Solids 184, 9. ZBLAN dispersion formula.",
+        citation: "Gan F. (1995). Optical properties of fluoride glasses: a review. J. Non-Cryst. Solids 184, 9. ZBLAN dispersion formula (n_d 1.5011).",
         url: "https://doi.org/10.1016/0022-3093(94)00592-3",
+      },
+      {
+        citation: "Zhu X., Peyghambarian N. (2010). High-power ZBLAN glass fiber lasers: review and prospect. Adv. OptoElectron. 2010, 501956. Table 1: ZBLAN n 1.499 at 589 nm, Abbe number 76; n_d varies with composition by a few 10⁻³.",
+        url: "https://doi.org/10.1155/2010/501956",
       },
       {
         citation: "Li H. H. (1976). Refractive index of alkali halides and its wavelength and temperature derivatives. J. Phys. Chem. Ref. Data 5, 329.",
@@ -760,6 +768,10 @@ export const materials: CalculatorEntry[] = [
       {
         citation: "CXRO X-ray Database (Lawrence Berkeley National Laboratory). Atomic scattering factor files (sf/<element>.nff) and index-of-refraction calculator; default densities.",
         url: "https://henke.lbl.gov/optical_constants/",
+      },
+      {
+        citation: "Kaloyeros A. E., Pan Y., Goff J., Arkles B. (2020). Review—Silicon nitride and silicon nitride-rich thin film technologies: state-of-the-art processing technologies, properties, and applications. ECS J. Solid State Sci. Technol. 9, 063006. Table I: bulk Si₃N₄ 3.10–3.20 g/cm³ (α 3.184), CVD films ≈ 2.8; the Si₃N₄ preset uses 3.18, not CXRO's 3.44.",
+        url: "https://doi.org/10.1149/2162-8777/aba447",
       },
       {
         citation: "Hubbell J. H., Veigele W. J., Briggs E. A., Brown R. T., Cromer D. T., Howerton R. J. (1975). Atomic form factors, incoherent scattering functions, and photon scattering cross sections. J. Phys. Chem. Ref. Data 4, 471–538.",

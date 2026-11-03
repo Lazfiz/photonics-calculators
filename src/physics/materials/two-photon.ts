@@ -24,7 +24,9 @@
  * on the fitted E′_g (BBO's 0.010 at 355 nm needs E′_g ≈ 6.94 instead of 6.8 eV); five of the six rows were measured
  * there (x_ref = 2ħω_ref/E′_g: KTP 1.013, fused silica and BaF₂ 1.036, LiNbO₃ 1.059, sapphire 1.072; BBO 1.371). These rows
  * are scaled only where both x_ref and x are at least 1.1 (`effectiveScalingValid`); elsewhere only the measured β is given. Their E′_g lies above the linear absorption edge
- * E_g of Table I (KTP 3.8, LiNbO₃ 3.9 eV), so one-photon absorption is taken to start at min(E_g, E′_g).
+ * E_g of Table I (KTP 3.8, LiNbO₃ 3.9 eV), so one-photon absorption is taken to start at min(E_g, E′_g). DeSalvo's E_g
+ * are "the linear transmission cutoff energies" of his samples: bulk KTP is usually quoted as transparent from 350 nm
+ * (3.54 eV; J. D. Bierlein & H. Vanherzeele, J. Opt. Soc. Am. B 6, 622 (1989)), so the KTP row may start a little late.
  *
  * Indirect-gap silicon: A. D. Bristow, N. Rotenberg, H. M. van Driel, Appl. Phys. Lett. 90, 191104 (2007),
  * doi:10.1063/1.2737359: β = Σₙ β⁽ⁿ⁾, β⁽ⁿ⁾ = 2C F₂⁽ⁿ⁾(ħω/E_gi) for allowed-allowed, allowed-forbidden and

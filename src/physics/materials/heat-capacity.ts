@@ -27,7 +27,9 @@
  * - GaAs: c_p 46.855 J/(mol·K) = 323.9 J/(kg·K) at 298.15 K from the zinc-blende Gibbs energy GB3GAAS of C. Chatillon,
  *   I. Ansara, A. Watson, B. B. Argent, Calphad 14, 203 (1990), doi:10.1016/0364-5916(90)90021-Q (Crystran's
  *   360 J/(kg·K) is above the Dulong–Petit limit 6R/M = 345 J/(kg·K)). θ_D 344 K (Råsander & Moram Table VII). Against
- *   Chatillon the scaled curve is 2.0 % low at 500 K, 3.2 % at 600 K and 9.5 % at 1000 K. Density: X-ray density
+ *   Chatillon the scaled curve is 2.0 % low at 500 K, 3.2 % at 600 K and 9.5 % at 1000 K. Below room temperature, against
+ *   R. Piesbergen, Z. Naturforsch. 18a, 141 (1963), doi:10.1515/zna-1963-0206, Tab. 3, it is 0.9 % high at 273 K,
+ *   1.3 % at 200 K, 2.4 % at 100 K and 24 % low at 50 K (his θ_D(T) is 351–362 K over 100–273 K). Density: X-ray density
  *   4M/(N_A a³) with a = 5.65325 Å (O. Madelung, Semiconductors: Data Handbook, 3rd ed., Springer 2004).
  * - Diamond: c_p 6.1197 J/(mol·K) at 298.15 K from SGTE GDIAC (Victor 1962: 6.117); density 3515 kg/m³ (CRC Handbook).
  * - Si c_p: Desai 1986 Table 4, 20.007 J/(mol·K) at 298.15 K. Sapphire: JANAF Al-096, 79.416 J/(mol·K) at 300 K

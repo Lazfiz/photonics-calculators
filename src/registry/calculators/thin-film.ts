@@ -312,7 +312,7 @@ export const thinFilm: CalculatorEntry[] = [
         url: "https://doi.org/10.1117/12.962866",
       },
       {
-        citation: "Peck D. S. (1986). Comprehensive model for humidity testing correlation. 24th International Reliability Physics Symposium, 44–50.",
+        citation: "Peck D. S. (1986). Comprehensive model for humidity testing correlation. 24th International Reliability Physics Symposium, 44–50. Fit for epoxy-packaged circuits: n 2.66, E_a 0.79 eV (nearly equivalent: 2.50 with 0.81 eV, 3.00 with 0.77 eV).",
         url: "https://doi.org/10.1109/IRPS.1986.362110",
       },
     ],

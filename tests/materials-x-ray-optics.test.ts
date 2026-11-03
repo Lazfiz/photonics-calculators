@@ -41,6 +41,10 @@ test("x-ray δ, β against the CXRO index-of-refraction calculator (henke.lbl.go
   assertRel(index("Be", 1.848, 10000).delta, 3.40754082e-6, 0.003, "Be δ");
   assertRel(index("diamond", 2.2, 10000).delta, 4.57251872e-6, 0.003, "C δ");
   assertRel(index("polyimide", 1.42, 8000).delta, 4.74066701e-6, 0.003, "Kapton δ");
+  // Si₃N₄ preset: α-Si₃N₄ 3.18 g/cm³ (Kaloyeros et al. 2020, Table I: 3.184), not CXRO's 3.44. δ ∝ ρ, so δ at 5 keV is
+  // the CXRO 3.17 row × 3.18/3.17 = 2.69050e-5.
+  assert.equal(M.Si3N4.rho_gcc, 3.18);
+  assertRel(index("Si3N4", M.Si3N4.rho_gcc, 5000).delta, 2.68203949e-5 * (3.18 / 3.17), 0.003, "Si₃N₄ preset δ");
 });
 
 test("x-ray β and attenuation length with Compton scattering against CXRO (getdb.pl, atten.pl, 2026-11-03)", () => {

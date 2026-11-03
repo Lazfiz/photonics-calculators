@@ -313,7 +313,7 @@ export const waveOptics: CalculatorEntry[] = [
     description: "Locking range of an injection-locked laser from the injection ratio, coupling rate and linewidth enhancement factor α: Adler's symmetric range and the asymmetric semiconductor-laser range, with a locking map.",
     keywords: ["injection locking", "Adler", "locking range", "linewidth enhancement factor", "alpha factor", "master slave laser"],
     tier: "textbook",
-    modelNote: "Static locking range −k_c√ρ√(1 + α²) ≤ Δω ≤ k_c√ρ of the single-mode rate equations, weak injection. The coupling rate k_c is an input; the page estimates it as (1 − R)/(τ_rt√R) (Kondratiev et al. 2023), and other authors' expressions differ by factors of order unity. Defaults: a 300 µm GaAs-based diode (R 0.32, n_g 3.9, k_c/2π 24.51 GHz) with the α ≈ 1 Berger et al. measured at 0.98 µm. The dynamically stable band (Hopf edge, set by the relaxation frequency and damping) is not computed: it can end well inside the positive edge or, at very weak injection, reach past it.",
+    modelNote: "Static locking range −k_c√ρ√(1 + α²) ≤ Δω ≤ k_c√ρ of the single-mode rate equations, weak injection. The coupling rate k_c is an input; the page estimates it as (1 − R)/(τ_rt√R) (Kondratiev et al. 2023), and other authors' expressions differ by factors of order unity. Defaults: a 300 µm strained InGaAs/GaAs quantum-well diode at 0.98 µm (R 0.32, n_g 3.9, k_c/2π 24.51 GHz) with the α ≈ 1 Berger et al. measured below threshold (Banerjee et al.: 0.34–0.54 in a similar well; unstrained GaAs and InGaAsP lasers have larger α). The dynamically stable band (Hopf edge, set by the relaxation frequency and damping) is not computed: it can end well inside the positive edge or, at very weak injection, reach past it.",
     references: [
       { citation: "Adler R. (1946). A study of locking phenomena in oscillators. Proc. IRE 34, 351.", url: "https://doi.org/10.1109/JRPROC.1946.229930" },
       { citation: "Lang R. (1982). Injection locking properties of a semiconductor laser. IEEE J. Quantum Electron. 18, 976.", url: "https://doi.org/10.1109/JQE.1982.1071632" },
@@ -325,6 +325,14 @@ export const waveOptics: CalculatorEntry[] = [
       {
         citation: "Berger P. R., Dutta N. K., Lopata J., Chand N. (1991). In0.2Ga0.8As/GaAs strained quantum-well lasers. CLEO 1991, paper CTuA7. Measured α ≈ 1.0 at 0.98 µm (≈ 3.5 for InGaAsP/InP quantum wells).",
         url: "https://opg.optica.org/abstract.cfm?uri=cleo-1991-CTuA7",
+      },
+      {
+        citation: "Banerjee S., Srivastava A. K., Chand N. (1991). Measurement of the linewidth enhancement factor in strained InGaAs/GaAs single quantum well lasers. Appl. Phys. Lett. 58, 2198. α 0.54, down to 0.34 at lower current, below threshold at 0.97 µm.",
+        url: "https://doi.org/10.1063/1.104925",
+      },
+      {
+        citation: "Henry C. H., Olsson N. A., Dutta N. K. (1985). Locking range and stability of injection locked 1.54 µm InGaAsP semiconductor lasers. IEEE J. Quantum Electron. 21, 1152. Range −ω₁√(1 + α²) to ω₁, unstable at the high-frequency end; α 6 ± 1.",
+        url: "https://doi.org/10.1109/JQE.1985.1072787",
       },
       {
         citation: "Wenzel H., Kantner M., Radziunas M., Bandelow U. (2021). Semiconductor Laser Linewidth Theory Revisited. Appl. Sci. 11, 6004. Table I: group index 3.9.",
@@ -520,11 +528,11 @@ export const waveOptics: CalculatorEntry[] = [
     description: "Zigzag slab laser: bounce angle and total internal reflection, threshold and output power, slope efficiency, heat density, temperature profile and the thermal lens the zigzag cancels.",
     keywords: ["zigzag slab", "Nd:YAG slab laser", "thermal lens", "conduction-cooled slab", "total internal reflection"],
     tier: "textbook",
-    modelNote: "Four-level gain with uniform inversion over the slab, the zigzag beam filling the aperture W t cos θ, Rigrod output. Infinite-slab heat conduction with uniform heat density; the straight-through lens keeps only dn/dT (no stress-optic, end-bulging or edge effects). Heat fraction default from Fan (1993).",
+    modelNote: "Four-level gain with uniform inversion over the slab, the zigzag beam filling the aperture W t cos θ, Rigrod output. Infinite-slab heat conduction with uniform heat density; the straight-through lens keeps only dn/dT (no stress-optic, end-bulging or edge effects). Heat fraction 0.32: Fan's (1993) estimate for Nd:YAG pumped at 808 nm and lasing at 1064 nm (non-lasing, he measured 0.37–0.43).",
     references: [
       { citation: "Eggleston J. M., Kane T. J., Kuhn K., Unternahrer J., Byer R. L. (1984). The slab geometry laser — Part I: Theory. IEEE J. Quantum Electron. 20, 289–301.", url: "https://doi.org/10.1109/JQE.1984.1072386" },
       { citation: "Kane T. J., Eggleston J. M., Byer R. L. (1985). The slab geometry laser — Part II: Thermal effects in a finite slab. IEEE J. Quantum Electron. 21, 1195–1210.", url: "https://doi.org/10.1109/JQE.1985.1072799" },
-      { citation: "Fan T. Y. (1993). Heat generation in Nd:YAG and Yb:YAG. IEEE J. Quantum Electron. 29, 1457–1459.", url: "https://doi.org/10.1109/3.234394" },
+      { citation: "Fan T. Y. (1993). Heat generation in Nd:YAG and Yb:YAG. IEEE J. Quantum Electron. 29, 1457–1459. Abstract: 1.04 at.% Nd:YAG pumped at 808 nm, 0.37–0.43 non-lasing, about 0.32 with 1064 nm extraction.", url: "https://doi.org/10.1109/3.234394" },
       { citation: "Koechner W. (2006). Solid-State Laser Engineering, 6th ed., ch. 2–3 and 7. Springer.", url: "https://doi.org/10.1007/0-387-29338-8" },
     ],
   },
