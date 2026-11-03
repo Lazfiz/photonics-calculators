@@ -426,7 +426,7 @@ export const thinFilm: CalculatorEntry[] = [
     modelNote: "Argon global model in a cylinder: Maxwellian electrons, ground-state ionisation, floating walls, h-factors for λᵢ > (Tᵢ/Tₑ)·size (flagged). No deposition chemistry; P is the power absorbed by the plasma.",
     references: [
       {
-        citation: "Lieberman M. A., Lichtenberg A. J. (2005). Principles of Plasma Discharges and Materials Processing, 2nd ed., Table 3.3 and §10.2 (global model). Wiley.",
+        citation: "Lieberman M. A., Lichtenberg A. J. (2005). Principles of Plasma Discharges and Materials Processing, 2nd ed., Table 3.3 (fits for 1 < T_e ≤ 7 V) and §10.2 (global model). Wiley.",
         url: "https://doi.org/10.1002/0471724254",
       },
     ],

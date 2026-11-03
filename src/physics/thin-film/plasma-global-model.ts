@@ -94,6 +94,10 @@ export function lowPressureRegime(d: Pick<Discharge, "lambdaI" | "Te">, R: numbe
 export const TE_MIN = 0.5;
 export const TE_MAX = 30;
 
+/** T_e range (eV) of Gudmundsson's rate-constant fits, "1 < T_e ≤ 7 V" (Lieberman & Lichtenberg, Table 3.3, note a). */
+export const TE_FIT_MIN = 1;
+export const TE_FIT_MAX = 7;
+
 /**
  * Electron temperature (eV) from particle balance K_iz(T_e)/u_B(T_e) = 1/(n_g d_eff), by bisection to
  * 1e-10 relative. The left side rises with T_e, so the root is unique. NaN when it lies outside

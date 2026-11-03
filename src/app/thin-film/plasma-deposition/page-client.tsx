@@ -7,7 +7,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { TORR, k_B_eV, q } from "../../../physics/constants";
-import { TE_MAX, TE_MIN, argonDischarge, lowPressureRegime } from "../../../physics/thin-film/plasma-global-model";
+import { TE_FIT_MAX, TE_FIT_MIN, TE_MAX, TE_MIN, argonDischarge, lowPressureRegime } from "../../../physics/thin-film/plasma-global-model";
 
 const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
 const fmtExp = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toExponential(digits)}${unit}` : "—");
@@ -72,6 +72,12 @@ export default function PlasmaDepositionPage() {
       {d && noRoot && (
         <p className="mb-6 text-sm text-yellow-300" role="status">
           No result: particle balance needs Tₑ outside {TE_MIN}–{TE_MAX} eV (n<sub>g</sub>d<sub>eff</sub> = {fmtExp(d.ng * d.dEff, 2, " m⁻²")}), outside this model.
+        </p>
+      )}
+      {d && !noRoot && (d.Te <= TE_FIT_MIN || d.Te > TE_FIT_MAX) && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          Tₑ = {fmt(d.Te, 2, " eV")} lies outside the {TE_FIT_MIN}–{TE_FIT_MAX} eV range of the argon rate-constant fits
+          (Lieberman &amp; Lichtenberg Table 3.3): extrapolated.
         </p>
       )}
       {d && !noRoot && !lowPressureRegime(d, R, l, gasTemp) && (
