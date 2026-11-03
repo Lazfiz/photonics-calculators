@@ -45,8 +45,8 @@ export default function OpticalCoherencePage() {
   const tauC = coherenceTime(lambda0, dLambda);
   const dNu = spectralWidthHz(lambda0, dLambda);
   const aScanTime = 1 / (rateKhz * 1e3);
-  const pDetector = powerMw * 1e-3 * kappa * Rs; // W from the sample on the detector
-  const snr = fdOctSnr(rho, pDetector, aScanTime);
+  const pSignal = powerMw * 1e-3 * kappa * Rs; // Choma's P_s = R_s·S, scaled by κ
+  const snr = fdOctSnr(rho, pSignal, aScanTime);
   const sensitivity = fdOctSnr(rho, powerMw * 1e-3 * kappa, aScanTime); // SNR of a perfect mirror = 1/R_s,min
 
   const lambdas = Array.from({ length: 201 }, (_, i) => lambdaNm - 2 * bwNm + (i * 4 * bwNm) / 200);
@@ -81,7 +81,7 @@ export default function OpticalCoherencePage() {
           <ValidatedNumberInput label="Group index of the sample n" value={nRaw} onChange={setN} min={1} max={1.8} step="0.01" />
           <ValidatedNumberInput label="Power on the sample (mW)" value={powerRaw} onChange={setPower} min={0.01} max={100} step="0.1" />
           <ValidatedNumberInput label="Sample reflectivity R_s" value={rsRaw} onChange={setRs} min={1e-6} max={1} step="0.001" />
-          <ValidatedNumberInput label="Return efficiency to the detector κ" value={kappaRaw} onChange={setKappa} min={0.01} max={1} step="0.05" />
+          <ValidatedNumberInput label="Interferometer efficiency κ (1 = lossless)" value={kappaRaw} onChange={setKappa} min={0.01} max={1} step="0.05" />
           <ValidatedNumberInput label="Detector responsivity ρ (A/W)" value={rhoRaw} onChange={setRho} min={0.05} max={1.2} step="0.05" />
           <ValidatedNumberInput label="A-scan rate (kHz)" value={rateRaw} onChange={setRate} min={0.1} max={1000} step="1" />
         </div>
@@ -93,7 +93,7 @@ export default function OpticalCoherencePage() {
           {row("Coherence length l_c (path difference)", fmt(lc * 1e6, 4, " µm"), "text-blue-400")}
           {row("Coherence time τ_c", fmt(tauC * 1e15, 4, " fs"), "text-blue-400")}
           {row("Spectral width Δν", fmt(dNu * 1e-12, 4, " THz"))}
-          {row("Sample power on the detector", fmt(pDetector * 1e9, 4, " nW"))}
+          {row("Signal power κ·R_s·P", fmt(pSignal * 1e9, 4, " nW"))}
           {row("Shot-noise SNR (Fourier domain)", dB(snr), "text-yellow-400")}
           {row("Sensitivity (1/R_s at SNR = 1)", dB(sensitivity), "text-yellow-400")}
           <p className="text-xs text-gray-500">
@@ -123,7 +123,7 @@ export default function OpticalCoherencePage() {
         <div className="text-sm text-gray-300 space-y-1 font-mono">
           <p>|γ(τ)| = exp(−(πΔν τ)²/(4 ln 2)), Δν = cΔλ/λ₀², τ_c = (4 ln 2/π)/Δν, l_c = cτ_c</p>
           <p>Δz = l_c/(2n) = (2 ln 2/π) λ₀²/(n Δλ) = 0.4413 λ₀²/(n Δλ)</p>
-          <p>P_s = P · κ · R_s, SNR = ρ P_s Δt/(2e), sensitivity = ρ P κ Δt/(2e)</p>
+          <p>P_s = P · κ · R_s, SNR = ρ P_s Δt/(2e) (Choma 2003, eq. 10), sensitivity = ρ P κ Δt/(2e); κ = 1 is a lossless 50/50 interferometer, whose detector receives P_s/2</p>
         </div>
         <p className="text-xs text-gray-500 mt-2">
           A Gaussian source spectrum with Δλ ≪ λ₀ and matched dispersion in the two arms. The coherence length is the FWHM

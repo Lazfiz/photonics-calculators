@@ -52,7 +52,7 @@ export default function LowCoherencePage() {
   const detectionBw = 2 * signalBw; // Choma 2003: B = 2Δk_FWHM v/π
   const aScanTime = (scanMm * 1e-3) / v;
   const bScanTime = aScans * aScanTime;
-  const pSample = (powerMw * 1e-3 * Rs) / 4; // 50/50 coupler, both passes
+  const pSample = (powerMw * 1e-3 * Rs) / 2; // Choma's R_s·S, S = P₀/2 on the sample behind a 50/50 coupler
   const snr = tdOctSnr(rho, pSample, detectionBw);
 
   // OPD axis sampled at λ₀/16 so the fringes are resolved; ±120 λ₀ at most for narrow sources.
@@ -113,7 +113,7 @@ export default function LowCoherencePage() {
             <p className="text-sm text-yellow-400">Δλ/λ₀ = {(bwNm / lambdaNm).toFixed(3)} exceeds 0.1: the Gaussian, Δλ ≪ λ₀ formulas lose accuracy.</p>
           )}
           <p className="text-xs text-gray-500">
-            SNR = ρ P_s/(2e B) with P_s = P₀R_s/4 through a 50/50 coupler and B = 2 × the signal FWHM ={" "}
+            SNR = ρ P_s/(2e B) (Choma 2003, eq. 9) with P_s = R_s·P₀/2, R_s times the power on the sample behind a 50/50 coupler (the detector receives half of it), and B = 2 × the signal FWHM ={" "}
             {fmt(detectionBw * 1e-3, 3, " kHz")}; it assumes R_r ≫ R_s and a shot-noise-limited reference. Spectral width Δλ/λ₀ = {(bwNm / lambdaNm).toFixed(3)}.
           </p>
         </div>

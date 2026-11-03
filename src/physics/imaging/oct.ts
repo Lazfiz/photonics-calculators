@@ -12,8 +12,9 @@
  * (A. F. Fercher et al., Rep. Prog. Phys. 66, 239 (2003), doi:10.1088/0034-4885/66/2/204, the "round-trip
  * coherence length"), with n the group index of the sample.
  *
- * Shot-noise limit with the reference power much larger than the sample power, ρ the responsivity (A/W), P_s the
- * sample power reaching the detector (M. A. Choma et al., Opt. Express 11, 2183 (2003), doi:10.1364/OE.11.002183):
+ * Shot-noise limit with the reference power much larger than the sample power, ρ the responsivity (A/W), P_s = R_s S
+ * the sample reflectivity times the power S incident on the sample; behind a 50/50 coupler the detector receives P_s/2
+ * (M. A. Choma et al., Opt. Express 11, 2183 (2003), doi:10.1364/OE.11.002183, p. 2186):
  *   time domain, eq. 9: SNR = ρ P_s/(2e B);  Fourier domain (spectrometer or swept source), eq. 10: SNR = ρ P_s Δt/(2e),
  * with Δt the A-scan time. SNR is a power ratio (A-scan peak height over the noise standard deviation, squared).
  */

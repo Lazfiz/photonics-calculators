@@ -69,6 +69,11 @@ test("Shot-noise SNR ρP_sΔt/(2e) and ρP_s/(2eB) (Choma et al. 2003, eqs. 9–
   assertRel(tdOctSnr(0.8, 10e-6, 9467.46), fdOctSnr(0.8, 10e-6, 1 / 9467.46), 1e-12, "TD = FD with Δt = 1/B");
   assert.equal(fdOctSnr(0.8, 0, 1e-3), 0);
   assert.ok(Number.isNaN(tdOctSnr(0.8, 1e-6, 0)), "B = 0");
+  // Choma's P_s is R_s × the power on the sample (p. 2186), not the detected power. Behind a 50/50 coupler P₀ puts
+  // S = P₀/2 on the sample and the detector receives P_det = P₀R_s/4; one detector's beat signal 2ρ²P_rP_det (mean square)
+  // over the reference shot noise 2eρP_rB gives ρP_det/(eB), equal to eq. 9 with P_s = P₀R_s/2 (the low-coherence page).
+  const [P0, Rs, B] = [1e-3, 1e-4, 1e4];
+  assertRel(tdOctSnr(0.8, (P0 * Rs) / 2, B), (0.8 * ((P0 * Rs) / 4)) / (q * B), 1e-12, "Choma eq. 9 = heterodyne ρP_det/(eB)");
 });
 
 test("Digital holography: Fresnel pixel, NA, reference angle, in-line distance (Schnars & Jüptner 2002)", () => {
