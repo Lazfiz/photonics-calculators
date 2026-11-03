@@ -1,29 +1,37 @@
-# Handover — 2026-11-03 (session 191 → session 192)
+# Handover — 2026-11-03 (session 192 → session 193)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 191 did 6h on `phase-6/6h-limitations` (PR #229): "Open findings" now holds only actionable items; accepted
-missing features and missing data sit in a new "Known limitations" section. Next: 6i cross-cutting UI and performance.
+Session 192 did 6i-a on `phase-6/6i-a-ui-check` (PR #230): a production chart crash fixed, ui-check brought current, three
+performance hot spots fixed. Next: 6i-b chart layout (ROADMAP "Cross-cutting (6i-b)"), then the Gemini hero.
 
 ## State
-- ROADMAP: "Open findings" = physics/data (thermal-expansion table test, "nepers" wording, kerr-lens title, two Codex
-  leftovers, IEC Ed. 4 watch, conc-mirror merge on request), "Performance (6i)" and "Cross-cutting (6i)".
-- Each Known limitation was checked against its page's modelNote or page text. Fixes: Brillouin modelNote said diamond
-  74 cm/GW (code and page give 17.4); notes added to soliton (Raman shift near the 57 fs default), background-noise
-  (850–1550 nm daytime, no night sky or Moon), infrared-glass (AMTIR-1 dn/dT 2× low below 1.5 µm), raman-scattering (no UV
-  edge for KGW, Ba(NO₃)₂); raman-gain.ts header no longer calls Savitski's gain linear. No formula or default changed.
-- Gate: 1215 tests, 5 eslint warnings.
+- **Production bug, fixed on the branch, live until a release:** `ChartPanel`'s `LazySimpleChart` passed the cached component
+  to `useState(loadedSimpleChart)`; React calls a function argument as an initializer, so every SVG chart remounted after the
+  chunk loaded (client navigation, Back) threw "Cannot destructure property 'data'" into the error boundary. Now `() => …`.
+- `scripts/ui-check.mjs`: all checks pass on the branch build; production fails only the new "no console errors after
+  navigating back" check (the bug above). Pages without inputs wait on other controls or the `<h1>`.
+- `poissonQuantile` (math.ts) starts at Cornish–Fisher and steps (identical on 135 cases); `periodicDecay` has a Fourier branch
+  (Poisson summation) used when it needs fewer terms; Fabry-Perot chart ≤ 2000 uniform + 161 sinh-spaced points per peak.
+- Accepted (ROADMAP Known limitations, "Performance and page weight"): gradient-index 0.35 s at the cap; metal-page JS is
+  data (ASTM G173 8.3 KB gz, TMM 5.2 KB, n,k 3.7 KB).
+- Gate: 1215 tests, 5 eslint warnings (unchanged). Build green.
 
 ## Next actions
-1. `/ship`; merge on the user's yes. After a release (on request): `node scripts/post-merge-check.mjs <sha>
-   fiber-optics/fiber-bragg-grating-sensor=195.6 imaging/low-coherence=97.2 detectors/photodiode-speed=13.47`
-   (no default output changed since session 189).
-2. 6i cross-cutting UI and performance (ROADMAP "Performance (6i)" and "Cross-cutting (6i)"); split into a/b if needed.
-   Then the Gemini hero (ask the user for the files).
-3. Ask the user for PDFs: Bai 2020 (APL Photonics 5, 031301: abstract 79 cm/GW vs body 60 ± 9), Patel 2001 (Yb:YAG κ at
+1. `/ship`; merge on the user's yes. Suggest a release soon (the chart crash is user-visible). After a release (on request):
+   `node scripts/post-merge-check.mjs <sha> fiber-optics/fiber-bragg-grating-sensor=195.6 imaging/low-coherence=97.2
+   detectors/photodiode-speed=13.47`, then `node scripts/ui-check.mjs https://photonics-calculators.vercel.app` (expect ALL PASS).
+2. 6i-b: chart double padding (pages wrapping ChartPanel in their own bordered `p-4` box; >10 files → `/codemod`), PNG/CSV
+   row height above SVG charts, Plotly charts without export buttons.
+3. Then the Gemini hero (ask the user for the files).
+4. Ask the user for PDFs: Bai 2020 (APL Photonics 5, 031301: abstract 79 cm/GW vs body 60 ± 9), Patel 2001 (Yb:YAG κ at
    10 at.%), Siegman "Lasers" ch. 11/21 pages.
-4. KRS-5 by hand: `materials/transparency-range?material=krs5` at 10 µm: n 2.3707, loss 28.4 %.
+5. KRS-5 by hand: `materials/transparency-range?material=krs5` at 10 µm: n 2.3707, loss 28.4 %.
 
 ## Non-obvious facts
+- **Session 192:** `ui-check` printed console errors without failing on them, so a production crash sat unnoticed: read its
+  "console errors" line. Full stacks: copy the script to the scratchpad and print `logs` whole. Minified Next chunks are
+  readable with `curl …/_next/static/chunks/<file>.js | cut -c<from>-<to>` at the stack's column. A second ui-check run right
+  after another can hit ECONNREFUSED on port 9333: wait a few seconds. `useState(x)` with a function x calls it.
 - **Session 191:** a registry modelNote can lag its page text after a value fix (Brillouin "74"): when a value
   changes, grep the registry entry too. Print notes for many slugs with a scratchpad script importing
   `src/registry/index` (`calculators`, filter by slug).
@@ -57,13 +65,7 @@ missing features and missing data sit in a new "Known limitations" section. Next
   a gated test is swallowed by devctl: write files and run gates in separate calls.
 - **Session 182:** derive overlaps for the actual geometry and check by brute quadrature. Reviewers must not try to get past
   captchas. Recompute reviewer goldens after changing defaults.
-- **Session 178:** refractiveindex.info `?shelf=…` URLs can resolve to the wrong page.
-- **Session 177:** reviewers' main catches are chart ranges fixed for the default while inputs span decades. devctl's CPU gate
-  can silently skip an implementer edit: keep `git status --short` in briefs.
 - **Session 175:** `useURLState` can't hold NaN: use an out-of-range sentinel. NIST-JANAF: `https://janaf.nist.gov/tables/<id>.txt`.
-- **Session 174:** the C: drive once filled to 0 bytes (ENOSPC on Edit): `df -h /c` when writes fail.
-- **Session 173:** ITU-R PDFs: `https://www.itu.int/dms_pubrec/itu-r/rec/p/R-REC-P.1814-1-202509-I!!PDF-E.pdf`, `pdftotext -raw`.
-- **Session 171:** a sed replacement with `&` pastes the match: use a node script with `replace(a, () => b)`.
 - **Session 160:** Chrome extension screenshots time out on this site; use a headless CDP script (pattern in `scripts/ui-check.mjs`).
   In the Bash tool a bare `python -` or `cat > file` with no input hangs until timeout.
 - **Sessions 137–138:** ITU-T PDFs: `https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-…!!PDF-E&type=items`. **Port 3000 can
