@@ -565,9 +565,9 @@ export const detectors: CalculatorEntry[] = [
   {
     slug: "photodiode-speed",
     title: "Photodiode Speed & Bandwidth",
-    description: "RC and transit-time bandwidth, junction capacitance and thermal NEP vs photodiode area.",
+    description: "RC, transit-time and diffusion-tail bandwidth, junction capacitance and thermal NEP vs photodiode area.",
     tier: "textbook",
-    modelNote: "RC limit with C ∝ area and the transit limit 0.443·v/W of one carrier crossing the full depletion width, combined as 1/f² = 1/f_RC² + 1/f_tr² (within 4 % of the exact response). Uniform generation with equal carrier speeds gives 0.553·v/W. Diffusion current from light absorbed outside W is not modelled; it dominates for Si near 850 nm, where 1/α ≈ 19 µm exceeds W.",
+    modelNote: "RC limit with C ∝ area and the transit limit 0.443·v/W of one carrier crossing the full depletion width, combined as 1/f² = 1/f_RC² + 1/f_tr² (within 4 % of the exact response). Uniform generation with equal carrier speeds gives 0.553·v/W. Light absorbed below W diffuses from a semi-infinite field-free substrate: Gärtner's DC split with L replaced by L/√(1 + iωτ), τ = L²/D, and p = 0 at the depletion edge. At the Si 850 nm defaults (1/α 18.7 µm, W 10.5 µm, L 35 µm) only 53.7 % of the current drifts: the intrinsic −3 dB point is 13.6 MHz, and with the transit sinc and the 50 Ω RC pole the total at 1 mm² is 13.5 MHz. Back-surface and front-surface recombination, an undepleted top layer, a finite substrate and the depletion-width change with bias are not modelled.",
     references: [
       {
         citation: "Bowers J. E., Burrus C. A. (1987). Ultrawide-band long-wavelength p-i-n photodetectors. J. Lightwave Technol. 5, 1339. Transit-time and RC limits of p-i-n bandwidth.",
@@ -580,6 +580,22 @@ export const detectors: CalculatorEntry[] = [
       {
         citation: "Jacoboni C., Canali C., Ottaviani G., Alberigi Quaranta A. (1977). A review of some charge transport properties of silicon. Solid-State Electron. 20, 77–89. Hole saturation velocity v = 1.62e8·T^−0.52 cm/s, ≈ 8.4×10⁴ m/s at 300 K.",
         url: "https://doi.org/10.1016/0038-1101(77)90054-5",
+      },
+      {
+        citation: "Gärtner W. W. (1959). Depletion-layer photoeffects in semiconductors. Phys. Rev. 116, 84–87. Drift 1 − e^(−αW) and diffusion e^(−αW)·αL/(1 + αL) shares of the photocurrent.",
+        url: "https://doi.org/10.1103/PhysRev.116.84",
+      },
+      {
+        citation: "Peter L. M. (1990). Dynamic aspects of semiconductor photoelectrochemistry. Chem. Rev. 90, 753–769. Modulated photocurrent of the Gärtner model.",
+        url: "https://doi.org/10.1021/cr00103a005",
+      },
+      {
+        citation: "Bisquert J. (2002). Theory of the impedance of electron diffusion and recombination in a thin layer. J. Phys. Chem. B 106, 325–333. Frequency-domain diffusion–recombination with complex wavenumber √(1 + iωτ)/L.",
+        url: "https://doi.org/10.1021/jp011941g",
+      },
+      {
+        citation: "Laird J. S., Ravishankar S., Rietwyk K. J., Mao W., Bach U., Smith T. A. (2022). Intensity modulated photocurrent microspectroscopy for next generation photovoltaics. Small Methods 6, 2200493. Diffusion–recombination transfer function following Peter and Bisquert (Eq. 15 of the open preprint arXiv:2201.10133).",
+        url: "https://doi.org/10.1002/smtd.202200493",
       },
     ],
   },

@@ -5,12 +5,12 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 185, 2026-11-03)
+## Status (session 187, 2026-11-03)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
   textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) and 5w-13 (materials) and 5w-14 (spectroscopy) and 5w-15 (thin-film + polarization) done (sessions 163–177): 5w is complete; KRS-5
-  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6d done (sessions 179–185), 6e next; the Gemini hero comes after it. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6e done (sessions 179–187), 6f next; the Gemini hero comes after it. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -235,8 +235,7 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - 5w-1 (session 163), not fixed: `cosmic-rays` `poissonQuantile` ≈ 13 ms per call at the max inputs (μ ≈ 1.7e9), ≈ 0.7 s per render;
   `camera-snr.ts` 604 register stages are the CCD201 (iXon 888), the page models an 897 (CCD97, unverified count; F² changes < 0.2 %);
   `em-gain` has no conventional-amplifier read-noise input.
-- 5w-2 (session 164), not fixed: `photodiode-speed` models no diffusion tail (6e-b);
-  `gain-temperature` scales the Miller curve with V_br (shift model differs 8 %); `pmt` Hamamatsu eq. numbers unverified.
+- 5w-2 (session 164), not fixed: `gain-temperature` scales the Miller curve with V_br (shift model differs 8 %); `pmt` Hamamatsu eq. numbers unverified.
 - `detectors/gain-temperature` PMT branch: the −0.3 %/°C default is an entered value; source a typical dynode-gain coefficient in part 7 (Hamamatsu handbook §13.1.1 gives no number).
 **Detectors (session 165, unverified, sources unreachable)**
 - `vacuum-photodiode`: S-20 dark emission 0.4 fA/cm² (Burle Table I); a reviewer recalled 0.3 (from memory).
@@ -313,12 +312,7 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - [x] 6d-b materials values (session 185, `phase-6/6d-b-materials`, PR #223): x-ray Compton term, GaAs and diamond c_p presets, SGTE T_m. See Done.
 - [x] 6e-a fiber + detectors (session 186, `phase-6/6e-fiber-detectors`, PR #224): PCF MFD from Nielsen 2003, detector D* from J_d and R₀A,
   C30902EH bulk I_d 0.22 pA, streak 3.37 ps bound. See Done.
-- [ ] 6e-b `photodiode-speed` diffusion tail. Reviewer (session 186): Si 850 nm, α 534 cm⁻¹ (1/α 18.7 µm), W 10.54 µm: only 43 % absorbed
-  in W; Gärtner drift share (1 − e^−αW)/(1 − e^−αW/(1 + αL)) = 0.538 with L 34.6 µm (η 0.8, R = 0), so the plateau is −5.4 dB and
-  f_3dB ≈ 14 MHz (diffusion), not ≈ 317 MHz. Diffusion response with L_ω = L/√(1 + iωτ), τ = L²/D (reviewer's derivation, find a
-  source: Sze & Ng ch. 13, Bowers & Burrus JLT 5, 1339 (1987), Lucovsky/Schwarz/Emmons JAP 35, 622 (1964)?); corner 2.43·D/(2πd²)
-  checked numerically. Design: `driftFraction`, `diffusionResponse`, `diffusionBandwidth` in `photodiode-rc.ts`; inputs 1/α (from
-  `siliconAbsorption`), L, D (36 cm²/s); cards "Drift share", "Diffusion −3 dB"; warning when the drift share < 1/√2.
+- [x] 6e-b photodiode diffusion tail (session 187, `phase-6/6e-b-photodiode-diffusion`, PR #225): drift share 53.7 %, total −3 dB 13.47 MHz. See Done.
 - [ ] 6f citation sweep a (thin film, polarization, imaging, spectroscopy, detectors): every "unverified" / "from memory" entry read in
   its source (crossref, Optica abstract pages, ITU/ICNIRP PDFs); fix or confirm, one line each.
 - [ ] 6g citation sweep b (fiber, free-space comms, wave optics, materials, laser safety).
@@ -344,6 +338,9 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 6e-b photodiode diffusion tail (session 187, `phase-6/6e-b-photodiode-diffusion`, PR #225): Gärtner split with L_ω = L/√(1 + iωτ)
+  (Peter 1990, Bisquert 2002, Laird 2022 Eq. 15), checked against a finite-difference solve to 1e-7; Si 850 nm defaults drift
+  share 53.7 %, intrinsic −3 dB 13.59 MHz, total at 1 mm² 13.47 MHz (50 Ω) / 1.31 MHz (10 kΩ) instead of 317 MHz.
 - 6e-a fiber + detectors (session 186, `phase-6/6e-fiber-detectors`, PR #224): PCF MFD from Nielsen et al. OL 28, 2309 (2003), w/Λ at V_PCF = √3 W
   (5.109 µm at the defaults vs Marcuse 5.076; HF1 A_eff 194 vs FEM 200 µm²; the "6.69 µm" finding was wrong); detectivity splits detector
   D* = ℛM/√(2qJ_dM²F + 4kT/R₀A) (2.616e12, Rogalski 2003) from system D* with R_L (2.668e9); C30902EH I_DB 0.2175 pA from i_N 0.1 pA/√Hz

@@ -1,32 +1,34 @@
-# Handover — 2026-11-03 (session 186 → session 187)
+# Handover — 2026-11-03 (session 187 → session 188)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 186 did 6e-a fiber + detectors on `phase-6/6e-fiber-detectors` (PR #224): PCF MFD from Nielsen 2003, detector D* from J_d
-and R₀A, C30902EH bulk I_d, streak note. Next: 6e-b `photodiode-speed` diffusion tail (design and reviewer numbers in the box).
+Session 187 did 6e-b on `phase-6/6e-b-photodiode-diffusion` (PR #225): the `photodiode-speed` diffusion tail. Phase 6e is
+done. Next: 6f citation sweep a (thin film, polarization, imaging, spectroscopy, detectors); split it into a/b if > 4 pages.
 
 ## State
-- `photonic-crystal.ts`: `nielsenSpotSize(vPcf)` = w/Λ = 0.7078 V^−0.2 + 0.2997 V^−1.5 + 0.0037 V^−6 (Nielsen et al. OL 28, 2309,
-  Eq. 2, g = 8); `pcfMode` returns `vPcf` = √3·W (Mortensen's V on Λ and n_eff); MFD NaN below `NIELSEN_V_RANGE[0]` = 0.5 (Fig. 2 data
-  0.5–5; the card says "extrapolated" above 5). Defaults 5.109 µm (Marcuse 5.076); LMA-5 4.03 µm (spec 4.1); HF1 A_eff 194 µm² (FEM 200).
-  `MARCUSE_MIN_V` is gone from this module (`specialty-fiber.ts` keeps its own for step-index fibres).
-- `noise.ts`: `detectorDetectivity({responsivity, darkCurrentDensity (A/cm²), r0a (Ω·cm²), temperature, gain, excessNoiseFactor})`
-  = ℛM/√(2qJ_dM²F + 4kT/R₀A). Detectivity page: new `r0a` input (default 1e7 Ω·cm², illustrative); "Detector D*" 2.616e12 and
-  "System D* (incl. load R_L)" 2.668e9 (the old number; R₀A = R_L·A reproduces it exactly). Both curves on both charts; the T chart
-  scales R₀A by 1/ratio.
-- `linear-mode-avalanche` default bulk I_d 2.2e-13 A (data sheet i_N 0.1 pA/√Hz, I_D 7 nA at M 150 → I_DB 0.2175 pA); M_opt 215.45.
-- Streak note: 2.63·√Δε/E ps verified in Shakya & Chang (E in kV/mm); added the 3.37 ps bound and Chang et al. APL 69, 133 (1996).
-- Gate: 1212 tests, 5 eslint warnings.
+- `photodiode-rc.ts`: `driftFraction(α, W, L)` = (1 − e^−αW)/(1 − e^−αW/(1 + αL)) (Gärtner 1959); `diffusionResponse(f, α, W, L, D)`
+  complex, diffusion term e^−αW·αL/(αL + √(1 + iωτ)), τ = L²/D (Peter 1990; Bisquert 2002; Laird et al. Small Methods 6,
+  2200493 (2022), Eq. 15 of arXiv:2201.10133); `diffusionBandwidth` (Infinity when the share ≥ 1/√2 or the crossing lies past
+  ±8 decades); `photodiodeResponse(f, {alpha, width, diffusionLength, diffusivity, fTransit, fRC})` = |H_int|·|sinc|/√(1 + (f/f_RC)²)
+  and `photodiodeBandwidth`; a private `firstCrossing` (0.01-decade scan + 100 bisections).
+- Page: inputs `absorptionDepth` (µm, 0 = Si at λ via `siliconAbsorption`), `diffusionLength` 35 µm, `diffusivity` 36 cm²/s;
+  cards Drift Share 53.7 %, Diffusion −3 dB 13.59 MHz, Total −3 dB @ 1 mm² 13.47 MHz; warning below a share of 1/√2; new
+  frequency-response chart; diffusion corner line on the area chart. Closed form = finite-difference solve to 1e-7.
+- Reviewer (Opus) verdict OK; fixed: total −3 dB instead of quoting the intrinsic corner (10 kΩ: 1.31 MHz), Infinity past the
+  scan, α > 0 guard, published citation. Gate: 1214 tests, 5 eslint warnings.
 
 ## Next actions
 1. `/ship`; merge on the user's yes. After a release (on request): `node scripts/post-merge-check.mjs <sha>
-   fiber-optics/photonic-crystal=5.11 detectors/detectivity=2.616e12 detectors/linear-mode-avalanche=215.5` (prerendered HTML
-   shows defaults; check the strings the page prints, e.g. "5.11 µm", "2.616e+12").
-2. 6e-b `photodiode-speed`: find a source for the diffusion frequency response before coding (reviewer's L_ω = L/√(1 + iωτ) is
-   the reviewer's own derivation). Candidates in the box.
+   detectors/photodiode-speed=13.47 fiber-optics/photonic-crystal=5.11 detectors/detectivity=2.616e12
+   detectors/linear-mode-avalanche=215.5` (the page prints "13.47 MHz", "13.59 MHz"; use 13.59, not the test's 13.60).
+2. 6f citation sweep a; then 6g, 6h, 6i; the hero after Phase 6.
 3. Bai 2020 (APL Photonics 5, 031301): abstract says measured 79 cm/GW, 12 MHz; code keeps 60 ± 9. Ask the user for the PDF.
 4. KRS-5 by hand: `materials/transparency-range?material=krs5` at 10 µm: n 2.3707, loss 28.4 %.
 
 ## Non-obvious facts
+- **Session 187:** `scripts/ui-check.mjs <base> load <paths…>` loads pages and reports console errors; a scratchpad copy that
+  prints card text after each load checks values on the dev server (`npx next dev -p 3100` wrapped in `timeout`). Optica
+  full-text pages answer WebFetch with a JS challenge; arXiv PDFs + `pdftotext -layout` lose Greek letters. Electrochemistry
+  (IMPS, Gerischer impedance) is where the AC diffusion–recombination solution with √(1 + iωτ)/L is published.
 - **Session 186:** ar5iv serves arXiv figures as PNG: `https://ar5iv.labs.arxiv.org/html/<id>/assets/fig2.png`; Read them to get
   axis ranges (no pdftoppm/mutool on this machine). A reviewer's "from memory" number in a finding (PCF 6.69 µm) was wrong: probe
   before planning a fix. devctl can queue `npm run check` ≈ 12 min behind another project's job; it then runs on the tree as it is.
