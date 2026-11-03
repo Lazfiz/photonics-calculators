@@ -762,6 +762,10 @@ export const materials: CalculatorEntry[] = [
         url: "https://henke.lbl.gov/optical_constants/",
       },
       {
+        citation: "Kaloyeros A. E., Pan Y., Goff J., Arkles B. (2020). Review—Silicon nitride and silicon nitride-rich thin film technologies: state-of-the-art processing technologies, properties, and applications. ECS J. Solid State Sci. Technol. 9, 063006. Table I: bulk Si₃N₄ 3.10–3.20 g/cm³ (α 3.184), CVD films ≈ 2.8; the Si₃N₄ preset uses 3.18, not CXRO's 3.44.",
+        url: "https://doi.org/10.1149/2162-8777/aba447",
+      },
+      {
         citation: "Hubbell J. H., Veigele W. J., Briggs E. A., Brown R. T., Cromer D. T., Howerton R. J. (1975). Atomic form factors, incoherent scattering functions, and photon scattering cross sections. J. Phys. Chem. Ref. Data 4, 471–538.",
         url: "https://doi.org/10.1063/1.555523",
       },
