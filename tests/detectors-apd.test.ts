@@ -92,11 +92,27 @@ test("APD receiver SNR and the optimum gain against thermal noise (Personick 197
   const snr = (M: number) => apdReceiver(base, M).snr;
   assert.ok(snr(Mopt) > snr(Mopt * 0.999) && snr(Mopt) > snr(Mopt * 1.001));
   close(snr(Mopt), 1.7854, 1e-4);
-  // The old page default (10 nA bulk dark current) gives M_opt = 78.72.
+  // Older page defaults: 10 nA bulk dark current gives M_opt = 78.72, 50 pA gives 208.94 (above).
   close(optimumGain({ ...base, darkCurrent: 10e-9 }), 78.72, 1e-4);
   // A huge load leaves no thermal noise to beat: the optimum clamps to M = 1.
   assert.equal(optimumGain({ ...base, loadResistance: 1e30 }), 1);
   assert.equal(optimumGain({ ...base, photocurrent: 0, darkCurrent: 0 }), Infinity);
   assert.equal(apdReceiver({ ...base, photocurrent: 0 }, 10).snr, 0);
   assert.ok(Number.isNaN(apdReceiver({ ...base, loadResistance: 0 }, 10).snr));
+});
+
+test("C30902EH bulk dark current from the data sheet's noise current (page default 0.22 pA)", () => {
+  // Excelitas C30902EH Rev. 2022.02, Table 4 and notes 2–3, at M = 150: I_D = I_DS + I_DB·M = 7 nA, i_N = 0.1 pA/√Hz,
+  // i_N² = 2q(I_DS + I_DB·M²F). F(150, k 0.02) = 3 + 0.98·1.99333 = 4.95347; i_N²/(2q) = 31.2076 nA, so
+  // I_DB = (31.2076 − 7) nA/(22500·4.95347 − 150) = 0.21749 pA and I_DS = 6.9674 nA.
+  const F = excessNoiseFactor(150, 0.02);
+  close(F, 4.953467, 1e-6);
+  const IDB = ((0.1e-12) ** 2 / (2 * q) - 7e-9) / (150 * 150 * F - 150);
+  close(IDB, 2.1749e-13, 1e-4);
+  // 1 nW at 800 nm, η 0.8, 100 MHz, 1 kΩ, 300 K with 0.22 pA: M_opt = 215.45 (+3.1 % on 50 pA), SNR 1.9121 there.
+  const Ip = (0.8 * q * 800e-9 * 1e-9) / (h * c);
+  const base = { photocurrent: Ip, darkCurrent: 2.2e-13, k: 0.02, bandwidth: 100e6, loadResistance: 1000, temperature: 300 };
+  const Mopt = optimumGain(base);
+  close(Mopt, 215.45, 1e-4);
+  close(apdReceiver(base, Mopt).snr, 1.9121, 1e-4);
 });

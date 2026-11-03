@@ -4,9 +4,9 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { hc_eV_nm } from "../../../physics/constants";
+import { hc_eV_nm, k_B, q } from "../../../physics/constants";
 import { darkCurrentRatio, type DarkCurrentMechanism } from "../../../physics/detectors/dark-current";
-import { johnsonNoise, noiseEquivalentPower, responsivity as responsivityOf, shotNoiseCurrent, specificDetectivity } from "../../../physics/detectors/noise";
+import { detectorDetectivity, johnsonNoise, noiseEquivalentPower, responsivity as responsivityOf, shotNoiseCurrent, specificDetectivity } from "../../../physics/detectors/noise";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 3) => (Number.isFinite(x) && x > 0 ? x.toExponential(digits) : "—");
@@ -20,6 +20,7 @@ export default function DetectivityPage() {
   const [bandwidthRaw, setBandwidth] = useURLState("bandwidth", 1);
   const [temperatureRaw, setTemperature] = useURLState("temperature", 293);
   const [loadResistanceRaw, setLoadResistance] = useURLState("loadResistance", 50);
+  const [r0aRaw, setR0a] = useURLState("r0a", 1e7);
   const [gainRaw, setGain] = useURLState("gain", 1);
   const [excessNoiseFactorRaw, setExcessNoiseFactor] = useURLState("excessNoiseFactor", 1);
   const [darkLawRaw, setDarkLaw] = useURLState("darkLaw", "generation");
@@ -33,6 +34,7 @@ export default function DetectivityPage() {
   const bandwidth = clamp(bandwidthRaw, 1e-6, 1e5, 1) * 1e6; // MHz → Hz
   const temperature = clamp(temperatureRaw, 4, 500, 293);
   const loadResistance = clamp(loadResistanceRaw, 1, 1e12, 50);
+  const r0a = clamp(r0aRaw, 1e-6, 1e15, 1e7); // Ω·cm²
   const gain = clamp(gainRaw, 1, 1e4, 1);
   const excessNoiseFactor = clamp(excessNoiseFactorRaw, 1, 1e4, 1);
   const bandGap_eV = hc_eV_nm / cutoff_nm;
@@ -43,6 +45,9 @@ export default function DetectivityPage() {
   const noiseCurrent = (Id: number, T: number) =>
     Math.hypot(shotNoiseCurrent(Id, bandwidth) * gain * Math.sqrt(excessNoiseFactor), johnsonNoise(loadResistance, T, bandwidth).i);
   const dStar = (R: number, iNoise: number) => (R > 0 ? specificDetectivity(area_cm2, bandwidth, noiseEquivalentPower(iNoise, R, gain)) : NaN);
+  // The detector's own D* from J_d = I_d/A and R₀A: independent of area, bandwidth and the load.
+  const dStarDetector = (R: number, Id: number, rA: number, T: number) =>
+    detectorDetectivity({ responsivity: R, darkCurrentDensity: Id / area_cm2, r0a: rA, temperature: T, gain, excessNoiseFactor });
 
   const responsivity = responsivityAt(wavelength_nm);
   const shotNoise = shotNoiseCurrent(darkCurrent, bandwidth) * gain * Math.sqrt(excessNoiseFactor);
@@ -50,18 +55,33 @@ export default function DetectivityPage() {
   const totalNoise = noiseCurrent(darkCurrent, temperature);
   const nepSpectral = responsivity > 0 ? noiseEquivalentPower(totalNoise, responsivity, gain) / Math.sqrt(bandwidth) : NaN; // W/√Hz
   const detectivity = dStar(responsivity, totalNoise);
+  const detectorDStar = dStarDetector(responsivity, darkCurrent, r0a, temperature);
+  const jd = darkCurrent / area_cm2; // A/cm²
+  const shotVariance = 2 * q * jd * gain * gain * excessNoiseFactor;
+  const johnsonVariance = (4 * k_B * temperature) / r0a;
 
   const spectralChart = (() => {
     const wlMax = Math.max(1.2 * cutoff_nm, wavelength_nm);
     const wl = Array.from({ length: 300 }, (_, i) => 200 + (i * (wlMax - 200)) / 299);
-    return [{ x: wl, y: wl.map(w => { const d = dStar(responsivityAt(w), totalNoise); return Number.isFinite(d) ? d : 0; }), type: "scatter", mode: "lines", name: "D*", line: { color: "#60a5fa", width: 2 } }];
+    const finite = (d: number) => (Number.isFinite(d) ? d : 0);
+    return [
+      { x: wl, y: wl.map(w => finite(dStarDetector(responsivityAt(w), darkCurrent, r0a, temperature))), type: "scatter", mode: "lines", name: "Detector D*", line: { color: "#60a5fa", width: 2 } },
+      { x: wl, y: wl.map(w => finite(dStar(responsivityAt(w), totalNoise))), type: "scatter", mode: "lines", name: "System D* (incl. R_L)", line: { color: "#a78bfa", width: 2, dash: "dash" } },
+    ];
   })();
 
   const tempChart = (() => {
     const temps = Array.from({ length: 151 }, (_, i) => 150 + i * 2);
-    // Only the detector is swept: the load stays at the entered temperature, so the curve shows the dark-current law.
-    const y = temps.map(T => dStar(responsivity, noiseCurrent(darkCurrent * darkCurrentRatio(T, temperature, bandGap_eV, darkLaw), temperature)));
-    return [{ x: temps, y: y.map(d => (Number.isFinite(d) && d > 0 ? d : null)), type: "scatter", mode: "lines", name: "D*", line: { color: "#f87171", width: 2 } }];
+    // Only the detector is swept: I_d scales with the chosen law and R₀A (the same junction current at zero bias) inversely;
+    // the load stays at the entered temperature.
+    const ratio = temps.map(T => darkCurrentRatio(T, temperature, bandGap_eV, darkLaw));
+    const det = temps.map((T, i) => dStarDetector(responsivity, darkCurrent * ratio[i], r0a / ratio[i], T));
+    const sys = ratio.map(r => dStar(responsivity, noiseCurrent(darkCurrent * r, temperature)));
+    const pos = (d: number) => (Number.isFinite(d) && d > 0 ? d : null);
+    return [
+      { x: temps, y: det.map(pos), type: "scatter", mode: "lines", name: "Detector D*", line: { color: "#f87171", width: 2 } },
+      { x: temps, y: sys.map(pos), type: "scatter", mode: "lines", name: "System D* (incl. R_L)", line: { color: "#a78bfa", width: 2, dash: "dash" } },
+    ];
   })();
 
   return (
@@ -74,7 +94,8 @@ export default function DetectivityPage() {
         <ValidatedNumberInput label="Area (mm²)" value={areaRaw} onChange={setArea} min={1e-4} max={1e4} step="0.1" />
         <ValidatedNumberInput label="Bandwidth (MHz)" value={bandwidthRaw} onChange={setBandwidth} min={1e-6} max={1e5} step="0.1" />
         <ValidatedNumberInput label="Temperature (K)" value={temperatureRaw} onChange={setTemperature} min={4} max={500} step="1" />
-        <ValidatedNumberInput label="Load R (Ω)" value={loadResistanceRaw} onChange={setLoadResistance} min={1} max={1e12} step="10" />
+        <ValidatedNumberInput label="Detector R₀A (Ω·cm², zero-bias)" value={r0aRaw} onChange={setR0a} min={1e-6} max={1e15} step="any" />
+        <ValidatedNumberInput label="Load R (Ω), system D* only" value={loadResistanceRaw} onChange={setLoadResistance} min={1} max={1e12} step="10" />
         <ValidatedNumberInput label="Avalanche Gain M" value={gainRaw} onChange={setGain} min={1} max={1e4} step="1" />
         <ValidatedNumberInput label="Excess Noise Factor F (1 for a PIN)" value={excessNoiseFactorRaw} onChange={setExcessNoiseFactor} min={1} max={1e4} step="0.1" />
         <label className="block text-sm text-gray-300">
@@ -87,17 +108,19 @@ export default function DetectivityPage() {
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ResultCard label="Responsivity (M = 1)" value={`${responsivity.toFixed(3)} A/W`} tone="blue" subtext={wavelength_nm > cutoff_nm ? "Beyond the cutoff: no response" : `E_g = ${bandGap_eV.toFixed(3)} eV from λ_c`} />
-        <ResultCard label="NEP" value={`${fmt(nepSpectral)} W/√Hz`} tone="red" />
+        <ResultCard label="Detector D*" value={`${fmt(detectorDStar)} cm·Hz^½/W`} tone="green" subtext={`J_d = ${fmt(jd)} A/cm²; ${shotVariance >= johnsonVariance ? "dark-current shot" : "R₀A Johnson"} noise dominates; area-independent`} />
+        <ResultCard label="NEP (system)" value={`${fmt(nepSpectral)} W/√Hz`} tone="red" />
         <ResultCard label="Shot Noise (multiplied dark)" value={fmt(shotNoise) + " A"} tone="yellow" />
         <ResultCard label="Thermal Noise" value={fmt(thermalNoise) + " A"} tone="orange" />
-        <ResultCard label="Detectivity D*" value={`${fmt(detectivity)} cm·Hz^½/W`} tone="green" />
+        <ResultCard label="System D* (incl. load R_L)" value={`${fmt(detectivity)} cm·Hz^½/W`} tone="purple" subtext={thermalNoise > shotNoise ? "Load Johnson noise dominates: grows as √A at fixed I_d" : "Dark-current shot noise dominates"} />
       </div>
       <div className="grid gap-6 md:grid-cols-2">
         <ChartPanel data={spectralChart} layout={{ xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "D* (cm·Hz^½/W)", gridcolor: "#374151" } }} title="D* vs Wavelength (constant η up to λ_c)" />
-        <ChartPanel data={tempChart} layout={{ xaxis: { title: "Detector temperature (K)", gridcolor: "#374151" }, yaxis: { title: "D* (cm·Hz^½/W)", type: "log", gridcolor: "#374151" } }} title="D* vs Detector Temperature (load at T)" />
+        <ChartPanel data={tempChart} layout={{ xaxis: { title: "Detector temperature (K)", gridcolor: "#374151" }, yaxis: { title: "D* (cm·Hz^½/W)", type: "log", gridcolor: "#374151" } }} title="D* vs Detector Temperature (I_d by the chosen law, R₀A inversely; load at T)" />
       </div>
       <div className="bg-gray-900 rounded-lg p-4 mt-6 text-sm text-gray-300 font-mono space-y-1">
-        <p>D* = √(A·Δf) / NEP,  NEP = i_n / (ℛ·M)</p>
+        <p>Detector: D* = ℛ·M / √(2·q·J_d·M²·F + 4·k·T / R₀A),  J_d = I_d / A</p>
+        <p>System: D* = √(A·Δf) / NEP,  NEP = i_n / (ℛ·M)</p>
         <p>ℛ = η·q·λ / (h·c) for λ ≤ λ_c = h·c/E_g, else 0</p>
         <p>i²_shot = 2·q·I_d·M²·F·Δf,  i²_thermal = 4·k·T·Δf / R_L</p>
         <p>I_d(T) ∝ n_i ∝ T^1.5·exp(−E_g/2kT) (generation) or ∝ n_i² (diffusion), scaled from the entered I_d at the entered T</p>

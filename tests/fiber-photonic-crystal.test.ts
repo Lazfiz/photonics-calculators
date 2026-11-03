@@ -1,8 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  V_CUTOFF, cutoffWavelength, endlesslySingleModeLimit, isEndlesslySingleMode, pcfDispersion, pcfMode, saitohKoshibaV,
-  saitohKoshibaW,
+  V_CUTOFF, cutoffWavelength, endlesslySingleModeLimit, isEndlesslySingleMode, nielsenSpotSize, pcfDispersion, pcfMode,
+  saitohKoshibaV, saitohKoshibaW,
 } from "../src/physics/fiber-optics/photonic-crystal";
 
 const PS_NM_KM = 1e-6;
@@ -65,15 +65,31 @@ test("large pitch recovers bulk silica dispersion (≈ 21.9 ps/(nm·km) at 1550 
 });
 
 test("effective area of the ESM fibre HF1 (Λ = 12.4 µm, d/Λ = 0.424) is ≈ 200 µm² at 1550 nm", () => {
-  // Saitoh et al., Opt. Express 13, 10833 (2005), Sec. 4: A_eff = 200 µm² from FEM. Gaussian πw² with Marcuse's w.
+  // Saitoh et al., Opt. Express 13, 10833 (2005), Sec. 4: A_eff = 200 µm² from FEM. πw² with Nielsen's w gives 194.0
+  // (V_PCF 2.885); Marcuse's step-index fit with V_SK gave 212.
   const m = pcfMode(12.4e-6, 0.424 * 12.4e-6, 1550e-9);
   const area_um2 = m.effectiveArea * 1e12;
-  assert.ok(Math.abs(area_um2 - 200) / 200 < 0.1, `A_eff ${area_um2}`);
+  assert.ok(Math.abs(area_um2 - 200) / 200 < 0.04, `A_eff ${area_um2}`);
   assert.equal(m.singleMode, true);
   assert.ok(m.nEff > m.nFsm && m.nEff < m.nCore);
 });
 
-test("unphysical fit regions give NaN: W ≤ 0, d/Λ outside 0.2–0.8, Marcuse below V = 1.2", () => {
+test("mode-field diameter from Nielsen et al., Opt. Lett. 28, 2309 (2003), Eq. (2) with g = 8", () => {
+  // w/Λ = 0.7078 V^−0.2 + 0.2997 V^−1.5 + 0.0037 V^−6. Read off Fig. 2: w/Λ ≈ 1.0 at V_PCF = 1, ≈ 0.62 at π.
+  assert.ok(Math.abs(nielsenSpotSize(1) - 1.0112) < 1e-12);
+  assert.ok(Math.abs(nielsenSpotSize(Math.PI) - 0.6168) < 1e-4, `${nielsenSpotSize(Math.PI)}`);
+  // Page defaults Λ 4.5 µm, d/Λ 0.6, 1550 nm: W 2.401, V_PCF = √3 W = 4.158; by hand 0.53229 + 0.035347 + 7e-7 =
+  // 0.56764, 2w = 5.109 µm (Marcuse with V_SK 2.933 gave 5.076).
+  const m = pcfMode(4.5e-6, 2.7e-6, 1550e-9);
+  assert.ok(Math.abs(m.vPcf - Math.sqrt(3) * m.W) < 1e-12 && Math.abs(m.vPcf - 4.158) < 1e-3, `V_PCF ${m.vPcf}`);
+  assert.ok(Math.abs(m.mfd * 1e6 - 5.109) < 2e-3, `MFD ${m.mfd * 1e6}`);
+  assert.ok(Math.abs(m.effectiveArea - (Math.PI * m.mfd * m.mfd) / 4) < 1e-24);
+  // NKT LMA-5 (Λ 2.9 µm, d/Λ 0.44): data sheet MFD 4.1 ± 0.5 µm at 1550 nm; Nielsen 4.03 (Marcuse gave 4.40).
+  const lma5 = pcfMode(2.9e-6, 0.44 * 2.9e-6, 1550e-9);
+  assert.ok(Math.abs(lma5.mfd * 1e6 - 4.1) < 0.15, `LMA-5 MFD ${lma5.mfd * 1e6}`);
+});
+
+test("unphysical fit regions give NaN: W ≤ 0, d/Λ outside 0.2–0.8, Nielsen below V_PCF = 0.5", () => {
   // Λ = 0.8 µm, d/Λ = 0.25, λ = 1550 nm: the W fit is −0.087 (n_eff would fall below n_FSM).
   const neg = pcfMode(0.8e-6, 0.2e-6, 1550e-9);
   assert.ok(neg.W < 0 && !neg.physical);
@@ -81,9 +97,9 @@ test("unphysical fit regions give NaN: W ≤ 0, d/Λ outside 0.2–0.8, Marcuse 
   // d/Λ = 0.9: the r^24.8 terms blow W up to ≈ 121; no result.
   const big = pcfMode(2.3e-6, 2.07e-6, 1550e-9);
   assert.ok(Number.isNaN(big.nEff) && Number.isNaN(big.na) && Number.isNaN(big.dispersion));
-  // d/Λ = 0.3, λ/Λ = 1.2: W > 0 but V ≈ 1.07 < 1.2, so n_eff is given and the MFD is not.
+  // d/Λ = 0.3, λ/Λ = 1.2: W > 0 but V_PCF ≈ 0.18 < 0.5 (Nielsen's w would be 127 µm), so n_eff is given and the MFD is not.
   const lowV = pcfMode(1.25e-6, 0.375e-6, 1500e-9);
-  assert.ok(lowV.V < 1.2 && lowV.W > 0, `V ${lowV.V}, W ${lowV.W}`);
+  assert.ok(lowV.vPcf < 0.5 && lowV.W > 0, `V_PCF ${lowV.vPcf}, W ${lowV.W}`);
   assert.ok(Number.isFinite(lowV.nEff) && Number.isNaN(lowV.mfd));
   // λ/Λ = 2 exactly counts as inside the fit range despite rounding.
   assert.equal(pcfMode(1e-6, 0.5e-6, 2000e-9).inFitRange, true);

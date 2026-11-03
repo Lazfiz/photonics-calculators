@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   cornerFlickerRms,
+  detectorDetectivity,
   enobFromSinad,
   flickerPsd,
   flickerRms,
@@ -17,6 +18,9 @@ import {
   minDetectableSignal,
   sensorNoiseElectrons,
   shotNoiseCurrent,
+  noiseEquivalentPower,
+  responsivity,
+  specificDetectivity,
 } from "../src/physics/detectors/noise";
 
 const close = (actual: number, expected: number, rel: number, msg = "") =>
@@ -150,4 +154,24 @@ test("SINAD including quantisation, 12-bit with N = 1e-7, D = 1e-8", () => {
 test("SINAD including quantisation: N = D = 0 gives exactly the ideal ADC (ENOB = bits); S <= 0 is NaN", () => {
   assert.ok(Math.abs(enobFromSinad(sinadWithQuantizationDb(1, 0, 0, 12)) - 12) < 1e-9);
   assert.ok(Number.isNaN(sinadWithQuantizationDb(0, 1e-7, 0, 12)));
+});
+
+test("detector D* = ℛM/√(2qJ_dM²F + 4kT/R₀A) (Rogalski 2003): detectivity page defaults", () => {
+  // 850 nm, η 0.7: ℛ = 0.47990 A/W; 1 nA over 1 mm² gives J_d = 1e-7 A/cm², 2qJ_d = 3.204353e-26 A²/(Hz·cm²).
+  const R = responsivity(0.7, 850e-9);
+  close(R, 0.4798999, 1e-6);
+  const base = { responsivity: R, darkCurrentDensity: 1e-7, temperature: 293 };
+  // Shot-limited: 0.4799/√3.204353e-26 = 2.68090e12 Jones.
+  close(detectorDetectivity({ ...base, r0a: Infinity }), 2.68090e12, 1e-5);
+  // R₀A 1e7 Ω·cm² adds 4k_B·293/1e7 = 1.618121e-27: 0.4799/√3.366165e-26 = 2.61567e12.
+  close(detectorDetectivity({ ...base, r0a: 1e7 }), 2.61567e12, 1e-5);
+  // M 10, F 3: 4.7990/√(9.613059e-24 + 1.618e-27) = 1.54769e12.
+  close(detectorDetectivity({ ...base, r0a: 1e7, gain: 10, excessNoiseFactor: 3 }), 1.54769e12, 1e-5);
+  // R₀A = R_L·A (50 Ω × 0.01 cm²) reproduces the page's system D* with a 50 Ω load: 2.66766e9 at any B.
+  const B = 1e6, i = Math.hypot(shotNoiseCurrent(1e-9, B), johnsonNoise(50, 293, B).i);
+  const system = specificDetectivity(0.01, B, noiseEquivalentPower(i, R));
+  close(system, 2.66766e9, 1e-5);
+  close(detectorDetectivity({ ...base, r0a: 0.5 }), system, 1e-12);
+  assert.equal(detectorDetectivity({ ...base, darkCurrentDensity: 0, r0a: Infinity }), Infinity);
+  assert.ok(Number.isNaN(detectorDetectivity({ ...base, r0a: 0 })) && Number.isNaN(detectorDetectivity({ ...base, r0a: 1, gain: 0.5 })));
 });

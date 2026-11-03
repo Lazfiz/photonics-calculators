@@ -255,10 +255,14 @@ export const detectors: CalculatorEntry[] = [
     title: "Detectivity (D*)",
     description: "Specific detectivity from NEP, area, and bandwidth. D* = √(A·Δf) / NEP",
     tier: "textbook",
-    modelNote: "Constant quantum efficiency up to the cutoff λ_c = hc/E_g; multiplied dark-current shot noise 2q·I_d·M²·F and load Johnson noise. The temperature chart scales dark current as n_i or n_i² with a fixed band gap and constant responsivity, with the load held at the entered temperature. D* includes the load: with I_d fixed and load noise dominant it grows as √A.",
+    modelNote: "Constant quantum efficiency up to the cutoff λ_c = hc/E_g. Detector D* from the dark-current density J_d = I_d/A (multiplied shot noise 2q·J_d·M²·F) and the zero-bias R₀A (Johnson 4kT/R₀A): area-independent. System D* adds the load's Johnson noise instead of R₀A; with I_d fixed and load noise dominant it grows as √A. The default R₀A is illustrative. The temperature chart scales I_d as n_i or n_i² and R₀A inversely, with a fixed band gap and constant responsivity, the load held at the entered temperature.",
     references: [
       {
         citation: "Dereniak E. L., Boreman G. D. (1996). Infrared Detectors and Systems. Wiley. Ch. 5: responsivity, noise-equivalent power and specific detectivity D* = √(A·Δf)/NEP.",
+      },
+      {
+        citation: "Rogalski A. (2003). Infrared detectors: status and trends. Prog. Quantum Electron. 27, 59–210. Photodiode D* = ℛ(4kT/R₀A + 2qJ)^−½.",
+        url: "https://doi.org/10.1016/S0079-6727(02)00024-1",
       },
       {
         citation: "Saleh B. E. A., Teich M. C. (1991). Fundamentals of Photonics. Wiley. §17.5 Noise in photodetectors: shot noise 2qīB and circuit noise.",
@@ -476,7 +480,7 @@ export const detectors: CalculatorEntry[] = [
     title: "Linear-Mode Avalanche Photodiode",
     description: "SNR of a linear-mode APD receiver versus gain: McIntyre excess noise, shot and thermal noise, and the optimum gain for a given load resistance.",
     tier: "textbook",
-    modelNote: "Shot noise of the multiplied photocurrent and bulk dark current with McIntyre's F, plus Johnson noise of the load; surface dark current, amplifier voltage noise and background light are left out. The default 50 pA bulk dark current is about the Excelitas C30902EH's 7 nA at M = 150 divided by the gain; the total dark current ÷ M is only an upper bound on the multiplied bulk part, because surface leakage isn't multiplied.",
+    modelNote: "Shot noise of the multiplied photocurrent and bulk dark current with McIntyre's F, plus Johnson noise of the load; surface dark current, amplifier voltage noise and background light are left out. The default 0.22 pA bulk dark current is the Excelitas C30902EH's, from its noise current i_N = 0.1 pA/√Hz and dark current I_D = I_DS + I_DB·M = 7 nA at M = 150 (i_N² = 2q(I_DS + I_DB·M²F), F = 4.95): the bulk part I_DB·M is 33 pA, 0.5 % of I_D, the rest is unmultiplied surface leakage.",
     references: [
       {
         citation: "McIntyre R. J. (1966). Multiplication noise in uniform avalanche diodes. IEEE Trans. Electron Devices ED-13, 164–168. F = kM + (1 − k)(2 − 1/M).",
@@ -490,7 +494,7 @@ export const detectors: CalculatorEntry[] = [
         citation: "Agrawal G. P. (2010). Fiber-Optic Communication Systems, 4th ed. Wiley. §4.4 (APD receiver noise, optimum gain) and Table 4.2 (k: Si 0.02–0.05, InGaAs 0.5–0.7, Ge 0.7–1.0).",
       },
       {
-        citation: "Excelitas Technologies. C30902EH and C30921EH avalanche photodiodes, datasheet Rev. 2022.02. k_eff = 0.02; V_br = 225 V at 22 °C, 0.7 V/°C; M = 150; dark current 7 nA.",
+        citation: "Excelitas Technologies. C30902EH and C30921EH avalanche photodiodes, datasheet Rev. 2022.02. k_eff = 0.02; V_br = 225 V at 22 °C, 0.7 V/°C; M = 150; dark current 7 nA (typ.), noise current 0.1 pA/√Hz (typ.), NEP 1.23 fW/√Hz; notes 2–3 split I_D into surface and bulk parts.",
         url: "https://www.excelitas.com/sites/default/files/assets/product/document/24781.pdf",
       },
     ],
@@ -962,6 +966,10 @@ export const detectors: CalculatorEntry[] = [
       {
         citation: "Shakya M. M., Chang Z. (2005). Achieving 280 fs resolution with a streak camera by reducing the deflection dispersion. Appl. Phys. Lett. 87, 041103. Transit-time dispersion 2.63·√Δε/E ps (Δε in eV, E in kV/mm) and deflection dispersion as tube terms.",
         url: "https://doi.org/10.1063/1.2001732",
+      },
+      {
+        citation: "Chang Z., Rundquist A., Zhou J., et al. (1996). Demonstration of a sub-picosecond x-ray streak camera. Appl. Phys. Lett. 69, 133. Source of the 2.63·√Δε/E transit-time estimate.",
+        url: "https://doi.org/10.1063/1.118099",
       },
     ],
   },

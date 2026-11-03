@@ -18,7 +18,7 @@ export default function LinearModeAPDPage() {
   const [kRaw, setIonizationRatio] = useURLState("ionizationRatio", 0.02);
   const [qeRaw, setQuantumEff] = useURLState("quantumEff", 0.8);
   const [bandwidthRaw, setBandwidth] = useURLState("bandwidth", 100e6);
-  const [darkRaw, setDarkCurrent] = useURLState("darkCurrent", 5e-11);
+  const [darkRaw, setDarkCurrent] = useURLState("darkCurrent", 2.2e-13);
   const [wavelengthRaw, setWavelength] = useURLState("wavelength", 800);
   const [powerRaw, setIncidentPower] = useURLState("incidentPower", 1e-9);
   const [loadRaw, setLoadResistance] = useURLState("loadResistance", 1000);
@@ -29,7 +29,7 @@ export default function LinearModeAPDPage() {
   const k = material === "custom" ? clamp(kRaw, 0, 1, 0.02) : APD_K_TABLE.find((m) => m.id === material)!.k;
   const qe = clamp(qeRaw, 0, 1, 0.8);
   const bandwidth = clamp(bandwidthRaw, 1, 1e11, 100e6);
-  const darkCurrent = clamp(darkRaw, 0, 1e-3, 5e-11);
+  const darkCurrent = clamp(darkRaw, 0, 1e-3, 2.2e-13);
   const wavelength_nm = clamp(wavelengthRaw, 200, 2000, 800);
   const power = clamp(powerRaw, 0, 1, 1e-9);
   const loadResistance = clamp(loadRaw, 1, 1e9, 1000);
@@ -83,7 +83,7 @@ export default function LinearModeAPDPage() {
         <ValidatedNumberInput label="Quantum Efficiency" value={qeRaw} onChange={setQuantumEff} min={0} max={1} step="0.01" />
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthRaw} onChange={setWavelength} min={200} max={2000} step="10" />
         <ValidatedNumberInput label="Incident Power (W)" value={powerRaw} onChange={setIncidentPower} min={0} max={1} step="1e-12" />
-        <ValidatedNumberInput label="Bulk Dark Current, unmultiplied (A)" value={darkRaw} onChange={setDarkCurrent} min={0} max={1e-3} step="1e-11" />
+        <ValidatedNumberInput label="Bulk Dark Current, unmultiplied (A)" value={darkRaw} onChange={setDarkCurrent} min={0} max={1e-3} step="1e-13" />
         <ValidatedNumberInput label="Bandwidth (Hz)" value={bandwidthRaw} onChange={setBandwidth} min={1} max={1e11} step="1e6" />
         <ValidatedNumberInput label="Load Resistance (Ω)" value={loadRaw} onChange={setLoadResistance} min={1} max={1e9} step="100" />
         <ValidatedNumberInput label="Load Temperature (K)" value={temperatureRaw} onChange={setTemperature} min={1} max={500} step="10" />
