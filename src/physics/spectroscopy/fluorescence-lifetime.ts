@@ -78,7 +78,11 @@ export function convolvedDecay(components: DecayComponent[], t: number, irfSigma
  * so tails of earlier pulses that have not decayed add to the window ("incomplete decay"). The sum is periodic, so t − t₀
  * is first reduced into [0, T); pulses later than t by more than 8σ (Gaussian tail < 2e-15) are dropped. Once Φ in y
  * has reached 1 (argument ≥ 8, error < 7e-16) the remaining terms are a geometric series, summed in closed form:
- * e^(σ²/2τ² − x_m/τ) / (1 − e^(−T/τ)). NaN if T ≤ 0 or more than 10⁵ explicit terms would be needed (σ ≫ T).
+ * e^(σ²/2τ² − x_m/τ) / (1 − e^(−T/τ)).
+ * When σ is not small against T, that sum needs ≈ (σ²/τ + 16σ)/T terms; its Fourier series (Poisson summation of the
+ * EMG transform τ e^(−ω²σ²/2)/(1 + iωτ) at ω_k = 2πk/T) needs only 8.85 T/(2πσ), where e^(−ω_k²σ²/2) < 1e-17:
+ *   Σₙ y(x + nT) = (τ/T) [1 + 2 Σ_{k≥1} e^(−ω_k²σ²/2) (cos ω_k x + ω_kτ sin ω_k x)/(1 + ω_k²τ²)].
+ * The shorter of the two is used. NaN if T ≤ 0 or both would need more than 10⁵ terms.
  * W. Becker, Advanced Time-Correlated Single Photon Counting Techniques (Springer, 2005).
  */
 export function periodicDecay(components: DecayComponent[], t: number, irfSigma: number, t0: number, period: number): number {
@@ -86,11 +90,23 @@ export function periodicDecay(components: DecayComponent[], t: number, irfSigma:
   const x = (((t - t0) % period) + period) % period;
   // First n with x + nT ≥ −8σ; the pulses before it have not arrived.
   const n0 = Math.min(-1, Math.ceil((-8 * irfSigma - x) / period));
+  // Fourier terms to e^(−ω_K²σ²/2) < 1e-17, ω_K σ ≥ √(2 ln 1e17) = 8.85; none for σ = 0.
+  const kMax = irfSigma > 0 ? Math.ceil((8.85 * period) / (2 * Math.PI * irfSigma)) : Infinity;
   let sum = 0;
   for (const c of components) {
     const tau = c.lifetime;
     // First n with (x + nT − σ²/τ)/σ ≥ 8.
     const m = Math.max(0, Math.ceil((irfSigma * irfSigma / tau + 8 * irfSigma - x) / period));
+    if (kMax < m - n0) {
+      if (kMax > 1e5) return NaN;
+      let f = 1;
+      for (let k = 1; k <= kMax; k++) {
+        const w = (2 * Math.PI * k) / period;
+        f += (2 * Math.exp(-0.5 * (w * irfSigma) ** 2) * (Math.cos(w * x) + w * tau * Math.sin(w * x))) / (1 + (w * tau) ** 2);
+      }
+      sum += (c.amplitude * tau * f) / period;
+      continue;
+    }
     if (m - n0 > 1e5) return NaN;
     let s = 0;
     for (let n = n0; n < m; n++) s += emgDecay(x + n * period, tau, irfSigma, 0);
