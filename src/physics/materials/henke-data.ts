@@ -4,7 +4,8 @@
  * B. L. Henke, E. M. Gullikson, J. C. Davis, At. Data Nucl. Data Tables 54, 181 (1993), doi:10.1006/adnd.1993.1013.
  * Rows are the published values, thinned so that interpolation in ln E (f₁ linear, ln f₂ linear) reproduces every
  * dropped row within 0.2 % (|Δf₁| ≤ 0.2 % of max(|f₁|, 1)); both rows of each absorption edge are kept.
- * f₂ is photoabsorption only (no Compton scattering). A: standard atomic weight, g/mol (CIAAW 2021).
+ * f₂ is photoabsorption only (x-ray-optics.ts adds Compton scattering from xcom-incoherent.ts).
+ * A: standard atomic weight, g/mol (CIAAW 2021).
  */
 
 export interface HenkeElement {

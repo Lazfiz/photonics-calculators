@@ -739,7 +739,7 @@ export const materials: CalculatorEntry[] = [
     title: "X-ray Optics Materials",
     description: "X-ray refractive index n = 1 − δ − iβ of Be, diamond, Si, Ni, Cu, Mo, Pt, Au, Kapton and Si₃N₄ from 1 to 30 keV, from the Henke scattering factors: critical angle, attenuation length, μ/ρ and transmission, with absorption edges.",
     tier: "textbook",
-    modelNote: "δ, β = (r_e λ²/2π) Σ n_q f₁,₂ with the Henke f₁, f₂ of independent atoms (CXRO tables, interpolated within 0.2 %); θ_c = √(2δ), μ = 4πβ/λ. Approximate within ~50 eV of an edge. β is photoabsorption only: below CXRO's β by 22 % for Be and 6 % for C at 10 keV (Compton), < 1 % for Si and heavier there. Scattering grows with energy: at 30 keV Compton and Rayleigh are about a fifth of silicon's attenuation (NIST XCOM), so T is an upper bound.",
+    modelNote: "δ, β = (r_e λ²/2π) Σ n_q f₁,₂ with the Henke f₁, f₂ of independent atoms (CXRO tables, interpolated within 0.2 %); θ_c = √(2δ), μ = 4πβ/λ. Approximate within ~50 eV of an edge. β adds Compton scattering, (λ/4π) Σ n_q σ_inc,q with the NIST XCOM σ_inc (Hubbell et al. 1975), as CXRO does (within 0.2 % of CXRO's β). Rayleigh scattering is left out, as in CXRO: it would add 18 % to Be's narrow-beam attenuation at 10 keV and about 10 % to Be's and Si's at 30 keV.",
     references: [
       {
         citation: "Henke B. L., Gullikson E. M., Davis J. C. (1993). X-ray interactions: photoabsorption, scattering, transmission, and reflection at E = 50–30,000 eV, Z = 1–92. At. Data Nucl. Data Tables 54, 181–342.",
@@ -748,6 +748,14 @@ export const materials: CalculatorEntry[] = [
       {
         citation: "CXRO X-ray Database (Lawrence Berkeley National Laboratory). Atomic scattering factor files (sf/<element>.nff) and index-of-refraction calculator; default densities.",
         url: "https://henke.lbl.gov/optical_constants/",
+      },
+      {
+        citation: "Hubbell J. H., Veigele W. J., Briggs E. A., Brown R. T., Cromer D. T., Howerton R. J. (1975). Atomic form factors, incoherent scattering functions, and photon scattering cross sections. J. Phys. Chem. Ref. Data 4, 471–538.",
+        url: "https://doi.org/10.1063/1.555523",
+      },
+      {
+        citation: "Berger M. J., Hubbell J. H., Seltzer S. M. et al. XCOM: Photon Cross Sections Database (NIST Standard Reference Database 8). Incoherent scattering cross-sections, queried 2026-11-03.",
+        url: "https://physics.nist.gov/PhysRefData/Xcom/html/xcom1.html",
       },
       {
         citation: "Als-Nielsen J., McMorrow D. (2011). Elements of Modern X-ray Physics, 2nd ed., Wiley. Ch. 3: refractive index and critical angle.",

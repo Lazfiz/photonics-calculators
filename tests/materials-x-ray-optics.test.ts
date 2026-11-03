@@ -1,7 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { XRAY_MATERIALS as M, scatteringFactors, xrayIndex, xrayTransmission } from "../src/physics/materials/x-ray-optics";
+import {
+  XRAY_MATERIALS as M,
+  incoherentCrossSection,
+  scatteringFactors,
+  xrayIndex,
+  xrayTransmission,
+} from "../src/physics/materials/x-ray-optics";
 
 function assertRel(actual: number, expected: number, tol: number, label: string) {
   assert.ok(Math.abs(actual / expected - 1) <= tol, `${label}: ${actual} vs ${expected}`);
@@ -15,7 +21,7 @@ test("x-ray δ: hand calculation r_e λ² n f₁/2π (PR #155 golden value)", ()
 });
 
 test("x-ray δ, β against the CXRO index-of-refraction calculator (henke.lbl.gov/cgi-bin/getdb.pl, 2026-10-22)", () => {
-  // [material, ρ g/cm³, E eV, δ, β]; β only for Z ≥ 14, where Compton scattering (in CXRO's β, not ours) is < 1 %.
+  // [material, ρ g/cm³, E eV, δ, β]; CXRO's β includes Compton scattering, as ours does.
   const cxro: [keyof typeof M, number, number, number, number][] = [
     ["Si", 2.33, 10000, 4.88892465e-6, 7.37899413e-8],
     ["Ni", 8.902, 10000, 1.72124055e-5, 1.83405609e-6],
@@ -32,11 +38,31 @@ test("x-ray δ, β against the CXRO index-of-refraction calculator (henke.lbl.go
     assertRel(r.delta, delta, 0.003, `${id} ${E} eV δ`);
     assertRel(r.beta, beta, 0.005, `${id} ${E} eV β`);
   }
-  // Light elements: δ still matches; β is photoabsorption only, so it sits below CXRO's (Compton included).
   assertRel(index("Be", 1.848, 10000).delta, 3.40754082e-6, 0.003, "Be δ");
   assertRel(index("diamond", 2.2, 10000).delta, 4.57251872e-6, 0.003, "C δ");
   assertRel(index("polyimide", 1.42, 8000).delta, 4.74066701e-6, 0.003, "Kapton δ");
-  assertRel(index("Be", 1.848, 10000).beta / 1.02839592e-9, 0.78, 0.01, "Be β / CXRO β");
+});
+
+test("x-ray β and attenuation length with Compton scattering against CXRO (getdb.pl, atten.pl, 2026-11-03)", () => {
+  // Photoabsorption alone gives Be β 7.98e-10 at 10 keV (0.78 of CXRO) and an attenuation length 14× too long at 30 keV.
+  assertRel(index("Be", 1.848, 10000).beta, 1.02839592e-9, 0.002, "Be 10 keV β");
+  assertRel(index("Be", 1.848, 30000).attenuationLength, 33354.8e-6, 0.002, "Be 30 keV L");
+  assertRel(index("diamond", 3.515, 10000).beta, 7.62779e-9, 0.003, "C 10 keV β");
+  assertRel(index("diamond", 3.515, 20000).attenuationLength, 7794.74e-6, 0.002, "C 20 keV L");
+  assertRel(index("polyimide", 1.43, 30000).beta, 1.15305307e-10, 0.002, "Kapton 30 keV β");
+  assertRel(index("Si", 2.33, 30000).beta, 9.89384463e-10, 0.002, "Si 30 keV β");
+  // Compton share of Be β at 30 keV: n σ_inc λ/4π with XCOM σ_inc 2.256 b, n = 1.848e3 · N_A/9.0122e-3 = 1.2349e29 m⁻³,
+  // λ = 4.1328e-11 m: 1.2349e29 · 2.256e-28 · 4.1328e-11/4π = 9.162e-11 of CXRO's 9.860e-11.
+  assertRel(index("Be", 1.848, 30000).betaCompton, 9.162e-11, 0.002, "Be 30 keV β_C");
+});
+
+test("x-ray incoherent cross-section: XCOM rows, interpolation, range", () => {
+  // XCOM (barn/atom): Be 10 keV 1.888; Au 30 keV 27.56; H between rows at 2.2 and 2.5 keV, XCOM 2.35 keV not queried:
+  // log-log midpoint of 0.2786 and 0.3214 at √(2200 · 2500) = 2345 eV is √(0.2786 · 0.3214) = 0.29924.
+  assertRel(incoherentCrossSection("Be", 10000), 1.888e-28, 1e-9, "Be 10 keV");
+  assertRel(incoherentCrossSection("Au", 30000), 27.56e-28, 1e-9, "Au 30 keV");
+  assertRel(incoherentCrossSection("H", Math.sqrt(2200 * 2500)), Math.sqrt(0.2786 * 0.3214) * 1e-28, 1e-9, "H midpoint");
+  assert.ok(Number.isNaN(incoherentCrossSection("Be", 999)) && Number.isNaN(incoherentCrossSection("Be", 30001)));
 });
 
 test("x-ray scattering factors: interpolation reproduces dropped Henke rows; edges; range", () => {
