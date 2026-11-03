@@ -74,7 +74,7 @@ export const DOPANT_PRESETS: readonly DopantPreset[] = [
   {
     id: "Yb", name: "Ytterbium (Yb³⁺)", host: "aluminosilicate", source: "Melkumov et al. 2004", molarMass: 0.173045, tau: 0.83e-3,
     pumps: [{ lambda: 976e-9, sigmaA: 2.69e-24, sigmaE: 2.97e-24 }],
-    signals: [{ lambda: 1064e-9, sigmaA: 4.6e-27, sigmaE: 3.0e-25 }],
+    signals: [{ lambda: 1064e-9, sigmaA: 5.7e-27, sigmaE: 3.1e-25 }],
   },
 ];
 

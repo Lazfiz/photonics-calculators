@@ -83,8 +83,8 @@ export default function SnowAttenuationPage() {
         <h3 className="text-lg font-semibold">Model</h3>
         <p className="font-mono">γ = a·S^b [dB/km];  dry: a = 5.42×10⁻⁵ λ + 5.4958776, b = 1.38;  wet: a = 1.023×10⁻⁴ λ + 3.7855466, b = 0.72</p>
         <p>
-          An empirical law from the TU Graz FSO group (Awan, PhD thesis 2010, eq. 3.29; Awan et al., WOCN 2009), λ in
-          nm. The source calls S the precipitation rate recorded at weather stations without saying more; it is read
+          An empirical law from the TU Graz FSO group (Sheikh Muhammad et al., ICTON 2005; Awan, PhD thesis 2010, eq. 3.29),
+          λ in nm; Awan applies wet snow below 500 m elevation and dry snow above. The source calls S the precipitation rate recorded at weather stations without saying more; it is read
           here as mm/h of melted water, which matches observed snow visibilities better than snow depth. Snowflakes are much larger than
           the wavelength, so λ changes a by under 3 % across 780–1600 nm. Dry snow attenuates more than wet snow above
           0.59 mm/h; below that the wet-snow law is the higher one.

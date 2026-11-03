@@ -39,7 +39,8 @@ export default function FiberOpticSensorPage() {
   const sensorType: SensorType = SENSOR_TYPES.includes(sensorRaw as SensorType) ? (sensorRaw as SensorType) : "fbg";
 
   const lambda = clamp(wavelength, 400, 2000) * 1e-9;
-  // Water dn/dT is only roughly constant within ±30 K of room temperature; the fibre K_T within ±100 K.
+  // Water dn/dT is only roughly constant within ±30 K of room temperature; the fibre K_T is linear in T over −20…100 °C
+  // (Cosme 2026 Table 3), so a constant K_T reads ≈ 0.12 % low per kelvin of ΔT; the FBG sensor page adds the slope.
   const dTMax = sensorType === "evanescent" ? 30 : 100;
   const dT = clamp(tempChange, -dTMax, dTMax);
   const eps = clamp(strain, -1e4, 1e4) * 1e-6;

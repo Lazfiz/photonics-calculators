@@ -116,9 +116,9 @@ export default function AnsiIecComparisonPage() {
           that meets the AEL for every duration up to it.
         </p>
         <p>
-          ANSI Z136.1-2014 is harmonised with ICNIRP and IEC in most cases. Schulmeister (2017) notes two differences:
-          ANSI extends the corneal limits below 1400 nm as the 1200–1400 nm dual limit, and it raised the corneal
-          limits up to 1500 nm for exposures under 10 s (by a factor of 3 below 1 ms). ANSI&apos;s tables are not public,
+          ANSI Z136.1-2014 is harmonised with ICNIRP and IEC in most cases. Schulmeister (2017, p. 10) notes two differences:
+          ANSI extrapolates its corneal limits from above 1400 nm to shorter wavelengths as a dual limit, and it raised the
+          corneal limits up to 1500 nm for exposures under 10 s (by a factor of 3 below 1 ms). ANSI&apos;s tables are not public,
           so its values aren&apos;t computed here.
         </p>
       </div>

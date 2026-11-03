@@ -21,7 +21,8 @@
 export const OH_PEAK_WAVELENGTH = 1383e-9;
 /** Illustrative full width at half maximum of the 1383 nm OH band, m. */
 export const OH_BAND_FWHM = 30e-9;
-/** First-overtone strength, dB/km per ppm (weight) of OH at 1383 nm (Humbach 1996, as quoted in arXiv:2303.17814 Table I). */
+/** First-overtone strength, dB/km per ppm (weight) of OH at 1383 nm (Humbach 1996, as quoted in arXiv:2303.17814 Table I,
+ * which lists it in its 1385 nm column). */
 export const OH_1383_DB_PER_KM_PER_PPM = 62.7;
 
 /** Density of fused silica, kg/m³ (Corning HPFS 7980 data sheet: 2.201 g/cm³). */

@@ -145,7 +145,7 @@ export default function GreenLaserPointerPage() {
           NOHD: the distance beyond which the beam stays within the ICNIRP 2013 eye limit for 0.25 s, averaged over
           7 mm, with the beam spreading as d + rφ (the standards&apos; formula). Dazzle: the beam blinds and dazzles far
           beyond the NOHD. The distances are where its peak irradiance falls to the ICAO flight-zone levels (Annex 11,
-          Doc 9815): 100 µW/cm² (no flash-blindness), 5 µW/cm² (no glare), 50 nW/cm² (no visual disruption).
+          Doc 9815): 100 µW/cm² (flash-blindness unlikely), 5 µW/cm² (glare unlikely), 50 nW/cm² (visual disruption unlikely).
           The FAA also weights the irradiance by the eye&apos;s sensitivity; not done here.
         </p>
         <p>

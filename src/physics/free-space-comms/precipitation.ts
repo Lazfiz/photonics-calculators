@@ -22,7 +22,9 @@
  * (2015), Table IV), gives 9.30 dB/km at 25 mm/h, near the µ = −1 row (9.37).
  *
  * Snow (empirical, TU Graz group; M. S. Awan, PhD thesis, TU Graz (2010), eq. (3.29), citing M. S. Awan et al., WOCN
- * 2009, doi:10.1109/WOCN.2009.5010571; reproduced, rounded, by Kaushal & Kaddoum (2015), eqs. (4)–(5)):
+ * 2009, doi:10.1109/WOCN.2009.5010571; first printed in S. Sheikh Muhammad, P. Köhldorfer, E. Leitgeb, ICTON 2005,
+ * eqs. (6)–(8), doi:10.1109/ICTON.2005.1505832, "S is the snow rate in [mm/h]", with no source given; reproduced, rounded,
+ * by Kaushal & Kaddoum (2015), eqs. (4)–(5)). Awan applies wet snow below 500 m elevation and dry snow above:
  *   γ_snow = a S^b  dB/km, S in mm/h, λ in nm
  *   dry snow  a = 5.42·10⁻⁵ λ + 5.4958776,  b = 1.38
  *   wet snow  a = 1.023·10⁻⁴ λ + 3.7855466, b = 0.72

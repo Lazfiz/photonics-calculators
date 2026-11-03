@@ -5,8 +5,8 @@
  * with 1/e diameters); d grows with range as in `hazard-distance.ts`, and the range is where d reaches √(8P/(πE)).
  *
  * Levels (ICAO Annex 11; ICAO Doc 9815, Manual on Laser Emitters and Flight Safety, 2003): laser-beam free flight zone
- * 50 nW/cm² ("unlikely to cause any visual disruption"), critical flight zone 5 µW/cm² (no glare), sensitive flight zone
- * 100 µW/cm² (no flash-blindness or afterimage). Not modelled: the eye's spectral sensitivity (the FAA scales the
+ * 50 nW/cm² ("unlikely to cause any visual disruption"), critical flight zone 5 µW/cm² ("unlikely to cause glare"), sensitive flight
+ * zone 100 µW/cm² ("unlikely to cause flash-blindness or after-image"); wording from CASA AC 139-23 §2, which cites Doc 9815. Not modelled: the eye's spectral sensitivity (the FAA scales the
  * irradiance by a visual correction factor), atmospheric loss, scintillation.
  */
 import { rangeToDiameter, type BeamGeometry } from "./hazard-distance";

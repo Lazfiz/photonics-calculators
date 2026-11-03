@@ -18,8 +18,10 @@
  *   Appl. Opt. 13, 2134 (1974), doi:10.1364/AO.13.002134). For γ = 0 the optimum is α = 1.121, g = 0.8145.
  *
  * Geometric loss of a divergent beam, top-hat form: the beam of exit diameter d_t and full divergence θ fills a
- * disc of diameter d_t + θR, of which the receiver catches (d_r/(d_t + θR))² (I. I. Kim, E. Korevaar, Proc. SPIE 4530,
- * 84 (2001), doi:10.1117/12.449800). A Gaussian beam with the same 1/e² footprint is twice as bright on axis, so a
+ * disc of diameter d_t + θR, of which the receiver catches (d_r/(d_t + θR))² (S. Sheikh Muhammad, P. Köhldorfer, E. Leitgeb,
+ * ICTON 2005, Tu.B3.5, eq. (1), doi:10.1109/ICTON.2005.1505832, θ "the opening angle of the beam"; the area form
+ * SA_R/(SA_T + π(θR)²/4) is I. I. Kim et al., Opt. Eng. 37, 3143 (1998), eq. (1), doi:10.1117/1.601981: 20.00 against
+ * 20.04 dB for 5 mm, 1 mrad, 1 km, 10 cm). A Gaussian beam with the same 1/e² footprint is twice as bright on axis, so a
  * small receiver catches 2× (3.01 dB) more. The Gaussian of `gaussianGeometricCapture` leaves the exit aperture with
  * w₀ = max(d_t/2, λ/(π θ/2)): an embedded Gaussian (M² ≥ 1) whose radius w(R)² = w₀² + (θR/2)² starts at the
  * aperture and ends at the far-field half-angle θ/2 (A. E. Siegman, "New developments in laser resonators",

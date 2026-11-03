@@ -119,7 +119,9 @@ export default function ChannelCapacityPage() {
           Complex AWGN channel with Nyquist signalling (symbol rate = B), so SNR = Es/N0 and k bits per symbol give
           k b/s/Hz. Bit error rates are exact for Gray mapping and ideal coherent detection: BPSK Q(√(2γ)), QPSK and
           coherent on-off keying Q(√γ), 16-QAM from Cho &amp; Yoon (2002), 8-PSK from Craig&apos;s (1991) exact phase
-          integral. The FEC is modelled by its input-BER limit; ≈ 3.8×10⁻³ is often quoted for 7 % hard-decision codes.
+          integral. The FEC is modelled by its input-BER limit; ≈ 3.8×10⁻³ is often quoted for 7 % hard-decision codes
+          (ITU-T G.975.1 doesn&apos;t print it; its App. I.9 BCH code, 6.69 % overhead, takes 3.5×10⁻³ in to 2.1×10⁻¹⁴ out,
+          Table I.22).
         </p>
         <p>
           Scope: most terrestrial FSO links use intensity modulation with direct detection. Their channel is real and

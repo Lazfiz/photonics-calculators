@@ -5,7 +5,8 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  SMF28_THERMAL_COEFFICIENT, braggShift, braggWavelength, couplingCoefficient, effectivePhotoelastic,
+  SMF28_FIT_T_MAX_C, SMF28_FIT_T_MIN_C, SMF28_REFERENCE_T_C, SMF28_THERMAL_COEFFICIENT, SMF28_THERMAL_COEFFICIENT_SLOPE,
+  braggShift, braggWavelength, couplingCoefficient, effectivePhotoelastic,
   firstZeroBandwidth, peakReflectance, strainGaugeFactor, uniformFwhm, uniformGratingReflectance,
 } from "../../../physics/fiber-optics/fiber-bragg-grating";
 
@@ -19,6 +20,7 @@ export default function FiberBraggGratingSensorPage() {
   const [strain, setStrain] = useURLState("strain", 500); // µε
   const [tempChange, setTempChange] = useURLState("tempChange", 20); // K
   const [thermalCoeff, setThermalCoeff] = useURLState("thermalCoeff", SMF28_THERMAL_COEFFICIENT * 1e6); // 1e-6/K
+  const [thermalSlope, setThermalSlope] = useURLState("thermalSlope", SMF28_THERMAL_COEFFICIENT_SLOPE * 1e8); // 1e-8/K²
 
   const calc = useMemo(() => {
     const nEff = clamp(effectiveIndex, 1, 3);
@@ -28,19 +30,22 @@ export default function FiberBraggGratingSensorPage() {
     const gauge = strainGaugeFactor(nEff);
     const KT = clamp(thermalCoeff, 0, 100) * 1e-6;
     const eps = clamp(strain, -1e4, 1e4) * 1e-6;
-    const dT = clamp(tempChange, -100, 100); // K_T is linear only within tens of kelvin of 20 °C
+    const KT1 = clamp(thermalSlope, -100, 100) * 1e-8;
+    const dT = clamp(tempChange, -100, 100); // from 20 °C; Cosme's K_T(T) fit covers −20…100 °C
+    const tempShiftAt = (t: number) => braggShift(lambdaB, 0, t, gauge, KT, KT1);
     const strainShift = braggShift(lambdaB, eps, 0, gauge, KT);
-    const tempShift = braggShift(lambdaB, 0, dT, gauge, KT);
+    const tempShift = tempShiftAt(dT);
     const totalShift = strainShift + tempShift;
     return {
-      strainUe: eps * 1e6, dT,
+      strainUe: eps * 1e6, dT, tempShiftAt,
+      outsideFit: SMF28_REFERENCE_T_C + dT < SMF28_FIT_T_MIN_C || SMF28_REFERENCE_T_C + dT > SMF28_FIT_T_MAX_C,
       g, lambdaB, pe, gauge, KT, strainShift, tempShift, totalShift, shiftedLambdaB: lambdaB + totalShift,
       reflectivity: peakReflectance(couplingCoefficient(g.deltaN, lambdaB) * g.length),
       fwhm: uniformFwhm(g), zeroWidth: firstZeroBandwidth(g),
       strainPm: braggShift(lambdaB, 1e-6, 0, gauge, KT) * 1e12, // pm/µε
-      tempPm: braggShift(lambdaB, 0, 1, gauge, KT) * 1e12, // pm/K
+      tempPm: braggShift(lambdaB, 0, 1, gauge, KT) * 1e12, // pm/K at 20 °C (the K_T term alone)
     };
-  }, [gratingPeriod, effectiveIndex, gratingLength, indexModulation, strain, tempChange, thermalCoeff]);
+  }, [gratingPeriod, effectiveIndex, gratingLength, indexModulation, strain, tempChange, thermalCoeff, thermalSlope]);
 
   const spectralData = useMemo(() => {
     const { g, lambdaB, shiftedLambdaB, zeroWidth } = calc;
@@ -84,20 +89,20 @@ export default function FiberBraggGratingSensorPage() {
   const tempData = useMemo(() => {
     const temps = grid(ranges.temp, 100);
     return [
-      { x: temps, y: temps.map((t) => t * calc.tempPm / 1000), type: "scatter" as const, mode: "lines" as const, name: "Temperature shift", line: { color: "#f97316", width: 2 } },
+      { x: temps, y: temps.map((t) => calc.tempShiftAt(t) * 1e9), type: "scatter" as const, mode: "lines" as const, name: "Temperature shift", line: { color: "#f97316", width: 2 } },
       marker(calc.dT, calc.tempShift * 1e9, "Operating point"),
     ];
-  }, [calc.tempPm, calc.dT, calc.tempShift, ranges.temp]);
+  }, [calc, ranges.temp]);
 
   const crossSensData = useMemo(() => {
     const strains = grid(ranges.heatStrain, 20);
     const temps = grid(ranges.heatTemp, 20);
-    const z = strains.map((s) => temps.map((t) => (s * calc.strainPm + t * calc.tempPm) / 1000));
+    const z = strains.map((s) => temps.map((t) => s * calc.strainPm / 1000 + calc.tempShiftAt(t) * 1e9));
     return [{
       z, x: temps, y: strains, type: "heatmap" as const, colorscale: "Viridis" as const,
       colorbar: { title: { text: "Δλ (nm)", side: "right" } },
     }, marker(calc.dT, calc.strainUe, "Operating point")];
-  }, [calc.strainPm, calc.tempPm, calc.dT, calc.strainUe, ranges.heatStrain, ranges.heatTemp]);
+  }, [calc, ranges.heatStrain, ranges.heatTemp]);
 
   const pm = (v: number) => `${(v * 1e12).toFixed(1)} pm`;
   const chartLayout = (xTitle: string, yTitle: string, height = 250) => ({
@@ -119,8 +124,12 @@ export default function FiberBraggGratingSensorPage() {
           <p className="text-xs text-gray-400 mt-1">≈ 0.8 × the core index change for SMF</p>
         </div>
         <ValidatedNumberInput label="Strain (µε)" value={strain} onChange={setStrain} min={-1e4} max={1e4} step="10" />
-        <ValidatedNumberInput label="Temperature Change ΔT (K)" value={tempChange} onChange={setTempChange} min={-100} max={100} step="1" />
+        <ValidatedNumberInput label="Temperature Change ΔT from 20 °C (K)" value={tempChange} onChange={setTempChange} min={-100} max={100} step="1" />
         <ValidatedNumberInput label="Thermal Coefficient K_T (10⁻⁶/K)" value={thermalCoeff} onChange={setThermalCoeff} min={0} max={100} step="0.01" />
+        <div>
+          <ValidatedNumberInput label="K_T slope dK_T/dT (10⁻⁸/K²)" value={thermalSlope} onChange={setThermalSlope} min={-100} max={100} step="0.001" />
+          <p className="text-xs text-gray-400 mt-1">SMF-28 1.431 (Cosme 2026); 0 for a constant K_T</p>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">
@@ -151,7 +160,7 @@ export default function FiberBraggGratingSensorPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Temperature Shift</p>
           <p className="text-xl font-bold text-orange-400">{pm(calc.tempShift)}</p>
-          <p className="text-xs text-gray-400">{calc.tempPm.toFixed(2)} pm/K</p>
+          <p className="text-xs text-gray-400">{calc.tempPm.toFixed(2)} pm/K at 20 °C</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Total Shift</p>
@@ -159,9 +168,10 @@ export default function FiberBraggGratingSensorPage() {
         </div>
       </div>
 
-      {Math.abs(calc.dT) > 50 && (
+      {calc.outsideFit && (
         <div role="alert" className="bg-yellow-900/30 border border-yellow-700 text-yellow-200 rounded-lg p-3 mb-8 text-sm">
-          K_T is linear only within about ±50 K.
+          {SMF28_REFERENCE_T_C + calc.dT} °C is outside −20…100 °C, where Cosme et al. fit K_T linear in T; past it K_T(T) is
+          quadratic (−50…200 °C), so the shift is approximate.
         </div>
       )}
 
@@ -190,9 +200,9 @@ export default function FiberBraggGratingSensorPage() {
         <h3 className="text-lg font-semibold mb-2">Key Formulas</h3>
         <div className="text-sm text-gray-300 space-y-2 font-mono">
           <p>λ_B = 2·n_eff·Λ; R_max = tanh²(πΔn·L/λ_B) (Erdogan 1997)</p>
-          <p>Δλ_B/λ_B = (1 − p_e)·ε + K_T·ΔT (Kersey 1997)</p>
+          <p>Δλ_B/λ_B = (1 − p_e)·ε + K_T·ΔT + ½K_T′·ΔT² (Kersey 1997; K_T′ from Cosme 2026 Table 3)</p>
           <p>p_e = (n²/2)[p₁₂ − ν(p₁₁ + p₁₂)] = {calc.pe.toFixed(4)} with p₁₁ 0.113, p₁₂ 0.252, ν 0.16</p>
-          <p>K_T = (1/n)dn/dT + α = 6.165×10⁻⁶/K for SMF-28 at 20 °C (Cosme 2026)</p>
+          <p>K_T = (1/n)dn/dT + α = 6.165×10⁻⁶/K for SMF-28 at 20 °C, K_T′ = 1.431×10⁻⁸/K² over −20…100 °C (Cosme 2026)</p>
           <p>A single grating cannot separate strain from temperature: use a strain-free reference grating.</p>
         </div>
       </div>
