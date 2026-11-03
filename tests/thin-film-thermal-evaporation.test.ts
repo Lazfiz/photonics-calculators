@@ -37,8 +37,15 @@ test("solid and liquid fits meet at the melting point", () => {
     const T = ev.Tm;
     const ps = ATM * 10 ** (As + Bs / T + Cs * Math.log10(T));
     const pl = ATM * 10 ** (Al + Bl / T + Cl * Math.log10(T));
-    assertRel(ps, pl, 0.05, `${id} at T_m`);
+    assertRel(ps, pl, 0.042, `${id} at T_m`); // largest: Al −4.1 %
   }
+});
+
+test("melting points are the SGTE values (Dinsdale 1991 breakpoints of GHSERxx; ITS-90 for Al, Ag, Au, Cu, In)", () => {
+  const sgte = { Al: 933.473, Ag: 1234.93, Au: 1337.33, Cu: 1357.77, Ni: 1728, Ti: 1941, Pd: 1828, In: 429.7485 };
+  for (const [id, Tm] of Object.entries(sgte)) assertRel(EVAPORANTS[id as keyof typeof EVAPORANTS].Tm, Tm, 1e-5, `${id} T_m`);
+  // Ti: the old 1930 K put the solid fit up to 1930 K only; at 1935 K the solid phase now uses the solid fit.
+  assert.equal(vapourPressure(EVAPORANTS.Ti, 1935), ATM * 10 ** (11.925 - 24991 / 1935 - 1.3376 * Math.log10(1935)));
 });
 
 test("aluminium: 1 Pa near 1485 K and the fit range", () => {
