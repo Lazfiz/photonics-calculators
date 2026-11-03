@@ -61,7 +61,8 @@ let loadedSimpleChart: SimpleChartType | null = null;
 // place (no layout shift). The server and the hydration render both draw the placeholder; a page reached by client
 // navigation, with the chunk already loaded, draws the chart at once. A failed load throws into ChartErrorBoundary.
 function LazySimpleChart(props: ChartPanelProps) {
-  const [SimpleChart, setSimpleChart] = useState<SimpleChartType | null>(loadedSimpleChart);
+  // The initializer form: useState(component) would call the component as a lazy initializer.
+  const [SimpleChart, setSimpleChart] = useState<SimpleChartType | null>(() => loadedSimpleChart);
   useEffect(() => {
     if (SimpleChart) return;
     import("./simple-chart").then(
