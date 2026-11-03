@@ -5,12 +5,12 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 187, 2026-11-03)
+## Status (session 188, 2026-11-03)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
   textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) and 5w-13 (materials) and 5w-14 (spectroscopy) and 5w-15 (thin-film + polarization) done (sessions 163–177): 5w is complete; KRS-5
-  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6e done (sessions 179–187), 6f next; the Gemini hero comes after it. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6f-a done (sessions 179–188), 6g next; the Gemini hero comes after it. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -174,13 +174,12 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - `sputtering-deposition` (low): no gas scattering (defaults sit at d ≈ 5.7 λ_Ar, rate is an upper bound); Westwood
   thermalisation could add it. Cr and Nb dropped: no sourced 500 eV Ar⁺ yield (M&G 600 eV: 1.3, 0.65).
 - `plasma-deposition` (low): h-factors are low-pressure only (flagged, chart cut); L&L's high-pressure diffusion term
-  would extend it. The Table 3.3 fits' T_e range is unchecked (solve allows 0.5–30 eV).
+  would extend it.
 - `ellipsometry-measurement` (optional): a film thickness needs a film model, e.g. a known film index and Azzam &
   Bashara's transparent-film inversion.
-- 5w-15 (session 177), unverified or deferred: Benjamin–Weaver τ prefactor k (0.2–1 in reviews, code k = 1) unchecked against
-  the 1960 paper; Fabry-Perot chart at R = 0.999 has ≈ 2.6 points per FWHM (20 000 cap); gradient-index lacks Southwell's quintic;
+- 5w-15 (session 177), deferred: Fabry-Perot chart at R = 0.999 has ≈ 2.6 points per FWHM (20 000 cap); gradient-index lacks Southwell's quintic;
   plasma sweep starts at 0.3 mTorr (input 0.1); hard-coating Γ ignores mode mixity.
-- `thermal-evaporation` (low): the CRC "Equations" table text is unread; CalebBell/chemicals refits of Alcock agree within 6.4 % (Ti solid).
+- `thermal-evaporation` (low): all 8 metals match the CRC table (6f-a); the fits use one 298–2500 K range, not CRC's per-phase T_max.
 
 **Free-space comms**
 - Code comments in `laser-resonator.ts`, `doped-fiber-gain.ts`, `fiber-nonlinear.ts` and four resonator pages still call power log-ratios "nepers" (low, wording only).
@@ -196,15 +195,10 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - `optical-antenna` (low): M² is capped at 2 (θ × M², gain / M⁴). A Gaussian Schell-model far field would cover multimode beams.
 
 **Imaging (session 166, unverified or deferred)**
-- `adaptive-optics`: zonal κ_continuous 0.28 (Hudgin 1977); some tables give ≈ 0.23 for Gaussian influence functions (reviewer, from memory).
-- `computational-imaging`: registry "0.08 + 0.42 = 0.5" synthetic NA (Zheng 2013): the 0.42 illumination NA not checked in the paper.
 - `fcs`: SNR uses G = 1/N and ignores the triplet amplitude (≈ 9 % at defaults, within Koppel's estimate).
 **Imaging (session 167, unverified or deferred)**
 - `mtf`: high-NA defocus is only warned about; an exact-phase OTF (reviewer's scalar quadrature: Strehl 0.27 vs paraxial 0.555
   at NA 0.95, Δz 0.5 µm) is not modelled.
-- `photoacoustic`: diffuse build-up factor k ≈ 2–5 (Jacques, from memory) is described but set to 1.
-- `low-coherence`, `optical-coherence`: SNR prefactors ρP/(2eB) and ρPΔt/(2e) not checked against Choma 2003 eqs. 9/10 (PDF unread).
-- `plenoptic-camera`: "12 usable pixels" and "prototype reached about half" (Ng 2005 tech report) unverified.
 **Fiber optics (sessions 169–170, unverified or deferred)**
 - `photonic-crystal`: Mortensen OL 28, 1879 DOI unchecked (429).
 - `fiber-optic-sensor`: K_T 9.56 pm/K (Cosme 2026) vs ≈ 10–13 pm/K in Kersey-era texts (from memory). `rare-earth-doped`: preset σ
@@ -217,14 +211,11 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 
 **Imaging (session 168, unverified or deferred)**
 - `spinning-disk`: crosstalk through neighbouring pinholes (the pitch) is not modelled; the pitch in AU is shown only.
-- `three-photon`/`two-photon`: Zipfel's NA^0.91 lateral fit is used up to NA 1.7; its validity range is unchecked (abstract only).
-- `stimulated-raman-microscopy`: the 10 cm⁻¹ "typical Raman line" warning threshold and SNR = δ√N as Ozeki 2009's form are from memory.
-- `shack-hartmann` "Akondi & Dubra 2021 eq. 2" and `sensor-cmos` "EMVA 1288 Eq. (11), (48)" numbers not read in the sources.
+- `three-photon`/`two-photon`: Zipfel's NA^0.91 lateral fit is used up to NA 1.7; Fig. 4c states no upper NA bound (main text paywalled).
 - `super-resolution`: one wavelength input for STED (excitation) and PALM (emission); a separate STED λ would be cleaner.
 
 **Imaging / spectroscopy** (found in the detectors part 0, session 63)
 - Spectroscopy part 11 (session 107): `infrared-spectroscopy` has no Herman–Wallis factor or absolute band strength; `electron-spectroscopy` graphite ρ 2.2 (SRD 71 table value) vs 2.26 g/cm³ crystal; LHM water ε₂ = 3.52 + 7.52θ kept (fits Table I with RMS 0.43, against 0.49 with −), and the page allows only −5 to 40 °C.
-- 5w-14 (session 176), unverified: `spectral-calibration` Hg lines labelled NIST ASD may be Sansonetti, Salit & Reader 1996 (doi:10.1364/AO.35.000074, ≈ 1 pm); `sum-frequency-gen` water preset gives 3200 and 3400 the same sign (Ji 2008 shows a positive 3200 band, later HD-SFG does not; amplitudes illustrative).
 - `spectroscopy/conc-mirror` and `jacquinot` (session 104) both show the Jacquinot ratio π f/(h tan θ) from `throughput.ts`;
   conc-mirror adds the mirror cone and slit étendue. Merge into jacquinot only if the user asks.
 - Imaging part 8 (session 86): `photoacoustic` applies only the single-pulse and ≥ 10 s skin limits (`pulse-train.ts` has no skin rules); `sum-frequency-microscopy` withholds the power for L > b (no non-degenerate Boyd–Kleinman); SRS δ is an input (no cross-section model).
@@ -233,15 +224,10 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - `intensified-ccd` (session 141): the gain sweep holds the data-sheet K_f down to unity gain (noted on the page).
 - `imaging/fluorophores.ts` (session 84): log-normal bands are exactly 0 past their anti-Stokes cutoff (EGFP emission below 480 nm, mCherry excitation above 622 nm), so tail-only bleed-through reads 0; sampled FPbase spectra would fix it. Disclosed on the pages.
 - 5w-1 (session 163), not fixed: `cosmic-rays` `poissonQuantile` ≈ 13 ms per call at the max inputs (μ ≈ 1.7e9), ≈ 0.7 s per render;
-  `camera-snr.ts` 604 register stages are the CCD201 (iXon 888), the page models an 897 (CCD97, unverified count; F² changes < 0.2 %);
   `em-gain` has no conventional-amplifier read-noise input.
-- 5w-2 (session 164), not fixed: `gain-temperature` scales the Miller curve with V_br (shift model differs 8 %); `pmt` Hamamatsu eq. numbers unverified.
-- `detectors/gain-temperature` PMT branch: the −0.3 %/°C default is an entered value; source a typical dynode-gain coefficient in part 7 (Hamamatsu handbook §13.1.1 gives no number).
-**Detectors (session 165, unverified, sources unreachable)**
-- `vacuum-photodiode`: S-20 dark emission 0.4 fA/cm² (Burle Table I); a reviewer recalled 0.3 (from memory).
+- 5w-2 (session 164), not fixed: `gain-temperature` scales the Miller curve with V_br (shift model differs 8 %).
 **Polarization**
-- 5w-15 (session 177), unverified: optical-activity 34.614° (NIST SRM 17e) vs ICUMSA 100 °Z 34.626° (from memory); wire-grid uses DC σ at
-  10.6 µm (Al ωτ ≈ 1.4, disclosed); Goldstein *Polarized Light* cited 2011, Crossref dates the DOI 2017; Cloude 1986 has no DOI.
+- 5w-15 (session 177): wire-grid uses DC σ at 10.6 µm (Al ωτ ≈ 1.4, disclosed).
 - `polarization-scrambling` (session 140): near-locked (not exactly locked) stages still use the product of means; only p, q ≤ 4 get a
   beat-period warning (5:7 detuned 0.1 % gets none), and a 1e-9 lock tolerance makes the DOP jump at exact lock.
 
@@ -313,8 +299,7 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - [x] 6e-a fiber + detectors (session 186, `phase-6/6e-fiber-detectors`, PR #224): PCF MFD from Nielsen 2003, detector D* from J_d and R₀A,
   C30902EH bulk I_d 0.22 pA, streak 3.37 ps bound. See Done.
 - [x] 6e-b photodiode diffusion tail (session 187, `phase-6/6e-b-photodiode-diffusion`, PR #225): drift share 53.7 %, total −3 dB 13.47 MHz. See Done.
-- [ ] 6f citation sweep a (thin film, polarization, imaging, spectroscopy, detectors): every "unverified" / "from memory" entry read in
-  its source (crossref, Optica abstract pages, ITU/ICNIRP PDFs); fix or confirm, one line each.
+- [x] 6f-a citation sweep a (session 188, `phase-6/6f-a-citations`, PR #226): 20 entries read; 3 value fixes. See Done.
 - [ ] 6g citation sweep b (fiber, free-space comms, wave optics, materials, laser safety).
 - [ ] 6h accepted limitations: move the missing-feature and missing-data entries from "Open findings" to a "Known limitations" list;
   check that each page states its limit.
@@ -338,6 +323,9 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 6f-a citation sweep a (session 188, `phase-6/6f-a-citations`, PR #226): low-coherence TD-OCT SNR +3.01 dB (Choma P_s = R_s × power on
+  the sample), ccd-vs-cmos CCD97 536 stages (F² −0.10 %), plasma T_e outside the 1–7 eV fit range flagged; 14 citations reworded or added;
+  confirmed: Akondi eq. 2, EMVA 1288 R3.1 eqs., Hamamatsu eqs., S-20 0.4 fA/cm², Alcock coefficients. Unread: Hudgin 1977, Benjamin–Weaver 1960.
 - 6e-b photodiode diffusion tail (session 187, `phase-6/6e-b-photodiode-diffusion`, PR #225): Gärtner split with L_ω = L/√(1 + iωτ)
   (Peter 1990, Bisquert 2002, Laird 2022 Eq. 15), checked against a finite-difference solve to 1e-7; Si 850 nm defaults drift
   share 53.7 %, intrinsic −3 dB 13.59 MHz, total at 1 mm² 13.47 MHz (50 Ω) / 1.31 MHz (10 kΩ) instead of 317 MHz.
