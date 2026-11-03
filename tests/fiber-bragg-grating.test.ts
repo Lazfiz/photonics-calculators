@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  SMF28_THERMAL_COEFFICIENT, braggShift, braggWavelength, chirpedBandwidth, chirpedGratingDispersion,
+  SMF28_THERMAL_COEFFICIENT, SMF28_THERMAL_COEFFICIENT_SLOPE, braggShift, braggWavelength, chirpedBandwidth, chirpedGratingDispersion,
   couplingCoefficient, defaultSectionCount, detuning, effectivePhotoelastic, maxChirp, firstZeroBandwidth, gratingSections, peakReflectance,
   phaseStrainSensitivity, phaseTemperatureSensitivity, spectrumFwhm, strainGaugeFactor, transferMatrixReflectance,
   uniformFwhm, uniformGratingReflectance, uniformReflectance, wavelengthAtDetuning,
@@ -146,6 +146,11 @@ test("strain and temperature response (Kersey 1997; Bertholds & Dändliker 1988;
   assertRel(braggShift(1550e-9, 1e-6, 0, gauge, SMF28_THERMAL_COEFFICIENT), 1.235845e-12, 1e-6, "pm/µε");
   assertRel(braggShift(1550e-9, 0, 1, gauge, SMF28_THERMAL_COEFFICIENT), 9.55575e-12, 1e-6, "pm/K");
   assertRel(braggShift(1550e-9, 500e-6, 20, gauge, SMF28_THERMAL_COEFFICIENT), 500 * 1.235845e-12 + 20 * 9.55575e-12, 1e-6, "sum");
+  // Cosme et al., Sensors 26, 435 (2026) Table 3, SMF-28: K_T(T) = 1.431e-8·T + 5.879e-6 (T in °C). 20 → 70 °C:
+  // ∫K_T dT = 1.431e-8·(70² − 20²)/2 + 5.879e-6·50 = 3.261475e-4, so Δλ = 505.53 pm at 1550 nm (linear K_T: 477.79 pm).
+  assertRel(braggShift(1550e-9, 0, 50, gauge, SMF28_THERMAL_COEFFICIENT, SMF28_THERMAL_COEFFICIENT_SLOPE), 1550e-9 * 3.261475e-4, 1e-4, "K_T(T) 20→70 °C");
+  // Cooling to −20 °C (the fit's lower end): ∫ from 20 to −20 = 1.431e-8·(400 − 400)/2 − 5.879e-6·40 = −2.3516e-4.
+  assertRel(braggShift(1550e-9, 0, -40, gauge, SMF28_THERMAL_COEFFICIENT, SMF28_THERMAL_COEFFICIENT_SLOPE), 1550e-9 * -2.3516e-4, 1e-4, "K_T(T) 20→−20 °C");
   // Bragg wavelength of a 535.6 nm period at n_eff 1.447: 1550.026 nm.
   assertRel(braggWavelength(1.447, 535.6e-9), 1550.0264e-9, 1e-8, "λ_B");
 });

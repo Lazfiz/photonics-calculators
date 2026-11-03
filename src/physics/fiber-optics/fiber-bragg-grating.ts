@@ -20,7 +20,9 @@
  *   J. Lightwave Technol. 6, 17 (1988), doi:10.1109/50.3956. Poisson ratio of fused silica 0.16 (Corning HPFS 7980
  *   product sheet).
  * - Temperature coefficient of SMF-28 gratings K_T = (1/n_eff)dn_eff/dT + α = 6.165e-6 /K at 20 °C (≈ 9.56 pm/K at
- *   1550 nm): M. Cosme et al., Sensors 26, 435 (2026), doi:10.3390/s26020435.
+ *   1550 nm): M. Cosme et al., Sensors 26, 435 (2026), doi:10.3390/s26020435. K_T itself grows linearly with
+ *   temperature over −20…100 °C (Table 3, SMF-28: K_T = 1.431e-8·T + 5.879e-6 with T in °C; quadratic over −50…200 °C),
+ *   so a constant K_T reads the shift ≈ 0.12 % per kelvin of ΔT low.
  */
 import { c } from "../constants";
 import { firstCrossing } from "../math";
@@ -32,6 +34,12 @@ export const FIBER_P12 = 0.252;
 export const SILICA_POISSON = 0.16;
 /** Normalised temperature coefficient (1/λ_B)dλ_B/dT of an SMF-28 grating at 20 °C, 1/K (Cosme et al. 2026). */
 export const SMF28_THERMAL_COEFFICIENT = 6.165e-6;
+/** dK_T/dT of an SMF-28 grating, 1/K² (Cosme et al. 2026, Table 3 linear fit). */
+export const SMF28_THERMAL_COEFFICIENT_SLOPE = 1.431e-8;
+/** Reference temperature of K_T and the range of Cosme's linear K_T(T) fit, °C. */
+export const SMF28_REFERENCE_T_C = 20;
+export const SMF28_FIT_T_MIN_C = -20;
+export const SMF28_FIT_T_MAX_C = 100;
 
 /** Bragg wavelength λ_B = 2 n_eff Λ. */
 export function braggWavelength(nEff: number, period: number): number {
@@ -255,11 +263,14 @@ export function strainGaugeFactor(n: number): number {
 }
 
 /**
- * Bragg-wavelength shift Δλ_B = λ_B[(1 − p_e)ε + K_T ΔT] (Kersey 1997), with gauge = 1 − p_e and thermal = K_T
- * (1/K). Linear in both: valid for small strains and a few tens of kelvin around the calibration temperature.
+ * Bragg-wavelength shift Δλ_B = λ_B[(1 − p_e)ε + K_T ΔT + ½K_T′ΔT²] (Kersey 1997), with gauge = 1 − p_e,
+ * thermal = K_T (1/K) at the reference temperature and thermalSlope = dK_T/dT (1/K², Cosme 2026 Table 3): the integral
+ * of a K_T linear in T. Linear in strain: valid for small strains.
  */
-export function braggShift(lambdaB: number, strain: number, deltaT: number, gauge: number, thermal: number): number {
-  return lambdaB * (gauge * strain + thermal * deltaT);
+export function braggShift(
+  lambdaB: number, strain: number, deltaT: number, gauge: number, thermal: number, thermalSlope = 0,
+): number {
+  return lambdaB * (gauge * strain + thermal * deltaT + 0.5 * thermalSlope * deltaT * deltaT);
 }
 
 /** Phase change of an interferometer arm of length L per unit strain, 2π n_eff L (1 − p_e)/λ (rad). */

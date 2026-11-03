@@ -341,7 +341,7 @@ export const fiberOptics: CalculatorEntry[] = [
     description: "Calculate FBG wavelength shift for strain and temperature sensing applications.",
     heading: "Fiber Bragg Grating Sensor",
     tier: "textbook",
-    modelNote: "Uniform-grating spectrum (Erdogan). Linear shift Δλ/λ = (1 − p_e)ε + K_T·ΔT: p_e from strain-optic coefficients, K_T measured on SMF-28 at 20 °C, linear within ~±50 K. Strain and ΔT not separable.",
+    modelNote: "Uniform-grating spectrum (Erdogan). Shift Δλ/λ = (1 − p_e)ε + K_T·ΔT + ½K_T′ΔT²: p_e from strain-optic coefficients; K_T at 20 °C and its slope K_T′ measured on SMF-28 (Cosme Table 3, K_T linear in T over −20…100 °C; without K_T′ the shift is ≈ 6 % low at ΔT = 50 K). Strain and ΔT not separable.",
     references: [
       {
         citation: "Kersey A. D. et al. (1997). Fiber grating sensors. J. Lightwave Technol. 15, 1442. Strain and temperature response.",
