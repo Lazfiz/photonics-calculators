@@ -246,8 +246,8 @@ export const G652_RDS = G652_AT_REF.S / G652_AT_REF.D;
 
 /**
  * Typical values; a real fibre's datasheet takes precedence.
- * G.653: λ₀ = 1550 nm and S₀ = 0.085 ps/(nm²·km) (the G.653 maximum). G.655: |D| between 1 and 10 ps/(nm·km)
- * over 1530–1565 nm; NZ-DSF+ 4.5 and 0.05 (λ₀ = 1460 nm), NZ-DSF− −4 and 0.06. DCF: −80 ps/(nm·km), slope
+ * G.653: λ₀ = 1550 nm and S₀ = 0.085 ps/(nm²·km) (the G.653 maximum). G.655.C: |D| between 1 and 10 ps/(nm·km),
+ * D_max − D_min ≤ 5, over 1530–1565 nm (G.655 11/2009 Table 1); NZ-DSF+ 4.5 and 0.05 (λ₀ = 1460 nm), NZ-DSF− −4 and 0.06. DCF: −80 ps/(nm·km), slope
  * matched to G.652 (equal RDS), so the pair compensates across the band.
  */
 export const FIBER_PRESETS = {

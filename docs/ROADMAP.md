@@ -183,14 +183,11 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 
 **Free-space comms**
 - Code comments in `laser-resonator.ts`, `doped-fiber-gain.ts`, `fiber-nonlinear.ts` and four resonator pages still call power log-ratios "nepers" (low, wording only).
-- `snow-attenuation` (low): the sources never define S (read as water-equivalent), and the 2005 ICTON origin of the law
-  is unverified (joanneum PDF is an HTML wall). Check Awan et al. WOCN 2009 / ICTON 2005 in Chrome; tier could drop to illustrative.
-- `geometric-loss` (low): the top-hat law (d_t + θR) is cited to Kim & Korevaar, SPIE 4530, 84 (2001) by DOI only; full text
-  unread. Confirm in Chrome, or cite Ghassemlooy et al., Optical Wireless Communications (CRC 2019, doi:10.1201/9781315151724).
+- `snow-attenuation` (low): ICTON 2005 (eqs. 6–8) and Awan's thesis say only "snow rate in mm/h"; S stays read as water-equivalent
+  (Awan p. 101: 50 dB/km at ≈ 5 mm/h, the page gives 51).
 - `background-noise`, `receiver-fov` (low): sky radiances are Giggenbach 2022 Table 1 typical values (×10 spread), 850–1550 nm only, log-log across the 1.13/1.38 µm water bands; no night sky or Moon (his Moon row is ≈ 10× E_sun·albedo/π at 850/1064 nm). A sourced sky model (MODTRAN tables, ITU-R P.1621) would extend it.
 - `receiver-fov` (low): field-stop clipping of the signal and turbulence spot growth (λ/r₀) are not modelled; only a 1.22λ/D warning.
-- `channel-capacity` (low): the 3.8×10⁻³ pre-FEC default for 7 % HD-FEC is not checked against the ITU-T G.975.1 text (input, labelled typical).
-- `acquisition-tracking` (low): Tyler & Fried NEA (3π/16)(λ/D)/SNR read from the JOSA 72, 804 abstract only; "rms per axis" is unconfirmed in the full text.
+- `acquisition-tracking` (low): Tyler & Fried's abstract says "rms angular measurement error"; "per axis" is our reading (full text unread).
 - `quantum-key-distribution` (low): asymptotic decoy BB84 only (no finite-key or intensity fluctuations); the GYS cutoff is 142.015 km against Ma's 142.05 (gap not from Y₀ terms).
 - `optical-antenna` (low): M² is capped at 2 (θ × M², gain / M⁴). A Gaussian Schell-model far field would cover multimode beams.
 
@@ -200,14 +197,10 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - `mtf`: high-NA defocus is only warned about; an exact-phase OTF (reviewer's scalar quadrature: Strehl 0.27 vs paraxial 0.555
   at NA 0.95, Δz 0.5 µm) is not modelled.
 **Fiber optics (sessions 169–170, unverified or deferred)**
-- `photonic-crystal`: Mortensen OL 28, 1879 DOI unchecked (429).
-- `fiber-optic-sensor`: K_T 9.56 pm/K (Cosme 2026) vs ≈ 10–13 pm/K in Kersey-era texts (from memory). `rare-earth-doped`: preset σ
-  (Er 1480, Yb 976) unchecked against Barnes Fig. 6(c) / Melkumov App. 2. `splice-loss`: air-gap Fresnel loss (≤ 0.59 dB) not
+- `rare-earth-doped`, `fiber-amplifier`: Er preset σ (980/1480/1550 nm) unchecked against Barnes 1991 (JQE 27, 1004; closed, the
+  Southampton eprint has a proof-of-work wall). `splice-loss`: air-gap Fresnel loss (≤ 0.59 dB) not
   included (`gapEtalonTransmission` exists); the page says so. `nonlinear-effects`: SBS card is narrow-CW only (no K/linewidth option).
-- `dispersion-shifted`: G.653/G.655 preset values (S₀ ≤ 0.085; G.655.C 1–10 ps/(nm·km)) not read in the Recommendations.
-- `fiber-bragg-grating-sensor`: the ±50 K linear K_T range (Cosme 2026) unverified. `fiber-amplifier`: preset σ vs Barnes
-  1991 Fig. 6(c) unverified. `dispersion-comp`: Agrawal §2.4.3/§5.4.4 numbers are 4th-edition; 5th-ed DOI 10.1002/9781119737391.
-- `fiber-characterization`: "fibre cutoff (G.650.1) below theoretical LP11" from memory; the card now says theoretical.
+- `dispersion-comp`: Agrawal 5th-ed. §2.4.3/§5.4.4 titles confirmed (Wiley TOC); the BL|D|σ_λ ≤ 1/4 body text unread.
 
 **Imaging (session 168, unverified or deferred)**
 - `spinning-disk`: crosstalk through neighbouring pinholes (the pitch) is not modelled; the pitch in AU is shown only.
@@ -236,8 +229,8 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - Re-check the classes when IEC 60825-1 Ed. 4 is published (only a BSI draft in 2026).
 - Sessions 180–181: ICNIRP Table 5 note c and Table 7 note b apply in the shared limits, scanned passes and the anterior
   segment (IR; visible only for α > α_min). Outside
-  400–1400 nm the pages assume 10 s with a note (ICNIRP p. 285: the longest exposure expected). Unverified: the ANSI
-  differences quoted from Schulmeister 2017 on `ansi-iec-comparison`; ICAO Doc 9815 levels and EN 207 test conditions (from memory).
+  400–1400 nm the pages assume 10 s with a note (ICNIRP p. 285: the longest exposure expected). EN 207 test conditions
+  (5 s CW / 50 pulses) are from secondary sources only (Wikipedia, Laser 2000); ISO 19818-1:2021 supersedes EN 207.
 
 **Codex review 2026-10-24** (each reproduced in session 144 with the repo's functions; golden cases for the tests)
 - Fixed in 4g-b (session 146). Leftovers: the OPA page's linear-GVM spectrum can run past degeneracy ν_p/2 when |δ_si| is tiny,
@@ -300,7 +293,8 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
   C30902EH bulk I_d 0.22 pA, streak 3.37 ps bound. See Done.
 - [x] 6e-b photodiode diffusion tail (session 187, `phase-6/6e-b-photodiode-diffusion`, PR #225): drift share 53.7 %, total −3 dB 13.47 MHz. See Done.
 - [x] 6f-a citation sweep a (session 188, `phase-6/6f-a-citations`, PR #226): 20 entries read; 3 value fixes. See Done.
-- [ ] 6g citation sweep b (fiber, free-space comms, wave optics, materials, laser safety).
+- [ ] 6g-a citation sweep b, part a (fiber, free-space comms, laser safety).
+- [ ] 6g-b citation sweep b, part b (wave optics, materials).
 - [ ] 6h accepted limitations: move the missing-feature and missing-data entries from "Open findings" to a "Known limitations" list;
   check that each page states its limit.
 - [ ] 6i cross-cutting UI (not accuracy): stale `ui-check` checks, chart double padding, export-row height, metal-page JS size.
@@ -323,6 +317,11 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 6g-a citation sweep b, part a (session 189, `phase-6/6g-a-citations`): Yb 1064 nm σ from Melkumov's 1064 row (was the 1068 row:
+  σ_a 5.7e-27, σ_e 3.1e-25 m²); FBG K_T slope 1.431e-8/K² (Cosme Table 3) added, +5.8 % shift at ΔT 50 K, warning outside
+  −20…100 °C (the old ±50 K wasn't in the paper); geometric-loss top-hat re-cited to ICTON 2005 eq. 1 (SPIE 4530 has no formula);
+  snow law origin ICTON 2005. Confirmed: PCF DOIs, OH 62.7 dB/km/ppm, G.653/G.655.C/G.650.1, Agrawal 5th-ed. sections,
+  Schulmeister 2017 p. 10, ICAO levels (CASA AC 139-23, FAA JO 7400.2), G.975.1 (no 3.8e-3 printed; I.9 Table I.22 quoted).
 - 6f-a citation sweep a (session 188, `phase-6/6f-a-citations`, PR #226): low-coherence TD-OCT SNR +3.01 dB (Choma P_s = R_s × power on
   the sample), ccd-vs-cmos CCD97 536 stages (F² −0.10 %), plasma T_e outside the 1–7 eV fit range flagged; 14 citations reworded or added;
   confirmed: Akondi eq. 2, EMVA 1288 R3.1 eqs., Hamamatsu eqs., S-20 0.4 fA/cm², Alcock coefficients. Unread: Hudgin 1977, Benjamin–Weaver 1960.

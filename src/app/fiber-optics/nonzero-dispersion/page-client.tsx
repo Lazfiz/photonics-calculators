@@ -147,7 +147,7 @@ export default function NonzeroDispersionPage() {
           <p>G.652 reference: D(λ) = (S₀/4)(λ − λ₀⁴/λ³), S₀ = 0.092, λ₀ = 1310 nm</p>
           <p>Δλ = λ² · Δν / c</p>
           <p>Δβ_FWM = −(2πΔν)²[β₂ + β₃·2πΔν],  β₂ = −λ²D/(2πc),  β₃ = (λ²/2πc)²(S + 2D/λ)</p>
-          <p>G.655.C: 1 ≤ |D| ≤ 10 ps/(nm·km) over 1530–1565 nm</p>
+          <p>G.655.C: 1 ≤ |D| ≤ 10 ps/(nm·km) and D_max − D_min ≤ 5 over 1530–1565 nm (Table 1)</p>
           <p>Trade-off: low |D| → stronger FWM; high |D| → more compensation needed</p>
         </div>
       </div>

@@ -136,7 +136,8 @@ export default function OpticalDensityPage() {
         105:271) for exposures up to t: OD = log₁₀(P / P_max), where P_max is the largest power of this beam whose
         irradiance, averaged over each limit&apos;s aperture (7 mm for the retina, 3.5 mm for the anterior eye, 1 → 3.5 mm
         on the cornea in the UV and from 1.4 µm), stays within the limit. A beam under 1 mm (1/e diameter, d/√2 for the 1/e² d) is held to its peak on the cornea below 0.35 s (ICNIRP 2013 Table 5 note c). A filter scales the power, not the beam
-        profile, so this is the same as log₁₀(H/MPE) in ANSI Z136.1 and EN 207. Typical exposure times: 0.25 s for
+        profile, so this is the same as log₁₀(H/MPE) in ANSI Z136.1 (EN 207 instead rates eyewear by LB scale numbers from its own
+        table of test power and energy densities). Typical exposure times: 0.25 s for
         visible beams (aversion response), 10 s for invisible ones, longer for staring. Not modelled: pulses (see{" "}
         <Link href="/laser-safety/pulsed-mpe" className={linkClass}>pulsed MPE</Link>), EN 207 / EN 208 scale numbers,
         and whether the filter survives the beam.
