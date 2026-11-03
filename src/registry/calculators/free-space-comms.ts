@@ -90,7 +90,7 @@ export const freeSpaceComms: CalculatorEntry[] = [
     title: "FSO Background Noise",
     description: "Background power, photon rate and photoelectrons per bit from clear sky, clouds or the Sun for a given field of view, aperture, filter passband and wavelength (850–1550 nm).",
     tier: "textbook",
-    modelNote: "P = L·A·Ω·Δλ·T·η with Ω = π sin²(FOV/2). Sky and cloud radiances are typical values (real skies vary ≈ ×10); the Sun is a 5772 K disc above the atmosphere (±20 %). Out-of-band light is fully blocked.",
+    modelNote: "P = L·A·Ω·Δλ·T·η with Ω = π sin²(FOV/2). Sky and cloud radiances are typical daytime values at 850–1550 nm (real skies vary ≈ ×10; no night sky or Moon); the Sun is a 5772 K disc above the atmosphere (±20 %). Out-of-band light is fully blocked.",
     references: [
       {
         citation: "Giggenbach D. (2022). Free-space optical data receivers with avalanche detectors for satellite downlinks regarding background light. Sensors 22(18), 6773. Table 1: sky, cloud and sun radiances at 850, 1064 and 1550 nm; eq. (22).",

@@ -10,8 +10,9 @@
  * - Raman frequency and FWHM linewidth of diamond, Ba(NO₃)₂ and KGd(WO₄)₂: T. T. Basiev, A. A. Sobol, P. G. Zverev,
  *   V. V. Osiko, R. C. Powell, Appl. Opt. 38, 594 (1999), doi:10.1364/AO.38.000594.
  * - Diamond gain at six pump wavelengths, 355–1280 nm, pump along <111>: V. G. Savitski, S. Reilly, A. J. Kemp,
- *   IEEE J. Quantum Electron. 49, 218 (2013), doi:10.1109/JQE.2012.2237505, Table 1. The gain grows linearly with the
- *   pump wavenumber, so between measured points it is interpolated linearly in 1/λ_p.
+ *   IEEE J. Quantum Electron. 49, 218 (2013), doi:10.1109/JQE.2012.2237505, Table 1. The gain rises with the pump
+ *   wavenumber, though not linearly (42 and 41 cm/GW at 532 and 670 nm), so between measured points it is interpolated
+ *   linearly in 1/λ_p.
  * - Steady-state gains at 532 nm, 10.7 ns spectrally limited pump: KGW 14 ± 3 cm/GW (901 cm⁻¹, E ∥ N_m) and 11 ± 3 cm/GW
  *   (767 cm⁻¹, E ∥ N_g), Ba(NO₃)₂ 43 ± 5 cm/GW: V. U. Markevich, R. V. Chulkov, Vestsi NAN Belarusi, Ser. Fiz.-Mat. Navuk
  *   2016, no. 1, 102–106 (CC BY 4.0, vestifm.belnauka.by/jour/article/view/15).

@@ -61,7 +61,7 @@ export const materials: CalculatorEntry[] = [
     description: "Brillouin scattering: frequency shift ν_B = 2nv_A/λ, Stokes wavelength, acoustic wavelength, phonon lifetime and peak gain g_B = 2πn⁷p₁₂²/(cλ²ρv_AΔν_B), for fused silica, As₂Se₃, As₂S₃, diamond or your own medium.",
     keywords: ["Brillouin Shift", "Brillouin Gain Coefficient", "Stimulated Brillouin Scattering", "Acoustic Phonon"],
     tier: "textbook",
-    modelNote: "Backward scattering from one longitudinal acoustic mode, with a Lorentzian gain line and a pump narrower than Δν_B. Δν_B is an input at the pump wavelength (it scales as λ⁻²). Bulk values: acoustic guiding and the overlap integral of a real fibre are not modelled. The As₂Se₃, As₂S₃ and diamond presets come from papers that measured ν_B, Δν_B and g_B, shown beside the result (formula within 9 % for the glasses; diamond 74 against 60 ± 9 cm/GW, inside the linewidth's ±36 %, with an effective p of unstated convention). The fibre SBS threshold has its own page.",
+    modelNote: "Backward scattering from one longitudinal acoustic mode, with a Lorentzian gain line and a pump narrower than Δν_B. Δν_B is an input at the pump wavelength (it scales as λ⁻²). Bulk values: acoustic guiding and the overlap integral of a real fibre are not modelled. The As₂Se₃, As₂S₃ and diamond presets come from papers that measured ν_B, Δν_B and g_B, shown beside the result (formula within 9 % for the glasses; diamond 17.4 against 60 ± 9 cm/GW: the elasto-optic p from Grimsditch & Ramdas underestimates the measured gain 3–4×). The fibre SBS threshold has its own page.",
     references: [
       {
         citation: "Agrawal G. P. (2019). Nonlinear Fiber Optics, 6th ed. Academic Press. Brillouin shift ν_B = 2nv_A/λ_p, peak gain g_B and fused-silica n, v_A, ρ₀ and p₁₂.",
@@ -304,7 +304,7 @@ export const materials: CalculatorEntry[] = [
     lede: "Compare IR transmitting materials and glasses. n(λ, T) = n(λ, T₀) + (dn/dT)(T − T₀), with n(λ, T₀) from each material's published Sellmeier formula.",
     keywords: ["Infrared Materials", "Chalcogenide Glass Properties", "Fluoride Glass (ZBLAN)"],
     tier: "textbook",
-    modelNote: "Index from published Sellmeier fits inside their ranges, shifted linearly by one room-temperature dn/dT; transmission is the lossless two-surface Fresnel limit 2n/(n² + 1). Bands, dn/dT, conductivity and hardness are Crystran data-sheet values, and Amorphous Materials' for AMTIR-1 and As₂S₃ (AMTIR-6: band and hardness only, its dn/dT changes sign across the band); none are sourced for ZBLAN.",
+    modelNote: "Index from published Sellmeier fits inside their ranges, shifted linearly by one room-temperature dn/dT; transmission is the lossless two-surface Fresnel limit 2n/(n² + 1). Bands, dn/dT, conductivity and hardness are Crystran data-sheet values, and Amorphous Materials' for AMTIR-1 and As₂S₃ (AMTIR-6: band and hardness only, its dn/dT changes sign across the band); none are sourced for ZBLAN. AMTIR-1's single dn/dT is about 2× low below 1.5 µm.",
     references: [
       {
         citation: "refractiveindex.info database (CC0). Sellmeier data sets, each with its original reference shown on the page. Used for Ge, Si, ZnSe, ZnS, CaF₂, BaF₂, MgF₂, NaCl, KBr, CsI, KRS-5, As₂S₃ and ZBLAN.",
@@ -552,7 +552,7 @@ export const materials: CalculatorEntry[] = [
     description: "Stimulated Raman gain of diamond, Ba(NO₃)₂, KGW, As₂S₃ glass and fused silica: Stokes wavelength, peak gain at your pump wavelength, Lorentzian gain line, dephasing time and single-pass gain e^(gIL).",
     keywords: ["Raman Gain Coefficient", "Stimulated Raman Scattering", "Raman Crystal", "Stokes Wavelength", "Diamond Raman Laser"],
     tier: "textbook",
-    modelNote: "Steady-state SRS (pulses much longer than T₂) of an undepleted plane-wave pump, with a homogeneous Lorentzian line. Gains are interpolated in pump wavenumber between measured points (diamond: six Savitski 2013 points; KGW and Ba(NO₃)₂: 532 nm measured, 1064 nm vendor; the two do not follow one 1/λ_p law, so between them the gain is good to about ±40 %); outside the measured pump range a gain is scaled as 1/λ_p and flagged as an estimate. The silica and As₂S₃ glass lines are broad and not Lorentzian; As₂S₃ absorbs visible pumps.",
+    modelNote: "Steady-state SRS (pulses much longer than T₂) of an undepleted plane-wave pump, with a homogeneous Lorentzian line. Gains are interpolated in pump wavenumber between measured points (diamond: six Savitski 2013 points; KGW and Ba(NO₃)₂: 532 nm measured, 1064 nm vendor; the two do not follow one 1/λ_p law, so between them the gain is good to about ±40 %); outside the measured pump range a gain is scaled as 1/λ_p and flagged as an estimate. The silica and As₂S₃ glass lines are broad and not Lorentzian; As₂S₃ absorbs visible pumps; no UV absorption edge is applied for KGW and Ba(NO₃)₂.",
     references: [
       {
         citation: "Savitski V. G., Reilly S., Kemp A. J. (2013). Steady-state Raman gain in diamond as a function of pump wavelength. IEEE J. Quantum Electron. 49, 218–223. Table 1.",
