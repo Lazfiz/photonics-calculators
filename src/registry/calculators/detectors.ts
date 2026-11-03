@@ -476,7 +476,7 @@ export const detectors: CalculatorEntry[] = [
     title: "Linear-Mode Avalanche Photodiode",
     description: "SNR of a linear-mode APD receiver versus gain: McIntyre excess noise, shot and thermal noise, and the optimum gain for a given load resistance.",
     tier: "textbook",
-    modelNote: "Shot noise of the multiplied photocurrent and bulk dark current with McIntyre's F, plus Johnson noise of the load; surface dark current, amplifier voltage noise and background light are left out. The default 50 pA bulk dark current is about the Excelitas C30902EH's 7 nA at M = 150 divided by the gain; the total dark current ÷ M is only an upper bound on the multiplied bulk part, because surface leakage isn't multiplied.",
+    modelNote: "Shot noise of the multiplied photocurrent and bulk dark current with McIntyre's F, plus Johnson noise of the load; surface dark current, amplifier voltage noise and background light are left out. The default 0.22 pA bulk dark current is the Excelitas C30902EH's, from its noise current i_N = 0.1 pA/√Hz and dark current I_D = I_DS + I_DB·M = 7 nA at M = 150 (i_N² = 2q(I_DS + I_DB·M²F), F = 4.95): the bulk part I_DB·M is 33 pA, 0.5 % of I_D, the rest is unmultiplied surface leakage.",
     references: [
       {
         citation: "McIntyre R. J. (1966). Multiplication noise in uniform avalanche diodes. IEEE Trans. Electron Devices ED-13, 164–168. F = kM + (1 − k)(2 − 1/M).",
@@ -490,7 +490,7 @@ export const detectors: CalculatorEntry[] = [
         citation: "Agrawal G. P. (2010). Fiber-Optic Communication Systems, 4th ed. Wiley. §4.4 (APD receiver noise, optimum gain) and Table 4.2 (k: Si 0.02–0.05, InGaAs 0.5–0.7, Ge 0.7–1.0).",
       },
       {
-        citation: "Excelitas Technologies. C30902EH and C30921EH avalanche photodiodes, datasheet Rev. 2022.02. k_eff = 0.02; V_br = 225 V at 22 °C, 0.7 V/°C; M = 150; dark current 7 nA.",
+        citation: "Excelitas Technologies. C30902EH and C30921EH avalanche photodiodes, datasheet Rev. 2022.02. k_eff = 0.02; V_br = 225 V at 22 °C, 0.7 V/°C; M = 150; dark current 7 nA (typ.), noise current 0.1 pA/√Hz (typ.), NEP 1.23 fW/√Hz; notes 2–3 split I_D into surface and bulk parts.",
         url: "https://www.excelitas.com/sites/default/files/assets/product/document/24781.pdf",
       },
     ],
