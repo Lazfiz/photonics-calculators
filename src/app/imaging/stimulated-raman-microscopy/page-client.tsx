@@ -155,7 +155,7 @@ export default function StimulatedRamanMicroscopyPage() {
             <p className="text-sm text-yellow-300" role="status">δ above 10 %: depletion is no longer negligible.</p>
           )}
           {bandwidthWide && (
-            <p className="text-sm text-yellow-300" role="status">The pulse bandwidth {bandwidthCm.toFixed(1)} cm⁻¹ is wider than a typical condensed-phase Raman line (≈ 10 cm⁻¹): steady-state g_R overestimates δ.</p>
+            <p className="text-sm text-yellow-300" role="status">The pulse bandwidth {bandwidthCm.toFixed(1)} cm⁻¹ is wider than a typical condensed-phase Raman line (≈ 10 cm⁻¹, Cheng et al. 2001): steady-state g_R overestimates δ.</p>
           )}
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Stokes wavelength</span><span className="font-mono text-blue-400">{fmt(results.stokesNm, 1, "nm")}</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Beat frequency</span><span className="font-mono">{fmt(results.beatTHz, 2, "THz")}</span></div>
@@ -171,7 +171,7 @@ export default function StimulatedRamanMicroscopyPage() {
           <div className="text-xs text-gray-500 mt-2 space-y-1">
             <p>ν̃_S = ν̃_p − Ω̃; SRS ∝ Im χ⁽³⁾ · I_p · I_S, with no non-resonant background.</p>
             <p>SRG: the Stokes beam gains (pump modulated, Stokes detected). SRL: the pump loses (Stokes modulated, pump detected).</p>
-            <p>SNR = δ·√N, N = ηPτλ/(hc), shot noise of the detected beam only (Ozeki et al., Opt. Express 17, 3651, 2009). Laser excess noise, detector noise and lock-in demodulation losses make real systems worse.</p>
+            <p>SNR = δ·√N (amplitude ratio; Ozeki et al., Opt. Express 17, 3651, 2009, Eq. 12 quotes its square, the energy ratio δ²N), N = ηPτλ/(hc), shot noise of the detected beam only. Laser excess noise, detector noise and lock-in demodulation losses make real systems worse.</p>
             <p>The modulation depth δ depends on the Raman cross-section, the concentration and both intensities: enter a measured or published value, or estimate it from g_R.</p>
             <p>Estimate: SRG δ = g_R·F·P̂_p/√2, SRL δ = (λ_S/λ_p)·g_R·F·P̂_S/√2 with F = √2πn/√(λ_p² + λ_S²) for paraxial Gaussian beams of the same far-field angle, a sample thicker than the focus (a liquid) and identical, overlapped Gaussian pulses of peak power P̂. g_R is the plane-wave Stokes gain dI_S/dz = g_R·I_p·I_S (Boyd, Nonlinear Optics, ch. 10); a dilute species scales it by its concentration. Steady-state gain (pulses longer than the Raman dephasing time) and δ ≪ 1.</p>
             <p>Focus: Gaussian fit to each beam (Zipfel et al. 2003), signal FWHM of the product I_p·I_S.</p>

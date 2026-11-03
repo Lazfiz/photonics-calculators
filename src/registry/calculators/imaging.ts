@@ -153,7 +153,7 @@ export const imaging: CalculatorEntry[] = [
         url: "https://doi.org/10.1117/3.725073",
       },
       {
-        citation: "Zheng G., Horstmeyer R., Yang C. (2013). Wide-field, high-resolution Fourier ptychographic microscopy. Nat. Photonics 7, 739–745. Synthetic NA = objective NA + illumination NA (0.08 + 0.42 = 0.5).",
+        citation: "Zheng G., Horstmeyer R., Yang C. (2013). Wide-field, high-resolution Fourier ptychographic microscopy. Nat. Photonics 7, 739–745. Objective NA 0.08; maximum synthetic NA 0.5, set by the outermost LED angle (illumination NA ≈ 0.42, implied, not stated).",
         url: "https://doi.org/10.1038/nphoton.2013.187",
       },
     ],
@@ -681,11 +681,15 @@ export const imaging: CalculatorEntry[] = [
     title: "Photoacoustic Imaging Calculator",
     description: "Initial pressure, diffuse light penetration, acoustic resolution and the skin exposure limit for photoacoustic microscopy and tomography.",
     tier: "textbook",
-    modelNote: "p₀ = Γμ_aF under stress confinement; fluence k·F₀·exp(−μ_eff z) from diffusion theory with the build-up factor k (≈ 2–5) set to 1, so p₀ at depth is low; one-way acoustic resolution of acoustic-resolution PAM and partial-view tomography. Skin limits are ICNIRP 2013 single-pulse and ≥ 10 s values, without the repetitive-pulse rules.",
+    modelNote: "p₀ = Γμ_aF under stress confinement; fluence k·F₀·exp(−μ_eff z) from diffusion theory with the build-up factor k (≈ 2.8–6, Jacques 1998) set to 1, so p₀ at depth is low; one-way acoustic resolution of acoustic-resolution PAM and partial-view tomography. Skin limits are ICNIRP 2013 single-pulse and ≥ 10 s values, without the repetitive-pulse rules.",
     references: [
       {
         citation: "Xu M., Wang L. V. (2006). Photoacoustic imaging in biomedicine. Rev. Sci. Instrum. 77, 041101. Thermal and stress confinement and the initial pressure p₀ = Γμ_aF.",
         url: "https://doi.org/10.1063/1.2195024",
+      },
+      {
+        citation: "Jacques S. L. (1998). Light distributions from point, line and plane sources for photochemical reactions and fluorescence in turbid biological tissues. Photochem. Photobiol. 67, 23–32. Eqs. 11–13: build-up factor k(R_d).",
+        url: "https://doi.org/10.1111/j.1751-1097.1998.tb05161.x",
       },
       {
         citation: "Wang L. V., Hu S. (2012). Photoacoustic tomography: in vivo imaging from organelles to organs. Science 335, 1458–1462. Axial resolution 0.88 v_s/Δf, lateral 0.71 v_s/(NA f₀), about 800 Pa per mK.",
@@ -981,11 +985,15 @@ export const imaging: CalculatorEntry[] = [
     description: "Shot-noise-limited SNR, detection limit, Stokes wavelength, resolution and frame time for stimulated Raman scattering microscopy.",
     keywords: ["Stimulated Raman Scattering (SRS)"],
     tier: "textbook",
-    modelNote: "SNR = δ√N, shot noise of the detected beam only. δ is an input or a small-signal (δ ≪ 1), steady-state (pulses longer than T₂) estimate from g_R over paraxial Gaussian foci in a thick sample. Excess laser noise and lock-in losses aren't modelled.",
+    modelNote: "SNR = δ√N (amplitude ratio; Ozeki's Eq. 12 is its square, δ²N), shot noise of the detected beam only. δ is an input or a small-signal (δ ≪ 1), steady-state (pulses longer than T₂) estimate from g_R over paraxial Gaussian foci in a thick sample. Excess laser noise and lock-in losses aren't modelled.",
     references: [
       {
-        citation: "Ozeki Y. et al. (2009). Analysis and experimental assessment of the sensitivity of stimulated Raman scattering microscopy. Opt. Express 17, 3651–3658. Shot-noise-limited SRS sensitivity.",
+        citation: "Ozeki Y. et al. (2009). Analysis and experimental assessment of the sensitivity of stimulated Raman scattering microscopy. Opt. Express 17, 3651–3658. Shot-noise-limited SRS sensitivity, Eq. 12.",
         url: "https://doi.org/10.1364/OE.17.003651",
+      },
+      {
+        citation: "Cheng J.-X., Volkmer A., Book L. D., Xie X. S. (2001). An epi-detected coherent anti-Stokes Raman scattering (E-CARS) microscope with high spectral resolution and high sensitivity. J. Phys. Chem. B 105, 1277–1280, p. 1278. A condensed-phase Raman line width is typically ≈ 10 cm⁻¹.",
+        url: "https://doi.org/10.1021/jp003774a",
       },
       {
         citation: "Boyd R. W. (2008). Nonlinear Optics, 3rd ed., ch. 10. Academic Press. Stimulated Raman gain dI_S/dz = g_R I_p I_S and the photon-number balance behind SRL.",
