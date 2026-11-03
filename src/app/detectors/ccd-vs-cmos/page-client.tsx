@@ -3,7 +3,7 @@
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { cameraSnr, dynamicRangeDb, EM_REGISTER_STAGES, emExcessNoiseFactorSq, emMaxSignal } from "../../../physics/detectors/camera-snr";
+import { cameraSnr, dynamicRangeDb, EM_REGISTER_STAGES_CCD97, emExcessNoiseFactorSq, emMaxSignal } from "../../../physics/detectors/camera-snr";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 
@@ -42,7 +42,7 @@ export default function CcdVsCmosPage() {
     const signal = s.qe * nPhotons;
     const dark = s.darkCurrent * exposureTime;
     const maxSignal = s.registerWell ? emMaxSignal(s.wellCapacity, s.registerWell, gain) : s.wellCapacity;
-    const excessNoiseFactorSq = s.registerWell ? emExcessNoiseFactorSq(gain, EM_REGISTER_STAGES) : 1;
+    const excessNoiseFactorSq = s.registerWell ? emExcessNoiseFactorSq(gain, EM_REGISTER_STAGES_CCD97) : 1;
     const saturated = signal + dark > maxSignal;
     return {
       signal,
@@ -92,7 +92,7 @@ export default function CcdVsCmosPage() {
       </div>
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1">
         <p>S = QE·N_photons; SNR = S / √(F²·(S + D·t) + (σ_read/G)²)</p>
-        <p>CCD, CMOS: G = 1, F² = 1. EMCCD: F² = 2(G − 1)·G^(−(N+1)/N) + 1/G, N = {EM_REGISTER_STAGES}</p>
+        <p>CCD, CMOS: G = 1, F² = 1. EMCCD: F² = 2(G − 1)·G^(−(N+1)/N) + 1/G, N = {EM_REGISTER_STAGES_CCD97} (CCD97)</p>
         <p>DR = 20·log₁₀(S_max / (σ_read/G)); EMCCD S_max = min(pixel well, register well / G)</p>
       </div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Signal (photons/pixel)", gridcolor: "#374151", type: "log" }, yaxis: { title: "SNR", gridcolor: "#374151", type: "log" } }} />

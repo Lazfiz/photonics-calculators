@@ -137,7 +137,7 @@ export const detectors: CalculatorEntry[] = [
     description: "Compare CCD, sCMOS, phone CMOS and EMCCD pixels: SNR from photons × QE, saturation and dynamic range.",
     keywords: ["CCD vs CMOS Comparison"],
     tier: "textbook",
-    modelNote: "Poisson signal (photons × QE) and dark charge plus Gaussian read noise; the EMCCD adds the Robbins–Hadwen excess noise of a 604-stage register and divides the read noise by the gain. Its dynamic range uses the gain-register well, so for G ≳ 4.4 (= 800 000/180 000, register well limited) it stays near 20·log₁₀(800 000/89) = 79 dB, while G = 1 gives 66.1 dB. The sensor values are representative; the EMCCD follows the iXon Ultra 897 sheet. Clock-induced charge, fixed-pattern noise, sCMOS read-noise tails and dual-gain readout are left out.",
+    modelNote: "Poisson signal (photons × QE) and dark charge plus Gaussian read noise; the EMCCD adds the Robbins–Hadwen excess noise of the CCD97's 536-stage register and divides the read noise by the gain. Its dynamic range uses the gain-register well, so for G ≳ 4.4 (= 800 000/180 000, register well limited) it stays near 20·log₁₀(800 000/89) = 79 dB, while G = 1 gives 66.1 dB. The sensor values are representative; the EMCCD follows the iXon Ultra 897 sheet. Clock-induced charge, fixed-pattern noise, sCMOS read-noise tails and dual-gain readout are left out.",
     references: [
       {
         citation: "Janesick J. R. (2007). Photon Transfer: DN → λ. SPIE Press. Shot, dark and read noise of a sensor pixel; full well and dynamic range.",
@@ -150,6 +150,10 @@ export const detectors: CalculatorEntry[] = [
       {
         citation: "Andor (Oxford Instruments). iXon Ultra EMCCD specifications. iXon Ultra 897: 180 000 e⁻ pixel well, 800 000 e⁻ gain-register well, 89 e⁻ read noise at 17 MHz without EM gain.",
         url: "https://andor.oxinst.com/downloads/uploads/andor-ixon-ultra-emccd-specifications.pdf",
+      },
+      {
+        citation: "Teledyne e2v. CCD97-00 Back Illuminated 2-Phase IMO Series Electron Multiplying CCD Sensor, data sheet A1A-CCD97BI-2P-IMO v6 (2017), p. 5: 536 gain-register elements.",
+        url: "https://teledyneimaging.com/download/f68f9696-ff81-45c2-80e0-3fc83fac6c67",
       },
     ],
   },

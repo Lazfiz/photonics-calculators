@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  cameraNoise, cameraSnr, compressiveResponse, dynamicRangeDb, emExcessNoiseFactorSq, emMaxSignal, emStageProbability,
+  cameraNoise, cameraSnr, compressiveResponse, dynamicRangeDb, EM_REGISTER_STAGES_CCD97, emExcessNoiseFactorSq, emMaxSignal, emStageProbability,
   pixelCapacitance, quantizationNoise,
 } from "../src/physics/detectors/camera-snr";
 import { darkReadCrossoverTemperature } from "../src/physics/detectors/dark-current";
@@ -26,6 +26,9 @@ test("EM register excess noise (Robbins & Hadwen 2003, doi:10.1109/TED.2003.8134
   // F² = 2(G − 1)·G^(−(N+1)/N) + 1/G: 2·99·100^(−605/604) + 0.01 = 1.98·e^(−ln100/604) + 0.01 = 1.974961.
   close(emExcessNoiseFactorSq(100, 604), 2 * 99 * 100 ** (-605 / 604) + 0.01, 1e-12);
   close(emExcessNoiseFactorSq(100, 604), 1.974961, 1e-6);
+  // CCD97 (iXon 897), 536 elements (e2v data sheet v6, p. 5): 1.98·e^(−ln100/536) + 0.01 = 1.973061, 0.10 % below 604.
+  assert.equal(EM_REGISTER_STAGES_CCD97, 536);
+  close(emExcessNoiseFactorSq(100, EM_REGISTER_STAGES_CCD97), 1.973061, 1e-6);
   // Independent check: the branching-process moments of a binomial stage.
   for (const [g, n] of [[100, 604], [1000, 604], [37, 20], [1000, 10]] as const) {
     close(emExcessNoiseFactorSq(g, n), galtonWatsonF2(g, n), 1e-10, `G=${g} N=${n}`);

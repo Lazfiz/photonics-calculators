@@ -22,6 +22,10 @@ import { q } from "../constants";
 /** Stages in the gain register of the e2v CCD201 (iXon Ultra 888), the usual EMCCD default. */
 export const EM_REGISTER_STAGES = 604;
 
+/** Multiplication elements in the gain register of the e2v CCD97 (iXon Ultra 897): "the 536 register elements"
+ * (Teledyne e2v CCD97-00 data sheet A1A-CCD97BI-2P-IMO v6, 2017, p. 5). */
+export const EM_REGISTER_STAGES_CCD97 = 536;
+
 /** Per-stage multiplication probability p = G^(1/N) − 1 of an N-stage register with mean gain G; NaN if p > 1. */
 export function emStageProbability(gain: number, stages: number): number {
   if (!(gain >= 1) || !(stages >= 1)) return NaN;
