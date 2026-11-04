@@ -5,7 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { gaussianCoupling, gaussianCouplingWorstTilt, lossDb } from "../../../physics/fiber-optics/gaussian-coupling";
+import { gapReflectionFactor, gaussianCoupling, gaussianCouplingWorstTilt, lossDb } from "../../../physics/fiber-optics/gaussian-coupling";
 
 const UM = 1e-6;
 const DEG = Math.PI / 180;
@@ -18,10 +18,11 @@ export default function SpliceLossPage() {
   const [gap, setGap] = useURLState("gap", 0, { min: 0 }); // µm
   const [gapIndex, setGapIndex] = useURLState("gapIndex", 1.45, { min: 1, max: 2 }); // medium the tilt and gap are in: 1 air, ≈ 1.45 fusion splice or gel
   const [wavelength_nm, setWavelength] = useURLState("wavelength", 1550, { min: 200, max: 5000 });
+  const [fiberIndex, setFiberIndex] = useURLState("fiberIndex", 1.447, { min: 1, max: 2 }); // fibre phase index (SMF-28 at 1550 nm; 1.4682 is its group index)
 
   const calc = useMemo(() => {
     const valid = lateralOffset >= 0 && angularMisalign >= 0 && angularMisalign < 30 && coreDiam > 0 && mfd2 > 0 &&
-      gap >= 0 && gapIndex >= 1 && wavelength_nm > 0;
+      gap >= 0 && gapIndex >= 1 && fiberIndex >= 1 && wavelength_nm > 0;
     const base = {
       w1: (coreDiam / 2) * UM, w2: (mfd2 / 2) * UM, lambda: wavelength_nm * 1e-9, n: gapIndex,
     };
@@ -29,15 +30,19 @@ export default function SpliceLossPage() {
     const loss = (j: Partial<typeof base> & { offset?: number; tilt?: number; gap?: number }) =>
       valid ? lossDb(gaussianCouplingWorstTilt({ ...base, ...j })) : NaN;
     const w = (coreDiam / 2) * UM;
+    // Multiple reflections between the faces (coherent sum of Gaussian passes in fibre 1's mode): the gap and total
+    // cards include them; 1 at physical contact (z = 0) and with index matching.
+    const reflection = valid ? gapReflectionFactor(fiberIndex, gapIndex, z, base.lambda, w) : NaN;
     return {
       // Each effect alone between equal modes of fibre 1's radius, then the mismatch alone, then the full joint.
       latLoss: loss({ w2: w, offset: d }),
       angLoss: loss({ w2: w, tilt }),
-      gapLoss: loss({ w2: w, gap: z }),
+      gapLoss: loss({ w2: w, gap: z }) + lossDb(reflection),
+      reflectionLoss: lossDb(reflection),
       mismatchLoss: loss({}),
-      totalLoss: loss({ offset: d, tilt, gap: z }),
+      totalLoss: loss({ offset: d, tilt, gap: z }) + lossDb(reflection),
     };
-  }, [lateralOffset, angularMisalign, coreDiam, mfd2, gap, gapIndex, wavelength_nm]);
+  }, [lateralOffset, angularMisalign, coreDiam, mfd2, gap, gapIndex, fiberIndex, wavelength_nm]);
 
   const chartData = useMemo(() => {
     // Equal modes of fibre 1's radius, as in the Lateral and Angular cards. Plotly can't draw Infinity: use gaps.
@@ -74,6 +79,7 @@ export default function SpliceLossPage() {
         <ValidatedNumberInput label="MFD, Fibre 1 (µm)" value={coreDiam} onChange={setCoreDiam} min={1} step="any" />
         <ValidatedNumberInput label="MFD, Fibre 2 (µm)" value={mfd2} onChange={setMfd2} min={1} step="any" />
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength_nm} onChange={setWavelength} min={200} max={5000} step="any" />
+        <ValidatedNumberInput label="Fibre Phase Index" value={fiberIndex} onChange={setFiberIndex} min={1} max={2} step="0.001" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-5 mb-8">
@@ -88,6 +94,7 @@ export default function SpliceLossPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Gap</p>
           <p className="text-xl font-bold text-yellow-400">{fmt(calc.gapLoss)}</p>
+          <p className="text-xs text-gray-500">reflections {fmt(calc.reflectionLoss)}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">MFD Mismatch</p>
@@ -115,7 +122,13 @@ export default function SpliceLossPage() {
         <p>Equal modes (w = MFD/2): offset η = exp(−d²/w²), tilt η = exp(−(π n w θ/λ)²), gap η = 1/(1 + (λz/(2π n w²))²).</p>
         <p>MFD mismatch η = (2w₁w₂/(w₁² + w₂²))². The total is the full Gaussian overlap of all effects together, with the
           tilt in its unfavourable sense; with a gap it is not exactly the sum of the separate losses. n is the index of the
-          medium the tilt and gap are in (glass for a fusion splice). Fresnel reflection at an air gap is not included.</p>
+          medium the tilt and gap are in (glass for a fusion splice).</p>
+        <p>Gap and total include the reflections between the two faces when the medium index differs from the fibre&apos;s:
+          the coherent sum of the multiply reflected Gaussian passes, r = (n_fibre − n)/(n_fibre + n). For gaps much shorter
+          than the Rayleigh range this is the Airy etalon 1/(1 + F sin²(2πnz/λ)), up to 0.58 dB for an air gap; for long gaps
+          the fringes persist with less contrast. The total applies this equal-mode factor to the full overlap (≈ 0.01 dB
+          approximation with offset or MFD mismatch); parallel end faces and a source coherent over 2z are assumed (tilted
+          faces wash out the fringes).</p>
       </div>
     </>
   );

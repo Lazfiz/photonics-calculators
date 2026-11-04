@@ -15,6 +15,7 @@ export default function SuperResolutionPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 580, { min: 300, max: 1000 }); // nm
   const [n, setN] = useURLState("n", 1.52, { min: 1, max: 1.8 });
   const [stedDepletion, setStedDepletion] = useURLState("stedDepletion", 30, { min: 0, max: 200 }); // I_STED / I_sat
+  const [stedWavelength, setStedWavelength] = useURLState("stedWavelength", 660, { min: 300, max: 1200 }); // nm, depletion beam (660 nm for orange dyes)
   const [palmPhotons, setPalmPhotons] = useURLState("palmPhotons", 5000, { min: 1, max: 1000000 });
 
   const results = useMemo(() => {
@@ -24,20 +25,20 @@ export default function SuperResolutionPage() {
       abbe: abbeLateralFwhm(lam, na),
       rayleigh: rayleighDistance(lam, na),
       axial: axialPsfFwhm(lam, n, na),
-      sted: stedLateralFwhm(lam, na, stedDepletion),
+      sted: stedLateralFwhm(lam, na, stedDepletion, stedWavelength * 1e-9),
       palm,
       palmFwhm: palm * GAUSSIAN_FWHM_PER_SIGMA,
     };
-  }, [na, wavelength, n, stedDepletion, palmPhotons]);
+  }, [na, wavelength, n, stedDepletion, stedWavelength, palmPhotons]);
 
   const stedPlot = useMemo(() => {
-    const lam = wavelength * 1e-9;
+    const lam = wavelength * 1e-9, lamSted = stedWavelength * 1e-9;
     const zeta = Array.from({ length: 101 }, (_, i) => i * 2);
     return [
-      { x: zeta, y: zeta.map((z) => stedLateralFwhm(lam, na, z) * 1e9), name: "STED lateral FWHM", line: { color: "#f87171" }, type: "scatter", mode: "lines" },
-      { x: [stedDepletion], y: [stedLateralFwhm(lam, na, stedDepletion) * 1e9], name: "Current", marker: { color: "#fbbf24", size: 11 }, type: "scatter", mode: "markers" },
+      { x: zeta, y: zeta.map((z) => stedLateralFwhm(lam, na, z, lamSted) * 1e9), name: "STED lateral FWHM", line: { color: "#f87171" }, type: "scatter", mode: "lines" },
+      { x: [stedDepletion], y: [stedLateralFwhm(lam, na, stedDepletion, lamSted) * 1e9], name: "Current", marker: { color: "#fbbf24", size: 11 }, type: "scatter", mode: "markers" },
     ];
-  }, [na, wavelength, stedDepletion]);
+  }, [na, wavelength, stedWavelength, stedDepletion]);
 
   const palmPlot = useMemo(() => {
     const lam = wavelength * 1e-9;
@@ -57,13 +58,16 @@ export default function SuperResolutionPage() {
             <ValidatedNumberInput label="NA" value={na} onChange={setNa} min={0.1} max={1.7} step="0.01" />
           </div>
           <div>
-            <ValidatedNumberInput label="Wavelength (nm): emission for PALM, excitation/STED for STED" value={wavelength} onChange={setWavelength} min={300} max={1000} />
+            <ValidatedNumberInput label="Wavelength λ (nm): emission for PALM, excitation for STED" value={wavelength} onChange={setWavelength} min={300} max={1000} />
           </div>
           <div>
             <ValidatedNumberInput label="Refractive index (n)" value={n} onChange={setN} min={1} max={1.8} step="0.01" />
           </div>
           <div>
             <ValidatedNumberInput label="STED I_STED / I_sat" value={stedDepletion} onChange={setStedDepletion} min={0} max={200} />
+          </div>
+          <div>
+            <ValidatedNumberInput label="STED depletion λ_STED (nm)" value={stedWavelength} onChange={setStedWavelength} min={300} max={1200} />
           </div>
           <div>
             <ValidatedNumberInput label="PALM photons detected" value={palmPhotons} onChange={setPalmPhotons} min={1} max={1000000} />
@@ -79,7 +83,11 @@ export default function SuperResolutionPage() {
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">PALM/STORM precision σ</span><span className="font-mono text-blue-400">{fmtNm(results.palm)}</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">PALM/STORM FWHM (2.35σ)</span><span className="font-mono text-purple-400">{fmtNm(results.palmFwhm)}</span></div>
           <div className="text-xs text-gray-500 mt-2 space-y-1">
-            <p>STED: d = λ/(2NA√(1 + I/I_sat)), Westphal &amp; Hell, Phys. Rev. Lett. 94, 143903 (2005). 2D (vortex) STED narrows only the lateral spot; the axial FWHM stays 0.88λ/(n − √(n² − NA²)).</p>
+            <p>STED: d = λ/(2NA√(1 + (I/I_sat)(λ/λ_STED)²)), Harke et al.&apos;s law d = d_c/√(1 + d_c²a²I/I_sat) (Opt. Express 16, 4154,
+              2008, Eq. 7) with the confocal d_c = λ/(2NA) at the excitation and a doughnut steepness a = 2NA/λ_STED, chosen so
+              that λ_STED = λ recovers Westphal &amp; Hell&apos;s λ/(2NA√(1 + I/I_sat)) (Phys. Rev. Lett. 94, 143903, 2005) and high
+              depletion gives Harke&apos;s Eq. 1, λ_STED/(2NA√(I/I_sat)). Harke&apos;s computed vortex pattern is 6 % less steep, so real
+              spots at high depletion are about 6 % wider; the I_sat convention also shifts the ratio. 2D (vortex) STED narrows only the lateral spot; the axial FWHM stays 0.88λ/(n − √(n² − NA²)).</p>
             <p>PALM/STORM: σ = s/√N, s = 0.21λ/NA, the Gaussian width of the PSF (Zhang et al., Appl. Opt. 46, 1819, 2007). This is the shot-noise limit (Thompson et al., Biophys. J. 82, 2775, 2002): pixelation, background and EMCCD excess noise (×√2) make it worse (Mortensen et al., Nat. Methods 7, 377, 2010).</p>
             <p>2D localization gives no axial position. 3D methods (astigmatism, biplane) are typically about twice as coarse axially as laterally (Huang et al., Science 319, 810, 2008).</p>
           </div>

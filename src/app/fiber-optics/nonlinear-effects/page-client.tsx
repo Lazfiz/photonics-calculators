@@ -7,9 +7,16 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { beta2FromD, beta3FromDS } from "../../../physics/fiber-optics/chromatic-dispersion";
 import {
-  SILICA_BRILLOUIN_GAIN, alphaFromDbPerKm, effectiveLength, fwmEfficiency, fwmPhaseMismatch, fwmProductRatio,
-  nonlinearCoefficient, nonlinearPhase, ramanGainAt, sbsThreshold, spmRmsBroadening, srsThreshold, xpmPhaseMax,
+  SBS_POLARIZATION_FACTOR, SILICA_BRILLOUIN_GAIN, SRS_POLARIZATION_FACTOR, alphaFromDbPerKm, effectiveLength, fwmEfficiency, fwmPhaseMismatch, fwmProductRatio,
+  nonlinearCoefficient, nonlinearPhase, ramanGainAt, sbsLinewidthFactor, sbsThreshold, spmRmsBroadening, srsThreshold, xpmPhaseMax,
 } from "../../../physics/fiber-optics/fiber-nonlinear";
+
+// Polarization factors K (threshold × K) for SBS and SRS; sources in fiber-nonlinear.ts.
+const POLARIZATIONS: Record<string, { label: string; sbs: number; srs: number }> = {
+  copolarized: { label: "Co-polarized (PM fibre, worst case)", sbs: SBS_POLARIZATION_FACTOR.copolarized, srs: SRS_POLARIZATION_FACTOR.copolarized },
+  standard: { label: "Standard fibre (random birefringence)", sbs: SBS_POLARIZATION_FACTOR.randomBirefringence, srs: SRS_POLARIZATION_FACTOR.standard },
+  scrambled: { label: "Standard fibre, scrambled pump", sbs: SBS_POLARIZATION_FACTOR.scrambled, srs: SRS_POLARIZATION_FACTOR.standard },
+};
 
 const toDb = (x: number) => {
   const v = 10 * Math.log10(x);
@@ -27,6 +34,11 @@ export default function NonlinearEffectsPage() {
   const [slope, setSlope] = useURLState("slope", 0.058, { min: -1, max: 1 }); // ps/(nm²·km)
   const [numChannels, setNumChannels] = useURLState("numChannels", 8, { min: 1 });
   const [channelSpacing, setChannelSpacing] = useURLState("channelSpacing", 100, { min: 0 }); // GHz
+  const [polarizationRaw, setPolarization] = useURLState("polarization", "copolarized");
+  const [sourceLinewidth, setSourceLinewidth] = useURLState("sourceLinewidth", 0, { min: 0 }); // MHz, Lorentzian
+  const [brillouinBandwidth, setBrillouinBandwidth] = useURLState("brillouinBandwidth", 35, { min: 1 }); // MHz FWHM, as on the SBS page
+  const polarization = polarizationRaw in POLARIZATIONS ? polarizationRaw : "copolarized";
+  const pol = POLARIZATIONS[polarization];
 
   const calc = useMemo(() => {
     const P = 10 ** (power / 10) * 1e-3; // W
@@ -54,9 +66,12 @@ export default function NonlinearEffectsPage() {
     const fwmRatio = (spacing: number) => fwmProductRatio(etaAt(spacing), phiSPM, true);
     const eta = etaAt(df);
 
-    // Worst cases: narrow-linewidth CW and co-polarized pump/Stokes (K = 1). See the SBS and SRS pages for K and linewidth.
-    const sbs = sbsThreshold({ Aeff, gB: SILICA_BRILLOUIN_GAIN, Leff });
-    const srs = srsThreshold(Aeff, ramanGainAt(lambda), Leff);
+    // Polarization factor K and a Lorentzian source linewidth (SBS only; the 13 THz Raman band is far wider).
+    const sbs = sbsThreshold({
+      Aeff, gB: SILICA_BRILLOUIN_GAIN, Leff, K: pol.sbs,
+      sourceLinewidth: Math.max(sourceLinewidth, 0) * 1e6, brillouinLinewidth: Math.max(brillouinBandwidth, 1) * 1e6,
+    });
+    const srs = srsThreshold(Aeff, ramanGainAt(lambda), Leff, pol.srs);
 
     const pLo = Math.min(-5, power - 5), pHi = Math.max(20, power + 5);
     const powers = Array.from({ length: 101 }, (_, i) => pLo + (i * (pHi - pLo)) / 100); // dBm
@@ -92,7 +107,7 @@ export default function NonlinearEffectsPage() {
       sbsDbm: 10 * Math.log10(sbs * 1e3), srsDbm: 10 * Math.log10(srs * 1e3),
       phaseVsPower, phaseVsDistance, fwmVsSpacing,
     };
-  }, [power, length, effectiveArea, alpha, n2, wavelength, dispersion, slope, numChannels, channelSpacing]);
+  }, [power, length, effectiveArea, alpha, n2, wavelength, dispersion, slope, numChannels, channelSpacing, pol, sourceLinewidth, brillouinBandwidth]);
 
   const sbsAbove = power > calc.sbsDbm;
   const srsAbove = power > calc.srsDbm;
@@ -111,6 +126,17 @@ export default function NonlinearEffectsPage() {
         <ValidatedNumberInput label="Dispersion Slope S (ps/(nm²·km))" value={slope} onChange={setSlope} min={-1} max={1} step="0.001" />
         <ValidatedNumberInput label="WDM Channels" value={numChannels} onChange={setNumChannels} min={1} step="1" />
         <ValidatedNumberInput label="Channel Spacing (GHz)" value={channelSpacing} onChange={setChannelSpacing} min={0} step="10" />
+        <label className="block">
+          <span className="text-sm text-gray-300">SBS/SRS Polarization</span>
+          <select value={polarization} onChange={e => setPolarization(e.target.value)}
+            className="mt-1 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
+            {Object.entries(POLARIZATIONS).map(([k, v]) => (
+              <option key={k} value={k}>{v.label}: K = {v.sbs} / {v.srs}</option>
+            ))}
+          </select>
+        </label>
+        <ValidatedNumberInput label="Source Linewidth Δν_s (MHz)" value={sourceLinewidth} onChange={setSourceLinewidth} min={0} step="any" />
+        <ValidatedNumberInput label="Brillouin Bandwidth Δν_B (MHz)" value={brillouinBandwidth} onChange={setBrillouinBandwidth} min={1} step="any" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">
@@ -137,7 +163,7 @@ export default function NonlinearEffectsPage() {
             <span className={srsAbove ? "text-red-400" : "text-green-400"}>{calc.srsDbm.toFixed(1)}</span> dBm
           </p>
           <p className="text-xs text-gray-500">
-            narrow CW line; modulated channels have a much higher threshold. Co-polarized{sbsAbove ? " · launch exceeds the narrow-CW SBS value" : ""}{srsAbove ? " · above SRS" : ""}
+            K = {pol.sbs} / {pol.srs}, {sourceLinewidth > 0 ? `linewidth factor ×${sbsLinewidthFactor(sourceLinewidth, Math.max(brillouinBandwidth, 1)).toFixed(2)}` : "narrow CW line"}; modulated channels have a much higher threshold{sbsAbove ? " · launch exceeds the SBS threshold" : ""}{srsAbove ? " · above SRS" : ""}
           </p>
         </div>
       </div>
@@ -181,7 +207,7 @@ export default function NonlinearEffectsPage() {
           <p>Δω_rms/Δω₀ = √(1 + 4φ²/(3√3))  [unchirped Gaussian]</p>
           <p>Δβ = −Δω²(β₂ ± β₃Δω),  η = α²/(α² + Δβ²)·[1 + 4e^(−αL) sin²(ΔβL/2)/(1 − e^(−αL))²]</p>
           <p>P_FWM / P_ch = η·(d/3)²·(γ·P·L_eff)²,  d = 3 degenerate, 6 non-degenerate</p>
-          <p>P_SBS = 21·A_eff / (g_B·L_eff), g_B = 5×10⁻¹¹ m/W;  P_SRS = 16·A_eff / (g_R·L_eff), g_R ∝ 1/λ</p>
+          <p>P_SBS = 21·K·A_eff·(1 + Δν_s/Δν_B) / (g_B·L_eff), g_B = 5×10⁻¹¹ m/W;  P_SRS = 16·K·A_eff / (g_R·L_eff), g_R ∝ 1/λ</p>
         </div>
       </div>
     </>

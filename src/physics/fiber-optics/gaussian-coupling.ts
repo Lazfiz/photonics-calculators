@@ -21,7 +21,7 @@
  *   offset  η = (2w₁w₂/(w₁²+w₂²))² exp(−2d²/(w₁²+w₂²))
  *   tilt    η = (2w₁w₂/(w₁²+w₂²))² exp(−2(πnθ/λ)² w₁²w₂²/(w₁²+w₂²))
  *   gap     η = 4 / ((w₁/w₂ + w₂/w₁)² + (λz/(πn w₁w₂))²), i.e. 1/(1 + (λz/(2πnw²))²) for equal w.
- * Not included: reflections at the gap faces (see gapEtalonTransmission), mode-field ellipticity, non-Gaussian
+ * Not included: reflections at the gap faces (see gapEtalonTransmission, gapReflectionFactor), mode-field ellipticity, non-Gaussian
  * mode tails (Marcuse's Gaussian fit is good to ~1 % in η near V ≈ 2), tilt angles or beam NAs beyond the paraxial
  * range (NA ≲ 0.3), and the obliquity of a tilted face (θw ≪ z_R).
  */
@@ -97,7 +97,7 @@ export function returnLossDb(R: number): number {
  *   T = 1 / (1 + F sin²(δ/2)),  F = 4R/(1 − R)²,  δ = 4π n_g z/λ,  R = ((n_f − n_g)/(n_f + n_g))².
  * T = 1 at z = 0 (physical contact) and when n_g = n_f (index matching). Plane-wave model: diffraction in the gap
  * is handled separately by gaussianCoupling, and treating the two as independent factors is good for gaps much
- * shorter than the Rayleigh range: against a coherent sum of multiply reflected Gaussian beams it is within 0.01 dB up
+ * shorter than the Rayleigh range: against a coherent sum of multiply reflected Gaussian beams it is within 0.02 dB up
  * to z ≈ 5 µm for a 9 µm MFD at 1550 nm (tests/fiber-gaussian-coupling.test.ts). NaN for invalid input.
  */
 export function gapEtalonTransmission(nFiber: number, nGap: number, z: number, lambda: number): number {
@@ -106,6 +106,33 @@ export function gapEtalonTransmission(nFiber: number, nGap: number, z: number, l
   const F = (4 * R) / (1 - R) ** 2;
   const s = Math.sin((2 * Math.PI * nGap * z) / lambda);
   return 1 / (1 + F * s * s);
+}
+
+/**
+ * Reflection factor of a gap at any length: the coherent sum of the multiply reflected Gaussian beams, divided by the
+ * single-pass diffraction coupling |c(z)|² = 1/(1 + (z/2z_R)²). Pass m crosses the gap 2m + 1 times with amplitude
+ * r^(2m)(1 − r²), r = (n_f − n_g)/(n_f + n_g), and couples with the equal-waist amplitude overlap after a path L in
+ * index n_g (from the q-parameter, H. Kogelnik, T. Li, Appl. Opt. 5, 1550 (1966), https://doi.org/10.1364/AO.5.001550 ):
+ *   c(L) = e^(−ikL)/(1 − iL/(2z_R)),  k = 2π n_g/λ,  z_R = π n_g w²/λ.
+ * It equals the Airy factor gapEtalonTransmission for z ≪ z_R. For z ≫ z_R pass m keeps 1/(2m + 1) of the first pass's
+ * overlap amplitude, so the fringes persist with less contrast: |Σ (1 − r²) r^(2m) e^(−ik(2m+1)z)/(2m + 1)|². 1 at z = 0 and for
+ * n_g = n_f. Equal waists w, parallel faces and a source coherent over the 2z round trip (tilted faces wash out
+ * the fringes). NaN for invalid input.
+ */
+export function gapReflectionFactor(nFiber: number, nGap: number, z: number, lambda: number, w: number): number {
+  if (!(nFiber >= 1 && nGap >= 1 && z >= 0 && lambda > 0 && w > 0 && Number.isFinite(z))) return NaN;
+  const r = (nFiber - nGap) / (nFiber + nGap);
+  const k = (2 * Math.PI * nGap) / lambda, zR = (Math.PI * nGap * w * w) / lambda;
+  let re = 0, im = 0, a = 1 - r * r;
+  // |r| < 1/3 for indices in [1, 2], so the terms fall at least 9× per pass; stop below 1e-18.
+  for (let m = 0; m < 200 && a > 1e-18; m++, a *= r * r) {
+    const L = (2 * m + 1) * z, u = L / (2 * zR), den = 1 + u * u;
+    const cr = Math.cos(k * L), ci = -Math.sin(k * L);
+    re += (a * (cr - ci * u)) / den;
+    im += (a * (ci + cr * u)) / den;
+  }
+  const single = 1 / (1 + (z / (2 * zR)) ** 2);
+  return (re * re + im * im) / single;
 }
 
 /**

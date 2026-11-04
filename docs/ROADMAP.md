@@ -5,12 +5,12 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 195, 2026-11-04)
+## Status (session 196, 2026-11-04)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
   textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) and 5w-13 (materials) and 5w-14 (spectroscopy) and 5w-15 (thin-film + polarization) done (sessions 163–177): 5w is complete; KRS-5
-  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6j done (sessions 179–194); Gemini hero done (session 195). No open stage: the user picks the next. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6j done (sessions 179–194); Gemini hero done (session 195). Phase 7 (Known limitations: features): 7a done (session 196); next 7b. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -92,8 +92,7 @@ Evidence for a later extension. Reopen an item only with a new source or a user 
   modelled (Humbach 1996 Table is paywalled; no open source found). Band widths are assumed (30 nm at 1383 nm, same in
   wavenumber elsewhere). The 1383 nm 62.7 dB/km/ppm is Humbach as quoted by arXiv:2303.17814.
 - `rare-earth-doped`, `fiber-amplifier`: Er preset σ: 980 nm from Barnes 1991 Table V, 1480/1550 nm read off Fig. 6(c)
-  (session 148; the Southampton eprint has a proof-of-work wall). `splice-loss`: air-gap Fresnel loss (≤ 0.59 dB) not
-  included (`gapEtalonTransmission` exists); the page says so. `nonlinear-effects`: SBS card is narrow-CW only (no K/linewidth option).
+  (session 148; the Southampton eprint has a proof-of-work wall).
 - `dispersion-comp`: Agrawal 5th-ed. §2.4.3/§5.4.4 titles confirmed (Wiley TOC); the BL|D|σ_λ ≤ 1/4 body text unread.
 
 **Materials**
@@ -156,7 +155,7 @@ Evidence for a later extension. Reopen an item only with a new source or a user 
   (Session 150) BBO type I only (d_eff from EKSMA d₂₂/d₃₁ at 1064 nm, no Miller scaling; d₃₁ sign taken as adding); no KTP/LBO/PPLN presets.
 - `injection-locking` (session 182): the dynamically stable band (Hopf edge, needs f_R and damping inputs) is not computed; Henry–Olsson–Dutta
   1985's range form is cited (session 190, from a snippet; ω₁'s definition unread); Petitbon 1988 abstract only. (Session 149) k_c is estimated as (1 − R)/(τ_rt√R) (Kondratiev 2023 Eq. 4; B is the reflected intracavity field, so ρ is
-  relative to the intracavity power); α 1 is Berger's below-threshold value, Banerjee 1991 gives 0.34–0.54 (both cited). `four-wave-mixing`: no fiber loss in the gain (lossless OPA).
+  relative to the intracavity power); α 1 is Berger's below-threshold value, Banerjee 1991 gives 0.34–0.54 (both cited).
 - `slow-light`: one isolated Lorentzian, no pulse distortion or saturation (a warning shows when the signal is wider than the line).
   Old `/wave-optics/interferometer?wavelength=633` links land on michelson-interferometer's µm input (clamped to 50 µm).
 - χ⁽²⁾ pages (session 149): d_eff 12.4 pm/V from Shoji Table 10 (read on the Optica abstract page); Miller's rule gives ×0.87 for the
@@ -211,7 +210,6 @@ Evidence for a later extension. Reopen an item only with a new source or a user 
   at NA 0.95, Δz 0.5 µm) is not modelled.
 - `spinning-disk`: crosstalk through neighbouring pinholes (the pitch) is not modelled; the pitch in AU is shown only.
 - `three-photon`/`two-photon`: Zipfel's NA^0.91 lateral fit is used up to NA 1.7; Fig. 4c states no upper NA bound (main text paywalled).
-- `super-resolution`: one wavelength input for STED (excitation) and PALM (emission), as its label says; a separate STED λ would be cleaner.
 - Spectroscopy part 11 (session 107): `infrared-spectroscopy` has no Herman–Wallis factor or absolute band strength; `electron-spectroscopy` graphite ρ 2.2 (SRD 71 table value) vs 2.26 g/cm³ crystal; LHM water ε₂ = 3.52 + 7.52θ kept (fits Table I with RMS 0.43, against 0.49 with −), and the page allows only −5 to 40 °C.
 - Imaging part 8 (session 86): `photoacoustic` applies only the single-pulse and ≥ 10 s skin limits (`pulse-train.ts` has no skin rules); `sum-frequency-microscopy` withholds the power for L > b (no non-degenerate Boyd–Kleinman); SRS δ is an input (no cross-section model).
 - `imaging/fluorophores.ts` (session 84): log-normal bands are exactly 0 past their anti-Stokes cutoff (EGFP emission below 480 nm, mCherry excitation above 622 nm), so tail-only bleed-through reads 0; sampled FPbase spectra would fix it. Disclosed on the pages.
@@ -220,7 +218,6 @@ Evidence for a later extension. Reopen an item only with a new source or a user 
 - `streak-camera` (session 142): M taken equal on the time axis (no source); the data-sheet allowance holds only at the
   spec's sweep (C16910 fastest range factory-set 60–80 ps; at 80 ps it is 0.48 ps, under the 0.5 ps default).
 - `intensified-ccd` (session 141): the gain sweep holds the data-sheet K_f down to unity gain (noted on the page).
-- 5w-1 (session 163): `em-gain` has no conventional-amplifier read-noise input (stated in its modelNote).
 - 5w-2 (session 164): `gain-temperature` scales the Miller curve with V_br (shift model differs 8 %).
 
 **Polarization**
@@ -292,6 +289,23 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - [x] 6j findings (session 194, `phase-6/6j-findings`, PR #232): lock-in pair sum, OPA degeneracy + PPLN hint, CTE table, kerr-lens, nepers. See Done.
 - [x] Gemini hero (session 195, `phase-5/gemini-hero`, PR #233): see Done.
 
+## Phase 7 — Known limitations: features (user, session 195: "Known limitations next")
+Triage of "Known limitations" (session 195): only items with an open, known model. The data-blocked ones (paywalled or unread
+sources: Ar⁺/CO₂ g₀, Nd/Tm/Ho σ, Sheik-Bahae n₂, ZBLAN, LiTaO₃, …) stay parked until a source turns up. Each stage: a
+`physics-reviewer` pass on the new model against its primary source, golden tests, the modelNote updated, the limitation line removed.
+- [ ] 7b free-space comms: `aperture-averaging` hard circular aperture (GR 6.574.2, checked session 173), `receiver-fov` turbulence
+  spot growth (λ/r₀) and field-stop clipping, `optical-antenna` Gaussian Schell-model far field for M² > 2.
+- [ ] 7c lasers: `q-switched-laser` g₀l input and Degnan optimum coupling, `optical-parametric-oscillator` PPLN preset (Zelmon,
+  already in `three-wave.ts`) and KTP if sourced.
+- [ ] 7d laser safety: scanned mode on `lidar-safety` (scanned-pass rules already in the shared limits, sessions 180–181). Own stage: safety-critical.
+- [ ] 7e thin film: `ellipsometry-measurement` transparent-film thickness (Azzam & Bashara inversion), `sputtering-deposition`
+  Westwood gas thermalisation, `plasma-deposition` high-pressure diffusion h-factor (Lieberman & Lichtenberg).
+- [ ] 7f imaging: `imaging/fluorophores.ts` sampled FPbase spectra (CC data) instead of log-normal bands, `spinning-disk` pinhole
+  crosstalk, `mtf` exact-phase high-NA defocus OTF.
+- [ ] 7g materials data: `thermal-expansion` α(T) for Si (Okada & Tokumaru 1984), BaTiO₃ on `electro-optic`/`photorefractive`
+  (Zgonik 1994 via Petraru's thesis Table 2.2; needs ε and r_eff(β)).
+- Later, user's choice: phone hero (cropped layout + touch: tap to highlight, tap again to open, auto-cycle); traffic/SEO pass.
+
 ## Decisions (keep)
 - **Polarization:** Goldstein/Collett convention site-wide.
   - e^{i(ωt − kz)}; RCP = [1, i]/√2, and S3 = 2 Im(Ex* Ey) > 0 for RCP.
@@ -309,6 +323,8 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 7a small options (session 196, `phase-7/7a-small-options`, PR #234): splice gap multipass Gaussian reflections (Airy 0.5800 dB at λ/4, 0.21790 dB at
+  41 µm); SBS K + linewidth; lossy FWM transfer matrices (G 8.633275 at 10 dB/km); EM crossover S* 36.6671; STED λ (Harke Eq. 7, 49.0942 nm); 1230 tests.
 - Gemini hero (session 195, `phase-5/gemini-hero`, PR #233): user's Gemini SVG chip hero ported (photonic-chip-art/-hero.tsx); bays link to
   spectroscopy/imaging/wave-optics and 9 registry calculators; demo workbench dropped; MZI split from `machZehnderBeams` (`hero-optics.ts`, 6 tests); 1226 tests.
 - 6j findings (session 194, `phase-6/6j-findings`, PR #232): square lock-in at f_s = 2m·f_r adds harmonics 2m ± j as phasors

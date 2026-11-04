@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  angledFaceReflectance, gapEtalonTransmission, gaussianCoupling, gaussianCouplingWorstTilt, lossDb, returnLossDb, stepReflectance, waistFromNA,
+  angledFaceReflectance, gapEtalonTransmission, gapReflectionFactor, gaussianCoupling, gaussianCouplingWorstTilt, lossDb, returnLossDb, stepReflectance, waistFromNA,
 } from "../src/physics/fiber-optics/gaussian-coupling";
 
 function assertRel(actual: number, expected: number, tol: number, label: string) {
@@ -153,6 +153,30 @@ test("Airy × Gaussian gap factor vs a coherent sum of multiply reflected Gaussi
     const diff = Math.abs(lossDb(product) - lossDb(multipass(z)));
     assert.ok(diff < tol_dB, `z = ${z_um} µm: ${lossDb(product)} vs ${lossDb(multipass(z))} dB`);
   }
+});
+
+test("Gap reflection factor: Airy for z ≪ z_R, the far-field pass sum for z ≫ z_R", () => {
+  const nf = 1.447, w = 4.5 * um, r = (nf - 1) / (nf + 1);
+  // z = 0 and index matching: no reflection loss.
+  assertRel(gapReflectionFactor(nf, 1, 0, lambda, w), 1, 1e-12, "z = 0");
+  assertRel(gapReflectionFactor(nf, nf, 3 * um, lambda, w), 1, 1e-12, "n_g = n_f");
+  // Quarter wave in air, 0.3875 µm ≪ z_R = 41 µm: the Airy minimum ((1 − R)/(1 + R))², 0.5800 dB.
+  const zq = lambda / 4;
+  assertRel(gapReflectionFactor(nf, 1, zq, lambda, w), gapEtalonTransmission(nf, 1, zq, lambda), 1e-4, "Airy");
+  assertRel(lossDb(gapReflectionFactor(nf, 1, zq, lambda, w)), 0.5800, 1e-3, "quarter-wave dB");
+  // z = 41 µm ≈ z_R: 0.21790 dB from an independent overlap integral of the w(z), R(z), Gouy beams (physics review,
+  // session 196); Airy × Gaussian would give 0.055 dB here.
+  assertRel(lossDb(gapReflectionFactor(nf, 1, 41 * um, lambda, w)), 0.21790, 1e-4, "z ≈ z_R");
+  // z = 1 m ≫ z_R: c(L) → i(2z_R/L)e^(−ikL), so the factor → |Σ (1 − r²) r^(2m) e^(−ik(2m+1)z)/(2m+1)|².
+  const z = 1, k = (2 * Math.PI) / lambda;
+  let re = 0, im = 0;
+  for (let m = 0; m < 40; m++) {
+    const a = ((1 - r * r) * r ** (2 * m)) / (2 * m + 1);
+    re += a * Math.cos(k * (2 * m + 1) * z);
+    im -= a * Math.sin(k * (2 * m + 1) * z);
+  }
+  assertRel(gapReflectionFactor(nf, 1, z, lambda, w), re * re + im * im, 1e-6, "far field");
+  assert.ok(Number.isNaN(gapReflectionFactor(nf, 1, -1e-6, lambda, w)));
 });
 
 test("Flat-face return loss with the phase index of SMF-28 (≈ 1.447 at 1550 nm)", () => {

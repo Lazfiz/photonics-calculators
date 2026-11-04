@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  cameraNoise, cameraSnr, compressiveResponse, dynamicRangeDb, EM_REGISTER_STAGES_CCD97, emExcessNoiseFactorSq, emMaxSignal, emStageProbability,
+  cameraNoise, cameraSnr, compressiveResponse, dynamicRangeDb, EM_REGISTER_STAGES_CCD97, emCrossoverSignal, emExcessNoiseFactorSq, emMaxSignal, emStageProbability,
   pixelCapacitance, quantizationNoise,
 } from "../src/physics/detectors/camera-snr";
 import { darkReadCrossoverTemperature } from "../src/physics/detectors/dark-current";
@@ -107,4 +107,19 @@ test("saturation page default: 12-bit ADC DR = 71.709 dB", () => {
   close(sq, 1.4099, 1e-4);
   close(dynamicRangeDb(20000, Math.hypot(5, sq)), 71.709, 1e-5);
   close(dynamicRangeDb(20000, 5), 72.0412, 1e-5);
+});
+
+test("EM vs conventional output crossover: equal SNR at S* (Robbins & Hadwen F²)", () => {
+  // G 100, 604 stages, σ_EM 50 e⁻, σ_c 6 e⁻, CIC 0.001: S* = (36 − 0.25)/(F² − 1) − 0.001.
+  const F2 = emExcessNoiseFactorSq(100, 604);
+  const inputs = { gain: 100, excessNoiseFactorSq: F2, emRead: 50, conventionalRead: 6, cic: 0.001 };
+  const S = emCrossoverSignal(inputs);
+  close(S, 35.75 / (F2 - 1) - 0.001, 1e-12, "S*");
+  close(S, 36.6671, 1e-5, "S* value");
+  const em = cameraSnr({ signal: S, cic: 0.001, read: 50, gain: 100, excessNoiseFactorSq: F2 });
+  close(em, cameraSnr({ signal: S, cic: 0.001, read: 6 }), 1e-12, "equal SNR");
+  // Edges: a noiseless conventional output always wins; F² = 1 with lower referred noise, EM always wins.
+  assert.equal(emCrossoverSignal({ ...inputs, conventionalRead: 0 }), 0);
+  assert.equal(emCrossoverSignal({ ...inputs, gain: 1, excessNoiseFactorSq: 1, emRead: 3 }), Infinity);
+  assert.ok(Number.isNaN(emCrossoverSignal({ ...inputs, excessNoiseFactorSq: 0.5 })));
 });

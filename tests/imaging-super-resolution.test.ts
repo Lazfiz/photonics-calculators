@@ -14,13 +14,30 @@ function assertRel(actual: number, expected: number, tol: number, label: string)
 
 const nm = 1e-9;
 
-test("STED law uses the λ/(2NA) FWHM, not the Rayleigh distance (page defaults)", () => {
+test("STED law uses the λ/(2NA) FWHM, not the Rayleigh distance (λ_STED = λ)", () => {
   // Westphal & Hell, PRL 94, 143903 (2005): d = λ/(2NA√(1 + ζ)). 580 nm, NA 1.4, ζ = 30:
   // λ/(2NA) = 207.1429 nm; / √31 = 37.2041 nm. The page computed 0.61λ/NA/√31 = 45.3891 nm (1.22×).
   assertRel(abbeLateralFwhm(580 * nm, 1.4), 207.1429 * nm, 1e-6, "Abbe");
   assertRel(stedLateralFwhm(580 * nm, 1.4, 30), 37.2041 * nm, 1e-5, "STED");
   assertRel(rayleighDistance(580 * nm, 1.4) / Math.sqrt(31) / stedLateralFwhm(580 * nm, 1.4, 30), 1.22, 1e-12, "old/new");
   assert.equal(stedLateralFwhm(580 * nm, 1.4, 0), abbeLateralFwhm(580 * nm, 1.4), "ζ = 0 is confocal");
+});
+
+test("STED with a separate depletion wavelength (Harke et al. 2008, a = 2NA/λ_STED)", () => {
+  // 580 nm excitation, 775 nm depletion, NA 1.4, ζ = 30: (580/775)² = 0.560083, 207.1429/√(1 + 16.8025) = 49.0942 nm.
+  assertRel(stedLateralFwhm(580 * nm, 1.4, 30, 775 * nm), 49.0942 * nm, 1e-5, "775 nm");
+  assert.equal(stedLateralFwhm(580 * nm, 1.4, 30, 580 * nm), stedLateralFwhm(580 * nm, 1.4, 30), "equal λ");
+  // ζ ≫ 1: the depletion wavelength sets the limit, λ_STED/(2NA√ζ).
+  assertRel(stedLateralFwhm(580 * nm, 1.4, 1e8, 775 * nm), (775 * nm) / (2 * 1.4 * 1e4), 1e-6, "asymptote");
+  assert.ok(Number.isNaN(stedLateralFwhm(580 * nm, 1.4, 30, 0)));
+  // Page defaults, 660 nm depletion: (580/660)² = 0.772268, 207.1429/√(1 + 23.1680) = 42.1356 nm.
+  assertRel(stedLateralFwhm(580 * nm, 1.4, 30, 660 * nm), 42.1356 * nm, 1e-5, "page defaults");
+  // Harke's setup (635 nm excitation, 735 nm STED, effective NA 1.36; computed a = 0.00347 nm⁻¹), ζ = 50:
+  // Eq. 7 gives 233.456/√(1 + (0.00347·233.456)²·50) = 40.15 nm; a = 2NA/λ_STED gives 37.71 nm, 6.1 % narrower.
+  const dc = 635 / (2 * 1.36);
+  const harke = dc / Math.sqrt(1 + (0.00347 * dc) ** 2 * 50);
+  assertRel(harke, 40.15, 1e-3, "Harke Eq. 7");
+  assertRel(stedLateralFwhm(635 * nm, 1.36, 50, 735 * nm) / (harke * nm), 0.9393, 1e-4, "calibration gap");
 });
 
 test("Gaussian σ = 0.21 λ/NA agrees with a least-squares fit to the Airy PSF", () => {

@@ -1,9 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { nonlinearCoefficient } from "../src/physics/fiber-optics/fiber-nonlinear";
+import { fwmEfficiency, nonlinearCoefficient } from "../src/physics/fiber-optics/fiber-nonlinear";
 import {
-  fwmDetuning, fwmGainCoefficient, fwmIdlerPower, fwmIdlerWavelength, fwmLinearMismatch, fwmPhaseMatchedDetuning, fwmSignalGain,
+  fwmDetuning, fwmGainCoefficient, fwmIdlerPower, fwmIdlerWavelength, fwmLinearMismatch, fwmLossyEvolution, fwmPhaseMatchedDetuning, fwmSignalGain,
 } from "../src/physics/wave-optics/four-wave-mixing";
 import { facetCouplingRate, lockingRange } from "../src/physics/wave-optics/injection-locking";
 import { slabEffectiveIndex, slabModeB, slabModeCount, slabTEConfinement, slabTEField, slabV } from "../src/physics/wave-optics/slab-waveguide";
@@ -96,6 +96,37 @@ test("FWM limits: Δβ = 0 gives 1 + (γPL)², weak pump gives (γPL)² sinc²(�
   assertRel(fwmIdlerPower(512.103, 1e-3, LS, 1540.1274e-9), 0.517698, 1e-5, "P_i");
   // Edge: no pump, no gain.
   assert.equal(fwmSignalGain(0, 1, 100), 1);
+});
+
+test("FWM with fiber loss: α = 0 reproduces the closed form; weak pump gives Inoue's (γP L_eff)² η e^(−αL)", () => {
+  // Lossless: RK4 of the lossy equations against Hansryd's closed form at κ = 0, Δβ = 0 and outside the band.
+  for (const db of [-2 * GAMMA, 0, 0.05]) {
+    const end = fwmLossyEvolution(GAMMA, 1, db, 0, L).at(-1)!;
+    assertRel(end.gain, fwmSignalGain(GAMMA, db, L), 1e-6, `G at Δβ = ${db}`);
+    // Equal-γ coupled equations conserve |B_s|² − |B_i|², so the idler is G − 1 in power.
+    assertRel(end.idler, end.gain - 1, 1e-9, "idler = G − 1");
+  }
+  // Weak pump with loss (K. Inoue, J. Lightwave Technol. 10, 1553 (1992)): γP₀ = 1e-6/m, 10 km at 0.2 dB/km,
+  // Δβ = 1e-3/m. The idler is (γP₀L_eff)² η e^(−αL) to O(γP₀/Δβ, γP₀L) ≈ 1e-2.
+  const alpha = 0.2 / (10 * Math.LOG10E) / 1000, Lw = 10e3, db = 1e-3;
+  const leff = -Math.expm1(-alpha * Lw) / alpha;
+  const end = fwmLossyEvolution(1e-6, 1, db, alpha, Lw).at(-1)!;
+  assertRel(end.idler, (1e-6 * leff) ** 2 * fwmEfficiency(alpha, Lw, db) * Math.exp(-alpha * Lw), 2e-2, "Inoue idler");
+  // The signal only loses: G → e^(−αL) = 10^(−0.2) when the pump is off.
+  assertRel(fwmLossyEvolution(GAMMA, 0, 0, alpha, Lw).at(-1)!.gain, 10 ** -0.2, 1e-9, "pump off");
+  // 10 dB/km, page defaults otherwise: an independent RK2 of the A_p, A_s, A_i equations (pump with SPM and loss,
+  // 2×10⁵ steps; physics review, session 196) gives G 8.633275, idler 8.317047 at κ₀ = 0 and G 0.352801 at Δβ = 0.02/m.
+  const a10 = 10 / (10 * Math.LOG10E) / 1000;
+  const k0 = fwmLossyEvolution(GAMMA, 1, -2 * GAMMA, a10, L).at(-1)!;
+  assertRel(k0.gain, 8.633275, 1e-6, "G κ₀ = 0");
+  assertRel(k0.idler, 8.317047, 1e-6, "idler κ₀ = 0");
+  assertRel(fwmLossyEvolution(GAMMA, 1, 0.02, a10, L).at(-1)!.gain, 0.352801, 2e-6, "G outside the band");
+  // Samples end at L; invalid input or an absurd loss (αL in the thousands) give nothing.
+  const pts = fwmLossyEvolution(GAMMA, 1, 0, alpha, L, 4);
+  assert.equal(pts.length, 4);
+  assertRel(pts[3].z, L, 1e-12, "last z");
+  assert.deepEqual(fwmLossyEvolution(GAMMA, 1, 0, -1, L), []);
+  assert.deepEqual(fwmLossyEvolution(GAMMA, 1, 0, 2.3, 1e5), []);
 });
 
 test("symmetric slab TE/TM modes (Kogelnik & Ramaswamy 1974, half-thickness V)", () => {
