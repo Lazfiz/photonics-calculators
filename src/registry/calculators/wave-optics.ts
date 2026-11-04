@@ -342,7 +342,7 @@ export const waveOptics: CalculatorEntry[] = [
   },
   {
     slug: "kerr-lens",
-    title: "Kerr Lens Mode Locking",
+    title: "Kerr Lens (Self-Focusing)",
     description: "Thin Kerr lens of a Gaussian beam, f = πw⁴/(8n₂PL), with the on-axis nonlinear phase, the critical power for self-focusing and the Rayleigh range in the crystal.",
     keywords: ["Kerr lens", "KLM", "self-focusing", "nonlinear refractive index n2", "critical power", "Ti:sapphire"],
     tier: "textbook",
