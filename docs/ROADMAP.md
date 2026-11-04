@@ -236,7 +236,6 @@ Evidence for a later extension. Reopen an item only with a new source or a user 
   the Rakić and silver n,k (3.7 KB). The client needs them to recompute on every input.
 
 **Laser safety**
-- No scanned-lidar mode on `lidar-safety` (the modelNote says scanning isn't modelled).
 - Sessions 180–181: ICNIRP Table 5 note c and Table 7 note b apply in the shared limits, scanned passes and the anterior
   segment (IR; visible only for α > α_min). Outside
   400–1400 nm the pages assume 10 s with a note (ICNIRP p. 285: the longest exposure expected). EN 207 test conditions

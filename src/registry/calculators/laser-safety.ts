@@ -379,13 +379,17 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "lidar-safety",
     title: "LiDAR Laser Safety Calculator",
-    description: "Eye safety of a stationary lidar beam (905 or 1550 nm) on the ICNIRP 2013 limits: the repetitive-pulse rule that binds, NOHD, exposure at a viewing distance and eyewear OD.",
+    description: "Eye safety of a lidar beam (905 or 1550 nm), stationary or scanned across the eye, on the ICNIRP 2013 limits: the repetitive-pulse rule that binds, NOHD, exposure at a viewing distance and eyewear OD.",
     tier: "textbook",
-    modelNote: "ICNIRP 2013 repetitive-pulse rules on the eye limits; round Gaussian beam widening as a + rφ, averaged over each aperture (its peak if under 1 mm (1/e) on the cornea below 0.35 s, ICNIRP Table 5 note c). Stationary beam (the worst case, a scanner failure); scanning not modelled.",
+    modelNote: "ICNIRP 2013 repetitive-pulse rules on the eye limits; round Gaussian beam widening as a + rφ, averaged over each aperture (its peak if under 1 mm (1/e) on the cornea below 0.35 s, ICNIRP Table 5 note c). Stationary beam (the worst case, a scanner failure), or scanned: the pulses within a pass (centred), each pass as one pulse of the average power times a worst-phase bound, and C_P over the pulses within T₂ whose 1/e² beam overlaps the pupil; never below the stationary beam's limit; eye on the scan line's centre with a still retinal image. Conservative by 1.0–1.6× against a sum over every window of the pulse energies (up to 2×; more for a narrow beam on the cornea). Not modelled: several beams or raster lines, turning points.",
     references: [
       {
         citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Repetitive pulse exposures (p. 287), Tables 4, 5 and 8.",
         url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+      {
+        citation: "Schulmeister, K. (2025). Extended source AEL analysis of scanned laser emission for IEC 60825-1. White paper, Ed. 2, Seibersdorf Laboratories. Pulse per pass, pass duration and energy (4.2.5, 6.2.3).",
+        url: "https://www.seibersdorf-laboratories.at/fileadmin/user_upload/docs/le/las/publ/whitepaper_scanned-laser-emission.pdf",
       },
     ],
   },
