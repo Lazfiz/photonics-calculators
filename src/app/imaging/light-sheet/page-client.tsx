@@ -97,11 +97,11 @@ export default function LightSheetPage() {
           <div className="grid gap-6 md:grid-cols-2 mb-6">
             <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
               <h2 className="text-lg font-semibold mb-4">Thickness and field of view vs illumination NA</h2>
-              <ChartPanel data={naChart} layout={{ ...layout, xaxis: { title: "Illumination NA", gridcolor: "#333" }, yaxis: { title: "FWHM (µm)", type: "log", gridcolor: "#333" }, yaxis2: { title: "Field of view (µm)", type: "log", overlaying: "y", side: "right" }, showlegend: true }} />
+              <ChartPanel bare data={naChart} layout={{ ...layout, xaxis: { title: "Illumination NA", gridcolor: "#333" }, yaxis: { title: "FWHM (µm)", type: "log", gridcolor: "#333" }, yaxis2: { title: "Field of view (µm)", type: "log", overlaying: "y", side: "right" }, showlegend: true }} />
             </div>
             <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
               <h2 className="text-lg font-semibold mb-4">Sheet profile along the beam</h2>
-              <ChartPanel data={profileChart} layout={{ ...layout, xaxis: { title: "Distance from the waist x (µm)", gridcolor: "#333" }, yaxis: { title: "Half-thickness w (µm)", gridcolor: "#333" }, showlegend: false }} />
+              <ChartPanel bare data={profileChart} layout={{ ...layout, xaxis: { title: "Distance from the waist x (µm)", gridcolor: "#333" }, yaxis: { title: "Half-thickness w (µm)", gridcolor: "#333" }, showlegend: false }} />
             </div>
           </div>
 

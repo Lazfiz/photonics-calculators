@@ -178,13 +178,13 @@ export default function RetarderTypesPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 mb-6">
         <h2 className="text-lg font-semibold mb-4">Retardance against wavelength (multi-order folded to one wave)</h2>
-        <ChartPanel data={spectral} layout={plotLayout("Wavelength (nm)", "Retardance (waves)")} />
+        <ChartPanel bare data={spectral} layout={plotLayout("Wavelength (nm)", "Retardance (waves)")} />
         <p className="text-xs text-gray-500 mt-2">The compound zero-order curve (dotted) lies on the zero-order one: only d₁ − d₂ counts at normal incidence.</p>
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 mb-6">
         <h2 className="text-lg font-semibold mb-4">Retardance change against tilt at λ₀</h2>
-        <ChartPanel data={tiltChart} layout={plotLayout("Angle of incidence (°)", "Change (waves)")} />
+        <ChartPanel bare data={tiltChart} layout={plotLayout("Angle of incidence (°)", "Change (waves)")} />
         <p className="text-xs text-gray-500 mt-2">
           Tilt in the plane holding the first plate&apos;s optic axis (the rhomb: in its plane of reflection). Tilting about the
           other axis changes the sign for the plates.

@@ -141,11 +141,11 @@ export default function DoubleRefractionPage() {
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">e index and walk-off against the wave-normal angle to the axis</h3>
-          <ChartPanel data={axisChart} layout={layout("θ from optic axis (°)", "n(θ)", "Walk-off ρ (°)")} />
+          <ChartPanel bare data={axisChart} layout={layout("θ from optic axis (°)", "n(θ)", "Walk-off ρ (°)")} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Separation and retardance against the angle of incidence</h3>
-          <ChartPanel data={incidenceChart} layout={layout("Angle of incidence (°)", "Separation (mm)", "Retardance (waves)")} />
+          <ChartPanel bare data={incidenceChart} layout={layout("Angle of incidence (°)", "Separation (mm)", "Retardance (waves)")} />
         </div>
       </div>
 

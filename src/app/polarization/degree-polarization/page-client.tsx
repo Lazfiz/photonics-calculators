@@ -176,7 +176,7 @@ export default function DegreeOfPolarizationPage() {
             <ValidatedNumberInput label="Retardance at centre (waves)" value={waves} onChange={setRetardance} min={0} max={10000} step="1" />
           </div>
           {spectral && spectral.bandwidths.length > 1 && bw > 0 && (
-            <ChartPanel data={[
+            <ChartPanel bare data={[
               { x: spectral.bandwidths, y: spectral.dopVals, name: "DoP", type: "scatter", mode: "lines", line: { color: "#f59e0b", width: 2 } },
             ]} layout={{ ...plotLayout, height: 250, xaxis: { ...plotLayout.xaxis, title: "Bandwidth, full width (nm)" }, yaxis: { ...plotLayout.yaxis, title: "Band-averaged DoP", range: [0, 1.05] } }} />
           )}

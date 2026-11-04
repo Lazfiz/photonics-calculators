@@ -100,7 +100,7 @@ export default function DamageThresholdPage() {
       )}
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 my-8">
-        <SimpleLineChart title="Damage threshold against pulse duration" xLabel="Pulse Duration (ns)" yLabel="Fluence (J/cm²)"
+        <SimpleLineChart bare title="Damage threshold against pulse duration" xLabel="Pulse Duration (ns)" yLabel="Fluence (J/cm²)"
           series={series} xScale="log" yScale="log" />
       </div>
 

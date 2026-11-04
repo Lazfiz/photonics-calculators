@@ -78,7 +78,7 @@ export default function WavelengthSelectionPage() {
           </div>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <ChartPanel data={plotData} layout={{
+          <ChartPanel bare data={plotData} layout={{
             polar: { radialaxis: { visible: true, range: [0, 100], color: "#9ca3af", gridcolor: "#374151" } },
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             margin: { t: 30, r: 20, b: 20, l: 20 }, font: { color: "#9ca3af", size: 10 },

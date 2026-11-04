@@ -109,7 +109,7 @@ export default function HeatCapacityPage() {
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
-        <SimpleLineChart title="Specific heat of the presets, scaled Debye model" xLabel="Temperature (K)" yLabel="c_p (J/(g·K))" series={series} />
+        <SimpleLineChart bare title="Specific heat of the presets, scaled Debye model" xLabel="Temperature (K)" yLabel="c_p (J/(g·K))" series={series} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8 overflow-x-auto">

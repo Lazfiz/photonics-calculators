@@ -97,7 +97,7 @@ export default function ApertureAveragingPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 mb-6">
         <h2 className="text-lg font-semibold mb-4">Aperture-averaging factor vs receiver diameter</h2>
-        <ChartPanel data={factorData} layout={chartLayout("Receiver diameter (cm)", "A = σ_I²(D)/σ_I²(0)", true, true)} />
+        <ChartPanel bare data={factorData} layout={chartLayout("Receiver diameter (cm)", "A = σ_I²(D)/σ_I²(0)", true, true)} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 text-sm text-gray-300 space-y-2">

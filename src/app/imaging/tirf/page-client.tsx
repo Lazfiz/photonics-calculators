@@ -107,12 +107,12 @@ export default function TIRFPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-4">Penetration depth vs angle</h2>
-          <ChartPanel data={depthChart} layout={{ ...layout, xaxis: { title: "Incidence angle (°)", gridcolor: "#333" }, yaxis: { title: "d (nm)", type: "log", gridcolor: "#333" }, showlegend: true }} />
+          <ChartPanel bare data={depthChart} layout={{ ...layout, xaxis: { title: "Incidence angle (°)", gridcolor: "#333" }, yaxis: { title: "d (nm)", type: "log", gridcolor: "#333" }, showlegend: true }} />
         </div>
         {!problem && (
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
             <h2 className="text-lg font-semibold mb-4">Evanescent intensity decay</h2>
-            <ChartPanel data={decayChart} layout={{ ...layout, xaxis: { title: "Distance from the interface z (nm)", gridcolor: "#333" }, yaxis: { title: "I(z)/I(0)", gridcolor: "#333", range: [0, 1] }, showlegend: true }} />
+            <ChartPanel bare data={decayChart} layout={{ ...layout, xaxis: { title: "Distance from the interface z (nm)", gridcolor: "#333" }, yaxis: { title: "I(z)/I(0)", gridcolor: "#333", range: [0, 1] }, showlegend: true }} />
           </div>
         )}
       </div>

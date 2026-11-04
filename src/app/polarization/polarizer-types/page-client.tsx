@@ -106,7 +106,7 @@ export default function PolarizerTypesPage() {
             Catalogue minimum, 10·log₁₀(k₁/k₂). Grey bars: the type&apos;s range doesn&apos;t include {fix(lambda / NM, 0)} nm.
           </p>
           {rows.length > 0 ? (
-            <ChartPanel
+            <ChartPanel bare
               data={erChart}
               layout={{ height: 260, margin: { t: 20, b: 90, l: 55, r: 10 }, xaxis: { tickangle: -40 }, yaxis: { title: "ER (dB)" } }}
             />

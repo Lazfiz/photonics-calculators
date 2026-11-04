@@ -104,7 +104,7 @@ export default function LightFieldPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h3 className="text-lg font-semibold mb-2">Spatial–axial trade-off vs microlens pitch</h3>
-        <ChartPanel data={chart} layout={{
+        <ChartPanel bare data={chart} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" },
           xaxis: { title: "Microlens pitch W (µm)", gridcolor: "#333", type: "log" },
           yaxis: { title: "Lateral sample (µm)", gridcolor: "#333", type: "log" },

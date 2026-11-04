@@ -116,7 +116,7 @@ export default function ResolutionPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h2 className="text-lg font-semibold mb-4">Lateral resolution vs NA (different wavelengths)</h2>
-        <ChartPanel data={plotData}
+        <ChartPanel bare data={plotData}
           layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#ccc" },

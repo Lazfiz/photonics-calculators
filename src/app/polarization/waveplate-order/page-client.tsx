@@ -72,7 +72,7 @@ export default function WaveplateOrderPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-1">Transmission between crossed polarizers</h2>
           <p className="text-xs text-gray-500 mb-3">Plate axes at 45° to the polarizer: T = sin²(Γ/2).</p>
-          <ChartPanel data={[{ type: "scatter" as const, mode: "lines" as const, x: curves.nm, y: curves.transmission, line: { color: "#3b82f6", width: 1.5 } }]}
+          <ChartPanel bare data={[{ type: "scatter" as const, mode: "lines" as const, x: curves.nm, y: curves.transmission, line: { color: "#3b82f6", width: 1.5 } }]}
             layout={{
               xaxis: { title: "Wavelength (nm)", color: "#9ca3af", gridcolor: "#374151" },
               yaxis: { title: "Transmission", color: "#9ca3af", gridcolor: "#374151", range: [0, 1.05] },
@@ -82,7 +82,7 @@ export default function WaveplateOrderPage() {
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 lg:col-span-2">
           <h2 className="text-lg font-semibold mb-4">Retardance against wavelength, folded to one wave</h2>
-          <ChartPanel data={[{ type: "scatter" as const, mode: "markers" as const, x: curves.nm, y: curves.phaseDeg, marker: { color: "#22c55e", size: 2 } }]}
+          <ChartPanel bare data={[{ type: "scatter" as const, mode: "markers" as const, x: curves.nm, y: curves.phaseDeg, marker: { color: "#22c55e", size: 2 } }]}
             layout={{
               xaxis: { title: "Wavelength (nm)", color: "#9ca3af", gridcolor: "#374151" },
               yaxis: { title: "Retardance mod 360 (°)", color: "#9ca3af", gridcolor: "#374151", range: [0, 360] },

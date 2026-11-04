@@ -164,11 +164,11 @@ export default function ReceiverFovPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">SNR vs FOV half-angle</h2>
-          <ChartPanel data={fovData} layout={chartLayout("FOV half-angle (mrad)", "SNR (dB)", true)} />
+          <ChartPanel bare data={fovData} layout={chartLayout("FOV half-angle (mrad)", "SNR (dB)", true)} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">SNR vs signal power</h2>
-          <ChartPanel data={signalData} layout={chartLayout("Signal at aperture (dBm)", "SNR (dB)", false)} />
+          <ChartPanel bare data={signalData} layout={chartLayout("Signal at aperture (dBm)", "SNR (dB)", false)} />
         </div>
       </div>
 

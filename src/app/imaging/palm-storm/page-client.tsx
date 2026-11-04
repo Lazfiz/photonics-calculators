@@ -143,11 +143,11 @@ export default function PALMSTORMPage() {
       <div className="grid gap-6 md:grid-cols-2">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-4">Localization precision vs photon count</h2>
-          <ChartPanel data={precisionChart} layout={{ ...layout, xaxis: { title: "Detected photons N", type: "log", gridcolor: "#333" }, yaxis: { title: dim === 3 ? "lateral σ_loc (nm)" : "σ_loc (nm)", type: "log", gridcolor: "#333" } }} />
+          <ChartPanel bare data={precisionChart} layout={{ ...layout, xaxis: { title: "Detected photons N", type: "log", gridcolor: "#333" }, yaxis: { title: dim === 3 ? "lateral σ_loc (nm)" : "σ_loc (nm)", type: "log", gridcolor: "#333" } }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-4">Effective resolution vs label density</h2>
-          <ChartPanel data={densityChart} layout={{ ...layout, xaxis: { title: `Label density (${densityUnit})`, type: "log", gridcolor: "#333" }, yaxis: { title: "Resolution (nm)", type: "log", gridcolor: "#333" } }} />
+          <ChartPanel bare data={densityChart} layout={{ ...layout, xaxis: { title: `Label density (${densityUnit})`, type: "log", gridcolor: "#333" }, yaxis: { title: "Resolution (nm)", type: "log", gridcolor: "#333" } }} />
         </div>
       </div>
     </>

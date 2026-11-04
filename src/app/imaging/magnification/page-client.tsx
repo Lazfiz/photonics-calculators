@@ -70,7 +70,7 @@ export default function MagnificationPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <h2 className="text-lg font-semibold mb-4">Magnification vs objective focal length</h2>
-        <ChartPanel data={chart} layout={{
+        <ChartPanel bare data={chart} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" },
           xaxis: { title: "Objective focal length (mm)", type: "log", gridcolor: "#333" },
           yaxis: { title: "Magnification (×)", type: "log", gridcolor: "#333" },

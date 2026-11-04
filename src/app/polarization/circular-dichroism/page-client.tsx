@@ -101,7 +101,7 @@ export default function CircularDichroismPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h3 className="text-sm text-gray-400 mb-2">Relative CD signal-to-noise against absorbance</h3>
-        <ChartPanel data={chart} layout={layout} />
+        <ChartPanel bare data={chart} layout={layout} />
         <p className="text-xs text-gray-500 mt-2">
           At fixed g the shot-noise-limited S/N is proportional to A·10<sup>−A/2</sup>: it peaks at A = {fix(CD_OPTIMUM_ABSORBANCE, 3)}{" "}
           and falls on either side, so adjust c or l to bring the mean absorbance close to it.

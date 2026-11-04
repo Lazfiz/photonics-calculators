@@ -7,8 +7,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import SimpleChart from "../src/components/simple-chart";
 import SimpleLineChart from "../src/components/simple-line-chart";
 import {
-  chartCsv, fileStem, formatTick, formatValue, labelStride, niceTicks, plotValue, splitAtGaps, tickCount, xCategories,
+  chartCsv, fileStem, formatTick, formatValue, labelStride, niceTicks, plotlyCsv, plotValue, splitAtGaps, tickCount, xCategories,
 } from "../src/components/chart-axes";
+import ChartPlaceholder from "../src/components/chart-placeholder";
 import { hoverRows } from "../src/components/chart-hover";
 
 // The step is 1, 2, 5 or 10 × 10^k, the first ≥ range/count. Before the fix it was the bare multiplier
@@ -170,6 +171,18 @@ test("chartCsv: shared x gives one column per series, else one row per point", (
   );
 });
 
+test("plotlyCsv: a z grid in long format, other traces one row per point", () => {
+  // Heatmap: x from the column, y from the row.
+  assert.equal(plotlyCsv([{ type: "heatmap", x: [1, 2], y: [10, 20], z: [[1, 2], [3, NaN]] }]), "x,y,z\r\n1,10,1\r\n2,10,2\r\n1,20,3\r\n2,20,\r\n");
+  // Surface without x and y: indices; a typed-array row.
+  assert.equal(plotlyCsv([{ type: "surface", z: [new Float64Array([5, 6])] }]), "x,y,z\r\n0,0,5\r\n1,0,6\r\n");
+  // Two traces: a series column; polar r/θ next to a 3-D scatter's x/y/z.
+  assert.equal(
+    plotlyCsv([{ type: "scatter3d", name: "path", x: [1], y: [2], z: [3] }, { type: "scatterpolar", r: [4, 5], theta: [0, 90] }]),
+    "series,x,y,z,r,theta\r\npath,1,2,3,,\r\nTrace 2,,,,4,0\r\nTrace 2,,,,5,90\r\n",
+  );
+});
+
 test("fileStem: ASCII slug of a title", () => {
   assert.equal(fileStem("Reflectance vs λ (nm)"), "reflectance-vs-nm");
   assert.equal(fileStem("Gires–Tournois phase"), "gires-tournois-phase");
@@ -195,4 +208,19 @@ test("Both charts render the export buttons and a focusable hover layer", () => 
     assert.ok(html.includes(">PNG</button>") && html.includes(">CSV</button>"), "PNG and CSV buttons");
     assert.ok(/<svg[^>]*data-export="skip"[^>]*tabindex="0"/.test(html), "hover layer, skipped by the PNG export");
   }
+});
+
+test("An untitled chart's buttons sit over its top margin; bare drops the chart's card", () => {
+  const data = [{ x: [1, 2], y: [1, 2], type: "scatter", mode: "lines" }];
+  const untitled = renderToStaticMarkup(createElement(SimpleChart, { data, layout: { width: 500 }, bare: true }));
+  assert.ok(untitled.startsWith("<div><div><div class=\"relative\"><div class=\"absolute right-0 top-0 z-10\">"), untitled.slice(0, 120));
+  const titled = renderToStaticMarkup(createElement(SimpleChart, { data, layout: { width: 500 }, title: "T" }));
+  assert.ok(titled.startsWith("<div class=\"bg-gray-900 border border-gray-800 rounded-lg p-4\"><div><div class=\"mb-2 flex"), titled.slice(0, 120));
+  const line = renderToStaticMarkup(createElement(SimpleLineChart, {
+    xLabel: "x", yLabel: "y", bare: true, series: [{ name: "s", color: "#ff0000", points: [{ x: 1, y: 1 }, { x: 2, y: 2 }] }],
+  }));
+  assert.ok(line.startsWith("<div><div class=\"relative\"><div class=\"absolute right-0 top-0 z-10\">"), line.slice(0, 120));
+  // The placeholder takes the same space: no button row for an untitled chart.
+  assert.equal(renderToStaticMarkup(createElement(ChartPlaceholder, { bare: true, className: "mb-6" })).slice(0, 47), "<div class=\"mb-6\"><div aria-hidden=\"true\"><div ");
+  assert.ok(!renderToStaticMarkup(createElement(ChartPlaceholder, {})).includes("mb-2"));
 });

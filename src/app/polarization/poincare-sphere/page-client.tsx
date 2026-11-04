@@ -108,7 +108,7 @@ export default function PoincareSpherePage() {
 
         <div className="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Poincaré Sphere</h2>
-          <ChartPanel data={[
+          <ChartPanel bare data={[
               ...wireframe,
               { type: "scatter3d" as const, mode: "markers+text" as const, x: [1], y: [0], z: [0], text: ["H"], textposition: "top center", marker: { size: 4, color: "#f59e0b" }, showlegend: false, hoverinfo: "skip" },
               { type: "scatter3d" as const, mode: "markers+text" as const, x: [-1], y: [0], z: [0], text: ["V"], textposition: "top center", marker: { size: 4, color: "#f59e0b" }, showlegend: false, hoverinfo: "skip" },
@@ -131,7 +131,7 @@ export default function PoincareSpherePage() {
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Polarization Ellipse</h2>
-          <ChartPanel data={[{ type: "scatter" as const, mode: "lines" as const, x: ellipseTrace.x, y: ellipseTrace.y, line: { color: "#3b82f6", width: 2 } }]}
+          <ChartPanel bare data={[{ type: "scatter" as const, mode: "lines" as const, x: ellipseTrace.x, y: ellipseTrace.y, line: { color: "#3b82f6", width: 2 } }]}
             layout={{
               xaxis: { title: "Ex", range: [-amplitudeShown * 1.2, amplitudeShown * 1.2], color: "#9ca3af", gridcolor: "#374151", zerolinecolor: "#4b5563" },
               yaxis: { title: "Ey", range: [-amplitudeShown * 1.2, amplitudeShown * 1.2], color: "#9ca3af", gridcolor: "#374151", zerolinecolor: "#4b5563", scaleanchor: "x" },

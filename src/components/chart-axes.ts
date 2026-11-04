@@ -180,6 +180,35 @@ export function chartCsv(series: readonly CsvSeries[], xLabel: string, yLabel: s
   return rows.map((r) => r.map(csvCell).join(",")).join("\r\n") + "\r\n";
 }
 
+const PLOTLY_COLUMNS = ["x", "y", "z", "r", "theta"] as const;
+const values = (v: unknown): unknown[] => (Array.isArray(v) ? v : ArrayBuffer.isView(v) ? Array.from(v as unknown as ArrayLike<number>) : []);
+
+/**
+ * Plotly traces (heatmap, surface, scatter3d, scatterpolar) as CSV: a z grid in long format (x, y, z per cell, x from
+ * the column and y from the row; indices when x or y is missing), other traces one row per point. A series column is
+ * added for more than one trace.
+ */
+export function plotlyCsv(traces: readonly Record<string, unknown>[]): string {
+  const isGrid = (t: Record<string, unknown>) => values(t.z).some((row) => Array.isArray(row) || ArrayBuffer.isView(row));
+  const columns = PLOTLY_COLUMNS.filter((c) => traces.some((t) => values(t[c]).length > 0 || ((c === "x" || c === "y") && isGrid(t))));
+  const series = traces.length > 1;
+  const rows: unknown[][] = [[...(series ? ["series"] : []), ...columns]];
+  traces.forEach((t, ti) => {
+    const name = typeof t.name === "string" && t.name ? t.name : `Trace ${ti + 1}`;
+    const push = (cells: Partial<Record<(typeof columns)[number], unknown>>) =>
+      rows.push([...(series ? [name] : []), ...columns.map((c) => cells[c])]);
+    if (isGrid(t)) {
+      const x = values(t.x), y = values(t.y);
+      values(t.z).forEach((row, i) => values(row).forEach((z, j) => push({ x: x.length ? x[j] : j, y: y.length ? y[i] : i, z })));
+      return;
+    }
+    const cols = Object.fromEntries(columns.map((c) => [c, values(t[c])]));
+    const n = Math.max(0, ...columns.map((c) => cols[c].length));
+    for (let i = 0; i < n; i++) push(Object.fromEntries(columns.map((c) => [c, cols[c][i]])));
+  });
+  return rows.map((r) => r.map(csvCell).join(",")).join("\r\n") + "\r\n";
+}
+
 /** A download file name stem from a chart or page title: "Reflectance vs λ (nm)" → "reflectance-vs-nm". */
 export function fileStem(text: string): string {
   const stem = text.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60).replace(/-+$/, "");

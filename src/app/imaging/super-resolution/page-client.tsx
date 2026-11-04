@@ -89,11 +89,11 @@ export default function SuperResolutionPage() {
       <div className="grid gap-6 md:grid-cols-2">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-4">STED resolution vs depletion</h2>
-          <ChartPanel data={stedPlot} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "I_STED / I_sat", gridcolor: "#333" }, yaxis: { title: "Lateral FWHM (nm)", gridcolor: "#333" }, legend: { font: { size: 11 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
+          <ChartPanel bare data={stedPlot} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "I_STED / I_sat", gridcolor: "#333" }, yaxis: { title: "Lateral FWHM (nm)", gridcolor: "#333" }, legend: { font: { size: 11 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-4">Localization precision vs photons</h2>
-          <ChartPanel data={palmPlot} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Photons detected", gridcolor: "#333", type: "log" }, yaxis: { title: "nm", gridcolor: "#333", type: "log" }, legend: { font: { size: 11 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
+          <ChartPanel bare data={palmPlot} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Photons detected", gridcolor: "#333", type: "log" }, yaxis: { title: "nm", gridcolor: "#333", type: "log" }, legend: { font: { size: 11 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
         </div>
       </div>
     </>

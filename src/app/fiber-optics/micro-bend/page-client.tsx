@@ -125,7 +125,7 @@ export default function MicroBendPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Loss vs Deformation Period (A = {amplitudeNm} nm)</h3>
-        <ChartPanel data={chartData} layout={{
+        <ChartPanel bare data={chartData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
           xaxis: { title: "Deformation period Λ (mm)", gridcolor: "#374151" },

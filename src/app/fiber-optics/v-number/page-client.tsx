@@ -128,7 +128,7 @@ export default function VNumberCalculator() {
 
       <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
         <h3 className="text-lg font-semibold mb-3">V-Number vs Wavelength</h3>
-        <ChartPanel data={chartData} layout={{
+        <ChartPanel bare data={chartData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           xaxis: { title: "Wavelength (nm)", gridcolor: "#374151", color: "#9ca3af" },
           yaxis: { title: "V-number", gridcolor: "#374151", color: "#9ca3af" },

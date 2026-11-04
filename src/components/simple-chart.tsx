@@ -1,7 +1,6 @@
 "use client";
 
 import { useId, useRef } from "react";
-import type { PlotParams } from "react-plotly.js";
 
 import { useElementWidth } from "@/hooks/use-element-width";
 import ChartLegend, { type LegendItem } from "./chart-legend";
@@ -11,8 +10,8 @@ import {
   tickCount, xCategories,
 } from "./chart-axes";
 // Shared Plotly wrapper to prevent double-bundling
-import { PlotlyChart } from "./plotly-chart";
-import { ChartReserve } from "./chart-placeholder";
+import PlotlyPanel from "./plotly-panel";
+import { ChartReserve, chartBoxClass } from "./chart-placeholder";
 
 interface Trace {
   x?: (number | string | null)[];
@@ -39,6 +38,7 @@ interface SimpleChartProps {
   config?: Record<string, unknown>;
   title?: string;
   className?: string;
+  bare?: boolean;
 }
 
 /** Plotted point in SVG px; `i` is its index in the trace (per-point colours and text). */
@@ -83,7 +83,8 @@ function ChartBody({ data, layout, w, title }: { data: Trace[]; layout: Record<s
 
   const margin = (layout.margin ?? {}) as Record<string, number | undefined>;
   const baseH = typeof layout.height === "number" ? layout.height : 400;
-  const mt = margin.t ?? 30;
+  // An untitled chart's PNG/CSV buttons (24 px) sit in its top margin instead of a row of their own.
+  const mt = title ? margin.t ?? 30 : Math.max(margin.t ?? 30, 32);
   const xaxis = layout.xaxis as Record<string, unknown> | undefined;
   const yaxis = layout.yaxis as Record<string, unknown> | undefined;
   const yaxis2 = layout.yaxis2 as Record<string, unknown> | undefined;
@@ -229,13 +230,12 @@ function ChartBody({ data, layout, w, title }: { data: Trace[]; layout: Record<s
     xLabel, yLabel: hasDualY ? "" : yLabel, // two y axes: a long-format "y" column holds both
   });
 
+  const actions = <ChartActions svgRef={svgRef} title={title} legend={showLegend ? legendItems : []} csv={csv} />;
   return (
     <>
-      <div className={`mb-2 flex items-start gap-3 ${heading ? "justify-between" : "justify-end"}`}>
-        {heading}
-        <ChartActions svgRef={svgRef} title={title} legend={showLegend ? legendItems : []} csv={csv} />
-      </div>
+      {heading ? <div className="mb-2 flex items-start justify-between gap-3">{heading}{actions}</div> : null}
       <div className="relative">
+      {heading ? null : <div className="absolute right-0 top-0 z-10">{actions}</div>}
       <svg ref={svgRef} viewBox={`0 0 ${w} ${h}`} className="block w-full h-auto overflow-visible" role="img" aria-label={title || "Chart"}>
         <title>{title || "Chart"}</title>
         <desc>{xLabel ? `${xLabel} vs ${yLabel}` : "Data visualization"}</desc>
@@ -344,40 +344,19 @@ function ChartBody({ data, layout, w, title }: { data: Trace[]; layout: Record<s
   );
 }
 
-export default function SimpleChart({ data, layout = {}, config = {}, title, className = "" }: SimpleChartProps) {
+export default function SimpleChart({ data, layout = {}, config = {}, title, className = "", bare = false }: SimpleChartProps) {
   const [ref, measured] = useElementWidth<HTMLDivElement>();
   const needsPlotly = data.some((t) =>
     t.type === "scatter3d" || t.type === "surface" || t.type === "heatmap" || t.type === "contour" ||
     t.type === "scatterpolar" || t.type === "scattergl" || t.type === "pie");
   if (needsPlotly) {
-    return <PlotlyFallback data={data} layout={layout} config={config} title={title} className={className} />;
+    return <PlotlyPanel data={data} layout={layout} config={config} title={title} className={className} bare={bare} />;
   }
   // A fixed layout.width draws at that width, scaled to fit; otherwise the chart lays out at the measured width.
   const w = typeof layout.width === "number" ? layout.width : measured;
   return (
-    <div className={`bg-gray-900 border border-gray-800 rounded-lg p-4 ${className}`.trim()}>
+    <div className={chartBoxClass(className, bare)}>
       <div ref={ref}>{w !== null ? <ChartBody data={data} layout={layout} w={w} title={title} /> : <ChartReserve layout={layout} title={title} />}</div>
-    </div>
-  );
-}
-
-function PlotlyFallback({ data, layout, config, title, className }: SimpleChartProps) {
-  return (
-    <div className={`bg-gray-900 border border-gray-800 rounded-lg p-4 ${className}`.trim()}>
-      {title ? <h3 className="text-lg font-semibold mb-3">{title}</h3> : null}
-      <PlotlyChart
-        data={data as PlotParams["data"]}
-        layout={{
-          paper_bgcolor: "transparent",
-          plot_bgcolor: "transparent",
-          font: { color: "#9ca3af" },
-          margin: { t: 30, r: 20, b: 50, l: 60 },
-          height: 400,
-          ...layout,
-        }}
-        config={{ responsive: true, displayModeBar: false, ...config }}
-        className="w-full"
-      />
     </div>
   );
 }

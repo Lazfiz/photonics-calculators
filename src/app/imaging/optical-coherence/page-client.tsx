@@ -106,15 +106,15 @@ export default function OpticalCoherencePage() {
       <div className="grid gap-6 md:grid-cols-2 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-4">Coherence gate in the sample</h2>
-          <ChartPanel data={gateChart} layout={layout("Depth from the matched position (µm)", "|γ|", { range: [0, 1.05] })} />
+          <ChartPanel bare data={gateChart} layout={layout("Depth from the matched position (µm)", "|γ|", { range: [0, 1.05] })} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-4">Source spectrum</h2>
-          <ChartPanel data={spectrumChart} layout={layout("Wavelength (nm)", "Relative power", { range: [0, 1.05] })} />
+          <ChartPanel bare data={spectrumChart} layout={layout("Wavelength (nm)", "Relative power", { range: [0, 1.05] })} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-4">Axial resolution against bandwidth</h2>
-          <ChartPanel data={resChart} layout={layout("Bandwidth Δλ (nm)", "Δz (µm)", { type: "log" })} />
+          <ChartPanel bare data={resChart} layout={layout("Bandwidth Δλ (nm)", "Δz (µm)", { type: "log" })} />
         </div>
       </div>
 

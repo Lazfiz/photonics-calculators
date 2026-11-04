@@ -87,7 +87,7 @@ export default function SecurityPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6">
         <h2 className="text-sm font-semibold text-gray-300 mb-2">Eve&apos;s power and the secrecy capacity vs her offset from the beam axis</h2>
-        <ChartPanel data={plotData} layout={{
+        <ChartPanel bare data={plotData} layout={{
           xaxis: { title: "Eve's offset (m)", color: "#9ca3af", gridcolor: "#374151" },
           yaxis: { title: "Received power (dBm)", color: "#9ca3af", gridcolor: "#374151" },
           yaxis2: { title: "Secrecy capacity (Gb/s)", color: "#f59e0b", gridcolor: "#374151", overlaying: "y", side: "right" },

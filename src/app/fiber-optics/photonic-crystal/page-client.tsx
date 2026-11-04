@@ -164,7 +164,7 @@ export default function PhotonicCrystalFiberCalculator() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Chromatic Dispersion</h3>
-        <ChartPanel data={dispersionData} layout={{
+        <ChartPanel bare data={dispersionData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
           xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
@@ -184,7 +184,7 @@ export default function PhotonicCrystalFiberCalculator() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Effective V-Number vs Wavelength</h3>
-        <ChartPanel data={vData} layout={{
+        <ChartPanel bare data={vData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
           xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },

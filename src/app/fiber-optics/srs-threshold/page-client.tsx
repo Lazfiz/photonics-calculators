@@ -122,12 +122,12 @@ export default function SRSThresholdPage() {
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Threshold vs Fiber Length</h2>
-          <ChartPanel data={results.vsLength} layout={chartLayout("Fiber Length (km)", "SRS Threshold (W)")} />
+          <ChartPanel bare data={results.vsLength} layout={chartLayout("Fiber Length (km)", "SRS Threshold (W)")} />
         </div>
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Raman On-Off Gain vs Pump Power</h2>
-          <ChartPanel data={results.vsPump} layout={chartLayout("Pump Power (mW)", "On-Off Gain at the Gain Peak (dB)")} />
+          <ChartPanel bare data={results.vsPump} layout={chartLayout("Pump Power (mW)", "On-Off Gain at the Gain Peak (dB)")} />
         </div>
       </div>
     </>

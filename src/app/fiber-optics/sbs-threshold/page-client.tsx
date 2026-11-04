@@ -130,12 +130,12 @@ export default function SBSThresholdPage() {
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Threshold vs Source Linewidth</h2>
-          <ChartPanel data={results.vsLinewidth} layout={chartLayout("Source Linewidth (MHz)")} />
+          <ChartPanel bare data={results.vsLinewidth} layout={chartLayout("Source Linewidth (MHz)")} />
         </div>
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Threshold vs Fiber Length</h2>
-          <ChartPanel data={results.vsLength} layout={chartLayout("Fiber Length (km)")} />
+          <ChartPanel bare data={results.vsLength} layout={chartLayout("Fiber Length (km)")} />
         </div>
       </div>
     </>

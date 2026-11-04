@@ -182,11 +182,11 @@ export default function StimulatedRamanMicroscopyPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-4">Shot-noise SNR vs Pixel Dwell</h2>
-          <ChartPanel data={snrPlot} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Pixel dwell (µs)", type: "log", gridcolor: "#333" }, yaxis: { title: "SNR", type: "log", gridcolor: "#333" }, legend: { font: { size: 10 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
+          <ChartPanel bare data={snrPlot} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Pixel dwell (µs)", type: "log", gridcolor: "#333" }, yaxis: { title: "SNR", type: "log", gridcolor: "#333" }, legend: { font: { size: 10 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-4">Detection Limit vs Detected Power</h2>
-          <ChartPanel data={limitPlot} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Detected beam power (mW)", type: "log", gridcolor: "#333" }, yaxis: { title: "Smallest ΔP/P (ppm)", type: "log", gridcolor: "#333" }, legend: { font: { size: 10 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
+          <ChartPanel bare data={limitPlot} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Detected beam power (mW)", type: "log", gridcolor: "#333" }, yaxis: { title: "Smallest ΔP/P (ppm)", type: "log", gridcolor: "#333" }, legend: { font: { size: 10 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
         </div>
       </div>
     </>

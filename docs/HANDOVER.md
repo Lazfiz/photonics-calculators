@@ -1,33 +1,37 @@
-# Handover — 2026-11-03 (session 192 → session 193)
+# Handover — 2026-11-04 (session 193 → session 194)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 192 did 6i-a on `phase-6/6i-a-ui-check` (PR #230): a production chart crash fixed, ui-check brought current, three
-performance hot spots fixed. Next: 6i-b chart layout (ROADMAP "Cross-cutting (6i-b)"), then the Gemini hero.
+Session 193 did 6i-b on `phase-6/6i-b-chart-layout` (PR #231): charts in page cards lose their second frame, untitled
+charts' buttons moved into the top margin, Plotly charts got PNG/CSV. Phase 6 is done. Next: the Gemini hero.
 
 ## State
-- **Production bug, fixed on the branch, live until a release:** `ChartPanel`'s `LazySimpleChart` passed the cached component
-  to `useState(loadedSimpleChart)`; React calls a function argument as an initializer, so every SVG chart remounted after the
-  chunk loaded (client navigation, Back) threw "Cannot destructure property 'data'" into the error boundary. Now `() => …`.
-- `scripts/ui-check.mjs`: all checks pass on the branch build; production fails only the new "no console errors after
-  navigating back" check (the bug above). Pages without inputs wait on other controls or the `<h1>`.
-- `poissonQuantile` (math.ts) starts at Cornish–Fisher and steps (identical on 135 cases); `periodicDecay` has a Fourier branch
-  (Poisson summation) used when it needs fewer terms; Fabry-Perot chart ≤ 2000 uniform + 161 sinh-spaced points per peak.
-- Accepted (ROADMAP Known limitations, "Performance and page weight"): gradient-index 0.35 s at the cap; metal-page JS is
-  data (ASTM G173 8.3 KB gz, TMM 5.2 KB, n,k 3.7 KB).
-- Gate: 1215 tests, 5 eslint warnings (unchanged). Build green.
+- `bare` prop on `ChartPanel`, `SimpleChart`, `SimpleLineChart`, `ChartPlaceholder` (`chartBoxClass` in chart-placeholder.tsx).
+  Codemod `scripts/codemods/2026-11-03-bare-charts.ts` set it on 170 charts (117 files) whose nearest JSX element is a
+  bg-gray-900 bordered p-N card. New pages that put a chart in their own card should pass `bare`.
+- Untitled SVG charts: PNG/CSV buttons `absolute right-0 top-0` over the top margin, raised to ≥ 32 px (line chart: top 32);
+  titled charts keep the heading row. `ChartReserve` draws no row for untitled charts (same height as the chart).
+- `src/components/plotly-panel.tsx`: the one Plotly card (ChartPanel, its error boundary and SimpleChart's fallback use it),
+  modebar = custom PNG (`Plotly.toImage` of the figure with paper `#111827`) and CSV (`plotlyCsv` in chart-axes.ts).
+- Production still has 6i-a's chart remount crash until a release (user asks; push `main` to `release`).
+- Gate: 1217 tests, 5 eslint warnings (unchanged). Build green; ui-check ALL PASS on the branch build.
 
 ## Next actions
-1. `/ship`; merge on the user's yes. Suggest a release soon (the chart crash is user-visible). After a release (on request):
+1. `/ship`; merge on the user's yes. Suggest a release (6i-a crash fix + 6i-b). After a release (on request):
    `node scripts/post-merge-check.mjs <sha> fiber-optics/fiber-bragg-grating-sensor=195.6 imaging/low-coherence=97.2
    detectors/photodiode-speed=13.47`, then `node scripts/ui-check.mjs https://photonics-calculators.vercel.app` (expect ALL PASS).
-2. 6i-b: chart double padding (pages wrapping ChartPanel in their own bordered `p-4` box; >10 files → `/codemod`), PNG/CSV
-   row height above SVG charts, Plotly charts without export buttons.
-3. Then the Gemini hero (ask the user for the files).
-4. Ask the user for PDFs: Bai 2020 (APL Photonics 5, 031301: abstract 79 cm/GW vs body 60 ± 9), Patel 2001 (Yb:YAG κ at
+2. The Gemini hero (Phase 5 leftover): ask the user for the files.
+3. Ask the user for PDFs: Bai 2020 (APL Photonics 5, 031301: abstract 79 cm/GW vs body 60 ± 9), Patel 2001 (Yb:YAG κ at
    10 at.%), Siegman "Lasers" ch. 11/21 pages.
-5. KRS-5 by hand: `materials/transparency-range?material=krs5` at 10 µm: n 2.3707, loss 28.4 %.
+4. KRS-5 by hand: `materials/transparency-range?material=krs5` at 10 µm: n 2.3707, loss 28.4 %.
 
 ## Non-obvious facts
+- **Session 193:** port 3100 is held by an old `next start` of this site (PID 20608, "411 tools"): don't kill it; serve the
+  branch build on 3200 and stop it with TaskStop. Headless checks without the extension: CDP `Page.captureScreenshot` with
+  a `clip` of the chart card at `Emulation.setDeviceMetricsOverride` width 360; to test downloads, override
+  `HTMLAnchorElement.prototype.click` and `URL.createObjectURL` in the page and record name and blob size. Plotly modebar
+  icons with `path` and no `transform` use SVG y-down; `Plotly.toImage` takes `{data, layout}`, so the export can change the
+  background without a relayout. Node edit scripts in a quoted heredoc turn `\r\n` inside a template into real CRLF:
+  write test text with the Write tool.
 - **Session 192:** `ui-check` printed console errors without failing on them, so a production crash sat unnoticed: read its
   "console errors" line. Full stacks: copy the script to the scratchpad and print `logs` whole. Minified Next chunks are
   readable with `curl …/_next/static/chunks/<file>.js | cut -c<from>-<to>` at the stack's column. A second ui-check run right
@@ -61,10 +65,6 @@ performance hot spots fixed. Next: 6i-b chart layout (ROADMAP "Cross-cutting (6i
   `/cgi-bin/atten.pl` or `getdb.pl`, then GET the `/tmp/xray*.dat` it links. Calphad TDB: c_p = −T ∂²G/∂T².
 - **Session 184:** Bai's group writes the [110] Brillouin tensor without the ½ of a unit strain (their p² is 4× the standard).
   APS and Optica abstract pages via WebFetch give tables' text. OpenAlex `abstract_inverted_index` rebuilds paywalled abstracts.
-- **Session 183:** the beam-wander ξ² lever arm sits at the transmitter. A Bash call that appends with a heredoc and then runs
-  a gated test is swallowed by devctl: write files and run gates in separate calls.
-- **Session 182:** derive overlaps for the actual geometry and check by brute quadrature. Reviewers must not try to get past
-  captchas. Recompute reviewer goldens after changing defaults.
 - **Session 175:** `useURLState` can't hold NaN: use an out-of-range sentinel. NIST-JANAF: `https://janaf.nist.gov/tables/<id>.txt`.
 - **Session 160:** Chrome extension screenshots time out on this site; use a headless CDP script (pattern in `scripts/ui-check.mjs`).
   In the Bash tool a bare `python -` or `cat > file` with no input hangs until timeout.

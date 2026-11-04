@@ -143,11 +143,11 @@ export default function PhotoacousticPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-4">Initial Pressure vs Target Depth</h2>
-          <ChartPanel data={depthPlot} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Depth (mm)", gridcolor: "#333" }, yaxis: { title: "p₀ (kPa)", gridcolor: "#333" }, legend: { font: { size: 10 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
+          <ChartPanel bare data={depthPlot} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Depth (mm)", gridcolor: "#333" }, yaxis: { title: "p₀ (kPa)", gridcolor: "#333" }, legend: { font: { size: 10 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-4">Resolution vs Centre Frequency</h2>
-          <ChartPanel data={resPlot} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Centre frequency (MHz)", type: "log", gridcolor: "#333" }, yaxis: { title: "Resolution (µm)", type: "log", gridcolor: "#333" }, legend: { font: { size: 10 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
+          <ChartPanel bare data={resPlot} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Centre frequency (MHz)", type: "log", gridcolor: "#333" }, yaxis: { title: "Resolution (µm)", type: "log", gridcolor: "#333" }, legend: { font: { size: 10 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
         </div>
       </div>
     </>

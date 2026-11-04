@@ -119,7 +119,7 @@ export default function DispersionShiftedCalculator() {
         </div>
 
         <div className="mt-8 bg-gray-900 rounded-lg p-6 border border-gray-800">
-          <ChartPanel data={plotData} layout={layout} />
+          <ChartPanel bare data={plotData} layout={layout} />
         </div>
     </>
   );

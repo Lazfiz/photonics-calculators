@@ -83,7 +83,7 @@ export default function ExpansionMicroscopyPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h2 className="text-lg font-semibold mb-4">Effective resolution vs expansion factor</h2>
-        <ChartPanel data={chart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Expansion factor E (×)", gridcolor: "#333" }, yaxis: { title: "Resolution (nm)", type: "log", gridcolor: "#333" }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
+        <ChartPanel bare data={chart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Expansion factor E (×)", gridcolor: "#333" }, yaxis: { title: "Resolution (nm)", type: "log", gridcolor: "#333" }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
       </div>
     </>
   );

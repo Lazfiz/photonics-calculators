@@ -147,7 +147,7 @@ export default function OrthoscopicPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Transmission at 550 nm against stage rotation</h3>
-          <ChartPanel
+          <ChartPanel bare
             data={[
               { x: curve.stage, y: curve.T, type: "scatter", mode: "lines", name: "T(ρ)", line: { color: "#60a5fa", width: 2 } },
               { x: [rhoDeg], y: [curve.T[rhoDeg]], type: "scatter", mode: "markers", name: "Current ρ", marker: { color: "#fbbf24", size: 9 } },

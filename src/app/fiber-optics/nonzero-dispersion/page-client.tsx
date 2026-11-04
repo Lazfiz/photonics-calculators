@@ -120,7 +120,7 @@ export default function NonzeroDispersionPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Chromatic Dispersion vs Wavelength</h3>
-        <ChartPanel data={dispCurveData} layout={{
+        <ChartPanel bare data={dispCurveData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           xaxis: { title: "Wavelength (nm)", color: "#9ca3af", gridcolor: "#374151" },
           yaxis: { title: "D (ps/nm·km)", color: "#9ca3af", gridcolor: "#374151", zeroline: true, zerolinecolor: "#6b7280" },
@@ -131,7 +131,7 @@ export default function NonzeroDispersionPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Accumulated Dispersion vs Distance</h3>
-        <ChartPanel data={accumulatedData} layout={{
+        <ChartPanel bare data={accumulatedData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           xaxis: { title: "Distance (km)", color: "#9ca3af", gridcolor: "#374151" },
           yaxis: { title: "Total Dispersion (ps/nm)", color: "#9ca3af", gridcolor: "#374151" },

@@ -113,7 +113,7 @@ export default function PolymerOpticsPage() {
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
-        <SimpleLineChart title="Refractive index over each fit's range" xLabel="Wavelength (nm)" yLabel="n" series={curves()} />
+        <SimpleLineChart bare title="Refractive index over each fit's range" xLabel="Wavelength (nm)" yLabel="n" series={curves()} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8 overflow-x-auto">

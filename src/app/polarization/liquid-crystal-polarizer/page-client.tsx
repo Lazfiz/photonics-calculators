@@ -156,11 +156,11 @@ export default function LiquidCrystalPolarizerPage() {
       <div className="grid gap-4 sm:grid-cols-2 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Transmission against wavelength (Δn held constant)</h3>
-          <ChartPanel data={spectral} layout={layout("Wavelength (nm)")} />
+          <ChartPanel bare data={spectral} layout={layout("Wavelength (nm)")} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">{va ? "Transmission against director tilt" : "Transmission against Δn·d/λ"}</h3>
-          <ChartPanel data={[
+          <ChartPanel bare data={[
             { x: second.x, y: second.y, type: "scatter" as const, mode: "lines" as const, name: "Transmission", line: { color: "#f87171", width: 2 } },
             ...(second.minima.length ? [{ x: second.minima, y: second.minima.map((x) => lcTransmission(twist, 2 * Math.PI * x, pol, ana)), type: "scatter" as const, mode: "markers" as const, name: "Gooch-Tarry points (√3/2, √15/2, √35/2)", marker: { color: "#fbbf24", size: 8 } }] : []),
             { x: [second.current], y: [T], type: "scatter" as const, mode: "markers" as const, name: "Current setting", marker: { color: "#34d399", size: 10 } },

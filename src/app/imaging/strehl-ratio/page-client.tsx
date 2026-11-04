@@ -103,7 +103,7 @@ export default function StrehlRatioPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h2 className="text-lg font-semibold mb-4">Strehl ratio vs RMS wavefront error</h2>
-        <ChartPanel data={chart} layout={{
+        <ChartPanel bare data={chart} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" },
           xaxis: { title: "RMS wavefront error σ (waves)", gridcolor: "#333", range: [0, 0.3] },
           yaxis: { title: "Strehl ratio", gridcolor: "#333", range: [0, 1.05] },

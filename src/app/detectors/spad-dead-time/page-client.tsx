@@ -110,13 +110,13 @@ export default function SpadDeadTimePage() {
       <div className="grid gap-6 md:grid-cols-2">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-3">Measured vs True Rate</h3>
-          <ChartPanel data={rateChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent",
+          <ChartPanel bare data={rateChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" }, xaxis: { title: "True Rate (Mcps)", gridcolor: "#374151" },
             yaxis: { title: "Measured (Mcps)", gridcolor: "#374151" }, margin: { t: 20, b: 40, l: 60, r: 20 } }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-3">Count Loss vs Dead Time</h3>
-          <ChartPanel data={dtChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent",
+          <ChartPanel bare data={dtChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" }, xaxis: { title: "Dead Time (ns)", gridcolor: "#374151" },
             yaxis: { title: "Loss (%)", gridcolor: "#374151" }, margin: { t: 20, b: 40, l: 60, r: 20 } }} />
         </div>

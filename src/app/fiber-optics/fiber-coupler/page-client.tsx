@@ -153,10 +153,10 @@ export default function FiberCouplerCalculator() {
 
       <div className="grid gap-8 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <ChartPanel data={transferCurve} layout={chartLayout("Power transfer vs coupling length", "Coupling length (mm)")} />
+          <ChartPanel bare data={transferCurve} layout={chartLayout("Power transfer vs coupling length", "Coupling length (mm)")} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <ChartPanel data={spectralResponse} layout={chartLayout(`Spectral response, L = ${couplingLength} mm`, "Wavelength (nm)")} />
+          <ChartPanel bare data={spectralResponse} layout={chartLayout(`Spectral response, L = ${couplingLength} mm`, "Wavelength (nm)")} />
         </div>
       </div>
 

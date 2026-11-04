@@ -185,7 +185,7 @@ export default function OpticalActivityPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h3 className="text-sm text-gray-400 mb-2">Specific rotation against wavelength at 20 °C</h3>
-        <ChartPanel data={chart} layout={layout} />
+        <ChartPanel bare data={chart} layout={layout} />
         <p className="text-xs text-gray-500 mt-2">
           {substance === "sucrose" ? `NIST SRM 17e ICUMSA curve over ${fix(SUC_LO, 1)}–${fix(SUC_HI, 1)} nm` : "Drude curve of the custom substance"}; the marker is the current wavelength.
         </p>

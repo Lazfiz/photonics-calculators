@@ -124,7 +124,7 @@ export default function PumpCombinerCalculator() {
       </div>
 
       <div className="mt-8 bg-gray-900 rounded-lg p-6 border border-gray-800">
-        <ChartPanel data={chartData} layout={{
+        <ChartPanel bare data={chartData} layout={{
           title: "Pump NA vs Number of Ports",
           xaxis: { title: "Pump Ports N", gridcolor: "#374151" },
           yaxis: { title: "NA", gridcolor: "#374151", rangemode: "tozero" },

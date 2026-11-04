@@ -190,7 +190,7 @@ export default function FiberBandwidthPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Bit-Rate Limit vs Distance</h3>
-        <ChartPanel data={limitVsLength} layout={{
+        <ChartPanel bare data={limitVsLength} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           xaxis: { title: "Distance (km)", type: "log", ...axis },
           yaxis: { title: "Bit-rate limit (Gb/s)", type: "log", ...axis },
@@ -201,7 +201,7 @@ export default function FiberBandwidthPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Maximum Reach by Data Rate</h3>
-        <ChartPanel data={reachData} layout={{
+        <ChartPanel bare data={reachData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           xaxis: { title: "Data Rate (Gb/s)", type: "category", ...axis },
           yaxis: { title: "Max Distance (km)", type: "log", ...axis },

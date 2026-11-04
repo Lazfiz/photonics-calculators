@@ -154,7 +154,7 @@ export default function WDMCouplerCalculator() {
 
         {!planInvalid && (
           <div className="mt-8 bg-gray-900 rounded-lg p-6 border border-gray-800">
-            <ChartPanel data={spectrum} layout={layout} />
+            <ChartPanel bare data={spectrum} layout={layout} />
           </div>
         )}
     </>
