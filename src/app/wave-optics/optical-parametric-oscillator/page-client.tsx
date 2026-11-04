@@ -7,6 +7,7 @@ import {
   bboTypeICut, idlerWavelength, parametricGainCoefficient, phaseMismatch, qpmPeriod, sroThresholdGainLength,
   sroThresholdIntensity, walkOffApertureLength, walkOffEffectiveLength,
 } from "../../../physics/wave-optics/optical-parametric-oscillator";
+import { LINBO3_D33_1313, pplnOpaParameters, qpmDeff } from "../../../physics/wave-optics/three-wave";
 
 const fmt = (x: number, digits: number, unit: string) => (Number.isFinite(x) ? `${x.toFixed(digits)} ${unit}` : "—");
 const fmtPower = (P: number) =>
@@ -41,6 +42,18 @@ export default function OPOCalculator() {
     setNPump(r5(pumpWavelength * (ns / signalWavelength + ni / lambdaI)));
     setDEff(Number((cut.dEff * 1e12).toFixed(3)));
     setWalkOff(Number(((cut.walkOff * 180) / Math.PI).toFixed(3)));
+  };
+  // Type-0 PPLN at the Zelmon indices: Δk stays, and the page shows the grating period that cancels it.
+  const ppln = pplnOpaParameters(pumpWavelength * 1e-9, signalWavelength * 1e-9);
+  const pplnDeff = qpmDeff(LINBO3_D33_1313);
+  const pplnPeriod = qpmPeriod(phaseMismatch({ ...process, nPump: ppln.nPump, nSignal: ppln.nSignal, nIdler: ppln.nIdler }));
+  const applyPpln = () => {
+    const r5 = (x: number) => Number(x.toFixed(5));
+    setNPump(r5(ppln.nPump));
+    setNSignal(r5(ppln.nSignal));
+    setNIdler(r5(ppln.nIdler));
+    setDEff(Number((pplnDeff * 1e12).toFixed(3)));
+    setWalkOff(0);
   };
   const w = beamRadius * 1e-6;
   const area = Math.PI * w * w;
@@ -144,6 +157,26 @@ export default function OPOCalculator() {
             <p className="text-gray-500 text-xs mt-2">
               Indices from the Tamošauskas et al. 2018 Sellmeier fits (Opt. Mater. Express 8, 1410); d_eff = d₃₁ sinθ + d₂₂ cosθ with the
               EKSMA d₂₂ = 2.2 and d₃₁ = 0.08 pm/V (1064 nm, no Miller scaling). The defaults are this cut at 532 → 800 nm.
+            </p>
+          </div>
+          <div className="bg-gray-900 rounded-lg p-4 mt-4 border border-gray-800 text-sm text-gray-300">
+            <h3 className="text-orange-400 font-semibold mb-2">PPLN type 0 (e → e + e), quasi-phase-matched</h3>
+            {Number.isFinite(ppln.nIdler) && Number.isFinite(pplnPeriod) ? (
+              <>
+                <p>
+                  nₚ = {ppln.nPump.toFixed(5)}, nₛ = {ppln.nSignal.toFixed(5)}, nᵢ = {ppln.nIdler.toFixed(5)}; grating period Λ ={" "}
+                  {fmt(pplnPeriod * 1e6, 2, "µm")}; d_eff = 2d₃₃/π = {fmt(pplnDeff * 1e12, 2, "pm/V")}; no walk-off.
+                </p>
+                <button type="button" onClick={applyPpln} className="mt-2 text-blue-400 hover:text-blue-300">Use these PPLN values</button>
+              </>
+            ) : (
+              <p>No PPLN values: a wavelength lies outside the 0.4–5 µm range of the index fit, or the signal isn&apos;t longer than the pump.</p>
+            )}
+            <p className="text-gray-500 text-xs mt-2">
+              Extraordinary indices of congruent LiNbO₃ from Zelmon et al. 1997 (J. Opt. Soc. Am. B 14, 3319) at 21 °C; PPLN OPOs often run
+              hot against photorefractive damage, which shifts Λ. d₃₃ = 19.5 pm/V (Shoji et al. 1997, SHG of 1.313 µm), 50 % duty cycle;
+              d₃₃ rises towards shorter wavelengths (25.2 pm/V at 1.064 µm), so d_eff is low for a visible pump. The indices are used
+              as they are, so Δk below is the mismatch the grating cancels.
             </p>
           </div>
         </div>

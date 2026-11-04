@@ -11,6 +11,12 @@
  * x_f = r(1 − η), with the extraction efficiency η solving rη = −ln(1 − η). The output coupler takes γ₂/(2γ) of the
  * photons, γ₂ = −ln R and γ the single-pass loss, so with N_t V = γA/σ:
  *   E = (γ₂/2)(hνA/σ) rη = (hνA/2σ) ln(1/R) ln(x_i/x_f),   P_p = (γ₂/2)(hνA/σ) Φ_p/τ_c.
+ * Optimum coupling at a fixed pump (Degnan 1989): the pump sets the initial single-pass gain g₀l, so
+ * r = g₀l/γ falls as the coupling rises. With z = g₀l/γ_i (Degnan's 2g₀l/L, L = 2γ_i the round-trip dissipative loss),
+ * E ∝ γ₂ ln(x_i/x_f); writing u = ln(x_i/x_f), the energy equation x_i(1 − e^(−u)) = u with x_i = g₀l/(γ_i + γ₂/2) gives γ₂ u = 2γ_i[z(1 − e^(−u)) − u], largest at
+ * e^u = z. So x_f = x_i/z, η = 1 − 1/z, and
+ *   γ₂,opt = 2γ_i (z − 1 − ln z)/ln z,   E_max = (hνA/2σ) 2γ_i (z − 1 − ln z),
+ * exact within the rate equations above. No optimum without internal loss (z → ∞) or below threshold (z ≤ 1).
  * Not modelled: a finite switching time, a slow lower-level decay (Degnan's inversion reduction factor 1–2) and
  * transverse variation of the gain.
  *
@@ -150,6 +156,46 @@ export function qSwitchWaveform(r: number, points = 400, seed = 1e-9): QSwitchWa
     shape.push(ps[keep[k]] / ps[iPeak]);
   }
   return { t, shape, fwhm, extracted };
+}
+
+export interface QSwitchOptimum {
+  /** z = g₀l/γ_i, the initial gain over the dissipative loss. */
+  readonly z: number;
+  /** Optimum output-coupler loss γ₂ = −ln R. */
+  readonly couplerLoss: number;
+  /** Optimum output-coupler reflectance. */
+  readonly reflectance: number;
+  /** Inversion ratio r = g₀l/γ at the optimum, z ln z/(z − 1). */
+  readonly ratio: number;
+  /** Extraction efficiency 1 − 1/z. */
+  readonly extraction: number;
+  /** Largest pulse energy, J. */
+  readonly energy: number;
+}
+
+/**
+ * Degnan's (1989) energy-optimum output coupling for a four-level Q-switched laser at a fixed pump: initial single-pass
+ * gain g₀l, internal single-pass loss γ_i = −ln(1 − loss), photon energy hν (J), mode area A (m²), cross-section σ (m²).
+ * NaN outside the domain, for γ_i = 0 (the optimum runs to R → 0) and for z ≤ 1 (no lasing at any coupling).
+ */
+export function qSwitchOptimumCoupling(g0l: number, internalLoss: number, photonEnergy: number, area: number, sigma: number): QSwitchOptimum {
+  const z = g0l / internalLoss;
+  if (!(internalLoss > 0 && g0l > 0 && z > 1 && Number.isFinite(z) && photonEnergy > 0 && area > 0 && sigma > 0)) {
+    return { z: NaN, couplerLoss: NaN, reflectance: NaN, ratio: NaN, extraction: NaN, energy: NaN };
+  }
+  // z − 1 − ln z cancels near z = 1: write it as w − ln(1 + w), w = z − 1.
+  const w = z - 1;
+  const lnz = Math.log1p(w);
+  const excess = w - lnz;
+  const couplerLoss = (2 * internalLoss * excess) / lnz;
+  return {
+    z,
+    couplerLoss,
+    reflectance: Math.exp(-couplerLoss),
+    ratio: g0l / (internalLoss + couplerLoss / 2),
+    extraction: 1 - 1 / z,
+    energy: ((photonEnergy * area) / (2 * sigma)) * 2 * internalLoss * excess,
+  };
 }
 
 /** Round-trip time 2L_e/c, s, of a linear cavity of optical length L_e (m). NaN for L_e ≤ 0. */
