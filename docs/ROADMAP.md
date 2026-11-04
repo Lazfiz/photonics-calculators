@@ -5,12 +5,12 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 194, 2026-11-04)
+## Status (session 195, 2026-11-04)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
   textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) and 5w-13 (materials) and 5w-14 (spectroscopy) and 5w-15 (thin-film + polarization) done (sessions 163–177): 5w is complete; KRS-5
-  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6j done (sessions 179–194); the Gemini hero is next. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6j done (sessions 179–194); Gemini hero done (session 195). No open stage: the user picks the next. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -290,7 +290,7 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - [x] 6i-a (session 192, `phase-6/6i-a-ui-check`, PR #230): chart remount crash, ui-check current, three hot spots faster. See Done.
 - [x] 6i-b chart layout (session 193, `phase-6/6i-b-chart-layout`, PR #231): `bare` on 170 charts in page cards, buttons in the top margin, Plotly PNG/CSV. See Done.
 - [x] 6j findings (session 194, `phase-6/6j-findings`, PR #232): lock-in pair sum, OPA degeneracy + PPLN hint, CTE table, kerr-lens, nepers. See Done.
-- [ ] Then (Phase 5 leftover): replace the home-page hero with the one the user made in Gemini, and wire it in (ask the user for the files).
+- [x] Gemini hero (session 195, `phase-5/gemini-hero`, PR #233): see Done.
 
 ## Decisions (keep)
 - **Polarization:** Goldstein/Collett convention site-wide.
@@ -309,6 +309,8 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- Gemini hero (session 195, `phase-5/gemini-hero`, PR #233): user's Gemini SVG chip hero ported (photonic-chip-art/-hero.tsx); bays link to
+  spectroscopy/imaging/wave-optics and 9 registry calculators; demo workbench dropped; MZI split from `machZehnderBeams` (`hero-optics.ts`, 6 tests); 1226 tests.
 - 6j findings (session 194, `phase-6/6j-findings`, PR #232): square lock-in at f_s = 2m·f_r adds harmonics 2m ± j as phasors
   (1.200422/1.082046/0.600211·H at 0/π/6/π/2, brute-force Fourier); OPA spectrum stops at ν_p/2, PPLN δ_si hint (Zelmon, −97.72 fs/mm);
   `CTE_TABLE` in thermal-expansion.ts (12 sourced goldens); kerr-lens retitled; "nepers" → natural log of power; 1220 tests.
