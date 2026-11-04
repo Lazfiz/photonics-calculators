@@ -1,33 +1,38 @@
-# Handover — 2026-11-04 (session 194 → session 195)
+# Handover — 2026-11-04 (session 195 → session 196)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 194 did 6j on `phase-6/6j-findings` (PR #232): the last open physics findings (lock-in pair sum, OPA degeneracy and
-PPLN hint) and three cleanups (CTE table, kerr-lens title, "nepers"). Phase 6 is done. Next: the Gemini hero.
+Session 195 ported the user's Gemini home hero on `phase-5/gemini-hero` (PR #233). Phases 4–6 have no open stage left:
+ask the user what comes next (open findings, Phase 2 architecture, or the PDF items below).
 
 ## State
-- `lockin.ts` `referenceMatch`: square reference, f_s = 2m·f_r → harmonics a = 2m − j, b = 2m + j beat at one |Δf|; envelope
-  |H|·√(g_a² + g_b² + 2g_a g_b cos 2φ); result carries `pairedHarmonic`. The page names both harmonics.
-- `three-wave.ts`: `degeneracyLimits(λp, λs)` (signal-side detuning range up to ν_p/2) and `pplnOpaParameters(λp, λs)` (Zelmon
-  e-ray n and δ_si, NaN outside 0.4–5 µm). The OPA page warns when the gain band reaches 2λ_p and offers PPLN values.
-- `thermal-expansion.ts`: `CTE_TABLE` (1/K, sorted) and `alphaPpm()` (display without float noise).
-- Gate: 1220 tests, 5 eslint warnings (unchanged). Build green on the branch. 411/411 tiered, 0 known issues.
+- `src/components/home/photonic-chip-art.tsx` (≈ 1240 lines): the Gemini SVG (1600×900 viewBox), pure props, `aria-hidden`.
+  `photonic-chip-hero.tsx` (client): hover/phase/λ/speed state, overlays at xl+ (in flow below xl), HUD card (md+), branch cards.
+- `src/lib/home-categories.ts` `heroBranches`: spectral → spectroscopy, imaging → imaging, interference → wave-optics, each
+  with 3 calculators resolved by `getCalculator` (a removed page fails the build). `featuredHero*` and the old hero map,
+  `category-detail-panel.tsx` and `public/hero/photonics-hero-desktop.jpg` are gone.
+- `src/lib/hero-optics.ts`: `heroPowerSplit(Δφ)` from `machZehnderBeams(0.5, 0.5)`, φ = π/2 − Δφ → ½(1 ± sin Δφ), 50/50 taps
+  (imaging always ½); `wavelengthBand`, `wavelengthToColor`. `tests/hero-optics.test.ts` (6).
+- Gate: 1226 tests, 5 eslint warnings (unchanged). 411/411 tiered, 0 known issues.
 
 ## Next actions
 1. `/ship`; merge on the user's yes. Release only on request, then:
-   `node scripts/post-merge-check.mjs <sha> materials/thermal-expansion=0.0710 materials/thermal-expansion=18.85
-   wave-optics/kerr-lens=Self-Focusing detectors/lockin-amplifier wave-optics/optical-parametric-amplifier`, then
-   `node scripts/ui-check.mjs https://photonics-calculators.vercel.app` (expect ALL PASS, 0 console errors).
-2. The Gemini hero (Phase 5 leftover): ask the user for the files.
+   `node scripts/post-merge-check.mjs <sha> spectroscopy/etalon-fsr` (home has no calculator value; load check), then
+   `node scripts/ui-check.mjs https://photonics-calculators.vercel.app` (expect ALL PASS, 0 console errors) and look at
+   the home page at 360 / 1024 / 1440 px.
+2. Ask the user what's next: no ROADMAP box is open.
 3. Ask the user for PDFs: Bai 2020 (APL Photonics 5, 031301: abstract 79 cm/GW vs body 60 ± 9), Patel 2001 (Yb:YAG κ at
    10 at.%), Siegman "Lasers" ch. 11/21 pages.
 4. KRS-5 by hand: `materials/transparency-range?material=krs5` at 10 µm: n 2.3707, loss 28.4 %.
 
 ## Non-obvious facts
+- **Session 195:** ports 3100 and 3200 both hold old `next start` servers of this site (3200 serves the old hero): run the
+  branch on 3300 and check the served HTML for new text before screenshotting. The CDP screenshot script (scratchpad
+  `shots.mjs`) needs Windows paths (`C:/…`), not `/c/…`, for node. Bay badge labels in the SVG are ≈ 9 px at 1440 px
+  (decorative, xl+ only). The user's Gemini source is `~/Downloads/photonics_calculators_interactive_hero.tsx`.
 - **Session 194:** a lock-in harmonic-pair formula is quick to verify by brute force: sample sin(ω_s t + φ)·sgn(sin ω_r t)
   over a whole number of periods (2e6 points) and take the Fourier component at j·f_r. Float noise: 0.05e-6 × 1e6 =
   0.049999…, so table values stored in SI need `+x.toPrecision(6)` for display and equality checks.
-- **Session 193:** port 3100 is held by an old `next start` of this site (PID 20608, "411 tools"): don't kill it; serve the
-  branch build on 3200 and stop it with TaskStop. Headless checks without the extension: CDP `Page.captureScreenshot` with
+- **Session 193:** headless checks without the extension: CDP `Page.captureScreenshot` with
   a `clip` of the chart card at `Emulation.setDeviceMetricsOverride` width 360; to test downloads, override
   `HTMLAnchorElement.prototype.click` and `URL.createObjectURL` in the page and record name and blob size. Plotly modebar
   icons with `path` and no `transform` use SVG y-down; `Plotly.toImage` takes `{data, layout}`, so the export can change the
@@ -57,13 +62,10 @@ PPLN hint) and three cleanups (CTE table, kerr-lens title, "nepers"). Phase 6 is
   `psec.uchicago.edu/links/Photomultiplier_Handbook.pdf`; EMVA 1288 R3.1 at `emva.org/wp-content/uploads/EMVA1288-3.1a.pdf`.
 - **Editing:** long Bash heredocs with mixed quotes fail. Write the edit list as JSON with the Write tool and apply it with a
   replace-once node script (`[{a, b}]`, fails unless `a` occurs once; session 190's is in the scratchpad pattern).
-- **Session 187:** `scripts/ui-check.mjs <base> load <paths…>` loads pages and reports console errors. Optica full-text pages
-  answer WebFetch with a JS challenge. arXiv PDFs + `pdftotext -layout` lose Greek letters.
 - **Session 185:** NIST XCOM answers a plain curl POST (`xcom3_1`, ZNum, OutOpt=CSBA, Energies in MeV one per line). CXRO: POST
   `/cgi-bin/atten.pl` or `getdb.pl`, then GET the `/tmp/xray*.dat` it links. Calphad TDB: c_p = −T ∂²G/∂T².
 - **Session 184:** Bai's group writes the [110] Brillouin tensor without the ½ of a unit strain (their p² is 4× the standard).
   APS and Optica abstract pages via WebFetch give tables' text. OpenAlex `abstract_inverted_index` rebuilds paywalled abstracts.
-- **Session 175:** `useURLState` can't hold NaN: use an out-of-range sentinel. NIST-JANAF: `https://janaf.nist.gov/tables/<id>.txt`.
 - **Session 160:** Chrome extension screenshots time out on this site; use a headless CDP script (pattern in `scripts/ui-check.mjs`).
   In the Bash tool a bare `python -` or `cat > file` with no input hangs until timeout.
 - **Sessions 137–138:** ITU-T PDFs: `https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-…!!PDF-E&type=items`. **Port 3000 can
