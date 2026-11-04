@@ -609,6 +609,49 @@ export function besselJ0Fast(x: number): number {
 }
 
 /**
+ * J₁(x) from the polynomial approximations of A&S 9.4.4 (|x| ≤ 3: x⁻¹J₁, |ε| < 1.3e-8) and 9.4.6 (|x| > 3: J₁ =
+ * x^(−½) f₁ cos θ₁, |ε(f₁)| < 4e-8, |ε(θ₁)| < 9e-8), so |error| < 1e-7. The J₁ companion of besselJ0Fast, for quadratures.
+ */
+export function besselJ1Fast(x: number): number {
+  const ax = Math.abs(x);
+  if (!Number.isFinite(ax)) return NaN;
+  if (ax <= 3) {
+    const t = (ax / 3) * (ax / 3);
+    return x * (0.5 + t * (-0.56249985 + t * (0.21093573 + t * (-0.03954289 + t * (0.00443319 + t * (-0.00031761 + t * 0.00001109))))));
+  }
+  const u = 3 / ax;
+  const f1 = 0.79788456 + u * (0.00000156 + u * (0.01659667 + u * (0.00017105 + u * (-0.00249511 + u * (0.00113653 + u * -0.00020033)))));
+  const theta1 = ax - 2.35619449 + u * (0.12499612 + u * (0.0000565 + u * (-0.00637879 + u * (0.00074348 + u * (0.00079824 + u * -0.00029166)))));
+  return (Math.sign(x) * f1 * Math.cos(theta1)) / Math.sqrt(ax);
+}
+
+/**
+ * e^(−x) I₀(x) for x ≥ 0 from the polynomial approximations of A&S 9.8.1 (x ≤ 3.75, |ε| < 1.6e-7 relative) and 9.8.2
+ * (x > 3.75: x^½ e^(−x) I₀, |ε| < 1.9e-7). The fast companion of besselIScaled(0, x), for quadratures.
+ */
+export function besselI0ScaledFast(x: number): number {
+  if (!(x >= 0)) return NaN;
+  if (x <= 3.75) {
+    const t = (x / 3.75) * (x / 3.75);
+    return Math.exp(-x) * (1 + t * (3.5156229 + t * (3.0899424 + t * (1.2067492 + t * (0.2659732 + t * (0.0360768 + t * 0.0045813))))));
+  }
+  const u = 3.75 / x;
+  return (0.39894228 + u * (0.01328592 + u * (0.00225319 + u * (-0.00157565 + u * (0.00916281 + u * (-0.02057706
+    + u * (0.02635537 + u * (-0.01647633 + u * 0.00392377)))))))) / Math.sqrt(x);
+}
+
+const GL8_X = [0.1834346424956498, 0.525532409916329, 0.7966664774136267, 0.9602898564975363];
+const GL8_W = [0.362683783378362, 0.3137066458778873, 0.2223810344533745, 0.1012285362903763];
+
+/** ∫ₐᵇ f(x) dx by 8-point Gauss–Legendre (A&S Table 25.4), exact for polynomials of degree ≤ 15. For one panel. */
+export function integrateGaussLegendre8(f: (x: number) => number, a: number, b: number): number {
+  const mid = (a + b) / 2;
+  const half = (b - a) / 2;
+  let sum = 0;
+  for (let i = 0; i < 4; i++) sum += GL8_W[i] * (f(mid - half * GL8_X[i]) + f(mid + half * GL8_X[i]));
+  return sum * half;
+}
+/**
  * Fresnel integrals [C(x), S(x)] = ∫₀ˣ [cos, sin](π t²/2) dt (DLMF 7.2.7–8), odd in x, → ½ as x → ∞.
  * |x| ≤ 1.5: the power series (DLMF 7.6.4–5); |x| > 1.5: C + iS = ½(1 + i)(1 − e^(iπx²/2) h), h from the continued
  * fraction for erfc evaluated by the modified Lentz method (Numerical Recipes 3rd ed., §6.8). Relative error ~1e-15.

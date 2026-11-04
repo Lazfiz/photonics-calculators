@@ -3,10 +3,10 @@ import assert from "node:assert/strict";
 
 import {
   apertureGain, fraunhoferDistance, freeSpacePathLoss, friisReceivedPower, gaussianTxGain, kleinDegnanEfficiency,
-  gaussianGeometricCapture, optimumTruncation, toDb, topHatGeometricLoss, truncatedGaussianFarField, truncatedGaussianWidth,
+  gaussianGeometricCapture, gsmFarField, optimumTruncation, toDb, topHatGeometricLoss, truncatedGaussianFarField, truncatedGaussianWidth,
 } from "../src/physics/free-space-comms/link-budget";
 import { pointingCapture } from "../src/physics/free-space-comms/pointing-loss";
-import { besselJ, firstCrossing } from "../src/physics/math";
+import { besselIScaled, besselJ, firstCrossing } from "../src/physics/math";
 
 const close = (actual: number, expected: number, tol: number, msg = "") =>
   assert.ok(Math.abs(actual - expected) <= tol, `${msg} ${actual} vs ${expected}`);
@@ -140,4 +140,48 @@ test("Klein–Degnan optimum with heavy obscuration and a mildly clipped width (
   close(opt.alpha, 0.9243, 2e-4);
   close(opt.efficiency, 0.34182, 2e-5);
   close(truncatedGaussianWidth(2, 0), 4.0668, 1e-3);
+});
+
+test("Gaussian Schell-model far field: Klein–Degnan at M² = 1, the GSM closed forms unclipped, a direct 4-D on-axis integral", () => {
+  // M² = 1 is the coherent clipped Gaussian.
+  for (const [alpha, gamma] of [[1, 0], [1.12, 0], [1, 0.15], [2, 0.3]]) {
+    const r = gsmFarField(alpha, gamma, 1);
+    close(r.efficiency, kleinDegnanEfficiency(alpha, gamma), 1e-12);
+    close(r.width, truncatedGaussianWidth(alpha, gamma), 1e-6);
+  }
+  // Unclipped (α = 4, edge field e^(−16)): Gaussian far field of 1/e² half-angle M²λ/(πw), u = 2M²α, so the on-axis
+  // gain 8π²w²/(M⁴λ²) gives g = 2/(α²M⁴) (Mandel & Wolf §5.6.4, θ = (2/k)(1/(4σ_S²) + 1/σ_g²)^½ with w = 2σ_S).
+  for (const m2 of [1.5, 3, 10]) {
+    const r = gsmFarField(4, 0, m2);
+    close(r.efficiency * 8 * m2 * m2, 1, 1e-6, `g, M² = ${m2}`);
+    close(r.width / (8 * m2), 1, 1e-6, `u, M² = ${m2}`);
+    close(r.intensity(4 * m2), Math.exp(-0.5), 1e-6, `profile, M² = ${m2}`);
+  }
+  // Clipped, on axis, straight from the cross-spectral density: F(0) = ∫∫ f(r₁)f(r₂) exp(−(r₁ − r₂)²/(2σ²))
+  // e^(−x)I₀(x) r₁r₂ dr₁dr₂, x = r₁r₂/σ², over γ ≤ r ≤ 1 (the angle integral of exp(−|r₁ − r₂|²/2σ²) in closed form).
+  for (const [alpha, gamma, m2] of [[1, 0.15, 2], [0.7, 0, 4]]) {
+    const s2 = 1 / (alpha * alpha * (m2 * m2 - 1));
+    const n = 200, h = (1 - gamma) / n;
+    const wt = (i: number) => (i === 0 || i === n ? 1 : i % 2 ? 4 : 2);
+    let F0 = 0;
+    for (let i = 0; i <= n; i++) {
+      for (let j = 0; j <= n; j++) {
+        const r1 = gamma + i * h, r2 = gamma + j * h;
+        F0 += wt(i) * wt(j) * Math.exp(-alpha * alpha * (r1 * r1 + r2 * r2) - ((r1 - r2) ** 2) / (2 * s2))
+          * besselIScaled(0, (r1 * r2) / s2) * r1 * r2;
+      }
+    }
+    F0 *= (h / 3) ** 2;
+    close(gsmFarField(alpha, gamma, m2).efficiency / (8 * alpha * alpha * F0), 1, 1e-6, `α ${alpha}, γ ${gamma}, M² ${m2}`);
+  }
+  // The page default (α = 1, γ = 0.15, M² = 1.1): g = 0.681173 from an independent 2-D Cartesian convolution (physics
+  // review, session 197); the old g/M⁴ rule gave 0.5081. Just above M² = 1 the result joins Klein–Degnan continuously.
+  close(gsmFarField(1, 0.15, 1.1).efficiency, 0.681173, 2e-6);
+  close(gsmFarField(1, 0.15, 1 + 1e-9).efficiency, kleinDegnanEfficiency(1, 0.15), 1e-12);
+  close(gsmFarField(1, 0.15, 1 + 1e-5).efficiency / kleinDegnanEfficiency(1, 0.15), 1, 1e-4);
+  // Clipping matters: at α = 1, γ = 0.15, M² = 2 the GSM gain is 1.65× the coherent g/M⁴ and the 1/e² width 0.79× M² u_coh.
+  const r = gsmFarField(1, 0.15, 2);
+  close(r.efficiency / (kleinDegnanEfficiency(1, 0.15) / 4), 1.647, 1e-3);
+  close(r.width / (2 * truncatedGaussianWidth(1, 0.15)), 0.7925, 1e-3);
+  assert.ok(Number.isNaN(gsmFarField(1, 0, 0.9).efficiency) && Number.isNaN(gsmFarField(1, 0, 11).width) && Number.isNaN(gsmFarField(0, 0, 2).efficiency));
 });

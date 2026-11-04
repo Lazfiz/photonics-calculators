@@ -6,7 +6,7 @@ import ResultCard from "../../../components/result-card";
 import { useURLState } from "../../../hooks/use-url-state";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import {
-  apertureGain, kleinDegnanEfficiency, optimumTruncation, toDb, truncatedGaussianWidth,
+  apertureGain, gsmFarField, kleinDegnanEfficiency, optimumTruncation, toDb,
 } from "../../../physics/free-space-comms/link-budget";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -23,11 +23,12 @@ export default function OpticalAntennaPage() {
   const wavelength = clamp(wavelengthRaw, 200, 20000, 1550);
   const obscuration = clamp(obscurationRaw, 0, 0.5, 0.15);
   const efficiency = clamp(efficiencyRaw, 0.01, 1, 0.75);
-  const beamQuality = clamp(beamQualityRaw, 1, 2, 1.1);
+  const beamQuality = clamp(beamQualityRaw, 1, 10, 1.1);
   const fill = clamp(fillRaw, 0.3, 3, 1);
 
-  // u = k a sin θ at the 1/e² edge of the far-field lobe; the half-angle then scales as λ/D.
-  const width = useMemo(() => truncatedGaussianWidth(fill, obscuration), [fill, obscuration]);
+  // Gaussian Schell-model far field of the clipped beam: on-axis efficiency g and u = k a sin θ at the 1/e² edge of
+  // the lobe (the half-angle then scales as λ/D). M² = 1 is the coherent Klein–Degnan beam.
+  const gsm = useMemo(() => gsmFarField(fill, obscuration, beamQuality), [fill, obscuration, beamQuality]);
   const optimum = useMemo(() => optimumTruncation(obscuration), [obscuration]);
 
   const calc = useMemo(() => {
@@ -38,22 +39,20 @@ export default function OpticalAntennaPage() {
     return {
       directivity: toDb(directivity),
       rxGain: toDb(apertureGain(D, lambda, obscuration, efficiency)),
-      // Klein–Degnan on-axis gain; M² > 1 spreads the far field over M⁴ the solid angle (Gaussian-like profile).
-      txGain: toDb((directivity * g * efficiency) / beamQuality ** 4),
-      g, w0,
-      theta: (beamQuality * width * lambda) / (2 * Math.PI * a),
+      txGain: toDb(directivity * gsm.efficiency * efficiency),
+      g, gGsm: gsm.efficiency, w0,
+      theta: (gsm.width * lambda) / (2 * Math.PI * a),
       thetaGauss: (beamQuality * lambda) / (Math.PI * w0),
       zR: (Math.PI * w0 * w0) / (beamQuality * lambda),
     };
-  }, [aperture, wavelength, obscuration, efficiency, beamQuality, fill, width]);
+  }, [aperture, wavelength, obscuration, efficiency, beamQuality, fill, gsm]);
 
   const plotData = useMemo(() => {
     const lambda = wavelength * 1e-9;
-    const g = kleinDegnanEfficiency(fill, obscuration);
     const apertures = Array.from({ length: 200 }, (_, i) => (aperture / 10) * 100 ** (i / 199));
-    const txAt = (cm: number) => toDb((apertureGain(cm * 1e-2, lambda) * g * efficiency) / beamQuality ** 4);
+    const txAt = (cm: number) => toDb(apertureGain(cm * 1e-2, lambda) * gsm.efficiency * efficiency);
     const rxAt = (cm: number) => toDb(apertureGain(cm * 1e-2, lambda, obscuration, efficiency));
-    const divAt = (cm: number) => ((beamQuality * width * lambda) / (Math.PI * cm * 1e-2)) * 1e6;
+    const divAt = (cm: number) => ((gsm.width * lambda) / (Math.PI * cm * 1e-2)) * 1e6;
     return [
       { x: apertures, y: apertures.map(txAt), type: "scatter", mode: "lines", name: "TX gain (dBi)", line: { color: "#06b6d4" }, yaxis: "y" },
       { x: apertures, y: apertures.map(rxAt), type: "scatter", mode: "lines", name: "RX gain (dBi)", line: { color: "#a78bfa", dash: "dot" }, yaxis: "y" },
@@ -62,7 +61,7 @@ export default function OpticalAntennaPage() {
       { x: [aperture], y: [rxAt(aperture)], type: "scatter", mode: "markers", name: "Current RX", marker: { color: "#a78bfa", size: 9 }, yaxis: "y" },
       { x: [aperture], y: [divAt(aperture)], type: "scatter", mode: "markers", name: "Current divergence", marker: { color: "#f59e0b", size: 9 }, yaxis: "y2" },
     ];
-  }, [aperture, wavelength, obscuration, efficiency, beamQuality, fill, width]);
+  }, [aperture, wavelength, obscuration, efficiency, gsm]);
 
   return (
     <>
@@ -73,10 +72,10 @@ export default function OpticalAntennaPage() {
           <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={200} max={20000} />
           <ValidatedNumberInput label="Central obscuration ratio γ (diameter)" value={obscuration} onChange={setObscuration} min={0} max={0.5} />
           <ValidatedNumberInput label="Optics efficiency η (transmission, wavefront error)" value={efficiency} onChange={setEfficiency} min={0.01} max={1} />
-          <ValidatedNumberInput label="Beam quality M² (≤ 2)" value={beamQuality} onChange={setBeamQuality} min={1} max={2} />
+          <ValidatedNumberInput label="Beam quality M² (1–10, Gaussian Schell model)" value={beamQuality} onChange={setBeamQuality} min={1} max={10} />
           <ValidatedNumberInput label="Fill ratio α = a/W₀ (aperture radius / beam radius)" value={fill} onChange={setFill} min={0.3} max={3} />
           <p className="text-xs text-gray-500">
-            The transmit gain peaks at α = {optimum.alpha.toFixed(3)} for γ = {obscuration} (g = {optimum.efficiency.toFixed(4)},{" "}
+            For a coherent beam (M² = 1) the transmit gain peaks at α = {optimum.alpha.toFixed(3)} for γ = {obscuration} (g = {optimum.efficiency.toFixed(4)},{" "}
             {toDb(optimum.efficiency).toFixed(2)} dB).
           </p>
         </div>
@@ -84,7 +83,9 @@ export default function OpticalAntennaPage() {
         <div className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <ResultCard label="Transmit gain (on axis)" value={`${calc.txGain.toFixed(2)} dBi`} tone="cyan"
-              subtext={`g(α, γ) = ${calc.g.toFixed(4)} (${toDb(calc.g).toFixed(2)} dB)`} />
+              subtext={beamQuality > 1
+                ? `g = ${calc.gGsm.toFixed(4)} (${toDb(calc.gGsm).toFixed(2)} dB); coherent g(α, γ) = ${calc.g.toFixed(4)}`
+                : `g(α, γ) = ${calc.g.toFixed(4)} (${toDb(calc.g).toFixed(2)} dB)`} />
             <ResultCard label="Receive gain" value={`${calc.rxGain.toFixed(2)} dBi`} tone="purple" subtext="(πD/λ)² (1 − γ²) η" />
             <ResultCard label="Directivity limit (πD/λ)²" value={`${calc.directivity.toFixed(2)} dBi`} tone="gray" subtext="uniform, unobscured" />
             <ResultCard label="Beam waist W₀ = a/α (unclipped Gaussian)" value={`${fmt(calc.w0 * 1e3)} mm`} tone="blue" />
@@ -106,7 +107,7 @@ export default function OpticalAntennaPage() {
 
       <div className="mt-6 bg-gray-900 border border-gray-800 rounded-lg p-4 text-sm text-gray-300 space-y-2">
         <h3 className="text-lg font-semibold">Model</h3>
-        <p className="font-mono">G_tx = (πD/λ)² · g(α, γ) · η / M⁴,   g = (2/α²)[e^(−α²) − e^(−γ²α²)]²   (Klein &amp; Degnan 1974)</p>
+        <p className="font-mono">G_tx = (πD/λ)² · g · η,   g(α, γ) = (2/α²)[e^(−α²) − e^(−γ²α²)]² at M² = 1   (Klein &amp; Degnan 1974)</p>
         <p>
           A Gaussian beam of 1/e² radius W₀ = a/α fills the telescope. Filling it more (small α) spills power past the rim;
           filling it less puts more of it on the secondary mirror and leaves the outer aperture dark, which widens the beam. The best compromise
@@ -119,9 +120,13 @@ export default function OpticalAntennaPage() {
           of the Gaussian beam W₀.
         </p>
         <p className="text-gray-500">
-          M² &gt; 1 is handled approximately: the divergence scales by M² and the on-axis gain by 1/M⁴, as for a beam that keeps
-          a Gaussian-like profile. That holds for nearly single-mode beams, so M² is limited to 2; a strongly multimode beam
-          spreads by its coherence, not by the clipping. Spider vanes and wavefront errors go in η.
+          A beam with M² &gt; 1 is modelled as a Gaussian Schell-model source (Gori 1980): Gaussian intensity of radius W₀
+          and Gaussian degree of coherence of width σ_g = W₀/√(M⁴ − 1). Such a beam is an incoherent sum of coherent
+          Gaussians tilted by a Gaussian spread of angles, so its far field is the clipped pattern above averaged over those
+          tilts. Unclipped it is a Gaussian of half-angle M²λ/(πW₀) and on-axis g = 2/(α²M⁴); clipping trims the wide
+          angles, so a clipped multimode beam is narrower and brighter on axis than M² alone suggests (at α = 1, M² = 2: 1.6×
+          the gain, 0.8× the width). Real multimode beams (top-hat fibre modes, laser-diode stacks) are not Gaussian
+          Schell; treat M² near 10 as indicative. Spider vanes and wavefront errors go in η.
         </p>
       </div>
     </>

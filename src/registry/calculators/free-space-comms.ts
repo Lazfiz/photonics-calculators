@@ -46,9 +46,9 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "aperture-averaging",
     title: "Aperture Averaging",
-    description: "Weak-fluctuation aperture-averaging factor for plane and spherical waves (exact integral and Andrews' fits), Rytov variance and the all-regime scintillation index versus receiver diameter.",
+    description: "Weak-fluctuation aperture-averaging factor for plane and spherical waves (exact integrals for a hard circular or Gaussian aperture, and Andrews' fits), Rytov variance and the all-regime scintillation index versus receiver diameter.",
     tier: "textbook",
-    modelNote: "Weak fluctuations: exact Gaussian-aperture integral of the Kolmogorov spectrum, with Andrews' 1992 fits for comparison; the all-regime σ_I²(D) interpolation under-averages for d² ≫ 1. A hard circular aperture differs by up to ≈ 13 %. Constant Cn².",
+    modelNote: "Weak fluctuations, constant Cn²: exact Kolmogorov integrals for a hard circular aperture (plane wave) and a Gaussian aperture (plane and spherical); Andrews 1992 fits shown. All-regime σ_I² is an interpolation.",
     references: [
       {
         citation: "Andrews L. C. (1992). Aperture-averaging factor for optical scintillations of plane and spherical waves in the atmosphere. J. Opt. Soc. Am. A 9(4), 597.",
@@ -56,6 +56,9 @@ export const freeSpaceComms: CalculatorEntry[] = [
       },
       {
         citation: "Andrews L. C., Phillips R. L. (2005). Laser Beam Propagation through Random Media, 2nd ed. SPIE. Gaussian-aperture weak-fluctuation integrals and the all-regime aperture-averaged scintillation index.",
+      },
+      {
+        citation: "Gradshteyn I. S., Ryzhik I. M. (2007). Table of Integrals, Series, and Products, 7th ed. Academic Press. Eq. 6.574.2, the Mellin transform of the Airy filter [2J₁(x)/x]².",
       },
     ],
   },
@@ -329,9 +332,9 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "optical-antenna",
     title: "Optical Antenna Gain",
-    description: "Telescope transmit gain (Klein–Degnan, clipped and obscured Gaussian beam), receive gain, far-field divergence, beam waist and Rayleigh range with beam quality M².",
+    description: "Telescope transmit gain (Klein–Degnan, clipped and obscured Gaussian beam), receive gain, far-field divergence, beam waist and Rayleigh range, with beam quality M² up to 10 as a Gaussian Schell-model beam.",
     tier: "textbook",
-    modelNote: "Klein–Degnan gain of a clipped, obscured Gaussian; W₀ = a/α; 1/e² far-field half-angle from the Fraunhofer pattern; receive gain (πD/λ)²(1 − γ²)η. M² ≤ 2, approximate: θ × M², gain / M⁴.",
+    modelNote: "Klein–Degnan gain of a clipped, obscured Gaussian; M² ≤ 10 as a Gaussian Schell-model beam (Gori's tilted coherent copies); 1/e² half-angle from the far field; receive gain (πD/λ)²(1 − γ²)η.",
     references: [
       {
         citation: "Klein B. J., Degnan J. J. (1974). Optical antenna gain. 1: Transmitting antennas. Appl. Opt. 13(9), 2134.",
@@ -344,6 +347,10 @@ export const freeSpaceComms: CalculatorEntry[] = [
       {
         citation: "Siegman A. E. (1990). New developments in laser resonators. Proc. SPIE 1224, 2. Beam quality M².",
         url: "https://doi.org/10.1117/12.18425",
+      },
+      {
+        citation: "Gori F. (1980). Collett–Wolf sources and multimode lasers. Opt. Commun. 34(3), 301. Gaussian Schell-model beam as an incoherent superposition of tilted coherent Gaussians.",
+        url: "https://doi.org/10.1016/0030-4018(80)90382-x",
       },
     ],
   },
@@ -417,9 +424,9 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "receiver-fov",
     title: "Receiver FOV vs Background Noise",
-    description: "Electrical SNR of a PIN or APD receiver versus field of view, with background light from clear sky, clouds or the Sun, and the FOV at which background noise overtakes amplifier noise.",
+    description: "Electrical SNR of a PIN or APD receiver versus field of view, with background light from clear sky, clouds or the Sun, the signal clipped by the field stop (diffraction and turbulence), and the FOV at which background noise overtakes amplifier noise.",
     tier: "textbook",
-    modelNote: "Shot noise 2qM²F(I_s + I_bg + I_d)B with McIntyre's F, plus amplifier noise i_n²B. Background L·A·Ω·Δλ·η with typical sky radiances. The signal is assumed to pass the field stop whole.",
+    modelNote: "Shot noise with McIntyre's F plus amplifier noise; background L·A·Ω·Δλ·η, typical sky radiances. Field stop: long-exposure encircled energy (aperture OTF × Fried's, spherical or plane r₀, tilt included).",
     references: [
       {
         citation: "Giggenbach D. (2022). Free-space optical data receivers with avalanche detectors for satellite downlinks regarding background light. Sensors 22(18), 6773. Table 1: sky, cloud and sun radiances at 850, 1064 and 1550 nm; eq. (22).",
@@ -431,6 +438,10 @@ export const freeSpaceComms: CalculatorEntry[] = [
       },
       {
         citation: "Agrawal G. P. (2010). Fiber-Optic Communication Systems, 4th ed. Wiley. §4.4, receiver noise and SNR of PIN and APD receivers.",
+      },
+      {
+        citation: "Fried D. L. (1966). Optical resolution through a randomly inhomogeneous medium for very long and very short exposures. J. Opt. Soc. Am. 56(10), 1372. Long-exposure OTF exp[−3.44 (λν/r₀)^(5/3)].",
+        url: "https://doi.org/10.1364/josa.56.001372",
       },
     ],
   },

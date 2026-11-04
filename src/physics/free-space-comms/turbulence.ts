@@ -14,10 +14,12 @@
  * Fades: in weak fluctuations the received irradiance is log-normal with σ_ln² = ln(1 + σ_I²), so
  * P(I < F⟨I⟩) = Φ((ln F + σ_ln²/2)/σ_ln). In all regimes the gamma-gamma CDF (Al-Habash, Andrews & Phillips,
  * Opt. Eng. 40, 1554 (2001)) applies, with α, β from the aperture-averaged log variances.
- * Weak-fluctuation aperture averaging is the exact Gaussian-aperture integral (Andrews' interpolations, JOSA A 9,
- * 597 (1992), for comparison); the irradiance correlation of two receivers is the weak-fluctuation plane-wave
- * covariance, tabulated by scripts/gen-irradiance-covariance.ts; diversity outage for equicorrelated log-normal
- * branches with SC, EGC and MRC combining; beam wander ⟨r_c²⟩ = 2.42 C_n² L³ W₀^(−1/3) (collimated beam).
+ * Weak-fluctuation aperture averaging is the exact Gaussian-aperture integral, and for a plane wave the hard circular
+ * aperture (Andrews' interpolations, JOSA A 9, 597 (1992), for comparison); the irradiance correlation of two
+ * receivers is the weak-fluctuation plane-wave covariance, tabulated by scripts/gen-irradiance-covariance.ts;
+ * diversity outage for equicorrelated log-normal
+ * branches with SC, EGC and MRC combining; beam wander ⟨r_c²⟩ = 2.42 C_n² L³ W₀^(−1/3) (collimated beam); the signal
+ * fraction through a receiver field stop, the long-exposure encircled energy (Fried 1966 OTF).
  *
  * Adaptive optics (a single turbulent layer moving at speed v):
  * - uncorrected phase variance 1.0299 (D/r₀)^(5/3), piston removed, and the residual after correcting the first
@@ -35,7 +37,9 @@
  *   (R. R. Parenti, R. J. Sasiela, JOSA A 11, 288 (1994)). It tends to (r₀/D)² for an uncorrected D ≫ r₀.
  */
 
-import { erfc, integrateSimpson, integrateTanhSinh, lnGamma, regularizedGammaP } from "../math";
+import {
+  besselJ1Fast, erfc, integrateGaussLegendre8, integrateSimpson, integrateTanhSinh, lnGamma, regularizedGammaP,
+} from "../math";
 
 const waveNumber = (lambda: number) => (2 * Math.PI) / lambda;
 
@@ -47,6 +51,14 @@ export function rytovVariance(cn2: number, lambda: number, pathLength: number): 
 /** Fried parameter r₀ = (0.423 k² C_n² L)^(−3/5), m (plane wave). */
 export function friedParameter(cn2: number, lambda: number, pathLength: number): number {
   return (0.423 * waveNumber(lambda) ** 2 * cn2 * pathLength) ** (-3 / 5);
+}
+
+/**
+ * Spherical-wave Fried parameter r₀ = (0.423 · (3/8) k² C_n² L)^(−3/5), m: a point source at the far end of a uniform
+ * path, weighted (z/L)^(5/3) (Andrews & Phillips 2005, ch. 6). 1.80× the plane-wave r₀.
+ */
+export function sphericalFriedParameter(cn2: number, lambda: number, pathLength: number): number {
+  return (0.423 * (3 / 8) * waveNumber(lambda) ** 2 * cn2 * pathLength) ** (-3 / 5);
 }
 
 /** Isoplanatic angle θ₀ = (2.91 · 3/8 · k² C_n² L^(8/3))^(−3/5), rad, uniform C_n² seen from one end. */
@@ -126,6 +138,57 @@ export function weakApertureFactor(d2: number, wave: "plane" | "spherical"): num
   const integrand = (d: number) => (xi: number) =>
     wave === "plane" ? kernel(d / 4, xi) : kernel((d * xi * xi) / 4, xi * (1 - xi));
   return integrateTanhSinh(integrand(d2), 0, 1) / integrateTanhSinh(integrand(0), 0, 1);
+}
+
+/** I₀ = ½Γ(−11/6) cos(5π/12) = ½ · (36/55) Γ(1/6) cos(5π/12). */
+const HARD_APERTURE_I0 = 0.5 * (36 / 55) * Math.exp(lnGamma(1 / 6)) * Math.cos((5 * Math.PI) / 12);
+
+/**
+ * Weak-fluctuation aperture-averaging factor A of a plane wave on a hard circular aperture of diameter D (uniform
+ * pupil, filter [2J₁(κD/2)/(κD/2)]², Andrews & Phillips 2005 ch. 10). Doing the path integral first,
+ *   σ_I²(D) ∝ ∫₀^∞ κ^(−8/3) [1 − sin(u)/u] [2J₁(κD/2)/(κD/2)]² dκ,   u = Lκ²/k,
+ * and with t = κ√(L/k), w(t) = t^(−8/3)(1 − sin t²/t²):
+ *   A = ∫₀^∞ w(t) [2J₁(dt)/(dt)]² dt / I₀,   I₀ = ∫₀^∞ w dt = ½Γ(−11/6) cos(5π/12) = 0.471492,
+ * the Mellin transform of 1 − sin v/v (½Γ(p − 1) cos(πp/2), p = (s − 8/3)/2). Computed in x = dt: tanh-sinh near 0,
+ * Gauss–Legendre panels that resolve the period π of J₁² and the period πd²/x of sin(x²/d²) up to 60 and 20d; beyond
+ * x = 60 J₁² is replaced by its mean (1/πx)(1 + 3/(8x²)) plus the end term of its −sin 2x part, and beyond 20d the
+ * sin(x²/d²) term (< 1e-7 of A) is dropped. Relative error ≈ 1e-7: the tests check the Mellin–Barnes expansions,
+ *   d² → 0: A = 1 + [M_F(−5/3) d^(5/3) − ¼ M_w(3) d² + (5/192) M_w(5) d⁴]/I₀,
+ *   d² → ∞: A = [M_F(7/3)/6 · d^(−7/3) + (4/π) M_w(−2) d^(−3)]/I₀,
+ * with M_F(s) = ∫x^(s−1)[2J₁(x)/x]² dx = 4Γ(3 − s)Γ(s/2)/[2^(3−s) Γ(2 − s/2)² Γ(3 − s/2)] (Gradshteyn & Ryzhik 6.574.2).
+ * Against the Gaussian aperture above, A is 5–14 % lower at d² = 1–30 (most near d² ≈ 4.7), equal at d² ≈ 77 and
+ * 1.1298× higher as d² → ∞.
+ */
+export function hardApertureFactor(d2: number): number {
+  if (!(d2 >= 0) || d2 === Infinity) return NaN;
+  if (d2 === 0) return 1;
+  const d = Math.sqrt(d2);
+  const xOsc = 60; // exact J₁ up to here
+  const xSin = 20 * d; // sin(x²/d²) kept up to here
+  const g = (x: number) => {
+    if (x > xSin) return 1;
+    const v = (x * x) / d2;
+    return v < 1e-3 ? (v * v) / 6 - (v * v * v * v) / 120 : 1 - Math.sin(v) / v;
+  };
+  const airy = (x: number) => (x < 1e-8 ? 1 : ((2 * besselJ1Fast(x)) / x) ** 2);
+  const f = (x: number) => x ** (-8 / 3) * g(x) * airy(x);
+  const x0 = Math.min(d, 1) / 4;
+  let sum = integrateTanhSinh(f, 0, x0);
+  for (let x = x0; x < xOsc; ) {
+    const b = Math.min(xOsc, x + Math.min(0.5 * x, Math.PI / 4, x < xSin ? (Math.PI * d2) / (4 * x) : Infinity));
+    sum += integrateGaussLegendre8(f, x, b);
+    x = b;
+  }
+  const mean = (x: number) => (4 / Math.PI) * x ** (-17 / 3) * (1 + 3 / (8 * x * x)) * g(x);
+  sum -= (mean(xOsc) * Math.cos(2 * xOsc)) / 2;
+  const xEnd = Math.max(xOsc, xSin);
+  for (let x = xOsc; x < xEnd; ) {
+    const b = Math.min(xEnd, x + Math.min(0.5 * x, (Math.PI * d2) / (4 * x)));
+    sum += integrateGaussLegendre8(mean, x, b);
+    x = b;
+  }
+  sum += (4 / Math.PI) * ((3 / 14) * xEnd ** (-14 / 3) + (9 / 160) * xEnd ** (-20 / 3));
+  return (d ** (5 / 3) * sum) / HARD_APERTURE_I0;
 }
 
 // ── Gamma-gamma irradiance statistics ───────────────────────────────────────────────────────────────────────
@@ -578,4 +641,75 @@ export function aoResidualVariance(fitting: number, servo: number, openLoop: num
 export function strehlRatio(phaseVariance: number, diameter: number, r0: number): number {
   const core = Math.exp(-phaseVariance);
   return core + (1 - core) / (1 + (diameter / r0) ** 2);
+}
+
+// ── Field stop of a receiver in turbulence ──────────────────────────────────────────────────────────────────────
+
+/** 1/Γ(x) for any real x (0 at the poles), by reflection for x < ½. */
+const reciprocalGamma = (x: number): number =>
+  x >= 0.5 ? Math.exp(-lnGamma(x)) : (Math.sin(Math.PI * x) * Math.exp(lnGamma(1 - x))) / Math.PI;
+
+/**
+ * Fraction of the received signal that passes a circular field stop of half-angle θ in the focal plane of a receiver of
+ * diameter D: the long-exposure encircled energy. The optical transfer function is the aperture's times Fried's
+ * long-exposure turbulence factor (D. L. Fried, JOSA 56, 1372 (1966); J. W. Goodman, Statistical Optics, §8.5),
+ *   T(s) = (2/π)[arccos s − s√(1 − s²)] · exp[−3.44 (sD/r₀)^(5/3)],   s = λν/D,
+ * and the encircled energy of a circular PSF from its OTF is EE(θ) = 2v ∫₀¹ T(s) J₁(2vs) ds, v = πDθ/λ. Without
+ * turbulence (r₀ = ∞) this is Rayleigh's 1 − J₀²(v) − J₁²(v) (Born & Wolf §8.5.2). The angle includes the tilt
+ * (image motion); r₀ is the plane-wave Fried parameter of the path, and 3.44 = [(24/5)Γ(6/5)]^(5/6) makes the
+ * resolution ∫T dν of an aperture D ≫ r₀ that of a perfect aperture r₀ (Fried's definition). Quadrature: 8-point
+ * Gauss–Legendre panels half a period π/v wide over s ≤ s_max, where exp(−3.44(sD/r₀)^(5/3)) ≥ e^(−40), with tanh-sinh
+ * on the end panels (T ∝ (1 − s)^(3/2) at s = 1); 1e-8 from Rayleigh's formula. Beyond 100 periods (θ ≳ 100 λ/D, or
+ * 23 λ/r₀ when r₀ < D) the large-v series: the terms
+ * c·s^α of T near s = 0 give c·M(α)(2v)^(−α) with M(α) = ∫₀^∞ x^α J₁(x) dx = 2^α Γ(1 + α/2)/Γ(1 − α/2) (DLMF 10.22.43),
+ * so EE = 1 − 2/(πv) − Γ(11/6)/Γ(1/6) · 3.44 (λ/(πr₀θ))^(5/3) + …; it is within 3e-6 of the quadrature at the switch.
+ */
+export function fieldStopFraction(
+  halfAngle: number, apertureDiameter: number, lambda: number, r0: number,
+  method: "auto" | "quadrature" | "series" = "auto",
+): number {
+  if (!(halfAngle >= 0 && apertureDiameter > 0 && lambda > 0 && r0 > 0) || halfAngle === Infinity) return NaN;
+  if (halfAngle === 0) return 0;
+  const v = (Math.PI * apertureDiameter * halfAngle) / lambda;
+  const a = r0 === Infinity ? 0 : 3.44 * (apertureDiameter / r0) ** (5 / 3);
+  const sMax = a > 0 ? Math.min(1, (40 / a) ** 0.6) : 1;
+  const periods = (v * sMax) / Math.PI;
+  if (method === "series" || (method === "auto" && periods > 100)) {
+    // T(s) = Σ_j t_j s^j · Σ_k (−a)^k s^(5k/3)/k!, with t_j from (2/π)(arccos s − s√(1 − s²)) = 1 − (4/π)s + (2/3π)s³ + (1/10π)s⁵ + O(s⁷).
+    const t: [number, number][] = [[0, 1], [1, -4 / Math.PI], [3, 2 / (3 * Math.PI)], [5, 1 / (10 * Math.PI)]];
+    let sum = 0;
+    for (const [j, tj] of t) {
+      let ak = 1; // (−a)^k/k!
+      for (let k = 0; k <= 4; k++) {
+        const alpha = j + (5 * k) / 3;
+        sum += tj * ak * 2 ** alpha * Math.exp(lnGamma(1 + alpha / 2)) * reciprocalGamma(1 - alpha / 2) * (2 * v) ** -alpha;
+        ak *= -a / (k + 1);
+      }
+    }
+    return sum;
+  }
+  const T = (s: number) => (2 / Math.PI) * (Math.acos(s) - s * Math.sqrt(1 - s * s)) * (a > 0 ? Math.exp(-a * s ** (5 / 3)) : 1);
+  const f = (s: number) => 2 * v * T(s) * besselJ1Fast(2 * v * s);
+  const n = Math.max(16, Math.ceil(2 * periods));
+  const h = sMax / n;
+  let sum = integrateTanhSinh(f, 0, h) + integrateTanhSinh(f, sMax - h, sMax);
+  for (let i = 1; i < n - 1; i++) sum += integrateGaussLegendre8(f, i * h, (i + 1) * h);
+  return sum;
+}
+
+/**
+ * Field-stop half-angle θ, rad, that passes the given fraction (0 < fraction < 1) of the long-exposure signal: the
+ * inverse of fieldStopFraction by bisection on ln θ (60 steps, relative tolerance ≈ 1e-12 of the bracket).
+ */
+export function fieldStopHalfAngle(fraction: number, apertureDiameter: number, lambda: number, r0: number): number {
+  if (!(fraction > 0 && fraction < 1 && apertureDiameter > 0 && lambda > 0 && r0 > 0)) return NaN;
+  const scale = lambda / Math.min(apertureDiameter, r0);
+  let lo = Math.log(1e-4 * scale);
+  let hi = Math.log((1e3 * scale) / (1 - fraction));
+  for (let i = 0; i < 60; i++) {
+    const mid = (lo + hi) / 2;
+    if (fieldStopFraction(Math.exp(mid), apertureDiameter, lambda, r0) < fraction) lo = mid;
+    else hi = mid;
+  }
+  return Math.exp((lo + hi) / 2);
 }

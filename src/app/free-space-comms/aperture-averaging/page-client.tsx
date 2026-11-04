@@ -6,7 +6,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  andrewsApertureFactor, apertureParameter, fresnelZone, rytovVariance, scintillationIndex,
+  andrewsApertureFactor, apertureParameter, fresnelZone, hardApertureFactor, rytovVariance, scintillationIndex,
   sphericalRytovVariance, weakApertureFactor,
 } from "../../../physics/free-space-comms/turbulence";
 
@@ -24,6 +24,8 @@ export default function ApertureAveragingPage() {
   const [rxDiameter, setRxDiameter] = useURLState("rxDiameter", 10, { min: 0, max: 100 }); // cm
   const [cn2, setCn2] = useURLState("cn2", 1e-15, { min: 1e-18, max: 1e-11 }); // m^(−2/3)
   const [distance, setDistance] = useURLState("distance", 1, { min: 0.001, max: 1000 }); // km
+  const [apertureRaw, setAperture] = useURLState("aperture", "hard");
+  const hard = apertureRaw !== "gaussian";
 
   const results = useMemo(() => {
     const lambda = wavelength * 1e-9;
@@ -32,20 +34,23 @@ export default function ApertureAveragingPage() {
     const sigmaR2 = rytovVariance(cn2, lambda, L);
     const d2 = apertureParameter(lambda, L, D);
     const aPlane = weakApertureFactor(d2, "plane");
+    const aHard = hardApertureFactor(d2);
+    const aRx = hard ? aHard : aPlane;
     return {
       sigmaR2,
       sigmaR2Sph: sphericalRytovVariance(cn2, lambda, L),
       fresnel: fresnelZone(lambda, L),
       d2,
       aPlane,
+      aHard,
       aSph: weakApertureFactor(d2, "spherical"),
       andPlane: andrewsApertureFactor(d2, "plane"),
       andSph: andrewsApertureFactor(d2, "spherical"),
-      weakSigmaI2: aPlane * sigmaR2,
+      weakSigmaI2: aRx * sigmaR2,
       allSigmaI2: scintillationIndex(sigmaR2, lambda, L, D),
-      reductionDb: 10 * Math.log10(1 / aPlane),
+      reductionDb: 10 * Math.log10(1 / aRx),
     };
-  }, [wavelength, rxDiameter, cn2, distance]);
+  }, [wavelength, rxDiameter, cn2, distance, hard]);
 
   const factorData = useMemo(() => {
     const lambda = wavelength * 1e-9;
@@ -57,20 +62,29 @@ export default function ApertureAveragingPage() {
     const d2s = Dm.map((D) => apertureParameter(lambda, L, D));
     const x = Dm.map((D) => D * 100);
     return [
-      { type: "scatter", mode: "lines", x, y: d2s.map((d) => weakApertureFactor(d, "plane")), name: "plane, exact", line: { color: "#06b6d4", width: 2 } },
+      { type: "scatter", mode: "lines", x, y: d2s.map((d) => hardApertureFactor(d)), name: "plane, hard aperture", line: { color: "#22c55e", width: 2 } },
+      { type: "scatter", mode: "lines", x, y: d2s.map((d) => weakApertureFactor(d, "plane")), name: "plane, Gaussian aperture", line: { color: "#06b6d4", width: 2 } },
       { type: "scatter", mode: "lines", x, y: d2s.map((d) => andrewsApertureFactor(d, "plane")), name: "plane, Andrews 1992", line: { color: "#06b6d4", dash: "dash" } },
-      { type: "scatter", mode: "lines", x, y: d2s.map((d) => weakApertureFactor(d, "spherical")), name: "spherical, exact", line: { color: "#a855f7", width: 2 } },
+      { type: "scatter", mode: "lines", x, y: d2s.map((d) => weakApertureFactor(d, "spherical")), name: "spherical, Gaussian aperture", line: { color: "#a855f7", width: 2 } },
       { type: "scatter", mode: "lines", x, y: d2s.map((d) => andrewsApertureFactor(d, "spherical")), name: "spherical, Andrews 1992", line: { color: "#a855f7", dash: "dash" } },
       ...(rxDiameter > 0 ? [{
         type: "scatter", mode: "markers", name: "Current", x: [rxDiameter],
-        y: [weakApertureFactor(apertureParameter(lambda, L, rxDiameter * 1e-2), "plane")],
+        y: [(hard ? hardApertureFactor : (d: number) => weakApertureFactor(d, "plane"))(apertureParameter(lambda, L, rxDiameter * 1e-2))],
         marker: { color: "#facc15", size: 10 },
       }] : []),
     ];
-  }, [wavelength, distance, rxDiameter]);
+  }, [wavelength, distance, rxDiameter, hard]);
 
   return (
     <>
+      <div className="mb-6 max-w-sm">
+        <label className="block text-sm text-gray-400 mb-1" htmlFor="aperture">Receiver aperture (for σ_I² and the reduction)</label>
+        <select id="aperture" value={hard ? "hard" : "gaussian"} onChange={(e) => setAperture(e.target.value)}
+          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+          <option value="hard">Hard circular (a lens or telescope)</option>
+          <option value="gaussian">Gaussian (exp(−κ²D²/16) model)</option>
+        </select>
+      </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={200} max={20000} />
         <ValidatedNumberInput label="Receiver Diameter (cm)" value={rxDiameter} onChange={setRxDiameter} min={0} max={100} step="any" />
@@ -87,12 +101,13 @@ export default function ApertureAveragingPage() {
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ResultCard label="Fresnel zone √(L/k)" value={`${fmt(results.fresnel * 100)} cm`} tone="cyan" />
         <ResultCard label="Aperture parameter d² = kD²/4L" value={fmt(results.d2)} tone="blue" />
+        <ResultCard label="A, plane wave (hard aperture)" value={fmt(results.aHard)} tone="green" subtext="uniform circular pupil" />
         <ResultCard label="A, plane wave (Gaussian aperture)" value={fmt(results.aPlane)} tone="green" subtext={`Andrews 1992: ${fmt(results.andPlane)}`} />
         <ResultCard label="A, spherical wave (Gaussian aperture)" value={fmt(results.aSph)} tone="purple" subtext={`Andrews 1992: ${fmt(results.andSph)}`} />
         <ResultCard label="Rytov variance σ_R² / β₀²" value={`${fmt(results.sigmaR2)} / ${fmt(results.sigmaR2Sph)}`} tone="gray" subtext="plane / spherical" />
-        <ResultCard label="Weak σ_I²(D) = A·σ_R²" value={fmt(results.weakSigmaI2)} tone="orange" subtext="plane wave, weak fluctuations only" />
-        <ResultCard label="All-regime σ_I²(D)" value={fmt(results.allSigmaI2)} tone="green" subtext="plane wave, weak to strong; interpolation" />
-        <ResultCard label="Scintillation reduction" value={`${fmt(results.reductionDb)} dB`} tone="cyan" subtext="10·log10(1/A), plane wave" />
+        <ResultCard label="Weak σ_I²(D) = A·σ_R²" value={fmt(results.weakSigmaI2)} tone="orange" subtext={`plane wave, ${hard ? "hard" : "Gaussian"} aperture, weak fluctuations only`} />
+        <ResultCard label="All-regime σ_I²(D)" value={fmt(results.allSigmaI2)} tone="green" subtext="plane wave, Gaussian aperture; weak-to-strong interpolation" />
+        <ResultCard label="Scintillation reduction" value={`${fmt(results.reductionDb)} dB`} tone="cyan" subtext={`10·log10(1/A), plane wave, ${hard ? "hard" : "Gaussian"} aperture`} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 mb-6">
@@ -104,8 +119,10 @@ export default function ApertureAveragingPage() {
         <h3 className="text-lg font-semibold">Model</h3>
         <p className="font-mono">A = σ_I²(D)/σ_I²(0),   d² = kD²/(4L)</p>
         <p>
-          For a Gaussian aperture in weak fluctuations, A is computed by numerical integration of the Kolmogorov
-          spectrum (plane and spherical wave). Andrews&apos; interpolation [1 + 1.062 d²]^(−7/6) is within 13 %
+          In weak fluctuations A is computed by numerical integration of the Kolmogorov spectrum: for a Gaussian
+          aperture (plane and spherical wave) and for a hard circular aperture with the Airy filter [2J₁(x)/x]²
+          (plane wave). The hard-aperture integral is checked against its exact small- and large-d² expansions
+          (Mellin transforms, Gradshteyn &amp; Ryzhik 6.574.2). Andrews&apos; interpolation [1 + 1.062 d²]^(−7/6) is within 13 %
           of the exact plane-wave value for d² ≥ 1 (4 % at 10 cm, 1 km), but his spherical-wave version (0.333) runs 25–37 % high at d² = 1–10 (peak 1.37× near d² ≈ 2.3) and 10–13 % low for d² ≥ 1000.
           For D ≫ √(L/k), A ∝ d^(−7/3).
         </p>
@@ -113,9 +130,10 @@ export default function ApertureAveragingPage() {
           The factor applies only for σ_R² &lt; 1. For stronger turbulence use the all-regime σ_I²(D) (plane wave,
           Andrews &amp; Phillips, <em>Laser Beam Propagation through Random Media</em>, 2nd ed., 2005). That expression is
           an interpolation whose aperture terms fall as d⁻² instead of d^(−7/3), so for d² ≫ 1 it averages too little
-          (1.8× the weak value at 10 cm, 1 km); in weak turbulence A·σ_R² is the better value. A hard circular
-          aperture gives ≈ 5–11 % lower A (more averaging) than this Gaussian aperture at d² = 1–30, but a higher A at
-          large d²: the ratio crosses 1 near d² ≈ 100 and tends to 1.13 as d² → ∞.
+          (1.8× the weak value at 10 cm, 1 km); in weak turbulence A·σ_R² is the better value. The hard
+          aperture gives 5–14 % lower A (more averaging) than the Gaussian aperture at d² = 1–30, but a higher A at
+          large d²: the ratio crosses 1 at d² ≈ 77 and tends to 1.130 as d² → ∞. The spherical-wave hard aperture is not
+          computed.
         </p>
       </div>
     </>
