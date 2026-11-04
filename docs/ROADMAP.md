@@ -5,12 +5,12 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 196, 2026-11-04)
+## Status (session 197, 2026-11-04)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
   textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) and 5w-13 (materials) and 5w-14 (spectroscopy) and 5w-15 (thin-film + polarization) done (sessions 163–177): 5w is complete; KRS-5
-  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6j done (sessions 179–194); Gemini hero done (session 195). Phase 7 (Known limitations: features): 7a done (session 196); next 7b. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6j done (sessions 179–194); Gemini hero done (session 195). Phase 7 (Known limitations: features): 7a–7b done (sessions 196–197); next 7c. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -182,6 +182,10 @@ Evidence for a later extension. Reopen an item only with a new source or a user 
 **Free-space comms**
 - `aperture-averaging`: the hard circular aperture is plane-wave only (session 197). The spherical wave needs the kernel
   ∫₀^∞ (1 + u)^(−11/3) [1 − cos(vu)] du, a complex incomplete gamma; it is shown with the Gaussian aperture.
+- `receiver-fov` (session 197): the field stop uses the mean (long-exposure) encircled energy; short-exposure spot wander and the
+  receiver's central obscuration in the OTF are not modelled (stated on the page).
+- `optical-antenna` (session 197): M² > 1 is a Gaussian Schell-model beam; real multimode profiles (top-hat fibre modes, diode
+  stacks) differ, so M² near 10 is indicative (stated on the page).
 - `beam-wander`: F keeps the geometric-optics expansion of 1 − exp(−ΛLκ²ξ²/k) (≈ 1.3 % high at the defaults, reviewer's
   exact κ-integral); Berman 2007's 1.919 (2r₀)^(−1/3) and Vasylyev PRL 117, 090501 (0.94 per axis, focused) don't match A&P's 2.42 (filter models).
 - `adaptive-optics`: Hudgin's zonal 0.28 (d/r₀)^(5/3) sits ≈ 10 % below Noll's Δ_N for all N ≤ 5000 (no crossing); κ spans 0.23–0.30 by
@@ -291,8 +295,7 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 Triage of "Known limitations" (session 195): only items with an open, known model. The data-blocked ones (paywalled or unread
 sources: Ar⁺/CO₂ g₀, Nd/Tm/Ho σ, Sheik-Bahae n₂, ZBLAN, LiTaO₃, …) stay parked until a source turns up. Each stage: a
 `physics-reviewer` pass on the new model against its primary source, golden tests, the modelNote updated, the limitation line removed.
-- [ ] 7b free-space comms: `aperture-averaging` hard circular aperture (GR 6.574.2, checked session 173), `receiver-fov` turbulence
-  spot growth (λ/r₀) and field-stop clipping, `optical-antenna` Gaussian Schell-model far field for M² > 2.
+- [x] 7b free-space comms (session 197, `phase-7/7b-fso`, PR #235). See Done.
 - [ ] 7c lasers: `q-switched-laser` g₀l input and Degnan optimum coupling, `optical-parametric-oscillator` PPLN preset (Zelmon,
   already in `three-wave.ts`) and KTP if sourced.
 - [ ] 7d laser safety: scanned mode on `lidar-safety` (scanned-pass rules already in the shared limits, sessions 180–181). Own stage: safety-critical.
@@ -321,6 +324,8 @@ sources: Ar⁺/CO₂ g₀, Nd/Tm/Ho σ, Sheik-Bahae n₂, ZBLAN, LiTaO₃, …) 
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 7b free-space comms (session 197, `phase-7/7b-fso`, PR #235): hard-aperture A (A(1) 0.413443, hard/Gauss → 1.1298, Churnside 1/1.07);
+  field-stop EE (0.8378 at the first dark ring, spherical r₀ default); GSM antenna to M² 10 (g 0.681173 at α 1, γ 0.15, M² 1.1); 1234 tests.
 - 7a small options (session 196, `phase-7/7a-small-options`, PR #234): splice gap multipass Gaussian reflections (Airy 0.5800 dB at λ/4, 0.21790 dB at
   41 µm); SBS K + linewidth; lossy FWM transfer matrices (G 8.633275 at 10 dB/km); EM crossover S* 36.6671; STED λ (Harke Eq. 7, 49.0942 nm); 1230 tests.
 - Gemini hero (session 195, `phase-5/gemini-hero`, PR #233): user's Gemini SVG chip hero ported (photonic-chip-art/-hero.tsx); bays link to

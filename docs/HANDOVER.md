@@ -1,33 +1,37 @@
-# Handover — 2026-11-04 (session 196 → session 197)
+# Handover — 2026-11-04 (session 197 → session 198)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 196 did Phase 7a (small options on five pages) on `phase-7/7a-small-options` (PR #234). Next: Phase 7b
-(free-space comms: aperture averaging, receiver FOV, Gaussian Schell-model antenna), on `phase-7/7b-fso`.
+Session 197 did Phase 7b (free-space comms: hard-aperture averaging, field-stop clipping, Gaussian Schell-model antenna) on
+`phase-7/7b-fso` (PR #235). Next: Phase 7c (lasers: `q-switched-laser` g₀l and Degnan coupling, OPO PPLN preset) on `phase-7/7c-lasers`.
 
 ## State
-- `fiber-optics/gaussian-coupling.ts` `gapReflectionFactor(n_f, n_g, z, λ, w)`: gap reflections as a coherent sum of multiply
-  reflected Gaussian beams over the single pass (Kogelnik & Li q-parameter). Airy for z ≪ z_R, the 1/(2m+1) series for z ≫ z_R.
-  `splice-loss` uses it, with a fibre phase-index input. `connector-insertion-loss` stays on Airy × Gaussian on purpose (gap
-  capped at 5 µm, ≤ 0.015 dB apart).
-- `nonlinear-effects`: polarization select (K: co-polarized 1/1, standard 1.5/2, scrambled 2/2), source linewidth and
-  Brillouin bandwidth inputs, using the existing `sbsThreshold` options.
-- `wave-optics/four-wave-mixing.ts` `fwmLossyEvolution(γ, P₀, Δβ, α, L, samples)`: frame b = B·e^(−iθ/2), constant-coefficient
-  matrix per segment with P at the midpoint, exact cosh/sinh step. Steps: αh ≤ 0.01 and γP₀L(αh)² ≤ 1e-5; [] above 10⁶.
-  Spectrum is plain render code (≤ 96 ms for 401 points on 5 km HNLF); no useMemo (React Compiler lint rejects it here).
-- `detectors/camera-snr.ts` `emCrossoverSignal`: S* = (σ_c² − (σ_EM/G)²)/(F² − 1) − C; `em-gain` has the conventional read noise.
-- `imaging/super-resolution.ts` `stedLateralFwhm(λ, NA, ζ, λ_STED = λ)` = λ/(2NA√(1 + ζ(λ/λ_STED)²)); page input λ_STED 660 nm.
-- Gate: 1230 tests, 5 eslint warnings (unchanged). 411/411 tiered, 0 known issues.
+- `physics/math.ts`: `besselJ1Fast` (A&S 9.4.4/9.4.6, < 1e-7), `besselI0ScaledFast` (e^(−x)I₀, A&S 9.8.1/9.8.2, ≤ 5e-7 rel),
+  `integrateGaussLegendre8(f, a, b)` (one 8-point panel; tile it yourself).
+- `free-space-comms/turbulence.ts`: `hardApertureFactor(d²)` (exact weak plane-wave A, hard aperture; ≈ 0.5 ms),
+  `fieldStopFraction(θ, D, λ, r₀, method)` (long-exposure EE, large-v series beyond 100 periods), `fieldStopHalfAngle(f, D, λ, r₀)`,
+  `sphericalFriedParameter` (1.8011× plane r₀). `aperture-averaging` has a hard/Gaussian select (default hard);
+  `receiver-fov` has Cn², distance and a plane/spherical r₀ select (default spherical) and multiplies the signal by EE.
+- `free-space-comms/link-budget.ts` `gsmFarField(α, γ, M²)` → {efficiency g, width u at 1/e², intensity(u)}: Gori tilted-copy
+  average of the clipped coherent pattern; coherent (Klein–Degnan) for M² − 1 < 1e-6; Q grid step min(0.05, 0.2/σ),
+  ≤ 0.2 s at α 3, M² 10. `optical-antenna` M² input is 1–10.
+- Gate: 1234 tests, 5 eslint warnings (unchanged). 411/411 tiered, 0 known issues.
 
 ## Next actions
 1. `/ship`; merge on the user's yes. Release only on request, then:
-   `node scripts/post-merge-check.mjs <sha> imaging/super-resolution=42.1 fiber-optics/splice-loss fiber-optics/nonlinear-effects wave-optics/four-wave-mixing detectors/em-gain`
+   `node scripts/post-merge-check.mjs <sha> free-space-comms/aperture-averaging free-space-comms/receiver-fov free-space-comms/optical-antenna`
    then `node scripts/ui-check.mjs https://photonics-calculators.vercel.app` (expect ALL PASS, 0 console errors).
-2. Phase 7b (ROADMAP). `aperture-averaging` hard aperture: GR 6.574.2 was checked in session 173.
+2. Phase 7c (ROADMAP).
 3. Ask the user for PDFs: Bai 2020 (APL Photonics 5, 031301: abstract 79 cm/GW vs body 60 ± 9), Patel 2001 (Yb:YAG κ at
    10 at.%), Siegman "Lasers" ch. 11/21 pages.
 4. KRS-5 by hand: `materials/transparency-range?material=krs5` at 10 µm: n 2.3707, loss 28.4 %.
 
 ## Non-obvious facts
+- **Session 197:** the GSM convention: σ_g = w/√(M⁴ − 1) with w the 1/e² *intensity* radius (Mandel & Wolf §5.6.4, w = 2σ_S);
+  a variable named `m2` already holds M², so M⁴ is `m2*m2` (one bug from `m2 ** 4`). Simpson on a Q grid with |A(Q)|² fringes
+  needs step ≈ 0.05 for 1e-6; check a quadrature against an independent brute-force integral (4-D on-axis CSD, 2-D Cartesian
+  convolution) rather than its own refinement. Oscillatory Bessel tails: integrate the mean envelope analytically past a cutoff
+  and subtract the end term. Horizontal links take the spherical-wave r₀ (point source); plane wave is for downlinks.
+  Mellin–Barnes (GR 6.574.2) gives both asymptotic ends of ∫w(t)[2J₁(dt)/(dt)]²dt: good golden values for any filter integral.
 - **Session 196:** Harke et al., Opt. Express 16, 4154 (2008) (user's PDF): Eq. 1 uses the *inhibition* wavelength;
   Eq. 7 d = d_c/√(1 + d_c²a²ζ). Their pattern (735 nm, NA 1.36) has a = 0.00347 nm⁻¹, 0.94 × our 2NA/λ_STED: a real doughnut
   is ≈ 6 % wider at high ζ (in the note and tests). Optica PDFs behind bot checks: the user can upload them. To read a PDF
