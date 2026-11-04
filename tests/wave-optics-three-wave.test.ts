@@ -6,7 +6,7 @@ import {
   idlerWavelength, mixingEfficiency, parametricGain, pplnOpaParameters, qpmDeff, sumFrequencyWavelength,
 } from "../src/physics/wave-optics/three-wave";
 import { c } from "../src/physics/constants";
-import { parametricGainCoefficient } from "../src/physics/wave-optics/optical-parametric-oscillator";
+import { parametricGainCoefficient, phaseMismatch, qpmPeriod } from "../src/physics/wave-optics/optical-parametric-oscillator";
 import { sfgCoefficient } from "../src/physics/imaging/second-harmonic-generation";
 
 function assertRel(actual: number, expected: number, tol: number, label: string) {
@@ -123,6 +123,15 @@ test("PPLN OPA parameters from Zelmon 1997 (e-ray, 21 °C) reproduce the page de
   // 1550 nm pumped to 3000 nm: the idler 3206.9 nm is inside the fit; 2 µm pump to 3 µm gives a 6 µm idler, outside 0.4–5 µm.
   assert.ok(Number.isFinite(pplnOpaParameters(1550e-9, 3000e-9).gvm));
   assert.ok(Number.isNaN(pplnOpaParameters(2000e-9, 3000e-9).gvm));
+});
+
+test("PPLN OPO preset: first-order grating period at 1064 → 1550 nm from the Zelmon indices (hand: 29.91 µm)", () => {
+  // Hand: 1/Λ = n_p/λ_p − n_s/λ_s − n_i/λ_i = 2.15554/1.064 − 2.13756/1.55 − 2.08145/3.39340 = 0.033431 µm⁻¹.
+  const p = pplnOpaParameters(1064e-9, 1550e-9);
+  const dk = phaseMismatch({ lambdaPump: 1064e-9, lambdaSignal: 1550e-9, dEff: 1e-12, nPump: p.nPump, nSignal: p.nSignal, nIdler: p.nIdler });
+  assertRel(qpmPeriod(dk), 29.912e-6, 2e-4, "Λ");
+  // Matched indices leave no period (edge).
+  assert.ok(!Number.isFinite(qpmPeriod(0)));
 });
 
 test("degeneracyLimits: the signal's detuning stays on its side of ν_p/2 (Codex review 2026-10-24)", () => {

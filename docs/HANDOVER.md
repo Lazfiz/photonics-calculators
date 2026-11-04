@@ -1,31 +1,33 @@
-# Handover — 2026-11-04 (session 197 → session 198)
+# Handover — 2026-11-04 (session 198 → session 199)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 197 did Phase 7b (free-space comms: hard-aperture averaging, field-stop clipping, Gaussian Schell-model antenna) on
-`phase-7/7b-fso` (PR #235). Next: Phase 7c (lasers: `q-switched-laser` g₀l and Degnan coupling, OPO PPLN preset) on `phase-7/7c-lasers`.
+Session 198 did Phase 7c (lasers: Degnan optimum coupling and g₀l pump on `q-switched-laser`, PPLN preset on
+`optical-parametric-oscillator`) on `phase-7/7c-lasers` (PR #236). Next: Phase 7d (`lidar-safety` scanned mode, safety-critical).
 
 ## State
-- `physics/math.ts`: `besselJ1Fast` (A&S 9.4.4/9.4.6, < 1e-7), `besselI0ScaledFast` (e^(−x)I₀, A&S 9.8.1/9.8.2, ≤ 5e-7 rel),
-  `integrateGaussLegendre8(f, a, b)` (one 8-point panel; tile it yourself).
-- `free-space-comms/turbulence.ts`: `hardApertureFactor(d²)` (exact weak plane-wave A, hard aperture; ≈ 0.5 ms),
-  `fieldStopFraction(θ, D, λ, r₀, method)` (long-exposure EE, large-v series beyond 100 periods), `fieldStopHalfAngle(f, D, λ, r₀)`,
-  `sphericalFriedParameter` (1.8011× plane r₀). `aperture-averaging` has a hard/Gaussian select (default hard);
-  `receiver-fov` has Cn², distance and a plane/spherical r₀ select (default spherical) and multiplies the signal by EE.
-- `free-space-comms/link-budget.ts` `gsmFarField(α, γ, M²)` → {efficiency g, width u at 1/e², intensity(u)}: Gori tilted-copy
-  average of the clipped coherent pattern; coherent (Klein–Degnan) for M² − 1 < 1e-6; Q grid step min(0.05, 0.2/σ),
-  ≤ 0.2 s at α 3, M² 10. `optical-antenna` M² input is 1–10.
-- Gate: 1234 tests, 5 eslint warnings (unchanged). 411/411 tiered, 0 known issues.
+- `wave-optics/pulsed-laser.ts` `qSwitchOptimumCoupling(g0l, γ_i, hν, A, σ)` → {z, couplerLoss, reflectance, ratio, extraction,
+  energy}: γ₂,opt = 2γ_i(z − 1 − ln z)/ln z, E_max = (hνA/2σ)2γ_i(z − 1 − ln z), r = z ln z/(z − 1), η = 1 − 1/z; NaN for γ_i = 0
+  or z ≤ 1. `q-switched-laser`: `pump` = ratio (default, old links unchanged) | gain (`g0l`, default 0.6); optimum cards in both
+  modes (g₀l = rγ in ratio mode); E-vs-R chart at fixed g₀l down to min(0.01, R_opt/2); RK4 shape only for r ≤ 50.
+- `optical-parametric-oscillator`: PPLN type 0 box (`pplnOpaParameters`, d_eff = 2·19.5/π = 12.41 pm/V, walk-off 0); the Δk row
+  then shows the grating period. Registry cites Zelmon and Shoji. KTP deferred (needs a principal-plane type II cut solver).
+- Gate: 1236 tests, 5 eslint warnings (unchanged). 411/411 tiered, 0 known issues.
 
 ## Next actions
 1. `/ship`; merge on the user's yes. Release only on request, then:
-   `node scripts/post-merge-check.mjs <sha> free-space-comms/aperture-averaging free-space-comms/receiver-fov free-space-comms/optical-antenna`
-   then `node scripts/ui-check.mjs https://photonics-calculators.vercel.app` (expect ALL PASS, 0 console errors).
-2. Phase 7c (ROADMAP).
+   `node scripts/post-merge-check.mjs <sha> "wave-optics/q-switched-laser=2.655" "wave-optics/optical-parametric-oscillator=2.23357"`
+   (q-switch default optimum E_max 2.655 mJ, R_opt 0.741; PPLN n_p at the 532 nm default) and `node scripts/ui-check.mjs https://photonics-calculators.vercel.app`.
+2. Phase 7d (ROADMAP).
 3. Ask the user for PDFs: Bai 2020 (APL Photonics 5, 031301: abstract 79 cm/GW vs body 60 ± 9), Patel 2001 (Yb:YAG κ at
-   10 at.%), Siegman "Lasers" ch. 11/21 pages.
+   10 at.%), Siegman "Lasers" ch. 11/21 pages, Degnan 1989 (to cite its equation numbers).
 4. KRS-5 by hand: `materials/transparency-range?material=krs5` at 10 µm: n 2.3707, loss 28.4 %.
 
 ## Non-obvious facts
+- **Session 198:** `devctl` (CPU scheduler shared with another project) holds a *whole* Bash command line while it waits: in
+  `node edit.mjs && npx tsx --test …` neither part runs (exit 75), so an edit can silently not happen. Run edits and tests
+  in separate calls and check `git diff --stat` before trusting a test count. node:test prints `ℹ tests N`, not `# pass`.
+  Degnan's δ is the round-trip dissipative loss: δ = 2γ_i with our single-pass γ_i, z = g₀l/γ_i. Brute force over R
+  (`qSwitchPulse` energy) confirms the closed form to 1e-7; it's exact within the instant-switch rate equations.
 - **Session 197:** the GSM convention: σ_g = w/√(M⁴ − 1) with w the 1/e² *intensity* radius (Mandel & Wolf §5.6.4, w = 2σ_S);
   a variable named `m2` already holds M², so M⁴ is `m2*m2` (one bug from `m2 ** 4`). Simpson on a Q grid with |A(Q)|² fringes
   needs step ≈ 0.05 for 1e-6; check a quadrature against an independent brute-force integral (4-D on-axis CSD, 2-D Cartesian

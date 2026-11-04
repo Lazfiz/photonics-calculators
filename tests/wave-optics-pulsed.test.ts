@@ -8,7 +8,7 @@ import {
   xieDegradation,
 } from "../src/physics/wave-optics/free-electron-laser";
 import {
-  TIME_BANDWIDTH, cavityLengthForRepRate, photonLifetime, qSwitchExtraction, qSwitchPeakPhotons, qSwitchPulse,
+  TIME_BANDWIDTH, cavityLengthForRepRate, photonLifetime, qSwitchExtraction, qSwitchOptimumCoupling, qSwitchPeakPhotons, qSwitchPulse,
   qSwitchWaveform, roundTripTime, singlePassLoss, transformLimitedBandwidth, wavelengthWidth,
 } from "../src/physics/wave-optics/pulsed-laser";
 
@@ -51,6 +51,42 @@ test("q-switch: energy is Degnan's (hνA/2σ) ln(1/R) ln(n_i/n_f) and peak Φ_p/
   assertRel(p.energy, 2.63500e-3, 1e-4, "E (hand: 2.618 mJ × 0.35667 × 2.82144)");
   assertRel(p.peak, 146939, 1e-4, "P_p");
   assert.ok(Number.isNaN(qSwitchPulse(3, hv, A, 0, 0.3, tauC).energy));
+});
+
+test("q-switch: Degnan optimum coupling R = exp[−δ(z − 1 − ln z)/ln z], E = E_sc(z − 1 − ln z) (Degnan 1989; Koechner ch. 8)", () => {
+  // δ = 2γ_i is the round-trip dissipative loss, z = 2g₀l/δ. Hand case z = e²: ln z = 2, z − 1 − ln z = e² − 3.
+  const gi = 0.02;
+  const o = qSwitchOptimumCoupling(gi * Math.exp(2), gi, 1, 1, 1);
+  assertRel(o.z, Math.exp(2), 1e-12, "z");
+  assertRel(o.couplerLoss, 0.0877811219786, 1e-10, "γ₂ = 0.02 (e² − 3)");
+  assertRel(o.reflectance, 0.915961338590, 1e-10, "R_opt");
+  assertRel(o.ratio, 2.31303528550, 1e-10, "r = z ln z/(z − 1)");
+  assertRel(o.extraction, 0.864664716763, 1e-10, "η = 1 − 1/z");
+  assertRel(o.energy, 0.5 * 0.175562243957, 1e-10, "E = (hνA/2σ)·2γ_i(e² − 3)");
+  // At the optimum r and η still satisfy rη = −ln(1 − η) = ln z.
+  assertRel(o.ratio * o.extraction, 2, 1e-12, "rη = ln z");
+  // Nd:YAG defaults (1064 nm, 1 mm top hat, σ 2.8e-19 cm², 2 % loss, g₀l = 3γ at R = 0.7): the optimum beats a brute-force
+  // scan of qSwitchPulse over the coupling, and its neighbours at R(1 ± 1 %) give less.
+  const hv = (h * c) / 1064e-9;
+  const A = Math.PI * 0.5e-3 ** 2;
+  const sigma = 2.8e-23;
+  const g0l = 3 * singlePassLoss(1, 0.7, 0.02);
+  const giY = Math.log(1 / 0.98);
+  const energyAt = (R: number) => qSwitchPulse(g0l / singlePassLoss(1, R, 0.02), hv, A, sigma, Math.log(1 / R), 1).energy;
+  const y = qSwitchOptimumCoupling(g0l, giY, hv, A, sigma);
+  assertRel(y.z, 29.4822139, 1e-7, "z = 3γ/γ_i");
+  assertRel(y.reflectance, 0.74104240, 1e-7, "R_opt");
+  assertRel(y.energy, 2.65535765e-3, 1e-7, "E_max (vs 2.635 mJ at R = 0.7)");
+  let best = 0;
+  for (let k = 1; k < 20000; k++) best = Math.max(best, energyAt(k / 20000) || 0);
+  assertRel(y.energy, best, 1e-7, "E_max vs brute force");
+  assertRel(energyAt(y.reflectance), y.energy, 1e-12, "E(R_opt) from qSwitchPulse");
+  assert.ok(energyAt(y.reflectance * 0.99) < y.energy && energyAt(y.reflectance * 1.01) < y.energy, "a maximum");
+  // Edges: no internal loss (optimum at R → 0), below threshold (z ≤ 1), and z → 1⁺ (γ₂ → γ_i(z − 1), E → 0).
+  assert.ok(Number.isNaN(qSwitchOptimumCoupling(0.5, 0, 1, 1, 1).reflectance));
+  assert.ok(Number.isNaN(qSwitchOptimumCoupling(0.1, 0.1, 1, 1, 1).energy));
+  const near = qSwitchOptimumCoupling(0.1 * (1 + 1e-6), 0.1, 1, 1, 1);
+  assertRel(near.couplerLoss, 0.1 * 1e-6, 1e-5, "γ₂ ≈ γ_i w for small w = z − 1");
 });
 
 test("q-switch: RK4 waveform conserves rη and its FWHM matches the quadrature ∫dx/(xΦ(x))", () => {

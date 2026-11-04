@@ -445,7 +445,7 @@ export const waveOptics: CalculatorEntry[] = [
     title: "Optical Parametric Oscillator",
     description: "Parametric gain, walk-off-limited interaction length and singly-resonant OPO threshold from pump wavelength, d_eff, beam radius and cavity loss.",
     tier: "textbook",
-    modelNote: "Plane-wave estimate: perfect phase matching, no pump depletion, no focusing optimisation, idler not resonated. Pump walk-off enters through a near-field overlap length (pump and signal mode of equal radius, pump centred at mid-crystal), our own derivation: L for no walk-off, 2^¼·√π·w/ρ for a long crystal.",
+    modelNote: "Plane-wave estimate: perfect phase matching, no pump depletion, no focusing optimisation, idler not resonated. Presets: BBO type I (angle cut) and PPLN type 0 (Zelmon e-indices, d_eff = 2d₃₃/π, Δk gives the grating period). Pump walk-off enters through a near-field overlap length (pump and signal mode of equal radius, pump centred at mid-crystal), our own derivation: L for no walk-off, 2^¼·√π·w/ρ for a long crystal.",
     references: [
       {
         citation: "Boyd R. W. (2008). Nonlinear Optics, 3rd ed., §2.8 and §2.9. Academic Press. Parametric gain coefficient and singly resonant threshold.",
@@ -453,6 +453,14 @@ export const waveOptics: CalculatorEntry[] = [
       {
         citation: "Boyd G. D., Kleinman D. A. (1968). Parametric Interaction of Focused Gaussian Light Beams. J. Appl. Phys. 39, 3597–3639. Walk-off aperture length l_a = √π w/ρ.",
         url: "https://doi.org/10.1063/1.1656831",
+      },
+      {
+        citation: "Zelmon D. E., Small D. L., Jundt D. (1997). Infrared corrected Sellmeier coefficients for congruently grown lithium niobate and 5 mol.% magnesium oxide–doped lithium niobate. J. Opt. Soc. Am. B 14, 3319. PPLN e-indices.",
+        url: "https://doi.org/10.1364/JOSAB.14.003319",
+      },
+      {
+        citation: "Shoji I., Kondo T., Kitamoto A., Shirane M., Ito R. (1997). Absolute scale of second-order nonlinear-optical coefficients. J. Opt. Soc. Am. B 14, 2268. Table 10: congruent LiNbO₃ d₃₃ = 19.5 pm/V (SHG of 1.313 µm), used for the PPLN preset.",
+        url: "https://doi.org/10.1364/JOSAB.14.002268",
       },
       {
         citation: "Myers L. E. et al. (1995). Quasi-phase-matched optical parametric oscillators in bulk periodically poled LiNbO₃. J. Opt. Soc. Am. B 12, 2102. Wavelength form of the gain coefficient, equal to Boyd's.",
@@ -481,7 +489,7 @@ export const waveOptics: CalculatorEntry[] = [
     description: "Q-switched laser: peak and average power and duty cycle of a pulse train, plus pulse energy, width and peak power from the Q-switch rate equations.",
     keywords: ["Q-switching", "giant pulse", "Nd:YAG Q-switched", "extraction efficiency", "photon lifetime", "Degnan"],
     tier: "textbook",
-    modelNote: "Pulse train: shape factor × E/τ for Gaussian, sech² or flat pulses. Cavity model: four-level rate equations with an instant switch and an empty lower level (Wagner–Lengyel, Degnan), top-hat mode, integrated numerically for the shape and FWHM. The inversion ratio r is an input held fixed when R_oc changes, so the optimum coupling at a fixed pump (Degnan) isn't shown. A slow lower-level decay, a finite switching time and transverse gain variation are not modelled. Nd:YAG σ default from Koechner.",
+    modelNote: "Pulse train: shape factor × E/τ for Gaussian, sech² or flat pulses. Cavity model: four-level rate equations with an instant switch and an empty lower level (Wagner–Lengyel, Degnan), top-hat mode, integrated numerically for the shape and FWHM. Pump as r or as g₀l (r = g₀l/γ); Degnan's optimum coupling and E_max in closed form. A slow lower-level decay, a finite switching time and transverse gain variation are not modelled. Nd:YAG σ default from Koechner.",
     references: [
       { citation: "Wagner W. G., Lengyel B. A. (1963). Evolution of the giant pulse in a laser. J. Appl. Phys. 34, 2040–2046.", url: "https://doi.org/10.1063/1.1729732" },
       { citation: "Degnan J. J. (1989). Theory of the optimally coupled Q-switched laser. IEEE J. Quantum Electron. 25, 214–220.", url: "https://doi.org/10.1109/3.16265" },

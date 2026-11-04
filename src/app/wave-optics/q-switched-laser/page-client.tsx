@@ -6,7 +6,7 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { c, h } from "../../../physics/constants";
 import { peakPower, type PulseShape } from "../../../physics/laser-safety/peak-power";
-import { photonLifetime, qSwitchPulse, qSwitchWaveform, singlePassLoss } from "../../../physics/wave-optics/pulsed-laser";
+import { photonLifetime, qSwitchOptimumCoupling, qSwitchPulse, qSwitchWaveform, singlePassLoss } from "../../../physics/wave-optics/pulsed-laser";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
@@ -18,7 +18,9 @@ export default function QSwitchedLaserPage() {
   const [energyRaw, setEnergy] = useURLState("pulseEnergy", 1); // mJ
   const [widthRaw, setWidth] = useURLState("pulseWidth", 10); // ns FWHM
   const [shapeRaw, setShape] = useURLState("shape", "gaussian");
+  const [pumpMode, setPumpMode] = useURLState("pump", "ratio");
   const [ratioRaw, setRatio] = useURLState("inversionRatio", 3);
+  const [g0lRaw, setG0l] = useURLState("g0l", 0.6);
   const [wavelengthRaw, setWavelength] = useURLState("wavelength", 1064); // nm
   const [sigmaRaw, setSigma] = useURLState("sigma", 2.8); // 1e-19 cm²
   const [diameterRaw, setDiameter] = useURLState("modeDiameter", 1); // mm
@@ -32,7 +34,8 @@ export default function QSwitchedLaserPage() {
   const energy = clamp(energyRaw, 1e-9, 1e6, 1) * 1e-3;
   const width = clamp(widthRaw, 1e-3, 1e6, 10) * 1e-9;
   const shape = SHAPES[shapeRaw] ?? "gaussian";
-  const r = clamp(ratioRaw, 1.01, 50, 3);
+  const fixedGain = pumpMode === "gain";
+  const g0lIn = clamp(g0lRaw, 1e-4, 20, 0.6);
   const lambda = clamp(wavelengthRaw, 200, 20000, 1064) * 1e-9;
   const sigma = clamp(sigmaRaw, 1e-4, 1e4, 2.8) * 1e-23; // m²
   const d = clamp(diameterRaw, 0.01, 100, 1) * 1e-3;
@@ -49,14 +52,42 @@ export default function QSwitchedLaserPage() {
 
   // Rate-equation pulse.
   const gamma = singlePassLoss(1, R_oc, loss);
+  const gammaI = singlePassLoss(1, 1, loss);
+  // One of r and g₀l is the input; the other follows from r = g₀l/γ.
+  const r = fixedGain ? g0lIn / gamma : clamp(ratioRaw, 1.01, 50, 3);
+  const g0l = fixedGain ? g0lIn : r * gamma;
   const opticalLength = cavity + (n - 1) * rod;
   const tauC = photonLifetime(opticalLength, gamma);
   const area = (Math.PI * d * d) / 4;
   const hv = (h * c) / lambda;
   const pulse = qSwitchPulse(r, hv, area, sigma, Math.log(1 / R_oc), tauC);
-  const wave = qSwitchWaveform(r);
+  // The RK4 shape costs ≈ r·(1/τ_c) steps: integrate it up to r = 50 only (the ratio input's range).
+  const integrate = r <= 50;
+  const wave = integrate ? qSwitchWaveform(r) : { t: [], shape: [], fwhm: NaN, extracted: NaN };
   const fwhm = wave.fwhm * tauC;
   const fluence = pulse.energy / area;
+
+  // Degnan's optimum coupling at this pump (g₀l fixed), and the pulse at that coupling.
+  const opt = qSwitchOptimumCoupling(g0l, gammaI, hv, area, sigma);
+  const optTauC = photonLifetime(opticalLength, gammaI + opt.couplerLoss / 2);
+  const optPulse = qSwitchPulse(opt.ratio, hv, area, sigma, opt.couplerLoss, optTauC);
+  const optNote = !(gammaI > 0)
+    ? "No optimum without internal loss: the energy keeps rising as R → 0."
+    : !(g0l > gammaI) ? "No lasing at any coupling: g₀l must exceed the internal loss γ_i."
+    : opt.reflectance < 0.01 ? "The optimum R is below the 0.01 the input accepts; there the mean-field (uniform-intensity) model is poor anyway." : "";
+  const rMin = Number.isFinite(opt.reflectance) ? Math.min(0.01, opt.reflectance / 2) : 0.01;
+  const energyAt = (R: number) => qSwitchPulse(g0l / singlePassLoss(1, R, loss), hv, area, sigma, Math.log(1 / R), 1).energy;
+  const couplingCurve = [
+    {
+      name: "Pulse energy at this g₀l",
+      color: "#34d399",
+      points: Array.from({ length: 200 }, (_, i) => rMin + (i / 199) * (0.999 - rMin))
+        .map((R) => ({ x: round6(R), y: round6(energyAt(R) * 1e3) }))
+        .filter((p) => Number.isFinite(p.y)),
+    },
+    { name: "This R", color: "#60a5fa", showPoints: true, points: Number.isFinite(pulse.energy) ? [{ x: round6(R_oc), y: round6(pulse.energy * 1e3) }] : [] },
+    { name: "Optimum (Degnan)", color: "#f472b6", showPoints: true, points: Number.isFinite(opt.energy) ? [{ x: round6(opt.reflectance), y: round6(opt.energy * 1e3) }] : [] },
+  ];
 
   const series = [{
     name: "Output power",
@@ -93,7 +124,18 @@ export default function QSwitchedLaserPage() {
 
       <h2 className="text-lg font-semibold mb-3">Pulse from the cavity (rate equations, defaults: Nd:YAG)</h2>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">
-        <ValidatedNumberInput label="Initial inversion / threshold r" value={ratioRaw} onChange={setRatio} min={1.01} max={50} step="any" />
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Pump given as</span>
+          <select value={fixedGain ? "gain" : "ratio"} onChange={(e) => setPumpMode(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
+            <option value="ratio">Inversion ratio r (held when R changes)</option>
+            <option value="gain">Small-signal gain g₀l (fixed pump)</option>
+          </select>
+        </label>
+        {fixedGain ? (
+          <ValidatedNumberInput label="Initial single-pass gain g₀l (ln of the gain)" value={g0lRaw} onChange={setG0l} min={1e-4} max={20} step="any" />
+        ) : (
+          <ValidatedNumberInput label="Initial inversion / threshold r" value={ratioRaw} onChange={setRatio} min={1.01} max={50} step="any" />
+        )}
         <ValidatedNumberInput label="Laser wavelength λ (nm)" value={wavelengthRaw} onChange={setWavelength} min={200} max={20000} step="any" />
         <ValidatedNumberInput label="Emission cross-section σ (10⁻¹⁹ cm²)" value={sigmaRaw} onChange={setSigma} min={1e-4} max={1e4} step="any" />
         <ValidatedNumberInput label="Mode diameter in the rod (mm, top hat)" value={diameterRaw} onChange={setDiameter} min={0.01} max={100} step="any" />
@@ -103,6 +145,16 @@ export default function QSwitchedLaserPage() {
         <ValidatedNumberInput label="Rod length l (mm)" value={rodRaw} onChange={setRod} min={0.1} max={1000} step="any" />
         <ValidatedNumberInput label="Rod index n" value={nRaw} onChange={setN} min={1} max={4} step="any" />
       </div>
+      {fixedGain && !(r > 1) && (
+        <p className="mb-4 text-sm text-yellow-300" role="status">
+          Below threshold: r = g₀l/γ = {fmt(r)}. Raise g₀l above the single-pass loss γ = {fmt(gamma)} or raise R.
+        </p>
+      )}
+      {r > 50 && (
+        <p className="mb-4 text-sm text-yellow-300" role="status">
+          r = {fmt(r)} is above 50: the pulse shape and its FWHM aren&apos;t integrated; the width shown is the estimate E/P_p.
+        </p>
+      )}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
         <ResultCard label="Pulse energy" value={`${fmt(pulse.energy * 1e3)} mJ`} subtext={`extraction η = ${fmt(pulse.extraction * 100)} %; ${fmt(fluence * 1e-4)} J/cm²`} tone="green" />
         <ResultCard label="Pulse width (FWHM)" value={`${fmt(fwhm * 1e9)} ns`} subtext={`${fmt(wave.fwhm)} τ_c; estimate E/P_p = ${fmt(pulse.widthEstimate * 1e9)} ns`} tone="cyan" />
@@ -110,15 +162,31 @@ export default function QSwitchedLaserPage() {
         <ResultCard label="Photon lifetime τ_c" value={`${fmt(tauC * 1e9)} ns`} subtext={`L_e/(cγ), γ = ${fmt(gamma)} per pass, L_e = ${fmt(opticalLength * 1e3)} mm`} tone="blue" />
       </div>
 
+      <h3 className="text-base font-semibold mb-3">Optimum output coupling at this pump (Degnan 1989)</h3>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-4">
+        <ResultCard label="Optimum R_oc" value={fmt(opt.reflectance)} subtext={`z = g₀l/γ_i = ${fmt(opt.z)}; g₀l = ${fmt(g0l)}, ${fixedGain ? `r = ${fmt(r)} here` : "from r·γ"}`} tone="yellow" />
+        <ResultCard label="Largest pulse energy" value={`${fmt(opt.energy * 1e3)} mJ`} subtext={`η = 1 − 1/z = ${fmt(opt.extraction * 100)} %; ${fmt(pulse.energy / opt.energy * 100)} % of it at this R`} tone="green" />
+        <ResultCard label="Width at the optimum (estimate)" value={`${fmt(optPulse.widthEstimate * 1e9)} ns`} subtext={`E/P_p; r = z ln z/(z − 1) = ${fmt(opt.ratio)}`} tone="cyan" />
+        <ResultCard label="Peak power at the optimum" value={`${fmt(optPulse.peak / 1e3)} kW`} subtext={`τ_c = ${fmt(optTauC * 1e9)} ns`} tone="purple" />
+      </div>
+      {optNote && <p className="mb-4 text-sm text-yellow-300" role="status">{optNote}</p>}
+
       <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">
         <p>Peak power of a measured pulse: shape factor × E/τ, with τ the intensity FWHM.</p>
         <p>Rate equations (Wagner–Lengyel, Degnan), four-level medium with an instant switch: rη = −ln(1 − η), E = (hνA/2σ) ln(1/R) rη,
           P_p = (γ₂/2)(hνA/σ)(r − 1 − ln r)/τ_c with γ₂ = −ln R, γ = γ_i + γ₂/2 and τ_c = L_e/(cγ), L_e = L + (n − 1)l. The plotted
           shape is integrated numerically; the FWHM comes from it.</p>
-        <p>The inversion ratio r = N_i/N_th is held fixed when you change R_oc. At a fixed pump the initial gain g₀l is fixed instead, so
-          r = g₀l/γ falls as R_oc drops, and the energy has an optimum coupling (Degnan 1989) that this input hides.</p>
+        <p>With r as the input it stays fixed when you change R_oc. At a fixed pump the initial gain g₀l = rγ is fixed instead, so
+          r = g₀l/γ falls as R_oc drops, and the energy peaks at Degnan&apos;s optimum: with z = g₀l/γ_i and γ_i = −ln(1 − internal loss),
+          ln(1/R_opt) = 2γ_i(z − 1 − ln z)/ln z and E_max = (hνA/2σ)·2γ_i(z − 1 − ln z); the final inversion is then 1/z of the initial one.
+          The optimum is computed from g₀l in both modes; the chart holds g₀l fixed.</p>
       </div>
 
+      {couplingCurve[0].points.length > 0 && (
+        <div className="mb-6">
+          <SimpleLineChart title="Pulse energy vs output coupler at fixed g₀l" xLabel="Output coupler reflectance R" yLabel="Pulse energy (mJ)" series={couplingCurve} />
+        </div>
+      )}
       {series[0].points.length > 0 && <SimpleLineChart title="Q-switched pulse from the rate equations" xLabel="Time from the peak (ns)" yLabel="Output power (kW)" series={series} />}
     </>
   );
