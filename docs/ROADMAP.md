@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 198, 2026-11-04)
+## Status (session 199, 2026-11-04)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
@@ -236,6 +236,7 @@ Evidence for a later extension. Reopen an item only with a new source or a user 
   the Rakić and silver n,k (3.7 KB). The client needs them to recompute on every input.
 
 **Laser safety**
+- `lidar-safety` scanned: conservative by up to 2× for sparse pulses (worst-phase bound ρ; more for a narrow beam on the cornea); C_P counts pulses whose 1/e² beam overlaps the pupil (ICNIRP sets no cut-off). Not modelled: multi-beam, raster, off-centre eye, turning points.
 - Sessions 180–181: ICNIRP Table 5 note c and Table 7 note b apply in the shared limits, scanned passes and the anterior
   segment (IR; visible only for α > α_min). Outside
   400–1400 nm the pages assume 10 s with a note (ICNIRP p. 285: the longest exposure expected). EN 207 test conditions
@@ -296,7 +297,7 @@ sources: Ar⁺/CO₂ g₀, Nd/Tm/Ho σ, Sheik-Bahae n₂, ZBLAN, LiTaO₃, …) 
 `physics-reviewer` pass on the new model against its primary source, golden tests, the modelNote updated, the limitation line removed.
 - [x] 7b free-space comms (session 197, `phase-7/7b-fso`, PR #235). See Done.
 - [x] 7c lasers (session 198, `phase-7/7c-lasers`, PR #236). See Done.
-- [ ] 7d laser safety: scanned mode on `lidar-safety` (scanned-pass rules already in the shared limits, sessions 180–181). Own stage: safety-critical.
+- [x] 7d laser safety (session 199, `phase-7/7d-lidar-scan`, PR #237). See Done.
 - [ ] 7e thin film: `ellipsometry-measurement` transparent-film thickness (Azzam & Bashara inversion), `sputtering-deposition`
   Westwood gas thermalisation, `plasma-deposition` high-pressure diffusion h-factor (Lieberman & Lichtenberg).
 - [ ] 7f imaging: `imaging/fluorophores.ts` sampled FPbase spectra (CC data) instead of log-normal bands, `spinning-disk` pinhole
@@ -322,6 +323,7 @@ sources: Ar⁺/CO₂ g₀, Nd/Tm/Ho σ, Sheik-Bahae n₂, ZBLAN, LiTaO₃, …) 
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 7d laser safety (session 199, `phase-7/7d-lidar-scan`, PR #237): `scanned-pulse-train.ts` (pulses within a pass, passes at P̄·ρ, C_P over T₂, stationary floor); `lidar-safety` `mode=scanned`: default rotating lidar 9.14× at 10 m, NOHD 32.9 m (stationary 146 m); brute force 1.00–1.59× conservative; review fixed a NaN band in the NOHD search.
 - 7c lasers (session 198, `phase-7/7c-lasers`, PR #236): `qSwitchOptimumCoupling` (Degnan; defaults R_opt 0.741, E_max 2.655 mJ vs 2.635
   at R 0.7), q-switch pump as r or g₀l + E-vs-R chart; OPO PPLN type 0 preset (Λ 29.91 µm at 1064 → 1550); KTP deferred; 1236 tests.
 - 7b free-space comms (session 197, `phase-7/7b-fso`, PR #235): hard-aperture A (A(1) 0.413443, hard/Gauss → 1.1298, Churnside 1/1.07);
