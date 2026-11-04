@@ -4,41 +4,13 @@ import { useState } from "react";
 
 import { useURLState } from "../../../hooks/use-url-state";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { expansionWaves, thermalExpansion } from "../../../physics/materials/thermal-expansion";
-
-interface Material {
-  name: string;
-  alpha: number; // CTE in 10⁻⁶/K, near room temperature
-  type: string;
-  notes: string;
-  /** Where α comes from (references on the page): data sheets, Kaye & Laby's 293 K table, or the slope of a NIST fit at 293 K. */
-  source: "Crystran" | "SCHOTT" | "Corning" | "Kaye & Laby" | "NIST";
-}
+import { alphaPpm, CTE_TABLE, expansionWaves, thermalExpansion } from "../../../physics/materials/thermal-expansion";
 
 const DT_MIN = -273;
 const DT_MAX = 3000;
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
-
-const MATERIALS: Material[] = [
-  { name: "Fused Silica", alpha: 0.55, type: "Glass", notes: "at 300 K", source: "Crystran" },
-  { name: "ULE 7972", alpha: 0.03, type: "Glass", notes: "Corning titania-silica; mean α specified as 0 ± 0.03, 5–35 °C (limit shown)", source: "Corning" },
-  { name: "Zerodur", alpha: 0.05, type: "Glass Ceramic", notes: "Expansion class 1: mean α 0 ± 0.05, 0–50 °C (limit shown); classes 0.007–0.1", source: "SCHOTT" },
-  { name: "BK7", alpha: 7.1, type: "Glass", notes: "Standard optical glass", source: "Crystran" },
-  { name: "Pyrex (Borosilicate)", alpha: 2.8, type: "Glass", notes: "at 293 K", source: "Kaye & Laby" },
-  { name: "SF11", alpha: 6.1, type: "Glass", notes: "High-index flint; mean −30 to +70 °C (N-SF11: 8.5)", source: "SCHOTT" },
-  { name: "Sapphire ∥ c", alpha: 5.6, type: "Crystal", notes: "5.0 perpendicular to the c-axis", source: "Crystran" },
-  { name: "CaF₂", alpha: 18.85, type: "Crystal", notes: "Large expansion, needs care", source: "Crystran" },
-  { name: "Si", alpha: 2.6, type: "Semiconductor", notes: "at 20 °C, increases with T", source: "Crystran" },
-  { name: "Ge", alpha: 6.1, type: "Semiconductor", notes: "at 298 K", source: "Crystran" },
-  { name: "ZnSe", alpha: 7.1, type: "II-VI", notes: "at 273 K", source: "Crystran" },
-  { name: "Aluminum 6061-T6", alpha: 22.6, type: "Metal", notes: "Common mount material; at 293 K", source: "NIST" },
-  { name: "Invar 36", alpha: 0.9, type: "Metal", notes: "Fe-36Ni near 293 K, ± 20 % (fit slope; mean 250–300 K 1.2); heat treatment changes it (Kaye & Laby: 0.13)", source: "NIST" },
-  { name: "Stainless 304", alpha: 15.4, type: "Metal", notes: "at 293 K (Kaye & Laby, austenitic: 14.1)", source: "NIST" },
-  { name: "Copper", alpha: 16.5, type: "Metal", notes: "Heat sinks, mirrors; at 293 K", source: "Kaye & Laby" },
-  { name: "Diamond", alpha: 1.0, type: "Crystal", notes: "at 293 K", source: "Crystran" },
-  { name: "MgF₂ ∥ c", alpha: 13.7, type: "Crystal", notes: "8.9 perpendicular to the c-axis", source: "Crystran" },
-];
-const materials = [...MATERIALS].sort((a, b) => a.alpha - b.alpha);
+// The table in the page unit, 10⁻⁶/K.
+const materials = CTE_TABLE.map((m) => ({ ...m, ppm: alphaPpm(m.alpha) }));
 
 export default function ThermalExpansionPage() {
   const [alphaRaw, setAlpha] = useURLState("alpha", 7.1);
@@ -103,11 +75,11 @@ export default function ThermalExpansionPage() {
           </thead>
           <tbody>
             {materials.map((m, i) => (
-              <tr key={i} className={`border-b border-gray-800/50 hover:bg-gray-900/50 cursor-pointer ${selected === m.name && alpha === m.alpha ? "bg-blue-900/20" : ""}`}
-                onClick={() => { setSelected(m.name); setAlpha(m.alpha); }}>
+              <tr key={i} className={`border-b border-gray-800/50 hover:bg-gray-900/50 cursor-pointer ${selected === m.name && alpha === m.ppm ? "bg-blue-900/20" : ""}`}
+                onClick={() => { setSelected(m.name); setAlpha(m.ppm); }}>
                 <td className="py-2 px-3 font-medium">{m.name}</td>
                 <td className="py-2 px-3 text-gray-400">{m.type}</td>
-                <td className="py-2 px-3 text-right font-mono text-blue-400">{m.alpha}</td>
+                <td className="py-2 px-3 text-right font-mono text-blue-400">{m.ppm}</td>
                 <td className="py-2 px-3 text-gray-500">{m.notes}</td>
                 <td className="py-2 px-3 text-gray-500">{m.source}</td>
               </tr>
