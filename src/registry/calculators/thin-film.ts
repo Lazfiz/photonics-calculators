@@ -427,11 +427,15 @@ export const thinFilm: CalculatorEntry[] = [
     title: "Plasma Deposition",
     description: "Argon discharge for plasma-assisted deposition: electron temperature from particle balance, plasma density from power balance, ion flux and ion energy at the substrate, Debye length.",
     tier: "textbook",
-    modelNote: "Argon global model in a cylinder: Maxwellian electrons, ground-state ionisation, floating walls, h-factors for λᵢ > (Tᵢ/Tₑ)·size (flagged). No deposition chemistry; P is the power absorbed by the plasma.",
+    modelNote: "Argon global model in a cylinder: Maxwellian electrons, ground-state ionisation, floating walls, collisionless sheath, h-factors from low pressure to ambipolar diffusion. No deposition chemistry; P is absorbed power.",
     references: [
       {
-        citation: "Lieberman M. A., Lichtenberg A. J. (2005). Principles of Plasma Discharges and Materials Processing, 2nd ed., Table 3.3 (fits for 1 < T_e ≤ 7 V) and §10.2 (global model). Wiley.",
+        citation: "Lieberman M. A., Lichtenberg A. J. (2005). Principles of Plasma Discharges and Materials Processing, 2nd ed., Table 3.3 (fits for 1 < T_e ≤ 7 V), §5.1–5.2 (diffusion) and §10.2 (global model, h-factors). Wiley.",
         url: "https://doi.org/10.1002/0471724254",
+      },
+      {
+        citation: "Kemaneci E., Mitschker F., Rudolph M., Szeremley D., Eremin D., Awakowicz P., Brinkmann R. P. (2017). A global model of cylindrical and coaxial surface-wave discharges. J. Phys. D: Appl. Phys. 50, 245203; eqs. (2) and (7) of the preprint arXiv:1612.07268v1.",
+        url: "https://doi.org/10.1088/1361-6463/aa7093",
       },
     ],
   },

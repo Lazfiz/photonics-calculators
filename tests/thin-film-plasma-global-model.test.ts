@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import { TORR } from "../src/physics/constants";
 import {
+  ambipolarDiffusion,
   argonDischarge,
   collisionalLoss,
   electronTemperature,
@@ -33,20 +34,22 @@ test("argon rate constants and collisional loss (Lieberman & Lichtenberg Table 3
 });
 
 test("global model, R = 15 cm, l = 30 cm, 1 mTorr, 293 K, 800 W", () => {
-  // Reference values from an independent script that scans Tₑ on a 1e-5 eV grid instead of bisecting.
+  // Reference values from an independent script (constants typed in, L&L eqs. 10.2.1–10.2.2 with D_a = D_i(1 + Tₑ/Tᵢ))
+  // that scans Tₑ on a 1e-5 eV grid instead of bisecting. The diffusion term lowers h_l by 0.8 % here (0.3051 without it).
   const d = argonDischarge(800, 0.15, 0.3, 1e-3 * TORR, 293);
   assertRel(d.ng, 3.295734e19, 1e-6, "n_g");
   assertRel(d.lambdaI, 0.03034226, 1e-6, "λᵢ");
-  assertRel(d.hl, 0.3051334, 1e-6, "h_l");
-  assertRel(d.hR, 0.2675062, 1e-6, "h_R");
-  assertRel(d.dEff, 0.1785405, 1e-6, "d_eff");
-  assertRel(d.aEff, 0.1187728, 1e-6, "A_eff");
-  assertRel(d.Te, 3.78804, 1e-5, "Tₑ");
-  assertRel(d.Ec, 46.952, 1e-4, "E_c");
-  assertRel(d.ET, 74.146, 1e-4, "E_T");
-  assertRel(d.n0, 1.874493e17, 1e-4, "n₀");
-  assertRel(d.ionFluxAxial, 1.730071e20, 1e-4, "Γ_axial");
-  assertRel(d.debye, 3.341832e-5, 1e-4, "λ_De");
+  assertRel(d.Da, 707.846, 1e-5, "D_a");
+  assertRel(d.hl, 0.3027996, 1e-6, "h_l");
+  assertRel(d.hR, 0.2650229, 1e-6, "h_R");
+  assertRel(d.dEff, 0.1801055, 1e-6, "d_eff");
+  assertRel(d.aEff, 0.1177407, 1e-6, "A_eff");
+  assertRel(d.Te, 3.78101, 1e-5, "Tₑ");
+  assertRel(d.Ec, 47.0387, 1e-4, "E_c");
+  assertRel(d.ET, 74.1823, 1e-4, "E_T");
+  assertRel(d.n0, 1.891757e17, 1e-4, "n₀");
+  assertRel(d.ionFluxAxial, 1.731042e20, 1e-4, "Γ_axial");
+  assertRel(d.debye, 3.323460e-5, 1e-4, "λ_De");
   // Lieberman's worked example of this case (course notes, https://people.eecs.berkeley.edu/~lieber/Day1View150315crop.pdf):
   // n₀ ≈ 2.0e17 m⁻³, J ≈ 2.9 mA/cm², with Tₑ ≈ 3.5 eV and E_c ≈ 42 eV read off figures; the fits give 3.79 and 47 eV.
   assertRel(d.n0, 2.0e17, 0.1, "n₀ vs example");
@@ -57,11 +60,30 @@ test("global model, R = 15 cm, l = 30 cm, 1 mTorr, 293 K, 800 W", () => {
 test("rate-constant fit range (Lieberman & Lichtenberg Table 3.3 note a: Gudmundsson, 1 < T_e ≤ 7 V)", () => {
   assert.equal(TE_FIT_MIN, 1);
   assert.equal(TE_FIT_MAX, 7);
-  // The page defaults (500 W, 5 mTorr, R 15 cm, l 30 cm, 300 K) solve to T_e ≈ 2.59 eV, inside the fits;
-  // 0.3 mTorr gives 5.54 eV, still inside, so the extrapolation warning needs a smaller or thinner chamber.
+  // The page defaults (500 W, 5 mTorr, R 15 cm, l 30 cm, 300 K) solve to T_e ≈ 2.553 eV (independent scan), inside the fits.
   const Te = argonDischarge(500, 0.15, 0.3, 5e-3 * TORR, 300).Te;
   assert.ok(Te > TE_FIT_MIN && Te <= TE_FIT_MAX, `T_e ${Te}`);
-  assertRel(Te, 2.59, 2e-3, "T_e at the defaults");
+  assertRel(Te, 2.5528, 1e-5, "T_e at the defaults");
+});
+
+test("collisional regime: 100 mTorr, and the diffusion limit of h (L&L eqs. 10.2.1–10.2.2)", () => {
+  // Same independent scan as above: the diffusion term takes over (h_l 0.0142 against 0.0386 from the low-pressure terms alone).
+  const d = argonDischarge(800, 0.15, 0.3, 0.1 * TORR, 293);
+  assertRel(d.Da, 2.69638, 1e-5, "D_a");
+  assertRel(d.hl, 0.01415881, 1e-5, "h_l");
+  assertRel(d.hR, 0.01146272, 1e-5, "h_R");
+  assertRel(d.Te, 1.42466, 1e-5, "Tₑ");
+  assertRel(d.n0, 1.456527e18, 1e-4, "n₀");
+  assertRel(d.ionFluxAxial, 3.825463e19, 1e-4, "Γ_axial");
+  // Hand calculation, ambipolar diffusion: D_i = k_B T_g / (M ν_i), ν_i = v̄_i/λ_i; at 1 mTorr, 293 K, Tₑ = 3.781 eV:
+  // v̄_i = √(8 k_B T_g/(π M)) = 394.6 m/s, D_i = 4.689 m²/s, × (1 + 3.781/0.02525) = 707.8 m²/s.
+  assertRel(ambipolarDiffusion(3.781005, 293, 0.03034226), 707.8455, 1e-5, "D_a by hand");
+  // At 10 Torr the cosine and J₀ diffusion profiles hold: h_l → π D_a/(l u_B), h_R → χ₀₁ J₁(χ₀₁) D_a/(R u_B).
+  const ng = (10 * TORR) / (1.380649e-23 * 293);
+  const g = geometry(0.15, 0.3, ng, 1.5, 293);
+  const uB = Math.sqrt((1.602176634e-19 * 1.5) / (39.948 * 1.66053906892e-27));
+  assertRel(g.hl, (Math.PI * g.Da) / (0.3 * uB), 2e-3, "h_l diffusion limit");
+  assertRel(g.hR, (2.404825557695773 * 0.5191474972894669 * g.Da) / (0.15 * uB), 2e-3, "h_R diffusion limit");
 });
 
 test("limits and guards", () => {
@@ -81,5 +103,5 @@ test("limits and guards", () => {
   assert.ok(!lowPressureRegime(argonDischarge(800, 0.15, 0.3, 0.1 * TORR, 293), 0.15, 0.3, 293));
   assert.ok(Number.isNaN(electronTemperature(1e10)), "no root: Tₑ above range");
   assert.ok(Number.isNaN(argonDischarge(100, 0, 0.1, 0.5, 300).Te), "R = 0");
-  assert.ok(Number.isNaN(geometry(0.1, 0.1, -1).hl), "n_g < 0");
+  assert.ok(Number.isNaN(geometry(0.1, 0.1, -1, 3, 300).hl), "n_g < 0");
 });

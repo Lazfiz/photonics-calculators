@@ -1,16 +1,20 @@
 /**
- * Global (volume-averaged) model of a low-pressure argon discharge in a cylinder of radius R and length l:
- * the electron temperature from particle balance, the density from power balance, and the ion flux and
- * energy at the walls, where the substrate sits in plasma-assisted deposition.
+ * Global (volume-averaged) model of an argon discharge in a cylinder of radius R and length l: the electron
+ * temperature from particle balance, the density from power balance, and the ion flux and energy at the
+ * walls, where the substrate sits in plasma-assisted deposition.
  *
  * Model tier: Textbook approximation. Electropositive argon, Maxwellian electrons, ionisation from the
- * ground state only (no metastable step ionisation), cold ions, floating walls, uniform gas density, and
- * the low-pressure edge-to-centre ratios h_l, h_R. P_abs is the power absorbed by the electrons, not the
- * generator power.
+ * ground state only (no metastable step ionisation), cold ions at the gas temperature, floating walls with
+ * a collisionless sheath, uniform gas density, and Lieberman & Lichtenberg's edge-to-centre ratios h_l, h_R,
+ * which join the low-pressure (variable-mobility) and the high-pressure (ambipolar-diffusion) solutions.
+ * P_abs is the power absorbed by the electrons, not the generator power.
  *
  * Reference: M. A. Lieberman, A. J. Lichtenberg, Principles of Plasma Discharges and Materials Processing,
  * 2nd ed. (Wiley, 2005), doi:10.1002/0471724254: Table 3.3 (argon rate constants), eq. 3.5.9 (E_c),
- * §10.2 (h_l, h_R, d_eff, particle and power balance, E_T = E_c + 2T_e + E_i).
+ * §5.1–5.2 (ion mobility, ambipolar diffusion), §10.2 (h_l, h_R, d_eff, particle and power balance,
+ * E_T = E_c + 2T_e + E_i). The h_R with its diffusion term and D_a = D_i(1 + T_e/T_i) as reproduced in
+ * E. Kemaneci et al., J. Phys. D 50, 245203 (2017), doi:10.1088/1361-6463/aa7093 (preprint arXiv:1612.07268v1,
+ * eqs. (2) and (7)).
  */
 import { epsilon_0, k_B, m_e, m_u, q } from "../constants";
 
@@ -64,27 +68,60 @@ export interface Geometry {
   dEff: number;
   /** Effective loss area A_eff = 2πR(R h_l + l h_R) (m²). */
   aEff: number;
+  /** Ambipolar diffusion coefficient D_a (m²/s). */
+  Da: number;
 }
 
-/** Low-pressure edge-to-centre ratios and effective size of a cylinder (R, l in m) at gas density n_g (m⁻³). */
-export function geometry(R: number, l: number, ng: number): Geometry {
-  if (!(R > 0 && l > 0 && ng > 0)) return { lambdaI: NaN, hl: NaN, hR: NaN, dEff: NaN, aEff: NaN };
+/** First zero of J₀ and J₁ there. */
+const CHI01 = 2.404825557695773;
+const J1_CHI01 = 0.5191474972894669;
+
+/**
+ * Ambipolar diffusion coefficient (m²/s) of argon ions at gas temperature T_g (K) with electrons at T_e (eV):
+ * D_a = D_i (1 + T_e/T_i), D_i = e T_i / (M ν_i), ν_i = v̄_i / λ_i, v̄_i = √(8 e T_i / (π M)), T_i = k_B T_g / e
+ * (L&L §5.1–5.2, cold ions at the gas temperature).
+ */
+export function ambipolarDiffusion(Te: number, Tg: number, lambdaI: number): number {
+  if (!(Te > 0 && Tg > 0 && lambdaI > 0)) return NaN;
+  const Ti = (k_B * Tg) / q;
+  const vi = Math.sqrt((8 * q * Ti) / (Math.PI * M_AR));
+  const Di = (q * Ti * lambdaI) / (M_AR * vi);
+  return Di * (1 + Te / Ti);
+}
+
+/**
+ * Edge-to-centre ratios and effective size of a cylinder (R, l in m) at gas density n_g (m⁻³), electron
+ * temperature T_e (eV) and gas temperature T_g (K), L&L eqs. (10.2.1)–(10.2.2):
+ *   h_l = 0.86 [3 + l/(2λ_i) + (0.86 l u_B / (π D_a))²]^(−1/2),
+ *   h_R = 0.80 [4 + R/λ_i + (0.80 R u_B / (χ₀₁ J₁(χ₀₁) D_a))²]^(−1/2).
+ * The last term is the diffusion solution (cosine and J₀ profiles, h → π D_a/(l u_B), χ₀₁J₁(χ₀₁) D_a/(R u_B)),
+ * the first two the low-pressure one; at low pressure the last term is small.
+ */
+export function geometry(R: number, l: number, ng: number, Te: number, Tg: number): Geometry {
+  if (!(R > 0 && l > 0 && ng > 0 && Te > 0 && Tg > 0)) {
+    return { lambdaI: NaN, hl: NaN, hR: NaN, dEff: NaN, aEff: NaN, Da: NaN };
+  }
   const lambdaI = 1 / (ng * SIGMA_I);
-  const hl = 0.86 / Math.sqrt(3 + l / (2 * lambdaI));
-  const hR = 0.8 / Math.sqrt(4 + R / lambdaI);
+  const Da = ambipolarDiffusion(Te, Tg, lambdaI);
+  const uB = bohmSpeed(Te);
+  const xl = (0.86 * l * uB) / (Math.PI * Da);
+  const xR = (0.8 * R * uB) / (CHI01 * J1_CHI01 * Da);
+  const hl = 0.86 / Math.sqrt(3 + l / (2 * lambdaI) + xl * xl);
+  const hR = 0.8 / Math.sqrt(4 + R / lambdaI + xR * xR);
   return {
     lambdaI,
     hl,
     hR,
     dEff: (R * l) / (2 * (R * hl + l * hR)),
     aEff: 2 * Math.PI * R * (R * hl + l * hR),
+    Da,
   };
 }
 
 /**
- * True when the low-pressure (variable-mobility) h-factors hold, λ_i ≳ (T_i/T_e)·max(l, R) with cold ions
- * at the gas temperature (L&L §5.3). Past it ions diffuse at constant mobility, h falls faster with
- * pressure, and n₀ is underestimated.
+ * True in the low-pressure (variable-mobility) regime, λ_i ≳ (T_i/T_e)·max(l, R) with cold ions at the gas
+ * temperature (L&L §5.3). Past it the ions diffuse at constant mobility and the diffusion term of h_l, h_R
+ * takes over.
  */
 export function lowPressureRegime(d: Pick<Discharge, "lambdaI" | "Te">, R: number, l: number, Tg: number): boolean {
   return d.lambdaI >= ((k_B * Tg) / (q * d.Te)) * Math.max(R, l);
@@ -100,15 +137,17 @@ export const TE_FIT_MAX = 7;
 
 /**
  * Electron temperature (eV) from particle balance K_iz(T_e)/u_B(T_e) = 1/(n_g d_eff), by bisection to
- * 1e-10 relative. The left side rises with T_e, so the root is unique. NaN when it lies outside
- * [TE_MIN, TE_MAX] (n_g d_eff too large or too small for this model).
+ * 1e-10 relative. n_g d_eff (m⁻²) is a number or a function of T_e (d_eff depends on T_e through the
+ * diffusion term of h). K_iz n_g d_eff / u_B rises with T_e: K_iz grows faster than T_e^1.17 up to 30 eV,
+ * while u_B/d_eff ∝ u_B h grows at most ∝ T_e (√T_e at low pressure, D_a ∝ T_e + T_i at high), so the
+ * root is unique. NaN when it lies outside [TE_MIN, TE_MAX] (n_g d_eff too large or too small).
  */
-export function electronTemperature(ngDeff: number): number {
-  if (!(ngDeff > 0)) return NaN;
-  const f = (Te: number) => kIz(Te) / bohmSpeed(Te) - 1 / ngDeff;
+export function electronTemperature(ngDeff: number | ((Te: number) => number)): number {
+  const nd = typeof ngDeff === "number" ? () => ngDeff : ngDeff;
+  const f = (Te: number) => (kIz(Te) * nd(Te)) / bohmSpeed(Te) - 1;
   let lo = TE_MIN;
   let hi = TE_MAX;
-  if (f(lo) > 0 || f(hi) < 0) return NaN;
+  if (!(f(lo) <= 0 && f(hi) >= 0)) return NaN;
   for (let i = 0; i < 200 && hi - lo > 1e-10 * hi; i++) {
     const mid = 0.5 * (lo + hi);
     if (f(mid) > 0) hi = mid;
@@ -142,13 +181,13 @@ export interface Discharge extends Geometry {
 
 /**
  * Argon global model: P_abs (W) absorbed in a cylinder of radius R and length l (m) at pressure p (Pa)
- * and gas temperature T_g (K). n0 = P_abs / (e u_B A_eff E_T). All fields NaN when the inputs are out of
- * range or T_e has no root in [TE_MIN, TE_MAX].
+ * and gas temperature T_g (K). T_e and h_l, h_R are solved together; n0 = P_abs / (e u_B A_eff E_T).
+ * All fields NaN when the inputs are out of range or T_e has no root in [TE_MIN, TE_MAX].
  */
 export function argonDischarge(Pabs: number, R: number, l: number, p: number, Tg: number): Discharge {
   const ng = p / (k_B * Tg);
-  const g = geometry(R, l, ng);
-  const Te = Pabs >= 0 && Tg > 0 ? electronTemperature(ng * g.dEff) : NaN;
+  const Te = Pabs >= 0 && Tg > 0 && ng > 0 ? electronTemperature((t) => ng * geometry(R, l, ng, t, Tg).dEff) : NaN;
+  const g = geometry(R, l, ng, Te, Tg);
   const uB = bohmSpeed(Te);
   const Ec = collisionalLoss(Te);
   const Ei = floatingSheathVoltage(Te) + Te / 2;
