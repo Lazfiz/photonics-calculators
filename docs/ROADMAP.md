@@ -5,12 +5,12 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 192, 2026-11-03)
+## Status (session 193, 2026-11-04)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
   textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) and 5w-13 (materials) and 5w-14 (spectroscopy) and 5w-15 (thin-film + polarization) done (sessions 163–177): 5w is complete; KRS-5
-  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6h and 6i-a done (sessions 179–192), 6i-b next; the Gemini hero comes after it. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6i done (sessions 179–193); the Gemini hero is next. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -88,12 +88,6 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 - Laser safety (watch): re-check the classes when IEC 60825-1 Ed. 4 is published (only a BSI draft in 2026).
 - `spectroscopy/conc-mirror` and `jacquinot` (session 104) both show the Jacquinot ratio π f/(h tan θ) from `throughput.ts`;
   conc-mirror adds the mirror cone and slit étendue. Merge into jacquinot only if the user asks.
-
-**Cross-cutting (6i-b)**
-- Charts (session 159): many pages wrap ChartPanel in their own bordered
-  `p-4` box: double padding leaves a 245 px plot at 360 px.
-- Charts (session 160): the PNG/CSV row adds ≈ 32 px above every SVG chart, including those whose page already prints a
-  heading above the ChartPanel. Plotly-routed charts (heatmap, 3-D, polar) have Plotly's own hover but no export buttons.
 
 ## Known limitations (accepted in 6h, session 191: missing features and missing data; each page's modelNote or text states its limit)
 Evidence for a later extension. Reopen an item only with a new source or a user request.
@@ -300,7 +294,7 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - [x] 6g-b citation sweep b, part b (session 190, `phase-6/6g-b-citations`, PR #228): 18 entries read; Si₃N₄ x-ray density 3.18. See Done.
 - [x] 6h accepted limitations (session 191, `phase-6/6h-limitations`, PR #229): ≈ 60 entries moved to "Known limitations"; 4 notes added, Brillouin note fixed. See Done.
 - [x] 6i-a (session 192, `phase-6/6i-a-ui-check`, PR #230): chart remount crash, ui-check current, three hot spots faster. See Done.
-- [ ] 6i-b cross-cutting UI: chart double padding, export-row height, Plotly export buttons ("Cross-cutting (6i-b)").
+- [x] 6i-b chart layout (session 193, `phase-6/6i-b-chart-layout`, PR #231): `bare` on 170 charts in page cards, buttons in the top margin, Plotly PNG/CSV. See Done.
 - [ ] Then (Phase 5 leftover): replace the home-page hero with the one the user made in Gemini, and wire it in (ask the user for the files).
 
 ## Decisions (keep)
@@ -320,6 +314,10 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 6i-b chart layout (session 193, `phase-6/6i-b-chart-layout`, PR #231): `bare` prop (ChartPanel, SimpleChart, SimpleLineChart,
+  placeholder) added by codemod to 170 charts in 117 files that sit in a page's own card: plot 236–244 → 270–278 px at 360 px.
+  Untitled charts' PNG/CSV buttons sit in the top margin (≥ 32 px), not a 32 px row. `PlotlyPanel` (one copy, was three) has
+  PNG and CSV modebar buttons (`plotlyCsv`: z grids long-format).
 - 6i-a UI and performance (session 192, `phase-6/6i-a-ui-check`, PR #230): `ChartPanel` passed the cached SimpleChart to
   `useState`, so every chart remounted by client navigation or Back threw into the error boundary (live on production until a
   release); ui-check's 9 stale checks updated, no-input pages hydrate, console errors after Back now fail it. `poissonQuantile`
