@@ -33,7 +33,7 @@
  * 1.44× the untruncated λ/(πw); for α ≳ 2 the two agree.
  */
 
-import { besselJ, firstCrossing } from "../math";
+import { besselI0ScaledFast, besselJ, besselJ0Fast, firstCrossing, integrateGaussLegendre8 } from "../math";
 
 /** Decibels of a linear power ratio. */
 export const toDb = (ratio: number): number => 10 * Math.log10(ratio);
@@ -161,4 +161,58 @@ export function truncatedGaussianFarField(u: number, alpha: number, gamma = 0): 
  */
 export function truncatedGaussianWidth(alpha: number, gamma = 0): number {
   return firstCrossing((u) => truncatedGaussianFarField(u, alpha, gamma), 0, 2 * alpha + 6, Math.exp(-2), 400);
+}
+
+/**
+ * Far field of a Gaussian Schell-model (GSM) beam, 1/e² intensity radius w = a/α and beam quality M² (before clipping),
+ * passed by an annular aperture γ ≤ r/a ≤ 1. The GSM cross-spectral density √I(r₁)√I(r₂) exp(−|r₁ − r₂|²/(2σ_g²)) has
+ * M² = √(1 + w²/σ_g²) (F. Gori, Opt. Commun. 34, 301 (1980); Mandel & Wolf, Optical Coherence and Quantum Optics, §5.6.4),
+ * so σ_g = w/√(M⁴ − 1). Its Gaussian degree of coherence makes it an incoherent sum of coherent copies tilted with a
+ * Gaussian spread of spatial frequencies q, p(q) = (σ_g²/2π) exp(−σ_g²q²/2); the far field is the coherent clipped
+ * pattern |A(Q)|², A(Q) = ∫_γ^1 e^(−α²r²) J₀(Qr) r dr (r in units of a), averaged over the tilts. With the angle
+ * integral done in closed form (DLMF 10.32.1), at u = k a sin θ:
+ *   F(u) = σ² ∫₀^∞ |A(Q)|² exp(−σ²(Q − u)²/2) e^(−σ²uQ) I₀(σ²uQ) Q dQ,   σ = σ_g/a = 1/(α√(M⁴ − 1)),
+ * and the on-axis efficiency (the Klein–Degnan g for M² = 1) is g = 8α² F(0): G_tx = (πD/λ)² g. Without clipping this
+ * is the GSM's Gaussian far field, g = 2/(α²M⁴) and the 1/e² half-angle M²λ/(πw), u = 2M²α (tests). Quadrature:
+ * A on a Q grid of step min(0.05, 0.2/σ) (Simpson error ≈ 1e-6 relative) up to u_max + 8/σ, each by 8-point Gauss–Legendre panels half a period π/Q wide;
+ * F by Simpson's rule on that grid. The width u is the first 1/e² crossing of F(u)/F(0) on [0, 3M²α + 6]. M² ≤ 10.
+ */
+export function gsmFarField(alpha: number, gamma: number, m2: number): { efficiency: number; width: number; intensity: (u: number) => number } {
+  const bad = { efficiency: NaN, width: NaN, intensity: () => NaN };
+  if (!(alpha > 0 && gamma >= 0 && gamma < 1 && m2 >= 1 && m2 <= 10)) return bad;
+  const a2 = alpha * alpha;
+  const coherent = m2 - 1 < 1e-6; // g differs from Klein–Degnan by ≈ 3(M² − 1)·…; the Q grid would grow as (M² − 1)^(−½)
+  const sigma = coherent ? Infinity : 1 / (alpha * Math.sqrt(m2 * m2 - 1)); // m2 is M², so M⁴ = m2²
+  const uMax = 3 * m2 * alpha + 6;
+  const amplitude = (Q: number) => {
+    const f = (r: number) => Math.exp(-a2 * r * r) * besselJ0Fast(Q * r) * r;
+    const n = Math.max(4, Math.ceil(((1 - gamma) * Q) / Math.PI));
+    const h = (1 - gamma) / n;
+    let s = 0;
+    for (let i = 0; i < n; i++) s += integrateGaussLegendre8(f, gamma + i * h, gamma + (i + 1) * h);
+    return s;
+  };
+  let F: (u: number) => number;
+  if (coherent) {
+    F = (u) => amplitude(u) ** 2;
+  } else {
+    const step0 = Math.min(0.05, 0.2 / sigma);
+    const n = 2 * Math.ceil((uMax + 8 / sigma) / step0 / 2);
+    const h = (uMax + 8 / sigma) / n;
+    const A2 = Array.from({ length: n + 1 }, (_, i) => amplitude(i * h) ** 2);
+    const s2 = sigma * sigma;
+    F = (u) => {
+      let s = 0;
+      for (let i = 0; i <= n; i++) {
+        const Q = i * h;
+        const d = Q - u;
+        const w = s2 * d * d < 80 ? Math.exp(-0.5 * s2 * d * d) * besselI0ScaledFast(s2 * u * Q) * Q : 0;
+        s += (i === 0 || i === n ? 1 : i % 2 ? 4 : 2) * A2[i] * w;
+      }
+      return (s2 * s * h) / 3;
+    };
+  }
+  const f0 = F(0);
+  const intensity = (u: number) => F(u) / f0;
+  return { efficiency: 8 * a2 * f0, width: firstCrossing(intensity, 0, uMax, Math.exp(-2), 100), intensity };
 }

@@ -180,8 +180,8 @@ Evidence for a later extension. Reopen an item only with a new source or a user 
   edge of Raman-free NLS (stated since session 191).
 
 **Free-space comms**
-- `aperture-averaging`: only the Gaussian aperture is modelled; a hard circular aperture gives a 5–11 % lower A at d² = 1–30 (two reviewers' quadrature),
-  crossing near d² ≈ 100 and → 1.13× as d² → ∞ (checked in session 173 with GR 6.574.2). The page states this; a hard-aperture option could add it.
+- `aperture-averaging`: the hard circular aperture is plane-wave only (session 197). The spherical wave needs the kernel
+  ∫₀^∞ (1 + u)^(−11/3) [1 − cos(vu)] du, a complex incomplete gamma; it is shown with the Gaussian aperture.
 - `beam-wander`: F keeps the geometric-optics expansion of 1 − exp(−ΛLκ²ξ²/k) (≈ 1.3 % high at the defaults, reviewer's
   exact κ-integral); Berman 2007's 1.919 (2r₀)^(−1/3) and Vasylyev PRL 117, 090501 (0.94 per axis, focused) don't match A&P's 2.42 (filter models).
 - `adaptive-optics`: Hudgin's zonal 0.28 (d/r₀)^(5/3) sits ≈ 10 % below Noll's Δ_N for all N ≤ 5000 (no crossing); κ spans 0.23–0.30 by
@@ -189,10 +189,8 @@ Evidence for a later extension. Reopen an item only with a new source or a user 
 - `snow-attenuation`: ICTON 2005 (eqs. 6–8) and Awan's thesis say only "snow rate in mm/h"; S stays read as water-equivalent
   (Awan p. 101: 50 dB/km at ≈ 5 mm/h, the page gives 51).
 - `background-noise`, `receiver-fov`: sky radiances are Giggenbach 2022 Table 1 typical values (×10 spread), 850–1550 nm only, log-log across the 1.13/1.38 µm water bands; no night sky or Moon (his Moon row is ≈ 10× E_sun·albedo/π at 850/1064 nm; stated since session 191). A sourced sky model (MODTRAN tables, ITU-R P.1621) would extend it.
-- `receiver-fov`: field-stop clipping of the signal and turbulence spot growth (λ/r₀) are not modelled; only a 1.22λ/D warning.
 - `acquisition-tracking`: Tyler & Fried's abstract says "rms angular measurement error"; "per axis" is our reading (full text unread).
 - `quantum-key-distribution`: asymptotic decoy BB84 only (no finite-key or intensity fluctuations); the GYS cutoff is 142.015 km against Ma's 142.05 (gap not from Y₀ terms).
-- `optical-antenna`: M² is capped at 2 (θ × M², gain / M⁴). A Gaussian Schell-model far field would cover multimode beams.
 
 **Thin film**
 - `sputtering-deposition`: no gas scattering (defaults sit at d ≈ 5.7 λ_Ar, rate is an upper bound); Westwood

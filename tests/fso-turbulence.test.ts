@@ -3,13 +3,13 @@ import assert from "node:assert/strict";
 
 import {
   actuatorPitch, andrewsApertureFactor, aoResidualVariance, apertureParameter, beamWanderDiffractionFactor, beamWanderLossDb, beamWanderVariance,
-  beamWanderVarianceDiffracting, diversityOutage, diversityThreshold,
-  dmFittingVariance, fittingErrorVariance, friedParameter, gammaGammaCdf, gammaGammaParameters, greenwoodFrequency, irradianceCorrelation,
+  beamWanderVarianceDiffracting, diversityOutage, diversityThreshold, fieldStopFraction, fieldStopHalfAngle, hardApertureFactor,
+  dmFittingVariance, fittingErrorVariance, friedParameter, sphericalFriedParameter, gammaGammaCdf, gammaGammaParameters, greenwoodFrequency, irradianceCorrelation,
   isoplanaticAngle, logIrradianceCorrelation, logIrradianceVariances, lognormalFadeProbability, rytovVariance,
   scintillationIndex, servoLagVariance, sphericalRytovVariance, strehlRatio, uncorrectedPhaseVariance, weakApertureFactor,
 } from "../src/physics/free-space-comms/turbulence";
 import { beamRadius } from "../src/physics/free-space-comms/pointing-loss";
-import { besselK, integrateTanhSinh, lnGamma } from "../src/physics/math";
+import { besselJ, besselK, integrateTanhSinh, lnGamma } from "../src/physics/math";
 import { covarianceIntegral } from "../scripts/gen-irradiance-covariance";
 
 const close = (actual: number, expected: number, rel: number, msg = "") =>
@@ -22,6 +22,8 @@ test("r₀ and θ₀ agree with Fried's forms 0.185 λ^(6/5)(C_n²L)^(−3/5) an
   const r0 = friedParameter(1e-14, lambda, 1000);
   close(r0, 0.185 * lambda ** 1.2 * (1e-14 * 1000) ** -0.6, 3e-3);
   close(r0, 0.07848, 1e-3); // hand: (0.423 · 1.6432e13 · 1e-14 · 1000)^(−3/5) = 69.51^(−0.6)
+  // Spherical wave on a uniform path: weight (z/L)^(5/3) integrates to 3/8, so r₀ is (3/8)^(−3/5) = 1.8011× larger.
+  close(sphericalFriedParameter(1e-14, lambda, 1000) / r0, 1.8011, 1e-4);
   // Uniform path: h̄ = (∫z^(5/3)dz / L)^(3/5) = (3/8)^(3/5) L, θ₀ = 0.314 r₀/h̄.
   close(isoplanaticAngle(1e-14, lambda, 1000), (0.314 * r0) / ((3 / 8) ** 0.6 * 1000), 2e-3);
 });
@@ -127,6 +129,40 @@ test("weak aperture averaging: the Gaussian-aperture integral, its D = 0 prefact
   // Large apertures: A ∝ d^(−7/3).
   close(weakApertureFactor(1e4, "plane") / weakApertureFactor(1e3, "plane"), 10 ** (-7 / 6), 0.02);
   assert.equal(weakApertureFactor(0, "spherical"), 1);
+});
+
+test("hard circular aperture A: Mellin–Barnes limits (GR 6.574.2) and the comparison with the Gaussian aperture", () => {
+  // Γ for negative non-integers by reflection; M_F from Gradshteyn & Ryzhik 6.574.2 with ν = μ = 1, λ = 3 − s;
+  // M_w(s) = ½Γ(p − 1) cos(πp/2), p = (s − 8/3)/2, the Mellin transform of t^(−8/3)(1 − sin t²/t²) (continued).
+  const gamma = (x: number): number => (x > 0 ? Math.exp(lnGamma(x)) : Math.PI / (Math.sin(Math.PI * x) * gamma(1 - x)));
+  const MF = (s: number) => (4 * gamma(3 - s) * gamma(s / 2)) / (2 ** (3 - s) * gamma(2 - s / 2) ** 2 * gamma(3 - s / 2));
+  const Mw = (s: number) => 0.5 * gamma((s - 8 / 3) / 2 - 1) * Math.cos((Math.PI * (s - 8 / 3)) / 4);
+  const I0 = Mw(1);
+  close(I0, 0.4714915, 1e-6);
+  for (const d2 of [1e-4, 1e-3, 1e-2]) {
+    const d = Math.sqrt(d2);
+    const small = 1 + (MF(-5 / 3) * d ** (5 / 3) - 0.25 * Mw(3) * d2 + (5 / 192) * Mw(5) * d2 * d2) / I0;
+    close(hardApertureFactor(d2), small, 1e-7, `d² = ${d2}`);
+  }
+  for (const d2 of [1e3, 1e4, 1e6]) {
+    const d = Math.sqrt(d2);
+    close(hardApertureFactor(d2), ((MF(7 / 3) / 6) * d ** (-7 / 3) + (4 / Math.PI) * Mw(-2) * d ** -3) / I0, 2e-6, `d² = ${d2}`);
+  }
+  // Gaussian aperture exp(−x²/4) in the same variable: ∫x^(4/3) e^(−x²/4) dx = 2^(4/3) Γ(7/6), so A_hard/A_Gauss → 1.1298.
+  close(MF(7 / 3) / (2 ** (4 / 3) * gamma(7 / 6)), 1.1298, 1e-4);
+  close(hardApertureFactor(1e12) / weakApertureFactor(1e12, "plane"), 1.1298, 1e-3);
+  // Independent normalisation: Churnside's hard-aperture fit A ≈ [1 + 1.07 d^(7/3)]^(−1) (Appl. Opt. 30, 1982 (1991))
+  // has the large-d² coefficient 1/1.07 = 0.9346; the exact one is M_F(7/3)/(6 I₀) = 0.9336.
+  close(hardApertureFactor(1e12) * 1e6 ** (7 / 3) * 1.07, 1, 2e-3); // d^(−3) term: 1e-4 relative at d = 1e6
+  // Session 173 (two reviewers' quadrature): below the Gaussian aperture at d² = 1–30 (here 5–14 %), crossing near d² ≈ 77.
+  close(hardApertureFactor(1), 0.413443, 1e-5); // also from the same quadrature with the integral-form besselJ
+  for (const d2 of [1, 3, 10, 30]) {
+    const r = hardApertureFactor(d2) / weakApertureFactor(d2, "plane");
+    assert.ok(r > 0.85 && r < 0.96, `d² = ${d2}: ${r}`);
+  }
+  assert.ok(hardApertureFactor(70) < weakApertureFactor(70, "plane") && hardApertureFactor(100) > weakApertureFactor(100, "plane"));
+  assert.equal(hardApertureFactor(0), 1);
+  assert.ok(Number.isNaN(hardApertureFactor(-1)) && Number.isNaN(hardApertureFactor(NaN)));
 });
 
 test("gamma-gamma α, β (Al-Habash, Andrews & Phillips 2001) and the CDF against closed forms", () => {
@@ -297,4 +333,44 @@ test("beam wander with the diffracting beam: F = 3∫ξ²(1 + ((1 − ξ)L/z_R)�
   assert.ok(Number.isNaN(beamWanderDiffractionFactor(-1)));
   // Defaults: 2.42 · 1e-14 · 1000³ · 0.02^(−1/3) = 8.9154e-5 m², times F = 8.7299e-5 m².
   close(beamWanderVarianceDiffracting(1e-14, 1000, 0.02, 1550e-9), 8.7299e-5, 1e-4);
+});
+
+test("field stop: Rayleigh's encircled energy without turbulence, Fried's r₀ normalisation and the large-angle series", () => {
+  const D = 0.2;
+  const theta = (v: number) => (v * lambda) / (Math.PI * D); // v = πDθ/λ
+  // Born & Wolf §8.5.2: EE = 1 − J₀²(v) − J₁²(v); 83.8 % inside the first dark ring v = 3.8317.
+  for (const v of [0.5, 1, 3.8317, 7.0156, 10, 50, 200, 1000, 5000]) {
+    const exact = 1 - besselJ(0, v) ** 2 - besselJ(1, v) ** 2;
+    assert.ok(Math.abs(fieldStopFraction(theta(v), D, lambda, Infinity) - exact) < 3e-6, `v = ${v}`);
+  }
+  close(fieldStopFraction(theta(3.8317), D, lambda, Infinity), 0.8378, 1e-4);
+  // Fried (1966): 6.88 = 2[(24/5)Γ(6/5)]^(5/6), so 3.44 to 3 digits.
+  close(0.5 * 6.88, ((24 / 5) * Math.exp(lnGamma(6 / 5))) ** (5 / 6), 1e-3);
+  // Small angles: EE ≈ v²/4 · 8∫T s ds. For D ≫ r₀, with a = 3.44(D/r₀)^(5/3) and T ≈ (1 − 4s/π)e^(−a s^(5/3)):
+  // 8∫T s ds = 4.8 Γ(6/5) a^(−6/5) − (32/π)(3/5) Γ(9/5) a^(−9/5) → (r₀/D)², the peak of a perfect aperture r₀.
+  for (const r0 of [2e-3, 2e-4]) {
+    const a = 3.44 * (D / r0) ** (5 / 3);
+    const expected = 4.8 * Math.exp(lnGamma(6 / 5)) * a ** -1.2 - (32 / Math.PI) * 0.6 * Math.exp(lnGamma(9 / 5)) * a ** -1.8;
+    close(fieldStopFraction(theta(1e-6), D, lambda, r0) / (1e-12 / 4), expected, 2e-5, `r₀ = ${r0}`);
+    close(expected / (r0 / D) ** 2, 1, 2e-2);
+  }
+  // The large-angle series and the quadrature agree where the method switches (100 periods of J₁(2vs)).
+  for (const r0 of [Infinity, 1, 0.2, 0.05, 0.01, 0.002]) {
+    const a = r0 === Infinity ? 0 : 3.44 * (D / r0) ** (5 / 3);
+    const th = theta((0.999 * 100 * Math.PI) / (a > 0 ? Math.min(1, (40 / a) ** 0.6) : 1));
+    const q = fieldStopFraction(th, D, lambda, r0, "quadrature");
+    assert.ok(Math.abs(q - fieldStopFraction(th, D, lambda, r0, "series")) < 3e-6, `r₀ = ${r0}`);
+  }
+  // Seeing-limited 1 − EE at large θ: Γ(11/6)/Γ(1/6) · 3.44 (λ/(πr₀θ))^(5/3) plus the aperture's 2/(πv).
+  const r0 = 0.01;
+  const th = 3e-3; // ≈ 19 λ/r₀, still the quadrature branch
+  const tail = (Math.exp(lnGamma(11 / 6) - lnGamma(1 / 6)) * 3.44 * (lambda / (Math.PI * r0 * th)) ** (5 / 3)) + (2 * lambda) / (Math.PI ** 2 * D * th);
+  close(1 - fieldStopFraction(th, D, lambda, r0), tail, 5e-3); // the next terms (s^(8/3), s^(10/3)) add ≈ 0.3 %
+  // Inverse and edges.
+  const t90 = fieldStopHalfAngle(0.9, D, lambda, 0.05);
+  close(fieldStopFraction(t90, D, lambda, 0.05), 0.9, 1e-9);
+  assert.ok(t90 > lambda / 0.05 && t90 < 3 * (lambda / 0.05)); // ≈ 1–3 λ/r₀ for D = 4 r₀
+  assert.equal(fieldStopFraction(0, D, lambda, 0.05), 0);
+  assert.ok(Number.isNaN(fieldStopFraction(-1e-3, D, lambda, 0.05)) && Number.isNaN(fieldStopFraction(1e-3, 0, lambda, 0.05)));
+  assert.ok(Number.isNaN(fieldStopHalfAngle(1, D, lambda, 0.05)));
 });

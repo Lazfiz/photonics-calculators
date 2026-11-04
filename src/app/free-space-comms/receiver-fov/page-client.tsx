@@ -9,6 +9,7 @@ import {
   BACKGROUND_SCENES, type BackgroundScene, backgroundPower, equalNoiseHalfAngle, parseScene,
   receiverNoise, responsivity, sceneRadiance, sceneSolidAngle,
 } from "../../../physics/free-space-comms/background-radiance";
+import { fieldStopFraction, fieldStopHalfAngle, friedParameter, sphericalFriedParameter } from "../../../physics/free-space-comms/turbulence";
 import { excessNoiseFactor } from "../../../physics/detectors/apd";
 
 const COLORS = ["#06b6d4", "#3b82f6", "#a78bfa", "#22c55e", "#9ca3af", "#f59e0b"];
@@ -58,10 +59,16 @@ export default function ReceiverFovPage() {
   const [darkRaw, setDark] = useURLState("dark", 1); // nA
   const [gainRaw, setGain] = useURLState("gain", 10);
   const [kRaw, setK] = useURLState("k", 0.4);
+  const [cn2Raw, setCn2] = useURLState("cn2", 1e-14); // m^(−2/3)
+  const [distanceRaw, setDistance] = useURLState("distance", 1); // km
+  const [waveRaw, setWave] = useURLState("wave", "spherical");
 
   const scene = parseScene(sceneRaw);
   const fov = clamp(fovRaw, 1e-3, 1000, 20);
   const signalDbm = clamp(signalRaw, -120, 30, -30);
+  const cn2 = clamp(cn2Raw, 0, 1e-11, 1e-14);
+  const distance = clamp(distanceRaw, 0.001, 1000, 1);
+  const plane = waveRaw === "plane";
   const rx: Receiver = useMemo(() => ({
     lambda: clamp(wavelengthRaw, 850, 1550, 1550) * 1e-9,
     diameter: clamp(diameterRaw, 1e-3, 10, 0.2),
@@ -74,11 +81,13 @@ export default function ReceiverFovPage() {
     gain: clamp(gainRaw, 1, 1000, 10),
     k: clamp(kRaw, 0, 1, 0.4),
   }), [wavelengthRaw, diameterRaw, etaRaw, passbandRaw, qeRaw, bandwidthRaw, ampRaw, darkRaw, gainRaw, kRaw]);
+  const r0 = cn2 > 0 ? (plane ? friedParameter : sphericalFriedParameter)(cn2, rx.lambda, distance * 1e3) : Infinity;
 
   const results = useMemo(() => {
     const Pb = bgPower(scene, fov * 1e-3, rx);
     const Ps = 10 ** (signalDbm / 10) * 1e-3;
-    const noise = noiseFor(Ps, Pb, rx);
+    const stop = fieldStopFraction(fov * 1e-3, rx.diameter, rx.lambda, r0);
+    const noise = noiseFor(Ps * stop, Pb, rx);
     const total = noise.signalShot + noise.backgroundShot + noise.darkShot + noise.amplifier;
     const fovEqual = equalNoiseHalfAngle({
       radiance: sceneRadiance(scene, rx.lambda), area: (Math.PI / 4) * rx.diameter ** 2, sourceSolidAngle: sceneSolidAngle(scene),
@@ -86,38 +95,41 @@ export default function ReceiverFovPage() {
       amplifierNoise: rx.ampNoise, gain: rx.gain, ionisationRatio: rx.k,
     });
     return {
-      Pb, Ps, noise, bgShare: noise.backgroundShot / total, ampShare: noise.amplifier / total, fovEqual,
+      Pb, Ps, stop, fov90: fieldStopHalfAngle(0.9, rx.diameter, rx.lambda, r0), noise, bgShare: noise.backgroundShot / total, ampShare: noise.amplifier / total, fovEqual,
       diffraction: (1.22 * rx.lambda) / rx.diameter, F: excessNoiseFactor(rx.gain, rx.k),
     };
-  }, [scene, fov, signalDbm, rx]);
+  }, [scene, fov, signalDbm, rx, r0]);
 
   const fovData = useMemo(() => {
     const Ps = 10 ** (signalDbm / 10) * 1e-3;
     const lo = Math.log10(Math.min(fov, 0.01));
     const hi = Math.log10(Math.max(fov, 100));
     const fovs = Array.from({ length: 161 }, (_, i) => 10 ** (lo + ((hi - lo) * i) / 160)); // min(FOV, 0.01)–max(FOV, 100) mrad
+    const stop = fovs.map((f) => fieldStopFraction(f * 1e-3, rx.diameter, rx.lambda, r0));
     const lines = BACKGROUND_SCENES.map((s, i) => ({
-      type: "scatter", mode: "lines", x: fovs, y: fovs.map((f) => dB(noiseFor(Ps, bgPower(s.id, f * 1e-3, rx), rx).snr)),
+      type: "scatter", mode: "lines", x: fovs, y: fovs.map((f, j) => dB(noiseFor(Ps * stop[j], bgPower(s.id, f * 1e-3, rx), rx).snr)),
       name: s.label, line: { color: COLORS[i], width: s.id === scene ? 3 : 1.5 },
     }));
     return [...lines, {
-      type: "scatter", mode: "markers", x: [fov], y: [dB(noiseFor(Ps, bgPower(scene, fov * 1e-3, rx), rx).snr)], name: "Current",
+      type: "scatter", mode: "markers", x: [fov],
+      y: [dB(noiseFor(Ps * fieldStopFraction(fov * 1e-3, rx.diameter, rx.lambda, r0), bgPower(scene, fov * 1e-3, rx), rx).snr)], name: "Current",
       marker: { color: "#f97316", size: 10 },
     }];
-  }, [scene, fov, signalDbm, rx]);
+  }, [scene, fov, signalDbm, rx, r0]);
 
   const signalData = useMemo(() => {
     const Pb = bgPower(scene, fov * 1e-3, rx);
+    const stop = results.stop;
     const dbms = Array.from({ length: 81 }, (_, i) => signalDbm - 40 + i);
-    const snr = (bg: number) => dbms.map((d) => dB(noiseFor(10 ** (d / 10) * 1e-3, bg, rx).snr));
+    const snr = (bg: number) => dbms.map((d) => dB(noiseFor(10 ** (d / 10) * 1e-3 * stop, bg, rx).snr));
     return [
       { type: "scatter", mode: "lines", x: dbms, y: snr(Pb), name: "with background", line: { color: "#f59e0b", width: 2 } },
       { type: "scatter", mode: "lines", x: dbms, y: snr(0), name: "no background", line: { color: "#3b82f6", dash: "dash" } },
-      { type: "scatter", mode: "markers", x: [signalDbm], y: [dB(noiseFor(10 ** (signalDbm / 10) * 1e-3, Pb, rx).snr)], name: "Current", marker: { color: "#f97316", size: 10 } },
+      { type: "scatter", mode: "markers", x: [signalDbm], y: [dB(noiseFor(10 ** (signalDbm / 10) * 1e-3 * stop, Pb, rx).snr)], name: "Current", marker: { color: "#f97316", size: 10 } },
     ];
-  }, [scene, fov, signalDbm, rx]);
+  }, [scene, fov, signalDbm, rx, results.stop]);
 
-  const underfilled = fov * 1e-3 < results.diffraction;
+  const clipped = results.stop < 0.9;
 
   return (
     <>
@@ -126,6 +138,12 @@ export default function ReceiverFovPage() {
         <select id="scene" value={scene} onChange={(e) => setScene(e.target.value)}
           className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
           {BACKGROUND_SCENES.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+        </select>
+        <label className="block text-sm text-gray-400 mt-3 mb-1" htmlFor="wave">Turbulence r₀ for the signal</label>
+        <select id="wave" value={plane ? "plane" : "spherical"} onChange={(e) => setWave(e.target.value)}
+          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+          <option value="spherical">Spherical wave (horizontal link, point source)</option>
+          <option value="plane">Plane wave (downlink, conservative)</option>
         </select>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
@@ -141,24 +159,30 @@ export default function ReceiverFovPage() {
         <ValidatedNumberInput label="Dark Current (nA, multiplied)" value={darkRaw} onChange={setDark} min={0} max={1e6} step="any" />
         <ValidatedNumberInput label="APD Gain M (1 = PIN)" value={gainRaw} onChange={setGain} min={1} max={1000} step="any" />
         <ValidatedNumberInput label="Ionisation Ratio k" value={kRaw} onChange={setK} min={0} max={1} step="any" />
+        <ValidatedNumberInput label="Cn² (m⁻²ᐟ³, 0 = none)" value={cn2} onChange={setCn2} min={0} max={1e-11} step="any" />
+        <ValidatedNumberInput label="Link Distance (km)" value={distance} onChange={setDistance} min={0.001} max={1000} step="any" />
       </div>
 
-      {underfilled && (
+      {clipped && (
         <div role="alert" className="mb-6 rounded-lg border border-yellow-600 bg-yellow-900/30 p-4 text-sm text-yellow-200">
-          The FOV half-angle is below the diffraction spot&apos;s first zero 1.22λ/D = {fmt(results.diffraction * 1e3)} mrad,
-          so the field stop clips the signal. That loss is not modelled here.
+          The field stop passes only {fmt(results.stop * 100)} % of the signal spot (diffraction and turbulence); a half-angle
+          of {fmt(results.fov90 * 1e3)} mrad passes 90 %. The SNR includes this loss.
         </div>
       )}
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ResultCard label="Electrical SNR" value={`${fmt(dB(results.noise.snr))} dB`} tone="green" subtext="(M I_s)² / σ²" />
         <ResultCard label="Background power at the detector" value={`${fmt(10 * Math.log10(results.Pb * 1e3))} dBm`} tone="orange" subtext={`${fmt(results.Pb)} W`} />
-        <ResultCard label="Signal power at the detector" value={`${fmt(10 * Math.log10(results.Ps * rx.eta * 1e3))} dBm`} tone="blue" subtext="η_opt × signal at the aperture" />
+        <ResultCard label="Signal power at the detector" value={`${fmt(10 * Math.log10(results.Ps * rx.eta * results.stop * 1e3))} dBm`} tone="blue" subtext="η_opt × field-stop fraction × signal at the aperture" />
+        <ResultCard label="Signal through the field stop" value={`${fmt(results.stop * 100, 4)} %`} tone="green" subtext="long-exposure encircled energy at the FOV half-angle" />
+        <ResultCard label="FOV passing 90 % of the signal" value={`${fmt(results.fov90 * 1e3)} mrad`} tone="cyan" subtext="half-angle" />
+        <ResultCard label="Fried parameter r₀" value={Number.isFinite(r0) ? `${fmt(r0 * 100)} cm` : "∞"} tone="purple"
+          subtext={Number.isFinite(r0) ? `seeing λ/r₀ = ${fmt((rx.lambda / r0) * 1e3)} mrad (${plane ? "plane" : "spherical"} wave)` : "no turbulence"} />
         <ResultCard label="Noise variance from background" value={`${fmt(results.bgShare * 100)} %`} tone="purple"
           subtext={`amplifier ${fmt(results.ampShare * 100)} %, excess noise F = ${fmt(results.F)}`} />
         <ResultCard label="FOV where background = amplifier noise" value={`${fmt(results.fovEqual * 1e3)} mrad`} tone="cyan"
           subtext={Number.isFinite(results.fovEqual) ? "half-angle; wider, background noise exceeds amplifier noise" : "never: this background is too faint"} />
-        <ResultCard label="Diffraction half-angle 1.22λ/D" value={`${fmt(results.diffraction * 1e3)} mrad`} tone="gray" subtext="smallest FOV that passes the Airy core" />
+        <ResultCard label="Diffraction half-angle 1.22λ/D" value={`${fmt(results.diffraction * 1e3)} mrad`} tone="gray" subtext="first dark ring: 83.8 % of a turbulence-free spot" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -176,9 +200,16 @@ export default function ReceiverFovPage() {
         <h3 className="text-lg font-semibold">Model</h3>
         <p className="font-mono">P_bg = L_λ · (πD²/4) · π sin²θ · Δλ · η_opt,   SNR = (M R η_opt P_s)² / [2qM²F (I_s + I_bg + I_d) B + i_n² B]</p>
         <p>
-          R = QE·qλ/(hc), F = kM + (1 − k)(2 − 1/M) (McIntyre 1966). The signal is assumed to pass the field stop
-          entirely; background radiances are typical clear-sky and cloud values (Giggenbach 2022) or a 5772 K solar
-          disc above the atmosphere. Spot growth from turbulence (λ/r₀ ≫ λ/D) is not modelled. A wider FOV eases pointing and turbulence-induced spot motion, but once the
+          R = QE·qλ/(hc), F = kM + (1 − k)(2 − 1/M) (McIntyre 1966). Background radiances are typical clear-sky and
+          cloud values (Giggenbach 2022) or a 5772 K solar disc above the atmosphere.
+        </p>
+        <p className="font-mono">EE(θ) = 2v ∫₀¹ T(s) J₁(2vs) ds,   v = πDθ/λ,   T(s) = (2/π)[arccos s − s√(1 − s²)] · exp[−3.44 (sD/r₀)^(5/3)]</p>
+        <p>
+          The field stop passes the long-exposure encircled energy EE of the signal spot: the aperture&apos;s transfer
+          function times Fried&apos;s (1966) long-exposure turbulence factor, with r₀ = (0.423 k² Cn² L)^(−3/5) for a plane wave or (0.423 · 3/8 · k² Cn² L)^(−3/5),
+          1.8× larger, for the spherical wave from a point source at the far end of a horizontal path. The SNR uses the mean
+          (long-exposure) fraction; the short-exposure spot wanders, and the receiver&apos;s central obscuration is ignored. It includes image motion (tilt); a tip-tilt tracker would make the spot smaller. Without turbulence
+          EE is Rayleigh&apos;s 1 − J₀²(v) − J₁²(v); for D ≫ r₀ the spot is ≈ λ/r₀ wide instead of λ/D. A wider FOV eases pointing and turbulence-induced spot motion, but once the
           background shot noise passes the amplifier noise every doubling of the half-angle quadruples it for an extended sky (for the Sun, only until the FOV covers the 4.65 mrad half-angle disc).
         </p>
       </div>

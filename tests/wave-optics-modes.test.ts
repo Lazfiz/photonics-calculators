@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { besselJ, besselJ0Fast, fresnelIntegrals, integrateSimpson } from "../src/physics/math";
+import { besselJ, besselJ0Fast, besselJ1Fast, fresnelIntegrals, integrateGaussLegendre8, integrateSimpson } from "../src/physics/math";
 import {
   hermiteH, hgAmplitude1D, hgIntensity, hgSecondMomentRadius, laguerreL, lgIntensity, lgRingRadius,
   lgSecondMomentRadius, modeGouyPhase,
@@ -56,6 +56,15 @@ test("besselJ0Fast: within 1e-7 of the integral-representation besselJ (A&S 9.4.
   assert.ok(worst < 1e-7, `max |error| ${worst}`);
   assertAbs(besselJ0Fast(J0_FIRST_ZERO), 0, 1e-7, "J₀(j₀,₁)");
   assert.equal(besselJ0Fast(-2), besselJ0Fast(2));
+});
+
+test("besselJ1Fast: within 1e-7 of besselJ (A&S 9.4.4, 9.4.6); 8-point Gauss–Legendre is exact to degree 15", () => {
+  let worst = 0;
+  for (let x = 0; x <= 600; x += 0.0731) worst = Math.max(worst, Math.abs(besselJ1Fast(x) - besselJ(1, x)));
+  assert.ok(worst < 1e-7, `worst ${worst}`);
+  assertAbs(besselJ1Fast(3.831705970207512), 0, 1e-7, "J₁(j₁,₁)"); // A&S Table 9.5
+  assert.equal(besselJ1Fast(-2), -besselJ1Fast(2));
+  assertAbs(integrateGaussLegendre8((x) => x ** 15 + x ** 14, 0, 1), 1 / 16 + 1 / 15, 1e-15, "∫x¹⁵ + x¹⁴");
 });
 
 test("Hermite and Laguerre polynomials (DLMF Tables 18.3.1, 18.5.1 closed forms)", () => {
