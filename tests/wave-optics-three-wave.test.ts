@@ -2,9 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  LINBO3_D33_1313, LOW_GAIN_BANDWIDTH_FACTOR, detunedMismatch, gainBandwidth, gaussianMixingPower, idlerPower, idlerWavelength,
-  mixingEfficiency, parametricGain, qpmDeff, sumFrequencyWavelength,
+  LINBO3_D33_1313, LOW_GAIN_BANDWIDTH_FACTOR, degeneracyLimits, detunedMismatch, gainBandwidth, gaussianMixingPower, idlerPower,
+  idlerWavelength, mixingEfficiency, parametricGain, pplnOpaParameters, qpmDeff, sumFrequencyWavelength,
 } from "../src/physics/wave-optics/three-wave";
+import { c } from "../src/physics/constants";
 import { parametricGainCoefficient } from "../src/physics/wave-optics/optical-parametric-oscillator";
 import { sfgCoefficient } from "../src/physics/imaging/second-harmonic-generation";
 
@@ -112,4 +113,29 @@ test("PPLN default d_eff = 2d₃₃/π from Shoji et al. 1997 (Table 10, congrue
   assertRel(qpmDeff(LINBO3_D33_1313), 12.4141e-12, 1e-5, "1313 nm");
   assertRel(qpmDeff(25.2e-12), 16.0428e-12, 1e-5, "1064 nm");
   assert.equal(qpmDeff(0), 0, "no nonlinearity");
+});
+
+test("PPLN OPA parameters from Zelmon 1997 (e-ray, 21 °C) reproduce the page defaults at 1064 → 1550 nm", () => {
+  // The page's defaults were taken from the same Sellmeier (session 149): n 2.1555, 2.1376, 2.0814; δ_si −97.7 fs/mm.
+  const p = pplnOpaParameters(1064e-9, 1550e-9);
+  assert.deepEqual([p.nPump, p.nSignal, p.nIdler].map((n) => n.toFixed(4)), ["2.1555", "2.1376", "2.0814"]);
+  assertRel(p.gvm * 1e15 * 1e-3, -97.72, 1e-4, "δ_si fs/mm");
+  // 1550 nm pumped to 3000 nm: the idler 3206.9 nm is inside the fit; 2 µm pump to 3 µm gives a 6 µm idler, outside 0.4–5 µm.
+  assert.ok(Number.isFinite(pplnOpaParameters(1550e-9, 3000e-9).gvm));
+  assert.ok(Number.isNaN(pplnOpaParameters(2000e-9, 3000e-9).gvm));
+});
+
+test("degeneracyLimits: the signal's detuning stays on its side of ν_p/2 (Codex review 2026-10-24)", () => {
+  // Hand values: 1064 nm pump, ν_p/2 = c/2128 nm. A 1550 nm signal (above ν_p/2) may move down to ν_p/2 and up to ν_p.
+  const [lo, hi] = degeneracyLimits(1064e-9, 1550e-9);
+  assertRel(lo, c / 2128e-9 - c / 1550e-9, 1e-12, "down to degeneracy");
+  assertRel(hi, c / 1064e-9 - c / 1550e-9, 1e-12, "up to the pump");
+  assertRel(lo * 1e-12, -52.535, 1e-4, "−52.535 THz");
+  // A 3000 nm signal (below ν_p/2) is bounded by 0 and degeneracy.
+  const [lo3, hi3] = degeneracyLimits(1064e-9, 3000e-9);
+  assertRel(lo3, -c / 3000e-9, 1e-12, "down to 0 Hz");
+  assertRel(hi3, c / 2128e-9 - c / 3000e-9, 1e-12, "up to degeneracy");
+  // Degenerate signal: both sides; signal shorter than the pump: NaN.
+  assert.deepEqual(degeneracyLimits(1064e-9, 2128e-9).map((v) => Math.sign(v)), [-1, 1]);
+  assert.ok(degeneracyLimits(1064e-9, 900e-9).every(Number.isNaN));
 });
