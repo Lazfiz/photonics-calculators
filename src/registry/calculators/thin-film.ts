@@ -258,12 +258,12 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "ellipsometry-measurement",
     title: "Ellipsometry Measurement",
-    description: "Invert ellipsometry data (Psi, Delta) to the pseudo-dielectric function and pseudo-refractive index of a substrate.",
-    lede: "Invert ellipsometry data (Ψ, Δ) to the pseudo-dielectric function and pseudo-refractive index (two-phase ambient/substrate model).",
+    description: "Invert ellipsometry data (Psi, Delta) to the pseudo-dielectric function and pseudo-refractive index of a substrate, or to the thickness of a transparent film of known index.",
+    lede: "Invert ellipsometry data (Ψ, Δ) to the pseudo-dielectric function and pseudo-refractive index (two-phase ambient/substrate model), or to the thickness of a transparent film of known index on a known substrate.",
     tier: "exact",
-    modelNote: "Two-phase (ambient/substrate) inversion of Ψ and Δ, exact for a bare, isotropic, semi-infinite substrate. With films, roughness or anisotropy, ⟨n⟩ and ⟨k⟩ are pseudo-values, not material constants.",
+    modelNote: "Two-phase inversion, exact for a bare isotropic substrate (else ⟨n⟩, ⟨k⟩ are pseudo-values). Film: exact three-phase inversion for one lossless film of known index, modulo the period D_φ; |X| ≠ 1 flags a misfit.",
     references: [
-      { citation: "Azzam R. M. A., Bashara N. M. (1977). Ellipsometry and Polarized Light, ch. 4 (ambient-substrate system). North-Holland." },
+      { citation: "Azzam R. M. A., Bashara N. M. (1977). Ellipsometry and Polarized Light, ch. 4 (ambient-substrate and ambient-film-substrate systems). North-Holland." },
       {
         citation: "Aspnes D. E. (1985). The accurate determination of optical properties by ellipsometry. In Palik E. D. (ed.), Handbook of Optical Constants of Solids, 89–112. Academic Press.",
         url: "https://doi.org/10.1016/b978-0-08-054721-3.50010-1",
