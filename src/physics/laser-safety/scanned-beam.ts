@@ -31,8 +31,9 @@
  *
  * Not modelled: an eye off the centre of the scan line (passes come in unevenly spaced pairs near the turning points,
  * where the beam also slows), sinusoidal (resonant) scans, raster scans (several lines per frame cross the pupil),
- * pulsed lasers (each pass a group of pulses), a moving retinal image (accommodation to infinity: less restrictive),
- * and IEC 60825-1's angle-of-acceptance analysis of extended images.
+ * a moving retinal image (accommodation to infinity: less restrictive),
+ * and IEC 60825-1's angle-of-acceptance analysis of extended images. Pulsed lasers (each pass a group of pulses):
+ * `scanned-pulse-train.ts`.
  */
 
 import { normalCdf } from "../math";

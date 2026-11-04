@@ -1,46 +1,47 @@
-# Handover — 2026-11-04 (session 198 → session 199)
+# Handover — 2026-11-04 (session 199 → session 200)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 198 did Phase 7c (lasers: Degnan optimum coupling and g₀l pump on `q-switched-laser`, PPLN preset on
-`optical-parametric-oscillator`) on `phase-7/7c-lasers` (PR #236). Next: Phase 7d (`lidar-safety` scanned mode, safety-critical).
+Session 199 did Phase 7d (scanned mode on `lidar-safety`, safety-critical) on `phase-7/7d-lidar-scan` (PR #237).
+Next: Phase 7e (thin film: ellipsometry transparent-film thickness, sputtering thermalisation, plasma h-factor).
 
 ## State
-- `wave-optics/pulsed-laser.ts` `qSwitchOptimumCoupling(g0l, γ_i, hν, A, σ)` → {z, couplerLoss, reflectance, ratio, extraction,
-  energy}: γ₂,opt = 2γ_i(z − 1 − ln z)/ln z, E_max = (hνA/2σ)2γ_i(z − 1 − ln z), r = z ln z/(z − 1), η = 1 − 1/z; NaN for γ_i = 0
-  or z ≤ 1. `q-switched-laser`: `pump` = ratio (default, old links unchanged) | gain (`g0l`, default 0.6); optimum cards in both
-  modes (g₀l = rγ in ratio mode); E-vs-R chart at fixed g₀l down to min(0.01, R_opt/2); RK4 shape only for r ≤ 50.
-- `optical-parametric-oscillator`: PPLN type 0 box (`pplnOpaParameters`, d_eff = 2·19.5/π = 12.41 pm/V, walk-off 0); the Δk row
-  then shows the grating period. Registry cites Zelmon and Shoji. KTP deferred (needs a principal-plane type II cut solver).
-- Gate: 1236 tests, 5 eslint warnings (unchanged). 411/411 tiered, 0 known issues.
+- New `laser-safety/scanned-pulse-train.ts`: `scannedPulseLimits(λ, d, {duration, prf}, scan, α)` → per limit `within`
+  (trainLimit over the half-power pass duration, pulses centred), `pass` (scannedBeamLimits at P̄; per pulse P_max/(fρ),
+  ρ = 1 + Δx·η(0)/L, or 1 + Δx/(d√(π/8)) under the actual-exposure rule), `reduced` (retinal C_P, n = passes in
+  min(T, T₂) × ⌈(D + d)/Δx⌉, T_i grouping), `stationary` floor; levels pulse | pass | reduced | stationary.
+  `lidarMaxEnergyAt` (stationary for any non-ok scan status), `lidarHazardDistance` (96-point log grid + bisection,
+  NaN counts as over). `pulse-train.ts` now exports `pulsesIn`.
+- `lidar-safety`: `mode` = stationary (default, old links unchanged) | scanned; keys `scanAngle` (360), `scanRate` (10 Hz),
+  `scanDirection` (one). Default scanned: 9.14× at 10 m, max 1.09 µJ (within-pass rule 2 at the 5 µs joint), NOHD
+  32.9 m vs stationary 146 m; ρ 1.15, C_P 0.833 (n 1300). Registry cites Schulmeister 2025 too.
+- Gate: 1245 tests, 5 eslint warnings (unchanged). 411/411 tiered, 0 known issues.
 
 ## Next actions
 1. `/ship`; merge on the user's yes. Release only on request, then:
-   `node scripts/post-merge-check.mjs <sha> "wave-optics/q-switched-laser=2.655" "wave-optics/optical-parametric-oscillator=2.23357"`
-   (q-switch default optimum E_max 2.655 mJ, R_opt 0.741; PPLN n_p at the 532 nm default) and `node scripts/ui-check.mjs https://photonics-calculators.vercel.app`.
-2. Phase 7d (ROADMAP).
+   `node scripts/post-merge-check.mjs <sha> "laser-safety/lidar-safety=146"` (stationary default NOHD 146 m; the scanned
+   values need `?mode=scanned`: 32.9 m, 9.14×) and `node scripts/ui-check.mjs https://photonics-calculators.vercel.app`.
+2. Phase 7e (ROADMAP).
 3. Ask the user for PDFs: Bai 2020 (APL Photonics 5, 031301: abstract 79 cm/GW vs body 60 ± 9), Patel 2001 (Yb:YAG κ at
    10 at.%), Siegman "Lasers" ch. 11/21 pages, Degnan 1989 (to cite its equation numbers).
 4. KRS-5 by hand: `materials/transparency-range?material=krs5` at 10 µm: n 2.3707, loss 28.4 %.
 
 ## Non-obvious facts
-- **Session 198:** `devctl` (CPU scheduler shared with another project) holds a *whole* Bash command line while it waits: in
-  `node edit.mjs && npx tsx --test …` neither part runs (exit 75), so an edit can silently not happen. Run edits and tests
-  in separate calls and check `git diff --stat` before trusting a test count. node:test prints `ℹ tests N`, not `# pass`.
-  Degnan's δ is the round-trip dissipative loss: δ = 2γ_i with our single-pass γ_i, z = g₀l/γ_i. Brute force over R
-  (`qSwitchPulse` energy) confirms the closed form to 1e-7; it's exact within the instant-switch rate equations.
-- **Session 197:** the GSM convention: σ_g = w/√(M⁴ − 1) with w the 1/e² *intensity* radius (Mandel & Wolf §5.6.4, w = 2σ_S);
-  a variable named `m2` already holds M², so M⁴ is `m2*m2` (one bug from `m2 ** 4`). Simpson on a Q grid with |A(Q)|² fringes
-  needs step ≈ 0.05 for 1e-6; check a quadrature against an independent brute-force integral (4-D on-axis CSD, 2-D Cartesian
-  convolution) rather than its own refinement. Oscillatory Bessel tails: integrate the mean envelope analytically past a cutoff
-  and subtract the end term. Horizontal links take the spherical-wave r₀ (point source); plane wave is for downlinks.
-  Mellin–Barnes (GR 6.574.2) gives both asymptotic ends of ∫w(t)[2J₁(dt)/(dt)]²dt: good golden values for any filter integral.
-- **Session 196:** Harke et al., Opt. Express 16, 4154 (2008) (user's PDF): Eq. 1 uses the *inhibition* wavelength;
-  Eq. 7 d = d_c/√(1 + d_c²a²ζ). Their pattern (735 nm, NA 1.36) has a = 0.00347 nm⁻¹, 0.94 × our 2NA/λ_STED: a real doughnut
-  is ≈ 6 % wider at high ζ (in the note and tests). Optica PDFs behind bot checks: the user can upload them. To read a PDF
-  without tools, run the scratchpad `pdftext.mjs` (inflate each stream, collect the TJ/Tj strings). Write it with the Write
-  tool: a heredoc mangles the regex backslashes. Probe with the exact γ (`nonlinearCoefficient`), not a rounded one, or 1e-4
-  differences look like bugs. The React Compiler rule `preserve-manual-memoization` fails `useMemo` whose deps are derived
-  in render; prefer plain render code or a module-level pure function.
+- **Session 199:** for a unimodal f, Σ f(x₀ + kΔx)·Δx ≤ ∫f + Δx·max f (each sample bounded by its outer interval; the two
+  around the mode share one): a rigorous worst-phase bound for pulse trains over an aperture. η (disc ⊛ Gaussian) is
+  log-concave (Prékopa). It is up to 1.7× loose when Δx ≈ L (one centred pulse per pass). Scanned evaluations can't
+  exceed the stationary beam's limit (no window carries more); the FWHM pass convention can make the levels 2 % stricter,
+  hence the floor. Watch NaN in "Q > limit" searches: it reads as safe; write `!(Q <= limit)`. At small r the pass
+  (W/v, v ∝ r) can outlast the exposure → scannedBeamLimits "invalid". A dev server of this repo may already run on 3300
+  (`next dev` refuses a second one); SSR doesn't apply URL state, so read values with headless CDP (ui-check pattern;
+  scratchpad scripts need `C:/…` paths and must not end mid-function when sliced from ui-check).
+- **Session 198:** `devctl` (CPU scheduler shared with another project) holds a *whole* Bash command line while it waits:
+  in `a && b` neither part runs (exit 75), so an edit can silently not happen. Run edits and tests in separate calls, or
+  long ones with `run_in_background`, and check `git diff --stat` before trusting a test count.
+- **Session 197:** check a quadrature against an independent brute-force integral rather than its own refinement;
+  Mellin–Barnes (GR 6.574.2) gives both asymptotic ends of ∫w(t)[2J₁(dt)/(dt)]²dt. A variable `m2` holds M²: M⁴ is `m2*m2`.
+- **Session 196:** Optica PDFs behind bot checks: the user can upload them; read one with the scratchpad `pdftext.mjs`
+  (inflate streams, collect TJ/Tj; write it with the Write tool). The React Compiler rule `preserve-manual-memoization`
+  fails `useMemo` whose deps are derived in render; prefer plain render code or a module-level pure function.
 - **Session 195:** ports 3100 and 3200 can hold old `next start` servers of this site: run a branch on 3300 and check the
   served HTML for new text before screenshotting. The CDP screenshot script needs Windows paths (`C:/…`) for node.
 - **Session 194:** verify a lock-in harmonic formula by brute force (sample, take the Fourier component at j·f_r). Table

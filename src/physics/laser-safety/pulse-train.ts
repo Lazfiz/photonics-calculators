@@ -122,7 +122,7 @@ const validTrain = ({ duration: tau, prf: f, exposure: T }: PulseTrain) =>
   tau > 0 && f >= 0 && f * tau <= 1 && T >= tau && T <= T_MAX;
 
 /** Pulses fully inside a window of length w (s) that starts with a pulse: ⌊(w − τ)f⌋ + 1 (the 1e-9 absorbs rounding). */
-const pulsesIn = (w: number, tau: number, f: number) => (w < tau ? 0 : Math.floor((w - tau) * f + 1e-9) + 1);
+export const pulsesIn = (w: number, tau: number, f: number) => (w < tau ? 0 : Math.floor((w - tau) * f + 1e-9) + 1);
 
 /** Number of pulses N in the exposure; NaN for an invalid train (τ ≤ 0, f < 0, f·τ > 1, T < τ or T > 30 ks). */
 export function pulseCount(train: PulseTrain): number {
