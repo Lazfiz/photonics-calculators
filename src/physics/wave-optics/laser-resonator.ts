@@ -1,6 +1,7 @@
 /**
  * Optically pumped four-level laser in a standing-wave resonator: round-trip loss, threshold pump power, small-signal
- * gain, saturation and the Rigrod output. SI units; reflectances and losses are fractions, gains and losses in nepers.
+ * gain, saturation and the Rigrod output. SI units; reflectances and losses are fractions, gains and losses as natural logs of power
+ * (not nepers: ISO 80000-3 defines 1 Np on a field ratio, so these are 2× the neper value).
  * Model tier: textbook. Homogeneous broadening, plane-wave saturation over an effective area, a four-level medium far
  * below full inversion (no ground-state absorption at λ), no thermal lens. O. Svelto, Principles of Lasers, 5th ed.
  * (Springer, 2010), doi 10.1007/978-1-4419-1302-9, ch. 6–7; W. Koechner, Solid-State Laser Engineering, 6th ed.
@@ -19,7 +20,7 @@ import { c, h } from "../constants";
 import { erfcx } from "../math";
 import { rigrodOutput } from "../fiber-optics/doped-fiber-gain";
 
-/** Logarithmic loss −ln(1 − f) = −log1p(−f), nepers, of a fractional power loss f per pass; NaN outside 0 ≤ f < 1. */
+/** Logarithmic loss −ln(1 − f) = −log1p(−f) (natural log of power) of a fractional power loss f per pass; NaN outside 0 ≤ f < 1. */
 export function logarithmicLoss(fraction: number): number {
   return fraction >= 0 && fraction < 1 ? -Math.log1p(-fraction) : NaN;
 }
@@ -51,7 +52,7 @@ export function gaussianSlopeSaturationArea(wMode: number, wPump: number): numbe
   return (Math.PI * m2 * (m2 + 2 * p2)) / (2 * (m2 + p2));
 }
 
-/** Single-pass small-signal gain g₀l = η_p σ τ P_p λ_p/(h c A), nepers; P_p is the absorbed pump power. */
+/** Single-pass small-signal gain g₀l = η_p σ τ P_p λ_p/(h c A), natural log of power; P_p is the absorbed pump power. */
 export function fourLevelGain(pump: number, lambdaPump: number, sigma: number, tau: number, area: number, etaP = 1): number {
   if (!(pump >= 0 && lambdaPump > 0 && sigma > 0 && tau > 0 && area > 0 && etaP > 0)) return NaN;
   return (etaP * sigma * tau * pump * lambdaPump) / (h * c * area);

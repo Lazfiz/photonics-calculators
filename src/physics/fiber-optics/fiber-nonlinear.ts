@@ -1,6 +1,6 @@
 /**
  * Nonlinear limits of a single-mode fibre span. SI units in and out: lengths in m, power attenuation α in 1/m
- * (nepers of power), areas in m², powers in W, gains g_B and g_R in m/W, n₂ in m²/W, γ in 1/(W·m), frequencies in Hz.
+ * (natural log of power per metre), areas in m², powers in W, gains g_B and g_R in m/W, n₂ in m²/W, γ in 1/(W·m), frequencies in Hz.
  * Model tier: textbook approximation (undepleted pump, CW or slowly varying fields, scalar fields with a polarization
  * factor; no dispersion acting on SPM/XPM).
  *

@@ -213,7 +213,7 @@ export const efficiencyBeyondStokes = (slope: number, lambdaPump: number, lambda
 
 /**
  * Rigrod output power ÷ saturation power (I_sat·A) of a standing-wave laser: single-pass small-signal gain g₀L
- * (nepers), reflectances R₁ (rear, with any internal loss folded in) and R₂ (output coupler),
+ * (natural log of power), reflectances R₁ (rear, with any internal loss folded in) and R₂ (output coupler),
  * P/P_sat = (1 − R₂)√R₁ (g₀L + ln√(R₁R₂)) / ((√R₁ + √R₂)(1 − √(R₁R₂))); 0 below threshold.
  */
 export function rigrodOutput(g0L: number, R1: number, R2: number): number {

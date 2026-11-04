@@ -39,7 +39,7 @@ export default function GasLaserResonatorPage() {
   const R2_mm = clamp(r2Raw, -1e7, 1e7, 5000);
   const R_oc = clamp(rOcRaw, 0.01, 0.9999, 0.99);
   const R_hr = clamp(rHrRaw, 0.01, 1, 0.999);
-  const internal = logarithmicLoss(clamp(lossRaw, 0, 50, 1) / 100); // single pass, nepers
+  const internal = logarithmicLoss(clamp(lossRaw, 0, 50, 1) / 100); // single pass, −ln(1 − f) of power
   const g0 = clamp(g0Raw, 0, 100, 0.15);
   const iSat = clamp(iSatRaw, 1e-3, 1e6, 25) * 1e4; // W/m²
 
