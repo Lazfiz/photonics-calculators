@@ -5,12 +5,12 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 197, 2026-11-04)
+## Status (session 198, 2026-11-04)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
   textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) and 5w-13 (materials) and 5w-14 (spectroscopy) and 5w-15 (thin-film + polarization) done (sessions 163–177): 5w is complete; KRS-5
-  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6j done (sessions 179–194); Gemini hero done (session 195). Phase 7 (Known limitations: features): 7a–7b done (sessions 196–197); next 7c. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6j done (sessions 179–194); Gemini hero done (session 195). Phase 7 (Known limitations: features): 7a–7c done (sessions 196–198); next 7d. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -152,7 +152,8 @@ Evidence for a later extension. Reopen an item only with a new source or a user 
 - `optical-parametric-oscillator` (session 182): the walk-off overlap length is our own near-field derivation (pump and signal
   mode of equal radius, pump centred mid-crystal; pump on the signal axis at entry gives 1.07 against 1.94 mm); Guha 1998
   (doi:10.1007/s003400050453) unreadable; a UPC thesis's summary of it has no walk-off length (session 190 re-derived ours). BK's h(B, ξ) is the SHG function, not used.
-  (Session 150) BBO type I only (d_eff from EKSMA d₂₂/d₃₁ at 1064 nm, no Miller scaling; d₃₁ sign taken as adding); no KTP/LBO/PPLN presets.
+  (Session 150) BBO type I only (d_eff from EKSMA d₂₂/d₃₁ at 1064 nm, no Miller scaling; d₃₁ sign taken as adding); PPLN type 0 preset since session 198 (Zelmon, d₃₃ 19.5 pm/V for any pump); no KTP/LBO
+  (Kato 2002 KTP Sellmeier is in `biaxial-data.ts`, but a KTP preset needs a principal-plane type II cut solver; d₁₅, d₂₄ are in `nonlinear-crystals.ts`).
 - `injection-locking` (session 182): the dynamically stable band (Hopf edge, needs f_R and damping inputs) is not computed; Henry–Olsson–Dutta
   1985's range form is cited (session 190, from a snippet; ω₁'s definition unread); Petitbon 1988 abstract only. (Session 149) k_c is estimated as (1 − R)/(τ_rt√R) (Kondratiev 2023 Eq. 4; B is the reflected intracavity field, so ρ is
   relative to the intracavity power); α 1 is Berger's below-threshold value, Banerjee 1991 gives 0.34–0.54 (both cited).
@@ -174,8 +175,7 @@ Evidence for a later extension. Reopen an item only with a new source or a user 
   interpolated (no direct 10 at.% value read). Patel 2001 (JQE 37, 135) measured 10 at.%
   but is paywalled; Chénais 2006 confirms 7 W/(m·K) at 8 at.%.
 - Session 172 (5w-10): supercontinuum DW is the β₂β₃ estimate, ≈ 90 nm redder than a GNLSE run at the defaults (session 182 probe);
-  Dudley 2006 read (session 190): defaults confirmed; its DW relation (p. 1151) uses (1 − f_R)γP_s (616 nm vs our 633 nm). `q-switched-laser`:
-  r is the input, so the Degnan optimum coupling can't show; a g₀l input would. `slab-laser` 0.32 is Fan 1993's lasing estimate (non-lasing 0.37–0.43; abstract). `ring-cavity` formulas re-derived;
+  Dudley 2006 read (session 190): defaults confirmed; its DW relation (p. 1151) uses (1 − f_R)γP_s (616 nm vs our 633 nm). `slab-laser` 0.32 is Fan 1993's lasing estimate (non-lasing 0.37–0.43; abstract). `ring-cavity` formulas re-derived;
   Siegman's text unread (ch. 11 fits finesse/FSR, ray matrices are ch. 15). `soliton` default T₀ 57 fs sits at the
   edge of Raman-free NLS (stated since session 191).
 
@@ -296,8 +296,7 @@ Triage of "Known limitations" (session 195): only items with an open, known mode
 sources: Ar⁺/CO₂ g₀, Nd/Tm/Ho σ, Sheik-Bahae n₂, ZBLAN, LiTaO₃, …) stay parked until a source turns up. Each stage: a
 `physics-reviewer` pass on the new model against its primary source, golden tests, the modelNote updated, the limitation line removed.
 - [x] 7b free-space comms (session 197, `phase-7/7b-fso`, PR #235). See Done.
-- [ ] 7c lasers: `q-switched-laser` g₀l input and Degnan optimum coupling, `optical-parametric-oscillator` PPLN preset (Zelmon,
-  already in `three-wave.ts`) and KTP if sourced.
+- [x] 7c lasers (session 198, `phase-7/7c-lasers`, PR #236). See Done.
 - [ ] 7d laser safety: scanned mode on `lidar-safety` (scanned-pass rules already in the shared limits, sessions 180–181). Own stage: safety-critical.
 - [ ] 7e thin film: `ellipsometry-measurement` transparent-film thickness (Azzam & Bashara inversion), `sputtering-deposition`
   Westwood gas thermalisation, `plasma-deposition` high-pressure diffusion h-factor (Lieberman & Lichtenberg).
@@ -324,6 +323,8 @@ sources: Ar⁺/CO₂ g₀, Nd/Tm/Ho σ, Sheik-Bahae n₂, ZBLAN, LiTaO₃, …) 
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 7c lasers (session 198, `phase-7/7c-lasers`, PR #236): `qSwitchOptimumCoupling` (Degnan; defaults R_opt 0.741, E_max 2.655 mJ vs 2.635
+  at R 0.7), q-switch pump as r or g₀l + E-vs-R chart; OPO PPLN type 0 preset (Λ 29.91 µm at 1064 → 1550); KTP deferred; 1236 tests.
 - 7b free-space comms (session 197, `phase-7/7b-fso`, PR #235): hard-aperture A (A(1) 0.413443, hard/Gauss → 1.1298, Churnside 1/1.07);
   field-stop EE (0.8378 at the first dark ring, spherical r₀ default); GSM antenna to M² 10 (g 0.681173 at α 1, γ 0.15, M² 1.1); 1234 tests.
 - 7a small options (session 196, `phase-7/7a-small-options`, PR #234): splice gap multipass Gaussian reflections (Airy 0.5800 dB at λ/4, 0.21790 dB at
