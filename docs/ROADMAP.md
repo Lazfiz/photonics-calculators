@@ -5,12 +5,12 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 195, 2026-11-04)
+## Status (session 196, 2026-11-04)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
   textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) and 5w-13 (materials) and 5w-14 (spectroscopy) and 5w-15 (thin-film + polarization) done (sessions 163–177): 5w is complete; KRS-5
-  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6j done (sessions 179–194); Gemini hero done (session 195). Next: Phase 7 (Known limitations: features), 7a first. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6j done (sessions 179–194); Gemini hero done (session 195). Phase 7 (Known limitations: features): 7a done (session 196); next 7b. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -293,8 +293,6 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 Triage of "Known limitations" (session 195): only items with an open, known model. The data-blocked ones (paywalled or unread
 sources: Ar⁺/CO₂ g₀, Nd/Tm/Ho σ, Sheik-Bahae n₂, ZBLAN, LiTaO₃, …) stay parked until a source turns up. Each stage: a
 `physics-reviewer` pass on the new model against its primary source, golden tests, the modelNote updated, the limitation line removed.
-- [ ] 7a small options on existing modules: `splice-loss` air-gap Fresnel (`gapEtalonTransmission`), `nonlinear-effects` SBS
-  linewidth/K option (Agrawal), `four-wave-mixing` fiber loss (L_eff), `em-gain` conventional-amplifier read noise, `super-resolution` separate STED λ.
 - [ ] 7b free-space comms: `aperture-averaging` hard circular aperture (GR 6.574.2, checked session 173), `receiver-fov` turbulence
   spot growth (λ/r₀) and field-stop clipping, `optical-antenna` Gaussian Schell-model far field for M² > 2.
 - [ ] 7c lasers: `q-switched-laser` g₀l input and Degnan optimum coupling, `optical-parametric-oscillator` PPLN preset (Zelmon,
@@ -325,6 +323,8 @@ sources: Ar⁺/CO₂ g₀, Nd/Tm/Ho σ, Sheik-Bahae n₂, ZBLAN, LiTaO₃, …) 
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 7a small options (session 196, `phase-7/7a-small-options`, PR #234): splice gap multipass Gaussian reflections (Airy 0.5800 dB at λ/4, 0.21790 dB at
+  41 µm); SBS K + linewidth; lossy FWM transfer matrices (G 8.633275 at 10 dB/km); EM crossover S* 36.6671; STED λ (Harke Eq. 7, 49.0942 nm); 1230 tests.
 - Gemini hero (session 195, `phase-5/gemini-hero`, PR #233): user's Gemini SVG chip hero ported (photonic-chip-art/-hero.tsx); bays link to
   spectroscopy/imaging/wave-optics and 9 registry calculators; demo workbench dropped; MZI split from `machZehnderBeams` (`hero-optics.ts`, 6 tests); 1226 tests.
 - 6j findings (session 194, `phase-6/6j-findings`, PR #232): square lock-in at f_s = 2m·f_r adds harmonics 2m ± j as phasors
