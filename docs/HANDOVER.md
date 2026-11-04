@@ -1,31 +1,35 @@
-# Handover — 2026-11-04 (session 199 → session 200)
+# Handover — 2026-11-04 (session 200 → session 201)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 199 did Phase 7d (scanned mode on `lidar-safety`, safety-critical) on `phase-7/7d-lidar-scan` (PR #237).
-Next: Phase 7e (thin film: ellipsometry transparent-film thickness, sputtering thermalisation, plasma h-factor).
+Session 200 did Phase 7e-a (ellipsometry film thickness, plasma high-pressure h-factors) on `phase-7/7e-thin-film` (PR #238).
+7e-b (sputtering thermalisation) is blocked on sources. Next: Phase 7f (imaging: FPbase spectra, spinning-disk crosstalk, mtf).
 
 ## State
-- New `laser-safety/scanned-pulse-train.ts`: `scannedPulseLimits(λ, d, {duration, prf}, scan, α)` → per limit `within`
-  (trainLimit over the half-power pass duration, pulses centred), `pass` (scannedBeamLimits at P̄; per pulse P_max/(fρ),
-  ρ = 1 + Δx·η(0)/L, or 1 + Δx/(d√(π/8)) under the actual-exposure rule), `reduced` (retinal C_P, n = passes in
-  min(T, T₂) × ⌈(D + d)/Δx⌉, T_i grouping), `stationary` floor; levels pulse | pass | reduced | stationary.
-  `lidarMaxEnergyAt` (stationary for any non-ok scan status), `lidarHazardDistance` (96-point log grid + bisection,
-  NaN counts as over). `pulse-train.ts` now exports `pulsesIn`.
-- `lidar-safety`: `mode` = stationary (default, old links unchanged) | scanned; keys `scanAngle` (360), `scanRate` (10 Hz),
-  `scanDirection` (one). Default scanned: 9.14× at 10 m, max 1.09 µJ (within-pass rule 2 at the 5 µs joint), NOHD
-  32.9 m vs stationary 146 m; ρ 1.15, C_P 0.833 (n 1300). Registry cites Schulmeister 2025 too.
-- Gate: 1245 tests, 5 eslint warnings (unchanged). 411/411 tiered, 0 known issues.
+- `thin-film/ellipsometry.ts`: `filmPsiDelta(d, θ, λ, n₁, {n, k}, n₀)` (three-phase, Nebraska), `filmThicknessPeriod`,
+  `transparentFilmThickness(Ψ, Δ, θ, λ, n₁, sub)` → `{thickness ∈ [−D/100, 0.99 D), period, absX}`. Page keys `lambdaNm`
+  (632.8), `filmN` (1.457), `subN` (3.882), `subK` (0.019); white Ψ-Δ film curve on the heatmap. Defaults stay bare Si (d 0.00).
+- `thin-film/plasma-global-model.ts`: `geometry(R, l, n_g, Tₑ, T_g)` now with D_a (new field `Da`, `ambipolarDiffusion`);
+  `electronTemperature` takes a number or a function of Tₑ; `argonDischarge` solves Tₑ with h. Defaults: Tₑ 2.5528 eV
+  (was 2.59), D_a 97.0 m²/s. Page: regime note instead of a cut, sweep 0.1–100 mTorr, points outside the 1–7 eV fits left out.
+- Gate: 1248 tests, 5 eslint warnings (unchanged). 411/411 tiered, 0 known issues.
 
 ## Next actions
 1. `/ship`; merge on the user's yes. Release only on request, then:
-   `node scripts/post-merge-check.mjs <sha> "laser-safety/lidar-safety=146"` (stationary default NOHD 146 m; the scanned
-   values need `?mode=scanned`: 32.9 m, 9.14×) and `node scripts/ui-check.mjs https://photonics-calculators.vercel.app`.
-2. Phase 7e (ROADMAP).
-3. Ask the user for PDFs: Bai 2020 (APL Photonics 5, 031301: abstract 79 cm/GW vs body 60 ± 9), Patel 2001 (Yb:YAG κ at
-   10 at.%), Siegman "Lasers" ch. 11/21 pages, Degnan 1989 (to cite its equation numbers).
+   `node scripts/post-merge-check.mjs <sha> "thin-film/plasma-deposition=2.55"` (default Tₑ, eV) and
+   `"thin-film/ellipsometry-measurement=3.8820"` (default ⟨n⟩; film case `?psiDeg=41.055&deltaDeg=79.787` → 100.00 nm),
+   then `node scripts/ui-check.mjs https://photonics-calculators.vercel.app`.
+2. Phase 7f (ROADMAP). 7e-b only once a source is readable.
+3. Ask the user for PDFs: Westwood 1978 (JVST 15, 1, doi:10.1116/1.569429) for 7e-b; Bai 2020 (APL Photonics 5, 031301:
+   abstract 79 cm/GW vs body 60 ± 9), Patel 2001 (Yb:YAG κ at 10 at.%), Siegman "Lasers" ch. 11/21, Degnan 1989; L&L 2nd ed.
+   §5.1 and §10.2 pages (check ν_i and the h_l equation, ROADMAP open finding).
 4. KRS-5 by hand: `materials/transparency-range?material=krs5` at 10 µm: n 2.3707, loss 28.4 %.
 
 ## Non-obvious facts
+- **Session 200:** stackResponse ↔ Nebraska: ρ_Nebraska = conj(−r_p/r_s) of the characteristic-matrix r's (independent check
+  for any ellipsometry formula). `csqrt` of a k = 0 argument has Im −0 and can return the growing branch: flip the sign after
+  the root when the decaying one is needed. Keller & Simmons 1979 is open at bitsavers (`IBM_Journal_of_Research_and_Development/231/ibmrd2301E.pdf`)
+  but its equations are CCITT scans: `pdftotext` gives only the OCR text, and headless Chrome `--screenshot` of a PDF (native
+  viewer, or pdf.js from cdnjs on a local server) came out blank; no pdftoppm, PyMuPDF or PIL here. arXiv: `curl` + `pdftotext` works.
 - **Session 199:** for a unimodal f, Σ f(x₀ + kΔx)·Δx ≤ ∫f + Δx·max f (each sample bounded by its outer interval; the two
   around the mode share one): a rigorous worst-phase bound for pulse trains over an aperture. η (disc ⊛ Gaussian) is
   log-concave (Prékopa). It is up to 1.7× loose when Δx ≈ L (one centred pulse per pass). Scanned evaluations can't
@@ -62,7 +66,6 @@ Next: Phase 7e (thin film: ellipsometry transparent-film thickness, sputtering t
   Burle TP-136 at `psec.uchicago.edu/links/Photomultiplier_Handbook.pdf`; EMVA 1288 R3.1 at `emva.org`.
 - **Editing:** long Bash heredocs with mixed quotes fail. Apply edits with a replace-once node script (fails unless the old
   text occurs exactly once).
-- **Session 185:** NIST XCOM answers a plain curl POST (`xcom3_1`); CXRO: POST `/cgi-bin/atten.pl`, then GET the `/tmp/xray*.dat`.
 - **Session 184:** Bai's group writes the [110] Brillouin tensor without the ½ of a unit strain (their p² is 4× standard).
   OpenAlex `abstract_inverted_index` rebuilds paywalled abstracts.
 - **Session 160:** Chrome extension screenshots time out on this site; use a headless CDP script (pattern in `scripts/ui-check.mjs`).
