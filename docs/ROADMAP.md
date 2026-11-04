@@ -10,7 +10,7 @@ goes in the PR description.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
   textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) and 5w-13 (materials) and 5w-14 (spectroscopy) and 5w-15 (thin-film + polarization) done (sessions 163–177): 5w is complete; KRS-5
-  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6j done (sessions 179–194); Gemini hero done (session 195). No open stage: the user picks the next. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6j done (sessions 179–194); Gemini hero done (session 195). Next: Phase 7 (Known limitations: features), 7a first. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -291,6 +291,25 @@ then limitations. Split a stage into a/b boxes when it exceeds about 4 pages.
 - [x] 6i-b chart layout (session 193, `phase-6/6i-b-chart-layout`, PR #231): `bare` on 170 charts in page cards, buttons in the top margin, Plotly PNG/CSV. See Done.
 - [x] 6j findings (session 194, `phase-6/6j-findings`, PR #232): lock-in pair sum, OPA degeneracy + PPLN hint, CTE table, kerr-lens, nepers. See Done.
 - [x] Gemini hero (session 195, `phase-5/gemini-hero`, PR #233): see Done.
+
+## Phase 7 — Known limitations: features (user, session 195: "Known limitations next")
+Triage of "Known limitations" (session 195): only items with an open, known model. The data-blocked ones (paywalled or unread
+sources: Ar⁺/CO₂ g₀, Nd/Tm/Ho σ, Sheik-Bahae n₂, ZBLAN, LiTaO₃, …) stay parked until a source turns up. Each stage: a
+`physics-reviewer` pass on the new model against its primary source, golden tests, the modelNote updated, the limitation line removed.
+- [ ] 7a small options on existing modules: `splice-loss` air-gap Fresnel (`gapEtalonTransmission`), `nonlinear-effects` SBS
+  linewidth/K option (Agrawal), `four-wave-mixing` fiber loss (L_eff), `em-gain` conventional-amplifier read noise, `super-resolution` separate STED λ.
+- [ ] 7b free-space comms: `aperture-averaging` hard circular aperture (GR 6.574.2, checked session 173), `receiver-fov` turbulence
+  spot growth (λ/r₀) and field-stop clipping, `optical-antenna` Gaussian Schell-model far field for M² > 2.
+- [ ] 7c lasers: `q-switched-laser` g₀l input and Degnan optimum coupling, `optical-parametric-oscillator` PPLN preset (Zelmon,
+  already in `three-wave.ts`) and KTP if sourced.
+- [ ] 7d laser safety: scanned mode on `lidar-safety` (scanned-pass rules already in the shared limits, sessions 180–181). Own stage: safety-critical.
+- [ ] 7e thin film: `ellipsometry-measurement` transparent-film thickness (Azzam & Bashara inversion), `sputtering-deposition`
+  Westwood gas thermalisation, `plasma-deposition` high-pressure diffusion h-factor (Lieberman & Lichtenberg).
+- [ ] 7f imaging: `imaging/fluorophores.ts` sampled FPbase spectra (CC data) instead of log-normal bands, `spinning-disk` pinhole
+  crosstalk, `mtf` exact-phase high-NA defocus OTF.
+- [ ] 7g materials data: `thermal-expansion` α(T) for Si (Okada & Tokumaru 1984), BaTiO₃ on `electro-optic`/`photorefractive`
+  (Zgonik 1994 via Petraru's thesis Table 2.2; needs ε and r_eff(β)).
+- Later, user's choice: phone hero (cropped layout + touch: tap to highlight, tap again to open, auto-cycle); traffic/SEO pass.
 
 ## Decisions (keep)
 - **Polarization:** Goldstein/Collett convention site-wide.

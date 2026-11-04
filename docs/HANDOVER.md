@@ -1,8 +1,8 @@
 # Handover — 2026-11-04 (session 195 → session 196)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 195 ported the user's Gemini home hero on `phase-5/gemini-hero` (PR #233). Phases 4–6 have no open stage left:
-ask the user what comes next (open findings, Phase 2 architecture, or the PDF items below).
+Session 195 ported the user's Gemini home hero on `phase-5/gemini-hero` (PR #233). Released on request (6279e31f).
+Next: Phase 7 (Known limitations → features), stage 7a; the plan is in ROADMAP.
 
 ## State
 - `src/components/home/photonic-chip-art.tsx` (≈ 1240 lines): the Gemini SVG (1600×900 viewBox), pure props, `aria-hidden`.
@@ -19,7 +19,7 @@ ask the user what comes next (open findings, Phase 2 architecture, or the PDF it
    `node scripts/post-merge-check.mjs <sha> spectroscopy/etalon-fsr` (home has no calculator value; load check), then
    `node scripts/ui-check.mjs https://photonics-calculators.vercel.app` (expect ALL PASS, 0 console errors) and look at
    the home page at 360 / 1024 / 1440 px.
-2. Ask the user what's next: no ROADMAP box is open.
+2. Released (6279e31f, ALL PASS). Next: Phase 7a (ROADMAP, branch `phase-7/7a-small-options`), user's choice in session 195.
 3. Ask the user for PDFs: Bai 2020 (APL Photonics 5, 031301: abstract 79 cm/GW vs body 60 ± 9), Patel 2001 (Yb:YAG κ at
    10 at.%), Siegman "Lasers" ch. 11/21 pages.
 4. KRS-5 by hand: `materials/transparency-range?material=krs5` at 10 µm: n 2.3707, loss 28.4 %.
