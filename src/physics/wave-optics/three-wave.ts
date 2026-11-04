@@ -27,6 +27,8 @@ import { epsilon_0, c } from "../constants";
 import { sinc } from "../math";
 import { sumFrequencyWavelength } from "../imaging/second-harmonic-generation";
 import { idlerWavelength, qpmPeriod, threeWaveMismatch } from "./optical-parametric-oscillator";
+import { groupIndex, refractiveIndex } from "../materials/sellmeier";
+import { UNIAXIAL_CRYSTALS, crystalRange } from "../materials/uniaxial-data";
 
 export { sumFrequencyWavelength, idlerWavelength, qpmPeriod, threeWaveMismatch };
 
@@ -123,3 +125,35 @@ export function gainBandwidth(gamma: number, length: number, gvm: number): numbe
 
 /** Low-gain limit 0.886/(|δ_si| L) of `gainBandwidth`: the sinc² FWHM, 2·1.39156/π = 0.88589. */
 export const LOW_GAIN_BANDWIDTH_FACTOR = (4 * 1.3915573782515103) / (2 * Math.PI);
+
+/**
+ * Signal detuning range (Hz) on the signal's own side of degeneracy ν_p/2, inside (0, ν_p): (ν_p/2 − ν_s, ν_p − ν_s)
+ * for a signal above ν_p/2, (−ν_s, ν_p/2 − ν_s) below it. The linear-GVM spectrum treats signal and idler as distinct
+ * beams; at degeneracy they swap roles and group-velocity dispersion sets the width, so the spectrum ends there.
+ * A degenerate signal (ν_s = ν_p/2) gets the whole (−ν_s, ν_p − ν_s). NaN unless 0 < λ_p < λ_s.
+ */
+export function degeneracyLimits(lambdaPump: number, lambdaSignal: number): [number, number] {
+  if (!(lambdaPump > 0 && lambdaSignal > lambdaPump && Number.isFinite(lambdaSignal))) return [NaN, NaN];
+  const nuP = c / lambdaPump, nuS = c / lambdaSignal;
+  const toDegeneracy = nuP / 2 - nuS;
+  if (Math.abs(toDegeneracy) <= 1e-12 * nuP) return [-nuS, nuP - nuS];
+  return toDegeneracy < 0 ? [toDegeneracy, nuP - nuS] : [-nuS, toDegeneracy];
+}
+
+/**
+ * Type-0 PPLN (all waves extraordinary, congruent LiNbO₃, D. E. Zelmon et al., J. Opt. Soc. Am. B 14, 3319 (1997), 21 °C):
+ * n_p, n_s, n_i and δ_si = (n_g,s − n_g,i)/c (s/m), n_g = n − λ dn/dλ. 1064 → 1550 nm (idler 3393.4 nm): 2.1555, 2.1376,
+ * 2.0814, −97.72 fs/mm. NaN when a wavelength is outside the fit's 0.4–5 µm.
+ */
+export function pplnOpaParameters(lambdaPump: number, lambdaSignal: number): { nPump: number; nSignal: number; nIdler: number; gvm: number } {
+  const lambdaIdler = idlerWavelength(lambdaPump, lambdaSignal);
+  const [lo, hi] = crystalRange("linbo3");
+  const e = UNIAXIAL_CRYSTALS.linbo3.e;
+  if (![lambdaPump, lambdaSignal, lambdaIdler].every((l) => l >= lo && l <= hi)) return { nPump: NaN, nSignal: NaN, nIdler: NaN, gvm: NaN };
+  return {
+    nPump: refractiveIndex(e, lambdaPump),
+    nSignal: refractiveIndex(e, lambdaSignal),
+    nIdler: refractiveIndex(e, lambdaIdler),
+    gvm: (groupIndex(e, lambdaSignal) - groupIndex(e, lambdaIdler)) / c,
+  };
+}

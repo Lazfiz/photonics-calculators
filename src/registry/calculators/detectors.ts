@@ -516,7 +516,7 @@ export const detectors: CalculatorEntry[] = [
     title: "Lock-in Amplifier",
     description: "Lock-in amplifier: demodulation gain, ENBW, noise rejection, and SNR improvement.",
     tier: "textbook",
-    modelNote: "Ideal multiplier with a unit-power sine or square reference, white input noise and an order-N output filter (cascaded RC or Butterworth). A square reference also detects odd harmonics k·f_r with gain 2√2/(kπ); the strongest harmonic is shown. A detuned signal is shown by its beat envelope. The square-reference noise penalty assumes the input noise bandwidth B_in ≫ f_r (many odd harmonics in band). Reference phase noise, dynamic reserve, harmonic pickup and 1/f noise are left out.",
+    modelNote: "Ideal multiplier with a unit-power sine or square reference, white input noise and an order-N output filter (cascaded RC or Butterworth). A square reference also detects odd harmonics k·f_r with gain 2√2/(kπ); the strongest harmonic is shown, and at f_s = 2m·f_r the two harmonics that beat at the same |Δf| are added as phasors. A detuned signal is shown by its beat envelope. The square-reference noise penalty assumes the input noise bandwidth B_in ≫ f_r (many odd harmonics in band). Reference phase noise, dynamic reserve, harmonic pickup and 1/f noise are left out.",
     references: [
       {
         citation: "Scofield J. H. (1994). Frequency-domain description of a lock-in amplifier. American Journal of Physics 62(2), 129–133. Demodulation, output filter and noise bandwidth.",

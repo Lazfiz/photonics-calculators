@@ -10,7 +10,8 @@ import {
   parametricGainCoefficient, phaseMismatch, qpmPeriod as qpmPeriodOf,
 } from "../../../physics/wave-optics/optical-parametric-oscillator";
 import {
-  LOW_GAIN_BANDWIDTH_FACTOR, detunedMismatch, gainBandwidth, idlerPower, idlerWavelength, parametricGain,
+  LOW_GAIN_BANDWIDTH_FACTOR, degeneracyLimits, detunedMismatch, gainBandwidth, idlerPower, idlerWavelength, parametricGain,
+  pplnOpaParameters,
 } from "../../../physics/wave-optics/three-wave";
 import { gaussianPeakIntensity } from "../../../physics/wave-optics/kerr";
 
@@ -61,25 +62,34 @@ export default function OPACalculator() {
   const bandwidth = gainBandwidth(gamma, L, gvm);
   const bandwidthNm = wavelengthWidth(lambdaS, bandwidth);
   const qpmPeriod = qpmPeriodOf(phaseMismatch(process));
+  // Signal and idler swap roles at ν_p/2: the linear-GVM spectrum stays on the signal's side of it.
+  const [detuneLo, detuneHi] = degeneracyLimits(lambdaP, lambdaS);
+  // Signal detuned by Δν sees Δk₀ − 2πΔν δ_si; the gain peaks where that is zero.
+  const peakDetuning = gvm !== 0 ? deltaK0 / (2 * Math.PI * gvm) : 0;
+  const nuS = c / lambdaS;
+  const toDegeneracy = c / (2 * lambdaP) - nuS;
+  const reachesDegeneracy = valid && Number.isFinite(bandwidth) && toDegeneracy !== 0 && Math.abs(toDegeneracy - peakDetuning) < bandwidth / 2;
+  // The indices and δ_si are inputs; the defaults are type-0 PPLN at 1064 → 1550 nm. Offer PPLN's values at other wavelengths.
+  const ppln = pplnOpaParameters(lambdaP, lambdaS);
+  const pplnValues = { nPump: Number(ppln.nPump.toFixed(4)), nSignal: Number(ppln.nSignal.toFixed(4)), nIdler: Number(ppln.nIdler.toFixed(4)), gvm: Number((ppln.gvm * 1e12).toFixed(1)) };
+  const pplnDiffers = Number.isFinite(ppln.gvm) && (pplnValues.nPump !== nP || pplnValues.nSignal !== nS || pplnValues.nIdler !== nI || Math.abs(pplnValues.gvm - gvm * 1e12) > 1e-6);
 
   const warnings = [
     !valid && "The signal wavelength must be longer than the pump wavelength: the idler is at 1/λ_i = 1/λ_p − 1/λ_s.",
     valid && pumpDrawn > 0.1 * Pp && `The amplified signal and idler take ${fmt((100 * pumpDrawn) / Pp, 3)} % of the pump power (more than 10 %): the pump depletes and the gain saturates below this value.`,
     valid && !Number.isFinite(G) && "The gain overflows: the pump would be depleted long before this.",
     valid && gvm === 0 && "With zero group-velocity mismatch the bandwidth is set by group-velocity dispersion, which this model omits.",
+    reachesDegeneracy && `The gain band reaches degeneracy (λ = 2λ_p = ${fmt(2 * lambdaP * 1e9, 5)} nm), where signal and idler merge: the linear δ_si model doesn't hold there (group-velocity dispersion sets the width), so the bandwidth is only indicative and the spectrum stops at degeneracy.`,
   ].filter(Boolean) as string[];
 
   const lengthCurve = valid && Number.isFinite(G) ? [{
     name: "Gain G(L)", color: "#00e5ff",
     points: Array.from({ length: 201 }, (_, i) => (i / 100) * L).map((l) => ({ x: round6(l * 1e3), y: round6(dB(parametricGain(gamma, deltaK0, l))) })),
   }] : [];
-  // Signal detuned by Δν sees Δk₀ − 2πΔν δ_si; the gain peaks where that is zero.
-  const peakDetuning = gvm !== 0 ? deltaK0 / (2 * Math.PI * gvm) : 0;
-  const nuS = c / lambdaS;
   const spectrum = valid && Number.isFinite(G) && Number.isFinite(bandwidth) && bandwidth > 0 ? [{
     name: "Gain spectrum", color: "#76ff03",
     points: Array.from({ length: 301 }, (_, i) => peakDetuning + ((i - 150) / 75) * bandwidth)
-      .filter((dnu) => nuS + dnu > 0 && nuS + dnu < c / lambdaP)
+      .filter((dnu) => dnu > detuneLo && dnu < detuneHi)
       .map((dnu) => ({ x: round6((c / (nuS + dnu)) * 1e9), y: round6(dB(parametricGain(gamma, detunedMismatch(deltaK0, dnu, gvm), L))) }))
       .reverse(),
   }] : [];
@@ -100,6 +110,16 @@ export default function OPACalculator() {
         <ValidatedNumberInput label="Residual Δk at λ_s (rad/mm)" value={deltaKRaw} onChange={setDeltaK} min={-1e4} max={1e4} step="any" />
         <ValidatedNumberInput label="GVM δ_si = 1/v_gs − 1/v_gi (fs/mm)" value={gvmRaw} onChange={setGvm} min={-1e4} max={1e4} step="any" />
       </div>
+      {pplnDiffers && (
+        <p className="-mt-4 mb-6 text-sm text-gray-300">
+          Type-0 PPLN (Zelmon 1997, extraordinary, 21 °C) at these wavelengths: n_p {pplnValues.nPump}, n_s {pplnValues.nSignal},
+          n_i {pplnValues.nIdler}, δ_si {pplnValues.gvm} fs/mm.{" "}
+          <button type="button" className="rounded border border-gray-700 px-2 py-0.5 text-xs text-gray-200 hover:bg-gray-800 focus-visible:outline-2 focus-visible:outline-blue-400"
+            onClick={() => { setNPump(pplnValues.nPump); setNSignal(pplnValues.nSignal); setNIdler(pplnValues.nIdler); setGvm(pplnValues.gvm); }}>
+            Use these values
+          </button>
+        </p>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
         <ResultCard label="Signal gain G" value={valid ? `${fmt(dB(G), 4)} dB` : "—"} subtext={`G = ${fmt(G)}; 1 + (Γ/g)² sinh²(gL), g² = Γ² − (Δk/2)²`} tone="green" />
@@ -114,8 +134,8 @@ export default function OPACalculator() {
           A phase mismatch lowers g; beyond |Δk| = 2Γ the gain only oscillates. The gain is computed at the pump&apos;s on-axis
           intensity 2P/(πw²), so it is the peak gain of a Gaussian beam. Detuning the signal by Δν changes Δk by −2πΔν δ_si,
           where δ_si is the signal–idler group-velocity mismatch. That sets the gain bandwidth: 0.886/(|δ_si|L) at low gain, widening as √(ΓL)
-          towards (2√ln2/π)√(Γ/L)/|δ_si| at high gain (Cerullo &amp; De Silvestri 2003). The defaults are a 1064 nm-pumped PPLN
-          amplifier for 1550 nm: indices and δ_si from the Zelmon Sellmeier (21 °C, extraordinary), first-order QPM period for the entered indices (update n when you change a wavelength){" "}
+          towards (2√ln2/π)√(Γ/L)/|δ_si| at high gain (Cerullo &amp; De Silvestri 2003). The spectrum stops at degeneracy 2λ_p, where signal and idler swap roles. The defaults are a 1064 nm-pumped PPLN
+          amplifier for 1550 nm: indices and δ_si from the Zelmon Sellmeier (21 °C, extraordinary), first-order QPM period for the entered indices (when you change a wavelength, the line under the inputs offers PPLN&apos;s indices and δ_si){" "}
           {fmt(qpmPeriod * 1e6, 4)} µm, and d_eff = 2d₃₃/π = 12.4 pm/V
           from d₃₃ = 19.5 pm/V of congruent LiNbO₃ for SHG of 1.313 µm (Shoji et al. 1997; 25.2 pm/V at 1.064 µm).
           Miller&apos;s rule scales d by 0.87 for the 3.39 µm idler, to ≈ 10.8 pm/V.</p>

@@ -79,10 +79,19 @@ test("lock-in square reference detects odd harmonics (Codex review 2026-10-24)",
   const m5 = referenceMatch(5e3 + 0.1, 1e3, 0, 1, 1, "rc", "square");
   assert.equal(m5.harmonic, 5);
   close(m5.gain, (2 * Math.SQRT2) / (5 * Math.PI) / Math.sqrt(1 + (0.2 * Math.PI) ** 2), 1e-9);
-  // even harmonic: a square wave has no 2f_r component; the 1f_r and 3f_r beats are both 1 kHz away and k = 1 wins
+  // even harmonic: a square wave has no 2f_r component; the 1f_r and 3f_r beats sit at +1 kHz and −1 kHz and add as
+  // phasors, (g₁e^{iφ} + g₃e^{−iφ})·|H|. Golden from the sampled product sin(ω_s t + φ)·sgn(sin ω_r t) at f_s = 2f_r: its
+  // f_r Fourier amplitude is 1.200422 (φ = 0), 1.082046 (30°), 0.600211 (90°) in units of A/√2 (2e6-point sum, session 193).
+  const H1k = 1 / Math.sqrt(1 + (2 * Math.PI * 1e3) ** 2);
   const m2 = referenceMatch(2e3, 1e3, 0, 1, 1, "rc", "square");
-  assert.equal(m2.harmonic, 1);
-  close(m2.gain, (2 * Math.SQRT2) / Math.PI / Math.sqrt(1 + (2 * Math.PI * 1e3) ** 2), 1e-9);
+  assert.deepEqual([m2.harmonic, m2.pairedHarmonic], [1, 3]);
+  close(m2.gain, 1.200422 * H1k, 1e-6);
+  close(referenceMatch(2e3, 1e3, Math.PI / 6, 1, 1, "rc", "square").gain, 1.082046 * H1k, 1e-6);
+  close(referenceMatch(2e3, 1e3, Math.PI / 2, 1, 1, "rc", "square").gain, 0.600211 * H1k, 1e-6);
+  // f_s = 4f_r pairs 3 and 5; off the even multiple (2 kHz + 1 Hz) the beats differ and the larger single term is taken
+  assert.deepEqual([referenceMatch(4e3, 1e3, 0, 1, 1, "rc", "square").harmonic, referenceMatch(4e3, 1e3, 0, 1, 1, "rc", "square").pairedHarmonic], [3, 5]);
+  const off = referenceMatch(2e3 + 1, 1e3, 0, 1, 1, "rc", "square");
+  assert.deepEqual([off.harmonic, off.pairedHarmonic], [1, undefined]);
   // a sine reference has no harmonics: 3 kHz on 1 kHz stays at |H(2 kHz)|
   const s3 = referenceMatch(3e3, 1e3, 0, 1, 1, "rc", "sine");
   assert.equal(s3.harmonic, 1);

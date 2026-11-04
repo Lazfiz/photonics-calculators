@@ -67,7 +67,7 @@ export default function SolidStateLaserResonatorPage() {
 
   // Rod pumped uniformly over its cross-section, multimode output filling it.
   const rodArea = Math.PI * (d_mm * 5e-4) ** 2;
-  const internal = alpha * 100 * l; // single-pass loss αl, nepers
+  const internal = alpha * 100 * l; // single-pass loss αl, natural log of power
   const delta = roundTripLoss(R_hr, R_oc, internal);
   const pTh = fourLevelThreshold(delta, lambdaP, sigma, tau, rodArea, etaP);
   const g0l = fourLevelGain(pump, lambdaP, sigma, tau, rodArea, etaP);

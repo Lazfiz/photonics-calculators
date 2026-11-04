@@ -4,7 +4,7 @@
  * line giving fast light).
  *
  * Model tier: Exact definitions τ = n_g L/c, v_g = c/n_g, Δν = c/(λ − Δλ/2) − c/(λ + Δλ/2). Textbook for the
- * resonance: a Lorentzian line of power gain G (nepers, power transmission e^G at the centre) and FWHM Δν has the
+ * resonance: a Lorentzian line of power gain G (natural log, power transmission e^G at the centre) and FWHM Δν has the
  * causal (Kramers–Kronig) transfer ln H = (G/2)·γ/(γ − iΔ), γ = πΔν (HWHM, rad/s), Δ = 2π(ν − ν₀). Its phase
  * φ = (G/2)γΔ/(γ² + Δ²) gives the excess group delay
  *   τ(Δ) = dφ/dΔ = (G/2)·γ(γ² − Δ²)/(γ² + Δ²)²,   τ(0) = G/(2γ) = G/Γ (Γ = 2πΔν, rad/s),

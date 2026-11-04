@@ -44,7 +44,7 @@ export default function ThinDiskLaserPage() {
   const m = Math.round(clamp(laserPassesRaw, 1, 100, 2));
   const pump = clamp(pumpRaw, 0, 1e6, 200);
   const R_oc = clamp(rOcRaw, 0.01, 0.9999, 0.97);
-  const otherLoss = logarithmicLoss(clamp(lossRaw, 0, 50, 1) / 100); // nepers per round trip
+  const otherLoss = logarithmicLoss(clamp(lossRaw, 0, 50, 1) / 100); // −ln(1 − f) of power per round trip
   const lambda = clamp(wavelengthRaw, 300, 5000, 1030) * 1e-9;
   const lambdaP = clamp(pumpWavelengthRaw, 200, 5000, 940) * 1e-9;
   const sigmaE = clamp(sigmaERaw, 1e-4, 1e4, 2.4) * 1e-24; // m²

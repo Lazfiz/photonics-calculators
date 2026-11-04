@@ -95,7 +95,7 @@ export default function LockinAmplifierPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ResultCard label="ENBW" value={`${fmt(enbw)} Hz`} tone="blue" subtext={`Detuning Δf = ${fmt(deltaF, 4)} Hz${match.harmonic > 1 ? ` from ${match.harmonic}·f_r` : ""}`} />
+        <ResultCard label="ENBW" value={`${fmt(enbw)} Hz`} tone="blue" subtext={`Detuning Δf = ${fmt(deltaF, 4)} Hz${match.pairedHarmonic ? ` from ${match.harmonic}·f_r and ${match.pairedHarmonic}·f_r, added coherently` : match.harmonic > 1 ? ` from ${match.harmonic}·f_r` : ""}`} />
         <ResultCard
           label={deltaF === 0 ? "Output X (rms)" : "Output beat amplitude"}
           value={`${fmt(outputSignal * 1e6, 3)} µV`}
@@ -108,7 +108,7 @@ export default function LockinAmplifierPage() {
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p>X = g · (A/√2) · cos φ · |H(Δf)|, &nbsp;noise = e_n · √ENBW &nbsp;(g = 1 sine, 2√2/π square reference)</p>
-        <p>A ±1 square reference also detects odd harmonics: g_k = 2√2/(kπ) at Δf_k = |f_s − k·f_r|, k = 3, 5, …</p>
+        <p>A ±1 square reference also detects odd harmonics: g_k = 2√2/(kπ) at Δf_k = |f_s − k·f_r|, k = 3, 5, … At f_s = 2m·f_r the harmonics 2m ∓ j beat at the same |Δf| and add: √(g_a² + g_b² + 2g_a·g_b·cos 2φ) · |H(Δf)|</p>
         <p>RC cascade: ENBW = 1/4τ, 1/8τ, 3/32τ, 5/64τ (N = 1–4) &nbsp;| &nbsp;Butterworth: ENBW = (1/4Nτ)/sin(π/2N)</p>
         <p>SNR improvement = g · |cos φ| · |H(Δf)| · √(B_in / ENBW)</p>
       </div>
