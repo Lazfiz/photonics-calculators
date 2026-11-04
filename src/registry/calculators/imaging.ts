@@ -1090,11 +1090,15 @@ export const imaging: CalculatorEntry[] = [
     description: "STED and PALM/STORM resolution limits beyond the diffraction barrier.",
     keywords: ["STED Super-Resolution"],
     tier: "textbook",
-    modelNote: "STED resolution law and the shot-noise limit of single-molecule localization. Pixelation, background and EMCCD excess noise (×√2) make real localization worse; 2D localization gives no axial position.",
+    modelNote: "STED resolution law with separate excitation and depletion wavelengths (Harke's generalized law, doughnut steepness 2NA/λ_STED) and the shot-noise limit of single-molecule localization. Pixelation, background and EMCCD excess noise (×√2) make real localization worse; 2D localization gives no axial position.",
     references: [
       {
         citation: "Westphal V., Hell S. W. (2005). Nanoscale Resolution in the Focal Plane of an Optical Microscope. Phys. Rev. Lett. 94, 143903. STED resolution d = λ/(2NA√(1 + I/I_s)).",
         url: "https://doi.org/10.1103/physrevlett.94.143903",
+      },
+      {
+        citation: "Harke B., Keller J., Ullal C. K., Westphal V., Schönle A., Hell S. W. (2008). Resolution scaling in STED microscopy. Opt. Express 16, 4154. Generalized law d = d_c/√(1 + d_c²a²I/I_s).",
+        url: "https://doi.org/10.1364/OE.16.004154",
       },
       {
         citation: "Zhang B., Zerubia J., Olivo-Marin J.-C. (2007). Gaussian approximations of fluorescence microscope point-spread function models. Appl. Opt. 46, 1819. Gaussian width 0.21 λ/NA that best fits the Airy PSF.",

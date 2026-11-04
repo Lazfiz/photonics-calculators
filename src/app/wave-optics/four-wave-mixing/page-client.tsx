@@ -5,9 +5,10 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { c } from "../../../physics/constants";
-import { nonlinearCoefficient } from "../../../physics/fiber-optics/fiber-nonlinear";
+import { alphaFromDbPerKm, nonlinearCoefficient } from "../../../physics/fiber-optics/fiber-nonlinear";
 import {
-  fwmDetuning, fwmGainCoefficient, fwmIdlerPower, fwmIdlerWavelength, fwmLinearMismatch, fwmPhaseMatchedDetuning, fwmSignalGain,
+  fwmDetuning, fwmGainCoefficient, fwmIdlerPower, fwmIdlerWavelength, fwmLinearMismatch, fwmLossyEvolution, fwmPhaseMatchedDetuning,
+  fwmSignalGain,
 } from "../../../physics/wave-optics/four-wave-mixing";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -17,6 +18,10 @@ const dB = (x: number) => 10 * Math.log10(x);
 const fmtPower = (W: number) => !Number.isFinite(W)
   ? "—"
   : W >= 1 ? `${fmt(W)} W` : W >= 1e-3 ? `${fmt(W * 1e3)} mW` : W >= 1e-6 ? `${fmt(W * 1e6)} µW` : `${fmt(W * 1e9)} nW`;
+
+// Net signal gain: Hansryd's closed form when lossless, else the segmented solution with the pump decaying as e^(−αz).
+const netGain = (gamma: number, Pp: number, deltaBeta: number, alpha: number, L: number) =>
+  alpha > 0 ? fwmLossyEvolution(gamma, Pp, deltaBeta, alpha, L).at(-1)?.gain ?? NaN : fwmSignalGain(gamma * Pp, deltaBeta, L);
 
 export default function FourWaveMixingPage() {
   const [lambdaPumpRaw, setLambdaPump] = useURLState("wavelengthPump", 1550); // nm
@@ -28,6 +33,7 @@ export default function FourWaveMixingPage() {
   const [lengthRaw, setLength] = useURLState("fiberLength", 500); // m
   const [beta2Raw, setBeta2] = useURLState("beta2", -0.1); // ps²/km
   const [beta4Raw, setBeta4] = useURLState("beta4", 0); // ps⁴/km
+  const [lossRaw, setLoss] = useURLState("fiberLoss", 0); // dB/km
 
   const lambdaP = clamp(lambdaPumpRaw, 200, 20000, 1550) * 1e-9;
   const lambdaS = clamp(lambdaSignalRaw, 200, 20000, 1560) * 1e-9;
@@ -38,6 +44,8 @@ export default function FourWaveMixingPage() {
   const L = clamp(lengthRaw, 1e-3, 1e5, 500);
   const beta2 = clamp(beta2Raw, -1e4, 1e4, -0.1) * 1e-27; // ps²/km → s²/m
   const beta4 = clamp(beta4Raw, -1e3, 1e3, 0) * 1e-51; // ps⁴/km → s⁴/m
+  const alpha = alphaFromDbPerKm(clamp(lossRaw, 0, 1e4, 0)); // 1/m
+  const lossy = alpha > 0;
 
   const gamma = nonlinearCoefficient(n2, lambdaP, area);
   const gammaP = gamma * Pp;
@@ -47,16 +55,23 @@ export default function FourWaveMixingPage() {
   const deltaBeta = fwmLinearMismatch(beta2, omega, beta4);
   const kappa = deltaBeta + 2 * gammaP;
   const g = fwmGainCoefficient(gammaP, deltaBeta);
-  const gain = valid ? fwmSignalGain(gammaP, deltaBeta, L) : NaN;
-  const Pi = valid ? fwmIdlerPower(gain, Ps, lambdaS, lambdaI) : NaN;
+  const gainAt = (db: number) => netGain(gamma, Pp, db, alpha, L);
+  const lossyEnd = valid && lossy ? fwmLossyEvolution(gamma, Pp, deltaBeta, alpha, L).at(-1) : undefined;
+  const gain = !valid ? NaN : lossy ? lossyEnd?.gain ?? NaN : fwmSignalGain(gammaP, deltaBeta, L);
+  const Pi = !valid ? NaN : lossy ? (lossyEnd ? (lambdaS / lambdaI) * lossyEnd.idler * Ps : NaN) : fwmIdlerPower(gain, Ps, lambdaS, lambdaI);
   const omegaPk = fwmPhaseMatchedDetuning(beta2, gammaP, beta4);
-  const peakGain = Math.cosh(gammaP * L) ** 2;
+  const peakGain = lossy ? gainAt(fwmLinearMismatch(beta2, omegaPk, beta4)) : Math.cosh(gammaP * L) ** 2;
   // Δλ of the gain peak on the long-wavelength side: 1/λ = 1/λ_p − Ω/(2πc).
   const peakShift = 1 / (1 / lambdaP - omegaPk / (2 * Math.PI * c)) - lambdaP;
 
+  // Power converted from the pump, before the fiber loss: P_s(|B_s|² − 1) + P_i at the undamped amplitudes.
+  const unatt = lossy ? Math.exp(alpha * L) : 1;
+  const converted = Ps * (gain * unatt - 1) + Pi * unatt;
   const warnings = [
     !valid && "The signal frequency is above twice the pump frequency (λ_s < λ_p/2), so there is no idler: 1/λ_i = 2/λ_p − 1/λ_s.",
-    valid && Ps * (gain - 1) + Pi > 0.1 * Pp && `Signal and idler take more than 10 % of the pump (${fmt((100 * (Ps * (gain - 1) + Pi)) / Pp, 3)} %): the pump is depleted and the undepleted-pump gain overstates the output.`,
+    valid && lossy && !Number.isFinite(gain) && "The fiber loss αL is in the thousands of nepers: nothing reaches the output.",
+    // Converted power before the loss, compared with the launched pump.
+    valid && converted > 0.1 * Pp && `Signal and idler take more than 10 % of the pump (${fmt((100 * converted) / Pp, 3)} %): the pump is depleted and the undepleted-pump gain overstates the output.`,
     !Number.isFinite(omegaPk) && Pp > 0 && "No detuning phase-matches (κ = 0 needs β₂ < 0 or β₄ < 0, i.e. anomalous dispersion): the gain band collapses to the pump and the idler grows only quadratically.",
   ].filter(Boolean) as string[];
 
@@ -65,16 +80,21 @@ export default function FourWaveMixingPage() {
   const spectrum = Array.from({ length: 401 }, (_, i) => ((i - 200) / 200) * omegaSpan)
     .map((o) => ({ lambda: 1 / (1 / lambdaP + o / (2 * Math.PI * c)), o }))
     .filter((p) => p.lambda > 0 && Number.isFinite(fwmIdlerWavelength(lambdaP, p.lambda)))
-    .map((p) => ({ x: round6(p.lambda * 1e9), y: round6(dB(fwmSignalGain(gammaP, fwmLinearMismatch(beta2, p.o, beta4), L))) }));
+    .map((p) => ({ x: round6(p.lambda * 1e9), y: round6(dB(netGain(gamma, Pp, fwmLinearMismatch(beta2, p.o, beta4), alpha, L))) }))
+    .filter((p) => Number.isFinite(p.y));
   const spectrumSeries = spectrum.length > 1 && Pp > 0 ? [{ name: "Signal gain G_s", color: "#60a5fa", points: spectrum }] : [];
   const marker = valid && Number.isFinite(gain)
     ? [{ name: "This signal", color: "#facc15", showPoints: true, points: [{ x: round6(lambdaS * 1e9), y: round6(dB(gain)) }] }]
     : [];
 
   const zs = Array.from({ length: 201 }, (_, i) => ((i + 1) / 201) * L);
-  const lengthSeries = valid && Ps > 0 && Pp > 0 ? [
-    { name: "Signal", color: "#60a5fa", points: zs.map((z) => ({ x: round6(z), y: round6(fwmSignalGain(gammaP, deltaBeta, z) * Ps * 1e3) })) },
-    { name: "Idler", color: "#f472b6", points: zs.map((z) => ({ x: round6(z), y: round6(fwmIdlerPower(fwmSignalGain(gammaP, deltaBeta, z), Ps, lambdaS, lambdaI) * 1e3) })) },
+  // Same grid as fwmLossyEvolution's 201 samples, z = (i + 1)L/201.
+  const evolution = lossy && valid ? fwmLossyEvolution(gamma, Pp, deltaBeta, alpha, L, zs.length) : [];
+  const signalAt = (i: number) => (lossy ? evolution[i]?.gain ?? NaN : fwmSignalGain(gammaP, deltaBeta, zs[i]));
+  const idlerAt = (i: number) => (lossy ? (lambdaS / lambdaI) * (evolution[i]?.idler ?? NaN) : fwmIdlerPower(signalAt(i), 1, lambdaS, lambdaI));
+  const lengthSeries = valid && Ps > 0 && Pp > 0 && (!lossy || evolution.length === zs.length) ? [
+    { name: "Signal", color: "#60a5fa", points: zs.map((z, i) => ({ x: round6(z), y: round6(signalAt(i) * Ps * 1e3) })) },
+    { name: "Idler", color: "#f472b6", points: zs.map((z, i) => ({ x: round6(z), y: round6(idlerAt(i) * Ps * 1e3) })) },
   ] : [];
 
   return (
@@ -89,17 +109,18 @@ export default function FourWaveMixingPage() {
         <ValidatedNumberInput label="Fiber length L (m)" value={lengthRaw} onChange={setLength} min={0.001} max={1e5} step="any" />
         <ValidatedNumberInput label="β₂ at the pump (ps²/km)" value={beta2Raw} onChange={setBeta2} min={-1e4} max={1e4} step="any" />
         <ValidatedNumberInput label="β₄ at the pump (ps⁴/km)" value={beta4Raw} onChange={setBeta4} min={-1e3} max={1e3} step="any" />
+        <ValidatedNumberInput label="Fiber loss α (dB/km)" value={lossRaw} onChange={setLoss} min={0} max={1e4} step="any" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
         <ResultCard label="Signal gain G_s" value={Number.isFinite(gain) ? `${fmt(dB(gain), 4)} dB` : "—"}
-          subtext={Number.isFinite(g) ? `gain coefficient g = ${fmt(g * 1e3, 4)} /km` : "outside the gain band: G oscillates with L"} tone="blue" />
+          subtext={lossy ? "net of fiber loss on signal and pump" : Number.isFinite(g) ? `gain coefficient g = ${fmt(g * 1e3, 4)} /km` : "outside the gain band: G oscillates with L"} tone="blue" />
         <ResultCard label="Idler λ_i and power" value={valid ? `${fmt(lambdaI * 1e9, 6)} nm` : "—"}
           subtext={valid ? `P_i = ${fmtPower(Pi)} = (λ_s/λ_i)(G_s − 1)P_s` : "needs λ_s > λ_p/2"} tone="green" />
         <ResultCard label="Nonlinear coefficient γ" value={`${fmt(gamma * 1e3, 4)} /(W·km)`} subtext={`γP_pL = ${fmt(gammaP * L, 4)} rad`} tone="purple" />
         <ResultCard label="Phase mismatch κ = Δβ + 2γP_p" value={`${fmt(kappa * 1e3, 4)} /km`} subtext={`linear Δβ = β₂Ω² + β₄Ω⁴/12 = ${fmt(deltaBeta * 1e3, 4)} /km`} tone="orange" />
-        <ResultCard label="Peak gain (κ = 0)" value={Number.isFinite(omegaPk) ? `${fmt(dB(peakGain), 4)} dB` : "—"}
-          subtext={Number.isFinite(omegaPk) ? `cosh²(γP_pL) at ±${fmt(omegaPk / (2 * Math.PI * 1e12), 4)} THz (λ_s ≈ λ_p + ${fmt(peakShift * 1e9, 4)} nm)` : "no phase-matched detuning"} tone="cyan" />
+        <ResultCard label={lossy ? "Gain where κ = 0 at the input" : "Peak gain (κ = 0)"} value={Number.isFinite(omegaPk) ? `${fmt(dB(peakGain), 4)} dB` : "—"}
+          subtext={Number.isFinite(omegaPk) ? `${lossy ? "net, with loss" : "cosh²(γP_pL)"} at ±${fmt(omegaPk / (2 * Math.PI * 1e12), 4)} THz (λ_s ≈ λ_p + ${fmt(peakShift * 1e9, 4)} nm)` : "no phase-matched detuning"} tone="cyan" />
       </div>
 
       <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">
@@ -108,8 +129,10 @@ export default function FourWaveMixingPage() {
           mismatch Δβ = β_s + β_i − 2β_p plus the pump&apos;s self- and cross-phase modulation. Gain is exponential where
           |κ| &lt; 2γP_p and peaks at cosh²(γP_pL) where κ = 0, which needs anomalous dispersion at the pump. Far outside the
           band G − 1 tends to (γP_pL)² sinc²(κL/2), κ = Δβ + 2γP_p; for a weak pump κ → Δβ. The defaults are a
-          500 m highly nonlinear fiber pumped with 1 W just on the anomalous side of its zero-dispersion wavelength. Fiber loss,
-          polarization and Raman gain are not modelled.</p>
+          500 m highly nonlinear fiber pumped with 1 W just on the anomalous side of its zero-dispersion wavelength. With fiber
+          loss α the pump decays as P_p e^(−αz), so γP_p and κ change along the fiber: the coupled equations are integrated
+          numerically (exact transfer matrices over short segments) and the gains are net of the signal&apos;s own loss; in the weak-pump limit the idler follows
+          Inoue&apos;s (γP_pL_eff)² η. Polarization and Raman gain are not modelled.</p>
         {warnings.map((msg) => <p key={msg} className="text-yellow-400">{msg}</p>)}
       </div>
 

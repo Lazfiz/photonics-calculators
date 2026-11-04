@@ -729,7 +729,7 @@ export const fiberOptics: CalculatorEntry[] = [
     title: "Nonlinear Effects in Fiber",
     description: "Calculate the nonlinear coefficient γ, SPM and XPM phase, four-wave-mixing efficiency and SBS/SRS thresholds of a fiber span.",
     tier: "textbook",
-    modelNote: "γ = 2πn₂/(λA_eff), SPM phase and Gaussian rms broadening, XPM upper bound (no walk-off), Inoue FWM efficiency (β₂, β₃) for the nearest product, worst-case CW SBS/SRS thresholds. Co-polarized γ: in randomly birefringent fibre the effective γ is 8/9 of it (Manakov). Not a Q penalty.",
+    modelNote: "γ = 2πn₂/(λA_eff), SPM phase and Gaussian rms broadening, XPM upper bound (no walk-off), Inoue FWM efficiency (β₂, β₃) for the nearest product, Smith SBS/SRS thresholds with a polarization factor K and a Lorentzian source linewidth (SBS). Co-polarized γ: in randomly birefringent fibre the effective γ is 8/9 of it (Manakov). Not a Q penalty.",
     references: [
       {
         citation: "Agrawal G. P. (2019). Nonlinear Fiber Optics, 6th ed., §2.3 (γ), §4.1 (SPM), §7.1 (XPM). Academic Press.",
@@ -991,7 +991,7 @@ export const fiberOptics: CalculatorEntry[] = [
     title: "Fiber Splice Loss",
     description: "Estimate single-mode splice loss from lateral offset, tilt, end-face gap and mode-field-diameter mismatch with the Gaussian mode model.",
     tier: "textbook",
-    modelNote: "Paraxial Gaussian mode overlap for offset, tilt (unfavourable sense), a gap in a medium of index n and unequal mode-field diameters, combined. Not included: Fresnel reflection at an air gap, mode ellipticity.",
+    modelNote: "Paraxial Gaussian mode overlap for offset, tilt (unfavourable sense), a gap in a medium of index n and unequal mode-field diameters, combined. Gap reflections between faces of a fibre index n_f: the coherent sum of the multiply reflected Gaussian passes (Airy etalon for gaps well inside the Rayleigh range, up to 0.58 dB for air). Not included: mode ellipticity.",
     references: [
       {
         citation: "Marcuse D. (1977). Loss analysis of single-mode fiber splices. Bell Syst. Tech. J. 56, 703. Gaussian offset, tilt and spot-size mismatch formulas.",

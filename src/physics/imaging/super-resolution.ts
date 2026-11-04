@@ -36,10 +36,20 @@ export function rayleighDistance(lambda: number, NA: number): number {
   return positive(lambda) && positive(NA) ? (0.61 * lambda) / NA : NaN;
 }
 
-/** STED lateral FWHM λ/(2NA √(1 + I/I_s)), m (Westphal & Hell 2005). */
-export function stedLateralFwhm(lambda: number, NA: number, saturation: number): number {
-  if (!(Number.isFinite(saturation) && saturation >= 0)) return NaN;
-  return abbeLateralFwhm(lambda, NA) / Math.sqrt(1 + saturation);
+/**
+ * STED lateral FWHM, m. B. Harke et al., Opt. Express 16, 4154 (2008), https://doi.org/10.1364/OE.16.004154 : a
+ * suppression exp(−ln2·I(x)/I_s) (Eq. 3) of a parabolic depletion pattern I(x) = 4a²x²·I_STED (Eq. 4) on a Gaussian
+ * confocal PSF of FWHM d_c gives d = d_c/√(1 + d_c² a² ζ) (Eq. 7), ζ = I_STED/I_s, and d → 1/(a√ζ) for ζ ≫ 1 (Eq. 8).
+ * Here d_c = λ/(2NA) at the excitation λ and a = 2NA/λ_STED, chosen so that the large-ζ limit is their Eq. 1,
+ * λ_STED/(2NA√ζ), where λ is the inhibition wavelength, and λ_STED = λ (the default) recovers Westphal & Hell's
+ * λ/(2NA √(1 + ζ)) (Phys. Rev. Lett. 94, 143903 (2005)):
+ *   d = λ/(2NA √(1 + ζ (λ/λ_STED)²)).
+ * a is a calibration: Harke's computed pattern (735 nm, effective NA 1.36) has a = 0.00347 nm⁻¹, 0.94 × 2NA/λ_STED, so a
+ * real vortex doughnut is about 6 % wider at high ζ (tests); the I_s convention also shifts ζ.
+ */
+export function stedLateralFwhm(lambda: number, NA: number, saturation: number, lambdaSted = lambda): number {
+  if (!(Number.isFinite(saturation) && saturation >= 0) || !positive(lambdaSted)) return NaN;
+  return abbeLateralFwhm(lambda, NA) / Math.sqrt(1 + saturation * (lambda / lambdaSted) ** 2);
 }
 
 /** Shot-noise-limited localization precision (standard deviation) 0.21 λ/(NA √N), m. */

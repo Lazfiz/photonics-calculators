@@ -4,7 +4,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { cameraSnr, EM_REGISTER_STAGES, emExcessNoiseFactorSq, emStageProbability } from "../../../physics/detectors/camera-snr";
+import { cameraSnr, EM_REGISTER_STAGES, emCrossoverSignal, emExcessNoiseFactorSq, emStageProbability } from "../../../physics/detectors/camera-snr";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fix = (x: number, digits = 2) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
@@ -15,12 +15,14 @@ export default function EmGainPage() {
   const [cicRaw, setClockInducedCharge] = useURLState("clockInducedCharge", 0.001);
   const [readNoiseRaw, setReadNoise] = useURLState("readNoise", 50);
   const [stagesRaw, setStages] = useURLState("stages", EM_REGISTER_STAGES);
+  const [convReadRaw, setConvRead] = useURLState("conventionalReadNoise", 6);
 
   const emGain = clamp(emGainRaw, 1, 1e4, 100);
   const inputSignal = clamp(inputSignalRaw, 0, 1e5, 10);
   const cic = clamp(cicRaw, 0, 1, 0.001);
   const readNoise = clamp(readNoiseRaw, 0, 500, 50);
   const stages = Math.round(clamp(stagesRaw, 1, 2000, EM_REGISTER_STAGES));
+  const convRead = clamp(convReadRaw, 0, 500, 6);
 
   const enf2 = emExcessNoiseFactorSq(emGain, stages);
   const stageProbability = emStageProbability(emGain, stages);
@@ -29,6 +31,9 @@ export default function EmGainPage() {
   const snrWithEM = snrAt(inputSignal, emGain);
   const snrWithoutEM = cameraSnr({ signal: inputSignal, cic, read: readNoise });
   const emBenefit = snrWithEM / snrWithoutEM;
+  // The same sensor read through its conventional (non-EM) amplifier: G = 1, F² = 1, lower read noise.
+  const snrConventional = cameraSnr({ signal: inputSignal, cic, read: convRead });
+  const crossover = emCrossoverSignal({ gain: emGain, excessNoiseFactorSq: enf2, emRead: readNoise, conventionalRead: convRead, cic });
 
   const gains = Array.from({ length: 201 }, (_, i) => 10 ** (i / 50));
   const signals = [1, 5, 10, 50];
@@ -51,13 +56,18 @@ export default function EmGainPage() {
         <ValidatedNumberInput label="CIC (e⁻/pix/frame)" value={cicRaw} onChange={setClockInducedCharge} min={0} max={1} step="0.0005" />
         <ValidatedNumberInput label="Read Noise (e⁻ rms)" value={readNoiseRaw} onChange={setReadNoise} min={0} max={500} step="1" />
         <ValidatedNumberInput label="Gain-Register Stages N" value={stagesRaw} onChange={setStages} min={1} max={2000} step="1" />
+        <ValidatedNumberInput label="Conventional-Output Read Noise (e⁻ rms)" value={convReadRaw} onChange={setConvRead} min={0} max={500} step="0.1" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ResultCard label="Output Signal" value={`${(inputSignal * emGain).toFixed(0)} e⁻`} tone="blue" />
         <ResultCard label="Effective Read Noise" value={`${(readNoise / emGain).toFixed(3)} e⁻`} tone="green" />
         <ResultCard label="SNR with EM" value={fix(snrWithEM)} tone="purple" />
         <ResultCard label="SNR at G = 1" value={fix(snrWithoutEM)} tone="gray" subtext="Same EM amplifier and read noise" />
-        <ResultCard label="EM Benefit vs G = 1" value={Number.isFinite(emBenefit) ? `×${emBenefit.toFixed(2)}` : "—"} tone="yellow" subtext="A conventional output (a few e⁻ read noise) gains less" />
+        <ResultCard label="EM Benefit vs G = 1" value={Number.isFinite(emBenefit) ? `×${emBenefit.toFixed(2)}` : "—"} tone="yellow" subtext="Same EM amplifier at unity gain" />
+        <ResultCard label="SNR, Conventional Output" value={fix(snrConventional)} tone="gray"
+          subtext={Number.isFinite(snrWithEM / snrConventional) ? `EM output ×${(snrWithEM / snrConventional).toFixed(2)} of it` : undefined} />
+        <ResultCard label="Crossover Signal" value={crossover === Infinity ? "∞" : Number.isFinite(crossover) ? `${crossover.toPrecision(3)} e⁻` : "—"} tone="blue"
+          subtext="EM output wins below, conventional above" />
         <ResultCard label="ENF² (F²)" value={fix(enf2, 4)} tone="orange" />
         <ResultCard label="Gain per Stage" value={Number.isFinite(stageProbability) ? `${(stageProbability * 100).toFixed(3)} %` : "—"} tone="red" />
       </div>
@@ -68,6 +78,7 @@ export default function EmGainPage() {
         <p>SNR_EM = S / √(F²·(S + CIC) + (σ_read/G)²)</p>
         <p>F² = 2(G − 1)·G^(−(N+1)/N) + 1/G  (Robbins &amp; Hadwen 2003)</p>
         <p>G = (1 + p)^N; F² → 2 − 1/G for N → ∞, F² = 1 at G = 1</p>
+        <p>SNR_conv = S / √(S + CIC + σ_conv²);  crossover S* = (σ_conv² − (σ_read/G)²)/(F² − 1) − CIC</p>
       </div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "EM Gain", gridcolor: "#374151", type: "log" }, yaxis: { title: "SNR ratio (G / G = 1)", gridcolor: "#374151" } }} />
     </>

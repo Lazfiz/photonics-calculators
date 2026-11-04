@@ -73,6 +73,22 @@ export function cameraSnr(inputs: CameraSnrInputs): number {
 }
 
 /**
+ * Signal at which an EMCCD's conventional output (G = 1, F² = 1, read noise σ_c) matches its EM output (gain G, F², read
+ * noise σ_EM), both seeing the same C (dark + clock-induced charge). Equating the two noise sums of cameraNoise:
+ *   F²(S + C) + (σ_EM/G)² = S + C + σ_c²  →  S* = (σ_c² − (σ_EM/G)²)/(F² − 1) − C,  e⁻.
+ * EM gives the higher SNR below S*, the conventional output above it. 0 when the conventional output wins at any signal;
+ * Infinity when F² = 1 and the EM output's referred read noise is lower. NaN for invalid input.
+ */
+export function emCrossoverSignal({ gain, excessNoiseFactorSq, emRead, conventionalRead, cic = 0 }: {
+  gain: number; excessNoiseFactorSq: number; emRead: number; conventionalRead: number; cic?: number;
+}): number {
+  if (!(gain >= 1 && excessNoiseFactorSq >= 1 && emRead >= 0 && conventionalRead >= 0 && cic >= 0)) return NaN;
+  const readGain = conventionalRead ** 2 - (emRead / gain) ** 2;
+  if (excessNoiseFactorSq === 1) return readGain > 0 ? Infinity : 0;
+  return Math.max(0, readGain / (excessNoiseFactorSq - 1) - cic);
+}
+
+/**
  * Frames to average for an SNR target, ⌈(SNR_target/SNR₁)²⌉, at least 1. Averaging N frames adds the signal N times and
  * independent noise √N times, so SNR_N = √N·SNR₁ (Janesick, Photon Transfer, ch. 5); drift and fixed-pattern noise,
  * which are correlated between frames, don't average down. The (1 − 1e-12) factor keeps an exact square such as

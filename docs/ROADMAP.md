@@ -92,8 +92,7 @@ Evidence for a later extension. Reopen an item only with a new source or a user 
   modelled (Humbach 1996 Table is paywalled; no open source found). Band widths are assumed (30 nm at 1383 nm, same in
   wavenumber elsewhere). The 1383 nm 62.7 dB/km/ppm is Humbach as quoted by arXiv:2303.17814.
 - `rare-earth-doped`, `fiber-amplifier`: Er preset σ: 980 nm from Barnes 1991 Table V, 1480/1550 nm read off Fig. 6(c)
-  (session 148; the Southampton eprint has a proof-of-work wall). `splice-loss`: air-gap Fresnel loss (≤ 0.59 dB) not
-  included (`gapEtalonTransmission` exists); the page says so. `nonlinear-effects`: SBS card is narrow-CW only (no K/linewidth option).
+  (session 148; the Southampton eprint has a proof-of-work wall).
 - `dispersion-comp`: Agrawal 5th-ed. §2.4.3/§5.4.4 titles confirmed (Wiley TOC); the BL|D|σ_λ ≤ 1/4 body text unread.
 
 **Materials**
@@ -156,7 +155,7 @@ Evidence for a later extension. Reopen an item only with a new source or a user 
   (Session 150) BBO type I only (d_eff from EKSMA d₂₂/d₃₁ at 1064 nm, no Miller scaling; d₃₁ sign taken as adding); no KTP/LBO/PPLN presets.
 - `injection-locking` (session 182): the dynamically stable band (Hopf edge, needs f_R and damping inputs) is not computed; Henry–Olsson–Dutta
   1985's range form is cited (session 190, from a snippet; ω₁'s definition unread); Petitbon 1988 abstract only. (Session 149) k_c is estimated as (1 − R)/(τ_rt√R) (Kondratiev 2023 Eq. 4; B is the reflected intracavity field, so ρ is
-  relative to the intracavity power); α 1 is Berger's below-threshold value, Banerjee 1991 gives 0.34–0.54 (both cited). `four-wave-mixing`: no fiber loss in the gain (lossless OPA).
+  relative to the intracavity power); α 1 is Berger's below-threshold value, Banerjee 1991 gives 0.34–0.54 (both cited).
 - `slow-light`: one isolated Lorentzian, no pulse distortion or saturation (a warning shows when the signal is wider than the line).
   Old `/wave-optics/interferometer?wavelength=633` links land on michelson-interferometer's µm input (clamped to 50 µm).
 - χ⁽²⁾ pages (session 149): d_eff 12.4 pm/V from Shoji Table 10 (read on the Optica abstract page); Miller's rule gives ×0.87 for the
@@ -211,7 +210,6 @@ Evidence for a later extension. Reopen an item only with a new source or a user 
   at NA 0.95, Δz 0.5 µm) is not modelled.
 - `spinning-disk`: crosstalk through neighbouring pinholes (the pitch) is not modelled; the pitch in AU is shown only.
 - `three-photon`/`two-photon`: Zipfel's NA^0.91 lateral fit is used up to NA 1.7; Fig. 4c states no upper NA bound (main text paywalled).
-- `super-resolution`: one wavelength input for STED (excitation) and PALM (emission), as its label says; a separate STED λ would be cleaner.
 - Spectroscopy part 11 (session 107): `infrared-spectroscopy` has no Herman–Wallis factor or absolute band strength; `electron-spectroscopy` graphite ρ 2.2 (SRD 71 table value) vs 2.26 g/cm³ crystal; LHM water ε₂ = 3.52 + 7.52θ kept (fits Table I with RMS 0.43, against 0.49 with −), and the page allows only −5 to 40 °C.
 - Imaging part 8 (session 86): `photoacoustic` applies only the single-pulse and ≥ 10 s skin limits (`pulse-train.ts` has no skin rules); `sum-frequency-microscopy` withholds the power for L > b (no non-degenerate Boyd–Kleinman); SRS δ is an input (no cross-section model).
 - `imaging/fluorophores.ts` (session 84): log-normal bands are exactly 0 past their anti-Stokes cutoff (EGFP emission below 480 nm, mCherry excitation above 622 nm), so tail-only bleed-through reads 0; sampled FPbase spectra would fix it. Disclosed on the pages.
@@ -220,7 +218,6 @@ Evidence for a later extension. Reopen an item only with a new source or a user 
 - `streak-camera` (session 142): M taken equal on the time axis (no source); the data-sheet allowance holds only at the
   spec's sweep (C16910 fastest range factory-set 60–80 ps; at 80 ps it is 0.48 ps, under the 0.5 ps default).
 - `intensified-ccd` (session 141): the gain sweep holds the data-sheet K_f down to unity gain (noted on the page).
-- 5w-1 (session 163): `em-gain` has no conventional-amplifier read-noise input (stated in its modelNote).
 - 5w-2 (session 164): `gain-temperature` scales the Miller curve with V_br (shift model differs 8 %).
 
 **Polarization**
