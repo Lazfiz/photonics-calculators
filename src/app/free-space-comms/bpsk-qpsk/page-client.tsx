@@ -145,7 +145,7 @@ export default function BpskQpskPage() {
             <p><strong className="text-gray-400">P<sub>req</sub>:</strong> (E<sub>b</sub>/N<sub>0</sub>)·N<sub>0</sub>·R at the local-oscillator shot-noise limit, N<sub>0</sub> = hν/η (heterodyne or intradyne) or hν/2η (single-quadrature homodyne, BPSK only). At η = 1 a BER of 10⁻⁹ needs 18 photons per bit (heterodyne) or 9 (homodyne). Thermal noise, LO intensity noise and amplifier ASE come on top: enter a lower η or a higher E<sub>b</sub>/N<sub>0</sub> for them.</p>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <ChartPanel data={plotData} layout={{
+            <ChartPanel bare data={plotData} layout={{
               xaxis: { title: "Eb/N0 (dB)", color: "#9ca3af", gridcolor: "#374151" },
               yaxis: { title: "Error rate", type: "log", color: "#9ca3af", gridcolor: "#374151" },
               paper_bgcolor: "transparent", plot_bgcolor: "transparent",

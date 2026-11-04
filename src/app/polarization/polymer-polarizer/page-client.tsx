@@ -112,11 +112,11 @@ export default function PolymerPolarizerPage() {
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Principal transmittances against film thickness (log₁₀)</h3>
-          <ChartPanel data={thicknessChart} layout={layout("Thickness (µm)", "log₁₀ k")} />
+          <ChartPanel bare data={thicknessChart} layout={layout("Thickness (µm)", "log₁₀ k")} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Extinction against pass transmittance as the film thickens</h3>
-          <ChartPanel data={tradeOff} layout={layout("k₁ (%)", "Extinction ratio (dB)")} />
+          <ChartPanel bare data={tradeOff} layout={layout("k₁ (%)", "Extinction ratio (dB)")} />
         </div>
       </div>
     </>

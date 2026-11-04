@@ -134,7 +134,7 @@ export default function FiberBraggGratingCalculator() {
       </div>
 
       <div className="mt-8 bg-gray-900 rounded-lg p-6 border border-gray-800">
-        <ChartPanel
+        <ChartPanel bare
           data={[{ ...r.spectrum, type: "scatter" as const, mode: "lines" as const, name: "Reflectance", line: { color: "#3b82f6", width: 2 } }]}
           layout={layout}
         />

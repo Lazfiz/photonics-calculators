@@ -165,7 +165,7 @@ export default function DepolarizationPage() {
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
             <h3 className="text-sm text-gray-400 mb-2">{spectral ? "Output DOP against plate thickness" : "Output DOP against d"}</h3>
-            <ChartPanel data={chart} layout={layout(spectral ? "Plate thickness (mm)" : "Depolarizer d")} />
+            <ChartPanel bare data={chart} layout={layout(spectral ? "Plate thickness (mm)" : "Depolarizer d")} />
             <p className="text-xs text-gray-500 mt-2">
               {spectral
                 ? "The curve is the output degree of polarization for the input above; the marker is the plate thickness set above. Light polarized along the fast or slow axis is not depolarized. The model is exact for a non-dispersive plate; for a crystal it takes the slope of Δn(λ) at λ₀ across the band."

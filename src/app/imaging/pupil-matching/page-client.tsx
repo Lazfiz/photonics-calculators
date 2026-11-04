@@ -71,7 +71,7 @@ export default function PupilMatchingPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <h2 className="text-lg font-semibold mb-4">Exit pupil vs objective NA</h2>
-        <ChartPanel data={chart} layout={{
+        <ChartPanel bare data={chart} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" },
           xaxis: { title: "Objective NA", gridcolor: "#333" }, yaxis: { title: "Exit pupil (mm)", gridcolor: "#333" },
           margin: { l: 60, r: 20, t: 20, b: 60 }, showlegend: true,

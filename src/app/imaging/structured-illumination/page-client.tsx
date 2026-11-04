@@ -101,7 +101,7 @@ export default function StructuredIlluminationPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h2 className="text-lg font-semibold mb-4">Frequency support along one pattern direction</h2>
-        <ChartPanel data={supportChart} layout={layout} />
+        <ChartPanel bare data={supportChart} layout={layout} />
         <p className="text-xs text-gray-500 mt-2">Each copy is drawn at unit height; in the raw data the first orders carry half the modulation depth, and harmonics less.</p>
       </div>
     </>

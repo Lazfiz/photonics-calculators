@@ -108,10 +108,10 @@ export default function ThirdHarmonicMicroscopyPage() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <ChartPanel data={powerChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af", size: 11 }, title: { text: "Signal vs power (relative to current)", font: { size: 13 } }, xaxis: { title: "Avg Power (mW)", gridcolor: "#374151", type: "log" }, yaxis: { title: "Relative signal", gridcolor: "#374151", type: "log" }, legend: { orientation: "h", y: -0.2 }, margin: { t: 40, b: 55 } }} />
+          <ChartPanel bare data={powerChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af", size: 11 }, title: { text: "Signal vs power (relative to current)", font: { size: 13 } }, xaxis: { title: "Avg Power (mW)", gridcolor: "#374151", type: "log" }, yaxis: { title: "Relative signal", gridcolor: "#374151", type: "log" }, legend: { orientation: "h", y: -0.2 }, margin: { t: 40, b: 55 } }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <ChartPanel data={depthChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af", size: 11 }, title: { text: "Signal attenuation vs depth", font: { size: 13 } }, xaxis: { title: "Depth (µm)", gridcolor: "#374151" }, yaxis: { title: "Relative signal", gridcolor: "#374151", type: "log" }, legend: { orientation: "h", y: -0.2 }, margin: { t: 40, b: 55 } }} />
+          <ChartPanel bare data={depthChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af", size: 11 }, title: { text: "Signal attenuation vs depth", font: { size: 13 } }, xaxis: { title: "Depth (µm)", gridcolor: "#374151" }, yaxis: { title: "Relative signal", gridcolor: "#374151", type: "log" }, legend: { orientation: "h", y: -0.2 }, margin: { t: 40, b: 55 } }} />
         </div>
       </div>
     </>

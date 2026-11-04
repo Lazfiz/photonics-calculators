@@ -88,7 +88,7 @@ export default function MTFPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h2 className="text-lg font-semibold mb-4">OTF vs spatial frequency</h2>
-        <ChartPanel data={chart} layout={{
+        <ChartPanel bare data={chart} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" },
           xaxis: { title: "Spatial frequency (lp/µm)", gridcolor: "#333" },
           yaxis: { title: "OTF", gridcolor: "#333", range: [-0.2, 1.05] },

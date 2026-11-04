@@ -110,7 +110,7 @@ export default function BERPage() {
             </div>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <ChartPanel data={plotData} layout={{
+            <ChartPanel bare data={plotData} layout={{
               xaxis: { title: "Detected photons per bit", type: "log", color: "#9ca3af", gridcolor: "#374151" },
               yaxis: { title: "BER", type: "log", color: "#9ca3af", gridcolor: "#374151" },
               paper_bgcolor: "transparent", plot_bgcolor: "transparent",

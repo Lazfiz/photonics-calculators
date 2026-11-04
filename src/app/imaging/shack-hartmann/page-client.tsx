@@ -159,22 +159,22 @@ export default function ShackHartmannPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-lg font-semibold mb-2">Lenslets over the pupil (mm)</h3>
           {layoutChart.length > 0 ? (
-            <ChartPanel data={layoutChart} layout={{ ...dark, xaxis: { title: "x (mm)", scaleanchor: "y" }, yaxis: { title: "y (mm)" } }} />
+            <ChartPanel bare data={layoutChart} layout={{ ...dark, xaxis: { title: "x (mm)", scaleanchor: "y" }, yaxis: { title: "y (mm)" } }} />
           ) : (
             <p className="text-sm text-gray-400">Too many lenslets to draw ({(D / d).toFixed(0)} across).</p>
           )}
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-lg font-semibold mb-2">Spot size vs lenslet pitch</h3>
-          <ChartPanel data={spotSizeChart} layout={{ ...dark, xaxis: { title: "Lenslet pitch (µm)" }, yaxis: { title: "µm", type: "log" } }} />
+          <ChartPanel bare data={spotSizeChart} layout={{ ...dark, xaxis: { title: "Lenslet pitch (µm)" }, yaxis: { title: "µm", type: "log" } }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-lg font-semibold mb-2">Centroid noise vs photons</h3>
-          <ChartPanel data={centroidChart} layout={{ ...dark, xaxis: { title: "Photons per lenslet", type: "log" }, yaxis: { title: "µm / nm", type: "log" } }} />
+          <ChartPanel bare data={centroidChart} layout={{ ...dark, xaxis: { title: "Photons per lenslet", type: "log" }, yaxis: { title: "µm / nm", type: "log" } }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-lg font-semibold mb-2">Dynamic range vs sensitivity</h3>
-          <ChartPanel data={tradeoffChart} layout={{ ...dark, xaxis: { title: "Lenslet focal length (mm)" }, yaxis: { title: "mrad", type: "log" } }} />
+          <ChartPanel bare data={tradeoffChart} layout={{ ...dark, xaxis: { title: "Lenslet focal length (mm)" }, yaxis: { title: "mrad", type: "log" } }} />
         </div>
       </div>
     </>

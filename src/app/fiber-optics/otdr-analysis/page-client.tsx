@@ -170,7 +170,7 @@ export default function OTDRAnalysisPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Model OTDR Trace</h3>
-        <ChartPanel data={traceData} layout={{
+        <ChartPanel bare data={traceData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           xaxis: { title: "Distance (km)", color: "#9ca3af", gridcolor: "#374151" },
           yaxis: { title: "Level re near-end backscatter (dB, one-way)", color: "#9ca3af", gridcolor: "#374151" },
@@ -185,7 +185,7 @@ export default function OTDRAnalysisPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Dynamic Range vs Pulse Width</h3>
-        <ChartPanel data={pulseData} layout={{
+        <ChartPanel bare data={pulseData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           xaxis: { title: "Pulse width (ns)", color: "#9ca3af", gridcolor: "#374151", type: "log" },
           yaxis: { title: "One-way dynamic range (dB)", color: "#60a5fa", gridcolor: "#374151" },

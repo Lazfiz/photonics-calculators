@@ -93,7 +93,7 @@ export default function OpticalAntennaPage() {
             <ResultCard label="Rayleigh range πW₀²/(M²λ) (unclipped Gaussian)" value={`${fmt(calc.zR)} m`} tone="green" />
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <ChartPanel data={plotData} layout={{
+            <ChartPanel bare data={plotData} layout={{
               xaxis: { title: "Aperture (cm)", color: "#9ca3af", gridcolor: "#374151", type: "log" },
               yaxis: { title: "Gain (dBi)", color: "#06b6d4", gridcolor: "#374151" },
               yaxis2: { title: "Divergence (µrad)", color: "#f59e0b", gridcolor: "#374151", overlaying: "y", side: "right" },

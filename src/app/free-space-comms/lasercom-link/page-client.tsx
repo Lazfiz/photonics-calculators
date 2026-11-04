@@ -117,7 +117,7 @@ export default function LasercomLinkPage() {
             <p><strong className="text-gray-400">Spot radius:</strong> w = θR with θ = √(8/G<sub>t</sub>), the Gaussian beam with the same on-axis gain (η<sub>tx</sub> included). Above η<sub>tx</sub> = 0.8145 (Klein–Degnan Gaussian optimum) you need a flat-top beam.</p>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <ChartPanel data={plotData} layout={{
+            <ChartPanel bare data={plotData} layout={{
               xaxis: { title: "Range (km)", color: "#9ca3af", gridcolor: "#374151" },
               yaxis: { title: "Rx power (dBm)", color: "#06b6d4", gridcolor: "#374151" },
               yaxis2: { title: "Spot radius (m)", color: "#f59e0b", gridcolor: "#374151", overlaying: "y", side: "right" },

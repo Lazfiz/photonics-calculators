@@ -81,7 +81,7 @@ export default function AcquisitionTrackingPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6">
         <h2 className="text-sm font-semibold text-gray-300 mb-2">Stare probability and raster scan time vs FOV</h2>
-        <ChartPanel data={plotData} layout={{
+        <ChartPanel bare data={plotData} layout={{
           xaxis: { title: "FOV, full angle (mrad)", color: "#9ca3af", gridcolor: "#374151" },
           yaxis: { title: "Stare probability (%)", color: "#06b6d4", gridcolor: "#374151", range: [0, 105] },
           yaxis2: { title: "Scan time (s)", color: "#f59e0b", gridcolor: "#374151", overlaying: "y", side: "right" },

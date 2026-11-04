@@ -94,7 +94,7 @@ export default function MicroscopePolarizerPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Transmission against analyzer angle</h3>
-          <ChartPanel layout={layout("Analyzer angle from crossed (°)", "Transmission")} data={[
+          <ChartPanel bare layout={layout("Analyzer angle from crossed (°)", "Transmission")} data={[
             { x: byAngle.x, y: byAngle.y, type: "scatter", mode: "lines", name: "Transmission", line: { color: "#60a5fa", width: 2 } },
             { x: [angle], y: [atAngle], type: "scatter", mode: "markers", name: "Current", marker: { color: "#fbbf24", size: 9 } },
           ]} />
@@ -102,7 +102,7 @@ export default function MicroscopePolarizerPage() {
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">System extinction ratio against NA</h3>
-          <ChartPanel layout={layout("NA of the narrower of condenser and objective", "System extinction ratio")} data={[
+          <ChartPanel bare layout={layout("NA of the narrower of condenser and objective", "System extinction ratio")} data={[
             { x: byNA.current.x, y: byNA.current.y, type: "scatter", mode: "lines", name: `m = ${fix(m, 0)} surfaces`, line: { color: "#34d399", width: 2 } },
             { x: byNA.reference.x, y: byNA.reference.y, type: "scatter", mode: "lines", name: "m = 0 (polarizers only)", line: { color: "#9ca3af", dash: "dash" } },
             { x: [NAeff], y: [e.ER], type: "scatter", mode: "markers", name: "Current", marker: { color: "#fbbf24", size: 9 } },

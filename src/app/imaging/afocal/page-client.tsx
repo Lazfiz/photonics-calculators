@@ -108,7 +108,7 @@ export default function AfocalPage() {
       {chart.length > 0 && (
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
           <h2 className="text-lg font-semibold mb-4">System power vs lens spacing</h2>
-          <ChartPanel data={chart} layout={{ ...layout, xaxis: { title: "Lens spacing t (mm)", gridcolor: "#333" }, yaxis: { title: "Power (D)", gridcolor: "#333" }, showlegend: true }} />
+          <ChartPanel bare data={chart} layout={{ ...layout, xaxis: { title: "Lens spacing t (mm)", gridcolor: "#333" }, yaxis: { title: "Power (D)", gridcolor: "#333" }, showlegend: true }} />
         </div>
       )}
 

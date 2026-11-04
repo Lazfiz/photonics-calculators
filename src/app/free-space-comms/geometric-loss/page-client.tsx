@@ -84,7 +84,7 @@ export default function GeometricLossPage() {
             </p>
           )}
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <ChartPanel data={plotData} layout={{
+            <ChartPanel bare data={plotData} layout={{
               xaxis: { title: "Range (km)", color: "#9ca3af", gridcolor: "#374151", type: "log" },
               yaxis: { title: "Loss (dB)", color: "#f43f5e", gridcolor: "#374151" },
               yaxis2: { title: "Beam dia. (m)", color: "#06b6d4", gridcolor: "#374151", overlaying: "y", side: "right" },

@@ -133,7 +133,7 @@ export default function FiberCharacterizationPage() {
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-lg font-semibold mb-3">V-number vs Wavelength</h3>
-          <ChartPanel data={vNumberData} layout={{
+          <ChartPanel bare data={vNumberData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             xaxis: { title: "λ (nm)", color: "#9ca3af", gridcolor: "#374151" },
             yaxis: { title: "V", color: "#9ca3af", gridcolor: "#374151" },
@@ -143,7 +143,7 @@ export default function FiberCharacterizationPage() {
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-lg font-semibold mb-3">Mode Field Diameter vs Wavelength</h3>
-          <ChartPanel data={mfdData} layout={{
+          <ChartPanel bare data={mfdData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             xaxis: { title: "λ (nm)", color: "#9ca3af", gridcolor: "#374151" },
             yaxis: { title: "MFD (µm)", color: "#9ca3af", gridcolor: "#374151" },

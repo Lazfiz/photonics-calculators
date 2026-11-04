@@ -96,7 +96,7 @@ export default function BirefringencePage() {
 
         <div className="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Retardation against wavelength</h2>
-          <ChartPanel
+          <ChartPanel bare
             data={[
               { type: "scatter", mode: "lines", x: curve.l.map((x) => x * 1e9), y: curve.waves, line: { color: "#3b82f6", width: 2 }, name: "|Δn|·d/λ (waves)" },
               { type: "scatter", mode: "markers", x: shown.map((x) => x * 1e9), y: shown.map((x) => Math.round((Math.abs(birefringenceOf(material, cNe - cNo)(x)) * d) / x)), marker: { size: 6, color: "#34d399" }, name: "Full wave" },

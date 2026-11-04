@@ -101,7 +101,7 @@ export default function SiliconPhotodiodePage() {
       <div className="grid gap-6 md:grid-cols-2">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-3">Spectral Response (absorption at 300 K)</h3>
-          <ChartPanel data={spectralChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent",
+          <ChartPanel bare data={spectralChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
             yaxis: { title: "QE (%)", gridcolor: "#374151", side: "left" },
             yaxis2: { title: "ℛ (A/W)", overlaying: "y", side: "right", gridcolor: "#374151" },
@@ -109,13 +109,13 @@ export default function SiliconPhotodiodePage() {
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-3">QE vs Depletion Width</h3>
-          <ChartPanel data={qeVsWidth} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent",
+          <ChartPanel bare data={qeVsWidth} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" }, xaxis: { title: "Depletion Width (μm)", gridcolor: "#374151" },
             yaxis: { title: "QE (%)", gridcolor: "#374151" }, margin: { t: 20, b: 40, l: 60, r: 20 } }} />
         </div>
         <div className="md:col-span-2 bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-3">Dark Current vs Temperature</h3>
-          <ChartPanel data={darkVsTemp} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent",
+          <ChartPanel bare data={darkVsTemp} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" }, xaxis: { title: "Temperature (K)", gridcolor: "#374151" },
             yaxis: { title: "I_dark (nA)", type: "log", gridcolor: "#374151" }, margin: { t: 20, b: 40, l: 60, r: 20 } }} />
         </div>

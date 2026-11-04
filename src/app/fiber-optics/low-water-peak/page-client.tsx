@@ -141,7 +141,7 @@ export default function LowWaterPeakPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Attenuation Spectrum: Older vs Low-Water-Peak Fibre</h3>
-        <ChartPanel data={spectrumData} layout={{
+        <ChartPanel bare data={spectrumData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
           xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
@@ -156,7 +156,7 @@ export default function LowWaterPeakPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">OH Absorption Bands, 0.8–2.9 µm</h3>
-        <ChartPanel data={ohBandData} layout={{
+        <ChartPanel bare data={ohBandData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
           xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
@@ -201,7 +201,7 @@ export default function LowWaterPeakPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">CWDM Channel Span Loss (ITU-T G.694.2 grid, {length} km)</h3>
-        <ChartPanel data={cwdmData} layout={{
+        <ChartPanel bare data={cwdmData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
           barmode: "group",

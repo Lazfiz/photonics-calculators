@@ -104,7 +104,7 @@ export default function ChannelCapacityPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 mb-6">
         <h2 className="text-lg font-semibold mb-4">Net rate vs SNR</h2>
-        <ChartPanel data={plotData} layout={{
+        <ChartPanel bare data={plotData} layout={{
           xaxis: { title: "Es/N0 (dB)", color: "#9ca3af", gridcolor: "#374151" },
           yaxis: { title: "Rate (Gb/s)", color: "#9ca3af", gridcolor: "#374151" },
           margin: { l: 60, r: 20, t: 20, b: 50 }, paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#d1d5db" },

@@ -129,7 +129,7 @@ export default function QuantumKeyDistributionPage() {
       <div className="grid gap-4 lg:grid-cols-2 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
           <h2 className="text-sm font-semibold text-gray-300 mb-2">Secure key per pulse vs {xName}</h2>
-          <ChartPanel data={keyPlot} layout={{
+          <ChartPanel bare data={keyPlot} layout={{
             xaxis: { title: xTitle, color: "#9ca3af", gridcolor: "#374151" },
             yaxis: { title: "bit per pulse", type: "log", color: "#9ca3af", gridcolor: "#374151" },
             margin: { l: 60, r: 20, t: 20, b: 50 }, paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#d1d5db" },
@@ -138,7 +138,7 @@ export default function QuantumKeyDistributionPage() {
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
           <h2 className="text-sm font-semibold text-gray-300 mb-2">QBER vs {xName}</h2>
-          <ChartPanel data={qberPlot} layout={{
+          <ChartPanel bare data={qberPlot} layout={{
             xaxis: { title: xTitle, color: "#9ca3af", gridcolor: "#374151" },
             yaxis: { title: "QBER (%)", color: "#9ca3af", gridcolor: "#374151", range: [0, 50] },
             margin: { l: 60, r: 20, t: 20, b: 50 }, paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#d1d5db" },

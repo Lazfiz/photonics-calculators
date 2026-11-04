@@ -96,7 +96,7 @@ export default function OpticalPowerPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <h2 className="text-lg font-semibold mb-4">Refraction vs axial length</h2>
-        <ChartPanel data={chart} layout={{ ...layout, xaxis: { title: "Axial length (mm)", gridcolor: "#333" }, yaxis: { title: "K (D)", gridcolor: "#333" }, showlegend: true }} />
+        <ChartPanel bare data={chart} layout={{ ...layout, xaxis: { title: "Axial length (mm)", gridcolor: "#333" }, yaxis: { title: "K (D)", gridcolor: "#333" }, showlegend: true }} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">

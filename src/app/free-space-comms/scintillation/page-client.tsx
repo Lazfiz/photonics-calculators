@@ -103,11 +103,11 @@ export default function ScintillationPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Fade probability (log-normal)</h2>
-          <ChartPanel data={fadeData} layout={chartLayout("Fade threshold below the mean (dB)", "P(I < threshold)", true)} />
+          <ChartPanel bare data={fadeData} layout={chartLayout("Fade threshold below the mean (dB)", "P(I < threshold)", true)} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Scintillation vs distance</h2>
-          <ChartPanel data={distanceData} layout={chartLayout("Distance (km)", "Variance", true)} />
+          <ChartPanel bare data={distanceData} layout={chartLayout("Distance (km)", "Variance", true)} />
         </div>
       </div>
 

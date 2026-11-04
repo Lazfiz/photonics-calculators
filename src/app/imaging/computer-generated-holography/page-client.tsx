@@ -129,11 +129,11 @@ export default function CGHPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-4">First-order efficiency against bit depth</h2>
-          <ChartPanel data={effChart} layout={layout("Phase bit depth", "Efficiency", { range: [0, 1.05] })} />
+          <ChartPanel bare data={effChart} layout={layout("Phase bit depth", "Efficiency", { range: [0, 1.05] })} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-4">Pixel envelope across the replay field (x)</h2>
-          <ChartPanel data={envChart} layout={layout("Replay position (mm)", "Relative intensity", { range: [0, 1.05] })} />
+          <ChartPanel bare data={envChart} layout={layout("Replay position (mm)", "Relative intensity", { range: [0, 1.05] })} />
         </div>
       </div>
 

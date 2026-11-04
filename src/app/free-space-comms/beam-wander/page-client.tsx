@@ -105,11 +105,11 @@ export default function BeamWanderPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">RMS wander vs Cn²</h2>
-          <ChartPanel data={cn2Data} layout={chartLayout("Cn² (m⁻²ᐟ³)", "RMS wander (cm)", true)} />
+          <ChartPanel bare data={cn2Data} layout={chartLayout("Cn² (m⁻²ᐟ³)", "RMS wander (cm)", true)} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Wander and beam radius vs distance</h2>
-          <ChartPanel data={distData} layout={chartLayout("Distance (km)", "Radius (cm)", true)} />
+          <ChartPanel bare data={distData} layout={chartLayout("Distance (km)", "Radius (cm)", true)} />
         </div>
       </div>
 

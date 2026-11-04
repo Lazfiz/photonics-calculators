@@ -69,7 +69,7 @@ export default function RadiationDamagePage() {
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
-        <SimpleLineChart title="Internal transmission against dose" xLabel="Dose (Gy)" yLabel="Transmission (%)" series={series} xScale="log" />
+        <SimpleLineChart bare title="Internal transmission against dose" xLabel="Dose (Gy)" yLabel="Transmission (%)" series={series} xScale="log" />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">

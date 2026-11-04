@@ -172,7 +172,7 @@ export default function MultiCoreFiberCalculator() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Crosstalk vs Core Pitch ({fiberLength} km, R_b = {bendRadius} mm)</h3>
-        <ChartPanel data={plotData} layout={{
+        <ChartPanel bare data={plotData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
           xaxis: { title: "Core pitch Λ (µm)", gridcolor: "#374151" },

@@ -122,14 +122,14 @@ export default function LowCoherencePage() {
       <div className="grid gap-6 md:grid-cols-2 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-4">Interferogram of a single reflector</h2>
-          <ChartPanel data={interferogram} layout={layout("Optical path difference (µm)", "I/(I_r + I_s)")} />
+          <ChartPanel bare data={interferogram} layout={layout("Optical path difference (µm)", "I/(I_r + I_s)")} />
           {halfRange < 2.5 * lc * 1e6 && (
             <p className="text-xs text-gray-500 mt-2">Only the central ±{halfRange.toFixed(0)} µm is drawn, so the fringes stay resolved.</p>
           )}
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-4">Fringe visibility against sample reflectivity</h2>
-          <ChartPanel data={visChart} layout={layout("Sample reflectivity R_s", "V", { type: "log" })} />
+          <ChartPanel bare data={visChart} layout={layout("Sample reflectivity R_s", "V", { type: "log" })} />
         </div>
       </div>
 

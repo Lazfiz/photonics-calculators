@@ -110,7 +110,7 @@ export default function MultiphotonDepthPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h2 className="text-lg font-semibold mb-4">Signal &amp; Excitation vs Depth</h2>
-        <ChartPanel data={plotData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Depth (µm)", gridcolor: "#333" }, yaxis: { title: "%", gridcolor: "#333", type: "log" }, legend: { font: { size: 11 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
+        <ChartPanel bare data={plotData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Depth (µm)", gridcolor: "#333" }, yaxis: { title: "%", gridcolor: "#333", type: "log" }, legend: { font: { size: 11 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
       </div>
     </>
   );

@@ -137,7 +137,7 @@ export default function BendInsensitivePage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Bend Loss vs Radius ({wavelength} nm)</h3>
-        <ChartPanel data={chartData} layout={{
+        <ChartPanel bare data={chartData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           xaxis: { title: "Bend radius (mm)", color: "#9ca3af", gridcolor: "#374151" },
           yaxis: { title: "Loss per turn (dB)", color: "#9ca3af", gridcolor: "#374151", type: "log" },

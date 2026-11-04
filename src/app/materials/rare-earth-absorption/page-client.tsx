@@ -93,7 +93,7 @@ export default function RareEarthAbsorptionPage() {
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
-        <SimpleLineChart title={`${ion.name}: transmission against path length`} xLabel="Path Length (m)" yLabel="Transmitted (%)" series={series} />
+        <SimpleLineChart bare title={`${ion.name}: transmission against path length`} xLabel="Path Length (m)" yLabel="Transmitted (%)" series={series} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8 overflow-x-auto">

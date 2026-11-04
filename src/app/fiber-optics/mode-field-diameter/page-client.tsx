@@ -169,15 +169,15 @@ export default function ModeFieldDiameterPage() {
       <div className="grid gap-4 lg:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-lg font-semibold mb-3">Mode Intensity Profile</h3>
-          <ChartPanel data={profileData} layout={{ ...layout("Radial position (µm)", "Normalized intensity"), yaxis: { title: "Normalized intensity", color: "#9ca3af", gridcolor: "#374151", range: [0, 1.05] } }} />
+          <ChartPanel bare data={profileData} layout={{ ...layout("Radial position (µm)", "Normalized intensity"), yaxis: { title: "Normalized intensity", color: "#9ca3af", gridcolor: "#374151", range: [0, 1.05] } }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-lg font-semibold mb-3">MFD vs Wavelength</h3>
-          <ChartPanel data={mfdData} layout={layout("Wavelength (nm)", "MFD (µm)")} />
+          <ChartPanel bare data={mfdData} layout={layout("Wavelength (nm)", "MFD (µm)")} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-lg font-semibold mb-3">Bend Loss per Turn vs Radius ({wavelength} nm)</h3>
-          <ChartPanel data={bendData} layout={layout("Bend radius (mm)", "Loss per turn (dB)", true)} />
+          <ChartPanel bare data={bendData} layout={layout("Bend radius (mm)", "Loss per turn (dB)", true)} />
           <p className="mt-2 text-xs text-gray-500">
             Marcuse 1976 curvature loss of LP01, as on the macrobending-loss page. {eo
               ? `The elasto-optic correction R_eff = R/(1 − p_e) ≈ ${eoFactor > 0 ? eoFactor.toFixed(2) : "—"} R is on (Schermer & Cole 2007 fit 1.28 R to measured SMF-28).`

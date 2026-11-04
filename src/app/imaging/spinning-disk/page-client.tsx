@@ -117,7 +117,7 @@ export default function SpinningDiskPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h2 className="text-lg font-semibold mb-4">Optical Section &amp; Throughput vs Pinhole Size</h2>
-        <ChartPanel data={plotData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Pinhole size (Airy units)", gridcolor: "#333" }, yaxis: { title: "Section FWHM (nm)", gridcolor: "#333" }, yaxis2: { title: "Throughput (%)", overlaying: "y", side: "right", gridcolor: "#333", range: [0, 105] }, legend: { font: { size: 11 } }, margin: { l: 70, r: 70, t: 20, b: 60 } }} />
+        <ChartPanel bare data={plotData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Pinhole size (Airy units)", gridcolor: "#333" }, yaxis: { title: "Section FWHM (nm)", gridcolor: "#333" }, yaxis2: { title: "Throughput (%)", overlaying: "y", side: "right", gridcolor: "#333", range: [0, 105] }, legend: { font: { size: 11 } }, margin: { l: 70, r: 70, t: 20, b: 60 } }} />
         <p className="text-xs text-gray-500 mt-2">
           Light from out-of-focus planes also leaks through neighbouring pinholes (pinhole crosstalk), so in thick samples
           the section of a spinning disk is worse than this single-pinhole value, more so for a small pitch.

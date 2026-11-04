@@ -134,11 +134,11 @@ export default function CoherentRamanPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-4">{cars ? "CARS" : "SRS"} spectral shape</h2>
-          <ChartPanel data={spectrumPlot} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Raman shift (cm⁻¹)", gridcolor: "#333" }, yaxis: { title: "Normalized signal", gridcolor: "#333" }, legend: { font: { size: 10 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
+          <ChartPanel bare data={spectrumPlot} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Raman shift (cm⁻¹)", gridcolor: "#333" }, yaxis: { title: "Normalized signal", gridcolor: "#333" }, legend: { font: { size: 10 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-4">Power scaling illustration (both beams scaled together)</h2>
-          <ChartPanel data={powerPlot} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Power, % of the set value", gridcolor: "#333" }, yaxis: { title: "Normalized signal", gridcolor: "#333" }, legend: { font: { size: 10 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
+          <ChartPanel bare data={powerPlot} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Power, % of the set value", gridcolor: "#333" }, yaxis: { title: "Normalized signal", gridcolor: "#333" }, legend: { font: { size: 10 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
         </div>
       </div>
     </>

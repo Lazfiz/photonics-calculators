@@ -105,7 +105,7 @@ export default function StokesPage() {
 
         <div className="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Poincaré Sphere</h2>
-          <ChartPanel
+          <ChartPanel bare
             data={[
               ...wireframe,
               ...(physical

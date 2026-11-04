@@ -130,10 +130,10 @@ export default function FiberDelayLineCalculator() {
 
         <div className="mt-8 grid md:grid-cols-2 gap-8">
           <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
-            <ChartPanel data={delayCurve} layout={layout1} />
+            <ChartPanel bare data={delayCurve} layout={layout1} />
           </div>
           <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
-            <ChartPanel data={dispersionCurve} layout={layout2} />
+            <ChartPanel bare data={dispersionCurve} layout={layout2} />
           </div>
         </div>
     </>

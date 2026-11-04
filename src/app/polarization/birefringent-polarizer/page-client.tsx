@@ -157,11 +157,11 @@ export default function BirefringentPolarizerPage() {
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">{design === "glan" ? "Window edges against the hypotenuse angle" : "Beam separation against the wedge angle"}</h3>
-          <ChartPanel data={angleChart} layout={layout(design === "glan" ? "Hypotenuse angle (°)" : "Wedge angle α (°)", design === "glan" ? "External angle (°)" : "Separation (°)")} />
+          <ChartPanel bare data={angleChart} layout={layout(design === "glan" ? "Hypotenuse angle (°)" : "Wedge angle α (°)", design === "glan" ? "External angle (°)" : "Separation (°)")} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">|Δn| of the listed crystals at {fix(lambda * 1e9, 0)} nm</h3>
-          <ChartPanel data={materialChart} layout={layout("", "|Δn|")} />
+          <ChartPanel bare data={materialChart} layout={layout("", "|Δn|")} />
         </div>
       </div>
     </>

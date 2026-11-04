@@ -132,7 +132,7 @@ export default function SecondHarmonicGenerationPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h2 className="text-lg font-semibold mb-4">Average SH Power vs Sample Thickness</h2>
-        <ChartPanel data={plotData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Thickness L (µm)", gridcolor: "#333", type: "log" }, yaxis: { title: "SH power (nW)", gridcolor: "#333", type: "log" }, legend: { font: { size: 11 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
+        <ChartPanel bare data={plotData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Thickness L (µm)", gridcolor: "#333", type: "log" }, yaxis: { title: "SH power (nW)", gridcolor: "#333", type: "log" }, legend: { font: { size: 11 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
       </div>
     </>
   );

@@ -96,7 +96,7 @@ export default function AdaptiveOpticsPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold mb-3">Fried parameter vs Cn²</h3>
-        <ChartPanel data={plotData} layout={{
+        <ChartPanel bare data={plotData} layout={{
           xaxis: { title: "Cn² (m⁻²ᐟ³)", color: "#9ca3af", gridcolor: "#374151", type: "log" },
           yaxis: { title: "Length (cm)", color: "#9ca3af", gridcolor: "#374151", type: "log" },
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",

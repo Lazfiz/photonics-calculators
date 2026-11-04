@@ -120,11 +120,11 @@ export default function BackgroundNoisePage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Background power vs full FOV</h2>
-          <ChartPanel data={fovData} layout={chartLayout("Full FOV (mrad)", "Background power (dBm)", true, false)} />
+          <ChartPanel bare data={fovData} layout={chartLayout("Full FOV (mrad)", "Background power (dBm)", true, false)} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Spectral radiance vs wavelength</h2>
-          <ChartPanel data={spectrumData} layout={chartLayout("Wavelength (nm)", "L_λ (W m⁻² sr⁻¹ nm⁻¹)", false, true)} />
+          <ChartPanel bare data={spectrumData} layout={chartLayout("Wavelength (nm)", "L_λ (W m⁻² sr⁻¹ nm⁻¹)", false, true)} />
         </div>
       </div>
 

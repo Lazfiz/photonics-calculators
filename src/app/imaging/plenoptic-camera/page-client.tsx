@@ -120,7 +120,7 @@ export default function PlenopticCameraPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h3 className="text-lg font-semibold mb-2">Spatial–angular trade-off (matched lenslets)</h3>
-        <ChartPanel data={chart} layout={{
+        <ChartPanel bare data={chart} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" },
           xaxis: { title: "Pixels across a micro-image N", gridcolor: "#333" },
           yaxis: { title: "Lenslets across the width", gridcolor: "#333" },

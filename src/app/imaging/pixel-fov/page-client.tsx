@@ -78,7 +78,7 @@ export default function PixelFovPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h2 className="text-lg font-semibold mb-4">Pixel IFOV vs focal length</h2>
-        <ChartPanel data={chart} layout={{
+        <ChartPanel bare data={chart} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" },
           xaxis: { title: "Focal length (mm)", type: "log", gridcolor: "#333" },
           yaxis: { title: "Pixel IFOV (arcsec)", type: "log", gridcolor: "#333" },

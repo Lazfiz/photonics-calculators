@@ -79,7 +79,7 @@ export default function PointAheadPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6">
         <h2 className="text-sm font-semibold text-gray-300 mb-2">Point-ahead angle vs transverse velocity</h2>
-        <ChartPanel data={plotData} layout={{
+        <ChartPanel bare data={plotData} layout={{
           xaxis: { title: "v⊥ (km/s)", color: "#9ca3af", gridcolor: "#374151" },
           yaxis: { title: "Angle (µrad)", color: "#9ca3af", gridcolor: "#374151" },
           margin: { l: 60, r: 20, t: 20, b: 50 }, paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#d1d5db" },

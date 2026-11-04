@@ -128,11 +128,11 @@ export default function DiversityReceptionPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Diversity gain vs separation</h2>
-          <ChartPanel data={[...sepData.gain, { type: "scatter", mode: "markers", x: [separation], y: [results.gain], name: "Current", marker: { color: "#facc15", size: 10 } }]} layout={chartLayout("Receiver separation (cm)", "Diversity gain (dB)")} />
+          <ChartPanel bare data={[...sepData.gain, { type: "scatter", mode: "markers", x: [separation], y: [results.gain], name: "Current", marker: { color: "#facc15", size: 10 } }]} layout={chartLayout("Receiver separation (cm)", "Diversity gain (dB)")} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Irradiance correlation vs separation</h2>
-          <ChartPanel data={[...sepData.corr, { type: "scatter", mode: "markers", x: [separation], y: [results.bI], name: "Current", marker: { color: "#facc15", size: 10 } }]} layout={chartLayout("Receiver separation (cm)", "b_I")} />
+          <ChartPanel bare data={[...sepData.corr, { type: "scatter", mode: "markers", x: [separation], y: [results.bI], name: "Current", marker: { color: "#facc15", size: 10 } }]} layout={chartLayout("Receiver separation (cm)", "b_I")} />
         </div>
       </div>
 

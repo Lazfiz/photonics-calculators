@@ -208,7 +208,7 @@ export default function FiberTaperPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Taper Profile (Birks–Li)</h3>
-        <ChartPanel data={profileData} layout={{
+        <ChartPanel bare data={profileData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
           xaxis: { title: "Position along the taper (mm)", gridcolor: "#374151" },
@@ -220,7 +220,7 @@ export default function FiberTaperPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Adiabaticity: Taper Angle vs Love&apos;s Delineation Curve</h3>
-        <ChartPanel data={adiabaticData} layout={{
+        <ChartPanel bare data={adiabaticData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
           xaxis: { title: "Local cladding diameter (µm)", gridcolor: "#374151", autorange: "reversed" },

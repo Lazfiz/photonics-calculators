@@ -200,7 +200,7 @@ export default function BirefringenceImagingPage() {
       <div className="grid gap-4 lg:grid-cols-2 mb-10">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Intensity against sample retardance</h3>
-          <ChartPanel layout={layout("Sample retardance (waves)", "Intensity")} data={[
+          <ChartPanel bare layout={layout("Sample retardance (waves)", "Intensity")} data={[
             { x: byRetardance.x, y: byRetardance.y, type: "scatter", mode: "lines", name: "I(R_s)", line: { color: "#60a5fa", width: 2 } },
             { x: [Rs / lambda], y: [T], type: "scatter", mode: "markers", name: "Current", marker: { color: "#fbbf24", size: 9 } },
           ]} />
@@ -208,7 +208,7 @@ export default function BirefringenceImagingPage() {
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Intensity against analyzer angle</h3>
-          <ChartPanel layout={layout("Analyzer angle A (°)", "Intensity")} data={[
+          <ChartPanel bare layout={layout("Analyzer angle A (°)", "Intensity")} data={[
             { x: byAnalyzer.x, y: byAnalyzer.y, type: "scatter", mode: "lines", name: "I(A)", line: { color: "#34d399", width: 2 } },
             { x: [A / DEG], y: [T], type: "scatter", mode: "markers", name: "Current", marker: { color: "#fbbf24", size: 9 } },
           ]} />
