@@ -17,8 +17,10 @@
  * g_k = 2√2/(kπ) and detuning Δf_k = |f_s − k·f_r|: f_s = 3f_r gives X = (A/√2)·2√2/(3π).
  * The output takes the harmonic with the largest g_k·|H(Δf_k)| (a harmonic within 1e-9 relative of f_s counts as matched
  * and wins), then applies cos φ to a matched one; the others beat at their own Δf_k and are suppressed by |H|, which is
- * the lock-in's working regime (2f_r ≫ 1/τ). Not modelled: when f_s is an even multiple of f_r the k and k + 2 beats share
- * one Δf and add coherently (between 0.6 and 1.2 times the reported envelope at f_s = 2f_r), far down the filter skirt.
+ * the lock-in's working regime (2f_r ≫ 1/τ). When f_s is an even multiple 2m·f_r, harmonics a = 2m − j and b = 2m + j beat
+ * at +j·f_r and −j·f_r: one frequency, so they add as phasors, g_a·e^{iφ} + g_b·e^{−iφ}, giving the envelope
+ * |H(j·f_r)|·√(g_a² + g_b² + 2g_a·g_b·cos 2φ). At f_s = 2f_r (a = 1, b = 3) that is 4/3 of g₁|H| in phase and 2/3 at 90°
+ * (checked against the Fourier component of the sampled product sin(ω_s t + φ)·sgn(sin ω_r t)).
  */
 
 export type LockinFilter = "rc" | "butterworth";
@@ -52,8 +54,10 @@ export interface ReferenceMatch {
   harmonic: number;
   /** |f_s − k·f_r| (Hz). */
   detuning_Hz: number;
-  /** g_k·|H(Δf_k)|, times cos φ when matched (φ: signal phase against that harmonic; X < 0 past 90°). */
+  /** g_k·|H(Δf_k)|, times cos φ when matched (φ: signal phase against that harmonic; X < 0 past 90°); a pair's phasor sum. */
   gain: number;
+  /** The harmonic 2m + j beating at the same |Δf| as `harmonic` = 2m − j when f_s = 2m·f_r (square reference). */
+  pairedHarmonic?: number;
 }
 
 /**
@@ -69,17 +73,25 @@ export function referenceMatch(
 ): ReferenceMatch {
   const nan = { harmonic: 1, detuning_Hz: NaN, gain: NaN };
   if (!(signal_Hz >= 0) || !(reference_Hz >= 0) || !Number.isFinite(signal_Hz + reference_Hz)) return nan;
-  // Envelope g_k·|H(Δf_k)|, Infinity for a matched harmonic so that it wins.
+  const gk = (k: number) => (k === 1 ? REFERENCE_GAIN[reference] : (2 * Math.SQRT2) / (k * Math.PI));
+  // f_s = 2m·f_r (same tolerance as a match): harmonic k beats at the same |Δf| as 4m − k.
+  const ratio = signal_Hz / reference_Hz;
+  const twoM = Math.round(ratio);
+  const pairSum = reference === "square" && twoM > 0 && twoM % 2 === 0 && Math.abs(ratio - twoM) <= 1e-9 * ratio ? 2 * twoM : 0;
+  // Envelope g_k·|H(Δf_k)| (a pair's phasor sum), Infinity for a matched harmonic so that it wins.
   const term = (k: number) => {
     const raw = Math.abs(signal_Hz - k * reference_Hz);
     const matched = raw <= 1e-9 * Math.max(signal_Hz, k * reference_Hz);
     const detuning_Hz = matched ? 0 : raw;
-    const g = k === 1 ? REFERENCE_GAIN[reference] : (2 * Math.SQRT2) / (k * Math.PI);
+    const a = pairSum > 0 ? Math.min(k, pairSum - k) : k, b = pairSum - a;
+    const g = a >= 1 && b > a ? Math.sqrt(gk(a) ** 2 + gk(b) ** 2 + 2 * gk(a) * gk(b) * Math.cos(2 * phase_rad)) : gk(k);
     const envelope = g * lowPassMagnitude(detuning_Hz, tau, order, filter);
-    return { harmonic: k, detuning_Hz, envelope, rank: matched ? Infinity : envelope };
+    return { harmonic: a >= 1 && b > a ? a : k, paired: a >= 1 && b > a ? b : undefined, detuning_Hz, envelope, rank: matched ? Infinity : envelope };
   };
-  const result = (t: ReturnType<typeof term>): ReferenceMatch =>
-    ({ harmonic: t.harmonic, detuning_Hz: t.detuning_Hz, gain: t.envelope * (t.detuning_Hz === 0 ? Math.cos(phase_rad) : 1) });
+  const result = (t: ReturnType<typeof term>): ReferenceMatch => ({
+    harmonic: t.harmonic, detuning_Hz: t.detuning_Hz, gain: t.envelope * (t.detuning_Hz === 0 ? Math.cos(phase_rad) : 1),
+    ...(t.paired ? { pairedHarmonic: t.paired } : {}),
+  });
   let best = term(1);
   if (Number.isNaN(best.envelope) || reference !== "square" || reference_Hz === 0) return result(best);
   const kLo = Math.max(1, 2 * Math.floor((signal_Hz / reference_Hz - 1) / 2) + 1); // largest odd k ≤ f_s/f_r
