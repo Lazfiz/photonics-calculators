@@ -26,7 +26,10 @@ declare module "react-plotly.js/factory" {
 
 // Partial-bundle entry points (src/components/plotly-bundle.ts)
 declare module "plotly.js/lib/core" {
-  const Plotly: { register(modules: unknown[]): void };
+  const Plotly: {
+    register(modules: unknown[]): void;
+    toImage(figure: { data: unknown[]; layout?: unknown }, options: { format: "png" | "svg"; scale?: number; width?: number; height?: number }): Promise<string>;
+  };
   export default Plotly;
 }
 

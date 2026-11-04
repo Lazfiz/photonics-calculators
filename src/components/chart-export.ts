@@ -5,7 +5,7 @@
 
 import type { LegendItem } from "./chart-legend";
 
-const BACKGROUND = "#111827"; // gray-900, the chart cards' background
+export const BACKGROUND = "#111827"; // gray-900, the chart cards' background
 const TEXT = "#d1d5db";
 const FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
 /** PNG pixels per CSS px: sharp on high-density screens and in documents. */
@@ -20,6 +20,13 @@ function save(blob: Blob, fileName: string) {
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/** A data: URL (Plotly's toImage) as a file. */
+export function downloadDataUrl(url: string, fileName: string) {
+  const [head, body] = url.split(",", 2);
+  const bytes = head.endsWith(";base64") ? Uint8Array.from(atob(body), (c) => c.charCodeAt(0)) : new TextEncoder().encode(decodeURIComponent(body));
+  save(new Blob([bytes], { type: head.slice(5).split(";")[0] }), fileName);
 }
 
 /** CSV text as a UTF-8 file with a BOM, so spreadsheet programs read µ, λ and ° correctly. */

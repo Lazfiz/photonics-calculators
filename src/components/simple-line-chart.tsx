@@ -46,6 +46,7 @@ export default function SimpleLineChart({
   xScale = "linear",
   yScale = "linear",
   height = 320,
+  bare = false,
 }: {
   title?: string;
   xLabel: string;
@@ -54,6 +55,8 @@ export default function SimpleLineChart({
   xScale?: AxisScale;
   yScale?: AxisScale;
   height?: number;
+  /** The page draws its own card around the chart: leave out the chart's. */
+  bare?: boolean;
 }) {
   const id = useId();
   const [ref, measured] = useElementWidth<HTMLDivElement>();
@@ -74,7 +77,7 @@ export default function SimpleLineChart({
     const [xMin, xMax] = extent(all.map((p) => p.x), xScale);
     const [yMin, yMax] = extent(all.map((p) => p.y), yScale);
     const raw = (v: number, scale: AxisScale) => (scale === "log" ? Math.pow(10, v) : v);
-    const top = 24, bottom = 56, right = 24;
+    const top = title ? 24 : 32, bottom = 56, right = 24; // an untitled chart's buttons sit in the top margin
     const innerH = height - top - bottom;
     const yTicks = niceTicks(raw(yMin, yScale), raw(yMax, yScale), tickCount(innerH, 50), yScale === "log");
     const yText = yTicks.map((v) => formatTick(v, yTicks));
@@ -145,13 +148,12 @@ export default function SimpleLineChart({
   const legend = series.map((s) => ({ name: s.name, color: s.color, kind: "line" as const, dash: s.dashed ? "5 3" : undefined }));
   const csv = () => ({ series: series.map((s) => ({ name: s.name, x: s.points.map((p) => p.x), y: s.points.map((p) => p.y) })), xLabel, yLabel });
 
+  const actions = <ChartActions svgRef={svgRef} title={title} legend={legend} csv={csv} />;
   return (
-    <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4">
-      <div className={`mb-2 flex items-start gap-3 ${title ? "justify-between" : "justify-end"}`}>
-        {title && <p className="text-sm font-medium text-gray-200">{title}</p>}
-        <ChartActions svgRef={svgRef} title={title} legend={legend} csv={csv} />
-      </div>
+    <div className={bare ? undefined : "rounded-xl border border-gray-800 bg-gray-900/80 p-4"}>
+      {title ? <div className="mb-2 flex items-start justify-between gap-3"><p className="text-sm font-medium text-gray-200">{title}</p>{actions}</div> : null}
       <div ref={ref} className="relative">
+        {title ? null : <div className="absolute right-0 top-0 z-10">{actions}</div>}
         {/* Fixed pixel height: the server render (DEFAULT_WIDTH, scaled to fit) and the measured one take the same space. */}
         <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} width="100%" height={height} className="block overflow-visible" role="img"
           aria-label={title || `${yLabel} versus ${xLabel}`}>
