@@ -1,30 +1,31 @@
-# Handover — 2026-11-04 (session 193 → session 194)
+# Handover — 2026-11-04 (session 194 → session 195)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 193 did 6i-b on `phase-6/6i-b-chart-layout` (PR #231): charts in page cards lose their second frame, untitled
-charts' buttons moved into the top margin, Plotly charts got PNG/CSV. Phase 6 is done. Next: the Gemini hero.
+Session 194 did 6j on `phase-6/6j-findings` (PR #232): the last open physics findings (lock-in pair sum, OPA degeneracy and
+PPLN hint) and three cleanups (CTE table, kerr-lens title, "nepers"). Phase 6 is done. Next: the Gemini hero.
 
 ## State
-- `bare` prop on `ChartPanel`, `SimpleChart`, `SimpleLineChart`, `ChartPlaceholder` (`chartBoxClass` in chart-placeholder.tsx).
-  Codemod `scripts/codemods/2026-11-03-bare-charts.ts` set it on 170 charts (117 files) whose nearest JSX element is a
-  bg-gray-900 bordered p-N card. New pages that put a chart in their own card should pass `bare`.
-- Untitled SVG charts: PNG/CSV buttons `absolute right-0 top-0` over the top margin, raised to ≥ 32 px (line chart: top 32);
-  titled charts keep the heading row. `ChartReserve` draws no row for untitled charts (same height as the chart).
-- `src/components/plotly-panel.tsx`: the one Plotly card (ChartPanel, its error boundary and SimpleChart's fallback use it),
-  modebar = custom PNG (`Plotly.toImage` of the figure with paper `#111827`) and CSV (`plotlyCsv` in chart-axes.ts).
-- Production still has 6i-a's chart remount crash until a release (user asks; push `main` to `release`).
-- Gate: 1217 tests, 5 eslint warnings (unchanged). Build green; ui-check ALL PASS on the branch build.
+- `lockin.ts` `referenceMatch`: square reference, f_s = 2m·f_r → harmonics a = 2m − j, b = 2m + j beat at one |Δf|; envelope
+  |H|·√(g_a² + g_b² + 2g_a g_b cos 2φ); result carries `pairedHarmonic`. The page names both harmonics.
+- `three-wave.ts`: `degeneracyLimits(λp, λs)` (signal-side detuning range up to ν_p/2) and `pplnOpaParameters(λp, λs)` (Zelmon
+  e-ray n and δ_si, NaN outside 0.4–5 µm). The OPA page warns when the gain band reaches 2λ_p and offers PPLN values.
+- `thermal-expansion.ts`: `CTE_TABLE` (1/K, sorted) and `alphaPpm()` (display without float noise).
+- Gate: 1220 tests, 5 eslint warnings (unchanged). Build green on the branch. 411/411 tiered, 0 known issues.
 
 ## Next actions
-1. `/ship`; merge on the user's yes. Suggest a release (6i-a crash fix + 6i-b). After a release (on request):
-   `node scripts/post-merge-check.mjs <sha> fiber-optics/fiber-bragg-grating-sensor=195.6 imaging/low-coherence=97.2
-   detectors/photodiode-speed=13.47`, then `node scripts/ui-check.mjs https://photonics-calculators.vercel.app` (expect ALL PASS).
+1. `/ship`; merge on the user's yes. Release only on request, then:
+   `node scripts/post-merge-check.mjs <sha> materials/thermal-expansion=0.0710 materials/thermal-expansion=18.85
+   wave-optics/kerr-lens=Self-Focusing detectors/lockin-amplifier wave-optics/optical-parametric-amplifier`, then
+   `node scripts/ui-check.mjs https://photonics-calculators.vercel.app` (expect ALL PASS, 0 console errors).
 2. The Gemini hero (Phase 5 leftover): ask the user for the files.
 3. Ask the user for PDFs: Bai 2020 (APL Photonics 5, 031301: abstract 79 cm/GW vs body 60 ± 9), Patel 2001 (Yb:YAG κ at
    10 at.%), Siegman "Lasers" ch. 11/21 pages.
 4. KRS-5 by hand: `materials/transparency-range?material=krs5` at 10 µm: n 2.3707, loss 28.4 %.
 
 ## Non-obvious facts
+- **Session 194:** a lock-in harmonic-pair formula is quick to verify by brute force: sample sin(ω_s t + φ)·sgn(sin ω_r t)
+  over a whole number of periods (2e6 points) and take the Fourier component at j·f_r. Float noise: 0.05e-6 × 1e6 =
+  0.049999…, so table values stored in SI need `+x.toPrecision(6)` for display and equality checks.
 - **Session 193:** port 3100 is held by an old `next start` of this site (PID 20608, "411 tools"): don't kill it; serve the
   branch build on 3200 and stop it with TaskStop. Headless checks without the extension: CDP `Page.captureScreenshot` with
   a `clip` of the chart card at `Emulation.setDeviceMetricsOverride` width 360; to test downloads, override
@@ -58,9 +59,6 @@ charts' buttons moved into the top margin, Plotly charts got PNG/CSV. Phase 6 is
   replace-once node script (`[{a, b}]`, fails unless `a` occurs once; session 190's is in the scratchpad pattern).
 - **Session 187:** `scripts/ui-check.mjs <base> load <paths…>` loads pages and reports console errors. Optica full-text pages
   answer WebFetch with a JS challenge. arXiv PDFs + `pdftotext -layout` lose Greek letters.
-- **Session 186:** ar5iv serves arXiv figures as PNG: `https://ar5iv.labs.arxiv.org/html/<id>/assets/fig2.png`. A reviewer's
-  "from memory" number can be wrong: probe before planning a fix. devctl can queue `npm run check` ≈ 12 min behind another
-  project's job. A data-sheet citation string can repeat across registry entries: anchor edits on the entry's modelNote.
 - **Session 185:** NIST XCOM answers a plain curl POST (`xcom3_1`, ZNum, OutOpt=CSBA, Energies in MeV one per line). CXRO: POST
   `/cgi-bin/atten.pl` or `getdb.pl`, then GET the `/tmp/xray*.dat` it links. Calphad TDB: c_p = −T ∂²G/∂T².
 - **Session 184:** Bai's group writes the [110] Brillouin tensor without the ½ of a unit strain (their p² is 4× the standard).
