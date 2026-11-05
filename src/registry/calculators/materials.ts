@@ -247,7 +247,7 @@ export const materials: CalculatorEntry[] = [
         url: "https://doi.org/10.1364/AO.41.005040",
       },
       {
-        citation: "Zgonik M., Bernasconi P., Duelli M., Schlesser R., Günter P., Garrett M. H., Rytz D., Zhu Y., Wu X. (1994). Dielectric, elastic, piezoelectric, electro-optic, and elasto-optic tensors of BaTiO₃ crystals. Phys. Rev. B 50, 5941–5949. Values as tabulated in Petraru A. I. (2003), Optical and electro-optical properties of BaTiO₃ thin films and Mach-Zehnder waveguide modulators, PhD thesis, Universität zu Köln, Table 2.2 (632.8 nm, 23 °C).",
+        citation: "Zgonik M., Bernasconi P., Duelli M., Schlesser R., Günter P., Garrett M. H., Rytz D., Zhu Y., Wu X. (1994). Dielectric, elastic, piezoelectric, electro-optic, and elasto-optic tensors of BaTiO₃ crystals. Phys. Rev. B 50, 5941–5949. Table II (clamped r) and Table III (stress-free r), 633 nm, 23 °C.",
         url: "https://doi.org/10.1103/PhysRevB.50.5941",
       },
       {
@@ -500,7 +500,7 @@ export const materials: CalculatorEntry[] = [
     description: "Light-induced refractive index changes via space-charge fields in electro-optic materials. Key for holographic storage, phase conjugation, and beam coupling.",
     keywords: ["Two-Beam Coupling", "Space-Charge Field", "Kukhtarev Model", "Photorefractive Gain"],
     tier: "textbook",
-    modelNote: "Kukhtarev's band-transport model in steady state: one carrier type, diffusion only (no applied field, no photovoltaic current), small fringe modulation. E_sc = E_D/(1 + E_D/E_q) and Γ = 2πn³r_eff E_sc/(λ cos θ). r_eff = r₃₃ with full fringe contrast at every angle, an upper bound for large angles (about 16 % high at 2θ = 60° in LiNbO₃). The trap density is an input; Fe:LiNbO₃'s photovoltaic field, which usually dominates, is left out.",
+    modelNote: "Steady-state Kukhtarev diffusion grating, small m: E_sc = E_D/(1 + E_D/E_q), Γ = 2πn³r_eff E_sc/(λ cos θ). e-beams: Feinberg's tensor r_eff with cos 2θ contrast and ε along K. BaTiO₃ clamped and free sets as limits; no grating piezo/elasto-optic terms, walk-off, photovoltaic current or applied field.",
     references: [
       {
         citation: "Kukhtarev N. V., Markov V. B., Odulov S. G., Soskin M. S., Vinetskii V. L. (1978). Holographic storage in electrooptic crystals. I. Steady state. Ferroelectrics 22, 949–960.",
@@ -511,8 +511,24 @@ export const materials: CalculatorEntry[] = [
         url: "https://doi.org/10.1109/3.18564",
       },
       {
+        citation: "Feinberg J., Heiman D., Tanguay A. R. Jr., Hellwarth R. W. (1980). Photorefractive effects and light-induced charge migration in barium titanate. J. Appl. Phys. 51, 1297–1305. Eq. 7 (ε along K), eqs. 13 and 19 (tensor coupling of the two beams); the e-wave r_eff(β, θ) on this page is contracted from them.",
+        url: "https://doi.org/10.1063/1.327824",
+      },
+      {
+        citation: "Zgonik M., Bernasconi P., Duelli M., Schlesser R., Günter P., Garrett M. H., Rytz D., Zhu Y., Wu X. (1994). Dielectric, elastic, piezoelectric, electro-optic, and elasto-optic tensors of BaTiO₃ crystals. Phys. Rev. B 50, 5941–5949. Table II (clamped r₁₃, r₃₃, r₄₂, ε₁₁, ε₃₃) and Table III (stress-free values), 633 nm, 23 °C.",
+        url: "https://doi.org/10.1103/PhysRevB.50.5941",
+      },
+      {
+        citation: "Wemple S. H., DiDomenico M. Jr., Camlibel I. (1968). Dielectric and optical properties of melt-grown BaTiO₃. J. Phys. Chem. Solids 29, 1797–1803 (n_o, n_e single-oscillator fits, 0.4–0.7 µm, via the refractiveindex.info database).",
+        url: "https://doi.org/10.1016/0022-3697(68)90164-9",
+      },
+      {
         citation: "Weis R. S., Gaylord T. K. (1985). Lithium niobate: summary of physical properties and crystal structure. Appl. Phys. A 37, 191–203.",
         url: "https://doi.org/10.1007/BF00614817",
+      },
+      {
+        citation: "Zelmon D. E., Small D. L., Jundt D. (1997). Infrared corrected Sellmeier coefficients for congruently grown lithium niobate and 5 mol.% magnesium oxide–doped lithium niobate. J. Opt. Soc. Am. B 14, 3319.",
+        url: "https://doi.org/10.1364/JOSAB.14.003319",
       },
     ],
   },
