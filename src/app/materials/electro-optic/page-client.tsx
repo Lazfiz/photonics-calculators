@@ -9,7 +9,7 @@ import {
   transverseHalfWaveVoltage, type PockelsGeometry, type PockelsId,
 } from "../../../physics/materials/pockels";
 
-const IDS = ["kdp", "kdp-d", "adp", "linbo3", "ktp"] as const satisfies readonly PockelsId[];
+const IDS = ["kdp", "kdp-d", "adp", "linbo3", "ktp", "batio3", "batio3-clamped"] as const satisfies readonly PockelsId[];
 type Choice = PockelsId | "custom";
 const CHOICES: readonly Choice[] = [...IDS, "custom"];
 const DEFAULT_ID: Choice = "kdp";
@@ -119,7 +119,7 @@ export default function ElectroOpticPage() {
 
   return (
     <>
-      <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 mb-6" role="group" aria-label="Material">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6" role="group" aria-label="Material">
         {CHOICES.map((id) => (
           <button key={id} onClick={() => setMaterial(id)} aria-pressed={choice === id}
             className={`px-3 py-2 rounded text-sm ${choice === id ? "bg-blue-600" : "bg-gray-800 hover:bg-gray-700"}`}>
@@ -240,6 +240,12 @@ export default function ElectroOpticPage() {
             it is approximate. LiNbO₃&apos;s r₃₃ and r₁₃ are the clamped (high-frequency) values; below the acoustic resonances
             the unclamped ones are a few per cent larger. KTP&apos;s r₃₃ and r₂₃ are the unclamped (low-frequency) values; vendor
             tables give 35.0 and 13.8 pm/V clamped.
+          </p>
+          <p>
+            BaTiO₃ (4mm) uses the same z-field geometry with n_e³r₃₃ − n_o³r₁₃, for a poled single-domain crystal at 633 nm and
+            23 °C. Its piezoelectric part is large: clamped r₃₃ is 40.6 against 105 pm/V unclamped, so V_π rises about 3× above the
+            first acoustic resonance (≈ 0.1 MHz for a 2 cm crystal). Its largest coefficient, r₄₂ = 1300 pm/V (clamped 730), needs a
+            field across the c-axis and is not modelled; n_e and r also change strongly with temperature.
           </p>
         </div>
       </div>

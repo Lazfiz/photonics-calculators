@@ -222,10 +222,10 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "electro-optic",
     title: "Electro-Optic Coefficients",
-    description: "Pockels-effect half-wave voltage of longitudinal KDP, KD*P and ADP cells and transverse LiNbO₃ and KTP modulators: retardation and single-polarization phase, V_π·L, the index change −½n³rE and the crossed-polarizer transmission.",
+    description: "Pockels-effect half-wave voltage of longitudinal KDP, KD*P and ADP cells and transverse LiNbO₃, KTP and BaTiO₃ modulators: retardation and single-polarization phase, V_π·L, the index change −½n³rE and the crossed-polarizer transmission.",
     keywords: ["Pockels Effect", "Half-Wave Voltage", "Pockels Cell", "Electro-Optic Modulator"],
     tier: "textbook",
-    modelNote: "Principal-axis geometries with r fixed at its reference wavelength; only n follows the Sellmeier fits (Zernike KDP, Zelmon LiNbO₃, Kato KTP), and KD*P and ADP use one published index. LiNbO₃ uses clamped (high-frequency) coefficients; KTP's 633 nm r₃₃ and r₂₃ are low-frequency measurements whose clamping the source doesn't state. The z–o retardation of a transverse modulator adds to the natural birefringence.",
+    modelNote: "Principal-axis geometries with r fixed at its reference wavelength; only n follows the Sellmeier fits (Zernike KDP, Zelmon LiNbO₃, Kato KTP, Wemple BaTiO₃ over 0.4–0.7 µm), and KD*P and ADP use one published index. LiNbO₃ uses clamped (high-frequency) coefficients; KTP's 633 nm r₃₃ and r₂₃ are low-frequency measurements whose clamping the source doesn't state. BaTiO₃ comes unclamped (r₃₃ 105, r₁₃ 8 pm/V) and clamped (40.6, 10.2); r₄₂ = 1300 (clamped 730) pm/V needs a field across c and is not modelled. The z–o retardation of a transverse modulator adds to the natural birefringence.",
     references: [
       {
         citation: "Wilson J., Hawkes J. F. B. (1998). Optoelectronics: An Introduction, 3rd ed. Prentice Hall Europe, ISBN 0-13-103961-X (the same Table 3.1 in the 1983 and 1989 editions). Table 3.1 (r₆₃ of KDP, KD*P, ADP) and Example 3.2 (KDP V_π = 14.5 kV at 1.06 µm).",
@@ -245,6 +245,14 @@ export const materials: CalculatorEntry[] = [
       {
         citation: "Kato K., Takaoka E. (2002). Sellmeier and thermo-optic dispersion formulas for KTP. Appl. Opt. 41, 5040–5044 (coefficients via the refractiveindex.info database).",
         url: "https://doi.org/10.1364/AO.41.005040",
+      },
+      {
+        citation: "Zgonik M., Bernasconi P., Duelli M., Schlesser R., Günter P., Garrett M. H., Rytz D., Zhu Y., Wu X. (1994). Dielectric, elastic, piezoelectric, electro-optic, and elasto-optic tensors of BaTiO₃ crystals. Phys. Rev. B 50, 5941–5949. Values as tabulated in Petraru A. I. (2003), Optical and electro-optical properties of BaTiO₃ thin films and Mach-Zehnder waveguide modulators, PhD thesis, Universität zu Köln, Table 2.2 (632.8 nm, 23 °C).",
+        url: "https://doi.org/10.1103/PhysRevB.50.5941",
+      },
+      {
+        citation: "Wemple S. H., DiDomenico M. Jr., Camlibel I. (1968). Dielectric and optical properties of melt-grown BaTiO₃. J. Phys. Chem. Solids 29, 1797–1803 (n_o, n_e single-oscillator fits, 0.4–0.7 µm, via the refractiveindex.info database).",
+        url: "https://doi.org/10.1016/0022-3697(68)90164-9",
       },
     ],
   },
@@ -659,10 +667,10 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "thermal-expansion",
     title: "Thermal Expansion",
-    description: "Length change ΔL = α·L·ΔT, strain and the change in 633 nm waves, with room-temperature expansion coefficients of optical glasses, crystals and mount metals.",
+    description: "Length change ΔL = α·L·ΔT, strain and the change in 633 nm waves, with room-temperature expansion coefficients of optical glasses, crystals and mount metals, and silicon's α(T) integrated from 120 to 1500 K.",
     keywords: ["Coefficient of Thermal Expansion"],
     tier: "textbook",
-    modelNote: "ΔL = αLΔT with one room-temperature α, good over tens of kelvin; α rises with temperature (Si: 2.6 to about 4.6 ×10⁻⁶/K from 300 to 1500 K). Crystals from Crystran; glasses from SCHOTT, Corning (ULE and Zerodur: the specified limit) and Kaye & Laby; metals at 293 K from Kaye & Laby or the slope of NIST's fits. Alloys vary with heat treatment (Invar 0.13–1.2).",
+    modelNote: "ΔL = αLΔT with one room-temperature α, good over tens of kelvin. Silicon: Okada & Tokumaru's α(T) (120–1500 K, ±0.2 ×10⁻⁶/K; 2.57 at 300 K, 4.56 at 1500 K) integrated in closed form, ΔL = L·expm1(∫α dT). Crystals from Crystran; glasses from SCHOTT, Corning (ULE and Zerodur: the specified limit) and Kaye & Laby; metals at 293 K from Kaye & Laby or the slope of NIST's fits. Alloys vary with heat treatment (Invar 0.13–1.2).",
     references: [
       {
         citation: "Okada Y., Tokumaru Y. (1984). Precise determination of lattice parameter and thermal expansion coefficient of silicon between 300 and 1500 K. J. Appl. Phys. 56, 314–320.",

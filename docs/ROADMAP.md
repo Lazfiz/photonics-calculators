@@ -5,12 +5,12 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 202, 2026-11-05)
+## Status (session 203, 2026-11-05)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
   textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) and 5w-13 (materials) and 5w-14 (spectroscopy) and 5w-15 (thin-film + polarization) done (sessions 163–177): 5w is complete; KRS-5
-  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6j done (sessions 179–194); Gemini hero done (session 195). Phase 7 (Known limitations: features): 7a–7d done (sessions 196–199), 7e done (session 200; 7e-b with the user's Westwood PDF), 7f-a done (session 201); next 7f-b. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6j done (sessions 179–194); Gemini hero done (session 195). Phase 7 (Known limitations: features): 7a–7d done (sessions 196–199), 7e done (session 200; 7e-b with the user's Westwood PDF), 7f-a/7f-b done (sessions 201–202), 7g-a done (session 203); 7g-b blocked on PDFs. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -106,15 +106,15 @@ Evidence for a later extension. Reopen an item only with a new source or a user 
 - `polymer-optics` (session 136): dropped PDMS (Schneider 2009 Sylgard 184 fit 1.431 vs Zhang 2020 1.397 at 550 nm), CYTOP, OrmoComp
   and all loss, T_g, dn/dT and stress-optic data (unsourced). NOA 61 checked (session 144) against Norland's archived sheet.
 - `thermal-expansion` (session 144: every α sourced): conventions are mixed (glasses: mean over a range; Kaye & Laby/NIST: 293 K).
-  Invar is an endpoint fit slope (± 20 %). No α(T) model (Okada & Tokumaru 1984 for Si).
+  Invar is an endpoint fit slope (± 20 %). α(T) only for Si (Okada & Tokumaru 1984, 120–1500 K, session 203).
 - `thin-film/environmental-stability` (session 135): the H-layer (TiO₂ film) dn/dT 20 and α 8 × 10⁻⁶/K defaults are unsourced
   placeholders; free-film expansion ignores the substrate constraint and Poisson term. Peck's own fit (read session 190 via a
   Wayback copy): n 2.66, Eₐ 0.79 eV; fitted to epoxy packages, so the page still defaults to n = 0.
 - `heat-capacity` (session 185: + GaAs, diamond): MgF₂, ZnSe, BaF₂ and fused silica are not offered (no cited θ_D). GaAs below 298 K unchecked
   (session 190: Piesbergen 1963 Tab. 3, within 2.4 % at 100–273 K, 24 % low at 50 K); above 600 K data sets spread by up to 10 J/(mol·K) (Pässler, AIP Adv. 3, 082108 (2013), abstract). `damage-threshold` and `radiation-damage` have user inputs, no presets.
-- `electro-optic`, `photorefractive` (session 143: KTP added): BaTiO₃, SBN, BSO and LiTaO₃ are still out. BaTiO₃ unclamped r₁₃ 8,
-  r₃₃ 105, r₄₂ 1300 pm/V at 633 nm (Zgonik 1994 PRB 50, 5941, quoted in Petraru's thesis, `kups.ub.uni-koeln.de/1050/1/thesis_petraru_final.pdf`
-  Table 2.2) needs ε and an r_eff(β) geometry on the photorefractive page; LiTaO₃ has only a vendor r₃₃ (Crylink 30.4, no r₁₃ or λ;
+- `electro-optic`, `photorefractive` (session 143: KTP added; session 203: BaTiO₃ unclamped/clamped on `electro-optic`, Wemple 1968
+  indices 0.4–0.7 µm, r₄₂ not modelled): SBN, BSO and LiTaO₃ are still out. BaTiO₃ on the photorefractive page needs ε₁₁, ε₃₃
+  (Zgonik 1994 PRB 50, 5941, paywalled; Petraru's thesis, behind a bot check, gives only r and n) and r_eff(β) (Yeh 1989 / Feinberg 1980); LiTaO₃ has only a vendor r₃₃ (Crylink 30.4, no r₁₃ or λ;
   Casson 2004 JOSA B is paywalled, OSTI refuses connections). KTP's r (Cheng 1994) are the unclamped values
   (vendor tables, session 190; Cheng itself paywalled). Wilson & Hawkes now cites the 3rd ed. (1998); Table 3.1 is the same in all three.
 - `nonlinear-crystals` (user decision, session 130: lean SHG page): CLBO, KTA, AgGaS₂, ZGP, GaSe and OP-GaAs and the walk-off,
@@ -295,8 +295,8 @@ sources: Ar⁺/CO₂ g₀, Nd/Tm/Ho σ, Sheik-Bahae n₂, ZBLAN, LiTaO₃, …) 
 - [x] 7e-b sputtering thermalisation (session 200, same branch and PR #238). See Done.
 - [x] 7f-a imaging (session 201, `phase-7/7f-imaging`, PR #239). See Done.
 - [x] 7f-b imaging (session 202, `phase-7/7f-b-fpbase-spectra`, PR #240). See Done.
-- [ ] 7g materials data: `thermal-expansion` α(T) for Si (Okada & Tokumaru 1984), BaTiO₃ on `electro-optic`/`photorefractive`
-  (Zgonik 1994 via Petraru's thesis Table 2.2; needs ε and r_eff(β)).
+- [x] 7g-a materials data (session 203, `phase-7/7g-materials-data`, PR #241). See Done.
+- [ ] 7g-b BaTiO₃ on `photorefractive`: blocked on ε₁₁/ε₃₃ (Zgonik 1994) and the e-polarized r_eff(β) (Yeh 1989 or Feinberg 1980): ask the user for PDFs.
 - Later, user's choice: phone hero (cropped layout + touch: tap to highlight, tap again to open, auto-cycle); traffic/SEO pass.
 
 ## Decisions (keep)
@@ -316,6 +316,7 @@ sources: Ar⁺/CO₂ g₀, Nd/Tm/Ho σ, Sheik-Bahae n₂, ZBLAN, LiTaO₃, …) 
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 7g-a materials data (session 203, `phase-7/7g-materials-data`, PR #241): `thermal-expansion` Si α(T) (Okada & Tokumaru 1984, 120–1500 K; α(300) 2.56806, 100 mm 20→120 °C 28.741 µm, cancellation-free mean); `electro-optic` BaTiO₃ unclamped/clamped (Zgonik via Petraru Table 2.2, Wemple n; V_π 24.914/80.655 V at 1 mm × 20 mm, 633 nm); 1255 tests.
 - 7f-b imaging (session 202, `phase-7/7f-b-fpbase-spectra`, PR #240): `fluorophores.ts` uses FPbase spectra sampled every 1 nm (`fpbase-spectra.ts`, CC BY-SA 4.0) on fluorescence-spectra, simultaneous-multicolor and spectral-unmixing; anti-Stokes tails kept (EGFP em 450–480 nm 0.0055, was 0); R₀ EGFP→mCherry 5.109 nm (fit 5.055).
 - 7f-a imaging (session 201, `phase-7/7f-imaging`, PR #239): `mtf` exact-phase high-NA defocus OTF (2D overlap) and closed-form Strehl (0.27298 vs paraxial 0.5554 at NA 0.95, 0.5 µm, 550 nm); `spinning-disk` crosstalk by a reciprocal-lattice sum, floor 4.45 % at the CSU defaults, Fourier section = CONFOCAL_FWHM_TABLE.
 - 7e-b thin film (session 200, PR #238): `sputtering-deposition` Westwood 1978 thermalisation (eqs. 2, 7, 8, 13; 80 u 5 eV 0.1 Pa 40.1 cm vs 42; 400 u Fig. 5 within 1 %), E* by inverting eq. 13 and Thompson share (E*/(E*+U))² (Al default 72 %, Cu 31 %).

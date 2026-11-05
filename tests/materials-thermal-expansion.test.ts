@@ -1,7 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { alphaPpm, CTE_TABLE, expansionWaves, thermalExpansion } from "../src/physics/materials/thermal-expansion";
+import {
+  alphaPpm, CTE_TABLE, expansionWaves, siliconAlpha, siliconAlphaIntegral, siliconExpansion, siliconMeanAlpha, thermalExpansion,
+} from "../src/physics/materials/thermal-expansion";
 
 test("thermal expansion ΔL = αLΔT (PR #155 golden value)", () => {
   // Si, α = 2.6e-6/K at 300 K (Okada & Tokumaru 1984, doi:10.1063/1.333965), L = 100 mm, ΔT = 10 K: ΔL = 2.6 µm.
@@ -31,4 +33,35 @@ test("CTE table: sourced room-temperature values, sorted, in 1/K", () => {
   assert.ok(Math.abs(thermalExpansion(al.alpha, 0.1, 10) - 22.6e-6) < 1e-15);
   // alphaPpm strips float noise: 0.05e-6 × 1e6 is 0.049999… in IEEE doubles.
   assert.equal(alphaPpm(0.05e-6), 0.05);
+});
+
+test("silicon α(T): Okada & Tokumaru (1984) fit, closed-form integral", () => {
+  // Abstract of J. Appl. Phys. 56, 314 (doi:10.1063/1.333965): α = (3.725{1 − exp[−5.88e-3 (T − 124)]} + 5.548e-4 T) 1e-6 /K,
+  // 120–1500 K. Hand values: 300 K: 3.725 (1 − e^−1.03488) + 0.16644 = 2.56806; 1500 K: 3.72389 + 0.83220 = 4.55606.
+  assert.ok(Math.abs(siliconAlpha(300) - 2.56806e-6) < 1e-11, `${siliconAlpha(300)}`);
+  assert.ok(Math.abs(siliconAlpha(1500) - 4.55606e-6) < 1e-11, `${siliconAlpha(1500)}`);
+  // Paszkowicz, Powder Diffr. 10, 223 (1995), doi:10.1017/s0885715600014792: Okada–Tokumaru's room-temperature α is "about
+  // 2.6e-6 /K", varying "by about 0.01e-6 /K" per kelvin; Hartwig et al. (1994) correct 20 °C lattice parameters with 2.51e-6.
+  assert.equal(+(siliconAlpha(293.15) * 1e6).toFixed(2), 2.51);
+  const slope = (siliconAlpha(301) - siliconAlpha(299)) / 2;
+  assert.ok(slope > 0.007e-6 && slope < 0.01e-6, `${slope}`);
+  // The closed-form integral against an independent trapezoid sum (2e5 steps) of the fit as written in the abstract.
+  const raw = (T: number) => (3.725 * (1 - Math.exp(-5.88e-3 * (T - 124))) + 5.548e-4 * T) * 1e-6;
+  for (const [a, b] of [[300, 400], [293.15, 1273.15], [120, 1500], [800, 300]]) {
+    const n = 200000, h = (b - a) / n;
+    let sum = 0;
+    for (let i = 0; i <= n; i++) sum += (i === 0 || i === n ? 0.5 : 1) * raw(a + i * h);
+    assert.ok(Math.abs(siliconAlphaIntegral(a, b) - sum * h) < 1e-12, `${a}–${b}`);
+  }
+  // Mean α over 300–400 K is 2.919e-6 /K (the page's warning quotes 2.92); T1 = T2 gives α itself.
+  assert.ok(Math.abs(siliconMeanAlpha(300, 400) - 2.91863e-6) < 1e-11);
+  assert.equal(siliconMeanAlpha(300, 300), siliconAlpha(300));
+  // A tiny ΔT must not cancel: the mean over 1e-12 K is α itself (a differenced antiderivative gave 2.33 instead of 2.51).
+  assert.ok(Math.abs(siliconMeanAlpha(293.15, 293.15 + 1e-12) - siliconAlpha(293.15)) < 1e-14);
+  // 100 mm heated 20 → 120 °C: L·expm1(2.87371e-4) = 28.741 µm (constant 2.6e-6: 26.0 µm). Cooling back undoes it exactly.
+  const dL = siliconExpansion(0.1, 293.15, 393.15);
+  assert.ok(Math.abs(dL - 28.7412e-6) < 1e-10, `${dL}`);
+  assert.ok(Math.abs((0.1 + dL) * Math.exp(siliconAlphaIntegral(393.15, 293.15)) - 0.1) < 1e-16);
+  // Outside 120–1500 K the fit is not used.
+  assert.ok(Number.isNaN(siliconAlpha(119)) && Number.isNaN(siliconAlpha(1501)) && Number.isNaN(siliconExpansion(0.1, 77, 300)));
 });
