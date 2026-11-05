@@ -496,9 +496,9 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "sputtering-deposition",
     title: "Sputtering Deposition",
-    description: "DC magnetron sputtering of a metal target in argon: ion current, sputtered atom rate from measured yields, on-axis deposition rate, sputtered-atom energy, argon mean free path and structure zone.",
+    description: "DC magnetron sputtering of a metal target in argon: ion current, sputtered atom rate from measured yields, on-axis deposition rate, sputtered-atom energy, gas thermalisation distance and structure zone.",
     tier: "textbook",
-    modelNote: "Measured 500 eV Ar⁺ yields, ion current P/(V(1+γ)), cosine disk source on axis, sticking 1, bulk density. No gas scattering (an upper bound beyond about one mean free path), no reactive sputtering.",
+    modelNote: "Measured 500 eV Ar⁺ yields, ion current P/(V(1+γ)), cosine disk on axis, sticking 1, bulk density. The rate ignores gas scattering; Westwood's thermalisation distance and the Thompson spectrum give the share that diffuses. Not reactive.",
     references: [
       {
         citation: "Laegreid N., Wehner G. K. (1961). Sputtering yields of metals for Ar+ and Ne+ ions with energies from 50 to 600 eV. J. Appl. Phys. 32, 365.",
@@ -517,6 +517,10 @@ export const thinFilm: CalculatorEntry[] = [
         url: "https://doi.org/10.1080/14786436808227358",
       },
       { citation: "Kittel C. (2005). Introduction to Solid State Physics, 8th ed., ch. 3, Table 1 (cohesive energies). Wiley." },
+      {
+        citation: "Westwood W. D. (1978). Calculation of deposition rates in diode sputtering systems. J. Vac. Sci. Technol. 15, 1, eqs. (2), (7), (8), (13).",
+        url: "https://doi.org/10.1116/1.569429",
+      },
       thornton,
     ],
   },

@@ -5,15 +5,18 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { TORR } from "../../../physics/constants";
+import { N_A, TORR } from "../../../physics/constants";
 import { structureZone } from "../../../physics/thin-film/thermal-evaporation";
 import {
   SPUTTER_TARGETS,
-  argonMeanFreePath,
   diskOnAxisFlux,
   growthRate,
+  sputteredAtomDiameter,
   sputteredAtomRate,
   targetIonCurrent,
+  thermalisationDistance,
+  thermalisationEnergy,
+  thompsonFractionBelow,
   thompsonPeakEnergy,
   type SputterTargetId,
 } from "../../../physics/thin-film/sputtering";
@@ -22,6 +25,7 @@ const IDS = Object.keys(SPUTTER_TARGETS) as SputterTargetId[];
 const isId = (s: string): s is SputterTargetId => Object.hasOwn(SPUTTER_TARGETS, s);
 const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
 const fmtExp = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toExponential(digits)}${unit}` : "—");
+const fmtE = (x: number) => (x >= 1e6 ? "> 1 MeV" : Number.isFinite(x) ? `${x < 10 ? x.toPrecision(2) : x.toFixed(0)} eV` : "—");
 const ZONE = ["", "zone 1: tapered columns, voided", "zone 2: dense columns", "zone 3: recrystallised grains"];
 
 export default function SputteringDepositionPage() {
@@ -62,9 +66,15 @@ export default function SputteringDepositionPage() {
     const Phi = sputteredAtomRate(Ii, Y);
     const F = diskOnAxisFlux(Phi, a, d);
     const rate = growthRate(F, t.M, t.rho); // m/s
-    const mfp = argonMeanFreePath(pressure * 1e-3 * TORR, gasT);
+    const p = pressure * 1e-3 * TORR;
+    const ms = t.M / N_A;
+    const sigma = sputteredAtomDiameter(t.M * 1e3);
+    const peak = thompsonPeakEnergy(t.Us);
+    const th = thermalisationDistance(peak, p, gasT, ms, sigma);
+    const Es = thermalisationEnergy(d, p, gasT, ms, sigma);
+    const thermalised = thompsonFractionBelow(Es, t.Us);
     const Ts = substrateTemp + 273.15;
-    return { I, Ii, Phi, F, rate, mfp, ratio: d / mfp, Ts, zone: structureZone(Ts, t.Tm), peak: thompsonPeakEnergy(t.Us) };
+    return { I, Ii, Phi, F, rate, th, Es, thermalised, d, Ts, zone: structureZone(Ts, t.Tm), peak };
   }, [valid, targetRadius, distance, power, voltage, gamma, Y, t, pressure, substrateTemp]);
 
   const sweepData = useMemo(() => {
@@ -79,9 +89,14 @@ export default function SputteringDepositionPage() {
       ds.push(dcm);
       rates.push(growthRate(diskOnAxisFlux(r.Phi, a, dcm * 1e-2), t.M, t.rho) * 1e9);
     }
+    const Dcm = r.th.distance * 100;
+    const marker = Dcm > dLo && Dcm < dHi
+      ? [{ x: [Dcm, Dcm], y: [0, Math.max(...rates)], type: "scatter" as const, mode: "lines" as const, name: "D at the peak energy", line: { color: "#facc15", dash: "dash" as const } }]
+      : [];
     return [
-      { x: ds, y: rates, type: "scatter" as const, mode: "lines" as const, name: "On-axis rate", line: { color: "#60a5fa" } },
+      { x: ds, y: rates, type: "scatter" as const, mode: "lines" as const, name: "On-axis rate (collisionless)", line: { color: "#60a5fa" } },
       { x: [distance], y: [r.rate * 1e9], type: "scatter" as const, mode: "markers" as const, name: "Input distance", marker: { color: "#f87171", size: 10 } },
+      ...marker,
     ];
   }, [r, targetRadius, t, distance]);
 
@@ -117,10 +132,15 @@ export default function SputteringDepositionPage() {
           The table yield is for 500 eV; at {fmt(voltage, 0, " V")} enter a measured yield for this voltage.
         </p>
       )}
-      {r && r.ratio > 1 && (
+      {r && Number.isFinite(r.thermalised) && (
         <p className="mb-6 text-sm text-gray-400">
-          The distance is {fmt(r.ratio, 1)} argon–argon mean free paths (a conservative proxy for a fast sputtered atom): many collide with the gas on the way, so the
-          rate below is an upper bound.
+          {r.thermalised < 0.01
+            ? <>Ballistic: only atoms ejected below E* = {fmtE(r.Es)} are thermalised before the substrate at {fmt(distance, 1, " cm")}, under 1 % of the
+                Thompson distribution. The atoms still collide about {fmt(r.d / (1.25 * r.th.lambda), 1)} times on average and lose some energy.</>
+            : <>{r.thermalised > 0.5 ? "Mostly diffusive" : "Mostly ballistic"}: atoms ejected below E* = {fmtE(r.Es)}, {fmt(r.thermalised * 100, 0, " %")} of
+                the Thompson distribution, are thermalised before the substrate at {fmt(distance, 1, " cm")} and reach it by diffusion through the argon.
+                The rest arrive with part of their energy after about {fmt(r.d / (1.25 * r.th.lambda), 1)} collisions on average. So the deposition rate is
+                below the collisionless value shown here, and the more so the larger the thermalised share.</>}
         </p>
       )}
 
@@ -129,8 +149,16 @@ export default function SputteringDepositionPage() {
           <ResultCard label="On-axis deposition rate" value={fmt(r.rate * 1e9, 3, " nm/s")} tone="yellow" subtext={`${fmt(r.rate * 1e10 * 60, 0, " Å/min")}; collisionless`} />
           <ResultCard label="Ion current to the target" value={fmt(r.Ii, 3, " A")} tone="cyan" subtext={`I/(1+γ), I = P/V = ${fmt(r.I, 3, " A")}`} />
           <ResultCard label="Sputtered atoms" value={fmtExp(r.Phi, 2, " s⁻¹")} tone="green" subtext={`(Iᵢ/e) Y, Y = ${fmt(Y, 2)}${useTable ? " (500 eV table)" : ""}`} />
-          <ResultCard label="Most probable energy of sputtered atoms" value={fmt(r.peak, 2, " eV")} subtext="Thompson peak U_s/2" />
-          <ResultCard label="Argon mean free path" value={fmt(r.mfp * 100, 2, " cm")} subtext={`distance = ${fmt(r.ratio, 2)} λ (gas at 300 K)`} />
+          <ResultCard
+            label="Thermalised before the substrate"
+            value={fmt(r.thermalised * 100, 0, " %")}
+            subtext={`ejected below E* = ${fmtE(r.Es)}; Thompson CDF (E/(E + U_s))²`}
+          />
+          <ResultCard
+            label="Thermalisation distance D at the peak energy"
+            value={fmt(r.th.distance * 100, 1, " cm")}
+            subtext={`1.25 η′λ, E₀ = U_s/2 = ${fmt(r.peak, 2, " eV")}: η′ = ${fmt(r.th.collisions, 1)}, λ = ${fmt(r.th.lambda * 100, 2, " cm")}`}
+          />
           <ResultCard
             label="Homologous temperature"
             value={fmt(r.Ts / t.Tm, 2)}
@@ -142,11 +170,16 @@ export default function SputteringDepositionPage() {
       <div className="bg-gray-900 rounded p-4 mb-6 text-sm text-gray-400">
         <p className="font-semibold text-gray-200 mb-2">Model</p>
         <p>Iᵢ = P / (V(1 + γ)); Φ = (Iᵢ/e)·Y; F = Φ / (π(a² + d²)); r = F·M / (ρ N<sub>A</sub>)</p>
-        <p>λ = k<sub>B</sub>T / (√2 π d<sub>Ar</sub>² p), d<sub>Ar</sub> = 3.64 Å (from the viscosity); Thompson peak U<sub>s</sub>/2</p>
+        <p>Thompson peak E₀ = U<sub>s</sub>/2; λ = k<sub>B</sub>T / (π((σ<sub>s</sub> + σ<sub>g</sub>)/2)² p √(1 + M<sub>s</sub>/M<sub>g</sub>)), σ<sub>g</sub> = 0.29 nm, σ<sub>s</sub> 0.30–0.45 nm</p>
+        <p>η′ = ln(v<sub>g</sub>/v₀) / ln(ν′/ν), v<sub>g</sub>/v₀ = √(k<sub>B</sub>T/E₀), ν′/ν Jeans&apos; persistence for M<sub>g</sub>/M<sub>s</sub>; D = 1.25 η′λ (Westwood 1978)</p>
+        <p>E* = k<sub>B</sub>T (ν′/ν)<sup>−2d/1.25λ</sup> (D(E*) = d); thermalised share (E*/(E* + U<sub>s</sub>))²</p>
         <p className="mt-2">
           A disk of radius a emitting uniformly with a cosine distribution, seen on axis from a parallel substrate; a real magnetron
-          erodes a ring (racetrack), so take a as its mean radius. Every atom sticks and the film has bulk density. Gas scattering
-          isn&apos;t modelled: beyond about one mean free path atoms start to scatter and thermalise and diffuse, and the rate falls below this. Zones are
+          erodes a ring (racetrack), so take a as its mean radius. Every atom sticks and the film has bulk density. The rate ignores gas
+          scattering. Westwood&apos;s D is the distance an atom ejected normal to the target travels before it slows to thermal speed (gas at
+          300 K); beyond it the atoms diffuse, the rate falls below this value and the profile flattens. D scales as 1/p and grows as ln E₀.
+          Oblique ejection shortens the normal distance, and the gas-averaged persistence makes D about 25 % shorter than for a fast atom
+          hitting gas at rest. Zones are
           Movchan–Demchishin by T<sub>s</sub>/T<sub>m</sub>; Thornton&apos;s sputtered-film zones also shift with the argon pressure.
           Reactive sputtering (oxides, nitrides) changes the yield and the film and isn&apos;t covered.
         </p>
