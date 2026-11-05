@@ -11,10 +11,10 @@
  *
  * Reference: M. A. Lieberman, A. J. Lichtenberg, Principles of Plasma Discharges and Materials Processing,
  * 2nd ed. (Wiley, 2005), doi:10.1002/0471724254: Table 3.3 (argon rate constants), eq. 3.5.9 (E_c),
- * §5.1–5.2 (ion mobility, ambipolar diffusion), §10.2 (h_l, h_R, d_eff, particle and power balance,
- * E_T = E_c + 2T_e + E_i). The h_R with its diffusion term and D_a = D_i(1 + T_e/T_i) as reproduced in
- * E. Kemaneci et al., J. Phys. D 50, 245203 (2017), doi:10.1088/1361-6463/aa7093 (preprint arXiv:1612.07268v1,
- * eqs. (2) and (7)).
+ * eqs. (5.1.5)–(5.1.6), (5.1.14) (D_i, D_a), (5.3.16)–(5.3.17) (h_l, h_R joining the collisionless,
+ * variable-mobility and constant-D regimes, after C. Lee, M. A. Lieberman, J. Vac. Sci. Technol. A 13, 368
+ * (1995), doi:10.1116/1.579366), §10.2 eqs. (10.2.4), (10.2.9)–(10.2.15) (sheath, E_T = E_c + 2T_e + E_i,
+ * d_eff, particle and power balance) and its Example 1 (p. 335), which the tests compare against.
  */
 import { epsilon_0, k_B, m_e, m_u, q } from "../constants";
 
@@ -23,7 +23,7 @@ export const M_AR = 39.948 * m_u;
 /** Ionisation and lumped excitation thresholds of argon (eV), Lieberman & Lichtenberg Table 3.3. */
 export const E_IZ = 15.76;
 export const E_EX = 12.14;
-/** Ion–neutral cross-section for the ion mean free path λ_i = 1/(n_g σ_i) (m²), L&L §10.2. */
+/** Ion–neutral cross-section for the ion mean free path λ_i = 1/(n_g σ_i) (m²), L&L §10.2 p. 330 (≈ 10⁻¹⁴ cm²). */
 export const SIGMA_I = 1e-18;
 
 /** Argon ionisation rate constant (m³/s), T_e in eV. */
@@ -79,7 +79,7 @@ const J1_CHI01 = 0.5191474972894669;
 /**
  * Ambipolar diffusion coefficient (m²/s) of argon ions at gas temperature T_g (K) with electrons at T_e (eV):
  * D_a = D_i (1 + T_e/T_i), D_i = e T_i / (M ν_i), ν_i = v̄_i / λ_i, v̄_i = √(8 e T_i / (π M)), T_i = k_B T_g / e
- * (L&L §5.1–5.2, cold ions at the gas temperature).
+ * (L&L eqs. (5.1.5) with λ = v̄/ν_m, and (5.1.14); cold ions at the gas temperature).
  */
 export function ambipolarDiffusion(Te: number, Tg: number, lambdaI: number): number {
   if (!(Te > 0 && Tg > 0 && lambdaI > 0)) return NaN;
@@ -91,11 +91,11 @@ export function ambipolarDiffusion(Te: number, Tg: number, lambdaI: number): num
 
 /**
  * Edge-to-centre ratios and effective size of a cylinder (R, l in m) at gas density n_g (m⁻³), electron
- * temperature T_e (eV) and gas temperature T_g (K), L&L eqs. (10.2.1)–(10.2.2):
+ * temperature T_e (eV) and gas temperature T_g (K), L&L eqs. (5.3.16)–(5.3.17):
  *   h_l = 0.86 [3 + l/(2λ_i) + (0.86 l u_B / (π D_a))²]^(−1/2),
  *   h_R = 0.80 [4 + R/λ_i + (0.80 R u_B / (χ₀₁ J₁(χ₀₁) D_a))²]^(−1/2).
  * The last term is the diffusion solution (cosine and J₀ profiles, h → π D_a/(l u_B), χ₀₁J₁(χ₀₁) D_a/(R u_B)),
- * the first two the low-pressure one; at low pressure the last term is small.
+ * the first two the low-pressure one, eqs. (5.3.13), (5.3.15) = (10.2.1)–(10.2.2); at low pressure the last term is small.
  */
 export function geometry(R: number, l: number, ng: number, Te: number, Tg: number): Geometry {
   if (!(R > 0 && l > 0 && ng > 0 && Te > 0 && Tg > 0)) {

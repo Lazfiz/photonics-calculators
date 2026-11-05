@@ -34,7 +34,7 @@ test("argon rate constants and collisional loss (Lieberman & Lichtenberg Table 3
 });
 
 test("global model, R = 15 cm, l = 30 cm, 1 mTorr, 293 K, 800 W", () => {
-  // Reference values from an independent script (constants typed in, L&L eqs. 10.2.1–10.2.2 with D_a = D_i(1 + Tₑ/Tᵢ))
+  // Reference values from an independent script (constants typed in, L&L eqs. 5.3.16–5.3.17 with D_a = D_i(1 + Tₑ/Tᵢ))
   // that scans Tₑ on a 1e-5 eV grid instead of bisecting. The diffusion term lowers h_l by 0.8 % here (0.3051 without it).
   const d = argonDischarge(800, 0.15, 0.3, 1e-3 * TORR, 293);
   assertRel(d.ng, 3.295734e19, 1e-6, "n_g");
@@ -50,11 +50,20 @@ test("global model, R = 15 cm, l = 30 cm, 1 mTorr, 293 K, 800 W", () => {
   assertRel(d.n0, 1.891757e17, 1e-4, "n₀");
   assertRel(d.ionFluxAxial, 1.731042e20, 1e-4, "Γ_axial");
   assertRel(d.debye, 3.323460e-5, 1e-4, "λ_De");
-  // Lieberman's worked example of this case (course notes, https://people.eecs.berkeley.edu/~lieber/Day1View150315crop.pdf):
-  // n₀ ≈ 2.0e17 m⁻³, J ≈ 2.9 mA/cm², with Tₑ ≈ 3.5 eV and E_c ≈ 42 eV read off figures; the fits give 3.79 and 47 eV.
-  assertRel(d.n0, 2.0e17, 0.1, "n₀ vs example");
-  assertRel(1.602176634e-19 * d.ionFluxAxial * 0.1, 2.9, 0.1, "J (mA/cm²) vs example");
-  assertRel(d.Te, 3.5, 0.1, "Tₑ vs example");
+  // L&L §10.2 Example 1 (p. 335), the same case with n_g = 3.3e19 m⁻³ and λᵢ ≈ 0.03 m: h_l ≈ 0.31, h_R ≈ 0.27,
+  // d_eff ≈ 0.18 m, Tₑ ≈ 3.8 V (Fig. 10.1), E_c ≈ 47 V, E_T ≈ 74 V, u_B ≈ 3.0e3 m/s, A_eff ≈ 0.12 m², n₀ ≈ 1.9e17 m⁻³,
+  // Γ_il ≈ 1.7e20 m⁻²s⁻¹, J_il ≈ 2.8 mA/cm². The book's h_l uses eq. 10.2.1 without the diffusion term (0.305).
+  assertRel(d.hl, 0.31, 0.03, "h_l vs Example 1");
+  assertRel(d.hR, 0.27, 0.03, "h_R vs Example 1");
+  assertRel(d.dEff, 0.18, 0.01, "d_eff vs Example 1");
+  assertRel(d.Te, 3.8, 0.01, "Tₑ vs Example 1");
+  assertRel(d.Ec, 47, 0.01, "E_c vs Example 1");
+  assertRel(d.ET, 74, 0.01, "E_T vs Example 1");
+  assertRel(d.uB, 3.0e3, 0.02, "u_B vs Example 1");
+  assertRel(d.aEff, 0.12, 0.03, "A_eff vs Example 1");
+  assertRel(d.n0, 1.9e17, 0.01, "n₀ vs Example 1");
+  assertRel(d.ionFluxAxial, 1.7e20, 0.03, "Γ_il vs Example 1");
+  assertRel(1.602176634e-19 * d.ionFluxAxial * 0.1, 2.8, 0.02, "J_il (mA/cm²) vs Example 1");
 });
 
 test("rate-constant fit range (Lieberman & Lichtenberg Table 3.3 note a: Gudmundsson, 1 < T_e ≤ 7 V)", () => {
@@ -66,7 +75,7 @@ test("rate-constant fit range (Lieberman & Lichtenberg Table 3.3 note a: Gudmund
   assertRel(Te, 2.5528, 1e-5, "T_e at the defaults");
 });
 
-test("collisional regime: 100 mTorr, and the diffusion limit of h (L&L eqs. 10.2.1–10.2.2)", () => {
+test("collisional regime: 100 mTorr, and the diffusion limit of h (L&L eqs. 5.3.16–5.3.17)", () => {
   // Same independent scan as above: the diffusion term takes over (h_l 0.0142 against 0.0386 from the low-pressure terms alone).
   const d = argonDischarge(800, 0.15, 0.3, 0.1 * TORR, 293);
   assertRel(d.Da, 2.69638, 1e-5, "D_a");
@@ -78,7 +87,7 @@ test("collisional regime: 100 mTorr, and the diffusion limit of h (L&L eqs. 10.2
   // Hand calculation, ambipolar diffusion: D_i = k_B T_g / (M ν_i), ν_i = v̄_i/λ_i; at 1 mTorr, 293 K, Tₑ = 3.781 eV:
   // v̄_i = √(8 k_B T_g/(π M)) = 394.6 m/s, D_i = 4.689 m²/s, × (1 + 3.781/0.02525) = 707.8 m²/s.
   assertRel(ambipolarDiffusion(3.781005, 293, 0.03034226), 707.8455, 1e-5, "D_a by hand");
-  // At 10 Torr the cosine and J₀ diffusion profiles hold: h_l → π D_a/(l u_B), h_R → χ₀₁ J₁(χ₀₁) D_a/(R u_B).
+  // At 10 Torr the cosine and J₀ diffusion profiles hold: h_l → π D_a/(l u_B) (L&L p. 149, Problem 5.7), h_R → χ₀₁ J₁(χ₀₁) D_a/(R u_B).
   const ng = (10 * TORR) / (1.380649e-23 * 293);
   const g = geometry(0.15, 0.3, ng, 1.5, 293);
   const uB = Math.sqrt((1.602176634e-19 * 1.5) / (39.948 * 1.66053906892e-27));

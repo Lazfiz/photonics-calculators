@@ -430,12 +430,12 @@ export const thinFilm: CalculatorEntry[] = [
     modelNote: "Argon global model in a cylinder: Maxwellian electrons, ground-state ionisation, floating walls, collisionless sheath, h-factors from low pressure to ambipolar diffusion. No deposition chemistry; P is absorbed power.",
     references: [
       {
-        citation: "Lieberman M. A., Lichtenberg A. J. (2005). Principles of Plasma Discharges and Materials Processing, 2nd ed., Table 3.3 (fits for 1 < T_e ≤ 7 V), §5.1–5.2 (diffusion) and §10.2 (global model, h-factors). Wiley.",
+        citation: "Lieberman M. A., Lichtenberg A. J. (2005). Principles of Plasma Discharges and Materials Processing, 2nd ed., Table 3.3 (fits for 1 < T_e ≤ 7 V), eqs. 5.1.5 and 5.1.14 (ambipolar diffusion), 5.3.16–5.3.17 (h-factors) and §10.2 (global model, Example 1). Wiley.",
         url: "https://doi.org/10.1002/0471724254",
       },
       {
-        citation: "Kemaneci E., Mitschker F., Rudolph M., Szeremley D., Eremin D., Awakowicz P., Brinkmann R. P. (2017). A global model of cylindrical and coaxial surface-wave discharges. J. Phys. D: Appl. Phys. 50, 245203; eqs. (2) and (7) of the preprint arXiv:1612.07268v1.",
-        url: "https://doi.org/10.1088/1361-6463/aa7093",
+        citation: "Lee C., Lieberman M. A. (1995). Global model of Ar, O2, Cl2, and Ar/O2 high-density plasma discharges. J. Vac. Sci. Technol. A 13, 368 (source of the joined h-factors, as cited by Lieberman & Lichtenberg).",
+        url: "https://doi.org/10.1116/1.579366",
       },
     ],
   },
