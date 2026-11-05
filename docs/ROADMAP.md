@@ -302,6 +302,19 @@ sources: Ar⁺/CO₂ g₀, Nd/Tm/Ho σ, Sheik-Bahae n₂, ZBLAN, LiTaO₃, …) 
 ## Phase 8 — data-blocked limitations (user, session 205: "Data blocked items")
 Open-access hunt (session 205, 4 agents; PDFs were in the session scratchpad). Open primary data found only for the Kerr rows.
 - [x] 8a `nonlinear-index` gases, CS₂, FS 1024 nm (session 205, `phase-8/8a-kerr-data`, PR #243). See Done.
+User uploads (session 205) are kept outside git in `C:devphotonics-calculators-refs` (PDF + pdftotext .txt; pdftotext drops
+minus signs and ±, and can shift table labels: confirm each value on the rendered PDF page with Read `pages`).
+- [ ] 8b `electro-optic` LiTaO₃: Casson 2004 JOSA B 21, 1948 Table 2, unclamped r₃₃/r₁₃ (pm/V) 30.5/7.62 at 632.8 nm, 29.6/6.96
+  at 980, 27.7/6.55 at 1330, 27.4/6.92 at 1558, with n_e/n_o from Gervais & Fonseca (Palik); 632.8 r₃₃ is pinned to the literature
+  30.5 (Onuki 1972). No ε (photorefractive stays out). + `nonlinear-index` sapphire n₂(λ): Major 2004 OL 29, 602 Eq. 2, double
+  exponential, 270–1550 nm, E ∥ c, ±25–30 % (3.3 → 2.8e-16 cm²/W over 550–1550 nm; check signs on the PDF).
+- [ ] 8c Tm³⁺ on `rare-earth-absorption` (and the doped-fibre presets if they fit): Agger & Povlsen 2006 OE 14, 50 — ³F₄ band only,
+  Table 1 σ_a,peak 4.2–4.5, σ_e,peak 3.5–3.9e-25 m², σ_a(1600 nm) 3.5 (Tm1) / 4.3 (Tm2) e-25 m², σ_e/σ_a(1740) 1.20/1.25,
+  τ(³F₄) 650/560 µs, τ_rad 6.0–6.6 ms; peak wavelengths only in figures. Nd³⁺ (Barnes 1991 Opt. Commun. 82, 283): σ_e 1.3 ± 0.2e-24
+  m² spectroscopic (0.75 laser method) at 1.088 µm, τ 460 µs, branching 0.56/0.40/0.04; no σ_a at 808 nm, so Nd waits for one.
+- Received but not unblocking: Nachshon 1973 (Appl. Opt. 12, 1935) gives only I_s ∝ p² (p > 20 torr) and a₀l = 3.32, no absolute
+  I_s or g₀ (CO₂ stays out). Ducharme 1987 (JQE 23, 2116): SBN:60 (x = 0.61) unclamped r₁₃ 47 ± 5, r₃₃ 235 ± 21 pm/V at 514.5 nm,
+  BaTiO₃ r₁₃ 19.5, r₃₃ 97 (no ε, no SBN indices): SBN needs Woike 2001 or Kip 1996 (SBN:61 Sellmeier) and ε.
 - Open but partial (a stage only with the user's go): Ho³⁺ silica σ_a 4.3 ± 0.2e-25 m² at 1946 nm, σ_e/σ_a 1.40 at 1995 nm
   (Le Gouët 2020, arXiv:2003.14188; full spectra only in Fig. 1); BSO r₄₁ 4.2 ± 2.0 pm/V, 40 ± 12°/mm (Efremidis 2009, figures +
   Table 2 compilation; ε and n only secondary); ZBLAN Knoop 190–250 kg/mm², dn/dT −8 to −15e-6/K for fluoride glasses (Poulain,

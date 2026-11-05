@@ -16,10 +16,9 @@ Session 205 released Phase 7 (`main` e27df432 → `release`, PRs #234–#242 liv
 ## Next actions
 1. `/ship`; merge on the user's yes. Release only on request, then:
    `node scripts/post-merge-check.mjs <sha> materials/nonlinear-index` (load only: the default medium is unchanged).
-2. Phase 8 next: the ROADMAP Phase 8 section lists open-but-partial data (Ho³⁺ σ, BSO r₄₁, ZBLAN hardness: a stage only
-   with the user's go) and the PDFs the user would need to upload (Nikolakakos 2004 SF59, Casson 2004 LiTaO₃, Ducharme
-   1987 SBN, Barnes 1991 Nd, Agger & Povlsen 2006 Tm, Appl. Opt. 12, 1934 CO₂, …). Ask the user which, or switch phase
-   (phone hero, traffic/SEO).
+2. Phase 8 next: 8b (LiTaO₃ on `electro-optic` + sapphire n₂(λ)), then 8c (Tm³⁺). The user uploaded six papers; they
+   are in `C:devphotonics-calculators-refs` (outside git). ROADMAP Phase 8 lists their values and what is still
+   missing (SBN indices/ε, Nd σ_a at 808 nm, absolute CO₂ I_s and g₀, SF59 n₂).
 3. Still wanted from before: Bai 2020 (APL Photonics 5, 031301), Patel 2001 (Yb:YAG κ), Siegman "Lasers" ch. 11/21,
    Degnan 1989, Egner, Andresen & Hell 2002 (J. Microsc. 206, 24).
 
