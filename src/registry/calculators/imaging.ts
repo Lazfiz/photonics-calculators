@@ -550,9 +550,9 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "mtf",
     title: "Modulation Transfer Function",
-    description: "Diffraction-limited incoherent MTF and cutoff 2NA/λ, and Hopkins' defocused OTF with contrast reversal, for a circular pupil.",
+    description: "Diffraction-limited incoherent MTF and cutoff 2NA/λ, and the defocused OTF and Strehl ratio with contrast reversal, paraxial (Hopkins) and with the exact high-NA defocus phase, for a circular pupil.",
     tier: "textbook",
-    modelNote: "Scalar incoherent imaging with a uniform circular pupil. Defocus is the paraxial W₀₂₀ = Δz·NA²/(2n); the OTF is Hopkins' pupil-overlap integral, evaluated numerically. Above NA ≈ 0.5 the paraxial W₀₂₀ under-estimates the defocus and the page warns.",
+    modelNote: "Scalar incoherent imaging with a uniform circular pupil (no aplanatic apodization, no polarization). The paraxial OTF uses W₀₂₀ = Δz·NA²/(2n) in Hopkins' pupil-overlap integral. The exact-phase OTF uses the Debye defocus phase 2π(nΔz/λ)√(1 − (NAρ/n)²), integrated over the pupil overlap in 2D; its Strehl ratio is in closed form. At NA 0.95, Δz 0.5 µm and 550 nm the Strehl ratio is 0.27 against a paraxial 0.56. An aplanatic lens would weight the pupil by (1 − (NAρ/n)²)^(−1/4); leaving it out over-states the high-NA defocused OTF (0.043 against 0.028 at ν = 0.5 in that example).",
     references: [
       {
         citation: "Goodman J. W. (2005). Introduction to Fourier Optics, 3rd ed., §6.3. Roberts & Company. Incoherent cutoff 2NA/λ and the diffraction-limited MTF of a circular pupil.",
@@ -560,6 +560,14 @@ export const imaging: CalculatorEntry[] = [
       {
         citation: "Hopkins H. H. (1955). The frequency response of a defocused optical system. Proc. R. Soc. Lond. A 231, 91–103. OTF of a defocused circular pupil.",
         url: "https://doi.org/10.1098/rspa.1955.0158",
+      },
+      {
+        citation: "Richards B., Wolf E. (1959). Electromagnetic diffraction in optical systems II. Structure of the image field in an aplanatic system. Proc. R. Soc. Lond. A 253, 358–379. Debye integral with the defocus phase k n z cos θ.",
+        url: "https://doi.org/10.1098/rspa.1959.0200",
+      },
+      {
+        citation: "Sheppard C. J. R. (1988). Aberrations in high aperture conventional and confocal imaging systems. Appl. Opt. 27, 4782–4786. High-aperture defocus as a non-quadratic pupil phase.",
+        url: "https://doi.org/10.1364/AO.27.004782",
       },
     ],
   },
