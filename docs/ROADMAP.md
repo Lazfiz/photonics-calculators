@@ -5,12 +5,12 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 200, 2026-11-04)
+## Status (session 201, 2026-11-05)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
   textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) and 5w-13 (materials) and 5w-14 (spectroscopy) and 5w-15 (thin-film + polarization) done (sessions 163–177): 5w is complete; KRS-5
-  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6j done (sessions 179–194); Gemini hero done (session 195). Phase 7 (Known limitations: features): 7a–7d done (sessions 196–199), 7e done (session 200; 7e-b with the user's Westwood PDF); next 7f. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6j done (sessions 179–194); Gemini hero done (session 195). Phase 7 (Known limitations: features): 7a–7d done (sessions 196–199), 7e done (session 200; 7e-b with the user's Westwood PDF), 7f-a done (session 201); next 7f-b. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -204,9 +204,7 @@ Evidence for a later extension. Reopen an item only with a new source or a user 
 
 **Imaging and spectroscopy**
 - `fcs`: SNR uses G = 1/N and ignores the triplet amplitude (≈ 9 % at defaults, within Koppel's estimate).
-- `mtf`: high-NA defocus is only warned about; an exact-phase OTF (reviewer's scalar quadrature: Strehl 0.27 vs paraxial 0.555
-  at NA 0.95, Δz 0.5 µm) is not modelled.
-- `spinning-disk`: crosstalk through neighbouring pinholes (the pitch) is not modelled; the pitch in AU is shown only.
+- `mtf` (session 201): the exact-phase OTF keeps a uniform pupil; the aplanatic (1 − s²ρ²)^(−1/4) weight would lower OTF(0.5) from 0.043 to 0.028 at NA 0.95, Δz 0.5 µm (disclosed on the page). `spinning-disk`: incoherent point-lit beams only (no laser interference between microlens beams).
 - `three-photon`/`two-photon`: Zipfel's NA^0.91 lateral fit is used up to NA 1.7; Fig. 4c states no upper NA bound (main text paywalled).
 - Spectroscopy part 11 (session 107): `infrared-spectroscopy` has no Herman–Wallis factor or absolute band strength; `electron-spectroscopy` graphite ρ 2.2 (SRD 71 table value) vs 2.26 g/cm³ crystal; LHM water ε₂ = 3.52 + 7.52θ kept (fits Table I with RMS 0.43, against 0.49 with −), and the page allows only −5 to 40 °C.
 - Imaging part 8 (session 86): `photoacoustic` applies only the single-pulse and ≥ 10 s skin limits (`pulse-train.ts` has no skin rules); `sum-frequency-microscopy` withholds the power for L > b (no non-degenerate Boyd–Kleinman); SRS δ is an input (no cross-section model).
@@ -296,8 +294,8 @@ sources: Ar⁺/CO₂ g₀, Nd/Tm/Ho σ, Sheik-Bahae n₂, ZBLAN, LiTaO₃, …) 
 - [x] 7d laser safety (session 199, `phase-7/7d-lidar-scan`, PR #237). See Done.
 - [x] 7e-a thin film (session 200, `phase-7/7e-thin-film`, PR #238). See Done.
 - [x] 7e-b sputtering thermalisation (session 200, same branch and PR #238). See Done.
-- [ ] 7f imaging: `imaging/fluorophores.ts` sampled FPbase spectra (CC data) instead of log-normal bands, `spinning-disk` pinhole
-  crosstalk, `mtf` exact-phase high-NA defocus OTF.
+- [x] 7f-a imaging (session 201, `phase-7/7f-imaging`, PR #239). See Done.
+- [ ] 7f-b imaging: `imaging/fluorophores.ts` sampled FPbase spectra (CC data) instead of log-normal bands, on its pages.
 - [ ] 7g materials data: `thermal-expansion` α(T) for Si (Okada & Tokumaru 1984), BaTiO₃ on `electro-optic`/`photorefractive`
   (Zgonik 1994 via Petraru's thesis Table 2.2; needs ε and r_eff(β)).
 - Later, user's choice: phone hero (cropped layout + touch: tap to highlight, tap again to open, auto-cycle); traffic/SEO pass.
@@ -319,6 +317,7 @@ sources: Ar⁺/CO₂ g₀, Nd/Tm/Ho σ, Sheik-Bahae n₂, ZBLAN, LiTaO₃, …) 
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 7f-a imaging (session 201, `phase-7/7f-imaging`, PR #239): `mtf` exact-phase high-NA defocus OTF (2D overlap) and closed-form Strehl (0.27298 vs paraxial 0.5554 at NA 0.95, 0.5 µm, 550 nm); `spinning-disk` crosstalk by a reciprocal-lattice sum, floor 4.45 % at the CSU defaults, Fourier section = CONFOCAL_FWHM_TABLE.
 - 7e-b thin film (session 200, PR #238): `sputtering-deposition` Westwood 1978 thermalisation (eqs. 2, 7, 8, 13; 80 u 5 eV 0.1 Pa 40.1 cm vs 42; 400 u Fig. 5 within 1 %), E* by inverting eq. 13 and Thompson share (E*/(E*+U))² (Al default 72 %, Cu 31 %).
 - 7e-a thin film (session 200, `phase-7/7e-thin-film`, PR #238): `ellipsometry-measurement` transparent-film thickness (A&B quadratic in X, |X| fit check, mod D_φ; SiO₂/Si 100 nm ↔ Ψ 41.055°, Δ 79.787°); `plasma-deposition` L&L h-factors with the diffusion term, Tₑ solved with h (100 mTorr: h_l 0.0142 vs 0.0386), sweep 0.1–100 mTorr; checked against the user's L&L pages (eqs. 5.1.5, 5.1.14, 5.3.16–17; Example 1 p. 335: n₀ 1.892e17 vs 1.9e17).
 - 7d laser safety (session 199, `phase-7/7d-lidar-scan`, PR #237): `scanned-pulse-train.ts` (pulses within a pass, passes at P̄·ρ, C_P over T₂, stationary floor); `lidar-safety` `mode=scanned`: default rotating lidar 9.14× at 10 m, NOHD 32.9 m (stationary 146 m); brute force 1.00–1.59× conservative; review fixed a NaN band in the NOHD search.
