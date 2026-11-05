@@ -4,7 +4,9 @@ import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { cutoffFrequency, defocusW020, defocusedOtf, diffractionMtf } from "../../../physics/imaging/diffraction-mtf";
+import {
+  MAX_HIGH_NA_PHASE, cutoffFrequency, defocusW020, defocusedOtf, diffractionMtf, highNaDefocusOtf, highNaDefocusStrehl,
+} from "../../../physics/imaging/diffraction-mtf";
 import { defocusStrehlExact } from "../../../physics/imaging/wavefront";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -36,23 +38,30 @@ export default function MTFPage() {
   const w020 = defocusW020(defocusUm * um, na, n) / (wavelengthNm * nm);
   // Exact edge path difference n·Δz(1 − cos θ), sin θ = NA/n.
   const edgeWaves = (n * defocusUm * um * (1 - Math.sqrt(1 - (na / n) ** 2))) / (wavelengthNm * nm);
+  // Exact phase 2πD√(1 − s²ρ²): D = nΔz/λ, s = NA/n.
+  const dWaves = (n * defocusUm * um) / (wavelengthNm * nm);
+  const s = na / n;
   const inFocus = diffractionMtf(nu);
   const defocused = defocusedOtf(nu, w020);
+  const exact = highNaDefocusOtf(nu, dWaves, s);
   const strehl = defocusStrehlExact(Math.abs(w020) / Math.sqrt(12));
+  const strehlExact = highNaDefocusStrehl(dWaves, s);
+  const paraxialOptimistic = Math.abs(edgeWaves) > 1.1 * Math.abs(w020);
 
   const chart = useMemo(() => {
-    const nus = Array.from({ length: 201 }, (_, k) => k / 200);
-    const curve = (w: number, name: string, color: string, dash?: string) => ({
-      x: nus.map((v) => (v * fc * um)), y: nus.map((v) => defocusedOtf(v, w)), type: "scatter" as const, mode: "lines" as const,
+    const nus = Array.from({ length: 101 }, (_, k) => k / 100);
+    const curve = (otf: (v: number) => number, name: string, color: string, dash?: string) => ({
+      x: nus.map((v) => (v * fc * um)), y: nus.map(otf), type: "scatter" as const, mode: "lines" as const,
       name, line: { color, dash },
     });
     return [
-      curve(0, "In focus", "#60a5fa"),
-      curve(0.25, "W₀₂₀ = λ/4 (Rayleigh)", "#34d399", "dot"),
-      curve(w020, `Δz = ${defocusUm} µm, W₀₂₀ = ${fmt(w020, 3)}λ`, "#f87171"),
-      { x: [nu * fc * um, nu * fc * um], y: [inFocus, defocused], type: "scatter" as const, mode: "markers" as const, name: "Chosen ν", marker: { color: "#facc15", size: 10 } },
+      curve(diffractionMtf, "In focus", "#60a5fa"),
+      curve((v) => defocusedOtf(v, 0.25), "W₀₂₀ = λ/4 (Rayleigh)", "#34d399", "dot"),
+      curve((v) => defocusedOtf(v, w020), `Δz = ${defocusUm} µm, paraxial W₀₂₀ = ${fmt(w020, 3)}λ`, "#f87171", "dash"),
+      curve((v) => highNaDefocusOtf(v, dWaves, s), `Δz = ${defocusUm} µm, exact phase`, "#f87171"),
+      { x: [nu * fc * um, nu * fc * um, nu * fc * um], y: [inFocus, defocused, exact], type: "scatter" as const, mode: "markers" as const, name: "Chosen ν", marker: { color: "#facc15", size: 10 } },
     ];
-  }, [fc, w020, defocusUm, nu, inFocus, defocused]);
+  }, [fc, w020, dWaves, s, defocusUm, nu, inFocus, defocused, exact]);
 
   return (
     <>
@@ -71,17 +80,22 @@ export default function MTFPage() {
           {row("Chosen frequency f = ν·f_c", fmt(nu * fc * 1e-3, 0, " lp/mm"))}
           {row("In-focus MTF(ν)", fmt(inFocus, 5), "text-blue-400")}
           {row("Paraxial W₀₂₀ = Δz·NA²/(2n)", fmt(w020, 4, " λ"))}
-          {row("Defocused OTF(ν), Hopkins", fmt(defocused, 4), defocused < 0 ? "text-yellow-400" : "text-red-400")}
-          {row("Strehl ratio of the defocus, sinc²(kW₀₂₀/2)", fmt(strehl, 4))}
-          {Math.abs(edgeWaves) > 1.1 * Math.abs(w020) && (
+          {row("Defocused OTF(ν), paraxial (Hopkins)", fmt(defocused, 4))}
+          {row("Defocused OTF(ν), exact phase", fmt(exact, 4), exact < 0 ? "text-yellow-400" : "text-red-400")}
+          {row("Strehl ratio, paraxial sinc²(kW₀₂₀/2)", fmt(strehl, 4))}
+          {row("Strehl ratio, exact phase", fmt(strehlExact, 4), "text-red-400")}
+          {paraxialOptimistic && (
             <p className="text-sm text-yellow-400">
-              Paraxial W₀₂₀ is {Math.round(100 * (1 - Math.abs(w020) / Math.abs(edgeWaves)))} % below the exact edge path n·Δz(1 − cos θ): at this NA the wavefront is not quadratic, and the OTF and Strehl shown are optimistic.
+              Paraxial W₀₂₀ is {Math.round(100 * (1 - Math.abs(w020) / Math.abs(edgeWaves)))} % below the exact edge path n·Δz(1 − cos θ): at this NA the wavefront is not quadratic, so use the exact-phase values; the paraxial ones are unreliable (usually optimistic).
             </p>
           )}
-          {defocused < 0 && <p className="text-sm text-yellow-400">Negative OTF: the pattern is imaged with reversed contrast.</p>}
+          {exact < 0 && <p className="text-sm text-yellow-400">Negative OTF: the pattern is imaged with reversed contrast.</p>}
+          {!Number.isFinite(exact) && <p className="text-sm text-yellow-400">The exact-phase OTF is not computed past {MAX_HIGH_NA_PHASE} rad of phase across the pupil overlap; the OTF there is close to 0.</p>}
           <p className="text-xs text-gray-500">
-            Scalar, uniform pupil. The paraxial W₀₂₀ under-estimates high-NA defocus: the exact path difference at the
-            pupil edge, n·Δz(1 − cos θ), is {fmt(edgeWaves, 3)}λ here, and the wavefront is no longer quadratic in ρ.
+            Scalar, uniform pupil amplitude in ρ = sin θ/(NA/n): an aplanatic lens weights it by (1 − (NAρ/n)²)^(−1/4), which
+            lowers the defocused OTF further at high NA (by a third at NA 0.95, Δz 0.5 µm); no polarization. The exact phase is 2π(nΔz/λ)√(1 − (NAρ/n)²)
+            (Debye integral); its path difference at the pupil edge, n·Δz(1 − cos θ), is {fmt(edgeWaves, 3)}λ here against the
+            paraxial W₀₂₀ = {fmt(w020, 3)}λ.
           </p>
         </div>
       </div>

@@ -2,7 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  cutoffFrequency, defocusW020, defocusedOtf, diffractionMtf, wienerGain, wienerHalfFrequency, wienerTransfer,
+  cutoffFrequency, defocusW020, defocusedOtf, diffractionMtf, highNaDefocusOtf, highNaDefocusStrehl, wienerGain,
+  wienerHalfFrequency, wienerTransfer,
 } from "../src/physics/imaging/diffraction-mtf";
 import {
   defocusStrehlExact, marechalRms, marechalStrehl, pvFromRms, rmsFromPv, zernikeStrehl,
@@ -87,4 +88,47 @@ test("PV/RMS of one Zernike term", () => {
   assertRel(pvFromRms(1, "spherical"), 1.5 * Math.sqrt(5), 1e-15, "spherical, √5 − (−√5/2)");
   assertRel(rmsFromPv(2 * Math.sqrt(8), "coma"), 1, 1e-15, "coma 2√8");
   assert.ok(Number.isNaN(pvFromRms(-1, "astigmatism")));
+});
+
+test("High-NA exact-phase defocus: Strehl and OTF (Richards & Wolf 1959; Sheppard 1988)", () => {
+  // NA 0.95, Δz 0.5 µm in air, 550 nm: D = nΔz/λ = 0.90909, s = 0.95. Closed form 0.272975 vs paraxial sinc²(kW₀₂₀/2) 0.5554
+  // (session-90 reviewer's scalar quadrature: 0.27).
+  const D = 0.5 / 0.55;
+  const S = highNaDefocusStrehl(D, 0.95);
+  assertRel(S, 0.27297521, 1e-6, "Strehl, exact phase");
+  // Independent check of the closed form: brute-force |∫₀¹ e^(i2πD√(1 − s²ρ²)) 2ρ dρ|² by Simpson.
+  const brute = (d: number, s: number) => {
+    const re = integrateSimpson((r) => 2 * r * Math.cos(2 * Math.PI * d * Math.sqrt(1 - s * s * r * r)), 0, 1, 4000);
+    const im = integrateSimpson((r) => 2 * r * Math.sin(2 * Math.PI * d * Math.sqrt(1 - s * s * r * r)), 0, 1, 4000);
+    return re * re + im * im;
+  };
+  assertRel(S, brute(D, 0.95), 1e-9, "Strehl vs quadrature");
+  // Series branch (z = 2πDδ < 0.5) and the s = 1 edge.
+  assertRel(highNaDefocusStrehl(0.1, 0.8), brute(0.1, 0.8), 1e-9, "series branch");
+  // At s = 1 the phase has an infinite slope at the rim: substitute ρ = sin φ, |∫₀^(π/2) e^(i2πD cos φ) sin 2φ dφ|².
+  const rimRe = integrateSimpson((p) => Math.sin(2 * p) * Math.cos(6 * Math.PI * Math.cos(p)), 0, Math.PI / 2, 2000);
+  const rimIm = integrateSimpson((p) => Math.sin(2 * p) * Math.sin(6 * Math.PI * Math.cos(p)), 0, Math.PI / 2, 2000);
+  assertRel(highNaDefocusStrehl(3, 1), rimRe * rimRe + rimIm * rimIm, 1e-9, "s = 1");
+  // Paraxial limit: s → 0 at fixed W₀₂₀ = Ds²/2 = 0.41023λ gives sinc²(kW₀₂₀/2) = 0.55544.
+  const w = defocusW020(0.5 * um, 0.95) / (550 * nm);
+  const kw2 = Math.PI * w;
+  assertRel(highNaDefocusStrehl((2 * w) / 1e-4, 1e-2), (Math.sin(kw2) / kw2) ** 2, 1e-4, "paraxial Strehl");
+  // The OTF tends to Hopkins' as s → 0 (relative difference O(s²)).
+  assertRel(highNaDefocusOtf(0.5, (2 * w) / 1e-4, 1e-2), defocusedOtf(0.5, w), 1e-4, "paraxial OTF");
+  // The PSF peak is the integral of the OTF: S = ∫OTF ν dν / ∫MTF₀ ν dν, with ∫₀¹MTF₀ ν dν = 1/8 (midpoint rule, 200 bins).
+  let moment = 0;
+  for (let k = 0; k < 200; k++) moment += (highNaDefocusOtf((k + 0.5) / 200, D, 0.95) * (k + 0.5)) / 200 / 200;
+  assertRel(moment / 0.125, S, 2e-4, "Strehl from the OTF");
+  // Grid convergence: 0.0432365532 at ν = 0.5 on a grid 4× finer in τ and 16× in t.
+  assertRel(highNaDefocusOtf(0.5, D, 0.95), 0.0432365532, 1e-6, "OTF(0.5)");
+  // In focus, symmetric in Δz, zero past the cutoff; NaN outside the domain or past 10³ rad.
+  assert.equal(highNaDefocusOtf(0.5, 0, 0.95), diffractionMtf(0.5));
+  assert.equal(highNaDefocusOtf(0.3, -D, 0.95), highNaDefocusOtf(0.3, D, 0.95));
+  assert.equal(highNaDefocusOtf(1, D, 0.95), 0);
+  assertRel(highNaDefocusStrehl(0, 0.95), 1, 1e-12, "Strehl in focus");
+  assert.ok(Number.isNaN(highNaDefocusOtf(0.5, D, 0)) && Number.isNaN(highNaDefocusStrehl(D, 1.1)));
+  assert.ok(Number.isNaN(highNaDefocusOtf(0.5, 1e4, 0.9)));
+  // s = 1 (infinite phase slope at the rim): 0.0031635 by a brute-force Cartesian grid and by an edge-substituted
+  // Gauss–Legendre rule (physics review, session 201); 0.00316350565 on a 256 × 128-panel grid. Within 1e-6 absolute.
+  assert.ok(Math.abs(highNaDefocusOtf(0.3, 2, 1) - 0.00316350565) < 1e-6, "OTF at s = 1");
 });

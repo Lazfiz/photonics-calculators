@@ -1,43 +1,39 @@
-# Handover — 2026-11-04 (session 200 → session 201)
+# Handover — 2026-11-05 (session 201 → session 202)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 200 did Phase 7e (ellipsometry film thickness, plasma high-pressure h-factors, sputtering thermalisation from the
-user's Westwood PDF) on `phase-7/7e-thin-film` (PR #238). Next: Phase 7f (imaging: FPbase spectra, spinning-disk crosstalk, mtf).
+Session 201 did Phase 7f-a (`mtf` exact-phase high-NA defocus, `spinning-disk` pinhole crosstalk) on `phase-7/7f-imaging`
+(PR #239). Next: Phase 7f-b (FPbase-sampled spectra in `imaging/fluorophores.ts` and its pages).
 
 ## State
-- `thin-film/ellipsometry.ts`: `filmPsiDelta(d, θ, λ, n₁, {n, k}, n₀)` (three-phase, Nebraska), `filmThicknessPeriod`,
-  `transparentFilmThickness(Ψ, Δ, θ, λ, n₁, sub)` → `{thickness ∈ [−D/100, 0.99 D), period, absX}`. Page keys `lambdaNm`
-  (632.8), `filmN` (1.457), `subN` (3.882), `subK` (0.019); white Ψ-Δ film curve on the heatmap. Defaults stay bare Si (d 0.00).
-- `thin-film/plasma-global-model.ts`: `geometry(R, l, n_g, Tₑ, T_g)` now with D_a (new field `Da`, `ambipolarDiffusion`);
-  `electronTemperature` takes a number or a function of Tₑ; `argonDischarge` solves Tₑ with h. Defaults: Tₑ 2.5528 eV
-  (was 2.59), D_a 97.0 m²/s. Page: regime note instead of a cut, sweep 0.1–100 mTorr, points outside the 1–7 eV fits left out.
-- `thin-film/sputtering.ts`: Westwood 1978 `sputteredMeanFreePath` (eq. 2), `velocityPersistence` (eq. 7, Jeans),
-  `thermalisationDistance(E₀, p, T, m_s, σ_s)` (eqs. 8, 13), `thermalisationEnergy` (eq. 13 inverted), `thompsonFractionBelow`
-  ((E/(E+U))²), `sputteredAtomDiameter` (0.30–0.45 nm over 20–150 u). Page: thermalised share card and regime note; Al default 72 %.
-- Gate: 1250 tests, 5 eslint warnings (unchanged). 411/411 tiered, 0 known issues.
+- `imaging/diffraction-mtf.ts`: `highNaDefocusOtf(ν, D = nΔz/λ, s = NA/n)` (2D overlap on Gauss–Legendre grids, x = (1−ν)(1−τ²),
+  y = Y·t(2−t); NaN past `MAX_HIGH_NA_PHASE` = 250 rad), `highNaDefocusStrehl(D, s)` (closed form, series for z < 0.5).
+  Page: paraxial and exact rows, exact curve on the chart. Default (NA 0.4, 3 µm): OTF(0.5) paraxial 0.1343, exact 0.1202.
+- `imaging/confocal.ts`: `pinholeSectionFourier(u, P)`, `spinningDiskSection(P, pitchAU)` → `{response(u), floor,
+  halfWidthU}` (lattice sum ≤ `SPINNING_DISK_MAX_PITCH_AU` = 20, floor only above), `confocalAxialCoordinate` (high-NA u),
+  private fast `hopkinsOtf`. Page: disk section FWHM, floor 4.45 %, "≈ 39 µm" thick-sample line, response-vs-z chart.
+- Gate: 1252 tests, 5 eslint warnings (unchanged). 411/411 tiered, 0 known issues.
 
 ## Next actions
 1. `/ship`; merge on the user's yes. Release only on request, then:
-   `node scripts/post-merge-check.mjs <sha> "thin-film/plasma-deposition=2.55"` (default Tₑ, eV) and
-   `"thin-film/ellipsometry-measurement=3.8820"` (default ⟨n⟩; film case `?psiDeg=41.055&deltaDeg=79.787` → 100.00 nm),
+   `node scripts/post-merge-check.mjs <sha> "imaging/spinning-disk=4.45 %" "imaging/mtf=0.1202"`,
    then `node scripts/ui-check.mjs https://photonics-calculators.vercel.app`.
-   Sputtering default: `"thin-film/sputtering-deposition=72 %"` (thermalised share).
-2. Phase 7f (ROADMAP).
-3. Ask the user for PDFs: Bai 2020 (APL Photonics 5, 031301:
-   abstract 79 cm/GW vs body 60 ± 9), Patel 2001 (Yb:YAG κ at 10 at.%), Siegman "Lasers" ch. 11/21, Degnan 1989.
+2. Phase 7f-b (ROADMAP): FPbase spectra are CC BY-SA; fetch sampled spectra for the 8 FPs, keep the FPbase fits as fallback.
+3. Ask the user for PDFs: Bai 2020 (APL Photonics 5, 031301: abstract 79 cm/GW vs body 60 ± 9), Patel 2001 (Yb:YAG κ at
+   10 at.%), Siegman "Lasers" ch. 11/21, Degnan 1989, Egner, Andresen & Hell 2002 (J. Microsc. 206, 24: Nipkow floor value).
 4. KRS-5 by hand: `materials/transparency-range?material=krs5` at 10 µm: n 2.3707, loss 28.4 %.
 
 ## Non-obvious facts
-- **Session 200:** Westwood's eq. (7) typesetting is ambiguous: only 2M/(1+M)·[ln-term + polynomial-term] gives 0.406 at
-  M = 1, → 1 as M → 0 and → 0 as M → ∞; his thermal end point is E_g = k_BT (Fig. 3 intercepts), not the gas mean speed.
-  Scanned PDFs: `python -E -P` (not `-I`, which hides the user-site pypdf and PIL) extracts the page strips with pypdf; stitch
-  them with PIL and Read the PNG. L&L's joined h-factors with the D_a term are eqs. (5.3.16)–(5.3.17) (Lee & Lieberman 1995);
-  (10.2.1)–(10.2.2) are only the low-pressure forms. D = kT/(mν_m) with λ = v̄/ν_m (5.1.5–6).
-- stackResponse ↔ Nebraska: ρ_Nebraska = conj(−r_p/r_s) of the characteristic-matrix r's (independent check
-  for any ellipsometry formula). `csqrt` of a k = 0 argument has Im −0 and can return the growing branch: flip the sign after
-  the root when the decaying one is needed. Keller & Simmons 1979 is open at bitsavers (`IBM_Journal_of_Research_and_Development/231/ibmrd2301E.pdf`)
-  but its equations are CCITT scans: `pdftotext` gives only the OCR text, and headless Chrome `--screenshot` of a PDF (native
-  viewer, or pdf.js from cdnjs on a local server) came out blank; no pdftoppm or PyMuPDF here. arXiv: `curl` + `pdftotext` works.
+- **Session 201:** in ρ = sin θ/s pupil coordinates the aplanatic weight is (1 − s²ρ²)^(−1/4) (√cos θ times dθ ∝ dρ/cos θ),
+  which brightens the rim; it is not modelled (uniform pupil, disclosed). The defocused-pupil OTF is real and even in Δz,
+  so only cos of the phase difference is integrated over a quadrant. Strehl = ∫OTF ν dν / ∫MTF₀ ν dν (∫MTF₀ν dν = 1/8)
+  checks any OTF quadrature. FT of |h|² in v units is 4π·OTF(q/2): lattice sums over pinholes become finite reciprocal
+  sums (|G| < 2). A brute Simpson over √(1 − ρ²) at s = 1 is wrong at 3e-4; substitute ρ = sin φ. React Compiler lint
+  (`preserve-manual-memoization`) failed a `useMemo` in spinning-disk; a module-level function called in render passed.
+  Port 3300 already had this repo's dev server (serving the working tree): `next dev -p 3300` then exits 1.
+- **Session 200:** scanned PDFs: `python -E -P` (not `-I`, which hides the user-site pypdf and PIL) extracts page strips;
+  stitch with PIL and Read the PNG. arXiv: `curl` + `pdftotext` works; headless Chrome screenshots of PDFs come out blank.
+  ρ_Nebraska = conj(−r_p/r_s) of the characteristic-matrix r's. `csqrt` of a k = 0 argument has Im −0 and can return the
+  growing branch. L&L joined h-factors with D_a: eqs. (5.3.16)–(5.3.17).
 - **Session 199:** for a unimodal f, Σ f(x₀ + kΔx)·Δx ≤ ∫f + Δx·max f (each sample bounded by its outer interval; the two
   around the mode share one): a rigorous worst-phase bound for pulse trains over an aperture. η (disc ⊛ Gaussian) is
   log-concave (Prékopa). It is up to 1.7× loose when Δx ≈ L (one centred pulse per pass). Scanned evaluations can't
