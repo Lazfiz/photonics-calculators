@@ -6,7 +6,7 @@ import { cameraSnr } from "../src/physics/detectors/camera-snr";
 import { createRng } from "../src/physics/random";
 import {
   FLUOROPHORES, FORSTER_PREFACTOR_NM, bandAtWavelength, emissionFraction, fluorophoreByName, forsterOverlap, forsterRadius,
-  fretEfficiency, integrateSpectrum, logNormalBand, relativeSignal, spilloverMatrix,
+  fretEfficiency, integrateSpectrum, logNormalBand, relativeSignal, spectrumAt, spilloverMatrix,
 } from "../src/physics/imaging/fluorophores";
 import { conditionNumber, fcls, nnls, ols, olsCovariance, shareStdDev, simulateMixture } from "../src/physics/imaging/linear-unmixing";
 
@@ -21,7 +21,7 @@ const nm = 1e-9;
 test("Siano–Metzler band: half maximum at the two half-widths, Gaussian limit at ρ = 1", () => {
   // High-ν half-width ρH/(1 + ρ), low-ν half-width H/(1 + ρ) (Siano & Metzler 1969).
   for (const f of FLUOROPHORES) {
-    for (const b of [f.ex, f.em]) {
+    for (const b of [f.exFit, f.emFit]) {
       assertAbs(logNormalBand(b, b.peak_cm1), 1, 1e-12, `${f.name} peak`);
       assertAbs(logNormalBand(b, b.peak_cm1 + (b.fwhm_cm1 * b.skew) / (1 + b.skew)), 0.5, 1e-12, `${f.name} high half`);
       assertAbs(logNormalBand(b, b.peak_cm1 - b.fwhm_cm1 / (1 + b.skew)), 0.5, 1e-12, `${f.name} low half`);
@@ -33,10 +33,17 @@ test("Siano–Metzler band: half maximum at the two half-widths, Gaussian limit 
   assert.ok(Number.isNaN(logNormalBand({ ...g, fwhm_cm1: 0 }, 20000)), "zero width");
 });
 
-test("FPbase catalogue: fitted maxima within 10 nm of the listed peaks", () => {
+test("FPbase catalogue: sampled maxima within 4 nm and fitted maxima within 10 nm of the listed peaks", () => {
   for (const f of FLUOROPHORES) {
-    assert.ok(Math.abs(1e7 / f.ex.peak_cm1 - f.exPeak_nm) <= 10, `${f.name} ex`);
-    assert.ok(Math.abs(1e7 / f.em.peak_cm1 - f.emPeak_nm) <= 10, `${f.name} em`);
+    assert.ok(Math.abs(1e7 / f.exFit.peak_cm1 - f.exPeak_nm) <= 10, `${f.name} ex fit`);
+    assert.ok(Math.abs(1e7 / f.emFit.peak_cm1 - f.emPeak_nm) <= 10, `${f.name} em fit`);
+    for (const [s, peak] of [[f.ex, f.exPeak_nm], [f.em, f.emPeak_nm]] as const) {
+      assert.ok("values" in s, `${f.name} sampled`);
+      const i = s.values.indexOf(Math.max(...s.values));
+      assert.equal(s.values[i], 10000, `${f.name} normalised`);
+      assert.ok(Math.abs(s.start_nm + i - peak) <= 4, `${f.name} ${s.start_nm + i} vs ${peak}`);
+      assertAbs(spectrumAt(s, (s.start_nm + i) * nm), 1, 1e-12, `${f.name} peak value`);
+    }
   }
   // EGFP on FPbase: 488/507 nm, ε 55 900 M⁻¹cm⁻¹, Φ 0.60, brightness 33.54.
   const egfp = fluorophoreByName("EGFP");
@@ -55,7 +62,7 @@ test("Spectral integration: a Gaussian over ±HWHM holds erf(√ln2) = 0.760968"
 
 test("Emission fraction agrees with an independent tanh-sinh quadrature", () => {
   for (const [name, lo, hi] of [["EGFP", 500, 550], ["mCherry", 572.5, 647.5], ["mTagBFP2", 425, 475]] as const) {
-    const em = fluorophoreByName(name).em;
+    const em = fluorophoreByName(name).emFit;
     const f = (l: number) => bandAtWavelength(em, l);
     // The band is zero above ν_c = ν_m − ρH/(ρ² − 1); tanh-sinh needs the support, not the flat zero part.
     const cutoff = 0.01 / (em.peak_cm1 - (em.skew * em.fwhm_cm1) / (em.skew ** 2 - 1));
@@ -65,16 +72,44 @@ test("Emission fraction agrees with an independent tanh-sinh quadrature", () => 
   assert.ok(Number.isNaN(emissionFraction(fluorophoreByName("EGFP").em, 550 * nm, 500 * nm)), "inverted window");
 });
 
-test("Model spectra against the raw FPbase spectra (direct integration, 2026-10-18)", () => {
-  // Raw FPbase spectra, trapezoid on 300–1000 nm: EGFP → mCherry R₀ = 5.109 nm (κ² = 2/3, n = 1.4);
-  // fraction of EGFP emission in 500–550 nm 0.7065, of mCherry in 572.5–647.5 nm 0.6627.
+test("Sampled spectrum: linear between 1 nm samples and to 0 at 1 nm past the ends; Simpson = trapezoid sum", () => {
+  const s = { start_nm: 500, values: [2000, 4000, 10000, 2000] };
+  assertAbs(spectrumAt(s, 501.25 * nm), 0.55, 1e-12, "interpolated");
+  assertAbs(spectrumAt(s, 503 * nm), 0.2, 1e-12, "last sample");
+  assertAbs(spectrumAt(s, 503.5 * nm), 0.1, 1e-12, "ramp past the end");
+  assertAbs(spectrumAt(s, 499.25 * nm), 0.05, 1e-12, "ramp before the start");
+  assert.equal(spectrumAt(s, 504.5 * nm), 0);
+  assert.equal(spectrumAt(s, 498 * nm), 0);
+  assert.ok(Number.isNaN(spectrumAt(s, -1)), "negative λ");
+  // 1 nm outside a record is exactly 0, not float residue (λ·1e9 is inexact): the spillover and unmixing guards test > 0.
+  assert.equal(spectrumAt(fluorophoreByName("mVenus").ex, 350 * nm), 0);
+  assert.equal(spectrumAt(fluorophoreByName("EGFP").em, 462 * nm), 0);
+  // ∫ = trapezoid with zeros at 499 and 504 nm: (0.2 + 0.4 + 1 + 0.2)·1 nm = 1.8 nm.
+  assertRel(integrateSpectrum((l) => spectrumAt(s, l), 490 * nm, 510 * nm), 1.8 * nm, 1e-12, "trapezoid");
+  const em = fluorophoreByName("EGFP").em;
+  assert.ok("values" in em);
+  const trap = (a: number, b: number) => { let t = 0; for (let l = a; l < b; l++) t += (spectrumAt(em, l * nm) + spectrumAt(em, (l + 1) * nm)) / 2; return t; };
+  assertRel(emissionFraction(em, 500 * nm, 550 * nm), trap(500, 550) / trap(300, 1000), 1e-9, "EGFP 500–550");
+});
+
+test("Sampled spectra and fits against the raw FPbase spectra (direct integration, 2026-10-18 and 2026-11-05)", () => {
+  // Raw FPbase API spectra (unrounded), trapezoid on the 1 nm grid over 300–1000 nm: EGFP → mCherry R₀ = 5.109 nm
+  // (κ² = 2/3, n = 1.4, J = 1.9440e15 M⁻¹cm⁻¹nm⁴); fraction of EGFP emission in 500–550 nm 0.70648, in 450–480 nm
+  // 0.005492 (anti-Stokes tail), of mCherry in 572.5–647.5 nm 0.66266; EGFP excitation at 405 nm 0.1732, mCherry at 640 nm 0.0043.
   const egfp = fluorophoreByName("EGFP");
   const mcherry = fluorophoreByName("mCherry");
-  assertRel(forsterRadius(forsterOverlap(egfp, mcherry), egfp.quantumYield), 5.109 * nm, 0.02, "R₀ EGFP → mCherry");
-  assertAbs(emissionFraction(egfp.em, 500 * nm, 550 * nm), 0.7065, 0.06, "EGFP 525/50");
-  assertAbs(emissionFraction(mcherry.em, 572.5 * nm, 647.5 * nm), 0.6627, 0.01, "mCherry 610/75");
-  // FPbase EGFP excitation at 405 nm is 0.173 of its peak; the fit gives 0.14.
-  assertAbs(bandAtWavelength(egfp.ex, 405 * nm), 0.173, 0.04, "EGFP at 405 nm");
+  assertRel(forsterRadius(forsterOverlap(egfp, mcherry), egfp.quantumYield), 5.109 * nm, 2e-4, "R₀ EGFP → mCherry");
+  assertAbs(emissionFraction(egfp.em, 500 * nm, 550 * nm), 0.70648, 2e-5, "EGFP 525/50");
+  assertAbs(emissionFraction(egfp.em, 450 * nm, 480 * nm), 0.005492, 2e-6, "EGFP tail 450–480");
+  assertAbs(emissionFraction(mcherry.em, 572.5 * nm, 647.5 * nm), 0.66266, 3e-5, "mCherry 610/75");
+  assertAbs(spectrumAt(egfp.ex, 405 * nm), 0.1732, 1e-4, "EGFP at 405 nm");
+  assertAbs(spectrumAt(mcherry.ex, 640 * nm), 0.0043, 1e-4, "mCherry at 640 nm");
+  // The log-normal fits (session 84): R₀ within 2.5 %, filter fraction within 0.06, EGFP at 405 nm 0.14; their anti-Stokes tails are 0.
+  const fitR0 = forsterRadius(forsterOverlap({ ...egfp, em: egfp.emFit }, { ...mcherry, ex: mcherry.exFit }), egfp.quantumYield);
+  assertRel(fitR0, 5.109 * nm, 0.025, "fit R₀");
+  assertAbs(emissionFraction(egfp.emFit, 500 * nm, 550 * nm), 0.7065, 0.06, "fit EGFP 525/50");
+  assertAbs(bandAtWavelength(egfp.exFit, 405 * nm), 0.173, 0.04, "fit EGFP at 405 nm");
+  assert.equal(emissionFraction(egfp.emFit, 450 * nm, 480 * nm), 0);
 });
 
 test("Förster prefactor 0.02108 nm and FRET efficiency (Lakowicz §13.2; Braslavsky et al. 2008)", () => {
@@ -96,7 +131,7 @@ test("Förster prefactor 0.02108 nm and FRET efficiency (Lakowicz §13.2; Brasla
 test("Relative signal: ε·f_ex·Φ·fraction, additive over laser lines", () => {
   const egfp = fluorophoreByName("EGFP");
   const s = relativeSignal(egfp, [488 * nm], 500 * nm, 550 * nm);
-  assertRel(s, egfp.extinction * bandAtWavelength(egfp.ex, 488 * nm) * egfp.quantumYield * emissionFraction(egfp.em, 500 * nm, 550 * nm), 1e-12, "one line");
+  assertRel(s, egfp.extinction * spectrumAt(egfp.ex, 488 * nm) * egfp.quantumYield * emissionFraction(egfp.em, 500 * nm, 550 * nm), 1e-12, "one line");
   const two = relativeSignal(egfp, [488 * nm, 405 * nm], 500 * nm, 550 * nm);
   assertRel(two - s, relativeSignal(egfp, [405 * nm], 500 * nm, 550 * nm), 1e-9, "two lines");
 });
@@ -164,8 +199,8 @@ test("OLS covariance: σ²(EᵀE)⁻¹, the sandwich form, and a seeded Monte Ca
   const egfp = fluorophoreByName("EGFP").em;
   const mch = fluorophoreByName("mCherry").em;
   const B = Array.from({ length: 8 }, (_, b) => [490 + 25 * b, 515 + 25 * b]);
-  const tot = [egfp, mch].map((s) => integrateSpectrum((l) => bandAtWavelength(s, l), 490 * nm, 690 * nm));
-  const M = B.map(([lo, hi]) => [egfp, mch].map((s, j) => integrateSpectrum((l) => bandAtWavelength(s, l), lo * nm, hi * nm) / tot[j]));
+  const tot = [egfp, mch].map((s) => integrateSpectrum((l) => spectrumAt(s, l), 490 * nm, 690 * nm));
+  const M = B.map(([lo, hi]) => [egfp, mch].map((s, j) => integrateSpectrum((l) => spectrumAt(s, l), lo * nm, hi * nm) / tot[j]));
   const xTrue = [6000, 4000];
   const rng = createRng(7);
   const draws = Array.from({ length: 4000 }, () => ols(M, simulateMixture(M, xTrue, 2, rng).y)[0]);
@@ -198,7 +233,7 @@ test("Spillover: simultaneous = emission ratio (lasers cancel), sequential adds 
   // Sequential: L_ij = [f_ex,j(λ_i)/f_ex,j(λ_j)]·EF ratio.
   const seq = spilloverMatrix(dyes, lasers, bands, "sequential");
   for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) {
-    const exRatio = bandAtWavelength(dyes[j].ex, lasers[i]) / bandAtWavelength(dyes[j].ex, lasers[j]);
+    const exRatio = spectrumAt(dyes[j].ex, lasers[i]) / spectrumAt(dyes[j].ex, lasers[j]);
     same(seq[i][j], exRatio * sim[i][j], `seq ${i}${j}`);
   }
   assert.ok(seq[1][0] < sim[1][0], "EGFP barely absorbs 561 nm: less spill into channel 2 in sequential mode");

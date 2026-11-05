@@ -369,15 +369,11 @@ export const imaging: CalculatorEntry[] = [
     title: "Fluorescence Spectra Overlap Calculator",
     description: "Compare excitation/emission spectra, spectral overlap, and filter crosstalk.",
     tier: "textbook",
-    modelNote: "Eight FPbase proteins, each spectrum a log-normal band fitted to FPbase data (R₀ within 2.5 % of the raw spectra); anti-Stokes tails are cut to 0. Ideal top-hat filter, equal concentration and photon flux.",
+    modelNote: "Eight FPbase proteins with their FPbase spectra sampled every 1 nm, anti-Stokes tails included; the excitation spectrum stands in for absorption. Ideal top-hat filter, equal concentration and photon flux.",
     references: [
       {
-        citation: "Lambert T. J. (2019). FPbase: a community-editable fluorescent protein database. Nat. Methods 16, 277–278. Peaks, extinction coefficients, quantum yields and spectra (read 2026-10-18).",
+        citation: "Lambert T. J. (2019). FPbase: a community-editable fluorescent protein database. Nat. Methods 16, 277–278. Peaks, extinction coefficients and quantum yields (read 2026-10-18); spectra from the FPbase API, CC BY-SA 4.0 (read 2026-11-05).",
         url: "https://doi.org/10.1038/s41592-019-0352-8",
-      },
-      {
-        citation: "Siano D. B., Metzler D. E. (1969). Band shapes of the electronic spectra of complex molecules. J. Chem. Phys. 51, 1856–1861. Log-normal band shape, fitted here to each FPbase spectrum.",
-        url: "https://doi.org/10.1063/1.1672270",
       },
       {
         citation: "Lakowicz J. R. (2006). Principles of Fluorescence Spectroscopy, 3rd ed. Springer, §13.2. Overlap integral J and R₀ = 0.02108 (κ² Φ_D n⁻⁴ J)^(1/6) nm.",
@@ -906,14 +902,14 @@ export const imaging: CalculatorEntry[] = [
     title: "Simultaneous Multicolor Imaging",
     description: "Calculate spectral separation, crosstalk, timing budgets, and SNR for multi-channel fluorescence imaging.",
     tier: "textbook",
-    modelNote: "Spillover L_ij = R_ij/R_jj from FPbase-fitted spectra, equal photon flux per laser, top-hat filters. Simultaneous: only the emission sets L (the lasers cancel); sequential adds excitation crosstalk. Bleed-through adds shot noise before unmixing; charge or digital binning sets the read noise.",
+    modelNote: "Spillover L_ij = R_ij/R_jj from sampled FPbase spectra, equal photon flux per laser, top-hat filters. Simultaneous: only the emission sets L (the lasers cancel); sequential adds excitation crosstalk. Bleed-through adds shot noise before unmixing; charge or digital binning sets the read noise.",
     references: [
       {
         citation: "Roederer M. (2001). Spectral compensation for flow cytometry: visualization artifacts, limitations, and caveats. Cytometry 45, 194–205. Spillover as the signal in a secondary detector over that in the primary one.",
         url: "https://doi.org/10.1002/1097-0320(20011101)45:3<194::AID-CYTO1163>3.0.CO;2-C",
       },
       {
-        citation: "Lambert T. J. (2019). FPbase: a community-editable fluorescent protein database. Nat. Methods 16, 277–278. Peaks, extinction coefficients, quantum yields and spectra (read 2026-10-18).",
+        citation: "Lambert T. J. (2019). FPbase: a community-editable fluorescent protein database. Nat. Methods 16, 277–278. Peaks, extinction coefficients and quantum yields (read 2026-10-18); spectra from the FPbase API, CC BY-SA 4.0 (read 2026-11-05).",
         url: "https://doi.org/10.1038/s41592-019-0352-8",
       },
       {
@@ -948,8 +944,12 @@ export const imaging: CalculatorEntry[] = [
     title: "Spectral Unmixing",
     description: "Decompose mixed spectral signals into constituent endmember abundances using linear unmixing methods.",
     tier: "textbook",
-    modelNote: "FPbase-fitted emission spectra in equal bands; one pixel with shot and read noise from a seeded generator, solved by OLS, NNLS or FCLS, with OLS error bars. Background and reference-spectrum errors are left out.",
+    modelNote: "Sampled FPbase emission spectra in equal bands; one pixel with shot and read noise from a seeded generator, solved by OLS, NNLS or FCLS, with OLS error bars. Background and reference-spectrum errors are left out.",
     references: [
+      {
+        citation: "Lambert T. J. (2019). FPbase: a community-editable fluorescent protein database. Nat. Methods 16, 277–278. Emission spectra from the FPbase API, CC BY-SA 4.0 (read 2026-11-05).",
+        url: "https://doi.org/10.1038/s41592-019-0352-8",
+      },
       {
         citation: "Zimmermann T., Rietdorf J., Pepperkok R. (2003). Spectral imaging and its applications in live cell microscopy. FEBS Lett. 546, 87–92. Linear unmixing of fluorescent proteins.",
         url: "https://doi.org/10.1016/S0014-5793(03)00521-0",

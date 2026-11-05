@@ -5,20 +5,28 @@
  * - Catalogue: peak wavelengths, extinction coefficient ε (M⁻¹ cm⁻¹), quantum yield Φ and pKa from FPbase
  *   (T. J. Lambert, Nat. Methods 16, 277 (2019), doi:10.1038/s41592-019-0352-8; www.fpbase.org, read 2026-10-18),
  *   each with the DOI of the protein's original paper.
- * - Band shape: the log-normal of D. B. Siano, D. E. Metzler, J. Chem. Phys. 51, 1856 (1969), doi:10.1063/1.1672270,
- *   in wavenumber ν with maximum ν_m, full width at half maximum H and skewness ρ (ratio of the high-ν to the low-ν
- *   half-width): f = exp(−(ln 2/ln²ρ)·ln²(1 + (ν − ν_m)(ρ² − 1)/(ρH))), zero where the log's argument is ≤ 0; ρ = 1 is
- *   the Gaussian. Past the cutoff (the weak anti-Stokes tail) the shape is exactly 0. ν_m, H and ρ were fitted (least
- *   squares, Nelder–Mead) to each FPbase excitation and emission spectrum above 5 % of its peak; the fits leave rms residuals of 1–7 % of the peak, and the fitted maxima differ from the
- *   catalogue peaks by ≤ 10 nm. The excitation shape stands in for the absorption spectrum. Against the raw FPbase
- *   spectra the fits give Förster radii within 2.5 % (EGFP → mCherry 5.05 nm against 5.11 nm), filter fractions within
- *   0.06 and laser-line excitation within 0.09 of the peak.
+ * - Spectra: the FPbase excitation and emission spectra sampled every 1 nm (`fpbase-spectra.ts`, CC BY-SA 4.0),
+ *   interpolated linearly and falling to 0 within 1 nm past the recorded range, so weak anti-Stokes tails are kept.
+ *   The excitation spectrum stands in for the absorption spectrum. Every recorded range ends at ≤ 6 % of the peak,
+ *   except excitation spectra that already start at 300 nm (EGFP 10 %, mCherry 13 %, mTurquoise2 25 %), the lower
+ *   integration limit. miRFP670's excitation starts at 520 nm (6 %), so its blue (Soret) absorption reads 0.
+ * - Fits kept for comparison (`exFit`, `emFit`): the log-normal of D. B. Siano, D. E. Metzler, J. Chem. Phys. 51, 1856
+ *   (1969), doi:10.1063/1.1672270, in wavenumber ν with maximum ν_m, full width at half maximum H and skewness ρ (ratio
+ *   of the high-ν to the low-ν half-width): f = exp(−(ln 2/ln²ρ)·ln²(1 + (ν − ν_m)(ρ² − 1)/(ρH))), zero where the log's
+ *   argument is ≤ 0; ρ = 1 is the Gaussian. Past the cutoff (the weak anti-Stokes tail) the shape is exactly 0. ν_m, H
+ *   and ρ were fitted (least squares, Nelder–Mead) to each FPbase excitation and emission spectrum above 5 % of its peak;
+ *   the fits leave rms residuals of 1–7 % of the peak, and the fitted maxima differ from the catalogue peaks by ≤ 10 nm.
+ *   Against the raw FPbase spectra the fits give Förster radii within 2.5 % (EGFP → mCherry 5.05 nm against 5.11 nm),
+ *   filter fractions within 0.06 and laser-line excitation within 0.09 of the peak.
  * - Förster (J. R. Lakowicz, Principles of Fluorescence Spectroscopy, 3rd ed., Springer 2006, §13.2):
  *   J = ∫F_D(λ) ε_A(λ) λ⁴ dλ / ∫F_D(λ) dλ in M⁻¹ cm⁻¹ nm⁴, R₀⁶ = 9000 ln10 κ² Φ_D J/(128 π⁵ N_A n⁴), which is
  *   R₀ = 0.02108 (κ² Φ_D n⁻⁴ J)^(1/6) nm; efficiency E = 1/(1 + (r/R₀)⁶).
  */
 
 import { N_A } from "../constants";
+import { FPBASE_SPECTRA, type SampledSpectrum } from "./fpbase-spectra";
+
+export type { SampledSpectrum };
 
 export interface LogNormalBand {
   /** Wavenumber of the maximum, cm⁻¹. */
@@ -28,6 +36,9 @@ export interface LogNormalBand {
   /** Skewness ρ: high-wavenumber half-width over low-wavenumber half-width (1 = Gaussian). */
   skew: number;
 }
+
+/** A sampled FPbase spectrum or a fitted log-normal band. */
+export type Spectrum = SampledSpectrum | LogNormalBand;
 
 export interface Fluorophore {
   name: string;
@@ -40,22 +51,27 @@ export interface Fluorophore {
   pKa: number;
   /** DOI of the original description, as listed by FPbase. */
   doi: string;
-  ex: LogNormalBand;
-  em: LogNormalBand;
+  /** Excitation and emission spectra: the sampled FPbase spectra in the catalogue. */
+  ex: Spectrum;
+  em: Spectrum;
+  /** Log-normal fits to them (see the header). */
+  exFit: LogNormalBand;
+  emFit: LogNormalBand;
 }
 
 const band = (peak_cm1: number, fwhm_cm1: number, skew: number): LogNormalBand => ({ peak_cm1, fwhm_cm1, skew });
+const fp = (f: Omit<Fluorophore, "ex" | "em">): Fluorophore => ({ ...f, ...FPBASE_SPECTRA[f.name] });
 
-/** Fluorescent proteins from FPbase, blue to far red; ex/em shapes fitted to the FPbase spectra (see the header). */
+/** Fluorescent proteins from FPbase, blue to far red, with their sampled spectra and log-normal fits (see the header). */
 export const FLUOROPHORES: readonly Fluorophore[] = [
-  { name: "mTagBFP2", exPeak_nm: 399, emPeak_nm: 454, extinction: 50600, quantumYield: 0.64, pKa: 2.7, doi: "10.1371/journal.pone.0028674", ex: band(24967, 3020, 1.323), em: band(21807, 2342, 0.649) },
-  { name: "mTurquoise2", exPeak_nm: 434, emPeak_nm: 474, extinction: 30000, quantumYield: 0.93, pKa: 3.1, doi: "10.1038/ncomms1738", ex: band(22573, 3159, 1.765), em: band(20850, 2299, 0.516) },
-  { name: "EGFP", exPeak_nm: 488, emPeak_nm: 507, extinction: 55900, quantumYield: 0.6, pKa: 6.0, doi: "10.1016/0378-1119(95)00685-0", ex: band(20474, 2428, 2.444), em: band(19671, 1395, 0.565) },
-  { name: "mVenus", exPeak_nm: 515, emPeak_nm: 527, extinction: 104000, quantumYield: 0.64, pKa: 5.5, doi: "10.1021/bi0516273", ex: band(19359, 1109, 2.301), em: band(18951, 1207, 0.482) },
-  { name: "mScarlet", exPeak_nm: 569, emPeak_nm: 594, extinction: 100000, quantumYield: 0.7, pKa: 5.3, doi: "10.1038/nmeth.4074", ex: band(17494, 1550, 2.577), em: band(16813, 1740, 0.552) },
-  { name: "mCherry", exPeak_nm: 587, emPeak_nm: 610, extinction: 72000, quantumYield: 0.22, pKa: 4.5, doi: "10.1038/nbt1037", ex: band(17096, 1797, 2.214), em: band(16425, 1542, 0.508) },
-  { name: "mKate2", exPeak_nm: 588, emPeak_nm: 633, extinction: 62500, quantumYield: 0.4, pKa: 5.4, doi: "10.1042/bj20081949", ex: band(16957, 1705, 2.046), em: band(15783, 2147, 0.654) },
-  { name: "miRFP670", exPeak_nm: 642, emPeak_nm: 670, extinction: 87400, quantumYield: 0.14, pKa: 4.5, doi: "10.1038/ncomms12405", ex: band(15648, 1913, 1.862), em: band(14942, 1330, 0.547) },
+  fp({ name: "mTagBFP2", exPeak_nm: 399, emPeak_nm: 454, extinction: 50600, quantumYield: 0.64, pKa: 2.7, doi: "10.1371/journal.pone.0028674", exFit: band(24967, 3020, 1.323), emFit: band(21807, 2342, 0.649) }),
+  fp({ name: "mTurquoise2", exPeak_nm: 434, emPeak_nm: 474, extinction: 30000, quantumYield: 0.93, pKa: 3.1, doi: "10.1038/ncomms1738", exFit: band(22573, 3159, 1.765), emFit: band(20850, 2299, 0.516) }),
+  fp({ name: "EGFP", exPeak_nm: 488, emPeak_nm: 507, extinction: 55900, quantumYield: 0.6, pKa: 6.0, doi: "10.1016/0378-1119(95)00685-0", exFit: band(20474, 2428, 2.444), emFit: band(19671, 1395, 0.565) }),
+  fp({ name: "mVenus", exPeak_nm: 515, emPeak_nm: 527, extinction: 104000, quantumYield: 0.64, pKa: 5.5, doi: "10.1021/bi0516273", exFit: band(19359, 1109, 2.301), emFit: band(18951, 1207, 0.482) }),
+  fp({ name: "mScarlet", exPeak_nm: 569, emPeak_nm: 594, extinction: 100000, quantumYield: 0.7, pKa: 5.3, doi: "10.1038/nmeth.4074", exFit: band(17494, 1550, 2.577), emFit: band(16813, 1740, 0.552) }),
+  fp({ name: "mCherry", exPeak_nm: 587, emPeak_nm: 610, extinction: 72000, quantumYield: 0.22, pKa: 4.5, doi: "10.1038/nbt1037", exFit: band(17096, 1797, 2.214), emFit: band(16425, 1542, 0.508) }),
+  fp({ name: "mKate2", exPeak_nm: 588, emPeak_nm: 633, extinction: 62500, quantumYield: 0.4, pKa: 5.4, doi: "10.1042/bj20081949", exFit: band(16957, 1705, 2.046), emFit: band(15783, 2147, 0.654) }),
+  fp({ name: "miRFP670", exPeak_nm: 642, emPeak_nm: 670, extinction: 87400, quantumYield: 0.14, pKa: 4.5, doi: "10.1038/ncomms12405", exFit: band(15648, 1913, 1.862), emFit: band(14942, 1330, 0.547) }),
 ];
 
 /** Catalogue entry by name, or the first entry when the name is unknown. */
@@ -79,15 +95,33 @@ export function bandAtWavelength(b: LogNormalBand, lambda: number): number {
   return lambda > 0 ? logNormalBand(b, 0.01 / lambda) : NaN;
 }
 
+/**
+ * A sampled spectrum or a band at a wavelength λ (m), 1 at the maximum. A sampled spectrum is linear between its 1 nm
+ * samples and falls linearly to 0 over the 1 nm past each end, so ∫ is the trapezoid sum of the samples.
+ */
+export function spectrumAt(s: Spectrum, lambda: number): number {
+  if (!("values" in s)) return bandAtWavelength(s, lambda);
+  if (!(lambda > 0)) return NaN;
+  // λ·1e9 of a whole nanometre can land 1e-13 off it: snap, so the ramp ends are exactly 0 (the callers test > 0).
+  const raw = lambda * 1e9 - s.start_nm;
+  const x = Math.abs(raw - Math.round(raw)) < 1e-9 ? Math.round(raw) : raw;
+  const i = Math.floor(x);
+  const v = (k: number) => s.values[k] ?? 0;
+  return i < -1 || i >= s.values.length ? 0 : (v(i) + (x - i) * (v(i + 1) - v(i))) / 1e4;
+}
+
 /** Emission spectra are integrated over 300–1000 nm. */
 export const SPECTRUM_MIN = 300e-9;
 export const SPECTRUM_MAX = 1000e-9;
 const STEP = 0.25e-9;
 
-/** Composite Simpson ∫f dλ over [a, b] (m) with steps ≤ 0.25 nm (the bands are smooth: they vanish with every derivative at the log-normal cutoff). */
+/**
+ * Composite Simpson ∫f dλ over [a, b] (m) with steps ≤ 0.25 nm: exact for a sampled spectrum when a and b are whole
+ * nanometres (the panels then end on its kinks), and the bands are smooth.
+ */
 export function integrateSpectrum(f: (lambda: number) => number, a = SPECTRUM_MIN, b = SPECTRUM_MAX): number {
   if (!(b > a)) return 0;
-  const n = 2 * Math.max(1, Math.ceil((b - a) / (2 * STEP)));
+  const n = 2 * Math.max(1, Math.ceil((b - a) / (2 * STEP) - 1e-9));
   const h = (b - a) / n;
   let s = f(a) + f(b);
   for (let i = 1; i < n; i++) s += (i % 2 ? 4 : 2) * f(a + i * h);
@@ -95,9 +129,9 @@ export function integrateSpectrum(f: (lambda: number) => number, a = SPECTRUM_MI
 }
 
 /** Fraction of the emission inside a top-hat window [λ_lo, λ_hi] (m), relative to 300–1000 nm. */
-export function emissionFraction(b: LogNormalBand, lo: number, hi: number): number {
+export function emissionFraction(b: Spectrum, lo: number, hi: number): number {
   if (!(hi > lo)) return NaN;
-  const shape = (l: number) => bandAtWavelength(b, l);
+  const shape = (l: number) => spectrumAt(b, l);
   const total = integrateSpectrum(shape);
   const a = Math.max(lo, SPECTRUM_MIN);
   const z = Math.min(hi, SPECTRUM_MAX);
@@ -114,7 +148,7 @@ export function brightness(f: Fluorophore): number {
  * the window), in M⁻¹ cm⁻¹. Assumes the same photon flux from every laser line and no saturation.
  */
 export function relativeSignal(f: Fluorophore, lasers: readonly number[], lo: number, hi: number): number {
-  const ex = lasers.reduce((s, l) => s + bandAtWavelength(f.ex, l), 0);
+  const ex = lasers.reduce((s, l) => s + spectrumAt(f.ex, l), 0);
   return f.extinction * ex * f.quantumYield * emissionFraction(f.em, lo, hi);
 }
 
@@ -134,8 +168,8 @@ export function spilloverMatrix(
 
 /** Förster overlap J = ∫F_D ε_A λ⁴ dλ / ∫F_D dλ (Lakowicz §13.2), in M⁻¹ cm⁻¹ nm⁴. */
 export function forsterOverlap(donor: Fluorophore, acceptor: Fluorophore): number {
-  const emD = (l: number) => bandAtWavelength(donor.em, l);
-  const num = integrateSpectrum((l) => emD(l) * acceptor.extinction * bandAtWavelength(acceptor.ex, l) * (l * 1e9) ** 4);
+  const emD = (l: number) => spectrumAt(donor.em, l);
+  const num = integrateSpectrum((l) => emD(l) * acceptor.extinction * spectrumAt(acceptor.ex, l) * (l * 1e9) ** 4);
   const den = integrateSpectrum(emD);
   return den > 0 ? num / den : NaN;
 }

@@ -4,7 +4,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { cameraNoise } from "../../../physics/detectors/camera-snr";
-import { FLUOROPHORES, bandAtWavelength, fluorophoreByName, spilloverMatrix } from "../../../physics/imaging/fluorophores";
+import { FLUOROPHORES, fluorophoreByName, spectrumAt, spilloverMatrix } from "../../../physics/imaging/fluorophores";
 
 const COLORS = ["#60a5fa", "#4ade80", "#f87171", "#a78bfa"];
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -94,7 +94,7 @@ export default function SimultaneousMulticolorPage() {
   const spectra = channels.flatMap((c, i) => {
     const f = fluorophoreByName(c.dye);
     return [
-      { x: wl, y: wl.map((l) => bandAtWavelength(f.em, l * 1e-9)), type: "scatter" as const, mode: "lines" as const, name: `${f.name} emission`, line: { color: COLORS[i], width: 2 } },
+      { x: wl, y: wl.map((l) => spectrumAt(f.em, l * 1e-9)), type: "scatter" as const, mode: "lines" as const, name: `${f.name} emission`, line: { color: COLORS[i], width: 2 } },
       { x: wl, y: wl.map((l) => (Math.abs(l - c.center) <= c.width / 2 ? 1 : 0)), type: "scatter" as const, mode: "lines" as const, name: `Filter ${i + 1}`, line: { color: COLORS[i], width: 1, dash: "dot" } },
     ];
   });
@@ -178,7 +178,7 @@ export default function SimultaneousMulticolorPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 overflow-x-auto">
         <h3 className="text-lg font-semibold mb-1">Spillover matrix (%)</h3>
-        <p className="text-xs text-gray-500 mb-3">Signal of each dye in each channel, as a percentage of its signal in its own channel, {mode === "simultaneous" ? "with all lasers on in one frame, so it depends only on the emission spectra" : "with laser i alone in frame i, so it includes the excitation crosstalk"}. A log-normal band is zero past its anti-Stokes cutoff, so spillover from those weak tails reads 0.</p>
+        <p className="text-xs text-gray-500 mb-3">Signal of each dye in each channel, as a percentage of its signal in its own channel, {mode === "simultaneous" ? "with all lasers on in one frame, so it depends only on the emission spectra" : "with laser i alone in frame i, so it includes the excitation crosstalk"}.</p>
         <table className="text-sm font-mono">
           <thead>
             <tr className="text-gray-400">
@@ -225,7 +225,7 @@ export default function SimultaneousMulticolorPage() {
           <p>σ_read² = σ² (charge binning) or B²σ² (digital sum); f = 1/(t + t_read), sequential 1/(N(t + t_read))</p>
         </div>
         <p className="text-xs text-gray-500 mt-2">
-          Spectra are the FPbase-fitted log-normal bands of the fluorescence-spectra page. Every laser delivers the same photon
+          Spectra are the sampled FPbase spectra (CC BY-SA 4.0) of the fluorescence-spectra page. Every laser delivers the same photon
           flux. Simultaneously, spillover depends only on the emission ratio between filters; excitation crosstalk (a laser
           exciting another dye) enters only in sequential mode. Filters are ideal top hats and each dye gives the same own-channel signal S; bleed-through photons count as
           background shot noise, before any linear unmixing. Laser switching time and the camera&apos;s overlap readout
