@@ -80,8 +80,6 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 ## Open findings (actionable; accepted model limits are under "Known limitations")
 **Physics / data**
 - Laser safety (watch): re-check the classes when IEC 60825-1 Ed. 4 is published (only a BSI draft in 2026).
-- `plasma-deposition` (session 200, source check): h_l's diffusion term and eq. numbers (10.2.1–2) are from memory of L&L, h_R and
-  D_a from Kemaneci 2016 eqs. (2), (7); ν_i = v̄_i/λ_i assumed (√(k_BT/M) instead would scale D_a by 1.6, collisional regime only).
 - `spectroscopy/conc-mirror` and `jacquinot` (session 104) both show the Jacquinot ratio π f/(h tan θ) from `throughput.ts`;
   conc-mirror adds the mirror cone and slit étendue. Merge into jacquinot only if the user asks.
 
@@ -322,7 +320,7 @@ sources: Ar⁺/CO₂ g₀, Nd/Tm/Ho σ, Sheik-Bahae n₂, ZBLAN, LiTaO₃, …) 
 
 ## Done (one line each; detail in the archive and the PR descriptions)
 - 7e-b thin film (session 200, PR #238): `sputtering-deposition` Westwood 1978 thermalisation (eqs. 2, 7, 8, 13; 80 u 5 eV 0.1 Pa 40.1 cm vs 42; 400 u Fig. 5 within 1 %), E* by inverting eq. 13 and Thompson share (E*/(E*+U))² (Al default 72 %, Cu 31 %).
-- 7e-a thin film (session 200, `phase-7/7e-thin-film`, PR #238): `ellipsometry-measurement` transparent-film thickness (A&B quadratic in X, |X| fit check, mod D_φ; SiO₂/Si 100 nm ↔ Ψ 41.055°, Δ 79.787°); `plasma-deposition` L&L h-factors with the diffusion term, Tₑ solved with h (100 mTorr: h_l 0.0142 vs 0.0386), sweep 0.1–100 mTorr.
+- 7e-a thin film (session 200, `phase-7/7e-thin-film`, PR #238): `ellipsometry-measurement` transparent-film thickness (A&B quadratic in X, |X| fit check, mod D_φ; SiO₂/Si 100 nm ↔ Ψ 41.055°, Δ 79.787°); `plasma-deposition` L&L h-factors with the diffusion term, Tₑ solved with h (100 mTorr: h_l 0.0142 vs 0.0386), sweep 0.1–100 mTorr; checked against the user's L&L pages (eqs. 5.1.5, 5.1.14, 5.3.16–17; Example 1 p. 335: n₀ 1.892e17 vs 1.9e17).
 - 7d laser safety (session 199, `phase-7/7d-lidar-scan`, PR #237): `scanned-pulse-train.ts` (pulses within a pass, passes at P̄·ρ, C_P over T₂, stationary floor); `lidar-safety` `mode=scanned`: default rotating lidar 9.14× at 10 m, NOHD 32.9 m (stationary 146 m); brute force 1.00–1.59× conservative; review fixed a NaN band in the NOHD search.
 - 7c lasers (session 198, `phase-7/7c-lasers`, PR #236): `qSwitchOptimumCoupling` (Degnan; defaults R_opt 0.741, E_max 2.655 mJ vs 2.635
   at R 0.7), q-switch pump as r or g₀l + E-vs-R chart; OPO PPLN type 0 preset (Λ 29.91 µm at 1064 → 1550); KTP deferred; 1236 tests.

@@ -24,15 +24,15 @@ user's Westwood PDF) on `phase-7/7e-thin-film` (PR #238). Next: Phase 7f (imagin
    Sputtering default: `"thin-film/sputtering-deposition=72 %"` (thermalised share).
 2. Phase 7f (ROADMAP).
 3. Ask the user for PDFs: Bai 2020 (APL Photonics 5, 031301:
-   abstract 79 cm/GW vs body 60 ± 9), Patel 2001 (Yb:YAG κ at 10 at.%), Siegman "Lasers" ch. 11/21, Degnan 1989; L&L 2nd ed.
-   §5.1 and §10.2 pages (check ν_i and the h_l equation, ROADMAP open finding).
+   abstract 79 cm/GW vs body 60 ± 9), Patel 2001 (Yb:YAG κ at 10 at.%), Siegman "Lasers" ch. 11/21, Degnan 1989.
 4. KRS-5 by hand: `materials/transparency-range?material=krs5` at 10 µm: n 2.3707, loss 28.4 %.
 
 ## Non-obvious facts
 - **Session 200:** Westwood's eq. (7) typesetting is ambiguous: only 2M/(1+M)·[ln-term + polynomial-term] gives 0.406 at
   M = 1, → 1 as M → 0 and → 0 as M → ∞; his thermal end point is E_g = k_BT (Fig. 3 intercepts), not the gas mean speed.
   Scanned PDFs: `python -E -P` (not `-I`, which hides the user-site pypdf and PIL) extracts the page strips with pypdf; stitch
-  them with PIL and Read the PNG.
+  them with PIL and Read the PNG. L&L's joined h-factors with the D_a term are eqs. (5.3.16)–(5.3.17) (Lee & Lieberman 1995);
+  (10.2.1)–(10.2.2) are only the low-pressure forms. D = kT/(mν_m) with λ = v̄/ν_m (5.1.5–6).
 - stackResponse ↔ Nebraska: ρ_Nebraska = conj(−r_p/r_s) of the characteristic-matrix r's (independent check
   for any ellipsometry formula). `csqrt` of a k = 0 argument has Im −0 and can return the growing branch: flip the sign after
   the root when the decaying one is needed. Keller & Simmons 1979 is open at bitsavers (`IBM_Journal_of_Research_and_Development/231/ibmrd2301E.pdf`)
