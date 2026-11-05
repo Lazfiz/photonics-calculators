@@ -18,6 +18,14 @@
  *   doi:10.1016/0022-0248(94)91256-4) as quoted there; n_y, n_z from Kato & Takaoka 2002 (`biaxial-data.ts`). They are
  *   the low-frequency (unclamped, r^T) values: vendor tables (Laser Components KTP sheet) list them beside high-frequency
  *   r₃₃ 35.0, r₂₃ 13.8 pm/V, and Xie & Pfister's kHz measurements agree with them. LiNbO₃'s Weis & Gaylord r are clamped.
+ * - BaTiO₃ (tetragonal 4mm at room temperature, negative uniaxial) in the same z-field geometry: M. Zgonik et al.,
+ *   Phys. Rev. B 50, 5941 (1994), doi:10.1103/PhysRevB.50.5941, at 632.8 nm and 23 °C, as tabulated in A. Petraru's thesis
+ *   (Universität zu Köln, 2003, Table 2.2): unclamped (below the crystal's first acoustic resonance, which depends on its
+ *   size: ≈ 0.1 MHz for a 2 cm crystal, 1–100 MHz for Petraru's samples) r₁₃ 8 ± 2,
+ *   r₃₃ 105 ± 10, r₄₂ 1300 ± 100 pm/V; clamped 10.2 ± 0.6, 40.6 ± 2.5, 730 ± 100 pm/V. The large r₄₂ needs a field
+ *   across z and is not used here. n_o, n_e: S. H. Wemple, M. DiDomenico Jr., I. Camlibel, J. Phys. Chem. Solids 29, 1797
+ *   (1968), doi:10.1016/0022-3697(68)90164-9, n² − 1 = Bλ²/(λ² − λ₀²) (o: B 4.187, λ₀ 0.223 µm; e: 4.064, 0.211 µm),
+ *   0.4–0.7 µm, as transcribed by refractiveindex.info (CC0).
  * - Photorefractive grating (N. V. Kukhtarev et al., Ferroelectrics 22, 949 (1978), doi:10.1080/00150197908239450),
  *   diffusion only, no applied field and no photovoltaic current, small fringe modulation m: the space-charge field
  *   per unit m is E_sc = E_D / (1 + E_D / E_q), E_D = k_B T K / q, E_q = q N_eff / (ε₀ ε K), K = 2π/Λ, shifted by a
@@ -28,9 +36,10 @@
 
 import { epsilon_0, k_B, q } from "../constants";
 import { biaxialIndices, biaxialRange } from "./biaxial-data";
+import { fromResonanceWavelengths, refractiveIndex } from "./sellmeier";
 import { crystalIndices, crystalRange } from "./uniaxial-data";
 
-export type PockelsId = "kdp" | "kdp-d" | "adp" | "linbo3" | "ktp";
+export type PockelsId = "kdp" | "kdp-d" | "adp" | "linbo3" | "ktp" | "batio3" | "batio3-clamped";
 export type PockelsGeometry = "longitudinal" | "transverse";
 
 export interface PockelsCrystal {
@@ -57,6 +66,11 @@ export interface PockelsCrystal {
 }
 
 const fixed = (n: number) => () => ({ no: n, ne: NaN });
+
+// BaTiO₃ n_o and n_e, Wemple et al. 1968 (see the header).
+const BATIO3_O = fromResonanceWavelengths(1, [4.187], [0.223], [0.4, 0.7]);
+const BATIO3_E = fromResonanceWavelengths(1, [4.064], [0.211], [0.4, 0.7]);
+const batio3Indices = (lambda: number) => ({ no: refractiveIndex(BATIO3_O, lambda), ne: refractiveIndex(BATIO3_E, lambda) });
 
 export const POCKELS: Record<PockelsId, PockelsCrystal> = {
   kdp: {
@@ -87,6 +101,16 @@ export const POCKELS: Record<PockelsId, PockelsCrystal> = {
     },
     range: biaxialRange("ktp"), epsilon: NaN, perp: { n: "n_y", nz: "n_z", r: "r₂₃" },
     source: "r₃₃, r₂₃ (unclamped, 633 nm) Cheng et al. 1994 via Xie & Pfister 2005; n_y, n_z Kato & Takaoka 2002",
+  },
+  batio3: {
+    name: "BaTiO₃ (unclamped)", pointGroup: "4mm", geometry: "transverse", r: { r33: 105e-12, r13: 8e-12 },
+    indices: batio3Indices, range: [BATIO3_O.range[0], BATIO3_O.range[1]], epsilon: NaN,
+    source: "r₃₃ 105 ± 10, r₁₃ 8 ± 2 (unclamped, below the first acoustic resonance; 633 nm) Zgonik et al. 1994 via Petraru 2003; n_o, n_e Wemple et al. 1968",
+  },
+  "batio3-clamped": {
+    name: "BaTiO₃ (clamped)", pointGroup: "4mm", geometry: "transverse", r: { r33: 40.6e-12, r13: 10.2e-12 },
+    indices: batio3Indices, range: [BATIO3_O.range[0], BATIO3_O.range[1]], epsilon: NaN,
+    source: "r₃₃ 40.6 ± 2.5, r₁₃ 10.2 ± 0.6 (clamped, above the piezoelectric resonances; 633 nm) Zgonik et al. 1994 via Petraru 2003; n_o, n_e Wemple et al. 1968",
   },
 };
 

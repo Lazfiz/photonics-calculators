@@ -57,6 +57,29 @@ test("transverse KTP modulator at 632.8 nm: r₃₃ 36.3, r₂₃ 15.7 pm/V (Che
   assert.ok(Number.isNaN(POCKELS.ktp.indices(5e-6).ne), "outside Kato's 0.43–3.54 µm");
 });
 
+test("transverse BaTiO₃ modulator at 632.8 nm: Zgonik et al. 1994 r (via Petraru 2003, Table 2.2), Wemple 1968 indices", () => {
+  // Wemple et al. 1968, n² − 1 = Bλ²/(λ² − λ₀²): n_o = √(1 + 4.187 · 0.40044/(0.40044 − 0.049729)) = 2.40431,
+  // n_e = √(1 + 4.064 · 0.40044/(0.40044 − 0.044521)) = 2.36059. Independent check: Nikogosyan's 2.412 and 2.360 at 20 °C
+  // (quoted by Petraru, §2.3) within 0.01.
+  const { no, ne } = POCKELS.batio3.indices(632.8e-9);
+  assertRel(no, 2.40431, 1e-5, "n_o");
+  assertRel(ne, 2.36059, 1e-5, "n_e");
+  assert.ok(Math.abs(no - 2.412) < 0.01 && Math.abs(ne - 2.36) < 0.01);
+  // Table 2.2: unclamped r₁₃ 8, r₃₃ 105; clamped 10.2, 40.6 pm/V.
+  assert.deepEqual([POCKELS.batio3.r.r13! * 1e12, POCKELS.batio3.r.r33! * 1e12], [8, 105]);
+  assert.deepEqual([POCKELS["batio3-clamped"].r.r13! * 1e12, POCKELS["batio3-clamped"].r.r33! * 1e12], [10.2, 40.6]);
+  // Unclamped: n_e³r₃₃ − n_o³r₁₃ = 1381.173 − 111.189 = 1269.985 pm/V; d = 1 mm, L = 20 mm: 632.8e-12/(1269.985e-12 · 0.02)
+  // = 24.914 V; z polarization alone 632.8e-12/(1381.173e-12 · 0.02) = 22.908 V.
+  const u = POCKELS.batio3.r;
+  assertRel(transverseHalfWaveVoltage(632.8e-9, no, ne, u.r33!, u.r13!, 1e-3, 0.02), 24.9137, 1e-4, "unclamped retardation V_π");
+  assertRel(phaseHalfWaveVoltage(632.8e-9, ne, u.r33!, 1e-3, 0.02), 22.9081, 1e-4, "unclamped phase V_π");
+  // Clamped: 534.054 − 141.766 = 392.288 pm/V → 80.655 V, about 3.2× the unclamped value.
+  const c = POCKELS["batio3-clamped"].r;
+  assertRel(transverseHalfWaveVoltage(632.8e-9, no, ne, c.r33!, c.r13!, 1e-3, 0.02), 80.655, 1e-4, "clamped retardation V_π");
+  // Wemple's fit covers 0.4–0.7 µm only.
+  assert.deepEqual(POCKELS.batio3.range, [400e-9, 700e-9]);
+});
+
 test("crossed polarizers: T = sin²(Γ/2) is 0 at Γ = 0, ½ at π/2 and 1 at π", () => {
   assert.equal(crossedPolarizerTransmission(0), 0);
   assertRel(crossedPolarizerTransmission(Math.PI / 2), 0.5, 1e-12, "π/2");
