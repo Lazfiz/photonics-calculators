@@ -78,4 +78,5 @@ Key sources underlying these calculators:
 
 ## License
 
-MIT
+MIT. Exception: `src/physics/imaging/fpbase-spectra.ts` holds spectra adapted from [FPbase](https://www.fpbase.org) and is
+licensed CC BY-SA 4.0, like its source.

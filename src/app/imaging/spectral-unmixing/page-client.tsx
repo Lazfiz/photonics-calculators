@@ -3,7 +3,7 @@
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { FLUOROPHORES, bandAtWavelength, fluorophoreByName, integrateSpectrum } from "../../../physics/imaging/fluorophores";
+import { FLUOROPHORES, fluorophoreByName, integrateSpectrum, spectrumAt } from "../../../physics/imaging/fluorophores";
 import { conditionNumber, fcls, nnls, ols, olsCovariance, reconstruct, shareStdDev, simulateMixture } from "../../../physics/imaging/linear-unmixing";
 import { createRng } from "../../../physics/random";
 
@@ -57,7 +57,7 @@ export default function SpectralUnmixingPage() {
   // E[b][j]: fraction of dye j's detected photons that fall in band b (columns sum to 1).
   const step = (end - start) / bands;
   const centres = Array.from({ length: bands }, (_, b) => start + (b + 0.5) * step);
-  const shapes = dyes.map((f) => (l: number) => bandAtWavelength(f.em, l));
+  const shapes = dyes.map((f) => (l: number) => spectrumAt(f.em, l));
   const inRange = shapes.map((s) => integrateSpectrum(s, start * 1e-9, end * 1e-9));
   const E = centres.map((c) => shapes.map((s, j) => integrateSpectrum(s, (c - step / 2) * 1e-9, (c + step / 2) * 1e-9) / inRange[j]));
 
@@ -194,7 +194,7 @@ export default function SpectralUnmixingPage() {
           <p>Cov(x̂) = (EᵀE)⁻¹ Eᵀ diag(var) E (EᵀE)⁻¹, κ(E) = √(λ_max/λ_min of EᵀE)</p>
         </div>
         <p className="text-xs text-gray-500 mt-2">
-          Endmembers are the FPbase-fitted emission bands of the fluorescence-spectra page, binned into equal bands between
+          Endmembers are the sampled FPbase emission spectra (CC BY-SA 4.0) of the fluorescence-spectra page, binned into equal bands between
           the range limits; x is the number of detected photons from each dye. One noisy pixel is simulated from a seeded
           generator, with shot noise in its Gaussian limit and read noise in every band; change the seed for another noise
           draw. Background, autofluorescence and errors in the reference spectra are not included: in practice those, not

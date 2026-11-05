@@ -4,7 +4,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  FLUOROPHORES, bandAtWavelength, brightness, emissionFraction, fluorophoreByName, forsterOverlap, forsterRadius, fretEfficiency, relativeSignal,
+  FLUOROPHORES, brightness, emissionFraction, fluorophoreByName, forsterOverlap, forsterRadius, fretEfficiency, relativeSignal, spectrumAt,
 } from "../../../physics/imaging/fluorophores";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -39,7 +39,7 @@ export default function FluorescenceSpectraPage() {
 
   const dyes = [dye1, dye2].map((f) => ({
     f,
-    ex: bandAtWavelength(f.ex, laser),
+    ex: spectrumAt(f.ex, laser),
     inFilter: emissionFraction(f.em, lo, hi),
     signal: relativeSignal(f, [laser], lo, hi),
   }));
@@ -50,8 +50,8 @@ export default function FluorescenceSpectraPage() {
   const E = fretEfficiency(r, R0);
 
   const wl = Array.from({ length: Math.max(800, Math.ceil(center + width / 2)) - 350 + 1 }, (_, i) => 350 + i);
-  const shape = (b: typeof dye1.ex) => wl.map((l) => bandAtWavelength(b, l * 1e-9));
-  const integrand = wl.map((l) => bandAtWavelength(dye1.em, l * 1e-9) * bandAtWavelength(dye2.ex, l * 1e-9) * l ** 4);
+  const shape = (b: typeof dye1.ex) => wl.map((l) => spectrumAt(b, l * 1e-9));
+  const integrand = wl.map((l) => spectrumAt(dye1.em, l * 1e-9) * spectrumAt(dye2.ex, l * 1e-9) * l ** 4);
   const integrandMax = Math.max(...integrand);
   const line = (x: number[], y: number[], name: string, color: string, dash?: string) => ({
     x, y, type: "scatter" as const, mode: "lines" as const, name, line: { color, width: 2, ...(dash ? { dash } : {}) },
@@ -125,18 +125,17 @@ export default function FluorescenceSpectraPage() {
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold mb-2">Model</h3>
         <div className="text-sm text-gray-300 space-y-1 font-mono">
-          <p>f(ν) = exp(−(ln2/ln²ρ) ln²(1 + (ν − ν_m)(ρ² − 1)/(ρH)))</p>
           <p>signal ∝ ε f_ex(λ_laser) Φ ∫_filter F(λ)dλ / ∫F(λ)dλ</p>
           <p>J = ∫F_D ε_A λ⁴ dλ / ∫F_D dλ, R₀ = 0.02108 (κ² Φ_D n⁻⁴ J)^(1/6) nm, E = 1/(1 + (r/R₀)⁶)</p>
         </div>
         <p className="text-xs text-gray-500 mt-2">
-          Peaks, extinction coefficients and quantum yields come from FPbase. Each spectrum is a Siano–Metzler log-normal band
-          fitted to the FPbase spectrum above 5 % of its peak (residuals 1–7 % of the peak); the excitation spectrum stands in for
-          the absorption. A log-normal band ends at a cutoff, so the weak anti-Stokes tails (emission blue of the cutoff,
-          excitation red of it) are zero here: bleed-through that comes only from those tails reads 0.
+          Peaks, extinction coefficients, quantum yields and spectra come from FPbase (spectra CC BY-SA 4.0), sampled every 1 nm
+          and interpolated linearly, so the weak anti-Stokes tails are kept; the excitation spectrum stands in for the
+          absorption. A spectrum falls to 0 within 1 nm past its record, and each record ends at 6 % of the peak or less, or below the
+          lowest laser line (350 nm). miRFP670&apos;s excitation record starts at 520 nm and omits its Soret band near 390 nm, so its
+          blue excitation reads 0.
           The filter is an ideal top hat and the two dyes are compared at equal concentration and equal laser photon flux.
-          Against the raw spectra the fits give Förster radii within 2.5 % and filter fractions within 6 percentage points. The
-          orientation factor κ² = 2/3 assumes freely rotating dipoles, which fusion proteins often are not.
+          The orientation factor κ² = 2/3 assumes freely rotating dipoles, which fusion proteins often are not.
         </p>
       </div>
     </>
