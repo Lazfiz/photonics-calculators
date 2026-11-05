@@ -40,8 +40,8 @@ test("Dubietis Table 1 n₂ in m²/W and the fused-silica critical power at 800 
 });
 
 test("DeSalvo 1996 n₂ from esu (Tables I–II) and Bristow 2007 silicon", () => {
-  // DeSalvo et al. Sec. III: fused silica (7.5 ± 1.5) × 10⁻¹⁴ esu = (2.1 ± 0.4) × 10⁻¹⁶ cm²/W with n₀ = 1.48.
-  assertRel(n2FromEsu(7.5e-14, 1.48), 2.1e-20, 0.02, "FS esu");
+  // DeSalvo et al. Sec. II: BaF₂ at 532 nm (7.5 ± 1.5) × 10⁻¹⁴ esu = (2.1 ± 0.4) × 10⁻¹⁶ cm²/W with n₀ = 1.48.
+  assertRel(n2FromEsu(7.5e-14, 1.48), 2.1e-20, 0.02, "BaF₂ esu");
   // KTP 100 × 10⁻¹⁴ esu, n₀ 1.77: 40π · 1e-12 / (299792458 · 1.77) = 1.25664e-10 / 5.30633e8 = 2.36819e-19 m²/W.
   assertRel(KERR_MEDIA.ktp.n2, 2.36819e-19, 1e-5, "KTP");
   // MgF₂ 1.9 × 10⁻¹⁴ esu, n₀ 1.4: 2.38761e-12 / 4.19709e8 = 5.68872e-21 m²/W.
@@ -51,6 +51,30 @@ test("DeSalvo 1996 n₂ from esu (Tables I–II) and Bristow 2007 silicon", () =
   assertRel(KERR_MEDIA.silicon.n2, 1.2e-17, 1e-12, "Si");
   assert.equal(KERR_MEDIA.silicon.lambda, 1800e-9);
   assert.ok(Number.isNaN(n2FromEsu(1e-13, 0)), "n₀ = 0 guarded");
+});
+
+test("Gases (Zahedpour 2015), CS₂ (Reichert 2014) and fused silica at 1024 nm (Wahlstrand & Cruz 2026)", () => {
+  // Zahedpour et al. Table 1, 800 nm, 1 atm, electronic n₂ in 10⁻²⁰ cm²/W: N₂ 7.9, O₂ 8.1, Ar 10.1.
+  assertRel(KERR_MEDIA.nitrogen.n2, 7.9e-24, 1e-12, "N₂");
+  assertRel(KERR_MEDIA.oxygen.n2, 8.1e-24, 1e-12, "O₂");
+  assertRel(KERR_MEDIA.argon.n2, 10.1e-24, 1e-12, "Ar");
+  // Air by hand: 0.78084 · 7.9 + 0.209476 · 8.1 + 0.00934 · 10.1 = 6.168636 + 1.696756 + 0.094334 = 7.959726.
+  assertRel(KERR_MEDIA.air.n2, 7.959726e-24, 1e-6, "air");
+  // Peck & Reeder standard air at 0.8 µm: n − 1 = 2.750e-4.
+  assertRel(KERR_MEDIA.air.n0 - 1, 2.750e-4, 1e-3, "air n₀");
+  // P_cr = 3.77 λ²/(8π n₀ n₂) for N₂: 3.77 · 6.4e-13 / (8π · 1.000275 · 7.9e-24) = 1.21488e10 W.
+  const n2gas = KERR_MEDIA.nitrogen;
+  assertRel(criticalPower(n2gas.lambda, n2gas.n0, n2gas.n2), 1.21488e10, 1e-5, "P_cr N₂");
+  // Reichert et al. Table 1: electronic 2.0, collision 1.0, libration 7.6, diffusive 18 (10⁻¹⁹ m²/W); Eq. 18 sums them.
+  assertRel(KERR_MEDIA.cs2.n2, 2.0e-19, 1e-12, "CS₂ fs");
+  assertRel(KERR_MEDIA["cs2-long"].n2, 2.86e-18, 1e-12, "CS₂ > 10 ps");
+  // Kedenburg et al.: n² = 1 + 1.50387 · 0.64/(0.64 − 0.03049) = 2.579097 → n = 1.605957 at 800 nm.
+  assertRel(KERR_MEDIA.cs2.n0, 1.605957, 1e-6, "CS₂ n₀");
+  // Wahlstrand & Cruz Sec. III: 2.18 × 10⁻¹⁶ cm²/W at 1024 nm, consistent with DeSalvo's fused silica (Table I, E_g 7.8 eV
+  // row) 7.4 × 10⁻¹⁴ esu at 1064 nm: 40π · 7.4e-14 / (299792458 · 1.45) = 2.13921e-20 m²/W.
+  assertRel(KERR_MEDIA["fused-silica-1024"].n2, 2.18e-20, 1e-12, "FS 1024");
+  assertRel(n2FromEsu(7.4e-14, 1.45), 2.13921e-20, 1e-5, "FS 1064 esu");
+  assert.equal(KERR_MEDIA["fused-silica-1024"].lambda, 1024e-9);
 });
 
 test("Kerr index change, π-phase intensity and their domain guards", () => {
