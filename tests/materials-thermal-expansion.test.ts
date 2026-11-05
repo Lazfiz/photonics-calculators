@@ -56,6 +56,8 @@ test("silicon α(T): Okada & Tokumaru (1984) fit, closed-form integral", () => {
   // Mean α over 300–400 K is 2.919e-6 /K (the page's warning quotes 2.92); T1 = T2 gives α itself.
   assert.ok(Math.abs(siliconMeanAlpha(300, 400) - 2.91863e-6) < 1e-11);
   assert.equal(siliconMeanAlpha(300, 300), siliconAlpha(300));
+  // A tiny ΔT must not cancel: the mean over 1e-12 K is α itself (a differenced antiderivative gave 2.33 instead of 2.51).
+  assert.ok(Math.abs(siliconMeanAlpha(293.15, 293.15 + 1e-12) - siliconAlpha(293.15)) < 1e-14);
   // 100 mm heated 20 → 120 °C: L·expm1(2.87371e-4) = 28.741 µm (constant 2.6e-6: 26.0 µm). Cooling back undoes it exactly.
   const dL = siliconExpansion(0.1, 293.15, 393.15);
   assert.ok(Math.abs(dL - 28.7412e-6) < 1e-10, `${dL}`);
