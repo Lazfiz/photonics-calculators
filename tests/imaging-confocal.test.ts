@@ -4,8 +4,10 @@ import assert from "node:assert/strict";
 import { AIRY_HALF_MAX_V, SINC2_HALF_MAX_X, airyIntensity } from "../src/physics/imaging/diffraction-psf";
 import {
   CONFOCAL_FWHM_TABLE, CONFOCAL_MAX_PINHOLE_AU, confocalAxialFwhm, confocalFwhmCoefficients, confocalLateralFwhm,
-  confocalOpticalSectionFwhm, pinholeAiryUnits, pinholeFillFactor, pinholeThroughput, spinningDiskFrameRate,
+  confocalOpticalSectionFwhm, pinholeAiryUnits, pinholeFillFactor, pinholeSectionFourier, pinholeThroughput,
+  spinningDiskFrameRate, spinningDiskSection,
 } from "../src/physics/imaging/confocal";
+import { firstCrossing, integrateSimpson } from "../src/physics/math";
 import {
   effectiveAxialFwhm, gaussianSheetFwhm, gaussianSheetRayleighRange, gaussianSheetWaist,
 } from "../src/physics/imaging/light-sheet";
@@ -105,4 +107,34 @@ test("Light sheet 3D-reconstruction defaults: λ 550 nm, sheet NA 0.1, detection
   // Sheet 1.17741 · 550 nm/(π · 0.1) = 2061.3 nm; detection 0.88602 · 550/(1.33 − √(1.33² − 1)) = 1.33 − 0.87669 = 0.45331
   // → 1075.1 nm; (1/2061.3² + 1/1075.1²)^(−1/2) = 948.4 nm (hand calculation).
   assertRel(effectiveAxialFwhm(gaussianSheetFwhm(550 * nm, 0.1), axialPsfFwhm(550 * nm, 1.33, 1.0)), 948.36 * nm, 2e-4, "effective axial");
+});
+
+test("spinning-disk pinhole crosstalk: lattice sum of the defocused OTF", () => {
+  // The Fourier single-pinhole section reproduces the spatial-domain CONFOCAL_FWHM_TABLE (independent integrals).
+  for (const P of [0.5, 1, 2]) {
+    const s0 = pinholeSectionFourier(0, P);
+    const uHalf = firstCrossing((u) => pinholeSectionFourier(u, P) / s0, 0, 40, 0.5, 40);
+    assertRel(uHalf / (2 * Math.PI), CONFOCAL_FWHM_TABLE[Math.round(10 * P)][3], 1e-3, `section ${P} AU`);
+  }
+  // Parseval: for a point pinhole S₁(0) = ∫₀^∞[2J₁(v)/v]⁴ v dv/(8π), the spatial integral done directly.
+  const spatial = integrateSimpson((v) => (v === 0 ? 0 : v * airyIntensity(v) ** 2), 0, 200, 40000) / (8 * Math.PI);
+  assertRel(pinholeSectionFourier(0, 1e-3), spatial, 1e-5, "Parseval");
+  // CSU-like disk: 50 µm pinholes at 250 µm pitch, 60×, 488 nm, NA 0.8 → 1.11976 AU at 5.5988 AU pitch.
+  // Floor 4.448 % (vs open area 3.14 %), in-focus neighbours add 0.19 %.
+  const disk = spinningDiskSection(1.11976, 5.59880);
+  assertRel(disk.floor, 0.044478, 1e-3, "floor");
+  // In-focus pinhole efficiency η = πp²·S₁(0) = 0.70492 by a direct 2D spatial integral (physics review, session 201).
+  assertRel(Math.PI * (3.8317059702075123 * 1.11976) ** 2 * pinholeSectionFourier(0, 1.11976), 0.70492, 1e-4, "η");
+  // The G ≠ 0 terms die out far from focus: the response at u = 400 is the floor.
+  assertRel(disk.response(400), disk.floor, 2e-3, "response → floor");
+  assert.equal(disk.response(0), 1);
+  // Large pitch: the half width tends to the single pinhole's, the floor to 1/(a²S₁(0)) ∝ 1/pitch².
+  const wide = spinningDiskSection(1, 20);
+  assertRel(wide.halfWidthU / (2 * Math.PI), CONFOCAL_FWHM_TABLE[10][3], 1e-3, "20 AU pitch");
+  assertRel(spinningDiskSection(1, 40).floor / wide.floor, 0.25, 1e-3, "floor ∝ 1/pitch²");
+  assert.ok(Number.isNaN(spinningDiskSection(1, 40).response(0)));
+  // Nearly touching holes: floor above ½, no half width.
+  const touching = spinningDiskSection(3, 3.2);
+  assert.ok(touching.floor > 0.5 && Number.isNaN(touching.halfWidthU));
+  assert.ok(Number.isNaN(spinningDiskSection(3, 2).floor) && Number.isNaN(spinningDiskSection(0, 5).floor));
 });

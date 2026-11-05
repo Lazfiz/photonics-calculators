@@ -967,10 +967,14 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "spinning-disk",
     title: "Spinning Disk Confocal Calculator",
-    description: "Pinhole size, optical sectioning, and frame rate for spinning disk confocal microscopy.",
+    description: "Pinhole size, optical sectioning with pinhole crosstalk and its background floor, and frame rate for spinning disk confocal microscopy.",
     tier: "textbook",
-    modelNote: "Scalar paraxial confocal theory with equal excitation and emission wavelengths and a uniformly filled pupil, computed numerically for pinholes of 0–5 AU; the axial scale n − √(n² − NA²) follows Wilhelm. One pinhole only: crosstalk through neighbouring pinholes is not modelled. Frame rate is RPM/60 × scans per revolution.",
+    modelNote: "Scalar paraxial confocal theory with equal excitation and emission wavelengths and a uniformly filled pupil, computed numerically for pinholes of 0–5 AU; the axial scale n − √(n² − NA²) follows Wilhelm. The disk section adds crosstalk through the neighbouring pinholes: Each beam is focused to a point in its pinhole (microlens disk). Poisson summation over a square lattice of mutually incoherent beams turns the crosstalk into a finite sum of squared defocused OTFs, which levels off at a floor far out of focus (4.4 % for 50 µm holes at 250 µm pitch, 60×, NA 0.8, 488 nm, n 1.33). Interference between laser-lit microlens beams is not modelled; a lamp-lit disk has a higher floor. Frame rate is RPM/60 × scans per revolution.",
     references: [
+      {
+        citation: "Egner A., Andresen V., Hell S. W. (2002). Comparison of the axial resolution of practical Nipkow-disk confocal fluorescence microscopy with that of multifocal multiphoton microscopy: theory and experiment. J. Microsc. 206, 24–32. Axial response of Nipkow disks with pinhole crosstalk.",
+        url: "https://doi.org/10.1046/j.1365-2818.2002.01001.x",
+      },
       {
         citation: "Tanaami T., Otsuki S., Tomosada N. et al. (2002). High-speed 1-frame/ms scanning confocal microscope with a microlens and Nipkow disks. Appl. Opt. 41, 4704–4708. Yokogawa CSU disk, 12 scans per revolution.",
         url: "https://doi.org/10.1364/AO.41.004704",

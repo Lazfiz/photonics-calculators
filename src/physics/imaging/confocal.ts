@@ -23,8 +23,25 @@
  * `scripts/gen-confocal-table.ts` computes with confocalFwhmCoefficients; the tests recompute rows of it.
  * Wilhelm's geometric formula (optical-sectioning-thickness module) lies 40 % above this section at 1 AU, 25 % at 2 AU
  * (low NA), about 75 % at NA 1.4 in oil and 80 % at NA 0.95 in air.
+ *
+ * Spinning disk (pinhole crosstalk). Every pinhole of the disk both illuminates and detects. Each beam is focused to a
+ * diffraction-limited spot in its pinhole (microlens disk; a lamp-lit hole is an extended source and adds a second
+ * 2J₁(qp)/(qp) factor, raising the floor below from 4.45 % to 6.05 %), and the beams are taken as mutually incoherent
+ * (laser-lit microlens beams interfere, giving Talbot-type excitation patterns not modelled). Per
+ * illuminating pinhole, a thin fluorescent plane at defocus u then gives S(u) = Σₖ C(u, dₖ), the sum over the detecting
+ * pinholes at lattice offsets dₖ of C(u, d) = ∫d²r |h(u, r)|² ∫_pinhole |h(u, r − d − w)|² d²w; the k = 0 term is the
+ * single-pinhole section above. C is a convolution of radial functions, and Poisson summation over a square lattice
+ * of pitch a (cell area a²) turns the sum into one over the reciprocal lattice G = (2π/a)(m₁, m₂):
+ *   S(u) = (1/a²) Σ_G Ĉ(u, |G|),  Ĉ(u, q) = (4π)² OTF(q/2; u)² · πp² · 2J₁(qp)/(qp),
+ * with OTF(ν; u) the defocused OTF of the pupil (Hopkins 1955, as in the diffraction-mtf module, W₀₂₀ = u/(4π) waves) and the
+ * pinhole radius p = j₁,₁ · P. The OTF vanishes for q ≥ 2, so the sum is finite. The single pinhole is the
+ * continuum limit S₁(u) = (1/2π) ∫₀² Ĉ(u, q) q dq: its section FWHM reproduces CONFOCAL_FWHM_TABLE (tests), an
+ * independent check of the spatial-domain integrals. As u → ∞ only G = 0 survives: the response to an out-of-focus
+ * plane levels off at the floor (πp²(4π)²/a²)/S(0), about the open-area fraction of the disk over the in-focus
+ * pinhole efficiency. The axial response of Nipkow disks with this crosstalk was compared with experiment by
+ * A. Egner, V. Andresen & S. W. Hell, J. Microsc. 206, 24–32 (2002), doi:10.1046/j.1365-2818.2002.01001.x.
  */
-import { besselJ, firstCrossing } from "../math";
+import { besselJ, firstCrossing, integrateGaussLegendre8 } from "../math";
 import { airyIntensity, BESSEL_J1_FIRST_ZERO, encircledEnergyAiry } from "./diffraction-psf";
 import { airyUnit } from "./optical-sectioning-thickness";
 
@@ -216,6 +233,11 @@ export function pinholeThroughput(pinholeAU: number): number {
   return Number.isFinite(pinholeAU) && pinholeAU >= 0 ? encircledEnergyAiry(BESSEL_J1_FIRST_ZERO * pinholeAU) : NaN;
 }
 
+/** Axial optical coordinate of this module, u = 4π (n − √(n² − NA²)) z/λ, for a defocus z (m). */
+export function confocalAxialCoordinate(z: number, lambda: number, n: number, NA: number): number {
+  return validMedium(lambda, n, NA) && Number.isFinite(z) ? (4 * Math.PI * axialDenominator(n, NA) * z) / lambda : NaN;
+}
+
 /** Confocal lateral FWHM for a pinhole of 0–5 AU, m. */
 export function confocalLateralFwhm(lambda: number, NA: number, pinholeAU: number): number {
   return positive(lambda) && positive(NA) ? (tableCoefficient(pinholeAU, 1) * lambda) / NA : NaN;
@@ -245,4 +267,97 @@ export function spinningDiskFrameRate(rpm: number, scansPerRevolution: number): 
  */
 export function pinholeFillFactor(diameter: number, pitch: number): number {
   return positive(diameter) && positive(pitch) && diameter <= pitch ? (Math.PI * diameter * diameter) / (4 * pitch * pitch) : NaN;
+}
+
+/** Largest pinhole pitch for which spinningDiskSection sums the lattice, Airy units (≈ 900 distinct |G| at 20 AU). */
+export const SPINNING_DISK_MAX_PITCH_AU = 20;
+
+/**
+ * Hopkins' defocused OTF at ν for W₀₂₀ = u/(4π) waves, (4/π)∫₀^arccos ν sin²t·cos(2uν(cos t − ν)) dt, by 8-point
+ * Gauss–Legendre with a panel per 3 rad of phase: within 1e-9 of defocusedOtf and about 15× faster (the lattice sum
+ * needs ≈ 10⁵ evaluations per curve).
+ */
+function hopkinsOtf(nu: number, u: number): number {
+  if (nu >= 1) return 0;
+  const a = 2 * Math.abs(u) * nu;
+  const T = Math.acos(nu);
+  const g = (t: number) => {
+    const st = Math.sin(t);
+    return st * st * Math.cos(a * (Math.cos(t) - nu));
+  };
+  const panels = Math.ceil((a * (1 - nu)) / 3) + 1;
+  let sum = 0;
+  for (let i = 0; i < panels; i++) sum += integrateGaussLegendre8(g, (i * T) / panels, ((i + 1) * T) / panels);
+  return (4 / Math.PI) * sum;
+}
+
+/** Transform of a pinhole of radius p at spatial frequency q, over its area: 2J₁(qp)/(qp). */
+const pinholeTransform = (q: number, p: number) => (q * p === 0 ? 1 : (2 * besselJ(1, q * p)) / (q * p));
+
+/** Ĉ(u, q)/((4π)²πp²): squared defocused OTF times the pinhole's transform. */
+function crosstalkKernel(u: number, q: number, p: number): number {
+  return hopkinsOtf(q / 2, u) ** 2 * pinholeTransform(q, p);
+}
+
+/**
+ * Single-pinhole thin-plane section S₁(u) = (1/2π) ∫₀² Ĉ(u, q) q dq in units of (4π)²πp² (Fourier form; see the
+ * header). Simpson's rule with 400 intervals.
+ */
+export function pinholeSectionFourier(u: number, pinholeAU: number): number {
+  if (!(Number.isFinite(u) && Number.isFinite(pinholeAU) && pinholeAU > 0)) return NaN;
+  const p = BESSEL_J1_FIRST_ZERO * pinholeAU;
+  let sum = 0;
+  const N = 400;
+  for (let i = 0; i <= N; i++) {
+    const q = (2 * i) / N;
+    sum += (i === 0 || i === N ? 1 : i % 2 ? 4 : 2) * crosstalkKernel(u, q, p) * q;
+  }
+  return ((2 / N / 3) * sum) / (2 * Math.PI);
+}
+
+export type SpinningDiskSection = {
+  /** Thin-plane response of the disk at defocus u, 1 in focus; NaN beyond SPINNING_DISK_MAX_PITCH_AU. */
+  response: (u: number) => number;
+  /** Response to a plane far out of focus (u → ∞): the crosstalk floor. */
+  floor: number;
+  /** Half width at half maximum of the response, in u; NaN if the floor is ≥ ½ or beyond the pitch limit. */
+  halfWidthU: number;
+};
+
+/**
+ * Thin-plane section of a spinning disk with pinholes of P Airy units on a square lattice of pitch a Airy units
+ * (0 < P ≤ a), including crosstalk through all neighbouring pinholes (lattice sum; see the header). Above
+ * SPINNING_DISK_MAX_PITCH_AU only the floor is returned, with S(0) taken as the single-pinhole S₁(0) (the
+ * neighbours add 0.002 % in focus at 20 AU).
+ */
+export function spinningDiskSection(pinholeAU: number, pitchAU: number): SpinningDiskSection {
+  const nan = { response: () => NaN, floor: NaN, halfWidthU: NaN };
+  if (!(Number.isFinite(pinholeAU) && Number.isFinite(pitchAU) && pinholeAU > 0 && pinholeAU <= pitchAU)) return nan;
+  const p = BESSEL_J1_FIRST_ZERO * pinholeAU;
+  const a = 2 * BESSEL_J1_FIRST_ZERO * pitchAU;
+  // The m = 0 term in the same units: ((4π)²πp²/a²)·1 over (4π)²πp².
+  const zeroTerm = 1 / (a * a);
+  if (pitchAU > SPINNING_DISK_MAX_PITCH_AU) return { ...nan, floor: zeroTerm / pinholeSectionFourier(0, pinholeAU) };
+  // Distinct |G|² = (2π/a)²(m₁² + m₂²) < 4 with their multiplicities.
+  const g = (2 * Math.PI) / a;
+  const mMax = Math.floor(2 / g);
+  const counts = new Map<number, number>();
+  for (let m1 = -mMax; m1 <= mMax; m1++) {
+    for (let m2 = -mMax; m2 <= mMax; m2++) {
+      const k = m1 * m1 + m2 * m2;
+      if (g * g * k < 4) counts.set(k, (counts.get(k) ?? 0) + 1);
+    }
+  }
+  const qs = [...counts.keys()].map((k) => g * Math.sqrt(k));
+  const weights = [...counts.values()].map((count, i) => count * pinholeTransform(qs[i], p));
+  const total = (u: number) => {
+    let sum = 0;
+    for (let i = 0; i < qs.length; i++) sum += weights[i] * hopkinsOtf(qs[i] / 2, u) ** 2;
+    return sum / (a * a);
+  };
+  const s0 = total(0);
+  const response = (u: number) => (Number.isFinite(u) ? total(u) / s0 : NaN);
+  const floor = zeroTerm / s0;
+  const halfWidthU = floor < 0.5 ? firstCrossing(response, 0, 200, 0.5, 100) : NaN;
+  return { response, floor, halfWidthU };
 }
