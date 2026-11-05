@@ -411,10 +411,10 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "nonlinear-index",
     title: "Nonlinear Refractive Index (n₂)",
-    description: "Kerr effect n = n₀ + n₂I: index change, nonlinear phase over a length, fibre nonlinear coefficient γ = 2πn₂/(λA_eff) and the self-focusing critical power, with n₂ of silica fibre, silicon and 17 crystals, glasses and water.",
+    description: "Kerr effect n = n₀ + n₂I: index change, nonlinear phase over a length, fibre nonlinear coefficient γ = 2πn₂/(λA_eff) and the self-focusing critical power, with n₂ of silica fibre, silicon, air and its gases, CS₂ and 17 crystals, glasses and water.",
     keywords: ["Kerr Effect", "Nonlinear Refractive Index", "B-Integral", "Self-Phase Modulation", "Critical Power"],
     tier: "textbook",
-    modelNote: "Instantaneous electronic Kerr effect for linear polarization and uniform intensity over L. n₂ is fixed at the wavelength it was measured at (800 nm for the Dubietis table, 1064 nm for DeSalvo's, 1800 nm for silicon, 1550 nm for silica fibre); its dispersion is not modelled. DeSalvo's esu values are converted with n₂(m²/W) = 40π n₂(esu)/(c n₀). P_cr is the Gaussian-beam value 3.77 λ²/(8π n₀ n₂).",
+    modelNote: "Instantaneous electronic Kerr effect for linear polarization and uniform intensity over L. n₂ is fixed at the wavelength it was measured at; its dispersion is not modelled. Gases are electronic only at 1 atm (≲ 50 fs; longer pulses add rotation); the CS₂ > 10 ps row includes the nuclear response. DeSalvo's esu values are converted with n₂(m²/W) = 40π n₂(esu)/(c n₀). P_cr is the Gaussian-beam value 3.77 λ²/(8π n₀ n₂).",
     references: [
       {
         citation: "Dubietis A., Tamošauskas G., Šuminas R., Jukna V., Couairon A. (2017). Ultrafast supercontinuum generation in bulk condensed media. Lith. J. Phys. 57(3). Table 1: n₂ and n₀ at 800 nm.",
@@ -443,6 +443,30 @@ export const materials: CalculatorEntry[] = [
       {
         citation: "Malitson I. H. (1965). Interspecimen comparison of the refractive index of fused silica. J. Opt. Soc. Am. 55, 1205.",
         url: "https://doi.org/10.1364/JOSA.55.001205",
+      },
+      {
+        citation: "Zahedpour S., Wahlstrand J. K., Milchberg H. M. (2015). Measurement of the nonlinear refractive index of air constituents at mid-infrared wavelengths. Opt. Lett. 40, 5794. Table 1: electronic and rotational n₂ of N₂, O₂ and Ar at 1 atm.",
+        url: "https://doi.org/10.1364/OL.40.005794",
+      },
+      {
+        citation: "U.S. Standard Atmosphere, 1976 (NOAA, NASA, USAF). Dry-air mole fractions N₂ 0.78084, O₂ 0.209476, Ar 0.00934.",
+        url: "https://ntrs.nasa.gov/citations/19770009539",
+      },
+      {
+        citation: "Peck E. R., Reeder K. (1972). Dispersion of Air. J. Opt. Soc. Am. 62, 958. n₀ of the gases.",
+        url: "https://doi.org/10.1364/josa.62.000958",
+      },
+      {
+        citation: "Reichert M., Hu H., Ferdinandus M. R., Seidel M., Zhao P., Ensley T. R., Peceli D., Reed J. M., Fishman D. A., Webster S., Hagan D. J., Van Stryland E. W. (2014). Temporal, spectral, and polarization dependence of the nonlinear optical response of carbon disulfide. Optica 1, 436. Table 1 and Eq. 18: CS₂ electronic and long-pulse n₂.",
+        url: "https://doi.org/10.1364/OPTICA.1.000436",
+      },
+      {
+        citation: "Kedenburg S., Vieweg M., Gissibl T., Giessen H. (2012). Linear refractive index and absorption measurements of nonlinear optical liquids in the visible and near-infrared spectral region. Opt. Mater. Express 2, 1588. n₀ of CS₂.",
+        url: "https://doi.org/10.1364/OME.2.001588",
+      },
+      {
+        citation: "Wahlstrand J. K., Cruz C. D. (2026). Precise measurement of the Kerr coefficient using phase-sensitive pump–probe hyperspectral imaging. Rev. Sci. Instrum. 97(8). Fused silica n₂ = 2.18 ± 0.14 × 10⁻¹⁶ cm²/W at 1024 nm (Z-scan).",
+        url: "https://doi.org/10.1063/5.0331814",
       },
       {
         citation: "Boyd R. W. (2020). Nonlinear Optics, 4th ed. Academic Press. The nonlinear index, its polarization dependence (⅔ for circular light, electronic response) and self-focusing.",

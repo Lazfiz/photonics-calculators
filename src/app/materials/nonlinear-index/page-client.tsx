@@ -144,16 +144,25 @@ export default function NonlinearIndexPage() {
             The electronic Kerr effect is instantaneous and the intensity uniform over L, so φ is the on-axis phase (the
             B-integral of a slab). In a fibre the same n₂ sets γ through the mode&apos;s effective area. n₂ falls slowly
             towards the infrared below the band gap, so a value measured at one wavelength holds only near it (fused silica:
-            2.4 × 10⁻¹⁶ cm²/W at 800 nm in Dubietis et al.&apos;s table, 2.1 × 10⁻¹⁶ at 1064 nm in DeSalvo et al.&apos;s
-            picosecond Z-scans, ±20 %).
+            2.4 × 10⁻¹⁶ cm²/W at 800 nm in Dubietis et al.&apos;s table, 2.18 × 10⁻¹⁶ at 1024 nm in Wahlstrand &amp;
+            Cruz&apos;s Z-scan, ±6 %; DeSalvo et al.&apos;s picosecond Z-scans give 2.1 × 10⁻¹⁶ at 1064 nm and 2.2 × 10⁻¹⁶ at
+            532 nm, ±20 %).
           </p>
           <p>
             Silicon&apos;s n₂ changes fourfold between 1000 and 2200 nm (4.7 × 10⁻¹⁴ cm²/W at 1220 nm, peak 1.2 × 10⁻¹³ at
             1800 nm), and silicon also absorbs two photons up to 2200 nm, which limits the usable nonlinear phase.
           </p>
           <p>
-            Values are for linear polarization; circular polarization gives ⅔ of n₂ in isotropic media. Pulses of a few
-            picoseconds or longer in liquids and gases add a slower molecular (orientational) part.
+            Values are for linear polarization; circular polarization gives ⅔ of the electronic n₂ in isotropic media
+            (CS₂&apos;s long-pulse n₂ falls 3.4-fold). Liquids and gases add a slower molecular (orientational) part.
+          </p>
+          <p>
+            The gases are the electronic n₂ at 1 atm from 40 fs pump–probe measurements (±10 %); n₂ scales with pressure.
+            The electronic part dominates only for pulses shorter than about 50 fs; above about 150 fs the rotation of N₂
+            and O₂ takes over, and for long pulses it adds 24 and 54 × 10⁻²⁰ cm²/W, three to seven times the electronic
+            value, so P_cr in air drops several-fold. Air is the mole-fraction sum of N₂, O₂ and Ar. CS₂ has two rows: the
+            bound-electronic n₂ (even at 32–165 fs the nuclear part can double the effective n₂), and the plateau above
+            10 ps, where its collision, libration and diffusive reorientation responses raise n₂ fourteenfold.
           </p>
         </div>
       </div>
