@@ -19,11 +19,11 @@
  *   the low-frequency (unclamped, r^T) values: vendor tables (Laser Components KTP sheet) list them beside high-frequency
  *   r₃₃ 35.0, r₂₃ 13.8 pm/V, and Xie & Pfister's kHz measurements agree with them. LiNbO₃'s Weis & Gaylord r are clamped.
  * - BaTiO₃ (tetragonal 4mm at room temperature, negative uniaxial) in the same z-field geometry: M. Zgonik et al.,
- *   Phys. Rev. B 50, 5941 (1994), doi:10.1103/PhysRevB.50.5941, at 632.8 nm and 23 °C, as tabulated in A. Petraru's thesis
- *   (Universität zu Köln, 2003, Table 2.2): unclamped (below the crystal's first acoustic resonance, which depends on its
- *   size: ≈ 0.1 MHz for a 2 cm crystal, 1–100 MHz for Petraru's samples) r₁₃ 8 ± 2,
- *   r₃₃ 105 ± 10, r₄₂ 1300 ± 100 pm/V; clamped 10.2 ± 0.6, 40.6 ± 2.5, 730 ± 100 pm/V. The large r₄₂ needs a field
- *   across z and is not used here. n_o, n_e: S. H. Wemple, M. DiDomenico Jr., I. Camlibel, J. Phys. Chem. Solids 29, 1797
+ *   Phys. Rev. B 50, 5941 (1994), doi:10.1103/PhysRevB.50.5941, at 633 nm and 23 °C: stress-free (unclamped, below the
+ *   crystal's acoustic resonances, 0.1 to a few MHz for Zgonik's samples) r₁₃ 8 ± 2, r₃₃ 105 ± 10, r₄₂ 1300 ± 100 pm/V
+ *   and ε₁₁ 4400 ± 400, ε₃₃ 129 ± 5 (Table III); clamped r 10.2 ± 0.6, 40.6 ± 2.5, 730 ± 100 pm/V and ε 2200 ± 200,
+ *   56 ± 3 (Table II). The modulators use r₁₃ and r₃₃; r₄₂ needs a field across z and enters only the photorefractive
+ *   grating below. n_o, n_e: S. H. Wemple, M. DiDomenico Jr., I. Camlibel, J. Phys. Chem. Solids 29, 1797
  *   (1968), doi:10.1016/0022-3697(68)90164-9, n² − 1 = Bλ²/(λ² − λ₀²) (o: B 4.187, λ₀ 0.223 µm; e: 4.064, 0.211 µm),
  *   0.4–0.7 µm, as transcribed by refractiveindex.info (CC0).
  * - Photorefractive grating (N. V. Kukhtarev et al., Ferroelectrics 22, 949 (1978), doi:10.1080/00150197908239450),
@@ -32,6 +32,16 @@
  *   quarter period from the fringes. Two-beam coupling then transfers intensity as dI₁/dz = Γ I₁I₂/(I₁ + I₂) with
  *   Γ = 2π n³ r_eff E_sc / (λ cos θ), θ the half-angle inside the crystal (P. Yeh, IEEE J. Quantum Electron. 25, 484
  *   (1989), doi:10.1109/3.18564). The sign of Γ follows the c-axis orientation; its magnitude is returned.
+ * - Anisotropic grating (J. Feinberg, D. Heiman, A. R. Tanguay Jr., R. W. Hellwarth, J. Appl. Phys. 51, 1297 (1980),
+ *   doi:10.1063/1.327824, eqs. 7, 13 and 19): E_q uses the static permittivity along the grating vector, ε_K = k̂·ε·k̂,
+ *   and the beams couple through (ê₁·ε_ω(R·k̂)ε_ω·ê₂)(ê₁·ê₂), ε_ω = diag(n_o², n_o², n_e²). For two e-polarized beams at
+ *   ±θ (inside) about a bisector in the x–z plane, with K tilted by β from c, the 4mm tensor (r₁₃, r₃₃, r₄₂ = r₅₁)
+ *   contracts to cos β·[n_o⁴r₁₃(sin²β − sin²θ) + 2n_o²n_e²r₄₂ sin²β + n_e⁴r₃₃(cos²β − sin²θ)] (derived here;
+ *   tests/materials-pockels.test.ts checks it against the full tensor sum), and ê₁·ê₂ = cos 2θ is the fringe contrast.
+ *   Divided by n⁴, n the e-index along the bisector, this is the r_eff of Γ. The beams' E and D directions are taken
+ *   equal (BaTiO₃'s walk-off is at most ≈ 1.05° at 633 nm, 1.24° at 532 nm). A grating's strain is neither zero nor free: its effective r adds
+ *   piezoelectric and elasto-optic terms that depend on K (Zgonik et al. 1994, sec. II), so the clamped and free sets
+ *   are two limiting cases, not the grating's own values.
  */
 
 import { epsilon_0, k_B, q } from "../constants";
@@ -50,7 +60,7 @@ export interface PockelsCrystal {
    * Coefficients in m/V: r₆₃ for a longitudinal cell; for a transverse one r₃₃ (z polarization) and r₁₃, the
    * coefficient of the polarization across z (r₂₃ for KTP, labelled by `perp`).
    */
-  r: { r63?: number; r33?: number; r13?: number };
+  r: { r63?: number; r33?: number; r13?: number; r42?: number };
   /**
    * Index across z (n_o; n_y for KTP) and along z (n_e; n_z for KTP) at λ (m): a Sellmeier fit, or fixed values
    * where only a single index is published.
@@ -60,8 +70,10 @@ export interface PockelsCrystal {
   perp?: { n: string; nz: string; r: string };
   /** Wavelength range of the index model, m (fixed indices: the range of the source's examples). */
   range: [number, number];
-  /** Static relative permittivity along the field (photorefractive E_q), or NaN where not tabulated. */
+  /** Static relative permittivity ε₃₃ along z (photorefractive E_q), or NaN where not tabulated. */
   epsilon: number;
+  /** Static relative permittivity ε₁₁ across z, where tabulated. */
+  epsilon11?: number;
   source: string;
 }
 
@@ -103,14 +115,14 @@ export const POCKELS: Record<PockelsId, PockelsCrystal> = {
     source: "r₃₃, r₂₃ (unclamped, 633 nm) Cheng et al. 1994 via Xie & Pfister 2005; n_y, n_z Kato & Takaoka 2002",
   },
   batio3: {
-    name: "BaTiO₃ (unclamped)", pointGroup: "4mm", geometry: "transverse", r: { r33: 105e-12, r13: 8e-12 },
-    indices: batio3Indices, range: [BATIO3_O.range[0], BATIO3_O.range[1]], epsilon: NaN,
-    source: "r₃₃ 105 ± 10, r₁₃ 8 ± 2 (unclamped, below the first acoustic resonance; 633 nm) Zgonik et al. 1994 via Petraru 2003; n_o, n_e Wemple et al. 1968",
+    name: "BaTiO₃ (unclamped)", pointGroup: "4mm", geometry: "transverse", r: { r33: 105e-12, r13: 8e-12, r42: 1300e-12 },
+    indices: batio3Indices, range: [BATIO3_O.range[0], BATIO3_O.range[1]], epsilon: 129, epsilon11: 4400,
+    source: "r₃₃ 105 ± 10, r₁₃ 8 ± 2 (unclamped, below the acoustic resonances; 633 nm) Zgonik et al. 1994, Table III; n_o, n_e Wemple et al. 1968",
   },
   "batio3-clamped": {
-    name: "BaTiO₃ (clamped)", pointGroup: "4mm", geometry: "transverse", r: { r33: 40.6e-12, r13: 10.2e-12 },
-    indices: batio3Indices, range: [BATIO3_O.range[0], BATIO3_O.range[1]], epsilon: NaN,
-    source: "r₃₃ 40.6 ± 2.5, r₁₃ 10.2 ± 0.6 (clamped, above the piezoelectric resonances; 633 nm) Zgonik et al. 1994 via Petraru 2003; n_o, n_e Wemple et al. 1968",
+    name: "BaTiO₃ (clamped)", pointGroup: "4mm", geometry: "transverse", r: { r33: 40.6e-12, r13: 10.2e-12, r42: 730e-12 },
+    indices: batio3Indices, range: [BATIO3_O.range[0], BATIO3_O.range[1]], epsilon: 56, epsilon11: 2200,
+    source: "r₃₃ 40.6 ± 2.5, r₁₃ 10.2 ± 0.6 (clamped, above the piezoelectric resonances; 633 nm) Zgonik et al. 1994, Table II; n_o, n_e Wemple et al. 1968",
   },
 };
 
@@ -155,6 +167,28 @@ export const twoBeamCouplingGain = (lambda: number, n: number, rEff: number, Esc
   pos(lambda) && pos(n) && pos(rEff) && pos(Esc) && Math.abs(thetaInside) < Math.PI / 2
     ? (2 * Math.PI * n ** 3 * rEff * Esc) / (lambda * Math.cos(thetaInside))
     : NaN;
+
+/** Index of an extraordinary wave travelling at ψ from the c axis: 1/n² = cos²ψ/n_o² + sin²ψ/n_e². */
+export const extraordinaryIndex = (no: number, ne: number, psi: number) =>
+  pos(no) && pos(ne) ? 1 / Math.sqrt(Math.cos(psi) ** 2 / no ** 2 + Math.sin(psi) ** 2 / ne ** 2) : NaN;
+
+/** Static permittivity along a grating vector at β from c, k̂·ε·k̂ = ε₁₁ sin²β + ε₃₃ cos²β (Feinberg et al. 1980, eq. 7). */
+export const gratingPermittivity = (epsilon11: number, epsilon33: number, beta: number) =>
+  pos(epsilon11) && pos(epsilon33) ? epsilon11 * Math.sin(beta) ** 2 + epsilon33 * Math.cos(beta) ** 2 : NaN;
+
+/**
+ * Effective coefficient |r_eff| (m/V) of two e-polarized beams at ±θ inside about their bisector, with the grating vector
+ * at β ∈ [0, π/2] from c, in a 4mm crystal (or 3m with the plane of incidence x–z; in y–z, r₂₂ adds a term for β ≠ 0): cos 2θ · cos β · [n_o⁴r₁₃(sin²β − sin²θ) + 2n_o²n_e²r₄₂ sin²β
+ * + n_e⁴r₃₃(cos²β − sin²θ)] / n⁴, n the e-index along the bisector (see the header). It goes into Γ with that n.
+ */
+export function eWaveEffectiveCoefficient(no: number, ne: number, r13: number, r33: number, r42: number, beta: number, theta: number): number {
+  if (!pos(no) || !pos(ne) || !(beta >= 0 && beta <= Math.PI / 2) || !(Math.abs(theta) < Math.PI / 2)) return NaN;
+  const s2b = Math.sin(beta) ** 2;
+  const s2t = Math.sin(theta) ** 2;
+  const bracket = no ** 4 * r13 * (s2b - s2t) + 2 * no ** 2 * ne ** 2 * r42 * s2b + ne ** 4 * r33 * (1 - s2b - s2t);
+  const n = extraordinaryIndex(no, ne, Math.PI / 2 - beta);
+  return Math.abs(Math.cos(2 * theta) * Math.cos(beta) * bracket) / n ** 4;
+}
 
 /**
  * Grating period where E_D = E_q, Λ = 2π √(ε₀ ε k_B T / (q² N_eff)) (2π times the Debye screening length). Since

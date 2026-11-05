@@ -5,12 +5,12 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 203, 2026-11-05)
+## Status (session 204, 2026-11-05)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
   textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) and 5w-13 (materials) and 5w-14 (spectroscopy) and 5w-15 (thin-film + polarization) done (sessions 163–177): 5w is complete; KRS-5
-  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6j done (sessions 179–194); Gemini hero done (session 195). Phase 7 (Known limitations: features): 7a–7d done (sessions 196–199), 7e done (session 200; 7e-b with the user's Westwood PDF), 7f-a/7f-b done (sessions 201–202), 7g-a done (session 203); 7g-b blocked on PDFs. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6j done (sessions 179–194); Gemini hero done (session 195). Phase 7 (Known limitations: features): 7a–7d done (sessions 196–199), 7e done (session 200; 7e-b with the user's Westwood PDF), 7f-a/7f-b done (sessions 201–202), 7g-a/7g-b done (sessions 203–204); Phase 7 done. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -113,8 +113,8 @@ Evidence for a later extension. Reopen an item only with a new source or a user 
 - `heat-capacity` (session 185: + GaAs, diamond): MgF₂, ZnSe, BaF₂ and fused silica are not offered (no cited θ_D). GaAs below 298 K unchecked
   (session 190: Piesbergen 1963 Tab. 3, within 2.4 % at 100–273 K, 24 % low at 50 K); above 600 K data sets spread by up to 10 J/(mol·K) (Pässler, AIP Adv. 3, 082108 (2013), abstract). `damage-threshold` and `radiation-damage` have user inputs, no presets.
 - `electro-optic`, `photorefractive` (session 143: KTP added; session 203: BaTiO₃ unclamped/clamped on `electro-optic`, Wemple 1968
-  indices 0.4–0.7 µm, r₄₂ not modelled): SBN, BSO and LiTaO₃ are still out. BaTiO₃ on the photorefractive page needs ε₁₁, ε₃₃
-  (Zgonik 1994 PRB 50, 5941, paywalled; Petraru's thesis, behind a bot check, gives only r and n) and r_eff(β) (Yeh 1989 / Feinberg 1980); LiTaO₃ has only a vendor r₃₃ (Crylink 30.4, no r₁₃ or λ;
+  indices 0.4–0.7 µm; session 204: BaTiO₃ on `photorefractive`, Feinberg 1980 e-wave r_eff(β), Zgonik 1994 ε): SBN, BSO and LiTaO₃
+  are still out (custom crystal only); no beam walk-off, anisotropic mobility or grating piezo/elasto-optic terms. LiTaO₃ has only a vendor r₃₃ (Crylink 30.4, no r₁₃ or λ;
   Casson 2004 JOSA B is paywalled, OSTI refuses connections). KTP's r (Cheng 1994) are the unclamped values
   (vendor tables, session 190; Cheng itself paywalled). Wilson & Hawkes now cites the 3rd ed. (1998); Table 3.1 is the same in all three.
 - `nonlinear-crystals` (user decision, session 130: lean SHG page): CLBO, KTA, AgGaS₂, ZGP, GaSe and OP-GaAs and the walk-off,
@@ -296,7 +296,7 @@ sources: Ar⁺/CO₂ g₀, Nd/Tm/Ho σ, Sheik-Bahae n₂, ZBLAN, LiTaO₃, …) 
 - [x] 7f-a imaging (session 201, `phase-7/7f-imaging`, PR #239). See Done.
 - [x] 7f-b imaging (session 202, `phase-7/7f-b-fpbase-spectra`, PR #240). See Done.
 - [x] 7g-a materials data (session 203, `phase-7/7g-materials-data`, PR #241). See Done.
-- [ ] 7g-b BaTiO₃ on `photorefractive`: blocked on ε₁₁/ε₃₃ (Zgonik 1994) and the e-polarized r_eff(β) (Yeh 1989 or Feinberg 1980): ask the user for PDFs.
+- [x] 7g-b BaTiO₃ on `photorefractive` (session 204, `phase-7/7g-b-batio3-photorefractive`, PR #242). See Done.
 - Later, user's choice: phone hero (cropped layout + touch: tap to highlight, tap again to open, auto-cycle); traffic/SEO pass.
 
 ## Decisions (keep)
@@ -316,6 +316,7 @@ sources: Ar⁺/CO₂ g₀, Nd/Tm/Ho σ, Sheik-Bahae n₂, ZBLAN, LiTaO₃, …) 
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 7g-b photorefractive (session 204, `phase-7/7g-b-batio3-photorefractive`, PR #242): BaTiO₃ unclamped/clamped, e-beams with K at β from c; Feinberg 1980 eq. 19 r_eff (closed form = full 4mm tensor sum to 1e-10), ε_K = ε₁₁sin²β + ε₃₃cos²β (Zgonik Tables II/III); 632.8 nm β 45° θ 0: 958.28 pm/V; page default Γ 26.73 cm⁻¹.
 - 7g-a materials data (session 203, `phase-7/7g-materials-data`, PR #241): `thermal-expansion` Si α(T) (Okada & Tokumaru 1984, 120–1500 K; α(300) 2.56806, 100 mm 20→120 °C 28.741 µm, cancellation-free mean); `electro-optic` BaTiO₃ unclamped/clamped (Zgonik via Petraru Table 2.2, Wemple n; V_π 24.914/80.655 V at 1 mm × 20 mm, 633 nm); 1255 tests.
 - 7f-b imaging (session 202, `phase-7/7f-b-fpbase-spectra`, PR #240): `fluorophores.ts` uses FPbase spectra sampled every 1 nm (`fpbase-spectra.ts`, CC BY-SA 4.0) on fluorescence-spectra, simultaneous-multicolor and spectral-unmixing; anti-Stokes tails kept (EGFP em 450–480 nm 0.0055, was 0); R₀ EGFP→mCherry 5.109 nm (fit 5.055).
 - 7f-a imaging (session 201, `phase-7/7f-imaging`, PR #239): `mtf` exact-phase high-NA defocus OTF (2D overlap) and closed-form Strehl (0.27298 vs paraxial 0.5554 at NA 0.95, 0.5 µm, 550 nm); `spinning-disk` crosstalk by a reciprocal-lattice sum, floor 4.45 % at the CSU defaults, Fourier section = CONFOCAL_FWHM_TABLE.

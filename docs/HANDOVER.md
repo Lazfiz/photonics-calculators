@@ -1,32 +1,35 @@
-# Handover — 2026-11-05 (session 203 → session 204)
+# Handover — 2026-11-05 (session 204 → session 205)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 203 did Phase 7g-a (Si α(T) on `thermal-expansion`, BaTiO₃ on `electro-optic`) on `phase-7/7g-materials-data`
-(PR #241, to open with `/ship`). 7g-b (BaTiO₃ on `photorefractive`) is blocked on PDFs; Phase 7 is otherwise done.
+Session 204 did Phase 7g-b (BaTiO₃ on `photorefractive`) on `phase-7/7g-b-batio3-photorefractive` (PR #242, to open
+with `/ship`). PR #241 (7g-a) is merged into `main`, not released. Phase 7 is done.
 
 ## State
-- `materials/thermal-expansion.ts`: `siliconAlpha(T)` (Okada & Tokumaru 1984 abstract fit, 120–1500 K, NaN outside),
-  `siliconMeanAlpha(T1, T2)` written with expm1(−cΔT)/(cΔT) (no cancellation for tiny ΔT), `siliconAlphaIntegral` = mean × ΔT,
-  `siliconExpansion(L, T1, T2)` = L·expm1(∫α dT). Page: T₀ input (`t0`, °C), 4 cards, α(T) chart.
-- `materials/pockels.ts`: `batio3`, `batio3-clamped` (transverse z-field, n_e³r₃₃ − n_o³r₁₃), Wemple 1968 n via
-  `fromResonanceWavelengths`, range 0.4–0.7 µm. r₄₂ noted, not modelled.
-- Golden: α(300 K) 2.56806e-6, α(1500) 4.55606e-6, α(293.15) 2.51 (Hartwig via Paszkowicz 1995), mean 300–400 K 2.91863e-6,
-  100 mm 20→120 °C 28.7412 µm; BaTiO₃ 632.8 nm n_o 2.40431, n_e 2.36059, V_π (d 1 mm, L 20 mm) 24.9137 V unclamped,
-  80.655 V clamped, phase-only 22.9081 V.
-- Gate: 1255 tests, 5 eslint warnings (unchanged); build green. 411/411 tiered, 0 known issues.
+- `materials/pockels.ts`: BaTiO₃ entries carry r₄₂ and `epsilon11` (Zgonik 1994 Table III free: ε 4400/129, r 8/105/1300;
+  Table II clamped: 2200/56, 10.2/40.6/730 pm/V). New `extraordinaryIndex(no, ne, ψ)`, `gratingPermittivity(ε₁₁, ε₃₃, β)`,
+  `eWaveEffectiveCoefficient(no, ne, r13, r33, r42, β, θ)` (Feinberg 1980 eq. 19, cos 2θ contrast and 1/n⁴ included).
+- Page: material LiNbO₃ (β = 0) / BaTiO₃ free / clamped / custom; `beta` URL param (0–90°, BaTiO₃ only), β chart,
+  out-of-range "—" plus a warning outside the 400–700 nm index fit.
+- Golden (632.8 nm): ε_K(45°) 2264.5, n_e(45°) 2.382146, r_eff β 45° θ 0 958.28 pm/V, θ 10° 898.29; β 0 → r₃₃;
+  chain 2θ 20°, β 45°, 295 K, N 1e22: E_q 23172.7 V/m, r_eff 947.69 pm/V, Γ 23.375 cm⁻¹. Page default (532 nm) Γ 26.73 cm⁻¹,
+  clamped 25.81, LiNbO₃ 3.897. Closed form = brute 4mm tensor sum (rel 5e-13). physics-reviewer: formula correct.
+- Gate: 1259 tests, 5 eslint warnings (unchanged); build green. 411/411 tiered, 0 known issues.
 
 ## Next actions
 1. `/ship`; merge on the user's yes. Release only on request, then:
-   `node scripts/post-merge-check.mjs <sha> "materials/thermal-expansion=Silicon: α(T) integrated" "materials/electro-optic=BaTiO₃ (unclamped)"`,
+   `node scripts/post-merge-check.mjs <sha> "materials/photorefractive?material=batio3=BaTiO₃"`,
    then `node scripts/ui-check.mjs https://photonics-calculators.vercel.app`.
-2. 7g-b (blocked): BaTiO₃ on `photorefractive` needs ε₁₁, ε₃₃ (Zgonik 1994 PRB 50, 5941) and the e-polarized r_eff(β)
-   (Yeh 1989 IEEE JQE 25, 484, or Feinberg et al. 1980). Ask the user for these PDFs.
-3. Other PDFs still wanted: Bai 2020 (APL Photonics 5, 031301), Patel 2001 (Yb:YAG κ), Siegman "Lasers" ch. 11/21,
-   Degnan 1989, Egner, Andresen & Hell 2002 (J. Microsc. 206, 24).
+2. Phase 7 is done. User's choice: phone hero (cropped layout + touch) or a traffic/SEO pass (ROADMAP), or open findings.
+3. PDFs still wanted: Bai 2020 (APL Photonics 5, 031301), Patel 2001 (Yb:YAG κ), Siegman "Lasers" ch. 11/21,
+   Degnan 1989, Egner, Andresen & Hell 2002 (J. Microsc. 206, 24); SBN/BSO/LiTaO₃ data (Casson 2004 JOSA B) for photorefractive.
 4. KRS-5 by hand: `materials/transparency-range?material=krs5` at 10 µm: n 2.3707, loss 28.4 %.
-5. After Phase 7, user's choice: phone hero, or a traffic/SEO pass (ROADMAP).
 
 ## Non-obvious facts
+- **Session 204:** JBIG2 scans (old AIP/APS PDFs): `pdftoppm` is absent and pypdf needs jbig2dec; `pip install --target
+  <scratchpad>/pylib pypdfium2` renders them (run with `python -E -P`, add the pylib dir to sys.path). HAL
+  (hal-iogs.archives-ouvertes.fr) runs Anubis: ask the user to upload. MacDonald 1985 (uploaded) is not needed for r_eff.
+  Feinberg's DOI is 10.1063/1.327824. Test a tensor contraction at θ ≠ 0 (K = 0 at θ = 0 gives NaN). Γ's optimum β moves
+  from 53° to 0° as E_q limits (ε₁₁ ≫ ε₃₃): don't state one peak angle. Wemple indices extrapolate silently: range-guard them.
 - **Session 203:** Crossref's `/works/<doi>` often carries the abstract (`message.abstract`, JATS) when publishers elide
   it elsewhere: Okada & Tokumaru's α(T) formula came from there. `kups.ub.uni-koeln.de` runs Anubis (proof-of-work bot
   check) and the Wayback Machine refuses curl: both are bot checks, don't drive Chrome through them; ask the user to upload.
