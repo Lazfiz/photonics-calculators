@@ -10,7 +10,7 @@ goes in the PR description.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
   textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) and 5w-13 (materials) and 5w-14 (spectroscopy) and 5w-15 (thin-film + polarization) done (sessions 163–177): 5w is complete; KRS-5
-  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6j done (sessions 179–194); Gemini hero done (session 195). Phase 7 (Known limitations: features): 7a–7d done (sessions 196–199), 7e-a done (session 200; 7e-b blocked on sources); next 7f. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6j done (sessions 179–194); Gemini hero done (session 195). Phase 7 (Known limitations: features): 7a–7d done (sessions 196–199), 7e done (session 200; 7e-b with the user's Westwood PDF); next 7f. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -199,10 +199,8 @@ Evidence for a later extension. Reopen an item only with a new source or a user 
 - `quantum-key-distribution`: asymptotic decoy BB84 only (no finite-key or intensity fluctuations); the GYS cutoff is 142.015 km against Ma's 142.05 (gap not from Y₀ terms).
 
 **Thin film**
-- `sputtering-deposition`: no gas scattering (defaults sit at d ≈ 5.7 λ_Ar, rate is an upper bound); Westwood
-  thermalisation could add it. Cr and Nb dropped: no sourced 500 eV Ar⁺ yield (M&G 600 eV: 1.3, 0.65).
-  Source-blocked (session 200): Westwood 1978 (doi:10.1116/1.569429) is paywalled; Keller & Simmons 1979 (IBM J. Res.
-  Dev. 23, 24, open on bitsavers) has its transmission equation only as a scanned image.
+- `sputtering-deposition`: the rate stays collisionless (Westwood gives the thermalised share, not the diffusive rate;
+  Keller & Simmons 1979's transmission would). Cr and Nb dropped: no sourced 500 eV Ar⁺ yield (M&G 600 eV: 1.3, 0.65).
 - 5w-15 (session 177): gradient-index lacks Southwell's quintic; hard-coating Γ ignores mode mixity.
 - `thermal-evaporation`: all 8 metals match the CRC table (6f-a); the fits use one 298–2500 K range, not CRC's per-phase T_max.
 
@@ -299,8 +297,7 @@ sources: Ar⁺/CO₂ g₀, Nd/Tm/Ho σ, Sheik-Bahae n₂, ZBLAN, LiTaO₃, …) 
 - [x] 7c lasers (session 198, `phase-7/7c-lasers`, PR #236). See Done.
 - [x] 7d laser safety (session 199, `phase-7/7d-lidar-scan`, PR #237). See Done.
 - [x] 7e-a thin film (session 200, `phase-7/7e-thin-film`, PR #238). See Done.
-- [ ] 7e-b `sputtering-deposition` gas thermalisation (Westwood 1978 / Keller & Simmons 1979). Blocked: needs the user's
-  PDF of Westwood (paywalled) or a readable copy of Keller & Simmons' transmission equation (scan only). Skip to 7f until then.
+- [x] 7e-b sputtering thermalisation (session 200, same branch and PR #238). See Done.
 - [ ] 7f imaging: `imaging/fluorophores.ts` sampled FPbase spectra (CC data) instead of log-normal bands, `spinning-disk` pinhole
   crosstalk, `mtf` exact-phase high-NA defocus OTF.
 - [ ] 7g materials data: `thermal-expansion` α(T) for Si (Okada & Tokumaru 1984), BaTiO₃ on `electro-optic`/`photorefractive`
@@ -324,6 +321,7 @@ sources: Ar⁺/CO₂ g₀, Nd/Tm/Ho σ, Sheik-Bahae n₂, ZBLAN, LiTaO₃, …) 
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 7e-b thin film (session 200, PR #238): `sputtering-deposition` Westwood 1978 thermalisation (eqs. 2, 7, 8, 13; 80 u 5 eV 0.1 Pa 40.1 cm vs 42; 400 u Fig. 5 within 1 %), E* by inverting eq. 13 and Thompson share (E*/(E*+U))² (Al default 72 %, Cu 31 %).
 - 7e-a thin film (session 200, `phase-7/7e-thin-film`, PR #238): `ellipsometry-measurement` transparent-film thickness (A&B quadratic in X, |X| fit check, mod D_φ; SiO₂/Si 100 nm ↔ Ψ 41.055°, Δ 79.787°); `plasma-deposition` L&L h-factors with the diffusion term, Tₑ solved with h (100 mTorr: h_l 0.0142 vs 0.0386), sweep 0.1–100 mTorr.
 - 7d laser safety (session 199, `phase-7/7d-lidar-scan`, PR #237): `scanned-pulse-train.ts` (pulses within a pass, passes at P̄·ρ, C_P over T₂, stationary floor); `lidar-safety` `mode=scanned`: default rotating lidar 9.14× at 10 m, NOHD 32.9 m (stationary 146 m); brute force 1.00–1.59× conservative; review fixed a NaN band in the NOHD search.
 - 7c lasers (session 198, `phase-7/7c-lasers`, PR #236): `qSwitchOptimumCoupling` (Degnan; defaults R_opt 0.741, E_max 2.655 mJ vs 2.635
