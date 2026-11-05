@@ -1,16 +1,22 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { TORR, k_B, m_u } from "../src/physics/constants";
+import { N_A, TORR, k_B, m_u, q } from "../src/physics/constants";
 import {
   D_AR,
   SPUTTER_TARGETS,
   argonMeanFreePath,
   diskOnAxisFlux,
   growthRate,
+  sputteredAtomDiameter,
   sputteredAtomRate,
+  sputteredMeanFreePath,
   targetIonCurrent,
+  thermalisationDistance,
+  thermalisationEnergy,
+  thompsonFractionBelow,
   thompsonPeakEnergy,
+  velocityPersistence,
 } from "../src/physics/thin-film/sputtering";
 
 function assertRel(actual: number, expected: number, tol: number, label: string) {
@@ -59,4 +65,56 @@ test("Thompson peak, argon mean free path, guards", () => {
   assert.ok(Number.isNaN(targetIonCurrent(300, 0, 0.07)), "V = 0");
   assert.ok(Number.isNaN(argonMeanFreePath(0, 300)), "p = 0");
   for (const t of Object.values(SPUTTER_TARGETS)) assert.ok(t.Y500 > 0 && t.Us > 0 && t.rho > 0 && t.Tm > 0, t.name);
+});
+
+test("Westwood 1978 thermalisation: persistence, mean free path, distance", () => {
+  // Jeans' persistence for like atoms (M = 1): ln(1 + √2)/(4√2) + 1/4 = 0.4058063, the classical 0.406.
+  assertRel(velocityPersistence(1), 0.4058063100, 1e-9, "ν′/ν at M = 1");
+  assert.ok(Math.abs(velocityPersistence(1e-4) - 1) < 1e-3, "heavy atom keeps its velocity");
+  assert.ok(velocityPersistence(1e4) < 1e-3, "light atom loses its direction");
+  // Eq. (2) as printed, in cm: λ⁻¹ = 8.34e14 p (σ_s + σ_g)²/4 √(1 + M_s/M_g), at T = π·1e-6/(8.34e14 k_B) = 272.835 K.
+  // 80 u, σ_s = 0.3 + 0.15·60/130 = 0.36923 nm, σ_g = 0.29 nm, 1 Pa: 0.6368982 cm.
+  const ms80 = 80 * m_u;
+  const s80 = sputteredAtomDiameter(80);
+  assertRel(s80, 0.369230769e-9, 1e-8, "σ_s(80 u)");
+  assertRel(sputteredMeanFreePath(1, 272.835287, ms80, s80), 0.006368982, 1e-6, "λ eq. (2)");
+  // Westwood's abstract: a 5 eV atom of mass 80 in argon thermalises within 42 cm at 0.1 Pa and 0.44 cm at 10 Pa.
+  // Independent script (constants typed in), 273.15 K: η′ = 5.031137, D = 1.25 η′ λ = 40.10023 cm at 0.1 Pa.
+  const at01 = thermalisationDistance(5, 0.1, 273.15, ms80, s80);
+  assertRel(at01.collisions, 5.031137, 1e-6, "η′");
+  assertRel(at01.distance, 0.4010023, 1e-6, "D at 0.1 Pa");
+  assertRel(at01.distance, 0.42, 0.1, "D vs Westwood 0.1 Pa");
+  assertRel(thermalisationDistance(5, 10, 273.15, ms80, s80).distance, 0.0044, 0.1, "D vs Westwood 10 Pa");
+  // Fig. 5, 400 u at 1 Pa (read off the log plot): ≈ 6.9 cm at 5 eV, ≈ 13.9 cm at 1000 eV; script 6.994521, 13.91040.
+  const ms400 = 400 * m_u;
+  const s400 = sputteredAtomDiameter(400);
+  assertRel(thermalisationDistance(5, 1, 273.15, ms400, s400).distance, 0.06994521, 1e-6, "D 400 u 5 eV");
+  assertRel(thermalisationDistance(1000, 1, 273.15, ms400, s400).distance, 0.1391040, 1e-6, "D 400 u 1 keV");
+  assertRel(thermalisationDistance(1000, 1, 273.15, ms400, s400).distance, 0.139, 0.03, "D vs Fig. 5");
+  // Page default: Al, E₀ = U_s/2 = 1.695 eV, 3 mTorr, 300 K: 6.349799 cm (script).
+  const al = SPUTTER_TARGETS.Al;
+  const msAl = al.M / N_A;
+  assertRel(thermalisationDistance(al.Us / 2, 3e-3 * TORR, 300, msAl, sputteredAtomDiameter(al.M * 1e3)).distance, 0.06349799, 1e-6, "Al default");
+  // Edge cases: an atom already at thermal energy goes nowhere; no gas gives NaN.
+  assert.equal(thermalisationDistance(0.02, 1, 300, ms80, s80).distance, 0);
+  assert.ok(Number.isNaN(thermalisationDistance(5, 0, 300, ms80, s80).distance), "p = 0");
+  assert.ok(Number.isNaN(velocityPersistence(0)), "M = 0");
+});
+
+test("Thermalised fraction: eq. (13) inverted and the Thompson distribution", () => {
+  // Thompson CDF (E/(E + U))²: median at (1 + √2)U, and 1/9 of atoms below the U/2 peak.
+  assertRel(thompsonFractionBelow((1 + Math.SQRT2) * 3.49, 3.49), 0.5, 1e-12, "median");
+  assertRel(thompsonFractionBelow(3.49 / 2, 3.49), 1 / 9, 1e-12, "below peak");
+  // Round trip: the energy E* that thermalises at d has D(E*) = d.
+  const cu = SPUTTER_TARGETS.Cu;
+  const ms = cu.M / N_A;
+  const sigma = sputteredAtomDiameter(cu.M * 1e3);
+  const p = 3e-3 * TORR;
+  const Es = thermalisationEnergy(0.1, p, 300, ms, sigma);
+  assertRel(thermalisationDistance(Es, p, 300, ms, sigma).distance, 0.1, 1e-9, "D(E*) = d");
+  // Page default with Cu (10 cm, 3 mTorr, 300 K), independent script: E* = 4.322666 eV, 30.61293 % thermalised.
+  assertRel(Es, 4.322666, 1e-6, "E* Cu");
+  assertRel(thompsonFractionBelow(Es, cu.Us), 0.3061293, 1e-6, "fraction Cu");
+  // d = 0: only atoms at thermal energy or below.
+  assertRel(thermalisationEnergy(0, p, 300, ms, sigma), (k_B * 300) / q, 1e-12, "E*(0) = k_B T");
 });

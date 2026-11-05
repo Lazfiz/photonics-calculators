@@ -258,12 +258,12 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "ellipsometry-measurement",
     title: "Ellipsometry Measurement",
-    description: "Invert ellipsometry data (Psi, Delta) to the pseudo-dielectric function and pseudo-refractive index of a substrate.",
-    lede: "Invert ellipsometry data (Ψ, Δ) to the pseudo-dielectric function and pseudo-refractive index (two-phase ambient/substrate model).",
+    description: "Invert ellipsometry data (Psi, Delta) to the pseudo-dielectric function and pseudo-refractive index of a substrate, or to the thickness of a transparent film of known index.",
+    lede: "Invert ellipsometry data (Ψ, Δ) to the pseudo-dielectric function and pseudo-refractive index (two-phase ambient/substrate model), or to the thickness of a transparent film of known index on a known substrate.",
     tier: "exact",
-    modelNote: "Two-phase (ambient/substrate) inversion of Ψ and Δ, exact for a bare, isotropic, semi-infinite substrate. With films, roughness or anisotropy, ⟨n⟩ and ⟨k⟩ are pseudo-values, not material constants.",
+    modelNote: "Two-phase inversion, exact for a bare isotropic substrate (else ⟨n⟩, ⟨k⟩ are pseudo-values). Film: exact three-phase inversion for one lossless film of known index, modulo the period D_φ; |X| ≠ 1 flags a misfit.",
     references: [
-      { citation: "Azzam R. M. A., Bashara N. M. (1977). Ellipsometry and Polarized Light, ch. 4 (ambient-substrate system). North-Holland." },
+      { citation: "Azzam R. M. A., Bashara N. M. (1977). Ellipsometry and Polarized Light, ch. 4 (ambient-substrate and ambient-film-substrate systems). North-Holland." },
       {
         citation: "Aspnes D. E. (1985). The accurate determination of optical properties by ellipsometry. In Palik E. D. (ed.), Handbook of Optical Constants of Solids, 89–112. Academic Press.",
         url: "https://doi.org/10.1016/b978-0-08-054721-3.50010-1",
@@ -427,11 +427,15 @@ export const thinFilm: CalculatorEntry[] = [
     title: "Plasma Deposition",
     description: "Argon discharge for plasma-assisted deposition: electron temperature from particle balance, plasma density from power balance, ion flux and ion energy at the substrate, Debye length.",
     tier: "textbook",
-    modelNote: "Argon global model in a cylinder: Maxwellian electrons, ground-state ionisation, floating walls, h-factors for λᵢ > (Tᵢ/Tₑ)·size (flagged). No deposition chemistry; P is the power absorbed by the plasma.",
+    modelNote: "Argon global model in a cylinder: Maxwellian electrons, ground-state ionisation, floating walls, collisionless sheath, h-factors from low pressure to ambipolar diffusion. No deposition chemistry; P is absorbed power.",
     references: [
       {
-        citation: "Lieberman M. A., Lichtenberg A. J. (2005). Principles of Plasma Discharges and Materials Processing, 2nd ed., Table 3.3 (fits for 1 < T_e ≤ 7 V) and §10.2 (global model). Wiley.",
+        citation: "Lieberman M. A., Lichtenberg A. J. (2005). Principles of Plasma Discharges and Materials Processing, 2nd ed., Table 3.3 (fits for 1 < T_e ≤ 7 V), eqs. 5.1.5 and 5.1.14 (ambipolar diffusion), 5.3.16–5.3.17 (h-factors) and §10.2 (global model, Example 1). Wiley.",
         url: "https://doi.org/10.1002/0471724254",
+      },
+      {
+        citation: "Lee C., Lieberman M. A. (1995). Global model of Ar, O2, Cl2, and Ar/O2 high-density plasma discharges. J. Vac. Sci. Technol. A 13, 368 (source of the joined h-factors, as cited by Lieberman & Lichtenberg).",
+        url: "https://doi.org/10.1116/1.579366",
       },
     ],
   },
@@ -492,9 +496,9 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "sputtering-deposition",
     title: "Sputtering Deposition",
-    description: "DC magnetron sputtering of a metal target in argon: ion current, sputtered atom rate from measured yields, on-axis deposition rate, sputtered-atom energy, argon mean free path and structure zone.",
+    description: "DC magnetron sputtering of a metal target in argon: ion current, sputtered atom rate from measured yields, on-axis deposition rate, sputtered-atom energy, gas thermalisation distance and structure zone.",
     tier: "textbook",
-    modelNote: "Measured 500 eV Ar⁺ yields, ion current P/(V(1+γ)), cosine disk source on axis, sticking 1, bulk density. No gas scattering (an upper bound beyond about one mean free path), no reactive sputtering.",
+    modelNote: "Measured 500 eV Ar⁺ yields, ion current P/(V(1+γ)), cosine disk on axis, sticking 1, bulk density. The rate ignores gas scattering; Westwood's thermalisation distance and the Thompson spectrum give the share that diffuses. Not reactive.",
     references: [
       {
         citation: "Laegreid N., Wehner G. K. (1961). Sputtering yields of metals for Ar+ and Ne+ ions with energies from 50 to 600 eV. J. Appl. Phys. 32, 365.",
@@ -513,6 +517,10 @@ export const thinFilm: CalculatorEntry[] = [
         url: "https://doi.org/10.1080/14786436808227358",
       },
       { citation: "Kittel C. (2005). Introduction to Solid State Physics, 8th ed., ch. 3, Table 1 (cohesive energies). Wiley." },
+      {
+        citation: "Westwood W. D. (1978). Calculation of deposition rates in diode sputtering systems. J. Vac. Sci. Technol. 15, 1, eqs. (2), (7), (8), (13).",
+        url: "https://doi.org/10.1116/1.569429",
+      },
       thornton,
     ],
   },

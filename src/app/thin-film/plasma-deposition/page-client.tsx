@@ -42,10 +42,10 @@ export default function PlasmaDepositionPage() {
     const Te: number[] = [];
     const n: number[] = [];
     for (let i = 0; i <= 120; i++) {
-      const mT = 0.3 * Math.pow(100 / 0.3, i / 120);
+      const mT = 0.1 * Math.pow(1000, i / 120);
       const s = argonDischarge(power, R, l, mT * 1e-3 * TORR, gasTemp);
-      // Only points where the low-pressure h-factors hold.
-      if (!Number.isFinite(s.Te) || !Number.isFinite(s.n0) || !lowPressureRegime(s, R, l, gasTemp)) continue;
+      // Only points inside the rate-constant fits (TE_FIT_MIN < Tₑ ≤ TE_FIT_MAX).
+      if (!(s.Te > TE_FIT_MIN && s.Te <= TE_FIT_MAX) || !Number.isFinite(s.n0)) continue;
       p.push(mT);
       Te.push(s.Te);
       n.push(s.n0 / 1e16);
@@ -71,7 +71,7 @@ export default function PlasmaDepositionPage() {
       )}
       {d && noRoot && (
         <p className="mb-6 text-sm text-yellow-300" role="status">
-          No result: particle balance needs Tₑ outside {TE_MIN}–{TE_MAX} eV (n<sub>g</sub>d<sub>eff</sub> = {fmtExp(d.ng * d.dEff, 2, " m⁻²")}), outside this model.
+          No result: at this pressure and chamber size particle balance needs Tₑ outside {TE_MIN}–{TE_MAX} eV, outside this model.
         </p>
       )}
       {d && !noRoot && (d.Te <= TE_FIT_MIN || d.Te > TE_FIT_MAX) && (
@@ -81,10 +81,11 @@ export default function PlasmaDepositionPage() {
         </p>
       )}
       {d && !noRoot && !lowPressureRegime(d, R, l, gasTemp) && (
-        <p className="mb-6 text-sm text-yellow-300" role="status">
-          Outside the low-pressure model: λᵢ = {fmt(d.lambdaI * 1e3, 2, " mm")} is below (Tᵢ/Tₑ)·max(R, l) ={" "}
-          {fmt(((gasTemp * k_B_eV) / d.Te) * Math.max(R, l) * 1e3, 2, " mm")}. Ions diffuse at constant mobility here, the
-          edge densities fall faster, and n₀ comes out too low.
+        <p className="mb-6 text-sm text-gray-400">
+          Collisional regime: λᵢ = {fmt(d.lambdaI * 1e3, 2, " mm")} is below (Tᵢ/Tₑ)·max(R, l) ={" "}
+          {fmt(((gasTemp * k_B_eV) / d.Te) * Math.max(R, l) * 1e3, 2, " mm")}, so the ions diffuse to the walls and the
+          diffusion term sets h<sub>l</sub> and h<sub>R</sub>. The ion energy assumes a collisionless sheath; once λᵢ is
+          shorter than the sheath (a few Debye lengths) the ions arrive with less.
         </p>
       )}
 
@@ -103,18 +104,20 @@ export default function PlasmaDepositionPage() {
           <ResultCard label="Debye length" value={fmt(d.debye * 1e6, 1, " µm")} subtext="√(ε₀ Tₑ / (e n₀))" />
           <ResultCard label="Bohm speed u_B" value={fmt(d.uB / 1e3, 2, " km/s")} subtext="√(e Tₑ / M)" />
           <ResultCard label="Ion mean free path λᵢ" value={fmt(d.lambdaI * 1e3, 2, " mm")} subtext={`n_g = ${fmtExp(d.ng, 2, " m⁻³")}`} />
-          <ResultCard label="h_l, h_R, d_eff" value={`${fmt(d.hl, 3)}, ${fmt(d.hR, 3)}`} subtext={`d_eff = ${fmt(d.dEff * 100, 1, " cm")}`} />
+          <ResultCard label="h_l, h_R, d_eff" value={`${fmt(d.hl, 3)}, ${fmt(d.hR, 3)}`} subtext={`d_eff = ${fmt(d.dEff * 100, 1, " cm")}, D_a = ${Number.isFinite(d.Da) ? d.Da.toPrecision(3) : "—"} m²/s`} />
         </div>
       )}
 
       <div className="bg-gray-900 rounded p-4 mb-6 text-sm text-gray-400">
         <p className="font-semibold text-gray-200 mb-2">Model</p>
-        <p>λᵢ = 1/(n<sub>g</sub>σᵢ), σᵢ = 10⁻¹⁸ m²; h<sub>l</sub> = 0.86 (3 + l/2λᵢ)<sup>−½</sup>, h<sub>R</sub> = 0.80 (4 + R/λᵢ)<sup>−½</sup></p>
+        <p>λᵢ = 1/(n<sub>g</sub>σᵢ), σᵢ = 10⁻¹⁸ m²; D<sub>a</sub> = Dᵢ(1 + Tₑ/Tᵢ), Dᵢ = eTᵢλᵢ/(M v̄ᵢ), Tᵢ = T<sub>gas</sub></p>
+        <p>h<sub>l</sub> = 0.86 [3 + l/2λᵢ + (0.86 l u<sub>B</sub>/πD<sub>a</sub>)²]<sup>−½</sup>, h<sub>R</sub> = 0.80 [4 + R/λᵢ + (0.80 R u<sub>B</sub>/χ₀₁J₁(χ₀₁)D<sub>a</sub>)²]<sup>−½</sup></p>
         <p>d<sub>eff</sub> = Rl / (2(Rh<sub>l</sub> + lh<sub>R</sub>)); A<sub>eff</sub> = 2πR(Rh<sub>l</sub> + lh<sub>R</sub>)</p>
         <p>E<sub>c</sub> = E<sub>iz</sub> + E<sub>ex</sub>K<sub>ex</sub>/K<sub>iz</sub> + (3m/M)TₑK<sub>el</sub>/K<sub>iz</sub> with the argon rate constants of Lieberman &amp; Lichtenberg</p>
         <p className="mt-2">
-          A volume-averaged argon discharge in a cylinder: Tₑ depends only on n<sub>g</sub>d<sub>eff</sub>, and the power sets the
-          density. The substrate sits on an end wall (an electrode). The wall is floating; an rf-biased or self-biased electrode
+          A volume-averaged argon discharge in a cylinder: particle balance fixes Tₑ (d<sub>eff</sub> depends on Tₑ through
+          D<sub>a</sub> and u<sub>B</sub>, so they are solved together), and the power sets the density. The h-factors join the
+          low-pressure and the diffusion (high-pressure) solutions. The substrate sits on an end wall (an electrode). The wall is floating; an rf-biased or self-biased electrode
           (capacitive discharge) draws the same ion flux but at the bias voltage, set by the matching and the electrode areas. Deposition
           gases (SiH₄, O₂, N₂) attach electrons and change Tₑ and the loss channels, so the page models the argon carrier only.
           The ion current density is what the <Link className="text-blue-400 underline" href="/thin-film/ion-assisted-deposition">ion-assisted deposition</Link> page takes.
@@ -128,6 +131,9 @@ export default function PlasmaDepositionPage() {
         yaxis2: { title: "n₀ (10¹⁶ m⁻³)", gridcolor: "#374151", overlaying: "y", side: "right" },
         margin: { t: 20, b: 40, l: 50, r: 60 }, autosize: true,
       }} />
+      <p className="text-gray-500 text-xs mt-2 text-center">
+        0.1–100 mTorr at the current power and chamber; pressures where Tₑ leaves the {TE_FIT_MIN}–{TE_FIT_MAX} eV rate-constant fits are left out.
+      </p>
     </>
   );
 }
