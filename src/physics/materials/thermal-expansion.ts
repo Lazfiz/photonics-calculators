@@ -2,11 +2,47 @@
  * Linear thermal expansion with a constant coefficient: ΔL = α L ΔT, strain ε = α ΔT. SI units: α in 1/K, lengths in m.
  * Model tier: textbook. α itself depends on temperature (Si: 2.6e-6/K at 300 K, rising to about 4.6e-6/K at 1500 K;
  * Y. Okada, Y. Tokumaru, J. Appl. Phys. 56, 314 (1984), doi:10.1063/1.333965), so a constant α holds over tens of kelvin;
- * for wide spans integrate α(T) dT instead.
+ * for wide spans integrate α(T) dT instead (silicon: `siliconExpansion` below).
  */
 
 /** Length change ΔL = α L ΔT, m. */
 export const thermalExpansion = (alpha: number, L: number, dT: number) => alpha * L * dT;
+
+/** Range of the Okada–Tokumaru fit, K (abstract: "t … ranging from 120 to 1500 K"). */
+export const SI_ALPHA_T_MIN = 120;
+export const SI_ALPHA_T_MAX = 1500;
+
+const inSiRange = (T: number) => T >= SI_ALPHA_T_MIN && T <= SI_ALPHA_T_MAX;
+
+/**
+ * Linear CTE of silicon, 1/K, at absolute temperature T (K): Okada & Tokumaru (1984), abstract,
+ * α(T) = (3.725 {1 − exp[−5.88 × 10⁻³ (T − 124)]} + 5.548 × 10⁻⁴ T) × 10⁻⁶ /K, valid 120–1500 K; their float-zone and
+ * Czochralski data lie within ±2 × 10⁻⁷ /K of it. NaN outside the range.
+ */
+export function siliconAlpha(T: number): number {
+  if (!inSiRange(T)) return NaN;
+  return (3.725 * -Math.expm1(-5.88e-3 * (T - 124)) + 5.548e-4 * T) * 1e-6;
+}
+
+/** Antiderivative of siliconAlpha, closed form: 10⁻⁶ [3.725 (T + e^{−c(T−124)}/c) + 5.548 × 10⁻⁴ T²/2]. */
+const siAlphaAntiderivative = (T: number) => (3.725 * (T + Math.exp(-5.88e-3 * (T - 124)) / 5.88e-3) + 2.774e-4 * T * T) * 1e-6;
+
+/** ∫ α dT from T1 to T2 (K) for silicon, closed form; NaN unless both ends lie in 120–1500 K. */
+export function siliconAlphaIntegral(T1: number, T2: number): number {
+  if (!inSiRange(T1) || !inSiRange(T2)) return NaN;
+  return siAlphaAntiderivative(T2) - siAlphaAntiderivative(T1);
+}
+
+/** Mean α of silicon over T1–T2 (K), 1/K; α(T1) when T1 = T2. */
+export const siliconMeanAlpha = (T1: number, T2: number) =>
+  T1 === T2 ? siliconAlpha(T1) : siliconAlphaIntegral(T1, T2) / (T2 - T1);
+
+/**
+ * Length change of silicon heated from T1 to T2 (K), m: with α = (1/L) dL/dT, L₂ = L₁ exp(∫α dT), so
+ * ΔL = L₁ expm1(∫α dT). Against L₁ ∫α dT this differs by (∫α dT)²/2 ≤ 1.3e-5 relative (120 → 1500 K), inside the
+ * ±1e-5 nm (2e-5 relative) by which Okada & Tokumaru's lattice parameters scatter about the fit.
+ */
+export const siliconExpansion = (L: number, T1: number, T2: number) => L * Math.expm1(siliconAlphaIntegral(T1, T2));
 
 /** Length change in optical waves at wavelength λ (m). NaN for λ ≤ 0. */
 export const expansionWaves = (dL: number, lambda: number) => (lambda > 0 ? dL / lambda : NaN);

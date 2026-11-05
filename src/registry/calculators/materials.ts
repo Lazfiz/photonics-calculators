@@ -659,10 +659,10 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "thermal-expansion",
     title: "Thermal Expansion",
-    description: "Length change ΔL = α·L·ΔT, strain and the change in 633 nm waves, with room-temperature expansion coefficients of optical glasses, crystals and mount metals.",
+    description: "Length change ΔL = α·L·ΔT, strain and the change in 633 nm waves, with room-temperature expansion coefficients of optical glasses, crystals and mount metals, and silicon's α(T) integrated from 120 to 1500 K.",
     keywords: ["Coefficient of Thermal Expansion"],
     tier: "textbook",
-    modelNote: "ΔL = αLΔT with one room-temperature α, good over tens of kelvin; α rises with temperature (Si: 2.6 to about 4.6 ×10⁻⁶/K from 300 to 1500 K). Crystals from Crystran; glasses from SCHOTT, Corning (ULE and Zerodur: the specified limit) and Kaye & Laby; metals at 293 K from Kaye & Laby or the slope of NIST's fits. Alloys vary with heat treatment (Invar 0.13–1.2).",
+    modelNote: "ΔL = αLΔT with one room-temperature α, good over tens of kelvin; α rises with temperature. For silicon the page integrates Okada & Tokumaru's fit α(T) = (3.725[1 − exp(−5.88×10⁻³(T − 124))] + 5.548×10⁻⁴T) ×10⁻⁶/K (120–1500 K, data within ±0.2 ×10⁻⁶/K; 2.57 at 300 K, 4.56 at 1500 K) in closed form: ΔL = L·expm1(∫α dT). Crystals from Crystran; glasses from SCHOTT, Corning (ULE and Zerodur: the specified limit) and Kaye & Laby; metals at 293 K from Kaye & Laby or the slope of NIST's fits. Alloys vary with heat treatment (Invar 0.13–1.2).",
     references: [
       {
         citation: "Okada Y., Tokumaru Y. (1984). Precise determination of lattice parameter and thermal expansion coefficient of silicon between 300 and 1500 K. J. Appl. Phys. 56, 314–320.",
