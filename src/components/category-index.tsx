@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SITE_URL } from "../lib/site";
 import { calculatorsIn, displayName, getCategory, type CategoryId } from "../registry";
 
 export function categoryMetadata(id: CategoryId): Metadata {
   const category = getCategory(id);
   return {
-    alternates: { canonical: `https://photonics-calculators.vercel.app/${id}` },
+    alternates: { canonical: `${SITE_URL}/${id}` },
     title: category.title,
     description: category.description,
   };

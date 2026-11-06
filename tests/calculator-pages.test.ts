@@ -9,7 +9,8 @@ import ts from "typescript";
 import { KnownIssueNotice, ModelBadge, ModelReferences, referenceLinkText } from "../src/components/model-references";
 import { jsonLdHtml } from "../src/lib/json-ld";
 import { getCalculator } from "../src/registry";
-import { calculatorJsonLd, calculatorMetadata, SITE_URL } from "../src/registry/metadata";
+import { SITE_URL } from "../src/lib/site";
+import { calculatorJsonLd, calculatorMetadata } from "../src/registry/metadata";
 
 // Each page.tsx names its registry key and nothing else; CalculatorShell renders the text, metadata
 // and JSON-LD from the entry. 6929ab07 once corrupted 427 hand-written copies with a regex.
@@ -74,7 +75,7 @@ test("no page-client.tsx renders its own <h1>", () => {
 
 test("calculatorMetadata: canonical, title and description from the entry", () => {
   assert.deepEqual(calculatorMetadata("/fiber-optics/chromatic-dispersion"), {
-    alternates: { canonical: "https://photonics-calculators.vercel.app/fiber-optics/chromatic-dispersion" },
+    alternates: { canonical: "https://photonicscalculators.com/fiber-optics/chromatic-dispersion" },
     title: "Chromatic Dispersion Calculator",
     description: "Calculate chromatic dispersion, pulse broadening, and system penalties for single-mode fiber.",
   });

@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next";
+import { SITE_URL as BASE_URL } from "../lib/site";
 import { calculators, categories } from "../registry";
-
-const BASE_URL = "https://photonics-calculators.vercel.app";
 
 /** Home, about, the category pages and every calculator (hidden ones too: they are public pages). */
 export default function sitemap(): MetadataRoute.Sitemap {

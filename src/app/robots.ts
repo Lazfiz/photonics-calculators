@@ -1,3 +1,5 @@
+import { SITE_URL } from "../lib/site";
+
 /** @type {import('next').MetadataRoute.Robots} */
 export default function robots() {
   return {
@@ -7,6 +9,6 @@ export default function robots() {
         allow: "/",
       },
     ],
-    sitemap: "https://photonics-calculators.vercel.app/sitemap.xml",
+    sitemap: `${SITE_URL}/sitemap.xml`,
   };
 }

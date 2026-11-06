@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import ReportProblem from "../../components/report-problem";
 import { totalCalculatorCount } from "../../lib/home-categories";
+import { SITE_URL } from "../../lib/site";
 import testStats from "../../lib/test-stats.json";
 import { calculators } from "../../registry";
 import { TIERS, UNREVIEWED, type TierInfo } from "../../registry/tiers";
 import type { ModelTier } from "../../registry/types";
 
 export const metadata: Metadata = {
-  alternates: { canonical: "https://photonics-calculators.vercel.app/about" },
+  alternates: { canonical: `${SITE_URL}/about` },
   title: "About",
   description: "A free, open-source collection of interactive optics and photonics calculators.",
 };
