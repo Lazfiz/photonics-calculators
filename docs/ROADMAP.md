@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 214, 2026-11-06)
+## Status (session 215, 2026-11-06)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
@@ -336,14 +336,10 @@ minus signs and ±, and can shift table labels: confirm each value on the render
 Evidence (session 214, Vercel Web Analytics 2026-10-07 → 11-06): 9 visitors, 55 pageviews, no search-engine referrers,
 ≈ half on mobile. No Search Console/Bing verification in `src/`, no Open Graph images. One box per session, in this order (10g first, user, session 214).
 - [x] 10c Get found (session 214, `phase-10/10c-get-found`, PR #252 + #253). See Done.
-- [ ] 10g Domain move (user, session 214: "add domain move next step"; before Google indexes much under vercel.app).
-  User buys the domain (proposed `photonicscalculators.com`, $12.03/yr at Vercel; `photonicscalculator.com` as a redirect).
-  Then: add it to the Vercel project; 301 `photonics-calculators.vercel.app` → new domain; replace the site URL in
-  `src/registry/metadata.ts`, `src/app/{layout,robots,sitemap}.ts(x)`, `about/page.tsx`, `components/category-index.tsx`,
-  `scripts/post-merge-check.mjs`, `scripts/crossref.mjs`, `tests/{calculator-pages,report}.test.ts` (one constant if
-  possible; the 2026-10-07 codemod stays as history); release; GSC Domain property via a DNS TXT record + Change of
-  address, Bing Site move (user); Resend domain verification → `REPORT_FROM_EMAIL` on the new domain (user sets the env).
-  The report route takes its origin from the request, so the form keeps working.
+- [x] 10g-1 Code and Vercel side of the domain move (session 215, `phase-10/10g-domain-move`, PR #254). See Done.
+- [ ] 10g-2 After the user's release: `post-merge-check` on the new host, curl the old host for a 308; GSC Domain
+  property (user pastes the TXT, Claude adds it to Vercel DNS) + Change of address; Bing Site move (user); Resend domain
+  records (Claude adds them to Vercel DNS) → `REPORT_FROM_EMAIL` on the new domain (user sets the env).
 - [ ] 10a Audit fixes: KD*P/ADP range to 1064 nm (`pockels.ts`), Stokes input and element types in `useURLState` on
   `mueller-polarimetry`, `dichroic-polarizer` tier vs the (1+κ²/n²) exit-face term. Golden tests with sources.
 - [ ] 10e Mobile pass: phone hero (cropped layout, tap to highlight, tap again to open, auto-cycle) and a 375 px check
@@ -374,6 +370,7 @@ Evidence (session 214, Vercel Web Analytics 2026-10-07 → 11-06): 9 visitors, 5
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 10g-1 (session 215, `phase-10/10g-domain-move`, PR #254): photonicscalculators.com (user bought it 2026-11-06) is canonical; Vercel www → apex 308; `SITE_URL` in `src/lib/site.ts` feeds canonicals, JSON-LD, sitemap, robots; `next.config.mjs` 308s the vercel.app host first; 1280 tests.
 - 9b-3 (session 213, `phase-9/9b-3-about-audit`, PR #251): About `#verification` states the blind audit (30 pages, seed 20261106, 0 errors, < 9.5 % at 95 %, 7 minor fixed, AI-reviewer limits) and links `docs/audit/9b-blind-audit.md`.
 - 10c (session 214, `phase-10/10c-get-found`, PR #252): Phase 9 released (433c0b4c, report form tested by email); Google Search Console verified via `metadata.verification.google` (released 54d6990b), sitemap read: 423 pages. Bing import from GSC left to the user.
 - 9b-2 (session 212, `phase-9/9b-2-minor-fixes`, PR #250): 7 MINOR audit findings fixed (6 wording, 1 physics); `cavityPassband` refines the ripple peak by golden section (`goldenSectionMax` in `math.ts`): narrow-bandpass peak 99.67 → 99.69 %; 1280 tests.
