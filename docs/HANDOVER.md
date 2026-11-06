@@ -1,30 +1,28 @@
-# Handover — 2026-11-06 (session 212 → session 213)
+# Handover — 2026-11-06 (session 213 → session 214)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 212 did 9b-2, the 7 MINOR fixes from the blind audit, on `phase-9/9b-2-minor-fixes` (PR #250). Next: 9b-3
-publishes the audit on About. 9a (PR #248), 9b-1 (PR #249) and 9b-2 are merged or pending, none released.
+Session 213 did 9b-3 on `phase-9/9b-3-about-audit` (PR #251): About `#verification` now states the blind audit.
+Phase 9 is done. 9a, 9b-1, 9b-2 and 9b-3 are on `main` (or pending in #251); none is released. No open ROADMAP stage
+is left: ask the user what comes next (a release, the optional items below, or a new phase).
 
 ## State
-- `goldenSectionMax(f, a, b)` in `src/physics/math.ts` (tested in `tests/math.test.ts`). `chromatic-dispersion.ts`
-  still has its own local golden section (`optimumOutputRmsWidth`); it could move to the shared helper.
-- `cavityPassband` (`src/physics/thin-film/cavity-filter.ts`): log scan → golden-section peak between the samples
-  either side → `firstCrossing` from the refined peak to the first sample below half. Narrow-bandpass default: peak
-  99.69 % at 1549.586/1550.414 nm, FWHM 1.134 nm; bandpass-filter 3×2 FWHM 19.1376 nm.
-- `docs/audit/9b-blind-audit.md` "Follow-up (9b-2, done)" lists each fix.
+- About `#verification` bullet (`src/app/about/page.tsx`): 30 tiered pages, 3 per category, seed 20261106; recomputed
+  from the live page at two input sets before reading code; 0 wrong, < 9.5 % at 95 % (Clopper–Pearson); 7 minor, all
+  fixed; limits (Claude reviewers, 8 pages against source text, 22 against the textbook result); links
+  `docs/audit/9b-blind-audit.md` on GitHub (`blob/main`). The numbers are hard-coded, not computed.
+- `goldenSectionMax(f, a, b)` in `src/physics/math.ts`; `chromatic-dispersion.ts` still has its own local golden
+  section (`optimumOutputRmsWidth`) that could move to it.
 - 1280 tests. 5 pre-existing eslint warnings (unused imports, thin-film pages); not errors.
 
 ## Next actions
-1. `/ship` PR #250. post-merge-check: `thin-film/narrow-bandpass=99.69` (peak T), optionally
-   `thin-film/narrow-bandpass=1549.586`.
-2. 9b-3: in About `#verification`, state the sample (30 random tiered pages, seed 20261106, 3 per category), the
-   method (blind recompute from the rendered page against the cited references), the limits (AI reviewers; 8 pages
-   against fetched text, 22 from the recalled standard result), and "0 errors in 30 (below 9.5 % at 95 %,
-   Clopper–Pearson)", plus that 7 minor issues were found and fixed. Link `docs/audit/9b-blind-audit.md` on GitHub.
-3. After a release, check `/about#report` and send a test report (see `REPORT_TO_EMAIL` and the Resend sender note:
-   `onboarding@resend.dev` only delivers to the Resend account owner).
-4. Optional from the audit: KD*P/ADP range to 1064 nm (`pockels.ts:166,171`); Stokes input and element types into
+1. `/ship` PR #251. No physics changed: no post-merge-check values (after a release:
+   `thin-film/narrow-bandpass=99.69` still covers 9b-2).
+2. Release only when the user asks (push `main` to `release`). Then check `/about#verification` and `/about#report`
+   and send a test report (see `REPORT_TO_EMAIL` and the Resend sender note: `onboarding@resend.dev` only delivers to the
+   Resend account owner).
+3. Optional from the audit: KD*P/ADP range to 1064 nm (`pockels.ts:166,171`); Stokes input and element types into
    `useURLState` on `mueller-polarimetry`; the `dichroic-polarizer` tier.
-5. Still missing data: BSO ε, SBN, Nd σ_a at 808 nm, CO₂ g₀ and I_s, SF59 n₂, the Tm ³H₄ band, ZBLAN κ and band.
+4. Still missing data: BSO ε, SBN, Nd σ_a at 808 nm, CO₂ g₀ and I_s, SF59 n₂, the Tm ³H₄ band, ZBLAN κ and band.
 
 ## Non-obvious facts
 - **Session 212:** `page-capture.mjs` against the running dev server on 3300 works after `npm run check` ends
