@@ -93,6 +93,25 @@ export default function AboutPage() {
               All {testStats.tests} tests must pass before any change is merged.
             </li>
             <li>
+              A blind audit (November 2026) drew 30 tiered pages at random, 3 per category, with a fixed seed
+              (20261106) so anyone can redraw the same pages. Reviewers recomputed every displayed result from
+              the live page, at the default inputs and at a second input set, against the cited references,
+              before reading the code. No page had a wrong result, so the share of pages with a wrong result is
+              below 9.5 % at 95 % confidence (Clopper–Pearson); the audit can&apos;t show that it is zero. 7
+              pages had a minor issue (a label, wording, a rounding gap); all 7 are fixed. Limits: the
+              reviewers were AI models (Claude), the same family that wrote the code, not independent human
+              experts, and 8 pages were checked against the source text, the other 22 against the standard
+              textbook result.{" "}
+              <a
+                href="https://github.com/Lazfiz/photonics-calculators/blob/main/docs/audit/9b-blind-audit.md"
+                rel="noopener noreferrer"
+                className="text-blue-400 hover:text-blue-300"
+              >
+                Full results and method
+              </a>
+              .
+            </li>
+            <li>
               The pages cite {distinctReferences.length} distinct references ({allReferences.length} citations in
               all); {linkedReferences} of them link to a DOI or an open copy.
             </li>
