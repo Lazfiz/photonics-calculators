@@ -1,53 +1,35 @@
-# Handover — 2026-11-06 (session 211 → session 212)
+# Handover — 2026-11-06 (session 212 → session 213)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 211 did 9b-1, the blind audit of 30 random pages, on `phase-9/9b-blind-audit` (PR #249). Result: 0 ERROR,
-7 MINOR, 23 OK. Next: 9b-2 fixes the 7 MINOR pages; 9b-3 publishes the result on About. 9a (PR #248) is merged, not released.
+Session 212 did 9b-2, the 7 MINOR fixes from the blind audit, on `phase-9/9b-2-minor-fixes` (PR #250). Next: 9b-3
+publishes the audit on About. 9a (PR #248), 9b-1 (PR #249) and 9b-2 are merged or pending, none released.
 
 ## State
-- `scripts/audit-sample.ts [seed] [perCategory]` draws the sample: mulberry32 PRNG, partial Fisher–Yates on the sorted
-  hrefs of the tiered pages in each category.
-- `scripts/page-capture.mjs` saves a page as text (inputs ⟦value⟧, results, formulas, model note, references; no
-  charts):
-  - Usage: `OUT=<dir> PORT=<n> MSYS_NO_PATHCONV=1 node scripts/page-capture.mjs <base> "/cat/slug?k=v"`.
-  - Use a different PORT per parallel run.
-- `docs/audit/9b-blind-audit.md` holds the method, the limits (AI reviewers; 8 pages against fetched text, 22 from the
-  recalled standard result), the table and the follow-up. Captures are `docs/audit/9b/<cat>__<slug>.{default,second}.txt`.
-- Error-rate claim: 0/30 means < 9.5 % at 95 % (Clopper–Pearson, 1 − 0.05^(1/30)).
+- `goldenSectionMax(f, a, b)` in `src/physics/math.ts` (tested in `tests/math.test.ts`). `chromatic-dispersion.ts`
+  still has its own local golden section (`optimumOutputRmsWidth`); it could move to the shared helper.
+- `cavityPassband` (`src/physics/thin-film/cavity-filter.ts`): log scan → golden-section peak between the samples
+  either side → `firstCrossing` from the refined peak to the first sample below half. Narrow-bandpass default: peak
+  99.69 % at 1549.586/1550.414 nm, FWHM 1.134 nm; bandpass-filter 3×2 FWHM 19.1376 nm.
+- `docs/audit/9b-blind-audit.md` "Follow-up (9b-2, done)" lists each fix.
+- 1280 tests. 5 pre-existing eslint warnings (unused imports, thin-film pages); not errors.
 
 ## Next actions
-1. `/ship` PR #249 (docs and scripts only: no post-merge-check values).
-2. 9b-2: fix the 7 MINOR pages. The file:line pointers are from the reviewers; confirm each before editing.
-   - `detectors/afterpulsing`:
-     - registry `detectors.ts:9` modelNote → "first order in P_ap (no afterpulse cascades) and in R·τ (no trap
-       saturation)";
-     - η₁+η₂ up to 2: cap it, or relabel "mean afterpulses per avalanche".
-   - `fiber-optics/dispersion-comp` `page-client.tsx:134/139/187`:
-     - the "4Bσ" subtext uses the added broadening σ_b (4πc), but B_max uses the total width √(σ_D²+|β₂|L) (2πc);
-     - name them differently, and say 2πc sets the B_max limit.
-     - The penalty correctly uses the added broadening (Agrawal's Bellcore form).
-   - `free-space-comms/fade-probability` `:84,:103`: "≫ max(√(λL), L/(kρ₀))".
-   - `free-space-comms/link-budget`:
-     - `:103/107`: label "Friis (capped at P_t)" whenever it is capped;
-     - `:124/128`: θ half- or full-angle consistency (2D²/(θ²R²) with the full angle).
-   - `spectroscopy/libs-analysis`:
-     - "ground-term weights" (~:165);
-     - add Griem 1974, *Spectral Line Broadening by Plasmas* (Academic Press), or reword.
-   - `spectroscopy/penetration-depth` `:36`: "attenuated total reflection (ATR)", not "frustrated TIR".
-   - `thin-film/narrow-bandpass`:
-     - `src/physics/thin-film/cavity-filter.ts` `cavityPassband` (:91-105): refine the peak by golden section.
-     - Golden test: default stack (1550 nm, 2.35/1.45/1.52, spacer 2.1, 6 pairs, 3 cavities) → peak T 0.996913 at
-       1549.586 and 1550.414 nm, T(λ₀) 0.957420, FWHM 1.13437 nm (transfer matrix; Macleod 2010 ch. 8).
-     - post-merge-check: `thin-film/narrow-bandpass=99.69`.
-   - Optional: KD*P/ADP range to 1064 nm (`pockels.ts:166,171`); Stokes input and element types into `useURLState` on
-     `mueller-polarimetry`.
-3. 9b-3: in About `#verification`, state the sample, method, limits and "0 errors in 30 (below 9.5 % at 95 %)", plus
-   that 7 minor issues were found and fixed. Link the results file on GitHub.
-4. After a release, check `/about#report` and send a test report (see `REPORT_TO_EMAIL` and the Resend sender note:
+1. `/ship` PR #250. post-merge-check: `thin-film/narrow-bandpass=99.69` (peak T), optionally
+   `thin-film/narrow-bandpass=1549.586`.
+2. 9b-3: in About `#verification`, state the sample (30 random tiered pages, seed 20261106, 3 per category), the
+   method (blind recompute from the rendered page against the cited references), the limits (AI reviewers; 8 pages
+   against fetched text, 22 from the recalled standard result), and "0 errors in 30 (below 9.5 % at 95 %,
+   Clopper–Pearson)", plus that 7 minor issues were found and fixed. Link `docs/audit/9b-blind-audit.md` on GitHub.
+3. After a release, check `/about#report` and send a test report (see `REPORT_TO_EMAIL` and the Resend sender note:
    `onboarding@resend.dev` only delivers to the Resend account owner).
+4. Optional from the audit: KD*P/ADP range to 1064 nm (`pockels.ts:166,171`); Stokes input and element types into
+   `useURLState` on `mueller-polarimetry`; the `dichroic-polarizer` tier.
 5. Still missing data: BSO ε, SBN, Nd σ_a at 808 nm, CO₂ g₀ and I_s, SF59 n₂, the Tm ³H₄ band, ZBLAN κ and band.
 
 ## Non-obvious facts
+- **Session 212:** `page-capture.mjs` against the running dev server on 3300 works after `npm run check` ends
+  (`OUT=<dir> PORT=9333 … http://localhost:3300 "/cat/slug"`). The afterpulsing card already switches to "Afterpulses
+  per Avalanche" above P_ap = 1, so no cap was needed.
 - **Session 211:**
   - 5 physics-reviewer agents × 6 pages: 10–17 min in parallel, 70–105k tokens each; they leave files in the scratchpad.
   - Fetches that worked: ICNIRP 2013 (icnirp.org), Seibersdorf white papers, Hamamatsu data sheet, refractiveindex.info
