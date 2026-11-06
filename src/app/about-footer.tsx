@@ -7,6 +7,10 @@ export default function AboutFooter() {
         About & References
       </Link>
       <span className="mx-2">·</span>
+      <Link href="/about#report" className="hover:text-blue-400 transition-colors">
+        Report a problem
+      </Link>
+      <span className="mx-2">·</span>
       <span>Photonics Calculators — Free & Open Source</span>
     </footer>
   );

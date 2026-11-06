@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import ReportProblem from "../../components/report-problem";
 import { totalCalculatorCount } from "../../lib/home-categories";
+import testStats from "../../lib/test-stats.json";
 import { calculators } from "../../registry";
 import { TIERS, UNREVIEWED, type TierInfo } from "../../registry/tiers";
 import type { ModelTier } from "../../registry/types";
@@ -18,6 +20,11 @@ const tierRows: (TierInfo & { count: number })[] = [
   })),
   { ...UNREVIEWED, count: calculators.filter((c) => !c.tier).length },
 ];
+
+const tieredCount = calculators.filter((c) => c.tier).length;
+const allReferences = calculators.flatMap((c) => c.references ?? []);
+const distinctReferences = [...new Map(allReferences.map((r) => [r.citation, r])).values()];
+const linkedReferences = distinctReferences.filter((r) => r.url).length;
 
 export default function AboutPage() {
   return (
@@ -42,8 +49,8 @@ export default function AboutPage() {
             free-space communications.
           </p>
           <p>
-            Each calculator provides real-time computation with interactive
-            Plotly.js charts where applicable. The goal is to make common
+            Each calculator recomputes as you type. Its charts are drawn as SVG,
+            or with Plotly.js where a plot needs zoom and hover. The goal is to make common
             photonics calculations accessible without needing MATLAB, Python, or
             proprietary software.
           </p>
@@ -58,7 +65,7 @@ export default function AboutPage() {
           <h2 className="text-2xl font-semibold text-white">Model Tiers</h2>
           <p className="mt-4 text-sm text-gray-400">
             Each calculator page shows how far its model can be trusted, and the references it was checked
-            against. The pages are being reviewed one by one.
+            against.
           </p>
           <dl className="mt-4 space-y-3 text-sm">
             {tierRows.map((row) => (
@@ -72,11 +79,36 @@ export default function AboutPage() {
           </dl>
         </section>
 
+        <section id="verification" className="mt-12 scroll-mt-6">
+          <h2 className="text-2xl font-semibold text-white">How the Calculators Are Checked</h2>
+          <ul className="mt-4 list-disc space-y-2 pl-5 text-sm text-gray-400">
+            <li>
+              {tieredCount} of {totalCalculatorCount} pages have a model tier from a physics audit (the counts
+              are above). Each page states what its model assumes or leaves out.
+            </li>
+            <li>
+              {testStats.physicsTests} automated tests in {testStats.physicsFiles} files check the physics
+              functions, mostly against values from the cited references or an independent hand calculation,
+              plus limits and domain edges.
+              All {testStats.tests} tests must pass before any change is merged.
+            </li>
+            <li>
+              The pages cite {distinctReferences.length} distinct references ({allReferences.length} citations in
+              all); {linkedReferences} of them link to a DOI or an open copy.
+            </li>
+          </ul>
+          <p className="mt-4 text-sm text-gray-400">
+            Checks miss things. If a value, formula or reference looks wrong, every calculator has a
+            &ldquo;Report a problem&rdquo; form at the bottom of its page, and the one below takes general reports.
+          </p>
+          <ReportProblem open />
+        </section>
+
         <section className="mt-12">
           <h2 className="text-2xl font-semibold text-white">Physics References</h2>
           <p className="mt-4 text-sm text-gray-400">
-            The underlying physics and formulas in these calculators are based on
-            standard optics and photonics references:
+            The general textbooks and standards behind many pages; each page lists the specific sources it was
+            checked against:
           </p>
           <ul className="mt-4 space-y-3 text-sm">
             <li>
