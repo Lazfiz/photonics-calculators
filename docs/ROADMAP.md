@@ -332,6 +332,22 @@ minus signs and ±, and can shift table labels: confirm each value on the render
   - [x] 9b-2 Fix the 7 MINOR findings (session 212, `phase-9/9b-2-minor-fixes`, PR #250). See Done.
   - [x] 9b-3 Audit on About `#verification` (session 213, `phase-9/9b-3-about-audit`, PR #251). See Done.
 
+## Phase 10 — reach, fixes, mobile, cross-checks (user, session 214: "plan fixes … other ideas, improvements")
+Evidence (session 214, Vercel Web Analytics 2026-10-07 → 11-06): 9 visitors, 55 pageviews, no search-engine referrers,
+≈ half on mobile. No Search Console/Bing verification in `src/`, no Open Graph images. One box per session, in this order.
+- [ ] 10c Get found: release `main` (user's yes), Google Search Console + Bing verification (user creates the accounts,
+  gives the tokens), submit `sitemap.xml`, check `robots.ts` and the index coverage.
+- [ ] 10a Audit fixes: KD*P/ADP range to 1064 nm (`pockels.ts`), Stokes input and element types in `useURLState` on
+  `mueller-polarimetry`, `dichroic-polarizer` tier vs the (1+κ²/n²) exit-face term. Golden tests with sources.
+- [ ] 10e Mobile pass: phone hero (cropped layout, tap to highlight, tap again to open, auto-cycle) and a 375 px check
+  of inputs, result cards and charts on the 10 most-visited pages.
+- [ ] 10d Social cards and snippets: Open Graph/Twitter images per category (Next `opengraph-image`), titles and
+  descriptions against the terms people search.
+- [ ] 10b Cleanup: the 5 eslint warnings; `chromatic-dispersion.ts` onto `goldenSectionMax` (`src/physics/math.ts`).
+- [ ] 10f External cross-checks: golden tests against independent public calculators/tables (CXRO, refractiveindex.info,
+  ICNIRP) on tiered pages the 9b audit didn't sample; split a/b by category.
+- Data-blocked items (Phase 8 list) move only when the user uploads a source.
+
 ## Decisions (keep)
 - **Polarization:** Goldstein/Collett convention site-wide.
   - e^{i(ωt − kz)}; RCP = [1, i]/√2, and S3 = 2 Im(Ex* Ey) > 0 for RCP.

@@ -30,6 +30,9 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
+  verification: {
+    google: "uoBMhGut5O-xS5GOcJiBjqjRjc3MihvTaM2ycXafe9Q",
+  },
   openGraph: {
     title: {
       default: "Photonics Calculators",
