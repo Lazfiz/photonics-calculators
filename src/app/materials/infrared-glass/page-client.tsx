@@ -145,8 +145,9 @@ export default function InfraredGlassPage() {
             index for MgF₂). dn/dT is one room-temperature value per material, so treat n(T) far from T₀ as an estimate.
             T_max is the transmission of an uncoated, non-absorbing window with both surfaces&apos; multiple reflections added
             in intensity: an upper bound that absorption near the band edges lowers. Bands, dn/dT, conductivity and Knoop
-            hardness are Crystran data-sheet values, and Amorphous Materials&apos; for AMTIR-1 and As₂S₃. ZBLAN has no sourced band or
-            thermal data.
+            hardness are Crystran data-sheet values, and Amorphous Materials&apos; for AMTIR-1 and As₂S₃. ZBLAN&apos;s Knoop hardness and dn/dT
+            are from Poulain&apos;s 2024 review: dn/dT is the midpoint of the −8 to −15 ×10⁻⁶/K reported for fluoride glasses, so
+            its n(T) is good to about ±3.5 ×10⁻⁶ per kelvin. ZBLAN has no sourced band or conductivity.
           </p>
         </div>
       </div>

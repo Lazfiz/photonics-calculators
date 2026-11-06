@@ -5,11 +5,11 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  POCKELS, crossedPolarizerTransmission, longitudinalHalfWaveVoltage, phaseHalfWaveVoltage, pockelsIndexChange,
-  transverseCoefficients, transverseHalfWaveVoltage, type PockelsGeometry, type PockelsId,
+  POCKELS, crossedPolarizerTransmission, cubicCoefficients, cubicHalfWaveVoltage, gyrotropicTransmission, longitudinalHalfWaveVoltage,
+  phaseHalfWaveVoltage, pockelsIndexChange, transverseCoefficients, transverseHalfWaveVoltage, type PockelsGeometry, type PockelsId,
 } from "../../../physics/materials/pockels";
 
-const IDS = ["kdp", "kdp-d", "adp", "linbo3", "litao3", "ktp", "batio3", "batio3-clamped"] as const satisfies readonly PockelsId[];
+const IDS = ["kdp", "kdp-d", "adp", "linbo3", "litao3", "ktp", "batio3", "batio3-clamped", "bso"] as const satisfies readonly PockelsId[];
 type Choice = PockelsId | "custom";
 const CHOICES: readonly Choice[] = [...IDS, "custom"];
 const DEFAULT_ID: Choice = "kdp";
@@ -33,15 +33,18 @@ const layout = (x: string, y: string) => ({
 const kV = (V: number) => (Number.isFinite(V) ? (Math.abs(V) >= 1000 ? `${sig(V / 1000, 4)} kV` : `${sig(V, 4)} V`) : "—");
 const ORDINARY = { n: "n_o", nz: "n_e", r: "r₁₃" };
 const rangeNm = (id: PockelsId) => POCKELS[id].range.map((x) => +(x * 1e9).toFixed(1)).join("–");
+const GEOMETRY_LABEL: Record<PockelsGeometry, string> = { longitudinal: "longitudinal", transverse: "transverse", cubic: "transverse [110]" };
 
 interface Modulator {
   geometry: PockelsGeometry;
-  /** Index (n_o for longitudinal, n_e for transverse) and coefficient the single-polarization phase uses. */
+  /** Index (n_o for longitudinal, n_e for transverse, n for cubic) and coefficient the single-polarization phase uses. */
   n: number;
   r: number;
   /** Retardation half-wave voltage, or NaN when it needs a second coefficient. */
   VpiRet: number;
   VpiPhase: number;
+  /** Rotatory power, rad/m (0 for the crystals without optical activity here). */
+  rotation: number;
 }
 
 function modulator(choice: Choice, lambda: number, d: number, L: number, custom: { n: number; r: number; geometry: PockelsGeometry }): Modulator {
@@ -49,7 +52,7 @@ function modulator(choice: Choice, lambda: number, d: number, L: number, custom:
     const { n, r, geometry } = custom;
     const dd = geometry === "longitudinal" ? L : d;
     const VpiRet = geometry === "longitudinal" ? longitudinalHalfWaveVoltage(lambda, n, r) : NaN;
-    return { geometry, n, r, VpiRet, VpiPhase: phaseHalfWaveVoltage(lambda, n, r, dd, L) };
+    return { geometry, n, r, VpiRet, VpiPhase: phaseHalfWaveVoltage(lambda, n, r, dd, L), rotation: 0 };
   }
   const c = POCKELS[choice];
   const [lo, hi] = c.range;
@@ -57,29 +60,42 @@ function modulator(choice: Choice, lambda: number, d: number, L: number, custom:
   const { no, ne } = c.indices(lambda);
   if (c.geometry === "longitudinal") {
     const n = inRange ? no : NaN;
-    return { geometry: "longitudinal", n, r: c.r.r63!, VpiRet: longitudinalHalfWaveVoltage(lambda, n, c.r.r63!), VpiPhase: phaseHalfWaveVoltage(lambda, n, c.r.r63!, L, L) };
+    return { geometry: "longitudinal", n, r: c.r.r63!, VpiRet: longitudinalHalfWaveVoltage(lambda, n, c.r.r63!), VpiPhase: phaseHalfWaveVoltage(lambda, n, c.r.r63!, L, L), rotation: 0 };
+  }
+  if (c.geometry === "cubic") {
+    const n = inRange ? no : NaN;
+    const { r41, rotation } = cubicCoefficients(c, lambda);
+    return { geometry: "cubic", n, r: r41, VpiRet: cubicHalfWaveVoltage(lambda, n, r41, d, L), VpiPhase: phaseHalfWaveVoltage(lambda, n, r41, d, L), rotation };
   }
   const n = inRange ? ne : NaN;
   const { r33, r13 } = transverseCoefficients(c, lambda);
   return {
     geometry: "transverse", n, r: r33,
     VpiRet: transverseHalfWaveVoltage(lambda, inRange ? no : NaN, n, r33, r13, d, L),
-    VpiPhase: phaseHalfWaveVoltage(lambda, n, r33, d, L),
+    VpiPhase: phaseHalfWaveVoltage(lambda, n, r33, d, L), rotation: 0,
   };
 }
 
-function transmissionChart(Vpi: number, V: number) {
+/** T(V) between crossed polarizers; with a rotation ρL ≠ 0 (rad) a second curve has the analyzer crossed to the zero-field output. */
+function transmissionChart(Vpi: number, V: number, rotationL: number) {
   if (!Number.isFinite(Vpi)) return [];
-  const Vmax = Math.max(2 * Vpi, 1.1 * Math.abs(V));
+  const active = Number.isFinite(rotationL) && rotationL !== 0;
+  // With optical activity the first transmission peak moves past V_π: plot further.
+  const Vmax = Math.max((active ? 4 : 2) * Vpi, 1.1 * Math.abs(V));
   const xs = Array.from({ length: CHART_POINTS + 1 }, (_, k) => (Vmax * k) / CHART_POINTS);
   const scale = Vpi >= 1000 ? 1000 : 1;
+  const T = (x: number) => (active ? gyrotropicTransmission((Math.PI * x) / Vpi, rotationL) : crossedPolarizerTransmission((Math.PI * x) / Vpi));
   const traces: Record<string, unknown>[] = [{
     x: xs.map((x) => round6(x / scale)), y: xs.map((x) => round6(crossedPolarizerTransmission((Math.PI * x) / Vpi))),
-    type: "scatter", mode: "lines", name: "T = sin²(πV/2V_π)", line: { color: "#60a5fa", width: 2 },
+    type: "scatter", mode: "lines", name: active ? "without optical activity" : "T = sin²(πV/2V_π)", line: { color: "#60a5fa", width: 2, dash: active ? "dot" : "solid" },
   }];
-  {
-    traces.push({ x: [round6(V / scale)], y: [round6(crossedPolarizerTransmission((Math.PI * V) / Vpi))], type: "scatter", mode: "markers", name: "selected", line: { color: "#f87171" }, marker: { color: "#f87171", size: 9 } });
+  if (active) {
+    traces.push({
+      x: xs.map((x) => round6(x / scale)), y: xs.map((x) => round6(T(x))),
+      type: "scatter", mode: "lines", name: `with ρL = ${sig((rotationL * 180) / Math.PI, 4)}°`, line: { color: "#34d399", width: 2 },
+    });
   }
+  traces.push({ x: [round6(V / scale)], y: [round6(T(V))], type: "scatter", mode: "markers", name: "selected", line: { color: "#f87171" }, marker: { color: "#f87171", size: 9 } });
   return traces;
 }
 
@@ -108,13 +124,15 @@ export default function ElectroOpticPage() {
 
   const m = modulator(choice, lambda, d, L, { n: nCustom, r: rCustom_pmV * 1e-12, geometry: customGeometry });
   const longitudinal = m.geometry === "longitudinal";
+  const cubic = m.geometry === "cubic";
   const E = voltage / (longitudinal ? L : d);
   const dn = pockelsIndexChange(m.n, m.r, E);
   const phase = (Math.PI * voltage) / m.VpiPhase;
   const retardation = (Math.PI * voltage) / m.VpiRet;
   const VpiL_Vcm = m.VpiPhase * L * 100;
   const outside = "outside the index model's range";
-  const chart = transmissionChart(m.VpiRet, voltage);
+  const rotationL = m.rotation * L; // rad
+  const chart = transmissionChart(m.VpiRet, voltage, rotationL);
   const fixedIndex = choice === "kdp-d" || choice === "adp";
   const perp = crystal?.perp ?? ORDINARY;
 
@@ -156,29 +174,45 @@ export default function ElectroOpticPage() {
         )}
       </div>
       <p className="text-xs mb-6 text-gray-500">
-        {crystal ? `${crystal.pointGroup}, ${crystal.geometry}; ${crystal.source}; index model ${rangeNm(choice as PockelsId)} nm.` : `Custom ${customGeometry} modulator.`}{" "}
-        {longitudinal ? "Field and light along z: E = V/L, and V_π does not depend on the crystal size." : "Field along z across the gap d, light across it: E = V/d."}{" "}
+        {crystal ? `${crystal.pointGroup}, ${GEOMETRY_LABEL[crystal.geometry]}; ${crystal.source}; index model ${rangeNm(choice as PockelsId)} nm.` : `Custom ${customGeometry} modulator.`}{" "}
+        {longitudinal ? "Field and light along z: E = V/L, and V_π does not depend on the crystal size."
+          : cubic ? "Field along [110] across the gap d, light along [1̄10]: E = V/d, induced axes at ±45° between [110] and [001]."
+          : "Field along z across the gap d, light across it: E = V/d."}{" "}
         {fixedIndex && <span className="text-yellow-400">n_o is a single published value, without dispersion.</span>}
         {!Number.isFinite(m.n) && <span className="text-yellow-400">The wavelength is {outside}.</span>}
       </p>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-4">
-        <ResultCard label={longitudinal ? "Half-wave voltage V_π (retardation)" : `Half-wave voltage V_π (z–${perp.n.slice(2)} retardation)`} value={kV(m.VpiRet)} tone="blue"
+        <ResultCard label={longitudinal || cubic ? "Half-wave voltage V_π (retardation)" : `Half-wave voltage V_π (z–${perp.n.slice(2)} retardation)`} value={kV(m.VpiRet)} tone="blue"
           subtext={Number.isFinite(m.VpiRet)
-            ? (longitudinal ? "λ/(2n_o³r₆₃): amplitude modulator between crossed polarizers" : `λd/((${perp.nz}³r₃₃ − ${perp.n}³${perp.r})L), on top of the natural birefringence`)
+            ? (longitudinal ? "λ/(2n_o³r₆₃): amplitude modulator between crossed polarizers"
+              : cubic ? "λd/(2n³r₄₁L), without the optical activity"
+              : `λd/((${perp.nz}³r₃₃ − ${perp.n}³${perp.r})L), on top of the natural birefringence`)
             : (custom ? "needs r₃₃ and r₁₃: use a table crystal" : outside)} />
         <ResultCard label="Phase half-wave voltage (one polarization)" value={kV(m.VpiPhase)} tone="green"
           subtext={Number.isFinite(m.VpiPhase)
-            ? (longitudinal ? "λ/(n_o³r₆₃): twice the retardation value" : `λd/(${perp.nz}³r₃₃L); V_π·L = ${sig(VpiL_Vcm, 4)} V·cm`)
+            ? (longitudinal ? "λ/(n_o³r₆₃): twice the retardation value"
+              : cubic ? `λd/(n³r₄₁L) along an induced axis, without the optical activity; V_π·L = ${sig(VpiL_Vcm, 4)} V·cm`
+              : `λd/(${perp.nz}³r₃₃L); V_π·L = ${sig(VpiL_Vcm, 4)} V·cm`)
             : outside} />
       </div>
-      <div className="grid gap-4 sm:grid-cols-3 mb-8">
+      <div className={`grid gap-4 mb-8 ${cubic ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-3"}`}>
         <ResultCard label="Field E" value={`${sig(E / 1e6, 4)} MV/m`} tone="gray" subtext={longitudinal ? "V/L" : "V/d"} />
         <ResultCard label="Index change Δn = −½n³rE" value={Number.isFinite(dn) ? dn.toExponential(3) : "—"} tone="orange"
-          subtext={Number.isFinite(dn) ? (longitudinal ? "x′ axis; y′ changes by +½n_o³r₆₃E" : "z polarization") : outside} />
+          subtext={Number.isFinite(dn)
+            ? (longitudinal ? "x′ axis; y′ changes by +½n_o³r₆₃E" : cubic ? "one induced axis; the other changes by +½n³r₄₁E" : "z polarization")
+            : outside} />
         <ResultCard label={Number.isFinite(retardation) ? "Retardation Γ / phase φ" : "Phase shift φ"}
           value={Number.isFinite(retardation) ? `${sig(retardation / Math.PI, 4)}π / ${sig(phase / Math.PI, 4)}π` : (Number.isFinite(phase) ? `${sig(phase / Math.PI, 4)}π` : "—")}
-          tone="purple" subtext={Number.isFinite(retardation) ? `crossed polarizers pass ${sig(100 * crossedPolarizerTransmission(retardation), 4)} %` : undefined} />
+          tone="purple" subtext={Number.isFinite(retardation)
+            ? (cubic
+              ? `crossed polarizers pass ${sig(100 * crossedPolarizerTransmission(retardation), 4)} % without the rotation, ${sig(100 * gyrotropicTransmission(retardation, rotationL), 4)} % with it`
+              : `crossed polarizers pass ${sig(100 * crossedPolarizerTransmission(retardation), 4)} %`)
+            : undefined} />
+        {cubic && (
+          <ResultCard label="Optical rotation ρL" value={Number.isFinite(rotationL) ? `${sig((rotationL * 180) / Math.PI, 4)}°` : "—"} tone="cyan"
+            subtext={Number.isFinite(rotationL) ? `ρ = ${sig((m.rotation * 1e-3 * 180) / Math.PI, 4)} °/mm; the analyzer is set crossed to the zero-field output` : outside} />
+        )}
       </div>
 
       {chart.length > 0 && (
@@ -202,11 +236,13 @@ export default function ElectroOpticPage() {
               const row = modulator(id, lambda, d, L, { n: nCustom, r: rCustom_pmV * 1e-12, geometry: customGeometry });
               const c = POCKELS[id];
               const rt = transverseCoefficients(c, lambda);
-              const rText = c.geometry === "longitudinal" ? `r₆₃ ${sig(c.r.r63! * 1e12, 3)}` : `r₃₃ ${sig(rt.r33 * 1e12, 3)}, ${(c.perp ?? ORDINARY).r} ${sig(rt.r13 * 1e12, 3)}`;
+              const rText = c.geometry === "longitudinal" ? `r₆₃ ${sig(c.r.r63! * 1e12, 3)}`
+                : c.geometry === "cubic" ? `r₄₁ ${sig(cubicCoefficients(c, lambda).r41 * 1e12, 3)}`
+                : `r₃₃ ${sig(rt.r33 * 1e12, 3)}, ${(c.perp ?? ORDINARY).r} ${sig(rt.r13 * 1e12, 3)}`;
               return (
                 <tr key={id} onClick={() => setMaterial(id)} className={`cursor-pointer hover:bg-gray-800 ${id === choice ? "bg-gray-800" : ""}`}>
                   <td className="pr-4 py-1">{c.name}</td>
-                  <td className="pr-4 py-1 text-gray-300">{c.geometry}</td>
+                  <td className="pr-4 py-1 text-gray-300">{GEOMETRY_LABEL[c.geometry]}</td>
                   <td className="pr-4 py-1">{rText}</td>
                   <td className="pr-4 py-1">{sig(row.n, 5)}</td>
                   <td className="pr-4 py-1">{kV(row.VpiRet)}</td>
@@ -255,6 +291,16 @@ export default function ElectroOpticPage() {
             23 °C. Its piezoelectric part is large: clamped r₃₃ is 40.6 against 105 pm/V unclamped, so V_π rises about 3× above the
             first acoustic resonance (≈ 0.1 MHz for a 2 cm crystal). Its largest coefficient, r₄₂ = 1300 pm/V (clamped 730), needs a
             field across the c-axis and is not modelled; n_e and r also change strongly with temperature.
+          </p>
+          <p>
+            BSO (Bi₁₂SiO₂₀, cubic 23) is isotropic until a field is applied. With the field along [110] and the light along [1̄10],
+            the induced axes lie at ±45° between [110] and [001] and differ by n³r₄₁E, so V_π = λd/(2n³r₄₁L). The crystal is also
+            optically active: it rotates the polarization by ρL (21 °/mm at 633 nm), and the rotation adds in quadrature to the
+            induced birefringence (Efremidis et al. 2009, eqs. 8–10). With the analyzer crossed to the zero-field output, the
+            transmission becomes (cos ρL·ρL·S − sin ρL·cos Δ)² + cos²ρL·(Γ/2)²S², Δ = √((Γ/2)² + (ρL)²), S = sin Δ/Δ, which falls
+            short of 1 at V_π once ρL is large: keep ρL small or compensate it. r₄₁, n and ρ are Efremidis et al.&apos;s, measured with a dc
+            field (unclamped) from 500 to 800 nm: r₄₁ falls from 4.1 to 2.0 pm/V, below the older single-wavelength values in the red
+            (3.8–5.0 pm/V at 633–850 nm).
           </p>
         </div>
       </div>

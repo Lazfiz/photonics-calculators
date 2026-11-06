@@ -99,8 +99,11 @@ const DATA = {
     note: "dn/dT at 10 µm; 76 ×10⁻⁶/K at 3 µm, 166 at 1 µm (Amorphous Materials).",
   },
   zblan: {
-    name: "ZBLAN glass", dispersion: MATERIALS.zblan, bands: [], dnDT: null, conductivity: null, knoop: null,
-    note: "No sourced transmission range or thermal data yet; Gan's formula covers 0.365–3.5 µm.",
+    // Poulain 2024 (APL Photonics 9, 091103): Knoop "around 250 kg/mm² for ZBLAN" (§ mechanical properties;
+    // Table IV, fluorozirconates 190–250); dn/dT "between −8 and −15 × 10⁻⁶ K⁻¹" for heavy-metal fluoride
+    // glasses in general (his ref. 32, Izumitani 1987), so −11.5 is that range's midpoint, not a ZBLAN measurement.
+    name: "ZBLAN glass", dispersion: MATERIALS.zblan, bands: [], dnDT: -11.5e-6, conductivity: null, knoop: 250,
+    note: "dn/dT is the midpoint of −8 to −15 ×10⁻⁶/K for fluoride glasses; Knoop 250 kg/mm² (fluorozirconates 190–250) (Poulain 2024). No sourced transmission range; Gan's formula covers 0.365–3.5 µm.",
   },
 } as const satisfies Record<string, WindowMaterial>;
 

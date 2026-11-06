@@ -34,6 +34,23 @@
  *   W. L. Bond, J. Appl. Phys. 36, 1674 (1965), doi:10.1063/1.1703106, tabulated at room temperature (refractiveindex.info,
  *   CC0), interpolated linearly in 1/λ²; this reproduces the indices of Casson's Table 2 (Gervais & Fonseca, Palik vol. 3)
  *   to 3 × 10⁻⁴. No ε is tabulated, so LiTaO₃ stays off the photorefractive grating.
+ * - BSO (Bi₁₂SiO₂₀, cubic 23, isotropic n, one coefficient r₄₁, optically active), field along [110] across the gap d,
+ *   light along [1̄10] (A. T. Efremidis, N. C. Deliolanis, C. Manolikas, E. D. Vanidhis, Appl. Phys. B 95, 467 (2009),
+ *   doi:10.1007/s00340-009-3498-8, Fig. 1 and eqs. 8–10). The reduced impermeability has 1/n² on the diagonal and
+ *   r₄₁E ∓ ig/n⁴ off it, so the induced axes lie at ±45° between [110] and [001] and the linear birefringence n³r₄₁E
+ *   adds in quadrature to the circular one (optical activity, rotatory power ρ = πg/(λn)): n₁ − n₂ = n³√(r₄₁²E² + g²/n⁸).
+ *   Without the rotation Γ = 2π n³ r₄₁ V L / (λ d), V_π = λ d / (2 n³ r₄₁ L). r₄₁ (unclamped, dc field), n and ρ at
+ *   500–800 nm are read from the vector paths of their Fig. 3 (the averages of three runs): r₄₁ falls from 4.14 to
+ *   2.03 pm/V and ρ from 40.05 to 12.14 °/mm, as their text states (4.2–2.0 pm/V, 40–12 °/mm; average error 0.1 pm/V).
+ *   n is the index they fitted with (their ref. 28), so n³r₄₁ is the measured product. Their red r₄₁ is below the
+ *   older single-wavelength values (3.8–5.0 pm/V at 633–850 nm, their Table 2), and the authors warn that below 560 nm a
+ *   space-charge field may screen the applied one and lower r₄₁. "dc" is inferred from their high-voltage supply (7 kV/cm).
+ *   No ε here, so BSO stays off the grating.
+ * - Optical activity with an induced retardation (derived here from the Jones calculus): a crystal of length L with linear
+ *   retardation Γ between axes at ±45° to the input polarization and rotation ρL has the Jones matrix
+ *   exp(−i(Γ/2 σ₁ + ρL σ₂)) = cos Δ − i sin Δ (Γ/2 σ₁ + ρL σ₂)/Δ, Δ = √((Γ/2)² + (ρL)²) (σ the Pauli matrices). An x-polarized
+ *   input leaves as (cos Δ, (ρL − iΓ/2) sin Δ/Δ); an analyzer crossed to the zero-field output, at 90° + ρL, passes
+ *   T = (cos ρL · ρL · S − sin ρL · cos Δ)² + cos²ρL · (Γ/2)² S², S = sin Δ/Δ. It is sin²(Γ/2) at ρ = 0 and 0 at Γ = 0.
  * - Photorefractive grating (N. V. Kukhtarev et al., Ferroelectrics 22, 949 (1978), doi:10.1080/00150197908239450),
  *   diffusion only, no applied field and no photovoltaic current, small fringe modulation m: the space-charge field
  *   per unit m is E_sc = E_D / (1 + E_D / E_q), E_D = k_B T K / q, E_q = q N_eff / (ε₀ ε K), K = 2π/Λ, shifted by a
@@ -53,12 +70,14 @@
  */
 
 import { epsilon_0, k_B, q } from "../constants";
+import { sinc } from "../math";
 import { biaxialIndices, biaxialRange } from "./biaxial-data";
 import { fromResonanceWavelengths, refractiveIndex } from "./sellmeier";
 import { crystalIndices, crystalRange } from "./uniaxial-data";
 
-export type PockelsId = "kdp" | "kdp-d" | "adp" | "linbo3" | "litao3" | "ktp" | "batio3" | "batio3-clamped";
-export type PockelsGeometry = "longitudinal" | "transverse";
+export type PockelsId = "kdp" | "kdp-d" | "adp" | "linbo3" | "litao3" | "ktp" | "batio3" | "batio3-clamped" | "bso";
+/** "cubic": a 23 or 43m crystal with the field along [110] across a gap and the light along [1̄10]. */
+export type PockelsGeometry = "longitudinal" | "transverse" | "cubic";
 
 export interface PockelsCrystal {
   name: string;
@@ -68,9 +87,11 @@ export interface PockelsCrystal {
    * Coefficients in m/V: r₆₃ for a longitudinal cell; for a transverse one r₃₃ (z polarization) and r₁₃, the
    * coefficient of the polarization across z (r₂₃ for KTP, labelled by `perp`).
    */
-  r: { r63?: number; r33?: number; r13?: number; r42?: number };
+  r: { r63?: number; r33?: number; r13?: number; r42?: number; r41?: number };
   /** r₃₃ and r₁₃ (m/V) measured at several wavelengths (m), where published; `r` then holds the first row. */
   rDispersion?: { lambda: readonly number[]; r33: readonly number[]; r13: readonly number[] };
+  /** A cubic crystal's r₄₁ (m/V), index and rotatory power (rad/m) at the wavelengths λ (m); `r` holds the first row. */
+  cubic?: { lambda: readonly number[]; r41: readonly number[]; n: readonly number[]; rotation: readonly number[] };
   /**
    * Index across z (n_o; n_y for KTP) and along z (n_e; n_z for KTP) at λ (m): a Sellmeier fit, or fixed values
    * where only a single index is published.
@@ -117,6 +138,22 @@ const litao3Indices = (lambda: number) => {
 };
 // Casson et al. 2004, Table 2: unclamped r₃₃, r₁₃ (pm/V).
 const LITAO3_R = { lambda: [632.8e-9, 980e-9, 1330e-9, 1558e-9], r33: [30.5e-12, 29.6e-12, 27.7e-12, 27.4e-12], r13: [7.62e-12, 6.96e-12, 6.55e-12, 6.92e-12] };
+// BSO, Efremidis et al. 2009 Fig. 3 (see the header), every 20 nm from 500 to 800 nm: r₄₁ (pm/V) at the averaged points; n
+// and ρ (°/mm) on the dotted and dash-dot curves, whose ends (500.7 and 799.7 nm for ρ, 799.7 nm for n) stand for 500 and 800.
+const BSO_NM = [500, 520, 540, 560, 580, 600, 620, 640, 660, 680, 700, 720, 740, 760, 780, 800];
+const BSO_R41 = [4.14, 4.01, 3.60, 3.53, 3.51, 3.25, 2.93, 2.62, 2.41, 2.26, 2.16, 2.15, 2.12, 2.10, 2.09, 2.03];
+const BSO_N = [2.6656, 2.6430, 2.6235, 2.6067, 2.5916, 2.5785, 2.5667, 2.5564, 2.5470, 2.5384, 2.5308, 2.5240, 2.5175, 2.5117, 2.5065, 2.5016];
+const BSO_RHO = [40.05, 35.82, 32.21, 29.20, 26.49, 24.24, 22.32, 20.57, 19.08, 17.71, 16.65, 15.50, 14.48, 13.64, 12.81, 12.14];
+const BSO = {
+  lambda: BSO_NM.map((x) => x * 1e-9), r41: BSO_R41.map((x) => x * 1e-12), n: BSO_N,
+  rotation: BSO_RHO.map((x) => (x * Math.PI) / 180 / 1e-3),
+};
+const bsoIndices = (lambda: number) => {
+  // The same end-point snap as cubicCoefficients.
+  const x = Math.min(BSO.lambda[BSO.lambda.length - 1], Math.max(BSO.lambda[0], lambda));
+  const n = Math.abs(x - lambda) <= 1e-9 * lambda ? interpolate(BSO.lambda, BSO.n, x) : NaN;
+  return { no: n, ne: n };
+};
 
 export const POCKELS: Record<PockelsId, PockelsCrystal> = {
   kdp: {
@@ -163,6 +200,11 @@ export const POCKELS: Record<PockelsId, PockelsCrystal> = {
     indices: batio3Indices, range: [BATIO3_O.range[0], BATIO3_O.range[1]], epsilon: 56, epsilon11: 2200,
     source: "r₃₃ 40.6 ± 2.5, r₁₃ 10.2 ± 0.6 (clamped, above the piezoelectric resonances; 633 nm) Zgonik et al. 1994, Table II; n_o, n_e Wemple et al. 1968",
   },
+  bso: {
+    name: "BSO (Bi₁₂SiO₂₀)", pointGroup: "23", geometry: "cubic", r: { r41: BSO.r41[0] }, cubic: BSO,
+    indices: bsoIndices, range: [BSO.lambda[0], BSO.lambda[BSO.lambda.length - 1]], epsilon: NaN,
+    source: "r₄₁ (unclamped, dc), n and optical activity at 500–800 nm, interpolated: Efremidis et al. 2009, Fig. 3",
+  },
 };
 
 const pos = (x: number) => Number.isFinite(x) && x > 0;
@@ -197,8 +239,38 @@ export function transverseHalfWaveVoltage(lambda: number, no: number, ne: number
   return pos(lambda) && pos(no) && pos(ne) && pos(rc) && pos(d) && pos(L) ? (lambda * d) / (rc * L) : NaN;
 }
 
+/**
+ * r₄₁ (m/V) and rotatory power ρ (rad/m) of a cubic crystal at λ, interpolated linearly in λ between its tabulated
+ * wavelengths (NaN outside them, or for a crystal without the table).
+ */
+export function cubicCoefficients(crystal: PockelsCrystal, lambda: number): { r41: number; rotation: number } {
+  const t = crystal.cubic;
+  if (!t) return { r41: NaN, rotation: NaN };
+  // The same end-point snap as transverseCoefficients.
+  const x = Math.min(t.lambda[t.lambda.length - 1], Math.max(t.lambda[0], lambda));
+  const inside = Math.abs(x - lambda) <= 1e-9 * lambda;
+  return inside ? { r41: interpolate(t.lambda, t.r41, x), rotation: interpolate(t.lambda, t.rotation, x) } : { r41: NaN, rotation: NaN };
+}
+
+/** Half-wave voltage of a cubic crystal with the field along [110] and light along [1̄10], λ d / (2 n³ r₄₁ L), without optical activity. */
+export const cubicHalfWaveVoltage = (lambda: number, n: number, r41: number, d: number, L: number) =>
+  pos(lambda) && pos(n) && pos(r41) && pos(d) && pos(L) ? (lambda * d) / (2 * n ** 3 * r41 * L) : NaN;
+
 /** Intensity transmission sin²(Γ/2) of a retarder between crossed polarizers at 45° to its axes. */
 export const crossedPolarizerTransmission = (retardation: number) => Math.sin(retardation / 2) ** 2;
+
+/**
+ * Transmission of an optically active crystal (rotation ρL, rad) with an induced retardation Γ between axes at 45° to the
+ * input polarizer, the analyzer crossed to the zero-field output (at 90° + ρL): (cos ρL · ρL · S − sin ρL · cos Δ)²
+ * + cos²ρL · (Γ/2)² S², Δ = √((Γ/2)² + (ρL)²), S = sin Δ/Δ (see the header). sin²(Γ/2) at ρL = 0.
+ */
+export function gyrotropicTransmission(retardation: number, rotation: number): number {
+  if (!Number.isFinite(retardation) || !Number.isFinite(rotation)) return NaN;
+  const a = retardation / 2;
+  const D = Math.hypot(a, rotation);
+  const S = sinc(D);
+  return (Math.cos(rotation) * rotation * S - Math.sin(rotation) * Math.cos(D)) ** 2 + (Math.cos(rotation) * a * S) ** 2;
+}
 
 /** Grating period Λ = λ / (2 sin θ) for two beams crossing at the full angle 2θ (outside or inside; λ in that medium). */
 export const gratingPeriod = (lambda: number, halfAngle: number) =>

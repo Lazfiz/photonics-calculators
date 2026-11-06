@@ -46,6 +46,21 @@ test("ZBLAN (Gan 1995): hand evaluation of the formula and no pole inside the ra
   assert.ok(abbeNumber(MATERIALS.zblan.model) > 70);
 });
 
+test("ZBLAN Knoop and dn/dT (Poulain 2024, APL Photonics 9, 091103)", () => {
+  const z = WINDOW_MATERIALS.zblan;
+  // "around 250 kg/mm² for ZBLAN"; Table IV, fluorozirconates 190–250.
+  assert.equal(z.knoop, 250);
+  // "values range between −8 and −15 × 10⁻⁶ K⁻¹": the midpoint.
+  assertAbs(z.dnDT ?? NaN, -11.5e-6, 1e-12, "ZBLAN dn/dT");
+  // Gan's formula at 2 µm by hand: λ² = 4; 1.22514·4/(4 − 0.0080443) = 1.227609, 1.52898·4/(4 − 457.211) = −0.013495
+  // → n = 1.487990. The page's n(T) at 100 °C from the formula's 20 °C: 1.487990 − 11.5e-6·80 = 1.487070.
+  const n = windowIndex(z, 2 * um);
+  assertAbs(n, 1.48799, 1e-6, "ZBLAN n(2 µm)");
+  assertAbs(n + (z.dnDT ?? NaN) * (100 - 20), 1.48707, 1e-6, "ZBLAN n(2 µm, 100 °C)");
+  // No sourced band or conductivity.
+  assert.deepEqual([z.bands.length, z.conductivity], [0, null]);
+});
+
 test("alkali halides (Li 1976) agree with Crystran and an independent CsI measurement", () => {
   // Crystran: LiF 1.392 at 0.6 µm (5.2 % reflection loss, 2 surfaces); KBr 1.527 at 10 µm (8.3 %).
   assertAbs(refractiveIndex(MATERIALS.lif.model, 0.6 * um), 1.392, 5e-4, "LiF 0.6 µm");
