@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { KERR_MEDIA, kerrIndexChange, n2FromEsu, piPhaseIntensity } from "../src/physics/materials/kerr-index";
+import { KERR_MEDIA, kerrIndexChange, kerrValuesAt, n2FromEsu, piPhaseIntensity, sapphireN2 } from "../src/physics/materials/kerr-index";
+import { crystalIndices } from "../src/physics/materials/uniaxial-data";
 import {
   BBO_THETA, SHG_CRYSTALS, SHG_LAMBDA, bestFocus, boydKleinmanHWalkOff, focusedShg, shgPrefactor, typeIPhaseMatchingAngle, uniaxialWalkOff, waistForXi,
   xyPlaneIndex,
@@ -30,13 +31,44 @@ test("nonlinear phase and γ of silica at 1550 nm (materials audit golden, PR #1
 });
 
 test("Dubietis Table 1 n₂ in m²/W and the fused-silica critical power at 800 nm", () => {
-  // Table 1 lists n₂ in 1e-16 cm²/W: fused silica 2.4, sapphire 3.1, YVO₄ 15.
+  // Table 1 lists n₂ in 1e-16 cm²/W: fused silica 2.4, sapphire 3.1, YVO₄ 15. The sapphire row now comes from Major
+  // et al.'s fit, which agrees at 800 nm to 0.4 %.
   assertRel(KERR_MEDIA["fused-silica"].n2, 2.4e-20, 1e-12, "FS");
-  assertRel(KERR_MEDIA.sapphire.n2, 3.1e-20, 1e-12, "Al₂O₃");
+  assertRel(KERR_MEDIA.sapphire.n2, 3.1e-20, 5e-3, "Al₂O₃");
   assertRel(KERR_MEDIA.yvo4.n2, 15e-20, 1e-12, "YVO₄");
   // 3.77 · (800e-9)² / (8π · 1.45 · 2.4e-20) = 2.4128e-12 / 8.7462e-19 = 2.7587 MW.
   const fs = KERR_MEDIA["fused-silica"];
   assertRel(criticalPower(fs.lambda, fs.n0, fs.n2), 2.7587e6, 1e-4, "P_cr");
+});
+
+test("sapphire n₂(λ), E ∥ c: Major et al. 2004 Eq. 2 and their 550–1550 nm span", () => {
+  // n₂/1e-16 cm²/W = 2.5 + 2.3 e^(−(λ−266)/46.6) + 1.0 e^(−(λ−266)/1086.3). At 1064 nm: e^(−798/46.6) = 3.7e-8 and
+  // e^(−798/1086.3) = e^(−0.734604) = 0.479696, so n₂ = 2.979696e-16 cm²/W.
+  assertRel(sapphireN2(1064e-9), 2.979696e-20, 1e-6, "1064 nm");
+  // The abstract: n₂ falls from 3.3 to 2.8 × 10⁻¹⁶ cm²/W over 550–1550 nm.
+  assertRel(sapphireN2(550e-9), 3.3e-20, 0.01, "550 nm");
+  assertRel(sapphireN2(1550e-9), 2.8e-20, 0.01, "1550 nm");
+  // Lower end, 270 nm: 2.5 + 2.3 e^(−4/46.6) + e^(−4/1086.3) = 2.5 + 2.110811 + 0.996325 = 5.607136.
+  assertRel(sapphireN2(270e-9), 5.60714e-20, 1e-5, "270 nm");
+  // The fit is stated for 270–1550 nm only.
+  assert.ok(Number.isNaN(sapphireN2(260e-9)) && Number.isNaN(sapphireN2(1600e-9)));
+  // The medium row: its 800 nm values and n₀ = n_e of Malitson & Dodge (1.7522 at 800 nm).
+  const s = KERR_MEDIA.sapphire;
+  assert.equal(s.n2, sapphireN2(800e-9));
+  assertRel(s.n0, 1.7522, 1e-4, "n_e 800 nm");
+  assertRel(s.dispersion!.n2(1064e-9), sapphireN2(1064e-9), 1e-15, "dispersion hook");
+  // At a wavelength: the fit inside 270–1550 nm, held at its 1550 nm value above (continuous at the edge), none below.
+  assert.equal(kerrValuesAt(s, 1064e-9).n2, sapphireN2(1064e-9));
+  const held = kerrValuesAt(s, 2000e-9);
+  assert.equal(held.status, "held");
+  assertRel(held.n2, 2.80667e-20, 1e-5, "held 1550 nm value");
+  assertRel(kerrValuesAt(s, 1550.01e-9).n2, sapphireN2(1550e-9), 1e-12, "continuous at 1550 nm");
+  const below = kerrValuesAt(s, 250e-9);
+  assert.ok(below.status === "below" && Number.isNaN(below.n2));
+  // n₀ keeps following n_e (Malitson & Dodge, 0.2–5 µm) outside the n₂ fit.
+  assertRel(below.n0, crystalIndices("sapphire", 250e-9).ne, 1e-12, "n_e 250 nm");
+  // A medium without a fit keeps its reference values.
+  assert.deepEqual(kerrValuesAt(KERR_MEDIA.yag, 1550e-9), { n2: KERR_MEDIA.yag.n2, n0: KERR_MEDIA.yag.n0, status: "fixed" });
 });
 
 test("DeSalvo 1996 n₂ from esu (Tables I–II) and Bristow 2007 silicon", () => {

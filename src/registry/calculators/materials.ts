@@ -222,10 +222,10 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "electro-optic",
     title: "Electro-Optic Coefficients",
-    description: "Pockels-effect half-wave voltage of longitudinal KDP, KD*P and ADP cells and transverse LiNbO₃, KTP and BaTiO₃ modulators: retardation and single-polarization phase, V_π·L, the index change −½n³rE and the crossed-polarizer transmission.",
+    description: "Pockels-effect half-wave voltage of longitudinal KDP, KD*P and ADP cells and transverse LiNbO₃, LiTaO₃, KTP and BaTiO₃ modulators: retardation and single-polarization phase, V_π·L, the index change −½n³rE and the crossed-polarizer transmission.",
     keywords: ["Pockels Effect", "Half-Wave Voltage", "Pockels Cell", "Electro-Optic Modulator"],
     tier: "textbook",
-    modelNote: "Principal-axis geometries with r fixed at its reference wavelength; only n follows the Sellmeier fits (Zernike KDP, Zelmon LiNbO₃, Kato KTP, Wemple BaTiO₃ over 0.4–0.7 µm), and KD*P and ADP use one published index. LiNbO₃ uses clamped (high-frequency) coefficients; KTP's 633 nm r₃₃ and r₂₃ are low-frequency measurements whose clamping the source doesn't state. BaTiO₃ comes unclamped (r₃₃ 105, r₁₃ 8 pm/V) and clamped (40.6, 10.2); r₄₂ = 1300 (clamped 730) pm/V needs a field across c and is not modelled. The z–o retardation of a transverse modulator adds to the natural birefringence.",
+    modelNote: "Principal-axis geometries with r fixed at its reference wavelength; only n follows the Sellmeier fits (Zernike KDP, Zelmon LiNbO₃, Kato KTP, Wemple BaTiO₃ over 0.4–0.7 µm), and KD*P and ADP use one published index. LiTaO₃'s unclamped r₃₃ and r₁₃ are Casson et al.'s at 632.8, 980, 1330 and 1558 nm (scaled to r₃₃ = 30.5 pm/V at 632.8 nm), interpolated linearly, with Bond's tabulated indices; it is offered over 632.8–1558 nm only. LiNbO₃ uses clamped (high-frequency) coefficients; KTP's 633 nm r₃₃ and r₂₃ are low-frequency measurements whose clamping the source doesn't state. BaTiO₃ comes unclamped (r₃₃ 105, r₁₃ 8 pm/V) and clamped (40.6, 10.2); r₄₂ = 1300 (clamped 730) pm/V needs a field across c and is not modelled. The z–o retardation of a transverse modulator adds to the natural birefringence.",
     references: [
       {
         citation: "Wilson J., Hawkes J. F. B. (1998). Optoelectronics: An Introduction, 3rd ed. Prentice Hall Europe, ISBN 0-13-103961-X (the same Table 3.1 in the 1983 and 1989 editions). Table 3.1 (r₆₃ of KDP, KD*P, ADP) and Example 3.2 (KDP V_π = 14.5 kV at 1.06 µm).",
@@ -237,6 +237,18 @@ export const materials: CalculatorEntry[] = [
       {
         citation: "Zelmon D. E., Small D. L., Jundt D. (1997). Infrared corrected Sellmeier coefficients for congruently grown lithium niobate and 5 mol.% magnesium oxide–doped lithium niobate. J. Opt. Soc. Am. B 14, 3319.",
         url: "https://doi.org/10.1364/JOSAB.14.003319",
+      },
+      {
+        citation: "Casson J. L., Gahagan K. T., Scrymgeour D. A., Jain R. K., Robinson J. M., Gopalan V., Sander R. K. (2004). Electro-optic coefficients of lithium tantalate at near-infrared wavelengths. J. Opt. Soc. Am. B 21, 1948–1952. Table 2: unclamped r₃₃ and r₁₃ of LiTaO₃ at 632.8, 980, 1330 and 1558 nm.",
+        url: "https://doi.org/10.1364/JOSAB.21.001948",
+      },
+      {
+        citation: "Onuki K., Uchida N., Saku T. (1972). Interferometric method for measuring electro-optic coefficients in crystals. J. Opt. Soc. Am. 62, 1030–1032. LiTaO₃ r₃₃ = 30.5 pm/V at 632.8 nm, which sets Casson et al.'s scale.",
+        url: "https://doi.org/10.1364/JOSA.62.001030",
+      },
+      {
+        citation: "Bond W. L. (1965). Measurement of the refractive indices of several crystals. J. Appl. Phys. 36, 1674–1677. LiTaO₃ n_o and n_e, tabulated (via the refractiveindex.info database).",
+        url: "https://doi.org/10.1063/1.1703106",
       },
       {
         citation: "Xie D., Pfister O. (2005). Low-frequency measurements of electro-optic coefficients of Na:KTiOPO₄ and RbTiOAsO₄. arXiv:physics/0507123. Eqs. 3–4 (Δn_y, Δn_z of a z field) and KTP r₂₃ = 15.7, r₃₃ = 36.3 pm/V at 633 nm (low-frequency, unclamped), quoted from Cheng L. K. et al. (1994), J. Cryst. Growth 137, 107–115.",
@@ -414,7 +426,7 @@ export const materials: CalculatorEntry[] = [
     description: "Kerr effect n = n₀ + n₂I: index change, nonlinear phase over a length, fibre nonlinear coefficient γ = 2πn₂/(λA_eff) and the self-focusing critical power, with n₂ of silica fibre, silicon, air and its gases, CS₂ and 17 crystals, glasses and water.",
     keywords: ["Kerr Effect", "Nonlinear Refractive Index", "B-Integral", "Self-Phase Modulation", "Critical Power"],
     tier: "textbook",
-    modelNote: "Instantaneous electronic Kerr effect for linear polarization and uniform intensity over L. n₂ is fixed at the wavelength it was measured at; its dispersion is not modelled. Gases are electronic only at 1 atm (≲ 50 fs; longer pulses add rotation); the CS₂ > 10 ps row includes the nuclear response. DeSalvo's esu values are converted with n₂(m²/W) = 40π n₂(esu)/(c n₀). P_cr is the Gaussian-beam value 3.77 λ²/(8π n₀ n₂).",
+    modelNote: "Instantaneous electronic Kerr effect for linear polarization and uniform intensity over L. n₂ is fixed at the wavelength it was measured at; its dispersion is not modelled, except for sapphire (E ∥ c), which follows Major et al.'s empirical fit over 270–1550 nm (±25–30 %), held at its 1550 nm value above and not given below 270 nm. Gases are electronic only at 1 atm (≲ 50 fs; longer pulses add rotation); the CS₂ > 10 ps row includes the nuclear response. DeSalvo's esu values are converted with n₂(m²/W) = 40π n₂(esu)/(c n₀). P_cr is the Gaussian-beam value 3.77 λ²/(8π n₀ n₂).",
     references: [
       {
         citation: "Dubietis A., Tamošauskas G., Šuminas R., Jukna V., Couairon A. (2017). Ultrafast supercontinuum generation in bulk condensed media. Lith. J. Phys. 57(3). Table 1: n₂ and n₀ at 800 nm.",
@@ -435,6 +447,13 @@ export const materials: CalculatorEntry[] = [
       {
         citation: "Bristow A. D., Rotenberg N., van Driel H. M. (2007). Two-photon absorption and Kerr coefficients of silicon for 850–2200 nm. Appl. Phys. Lett. 90, 191104. Peak n₂ = 1.2e-13 cm²/W at 1800 nm.",
         url: "https://doi.org/10.1063/1.2737359",
+      },
+      {
+        citation: "Major A., Yoshino F., Nikolakakos I., Aitchison J. S., Smith P. W. E. (2004). Dispersion of the nonlinear refractive index in sapphire. Opt. Lett. 29, 602–604. Eq. 2: empirical n₂(λ) of sapphire for E ∥ c, 270–1550 nm.",
+        url: "https://doi.org/10.1364/OL.29.000602",
+      },
+      {
+        citation: "Malitson I. H., Dodge M. J. (1972). Refractive index and birefringence of synthetic sapphire. J. Opt. Soc. Am. 62, 1405 (meeting abstract). n_e of sapphire.",
       },
       {
         citation: "Salzberg C. D., Villa J. J. (1957). Infrared refractive indexes of silicon, germanium, and modified selenium glass. J. Opt. Soc. Am. 47, 244. n₀ of silicon.",

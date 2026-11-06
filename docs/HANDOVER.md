@@ -1,28 +1,36 @@
-# Handover — 2026-11-05 (session 205 → session 206)
+# Handover — 2026-11-06 (session 206 → session 207)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 205 released Phase 7 (`main` e27df432 → `release`, PRs #234–#242 live, checks passed) and did Phase 8a (Kerr data on
-`nonlinear-index`) on `phase-8/8a-kerr-data` (PR #243, to open with `/ship`). Phase 8 = data-blocked limitations.
+Session 206 did Phase 8b (LiTaO₃ on `electro-optic`, sapphire n₂(λ) on `nonlinear-index`) on `phase-8/8b-litao3-sapphire`
+(PR #244, to open with `/ship`). PR #243 (8a) is merged, not released. Next: 8c (Tm³⁺), by the user's choice.
 
 ## State
-- `materials/kerr-index.ts`: + `nitrogen`, `oxygen`, `argon`, `air` (Zahedpour 2015 Table 1, 800 nm, 1 atm electronic;
-  air = Σ xᵢ n₂,ᵢ with U.S. Std Atm 1976 fractions; n₀ `standardAirIndex` from free-space-comms/atmospheric-attenuation),
-  `cs2` (2.0e-19 m²/W) and `cs2-long` (2.86e-18, > 10 ps; Reichert 2014 Table 1, Eq. 18; n₀ Kedenburg 2012 = 1.605957),
-  `fused-silica-1024` (2.18e-20, Wahlstrand & Cruz 2026). 26 media.
-- Golden: P_cr N₂ 1.21488e10 W; air n₂ 7.959726e-24; DeSalvo FS 7.4e-14 esu at 1064 nm → 2.13921e-20 m²/W (n₀ 1.45).
-- physics-reviewer: one bug (mine, fixed before commit). Gate: 1260 tests, 5 eslint warnings (unchanged). 411/411 tiered.
-- Production: e27df432; post-merge-check, full ui-check, BaTiO₃ Γ 26.73 and KRS-5 n 2.3707 / T 71.6 % verified live.
+- `materials/pockels.ts`: + `litao3` (Casson 2004 Table 2 unclamped r₃₃/r₁₃ at 632.8/980/1330/1558 nm, `rDispersion`, linear in λ;
+  Bond 1965 n_o/n_e rows 0.6–1.6 µm interpolated in 1/λ²; range 632.8–1558 nm; ε NaN, so not on `photorefractive`).
+  New `transverseCoefficients(crystal, λ)` (r at λ; reference values for crystals without a table); local `interpolate`.
+- `materials/kerr-index.ts`: + `sapphireN2(λ)` (Major 2004 Eq. 2, `SAPPHIRE_N2_RANGE` 270–1550 nm), optional
+  `KerrMedium.dispersion`, `kerrValuesAt(medium, λ)` → status fixed | fit | held (above: 1550 nm value) | below (NaN).
+  The sapphire row is now E ∥ c, n₀ = n_e (Malitson & Dodge), n₂(800) 3.1117e-20 (Dubietis's 3.1, +0.4 %).
+- Golden: LiTaO₃ r(800 nm) 30.06659/7.302166 pm/V; V_π 1558 nm, d 1 mm, L 20 mm = 397.14 V; sapphire n₂ 1064 nm
+  2.979696e-20, 270 nm 5.60714e-20 m²/W.
+- physics-reviewer: LiTaO₃ OK; sapphire edge jumps (+11 % / −45 % back to the 800 nm value) fixed with `kerrValuesAt`.
+  Gate: 1262 tests, 5 eslint warnings (unchanged). 411/411 tiered.
 
 ## Next actions
-1. `/ship`; merge on the user's yes. Release only on request, then:
-   `node scripts/post-merge-check.mjs <sha> materials/nonlinear-index` (load only: the default medium is unchanged).
-2. Phase 8 next: 8b (LiTaO₃ on `electro-optic` + sapphire n₂(λ)), then 8c (Tm³⁺). The user uploaded six papers; they
-   are in `C:devphotonics-calculators-refs` (outside git). ROADMAP Phase 8 lists their values and what is still
-   missing (SBN indices/ε, Nd σ_a at 808 nm, absolute CO₂ I_s and g₀, SF59 n₂).
+1. Build ran before push (check its log); `/ship`; merge on the user's yes. Release only on request, then
+   `node scripts/post-merge-check.mjs <sha> materials/electro-optic materials/nonlinear-index` (load only: defaults unchanged),
+   and a URL-state check: `/materials/electro-optic?material=litao3&wavelength=1558` shows V_π 397.1 V (headless dump-dom, below).
+2. Phase 8c (Tm³⁺ on `rare-earth-absorption`, Agger & Povlsen 2006): values in ROADMAP Phase 8. The uploads are in
+   `C:/dev/photonics-calculators-refs` (outside git). Still missing: SBN indices/ε, Nd σ_a at 808 nm, CO₂ I_s and g₀, SF59 n₂.
 3. Still wanted from before: Bai 2020 (APL Photonics 5, 031301), Patel 2001 (Yb:YAG κ), Siegman "Lasers" ch. 11/21,
    Degnan 1989, Egner, Andresen & Hell 2002 (J. Microsc. 206, 24).
 
 ## Non-obvious facts
+- **Session 206:** Read's PDF `pages` fails here (no pdftoppm). Render a crop with pypdfium2 (`pip install --target
+  <scratchpad>/pylib pypdfium2`; Pillow is installed): `pdfium.PdfDocument(p)[i].render(scale=2).to_pil().crop(box)`, run with
+  `python -E -P`. devctl holds a whole `a && b` line: if it gives up, later steps (a heredoc file write) never ran. One file's
+  hunks in two commits: `git diff -U1 f > p`, cut the wanted hunks, `git apply --cached --unidiff-zero`. n is nearly linear
+  in 1/λ²: interpolate tabulated indices there. A fit with a range needs defined edges: hold or NaN, never snap back.
 - **Session 205:** pdftotext can shift a table's row labels when a row's name cell is empty: DeSalvo 1996 Table I printed
   "SiO₂" on BaF₂'s row. Cross-check a row against a stated property (band gap, a worked example in the text) before
   trusting it. Open-access Optica papers (Optics Express, OL via arXiv) are blocked to curl by Radware; arXiv, UCF STARS,
@@ -56,8 +64,6 @@ Session 205 released Phase 7 (`main` e27df432 → `release`, PRs #234–#242 liv
 - **Session 194:** verify a lock-in harmonic formula by brute force. Table values stored in SI need `+x.toPrecision(6)`.
 - **Session 193:** headless checks: CDP `Page.captureScreenshot` with a `clip` at `Emulation.setDeviceMetricsOverride` width
   360. Node edit scripts in a quoted heredoc turn `\r\n` inside a template into real CRLF: write test text with the Write tool.
-- **Session 192:** read ui-check's "console errors" line. A second ui-check right after another can hit ECONNREFUSED on 9333.
-- **Session 191:** a registry modelNote can lag its page text after a value fix: when a value changes, grep the registry too.
 - **Editing:** long Bash heredocs with mixed quotes fail. Apply edits with a replace-once node script (fails unless the old
   text occurs exactly once).
 - **Session 160:** Chrome extension screenshots time out on this site; use a headless CDP script (pattern in `scripts/ui-check.mjs`).

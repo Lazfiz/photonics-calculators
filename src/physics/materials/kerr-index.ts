@@ -2,7 +2,7 @@
  * Nonlinear (Kerr) refractive index n = n₀ + n₂I of transparent media: reference n₂ values, the index change, the
  * nonlinear phase over a length, the fibre nonlinear coefficient γ and the self-focusing critical power.
  * Model tier: textbook (instantaneous electronic Kerr response, linearly polarized light; n₂ fixed at the wavelength it
- * was measured at, so its dispersion is not modelled). One row, CS₂ for pulses > 10 ps, is the long-pulse effective n₂
+ * was measured at, so its dispersion is not modelled, except for sapphire's empirical fit). One row, CS₂ for pulses > 10 ps, is the long-pulse effective n₂
  * that includes CS₂'s nuclear (orientational) response.
  * SI units: λ in m, n₂ in m²/W, intensities in W/m², lengths in m, areas in m², powers in W.
  *
@@ -29,6 +29,10 @@
  *   electronic n₂ = 2.0 ± 0.4 × 10⁻¹⁹ m²/W, plus collision 1.0, libration 7.6 and diffusive 18 × 10⁻¹⁹ m²/W whose sum is
  *   n₂,eff for pulses > 10 ps (Eq. 18). n₀ from S. Kedenburg et al., Opt. Mater. Express 2, 1588 (2012),
  *   doi 10.1364/OME.2.001588: n² = 1 + 1.50387 λ²/(λ² − 0.03049), λ in µm, 20 °C.
+ * - Sapphire, E ∥ c: A. Major, F. Yoshino, I. Nikolakakos, J. S. Aitchison, P. W. E. Smith, Opt. Lett. 29, 602 (2004),
+ *   doi 10.1364/OL.29.000602, Eq. 2: n₂ = [2.5 + 2.3 exp(−(λ − 266)/46.6) + 1.0 exp(−(λ − 266)/1086.3)] × 10⁻¹⁶ cm²/W, λ in nm,
+ *   an empirical fit (no underlying theory, their words) to their 1 ps Z-scans over 550–1550 nm (±25–30 %) and DeSalvo et
+ *   al.'s 266, 355, 532 and 1064 nm points; it is stated for 270–1550 nm. n₀ = n_e of Malitson & Dodge (uniaxial-data.ts).
  * - Fused silica at 1024 nm: J. K. Wahlstrand, C. D. Cruz, Rev. Sci. Instrum. 97(8) (2026), doi 10.1063/5.0331814
  *   (arXiv:2604.10340), Sec. III: Z-scan with 250 fs pulses, n₂ = 2.18 ± 0.14 × 10⁻¹⁶ cm²/W.
  */
@@ -38,6 +42,7 @@ import { SILICA_N2 } from "../fiber-optics/fiber-nonlinear";
 import { standardAirIndex } from "../free-space-comms/atmospheric-attenuation";
 import { refractiveIndex } from "./sellmeier";
 import { MATERIALS } from "./sellmeier-data";
+import { crystalIndices } from "./uniaxial-data";
 
 export type KerrMediumId =
   | "silica-fiber" | "lif" | "caf2" | "sapphire" | "baf2" | "fused-silica" | "kdp" | "water" | "yag" | "bbo" | "bk7"
@@ -53,6 +58,8 @@ export interface KerrMedium {
   /** Wavelength the values hold at, m. */
   lambda: number;
   source: string;
+  /** n₂(λ) and n₀(λ) where a dispersion fit is published, valid over `range` (m); n₂ and n₀ above are its values at `lambda`. */
+  dispersion?: { n2: (lambda: number) => number; n0: (lambda: number) => number; range: readonly [number, number] };
 }
 
 const DUBIETIS = "Dubietis et al. 2017, Table 1 (800 nm)";
@@ -78,6 +85,21 @@ const gasAt800 = (name: string, n2: number, source = ZAHEDPOUR): KerrMedium => (
   name, n2, n0: standardAirIndex(800e-9), lambda: 800e-9, source,
 });
 
+/** Validity range of Major et al.'s sapphire n₂(λ) fit, m. */
+export const SAPPHIRE_N2_RANGE = [270e-9, 1550e-9] as const;
+
+/**
+ * n₂ of sapphire for E ∥ c, m²/W: Major et al. 2004, Eq. 2, [2.5 + 2.3 e^(−(λ−266)/46.6) + 1.0 e^(−(λ−266)/1086.3)] × 10⁻¹⁶
+ * cm²/W with λ in nm. NaN outside 270–1550 nm.
+ */
+export function sapphireN2(lambda: number): number {
+  if (!(lambda >= SAPPHIRE_N2_RANGE[0] * (1 - 1e-9) && lambda <= SAPPHIRE_N2_RANGE[1] * (1 + 1e-9))) return NaN;
+  const x = lambda * 1e9 - 266;
+  return (2.5 + 2.3 * Math.exp(-x / 46.6) + 1.0 * Math.exp(-x / 1086.3)) * 1e-20;
+}
+
+const sapphireN0 = (lambda: number) => crystalIndices("sapphire", lambda).ne;
+
 /** n₀ of CS₂ at 800 nm from Kedenburg et al. 2012 (λ in µm). */
 const CS2_N0_800 = Math.sqrt(1 + (1.50387 * 0.8 ** 2) / (0.8 ** 2 - 0.03049));
 const REICHERT = "Reichert et al. 2014, Table 1 (800 nm); n₀ Kedenburg et al. 2012";
@@ -89,7 +111,11 @@ export const KERR_MEDIA: Record<KerrMediumId, KerrMedium> = {
   },
   lif: at800("LiF", 0.81, 1.39),
   caf2: at800("CaF₂", 1.3, 1.43),
-  sapphire: at800("Sapphire (Al₂O₃)", 3.1, 1.76),
+  sapphire: {
+    name: "Sapphire (Al₂O₃, E ∥ c)", n2: sapphireN2(800e-9), n0: sapphireN0(800e-9), lambda: 800e-9,
+    source: "n₂(λ) Major et al. 2004, Eq. 2 (270–1550 nm); n₀ = n_e, Malitson & Dodge 1972",
+    dispersion: { n2: sapphireN2, n0: sapphireN0, range: SAPPHIRE_N2_RANGE },
+  },
   baf2: at800("BaF₂", 1.91, 1.47),
   "fused-silica": at800("Fused silica", 2.4, 1.45),
   kdp: at800("KDP", 2.0, 1.5),
@@ -126,6 +152,22 @@ export const KERR_MEDIA: Record<KerrMediumId, KerrMedium> = {
     source: `${REICHERT}, electronic + nuclear (Eq. 18)`,
   },
 };
+
+/**
+ * n₂ and n₀ of a medium at λ. Without a dispersion fit: the reference values ("fixed"). With one: the fit inside its range
+ * ("fit"); above it n₂ is held at the upper end, where it still falls slowly ("held"); below it n₂ is NaN, since n₂ rises
+ * steeply towards the band gap ("below"). n₀ follows its own dispersion wherever that is defined, else the reference value.
+ */
+export function kerrValuesAt(medium: KerrMedium, lambda: number): { n2: number; n0: number; status: "fixed" | "fit" | "held" | "below" } {
+  const fit = medium.dispersion;
+  if (!fit) return { n2: medium.n2, n0: medium.n0, status: "fixed" };
+  const [lo, hi] = fit.range;
+  const n0Fit = fit.n0(lambda);
+  const n0 = Number.isFinite(n0Fit) ? n0Fit : medium.n0;
+  if (!(lambda >= lo * (1 - 1e-9))) return { n2: NaN, n0, status: "below" };
+  if (lambda > hi * (1 + 1e-9)) return { n2: fit.n2(hi), n0, status: "held" };
+  return { n2: fit.n2(Math.min(lambda, hi)), n0, status: "fit" };
+}
 
 /** Kerr index change Δn = n₂I. NaN unless n₂ is finite and I ≥ 0. */
 export function kerrIndexChange(n2: number, intensity: number): number {

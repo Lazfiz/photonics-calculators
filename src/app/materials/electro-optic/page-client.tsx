@@ -6,10 +6,10 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
   POCKELS, crossedPolarizerTransmission, longitudinalHalfWaveVoltage, phaseHalfWaveVoltage, pockelsIndexChange,
-  transverseHalfWaveVoltage, type PockelsGeometry, type PockelsId,
+  transverseCoefficients, transverseHalfWaveVoltage, type PockelsGeometry, type PockelsId,
 } from "../../../physics/materials/pockels";
 
-const IDS = ["kdp", "kdp-d", "adp", "linbo3", "ktp", "batio3", "batio3-clamped"] as const satisfies readonly PockelsId[];
+const IDS = ["kdp", "kdp-d", "adp", "linbo3", "litao3", "ktp", "batio3", "batio3-clamped"] as const satisfies readonly PockelsId[];
 type Choice = PockelsId | "custom";
 const CHOICES: readonly Choice[] = [...IDS, "custom"];
 const DEFAULT_ID: Choice = "kdp";
@@ -32,7 +32,7 @@ const layout = (x: string, y: string) => ({
 });
 const kV = (V: number) => (Number.isFinite(V) ? (Math.abs(V) >= 1000 ? `${sig(V / 1000, 4)} kV` : `${sig(V, 4)} V`) : "—");
 const ORDINARY = { n: "n_o", nz: "n_e", r: "r₁₃" };
-const rangeNm = (id: PockelsId) => POCKELS[id].range.map((x) => Math.round(x * 1e9)).join("–");
+const rangeNm = (id: PockelsId) => POCKELS[id].range.map((x) => +(x * 1e9).toFixed(1)).join("–");
 
 interface Modulator {
   geometry: PockelsGeometry;
@@ -60,10 +60,11 @@ function modulator(choice: Choice, lambda: number, d: number, L: number, custom:
     return { geometry: "longitudinal", n, r: c.r.r63!, VpiRet: longitudinalHalfWaveVoltage(lambda, n, c.r.r63!), VpiPhase: phaseHalfWaveVoltage(lambda, n, c.r.r63!, L, L) };
   }
   const n = inRange ? ne : NaN;
+  const { r33, r13 } = transverseCoefficients(c, lambda);
   return {
-    geometry: "transverse", n, r: c.r.r33!,
-    VpiRet: transverseHalfWaveVoltage(lambda, inRange ? no : NaN, n, c.r.r33!, c.r.r13!, d, L),
-    VpiPhase: phaseHalfWaveVoltage(lambda, n, c.r.r33!, d, L),
+    geometry: "transverse", n, r: r33,
+    VpiRet: transverseHalfWaveVoltage(lambda, inRange ? no : NaN, n, r33, r13, d, L),
+    VpiPhase: phaseHalfWaveVoltage(lambda, n, r33, d, L),
   };
 }
 
@@ -200,7 +201,8 @@ export default function ElectroOpticPage() {
             {IDS.map((id) => {
               const row = modulator(id, lambda, d, L, { n: nCustom, r: rCustom_pmV * 1e-12, geometry: customGeometry });
               const c = POCKELS[id];
-              const rText = c.geometry === "longitudinal" ? `r₆₃ ${sig(c.r.r63! * 1e12, 3)}` : `r₃₃ ${sig(c.r.r33! * 1e12, 3)}, ${(c.perp ?? ORDINARY).r} ${sig(c.r.r13! * 1e12, 3)}`;
+              const rt = transverseCoefficients(c, lambda);
+              const rText = c.geometry === "longitudinal" ? `r₆₃ ${sig(c.r.r63! * 1e12, 3)}` : `r₃₃ ${sig(rt.r33 * 1e12, 3)}, ${(c.perp ?? ORDINARY).r} ${sig(rt.r13 * 1e12, 3)}`;
               return (
                 <tr key={id} onClick={() => setMaterial(id)} className={`cursor-pointer hover:bg-gray-800 ${id === choice ? "bg-gray-800" : ""}`}>
                   <td className="pr-4 py-1">{c.name}</td>
@@ -237,9 +239,16 @@ export default function ElectroOpticPage() {
           </p>
           <p>
             r is taken at its reference wavelength (633 nm for LiNbO₃ and KTP) and only n follows the Sellmeier fit, so V_π far from
-            it is approximate. LiNbO₃&apos;s r₃₃ and r₁₃ are the clamped (high-frequency) values; below the acoustic resonances
+            it is approximate. LiTaO₃ is the exception: its unclamped r₃₃ and r₁₃ were measured at 632.8, 980, 1330 and 1558 nm and
+            are interpolated between them (r₃₃ falls from 30.5 to 27.4 pm/V), so its V_π holds over that range only. LiNbO₃&apos;s r₃₃ and r₁₃ are the clamped (high-frequency) values; below the acoustic resonances
             the unclamped ones are a few per cent larger. KTP&apos;s r₃₃ and r₂₃ are the unclamped (low-frequency) values; vendor
             tables give 35.0 and 13.8 pm/V clamped.
+          </p>
+          <p>
+            LiTaO₃ (3m) works like LiNbO₃ but its birefringence is small and of the other sign (n_e − n_o ≈ +0.004), so the
+            natural retardation of a transverse modulator is about 20× smaller. Its coefficients are the unclamped (low-frequency)
+            values of Casson et al., scaled to the literature r₃₃ = 30.5 pm/V at 632.8 nm; their r₁₃ there is 7.62 pm/V against
+            8.4 in the older interferometric value. Its permittivity is not tabulated here.
           </p>
           <p>
             BaTiO₃ (4mm) uses the same z-field geometry with n_e³r₃₃ − n_o³r₁₃, for a poled single-domain crystal at 633 nm and
