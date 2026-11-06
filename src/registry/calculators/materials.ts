@@ -426,7 +426,7 @@ export const materials: CalculatorEntry[] = [
     description: "Kerr effect n = n₀ + n₂I: index change, nonlinear phase over a length, fibre nonlinear coefficient γ = 2πn₂/(λA_eff) and the self-focusing critical power, with n₂ of silica fibre, silicon, air and its gases, CS₂ and 17 crystals, glasses and water.",
     keywords: ["Kerr Effect", "Nonlinear Refractive Index", "B-Integral", "Self-Phase Modulation", "Critical Power"],
     tier: "textbook",
-    modelNote: "Instantaneous electronic Kerr effect for linear polarization and uniform intensity over L. n₂ is fixed at the wavelength it was measured at; its dispersion is not modelled. Gases are electronic only at 1 atm (≲ 50 fs; longer pulses add rotation); the CS₂ > 10 ps row includes the nuclear response. DeSalvo's esu values are converted with n₂(m²/W) = 40π n₂(esu)/(c n₀). P_cr is the Gaussian-beam value 3.77 λ²/(8π n₀ n₂).",
+    modelNote: "Instantaneous electronic Kerr effect for linear polarization and uniform intensity over L. n₂ is fixed at the wavelength it was measured at; its dispersion is not modelled, except for sapphire (E ∥ c), which follows Major et al.'s empirical fit over 270–1550 nm (±25–30 %), held at its 1550 nm value above and not given below 270 nm. Gases are electronic only at 1 atm (≲ 50 fs; longer pulses add rotation); the CS₂ > 10 ps row includes the nuclear response. DeSalvo's esu values are converted with n₂(m²/W) = 40π n₂(esu)/(c n₀). P_cr is the Gaussian-beam value 3.77 λ²/(8π n₀ n₂).",
     references: [
       {
         citation: "Dubietis A., Tamošauskas G., Šuminas R., Jukna V., Couairon A. (2017). Ultrafast supercontinuum generation in bulk condensed media. Lith. J. Phys. 57(3). Table 1: n₂ and n₀ at 800 nm.",
@@ -447,6 +447,13 @@ export const materials: CalculatorEntry[] = [
       {
         citation: "Bristow A. D., Rotenberg N., van Driel H. M. (2007). Two-photon absorption and Kerr coefficients of silicon for 850–2200 nm. Appl. Phys. Lett. 90, 191104. Peak n₂ = 1.2e-13 cm²/W at 1800 nm.",
         url: "https://doi.org/10.1063/1.2737359",
+      },
+      {
+        citation: "Major A., Yoshino F., Nikolakakos I., Aitchison J. S., Smith P. W. E. (2004). Dispersion of the nonlinear refractive index in sapphire. Opt. Lett. 29, 602–604. Eq. 2: empirical n₂(λ) of sapphire for E ∥ c, 270–1550 nm.",
+        url: "https://doi.org/10.1364/OL.29.000602",
+      },
+      {
+        citation: "Malitson I. H., Dodge M. J. (1972). Refractive index and birefringence of synthetic sapphire. J. Opt. Soc. Am. 62, 1405 (meeting abstract). n_e of sapphire.",
       },
       {
         citation: "Salzberg C. D., Villa J. J. (1957). Infrared refractive indexes of silicon, germanium, and modified selenium glass. J. Opt. Soc. Am. 47, 244. n₀ of silicon.",

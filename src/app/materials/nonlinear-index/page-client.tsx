@@ -4,7 +4,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { nonlinearCoefficient } from "../../../physics/fiber-optics/fiber-nonlinear";
-import { KERR_MEDIA, kerrIndexChange, piPhaseIntensity, type KerrMediumId } from "../../../physics/materials/kerr-index";
+import { KERR_MEDIA, kerrIndexChange, kerrValuesAt, piPhaseIntensity, type KerrMediumId } from "../../../physics/materials/kerr-index";
 import { criticalPower, nonlinearPhase } from "../../../physics/wave-optics/kerr";
 
 const IDS = Object.keys(KERR_MEDIA) as KerrMediumId[];
@@ -49,9 +49,11 @@ export default function NonlinearIndexPage() {
   const length_mm = clamp(lengthRaw, LENGTH_MIN_MM, LENGTH_MAX_MM, 10);
   const area_um2 = clamp(areaRaw, AREA_MIN_UM2, AREA_MAX_UM2, 80);
 
-  const n2 = medium ? medium.n2 : n2_cm2W * 1e-4;
-  const n0 = medium ? medium.n0 : n0Custom;
   const lambda = wavelength_nm * 1e-9;
+  const at = medium ? kerrValuesAt(medium, lambda) : null;
+  const n2 = at ? at.n2 : n2_cm2W * 1e-4;
+  const n0 = at ? at.n0 : n0Custom;
+  const fit = medium?.dispersion;
   const I = intensity_Wcm2 * 1e4;
   const L = length_mm * 1e-3;
   const dn = kerrIndexChange(n2, I);
@@ -59,7 +61,8 @@ export default function NonlinearIndexPage() {
   const gamma = nonlinearCoefficient(n2, lambda, area_um2 * 1e-12);
   const Pcr = criticalPower(lambda, n0, n2);
   const Ipi = piPhaseIntensity(lambda, n2, L);
-  const offReference = medium !== null && Math.abs(lambda - medium.lambda) > LAMBDA_TOLERANCE * medium.lambda;
+  const offReference = medium !== null && !fit && Math.abs(lambda - medium.lambda) > LAMBDA_TOLERANCE * medium.lambda;
+  const fitRange = fit ? fit.range.map((x) => Math.round(x * 1e9)).join("–") : "";
   const select = (id: Choice) => {
     setMaterial(id);
     if (id !== "custom") setWavelength(Math.round(KERR_MEDIA[id].lambda * 1e9));
@@ -91,9 +94,11 @@ export default function NonlinearIndexPage() {
       </div>
       <p className="text-xs mb-6 text-gray-500">
         {medium
-          ? `n₂ = ${exp(medium.n2 * 1e4, 2)} cm²/W (${exp(medium.n2, 2)} m²/W), n₀ = ${sig(medium.n0, 4)} at ${Math.round(medium.lambda * 1e9)} nm; ${medium.source}.`
+          ? `n₂ = ${exp(n2 * 1e4, 2)} cm²/W (${exp(n2, 2)} m²/W), n₀ = ${sig(n0, 4)} at ${fit ? sig(wavelength_nm, 6) : Math.round(medium.lambda * 1e9)} nm; ${medium.source}.`
           : `Custom medium: n₂ = ${exp(n2, 2)} m²/W.`}{" "}
         {offReference && <span className="text-yellow-400">n₂ is the {Math.round(medium!.lambda * 1e9)} nm value; its dispersion is not modelled.</span>}
+        {at?.status === "held" && <span className="text-yellow-400">The n₂ fit covers {fitRange} nm only: n₂ is held at its long-wavelength end.</span>}
+        {at?.status === "below" && <span className="text-yellow-400">The n₂ fit starts at {fitRange.split("–")[0]} nm; below it n₂ rises steeply towards the band gap, so none is given.</span>}
       </p>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-4">
@@ -147,6 +152,14 @@ export default function NonlinearIndexPage() {
             2.4 × 10⁻¹⁶ cm²/W at 800 nm in Dubietis et al.&apos;s table, 2.18 × 10⁻¹⁶ at 1024 nm in Wahlstrand &amp;
             Cruz&apos;s Z-scan, ±6 %; DeSalvo et al.&apos;s picosecond Z-scans give 2.1 × 10⁻¹⁶ at 1064 nm and 2.2 × 10⁻¹⁶ at
             532 nm, ±20 %).
+          </p>
+          <p>
+            Sapphire follows Major et al.&apos;s empirical double-exponential fit to their picosecond Z-scans with E ∥ c from
+            550 to 1550 nm (3.3 to 2.8 × 10⁻¹⁶ cm²/W, ±25–30 %); below 550 nm its shape is set mainly by DeSalvo et al.&apos;s
+            266 and 355 nm points. It gives 5.6 × 10⁻¹⁶ cm²/W at 270 nm, its lower end; below that no n₂ is given, and below
+            about 340 nm (2ħω above the 7.3 eV band gap) sapphire also absorbs two photons. Above 1550 nm n₂ is held at its
+            1550 nm value (the fit&apos;s own tail falls only to 2.7 × 10⁻¹⁶ at 2 µm). n₀ is the extraordinary
+            index.
           </p>
           <p>
             Silicon&apos;s n₂ changes fourfold between 1000 and 2200 nm (4.7 × 10⁻¹⁴ cm²/W at 1220 nm, peak 1.2 × 10⁻¹³ at
