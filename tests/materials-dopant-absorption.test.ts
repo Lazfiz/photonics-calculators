@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 import { DOPANT_LINES, dopantAbsorption } from "../src/physics/materials/dopant-absorption";
 import { COLOR_CENTERS, stokesShift } from "../src/physics/materials/color-centers";
-import { ionDensityFromWtPpm } from "../src/physics/fiber-optics/doped-fiber-gain";
+import { DOPANT_PRESETS, ionDensityFromWtPpm, twoLevelAt } from "../src/physics/fiber-optics/doped-fiber-gain";
 
 const assertRel = (actual: number, expected: number, tol: number, msg: string) =>
   assert.ok(Math.abs(actual - expected) <= tol * Math.abs(expected), `${msg}: ${actual} vs ${expected}`);
@@ -39,8 +39,42 @@ test("Er presets: Barnes et al. 1991, GeO₂–Al₂O₃–SiO₂ fibre", () => 
   assert.deepEqual([pick("Yb1064")?.sigmaA, pick("Yb1064")?.sigmaE], [5.7e-27, 3.1e-25]);
 });
 
-test("The five preset lines and the domain guards", () => {
-  assert.deepEqual(DOPANT_LINES.map((l) => l.id), ["Er980", "Er1480", "Er1550", "Yb976", "Yb1064"]);
+test("Tm presets: Agger & Povlsen 2006, Al/La-silica fibre Tm1", () => {
+  // Text: σ_a(1600) = 3.5 ± 0.1e-25 m², σ_e/σ_a = 0.10 ± 0.02 at 1600 nm and 1.20 ± 0.02 at 1740 nm, τ(³F₄) = 650 µs.
+  // Vector data of Fig. 3 (σ_a) and Fig. 4 (σ_a, σ_e): 1740 nm 2.822/2.830 and 3.395; 1900 nm 0.171/0.173 and 2.836.
+  const tm = DOPANT_PRESETS.find((p) => p.id === "Tm");
+  assert.ok(tm);
+  assert.equal(tm.tau, 650e-6);
+  const pick = (id: string) => DOPANT_LINES.find((l) => l.id === id);
+  const p = pick("Tm1600"), s1 = pick("Tm1740"), s2 = pick("Tm1900");
+  assert.ok(p && s1 && s2);
+  assert.deepEqual([p.role, p.sigmaA, p.sigmaE], ["pump", 3.5e-25, 0.35e-25]);
+  assertRel(s1.sigmaE / s1.sigmaA, 1.2, 0.02 / 1.2, "σ_e/σ_a at 1740 nm");
+  assertRel(s1.sigmaA, 2.83e-25, 0.05 / 2.83, "σ_a(1740)");
+  assertRel(s2.sigmaA, 0.17e-25, 0.05 / 0.17, "σ_a(1900)");
+  assertRel(s2.sigmaE, 2.84e-25, 0.05 / 2.84, "σ_e(1900)");
+  // The amplifier pages take the first signal: 1900 nm.
+  assert.equal(tm.signals[0].lambda, 1900e-9);
+  // 1000 wt-ppm Tm (M 168.934 g/mol): N = 1e-3·2201·6.02214076e23/0.168934 = 7.84610e24 m⁻³; α(1600) = 3.5e-25·N =
+  // 2.74614 m⁻¹ = 11.9263 dB/m; 10 cm: T = e^(−0.274614) = 0.759866.
+  const N = ionDensityFromWtPpm(1000, tm.molarMass);
+  assertRel(N, 7.8461e24, 1e-5, "N");
+  const r = dopantAbsorption(p.sigmaA, N, 0.1);
+  assertRel(r.dbPerM, 11.9263, 1e-5, "dB/m");
+  assertRel(r.transmission, 0.759866, 1e-5, "T");
+});
+
+test("In-band pumping at 1600 nm inverts Tm at most to σ_a/(σ_a + σ_e) = 1/1.1", () => {
+  // Two-level limit of Giles & Desurvire eq. (6) as the pump grows: n₂/N → σ_a/(σ_a + σ_e) = 3.5/3.85 = 0.909091.
+  const tm = DOPANT_PRESETS.find((p) => p.id === "Tm");
+  assert.ok(tm);
+  const fiber = { N: 8.4e25, area: Math.PI * 3.5e-6 ** 2, tau: tm.tau };
+  const beam = { ...tm.pumps[0], overlap: 0.8, power: 1e4 };
+  assertRel(twoLevelAt(fiber, [beam], 0).inversion, 1 / 1.1, 1e-4, "inversion at 10 kW");
+});
+
+test("The eight preset lines and the domain guards", () => {
+  assert.deepEqual(DOPANT_LINES.map((l) => l.id), ["Er980", "Er1480", "Er1550", "Yb976", "Yb1064", "Tm1600", "Tm1740", "Tm1900"]);
   // The old page counted Nd's 1064 nm emission as absorption; σ_a of Yb at 1064 nm is 5.7e-27 m², 472× below 976 nm.
   assert.equal(DOPANT_LINES.find((l) => l.id === "Yb1064")?.role, "signal");
   const none = dopantAbsorption(2.5e-25, 0, 1);
