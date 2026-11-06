@@ -2,7 +2,8 @@
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
 Session 208 did Phase 8d (Ho³⁺ on `rare-earth-absorption`, `rare-earth-doped`, `fiber-amplifier`) on `phase-8/8d-ho-absorption`
-(PR #246, to open with `/ship`). PR #245 is merged. Phase 8 has no open box left: ask the user for the next stage.
+(PR #246, merged, not released). Next: Phase 8e BSO + ZBLAN (user's pick), branch `phase-8/8e-bso-zblan` (exists, holds
+the ROADMAP box). Get sources first: Efremidis 2009 (BSO), Poulain 2024 APL Photonics 9, 091103 (ZBLAN).
 
 ## State
 - `fiber-optics/doped-fiber-gain.ts`: DOPANT_PRESETS + `Ho` (Le Gouët et al. 2020, Opt. Express 28, 22307; values from
@@ -17,7 +18,7 @@ Session 208 did Phase 8d (Ho³⁺ on `rare-earth-absorption`, `rare-earth-doped`
   physics-reviewer: all values confirmed; Γ_p fixed 0.76 → 0.78 (1908 nm), N mismatch noted in a comment.
 
 ## Next actions
-1. Build ran before push (check its log); `/ship`; merge on the user's yes. Release only on request, then
+1. 8d is merged, not released. Release only on request, then
    `node scripts/post-merge-check.mjs <sha> materials/rare-earth-absorption fiber-optics/fiber-amplifier fiber-optics/rare-earth-doped`
    (load only: defaults unchanged), and a URL-state check: `/materials/rare-earth-absorption?line=Ho1946` shows 15.01 dB/m.
 2. Next stage, user's choice: Phase 8 "open but partial" items (BSO Efremidis 2009, ZBLAN) only with a go; or the "Later"
@@ -63,7 +64,6 @@ Session 208 did Phase 8d (Ho³⁺ on `rare-earth-absorption`, `rare-earth-doped`
 - **Session 198:** `devctl` (CPU scheduler shared with other projects) holds a *whole* Bash command line while it waits and
   gives up after 90 s with exit 75: run tests and gates with `run_in_background` (they queue), and check `git diff --stat`
   before trusting a test count.
-- **Session 194:** verify a lock-in harmonic formula by brute force. Table values stored in SI need `+x.toPrecision(6)`.
 - **Session 193:** headless checks: CDP `Page.captureScreenshot` with a `clip` at `Emulation.setDeviceMetricsOverride` width
   360. Node edit scripts in a quoted heredoc turn `\r\n` inside a template into real CRLF: write test text with the Write tool.
 - **Editing:** long Bash heredocs with mixed quotes fail. Apply edits with a replace-once node script (fails unless the old

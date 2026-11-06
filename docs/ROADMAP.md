@@ -308,6 +308,8 @@ minus signs and ±, and can shift table labels: confirm each value on the render
 - [x] 8b `electro-optic` LiTaO₃ + `nonlinear-index` sapphire n₂(λ) (session 206, `phase-8/8b-litao3-sapphire`, PR #244). See Done.
 - [x] 8c Tm³⁺ on `rare-earth-absorption`, `rare-earth-doped`, `fiber-amplifier` (session 207, `phase-8/8c-tm-absorption`, PR #245). See Done.
 - [x] 8d Ho³⁺ on the same three pages (session 208, `phase-8/8d-ho-absorption`, PR #246). See Done.
+- [ ] 8e (user, session 208: "8e BSO + ZBLAN") BSO r₄₁ 4.2 ± 2.0 pm/V and optical activity 40 ± 12°/mm on `electro-optic`
+  (Efremidis 2009; ε, n secondary) and ZBLAN Knoop 190–250 kg/mm², dn/dT −8 to −15e-6/K rows (Poulain 2024). Branch `phase-8/8e-bso-zblan`.
 - Nd³⁺ (Barnes 1991 Opt. Commun. 82, 283): σ_e 1.3 ± 0.2e-24
   m² spectroscopic (0.75 laser method) at 1.088 µm, τ 460 µs, branching 0.56/0.40/0.04; no σ_a at 808 nm, so Nd waits for one.
 - Received but not unblocking: Nachshon 1973 (Appl. Opt. 12, 1935) gives only I_s ∝ p² (p > 20 torr) and a₀l = 3.32, no absolute
