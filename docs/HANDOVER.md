@@ -32,7 +32,8 @@ poulain2024-hmfg.pdf.
 1. 8e is merged (PR #247) and released: `release` = 1968d6e1. post-merge-check ALL PASS on the 8d and 8e pages.
 2. Next: Phase 9a (user's pick). Add a "Report a problem" form on every calculator; delivery is Resend email via a route
    handler (see the ROADMAP box). Also fix the About page. Branch `phase-9/9a-report-button` holds the box.
-   - Before deploying, the user creates a Resend account and sets `RESEND_API_KEY` and `REPORT_TO_EMAIL` in Vercel.
+   - Done (session 209): `RESEND_API_KEY` and `REPORT_TO_EMAIL` are set in Vercel as Production, sensitive. Only names were checked
+     via MCP; never decrypt. Preview has neither, so the form must fall back gracefully.
    - Then 9b: the blind audit.
 3. Still missing data: BSO ε, SBN, Nd σ_a at 808 nm, CO₂ g₀ and I_s, SF59 n₂, the Tm ³H₄ band, ZBLAN κ and band.
 
