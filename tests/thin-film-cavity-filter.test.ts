@@ -83,7 +83,7 @@ test("cavity filter: pass-band FWHM by scan and bisection", () => {
   // At λ₀ each cavity is an absentee, leaving the couplers: two L layers (3 cavities) are a half-wave absentee,
   // so T = 1 − R₀ = 0.957420; one L layer (2 cavities) gives R = ((1.52 − 1.45²)/(1.52 + 1.45²))², T = 0.974143.
   const RL = ((nSub - 1.45 ** 2) / (nSub + 1.45 ** 2)) ** 2;
-  for (const [pairs, cavities, expected, window, T0] of [[6, 3, 1.13443, 3, 1 - R0], [3, 2, 19.1377, 40, 1 - RL]]) {
+  for (const [pairs, cavities, expected, window, T0] of [[6, 3, 1.13437, 3, 1 - R0], [3, 2, 19.1376, 40, 1 - RL]]) {
     const stack = filterStack(design({ mirrorPairs: pairs, cavities }));
     const pb = cavityPassband(stack, lambda0, dg);
     const fwhm = (pb.long - pb.short) / NM;
@@ -97,9 +97,19 @@ test("cavity filter: pass-band FWHM by scan and bisection", () => {
     close(stackResponse(stack, lambda0).T, T0, 1e-12, "T(λ₀)");
     assert.ok(pb.peakT > 0.98 && pb.peakT > T0);
   }
+  // narrow-bandpass defaults: the sampled peak was 0.9967 at 1549.590/1550.410 nm (blind audit 9b, 2026-11-06);
+  // refined it is 0.996913 at 1549.586/1550.414 nm, as a 1e-6 nm transfer-matrix scan finds (Macleod 2010 ch. 8).
+  const def = filterStack(design({ mirrorPairs: 6, cavities: 3 }));
+  const pk = cavityPassband(def, lambda0, dg);
+  close(pk.peakT, 0.9969127, 1e-7, "default peak T");
+  close(pk.peakShort / NM, 1549.58604, 1e-5, "default peak, short side");
+  close(pk.peakLong / NM, 1550.41418, 1e-4, "default peak, long side");
+  let dense = 0;
+  for (let i = -500; i <= 500; i++) dense = Math.max(dense, stackResponse(def, pk.peakShort + i * 1e-6 * NM).T);
+  assert.ok(pk.peakT >= dense - 1e-12, `refined peak ${pk.peakT} below the dense scan ${dense}`);
   // 8 pairs (the old page showed FWHM 0 from 8 pairs up): 0.1643 nm.
   const eight = cavityPassband(filterStack(design({ mirrorPairs: 8, cavities: 3 })), lambda0, dg);
-  close((eight.long - eight.short) / NM, 0.164335, 1e-5, "8 pairs × 3");
+  close((eight.long - eight.short) / NM, 0.164325, 1e-5, "8 pairs × 3");
   // Single cavity: the peak is at λ₀ and equals the bare substrate's transmittance.
   const one = cavityPassband(filterStack(design({ mirrorPairs: 12 })), lambda0, dg);
   assert.equal(one.peakShort, lambda0);

@@ -162,7 +162,7 @@ export default function LibsAnalysisPage() {
           electron-impact half-width at 10¹⁶ cm⁻³ for the chosen line and temperature (typically 0.001–0.1 nm; Griem&apos;s 1974 tables give w directly. Tables of measured full widths w_m at a density
           nₑ,m, such as the Konjević critical reviews, give w = (w_m/2)·10¹⁶ cm⁻³/nₑ,m), and ion broadening, a few percent for ionic lines, is neglected. Hydrogen Balmer lines
           follow the linear Stark effect instead (nₑ ∝ Δλ^(3/2)). The Saha ratio assumes LTE, single ionisation and no
-          lowering of the ionisation energy; take U⁺/U⁰ from partition-function tables (the ground-state weights alone give
+          lowering of the ionisation energy; take U⁺/U⁰ from partition-function tables (the ground-term weights alone give
           ½ for Na, 2 for Ca and ⅙ for Al). The
           McWhirter criterion is necessary but not sufficient for LTE in a transient LIBS plasma.
         </p>

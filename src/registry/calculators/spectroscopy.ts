@@ -328,6 +328,9 @@ export const spectroscopy: CalculatorEntry[] = [
         url: "https://doi.org/10.1016/j.sab.2009.11.005",
       },
       {
+        citation: "Griem H. R. (1974). Spectral Line Broadening by Plasmas. Academic Press, New York (tabulated electron-impact Stark widths).",
+      },
+      {
         citation: "Griem H. R. (1997). Principles of Plasma Spectroscopy. Cambridge University Press (Saha equation, Stark broadening).",
       },
       {
