@@ -328,7 +328,7 @@ export const materials: CalculatorEntry[] = [
     lede: "Compare IR transmitting materials and glasses. n(λ, T) = n(λ, T₀) + (dn/dT)(T − T₀), with n(λ, T₀) from each material's published Sellmeier formula.",
     keywords: ["Infrared Materials", "Chalcogenide Glass Properties", "Fluoride Glass (ZBLAN)"],
     tier: "textbook",
-    modelNote: "Index from published Sellmeier fits inside their ranges, shifted linearly by one room-temperature dn/dT; transmission is the lossless two-surface Fresnel limit 2n/(n² + 1). Bands, dn/dT, conductivity and hardness are Crystran data-sheet values, and Amorphous Materials' for AMTIR-1 and As₂S₃ (AMTIR-6: band and hardness only, its dn/dT changes sign across the band); none are sourced for ZBLAN. AMTIR-1's single dn/dT is about 2× low below 1.5 µm.",
+    modelNote: "Index from published Sellmeier fits inside their ranges, shifted linearly by one room-temperature dn/dT; transmission is the lossless two-surface Fresnel limit 2n/(n² + 1). Bands, dn/dT, conductivity and hardness are Crystran data-sheet values, and Amorphous Materials' for AMTIR-1 and As₂S₃ (AMTIR-6: band and hardness only, its dn/dT changes sign across the band); ZBLAN's Knoop 250 kg/mm² and dn/dT −11.5 ×10⁻⁶/K (midpoint of −8 to −15 for fluoride glasses) are from Poulain's 2024 review, with no band or conductivity. AMTIR-1's single dn/dT is about 2× low below 1.5 µm.",
     references: [
       {
         citation: "refractiveindex.info database (CC0). Sellmeier data sets, each with its original reference shown on the page. Used for Ge, Si, ZnSe, ZnS, CaF₂, BaF₂, MgF₂, NaCl, KBr, CsI, KRS-5, As₂S₃ and ZBLAN.",
@@ -348,6 +348,10 @@ export const materials: CalculatorEntry[] = [
       {
         citation: "Zhu X., Peyghambarian N. (2010). High-power ZBLAN glass fiber lasers: review and prospect. Adv. OptoElectron. 2010, 501956. Table 1: ZBLAN n 1.499 at 589 nm, Abbe number 76; n_d varies with composition by a few 10⁻³.",
         url: "https://doi.org/10.1155/2010/501956",
+      },
+      {
+        citation: "Poulain M. (2024). Heavy metal fluoride glasses: A tutorial review. APL Photonics 9, 091103. Knoop hardness about 250 kg/mm² for ZBLAN (Table IV: fluorozirconates 190–250) and dn/dT −8 to −15 ×10⁻⁶/K for fluoride glasses.",
+        url: "https://doi.org/10.1063/5.0226668",
       },
       {
         citation: "Li H. H. (1976). Refractive index of alkali halides and its wavelength and temperature derivatives. J. Phys. Chem. Ref. Data 5, 329.",
