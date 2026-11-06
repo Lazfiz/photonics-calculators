@@ -29,15 +29,12 @@ poulain2024-hmfg.pdf.
 - Gate: 1269 tests; 411/411 pages tiered.
 
 ## Next actions
-1. Ship 8e: push, open the PR, wait for CI, then merge on the user's yes. Release only on request, then
-   `node scripts/post-merge-check.mjs <sha> materials/electro-optic materials/infrared-glass` (load only; defaults unchanged).
-   URL-state check: `/materials/electro-optic?material=bso&wavelength=633` shows ρ 21.18 °/mm.
-2. Next stage, user's choice:
-   - The "Later" items: phone hero, traffic/SEO pass.
-   - A Phase 8 upload. Still missing data: BSO ε/n (Gunter & Huignard vol. 2), SBN indices and ε, Nd σ_a at 808 nm,
-     CO₂ I_s and g₀, SF59 n₂, the Tm ³H₄ band (Jackson & King 1999), ZBLAN κ and band.
-3. Still wanted from before: Bai 2020 (APL Photonics 5, 031301), Patel 2001 (Yb:YAG κ), Siegman "Lasers" ch. 11/21,
-   Degnan 1989, Egner, Andresen & Hell 2002 (J. Microsc. 206, 24).
+1. 8e is merged (PR #247) and released: `release` = 1968d6e1. post-merge-check ALL PASS on the 8d and 8e pages.
+2. Next: Phase 9a (user's pick). Add a "Report a problem" form on every calculator; delivery is Resend email via a route
+   handler (see the ROADMAP box). Also fix the About page. Branch `phase-9/9a-report-button` holds the box.
+   - Before deploying, the user creates a Resend account and sets `RESEND_API_KEY` and `REPORT_TO_EMAIL` in Vercel.
+   - Then 9b: the blind audit.
+3. Still missing data: BSO ε, SBN, Nd σ_a at 808 nm, CO₂ g₀ and I_s, SF59 n₂, the Tm ³H₄ band, ZBLAN κ and band.
 
 ## Non-obvious facts
 - **Session 209:** `python -I` hides the user site, so PIL is missing: use `python -E -P` for pypdfium2 renders. A scratchpad

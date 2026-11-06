@@ -322,6 +322,24 @@ minus signs and ±, and can shift table labels: confirm each value on the render
   1164), GaAs/Si (Sheik-Bahae 1991; Dinu 2003), AlGaAs (Aitchison 1997 JQE 33, 341), As₂S₃ (Ta'eed 2005 OL), As₂Se₃ (Fu 2005 OE).
   Bot-checked hosts (opg.optica.org, DTIC, Soton eprints, DTU Orbit, HAL): Optics Express papers are open in a browser.
 
+## Phase 9 — credibility (user, session 209: "The credibility is the most important bit")
+- [ ] 9a (user's pick: report button + About fix first; delivery "Form → email") "Report a problem" on every calculator,
+  added once in `calculator-shell.tsx` (client form island). It sends the page href, the current query string (inputs),
+  the deployed SHA and the message. Delivery: a Next 16 route handler (read `node_modules/next/dist/docs/` first) emails it
+  through Resend. The key comes from Vercel env `RESEND_API_KEY` plus `REPORT_TO_EMAIL`; the user sets both, and code never
+  reads `.env*`. Guards: honeypot field, length caps, a per-IP rate limit, no address on the page. A fallback message
+  shows when it isn't configured.
+
+  About fixes:
+  - Drop "being reviewed one by one".
+  - Correct the chart wording: Plotly and SVG.
+  - State the verification: tier counts, the golden-test count and the reference counts.
+  - Link the report form.
+
+  Branch `phase-9/9a-report-button`.
+- [ ] 9b Blind audit: 25–30 random tiered pages, recomputed by hand against their cited references. Fix the findings and
+  publish the error rate on About.
+
 ## Decisions (keep)
 - **Polarization:** Goldstein/Collett convention site-wide.
   - e^{i(ωt − kz)}; RCP = [1, i]/√2, and S3 = 2 Im(Ex* Ey) > 0 for RCP.
