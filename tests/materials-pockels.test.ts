@@ -2,8 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  POCKELS, balancedGratingPeriod, crossedPolarizerTransmission, diffusionField, eWaveEffectiveCoefficient, extraordinaryIndex, gratingPeriod,
-  gratingPermittivity, longitudinalHalfWaveVoltage, phaseHalfWaveVoltage, pockelsIndexChange, spaceChargeField, transverseCoefficients, transverseHalfWaveVoltage, trapLimitedField, twoBeamCouplingGain, twoBeamSignalGain,
+  POCKELS, balancedGratingPeriod, crossedPolarizerTransmission, cubicCoefficients, cubicHalfWaveVoltage, diffusionField, eWaveEffectiveCoefficient,
+  extraordinaryIndex, gratingPeriod, gratingPermittivity, gyrotropicTransmission, longitudinalHalfWaveVoltage, phaseHalfWaveVoltage, pockelsIndexChange, spaceChargeField, transverseCoefficients, transverseHalfWaveVoltage, trapLimitedField, twoBeamCouplingGain, twoBeamSignalGain,
 } from "../src/physics/materials/pockels";
 
 const deg = Math.PI / 180;
@@ -110,6 +110,55 @@ test("crossed polarizers: T = sin²(Γ/2) is 0 at Γ = 0, ½ at π/2 and 1 at π
   assert.equal(crossedPolarizerTransmission(0), 0);
   assertRel(crossedPolarizerTransmission(Math.PI / 2), 0.5, 1e-12, "π/2");
   assertRel(crossedPolarizerTransmission(Math.PI), 1, 1e-12, "π");
+});
+
+test("BSO: Efremidis et al. 2009 Fig. 3 r₄₁, n and ρ, and a 633 nm modulator by hand", () => {
+  const c = POCKELS.bso;
+  // Their text: r₄₁ 4.2–2.0 pm/V over 500–800 nm (average error 0.1 pm/V) and optical activity 40–12 °/mm.
+  const at = (nm: number) => cubicCoefficients(c, nm * 1e-9);
+  const degPerMm = (rho: number) => (rho * 1e-3) / deg;
+  assert.ok(Math.abs(at(500).r41 * 1e12 - 4.2) <= 0.1 && Math.abs(at(800).r41 * 1e12 - 2.0) <= 0.1, "r₄₁ ends");
+  assert.ok(Math.abs(degPerMm(at(500).rotation) - 40) <= 0.1 && Math.abs(degPerMm(at(800).rotation) - 12) <= 0.2, "ρ ends");
+  // 633 nm, linear between the 620 and 640 nm nodes (weight 0.65): r₄₁ = 2.93 − 0.31 · 0.65 = 2.7285 pm/V,
+  // n = 2.5667 − 0.0103 · 0.65 = 2.560005, ρ = 22.32 − 1.75 · 0.65 = 21.1825 °/mm.
+  const { r41, rotation } = at(633);
+  const n = c.indices(633e-9).no;
+  assertRel(r41, 2.7285e-12, 1e-9, "r₄₁ 633");
+  assertRel(n, 2.560005, 1e-9, "n 633");
+  assertRel(degPerMm(rotation), 21.1825, 1e-9, "ρ 633");
+  // d = 1 mm, L = 10 mm: n³ = 16.777314, V_π = 633e-9 · 1e-3 / (2 · 16.777314 · 2.7285e-12 · 0.01) = 691.397 V.
+  assertRel(cubicHalfWaveVoltage(633e-9, n, r41, 1e-3, 10e-3), 691.397, 1e-5, "V_π 633");
+  assertRel(phaseHalfWaveVoltage(633e-9, n, r41, 1e-3, 10e-3), 2 * 691.397, 1e-5, "phase V_π");
+  // The table spans 500–800 nm only; the other crystals have no cubic coefficients.
+  assert.ok(Number.isNaN(at(499).r41) && Number.isNaN(at(801).rotation) && Number.isNaN(c.indices(801e-9).no));
+  assert.ok(Number.isNaN(cubicCoefficients(POCKELS.linbo3, 633e-9).r41));
+  assert.ok(Number.isNaN(cubicHalfWaveVoltage(633e-9, n, 0, 1e-3, 1e-2)), "r₄₁ = 0");
+});
+
+test("optically active crystal: closed-form Jones transmission equals a thin-slab product, with the limits", () => {
+  // Independent check: N symmetric slices (half rotation, retarder, half rotation) of the same crystal, analyzer at 90° + ρL.
+  function slices(G: number, b: number, N: number): number {
+    const a = G / 2 / N, h = b / 2 / N;
+    let [xr, xi, yr, yi] = [1, 0, 0, 0];
+    const rotate = (t: number) => {
+      [xr, xi, yr, yi] = [Math.cos(t) * xr - Math.sin(t) * yr, Math.cos(t) * xi - Math.sin(t) * yi, Math.sin(t) * xr + Math.cos(t) * yr, Math.sin(t) * xi + Math.cos(t) * yi];
+    };
+    for (let k = 0; k < N; k++) {
+      rotate(h);
+      // [[cos a, −i sin a], [−i sin a, cos a]]
+      [xr, xi, yr, yi] = [Math.cos(a) * xr + Math.sin(a) * yi, Math.cos(a) * xi - Math.sin(a) * yr, Math.cos(a) * yr + Math.sin(a) * xi, Math.cos(a) * yi - Math.sin(a) * xr];
+      rotate(h);
+    }
+    return (-Math.sin(b) * xr + Math.cos(b) * yr) ** 2 + (-Math.sin(b) * xi + Math.cos(b) * yi) ** 2;
+  }
+  for (const [G, b] of [[1.3, 0.9], [Math.PI, 2.5], [0.2, 7.4], [Math.PI, 3.697]]) {
+    assert.ok(Math.abs(gyrotropicTransmission(G, b) - slices(G, b, 4000)) < 1e-6, `Γ ${G}, ρL ${b}`);
+  }
+  // No rotation: sin²(Γ/2). No field: the analyzer blocks the rotated light. Γ → 0 uses the sinc series.
+  assertRel(gyrotropicTransmission(Math.PI / 2, 0), 0.5, 1e-12, "ρ = 0");
+  assert.ok(gyrotropicTransmission(0, 3) < 1e-30, "Γ = 0");
+  assert.ok(gyrotropicTransmission(1e-9, 0) < 1e-18, "Γ, ρ → 0");
+  assert.ok(Number.isNaN(gyrotropicTransmission(NaN, 1)));
 });
 
 // ------------------------------------------------------------------ photorefractive grating

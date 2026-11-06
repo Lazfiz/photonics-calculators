@@ -222,10 +222,10 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "electro-optic",
     title: "Electro-Optic Coefficients",
-    description: "Pockels-effect half-wave voltage of longitudinal KDP, KD*P and ADP cells and transverse LiNbO₃, LiTaO₃, KTP and BaTiO₃ modulators: retardation and single-polarization phase, V_π·L, the index change −½n³rE and the crossed-polarizer transmission.",
+    description: "Pockels-effect half-wave voltage of longitudinal KDP, KD*P and ADP cells and transverse LiNbO₃, LiTaO₃, KTP, BaTiO₃ and BSO modulators: retardation and single-polarization phase, V_π·L, the index change −½n³rE and the crossed-polarizer transmission, with BSO's optical activity.",
     keywords: ["Pockels Effect", "Half-Wave Voltage", "Pockels Cell", "Electro-Optic Modulator"],
     tier: "textbook",
-    modelNote: "Principal-axis geometries with r fixed at its reference wavelength; only n follows the Sellmeier fits (Zernike KDP, Zelmon LiNbO₃, Kato KTP, Wemple BaTiO₃ over 0.4–0.7 µm), and KD*P and ADP use one published index. LiTaO₃'s unclamped r₃₃ and r₁₃ are Casson et al.'s at 632.8, 980, 1330 and 1558 nm (scaled to r₃₃ = 30.5 pm/V at 632.8 nm), interpolated linearly, with Bond's tabulated indices; it is offered over 632.8–1558 nm only. LiNbO₃ uses clamped (high-frequency) coefficients; KTP's 633 nm r₃₃ and r₂₃ are low-frequency measurements whose clamping the source doesn't state. BaTiO₃ comes unclamped (r₃₃ 105, r₁₃ 8 pm/V) and clamped (40.6, 10.2); r₄₂ = 1300 (clamped 730) pm/V needs a field across c and is not modelled. The z–o retardation of a transverse modulator adds to the natural birefringence.",
+    modelNote: "Principal-axis geometries with r fixed at its reference wavelength; only n follows the Sellmeier fits (Zernike KDP, Zelmon LiNbO₃, Kato KTP, Wemple BaTiO₃ over 0.4–0.7 µm), and KD*P and ADP use one published index. LiTaO₃'s unclamped r₃₃ and r₁₃ are Casson et al.'s at 632.8, 980, 1330 and 1558 nm (scaled to r₃₃ = 30.5 pm/V at 632.8 nm), interpolated linearly, with Bond's tabulated indices; it is offered over 632.8–1558 nm only. LiNbO₃ uses clamped (high-frequency) coefficients; KTP's 633 nm r₃₃ and r₂₃ are low-frequency measurements whose clamping the source doesn't state. BaTiO₃ comes unclamped (r₃₃ 105, r₁₃ 8 pm/V) and clamped (40.6, 10.2); r₄₂ = 1300 (clamped 730) pm/V needs a field across c and is not modelled. The z–o retardation of a transverse modulator adds to the natural birefringence. BSO (field along [110]): Efremidis et al.'s r₄₁, n and optical activity at 500–800 nm (Fig. 3, interpolated; below 560 nm r₄₁ may read low from screening), with the rotation in the crossed-polarizer transmission.",
     references: [
       {
         citation: "Wilson J., Hawkes J. F. B. (1998). Optoelectronics: An Introduction, 3rd ed. Prentice Hall Europe, ISBN 0-13-103961-X (the same Table 3.1 in the 1983 and 1989 editions). Table 3.1 (r₆₃ of KDP, KD*P, ADP) and Example 3.2 (KDP V_π = 14.5 kV at 1.06 µm).",
@@ -265,6 +265,10 @@ export const materials: CalculatorEntry[] = [
       {
         citation: "Wemple S. H., DiDomenico M. Jr., Camlibel I. (1968). Dielectric and optical properties of melt-grown BaTiO₃. J. Phys. Chem. Solids 29, 1797–1803 (n_o, n_e single-oscillator fits, 0.4–0.7 µm, via the refractiveindex.info database).",
         url: "https://doi.org/10.1016/0022-3697(68)90164-9",
+      },
+      {
+        citation: "Efremidis A. T., Deliolanis N. C., Manolikas C., Vanidhis E. D. (2009). Dispersion of electro-optic coefficients in sillenite crystals. Appl. Phys. B 95, 467–473. Eqs. 8–10 (BSO field along [110], light along [1̄10]) and Fig. 3: r₄₁, n and optical activity of BSO at 500–800 nm.",
+        url: "https://doi.org/10.1007/s00340-009-3498-8",
       },
     ],
   },
