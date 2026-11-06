@@ -73,8 +73,50 @@ test("In-band pumping at 1600 nm inverts Tm at most to σ_a/(σ_a + σ_e) = 1/1.
   assertRel(twoLevelAt(fiber, [beam], 0).inversion, 1 / 1.1, 1e-4, "inversion at 10 kW");
 });
 
-test("The eight preset lines and the domain guards", () => {
-  assert.deepEqual(DOPANT_LINES.map((l) => l.id), ["Er980", "Er1480", "Er1550", "Yb976", "Yb1064", "Tm1600", "Tm1740", "Tm1900"]);
+test("Ho presets: Le Gouët et al. 2020 (Opt. Express 28, 22307; arXiv:2003.14188v1), silica fibre", () => {
+  // Text: σ_a(1946) = 4.3 ± 0.2e-25 m² (fibre #2), peak σ_e/σ_a = 1.40 ± 0.06, g(1995) = 58 dB/m against α(1946) = 57 dB/m,
+  // so σ_e(1995) = (58/57)·4.3 = 4.3754e-25 m²; at 1908 nm σ_a 1.9, σ_e 1.6e-25 m²; τ(⁵I₇) = 0.7 ± 0.1 ms.
+  // Fig. 1 (raster) read: 1946 nm σ_e 5.9; 1995 nm σ_a 1.93; 2120 nm 0.18 and 1.30 (±0.1, steep edge).
+  const ho = DOPANT_PRESETS.find((p) => p.id === "Ho");
+  assert.ok(ho);
+  assert.equal(ho.tau, 0.7e-3);
+  const pick = (id: string) => DOPANT_LINES.find((l) => l.id === id);
+  const p1 = pick("Ho1908"), p2 = pick("Ho1946"), s1 = pick("Ho1995"), s2 = pick("Ho2120");
+  assert.ok(p1 && p2 && s1 && s2);
+  assert.deepEqual([p1.role, p1.sigmaA, p1.sigmaE], ["pump", 1.9e-25, 1.6e-25]);
+  assert.equal(p2.sigmaA, 4.3e-25);
+  assertRel(p2.sigmaE / p2.sigmaA, 1.4, 0.06 / 1.4, "σ_e/σ_a near the peaks");
+  assertRel(s1.sigmaE, 4.3754e-25, 0.01, "σ_e(1995) from the measured gain");
+  assertRel(s2.sigmaE, 1.3e-25, 0.1 / 1.3, "σ_e(2120)");
+  // The amplifier pages take the first signal: the paper's 2120 nm laser line.
+  assert.equal(ho.signals[0].lambda, 2120e-9);
+  // Fibre #2: N = 27e25 m⁻³, Γ = 0.85: α = 0.85·4.3e-25·2.7e26 = 98.685 m⁻¹ = 428.58 dB/m; measured 425 ± 5 dB/m at 1950 nm.
+  const f2 = dopantAbsorption(p2.sigmaA, 2.7e26, 1, 0.85);
+  assertRel(f2.dbPerM, 428.584, 1e-5, "fibre #2, dB/m");
+  assertRel(f2.dbPerM, 425, 10 / 425, "against the measured 425 ± 5 dB/m");
+  // Fibre #1 (N 3.7e25 ± 16 %, Γ 0.776 at 1908 nm): 4.343·0.776·1.9e-25·3.7e25 = 23.69 dB/m; measured 25.2 ± 0.3 dB/m.
+  assertRel(dopantAbsorption(p1.sigmaA, 3.7e25, 1, 0.776).dbPerM, 25.2, 0.1, "fibre #1 at 1908 nm");
+  // 1000 wt-ppm Ho (M 164.930 g/mol): N = 1e-3·2201·6.02214076e23/0.16493 = 8.03658e24 m⁻³; α(1946) = 3.45573 m⁻¹ =
+  // 15.0080 dB/m; 10 cm: T = e^(−0.345573) = 0.707815.
+  const N = ionDensityFromWtPpm(1000, ho.molarMass);
+  assertRel(N, 8.03658e24, 1e-5, "N");
+  const r = dopantAbsorption(p2.sigmaA, N, 0.1);
+  assertRel(r.dbPerM, 15.008, 1e-5, "dB/m");
+  assertRel(r.transmission, 0.707815, 1e-5, "T");
+});
+
+test("In-band pumping at 1908 nm inverts Ho at most to σ_a/(σ_a + σ_e) = 1.9/3.5", () => {
+  const ho = DOPANT_PRESETS.find((p) => p.id === "Ho");
+  assert.ok(ho);
+  const fiber = { N: 3.7e25, area: Math.PI * 4e-6 ** 2, tau: ho.tau };
+  const beam = { ...ho.pumps[0], overlap: 0.76, power: 1e4 };
+  assertRel(twoLevelAt(fiber, [beam], 0).inversion, 1.9 / 3.5, 1e-4, "inversion at 10 kW");
+});
+
+test("The twelve preset lines and the domain guards", () => {
+  assert.deepEqual(DOPANT_LINES.map((l) => l.id), [
+    "Er980", "Er1480", "Er1550", "Yb976", "Yb1064", "Tm1600", "Tm1740", "Tm1900", "Ho1908", "Ho1946", "Ho1995", "Ho2120",
+  ]);
   // The old page counted Nd's 1064 nm emission as absorption; σ_a of Yb at 1064 nm is 5.7e-27 m², 472× below 976 nm.
   assert.equal(DOPANT_LINES.find((l) => l.id === "Yb1064")?.role, "signal");
   const none = dopantAbsorption(2.5e-25, 0, 1);

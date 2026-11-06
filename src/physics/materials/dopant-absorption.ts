@@ -9,7 +9,8 @@
  * - α = Γσ_a N and the dB/m form 10·log₁₀(e)·α: C. R. Giles, E. Desurvire, J. Lightwave Technol. 9, 271 (1991),
  *   doi:10.1109/50.65886 (α_k = Γ_kσ_akN, eqs. (6)–(9) with n₂ = 0).
  * - Cross-sections: DOPANT_PRESETS (fiber-optics/doped-fiber-gain.ts), Er³⁺ from Barnes et al. 1991, Yb³⁺ from
- *   Melkumov et al. 2004 and Tm³⁺ from Agger & Povlsen 2006, shared with the fibre amplifier pages.
+ *   Melkumov et al. 2004, Tm³⁺ from Agger & Povlsen 2006 and Ho³⁺ from Le Gouët et al. 2020, shared with the fibre
+ *   amplifier pages.
  */
 
 import { DOPANT_PRESETS, type DopantPreset } from "../fiber-optics/doped-fiber-gain";
@@ -56,7 +57,7 @@ export interface DopantLine {
 }
 
 /** Every pump and signal line of DOPANT_PRESETS by ion, in wavelength order (Er 980, 1480, 1550 nm; Yb 976, 1064 nm;
- * Tm 1600, 1740, 1900 nm). */
+ * Tm 1600, 1740, 1900 nm; Ho 1908, 1946, 1995, 2120 nm). */
 export const DOPANT_LINES: readonly DopantLine[] = DOPANT_PRESETS.flatMap((p) =>
   (["pump", "signal"] as const).flatMap((role) =>
     (role === "pump" ? p.pumps : p.signals).map((x) => ({

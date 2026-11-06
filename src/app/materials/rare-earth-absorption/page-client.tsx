@@ -9,7 +9,7 @@ import { DOPANT_LINES, dopantAbsorption, type DopantLine } from "../../../physic
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const SIGMA_UNIT = 1e-25; // m², the unit of the cross-section input
 const show = (x: number, text: () => string) => (Number.isFinite(x) ? text() : "—");
-const COLORS = ["#60a5fa", "#f87171", "#34d399"];
+const COLORS = ["#60a5fa", "#f87171", "#34d399", "#fbbf24"];
 const lineLabel = (l: DopantLine) => `${l.ion} ${Math.round(l.lambda * 1e9)} nm (${l.role})`;
 
 function Card({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone: string }) {
@@ -128,8 +128,8 @@ export default function RareEarthAbsorptionPage() {
         <p className="text-xs text-gray-400 mt-3">
           Small-signal absorption of an unpumped sample: every ion in the ground state. A strong pump bleaches the
           absorption, and Er at 1550 nm turns into gain once inverted; the Rare-Earth-Doped Fiber Amplifier page models
-          that. Tm is offered in its ³F₄ band only (1600–1900 nm), not at its 790 nm ³H₄ pump band. Nd and Ho are not
-          offered: their cross-sections need their own sourced data.
+          that. Tm is offered in its ³F₄ band only (1600–1900 nm), not at its 790 nm ³H₄ pump band, and Ho in its ⁵I₇ band
+          only (1908–2120 nm). Nd is not offered: its cross-sections need their own sourced data.
         </p>
       </div>
     </>

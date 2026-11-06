@@ -22,6 +22,7 @@ const PRESETS = [
   { id: "er1480", label: "Erbium, 1480 nm pump", ion: 0, pump: 1 },
   { id: "yb976", label: "Ytterbium, 976 nm pump", ion: 1, pump: 0 },
   { id: "tm1600", label: "Thulium, 1600 nm in-band pump", ion: 2, pump: 0 },
+  { id: "ho1908", label: "Holmium, 1908 nm in-band pump", ion: 3, pump: 0 },
 ] as const;
 
 function Card({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone: string }) {
@@ -204,10 +205,10 @@ export default function RareEarthDopedCalculator() {
           here it is an upper bound.
         </p>
         <p className="text-xs text-gray-400 mt-3">
-          The two-level model covers Er (pumped at 980 or 1480 nm), Yb, and Tm pumped in band at 1600 nm (³H₆ ↔ ³F₄).
-          Tm pumped at 790 nm (cross-relaxation), Ho, Nd and Er/Yb co-doping need three- or four-level models with
-          energy transfer, so they are not offered. No ASE self-saturation, ion
-          clustering or excited-state absorption; co-propagating pump.
+          The two-level model covers Er (pumped at 980 or 1480 nm), Yb, Tm pumped in band at 1600 nm (³H₆ ↔ ³F₄) and
+          Ho pumped in band at 1908 nm (⁵I₈ ↔ ⁵I₇). Tm pumped at 790 nm (cross-relaxation), Nd and Er/Yb co-doping need
+          three- or four-level models with energy transfer, so they are not offered. No ASE self-saturation, ion
+          clustering (Le Gouët et al. found 15 % of the Ho ions in pairs) or excited-state absorption; co-propagating pump.
         </p>
       </div>
 
