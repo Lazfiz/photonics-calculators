@@ -341,7 +341,9 @@ Evidence (session 214, Vercel Web Analytics 2026-10-07 → 11-06): 9 visitors, 5
 - [ ] 10e Mobile pass: phone hero (cropped layout, tap to highlight, tap again to open, auto-cycle) and a 375 px check
   of inputs, result cards and charts on the 10 most-visited pages.
 - [ ] 10d Social cards and snippets: Open Graph/Twitter images per category (Next `opengraph-image`), titles and
-  descriptions against the terms people search.
+  descriptions against the terms people search. Bing flags "Meta Description too long" (> 160 chars): 163 of 424
+  pages (built HTML, session 214: 112 at 161–200, 47 at 201–250, 4 over 250, e.g. `materials/electro-optic` 278; `/laser-safety`
+  172). Rewrite each by hand in the registry (one category file per box), then a test that fails over 160.
 - [ ] 10b Cleanup: the 5 eslint warnings; `chromatic-dispersion.ts` onto `goldenSectionMax` (`src/physics/math.ts`).
 - [ ] 10f External cross-checks: golden tests against independent public calculators/tables (CXRO, refractiveindex.info,
   ICNIRP) on tiered pages the 9b audit didn't sample; split a/b by category.
