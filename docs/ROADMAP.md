@@ -334,8 +334,16 @@ minus signs and ±, and can shift table labels: confirm each value on the render
 
 ## Phase 10 — reach, fixes, mobile, cross-checks (user, session 214: "plan fixes … other ideas, improvements")
 Evidence (session 214, Vercel Web Analytics 2026-10-07 → 11-06): 9 visitors, 55 pageviews, no search-engine referrers,
-≈ half on mobile. No Search Console/Bing verification in `src/`, no Open Graph images. One box per session, in this order.
+≈ half on mobile. No Search Console/Bing verification in `src/`, no Open Graph images. One box per session, in this order (10g first, user, session 214).
 - [x] 10c Get found (session 214, `phase-10/10c-get-found`, PR #252 + #253). See Done.
+- [ ] 10g Domain move (user, session 214: "add domain move next step"; before Google indexes much under vercel.app).
+  User buys the domain (proposed `photonicscalculators.com`, $12.03/yr at Vercel; `photonicscalculator.com` as a redirect).
+  Then: add it to the Vercel project; 301 `photonics-calculators.vercel.app` → new domain; replace the site URL in
+  `src/registry/metadata.ts`, `src/app/{layout,robots,sitemap}.ts(x)`, `about/page.tsx`, `components/category-index.tsx`,
+  `scripts/post-merge-check.mjs`, `scripts/crossref.mjs`, `tests/{calculator-pages,report}.test.ts` (one constant if
+  possible; the 2026-10-07 codemod stays as history); release; GSC Domain property via a DNS TXT record + Change of
+  address, Bing Site move (user); Resend domain verification → `REPORT_FROM_EMAIL` on the new domain (user sets the env).
+  The report route takes its origin from the request, so the form keeps working.
 - [ ] 10a Audit fixes: KD*P/ADP range to 1064 nm (`pockels.ts`), Stokes input and element types in `useURLState` on
   `mueller-polarimetry`, `dichroic-polarizer` tier vs the (1+κ²/n²) exit-face term. Golden tests with sources.
 - [ ] 10e Mobile pass: phone hero (cropped layout, tap to highlight, tap again to open, auto-cycle) and a 375 px check

@@ -3,7 +3,7 @@
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
 Session 214 planned Phase 10 (user: "plan fixes … other ideas, improvements"; all four groups chosen) and did 10c on
 `phase-10/10c-get-found` (PR #252, merged + released) and `phase-10/10c-handover` (PR #253, this handover).
-Next stage: **10a** audit fixes, then 10e → 10d → 10b → 10f.
+Next stage: **10g** domain move (user's choice), then 10a → 10e → 10d → 10b → 10f.
 
 ## State
 - Released: `release` = 54d6990b (Phase 9 + the Search Console tag). The report form works in production (user's
@@ -15,13 +15,15 @@ Next stage: **10a** audit fixes, then 10e → 10d → 10b → 10f.
 - 1280 tests. 5 eslint warnings (10b).
 
 ## Next actions
-1. 10a on a new branch: KD*P/ADP range to 1064 nm (`pockels.ts:166,171`); Stokes input and element types into
+1. 10g domain move (ROADMAP box): ask whether the user has bought the domain (proposed `photonicscalculators.com`);
+   don't buy it yourself. Then follow the box; post-merge-check with the new host after the release.
+2. 10a on a new branch: KD*P/ADP range to 1064 nm (`pockels.ts:166,171`); Stokes input and element types into
    `useURLState` on `polarization/mueller-polarimetry` (one state per field, not in a `.map`); `dichroic-polarizer`
    tier vs the (1+κ²/n²) exit-face term. Golden tests with sources; `physics-reviewer` on the changed pages.
    post-merge-check: the changed pages' new default values (read them from the built HTML).
-2. Release only when the user asks.
-3. In a week or two: ask the user for the Search Console Pages/Performance reports (indexed count, queries) for 10d.
-4. Still missing data: BSO ε, SBN, Nd σ_a at 808 nm, CO₂ g₀ and I_s, SF59 n₂, the Tm ³H₄ band, ZBLAN κ and band.
+3. Release only when the user asks.
+4. In a week or two: ask the user for the Search Console Pages/Performance reports (indexed count, queries) for 10d.
+5. Still missing data: BSO ε, SBN, Nd σ_a at 808 nm, CO₂ g₀ and I_s, SF59 n₂, the Tm ³H₄ band, ZBLAN κ and band.
 
 ## Non-obvious facts
 - **Session 214:** Vercel Web Analytics on the hobby plan only answers for the last 31 days (400 otherwise); team
