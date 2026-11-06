@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   POCKELS, balancedGratingPeriod, crossedPolarizerTransmission, diffusionField, eWaveEffectiveCoefficient, extraordinaryIndex, gratingPeriod,
-  gratingPermittivity, longitudinalHalfWaveVoltage, phaseHalfWaveVoltage, pockelsIndexChange, spaceChargeField, transverseHalfWaveVoltage, trapLimitedField, twoBeamCouplingGain, twoBeamSignalGain,
+  gratingPermittivity, longitudinalHalfWaveVoltage, phaseHalfWaveVoltage, pockelsIndexChange, spaceChargeField, transverseCoefficients, transverseHalfWaveVoltage, trapLimitedField, twoBeamCouplingGain, twoBeamSignalGain,
 } from "../src/physics/materials/pockels";
 
 const deg = Math.PI / 180;
@@ -78,6 +78,32 @@ test("transverse BaTiO₃ modulator at 632.8 nm: Zgonik et al. 1994 r (Tables II
   assertRel(transverseHalfWaveVoltage(632.8e-9, no, ne, c.r33!, c.r13!, 1e-3, 0.02), 80.655, 1e-4, "clamped retardation V_π");
   // Wemple's fit covers 0.4–0.7 µm only.
   assert.deepEqual(POCKELS.batio3.range, [400e-9, 700e-9]);
+});
+
+test("LiTaO₃: Casson et al. 2004 Table 2 r(λ), Bond 1965 indices and a 1558 nm modulator by hand", () => {
+  const c = POCKELS.litao3;
+  // Table 2: λ (nm), n_e, r₃₃, n_o, r₁₃ (pm/V). Its indices are Gervais & Fonseca's (Palik), independent of Bond's table.
+  const table = [[632.8, 2.1809, 30.5, 2.1763, 7.62], [980, 2.1443, 29.6, 2.1402, 6.96], [1330, 2.1296, 27.7, 2.1259, 6.55], [1558, 2.1224, 27.4, 2.1186, 6.92]];
+  for (const [l, ne, r33, no, r13] of table) {
+    const n = c.indices(l * 1e-9);
+    assert.ok(Math.abs(n.ne - ne) < 3e-4 && Math.abs(n.no - no) < 3e-4, `${l} nm: ${n.no}, ${n.ne}`);
+    const r = transverseCoefficients(c, l * 1e-9);
+    assertRel(r.r33, r33 * 1e-12, 1e-12, `r₃₃ ${l}`);
+    assertRel(r.r13, r13 * 1e-12, 1e-12, `r₁₃ ${l}`);
+  }
+  // Linear in λ at 800 nm: 30.5 − 0.9 · 167.2/347.2 = 30.066590, 7.62 − 0.66 · 167.2/347.2 = 7.302166 pm/V.
+  const r800 = transverseCoefficients(c, 800e-9);
+  assertRel(r800.r33, 30.06659e-12, 1e-6, "r₃₃ 800");
+  assertRel(r800.r13, 7.302166e-12, 1e-6, "r₁₃ 800");
+  // Bond's 800 nm row: n_o 2.1538, n_e 2.1578 (a table node, so exact).
+  assertRel(c.indices(800e-9).ne, 2.1578, 1e-12, "n_e 800");
+  // 1558 nm, d = 1 mm, L = 20 mm: n_e = 2.122371, n_o = 2.118507 (1/λ² between Bond's 1.4 and 1.6 µm rows), so
+  // n_e³r₃₃ − n_o³r₁₃ = 9.560132 · 27.4 − 9.508010 · 6.92 = 196.1522 pm/V and V_π = 1558e-9 · 1e-3 / (196.1522e-12 · 0.02) = 397.14 V.
+  const n = c.indices(1558e-9);
+  assertRel(transverseHalfWaveVoltage(1558e-9, n.no, n.ne, 27.4e-12, 6.92e-12, 1e-3, 20e-3), 397.14, 1e-4, "V_π 1558");
+  // The coefficients exist only between the measured wavelengths; the other crystals keep their single r.
+  assert.ok(Number.isNaN(transverseCoefficients(c, 620e-9).r33) && Number.isNaN(transverseCoefficients(c, 1600e-9).r13));
+  assert.deepEqual(transverseCoefficients(POCKELS.linbo3, 1550e-9), { r33: 30.8e-12, r13: 8.6e-12 });
 });
 
 test("crossed polarizers: T = sin²(Γ/2) is 0 at Γ = 0, ½ at π/2 and 1 at π", () => {

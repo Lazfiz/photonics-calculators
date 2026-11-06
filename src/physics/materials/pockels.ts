@@ -26,6 +26,14 @@
  *   grating below. n_o, n_e: S. H. Wemple, M. DiDomenico Jr., I. Camlibel, J. Phys. Chem. Solids 29, 1797
  *   (1968), doi:10.1016/0022-3697(68)90164-9, n² − 1 = Bλ²/(λ² − λ₀²) (o: B 4.187, λ₀ 0.223 µm; e: 4.064, 0.211 µm),
  *   0.4–0.7 µm, as transcribed by refractiveindex.info (CC0).
+ * - LiTaO₃ (congruent, 3m, positive uniaxial: n_e exceeds n_o by ≈ 0.004) in the same z-field geometry: unclamped r₃₃ and
+ *   r₁₃ at 632.8, 980, 1330 and 1558 nm from J. L. Casson et al., J. Opt. Soc. Am. B 21, 1948 (2004),
+ *   doi:10.1364/JOSAB.21.001948, Table 2 (horn-shaped domain deflector, precision ≈ 2 %). Their scale is set by r₃₃ =
+ *   30.5 pm/V at 632.8 nm, the literature value (K. Onuki, N. Uchida, T. Saku, J. Opt. Soc. Am. 62, 1030 (1972)); r₁₃ at
+ *   632.8 nm is their 7.62 pm/V (Onuki: 8.4). r is interpolated linearly in λ between the four wavelengths. n_o, n_e:
+ *   W. L. Bond, J. Appl. Phys. 36, 1674 (1965), doi:10.1063/1.1703106, tabulated at room temperature (refractiveindex.info,
+ *   CC0), interpolated linearly in 1/λ²; this reproduces the indices of Casson's Table 2 (Gervais & Fonseca, Palik vol. 3)
+ *   to 3 × 10⁻⁴. No ε is tabulated, so LiTaO₃ stays off the photorefractive grating.
  * - Photorefractive grating (N. V. Kukhtarev et al., Ferroelectrics 22, 949 (1978), doi:10.1080/00150197908239450),
  *   diffusion only, no applied field and no photovoltaic current, small fringe modulation m: the space-charge field
  *   per unit m is E_sc = E_D / (1 + E_D / E_q), E_D = k_B T K / q, E_q = q N_eff / (ε₀ ε K), K = 2π/Λ, shifted by a
@@ -49,7 +57,7 @@ import { biaxialIndices, biaxialRange } from "./biaxial-data";
 import { fromResonanceWavelengths, refractiveIndex } from "./sellmeier";
 import { crystalIndices, crystalRange } from "./uniaxial-data";
 
-export type PockelsId = "kdp" | "kdp-d" | "adp" | "linbo3" | "ktp" | "batio3" | "batio3-clamped";
+export type PockelsId = "kdp" | "kdp-d" | "adp" | "linbo3" | "litao3" | "ktp" | "batio3" | "batio3-clamped";
 export type PockelsGeometry = "longitudinal" | "transverse";
 
 export interface PockelsCrystal {
@@ -61,6 +69,8 @@ export interface PockelsCrystal {
    * coefficient of the polarization across z (r₂₃ for KTP, labelled by `perp`).
    */
   r: { r63?: number; r33?: number; r13?: number; r42?: number };
+  /** r₃₃ and r₁₃ (m/V) measured at several wavelengths (m), where published; `r` then holds the first row. */
+  rDispersion?: { lambda: readonly number[]; r33: readonly number[]; r13: readonly number[] };
   /**
    * Index across z (n_o; n_y for KTP) and along z (n_e; n_z for KTP) at λ (m): a Sellmeier fit, or fixed values
    * where only a single index is published.
@@ -84,6 +94,30 @@ const BATIO3_O = fromResonanceWavelengths(1, [4.187], [0.223], [0.4, 0.7]);
 const BATIO3_E = fromResonanceWavelengths(1, [4.064], [0.211], [0.4, 0.7]);
 const batio3Indices = (lambda: number) => ({ no: refractiveIndex(BATIO3_O, lambda), ne: refractiveIndex(BATIO3_E, lambda) });
 
+/** Linear interpolation of ys over strictly ascending xs (at least two nodes); NaN outside [xs[0], xs[last]]. */
+function interpolate(xs: readonly number[], ys: readonly number[], x: number): number {
+  const last = xs.length - 1;
+  if (!(x >= xs[0] && x <= xs[last])) return NaN;
+  let k = 0;
+  while (k < last - 1 && x > xs[k + 1]) k++;
+  return ys[k] + ((ys[k + 1] - ys[k]) * (x - xs[k])) / (xs[k + 1] - xs[k]);
+}
+
+// LiTaO₃ n_o, n_e, Bond 1965 (see the header), λ in µm; interpolated in 1/λ², which is nearly linear in n.
+const LITAO3_UM = [0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4, 1.6];
+const LITAO3_NO = [2.1834, 2.1652, 2.1538, 2.1454, 2.1391, 2.1305, 2.1236, 2.1174];
+const LITAO3_NE = [2.1878, 2.1696, 2.1578, 2.1493, 2.1432, 2.1341, 2.1273, 2.1213];
+// The same rows in ascending u = 1/λ² (µm⁻²).
+const LITAO3_U = LITAO3_UM.map((x) => 1 / x ** 2).reverse();
+const LITAO3_NO_U = [...LITAO3_NO].reverse();
+const LITAO3_NE_U = [...LITAO3_NE].reverse();
+const litao3Indices = (lambda: number) => {
+  const u = 1 / (lambda * 1e6) ** 2;
+  return { no: interpolate(LITAO3_U, LITAO3_NO_U, u), ne: interpolate(LITAO3_U, LITAO3_NE_U, u) };
+};
+// Casson et al. 2004, Table 2: unclamped r₃₃, r₁₃ (pm/V).
+const LITAO3_R = { lambda: [632.8e-9, 980e-9, 1330e-9, 1558e-9], r33: [30.5e-12, 29.6e-12, 27.7e-12, 27.4e-12], r13: [7.62e-12, 6.96e-12, 6.55e-12, 6.92e-12] };
+
 export const POCKELS: Record<PockelsId, PockelsCrystal> = {
   kdp: {
     name: "KDP (KH₂PO₄)", pointGroup: "42m", geometry: "longitudinal", r: { r63: 10.6e-12 },
@@ -104,6 +138,11 @@ export const POCKELS: Record<PockelsId, PockelsCrystal> = {
     name: "LiNbO₃ (congruent)", pointGroup: "3m", geometry: "transverse", r: { r33: 30.8e-12, r13: 8.6e-12 },
     indices: (lambda) => crystalIndices("linbo3", lambda), range: crystalRange("linbo3"), epsilon: 28,
     source: "r₃₃, r₁₃ (clamped, 633 nm) and ε₃₃ Weis & Gaylord 1985; n_o, n_e Zelmon et al. 1997",
+  },
+  litao3: {
+    name: "LiTaO₃ (congruent)", pointGroup: "3m", geometry: "transverse", r: { r33: LITAO3_R.r33[0], r13: LITAO3_R.r13[0] },
+    rDispersion: LITAO3_R, indices: litao3Indices, range: [LITAO3_R.lambda[0], LITAO3_R.lambda[3]], epsilon: NaN,
+    source: "r₃₃, r₁₃ (unclamped, 632.8–1558 nm, interpolated) Casson et al. 2004, Table 2, scaled to r₃₃ = 30.5 pm/V at 632.8 nm (Onuki et al. 1972); n_o, n_e Bond 1965",
   },
   ktp: {
     name: "KTP (KTiOPO₄)", pointGroup: "mm2", geometry: "transverse", r: { r33: 36.3e-12, r13: 15.7e-12 },
@@ -127,6 +166,19 @@ export const POCKELS: Record<PockelsId, PockelsCrystal> = {
 };
 
 const pos = (x: number) => Number.isFinite(x) && x > 0;
+
+/**
+ * r₃₃ and r₁₃ (m/V) of a transverse crystal at λ: interpolated linearly in λ where the coefficients were measured at several
+ * wavelengths (NaN outside them), else the reference-wavelength values.
+ */
+export function transverseCoefficients(crystal: PockelsCrystal, lambda: number): { r33: number; r13: number } {
+  const t = crystal.rDispersion;
+  if (!t) return { r33: crystal.r.r33 ?? NaN, r13: crystal.r.r13 ?? NaN };
+  // Snap λ within 1e-9 (relative) of the ends, the tolerance of the page's range check, so an end point isn't lost to rounding.
+  const x = Math.min(t.lambda[t.lambda.length - 1], Math.max(t.lambda[0], lambda));
+  const inside = Math.abs(x - lambda) <= 1e-9 * lambda;
+  return inside ? { r33: interpolate(t.lambda, t.r33, x), r13: interpolate(t.lambda, t.r13, x) } : { r33: NaN, r13: NaN };
+}
 
 /** Index change −½ n³ r E along one principal axis (r in m/V, E in V/m). */
 export const pockelsIndexChange = (n: number, r: number, E: number) => (pos(n) ? -0.5 * n ** 3 * r * E : NaN);
