@@ -5,12 +5,12 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 205, 2026-11-05)
+## Status (session 206, 2026-11-06)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
   textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) and 5w-13 (materials) and 5w-14 (spectroscopy) and 5w-15 (thin-film + polarization) done (sessions 163–177): 5w is complete; KRS-5
-  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6j done (sessions 179–194); Gemini hero done (session 195). Phase 7 (Known limitations: features): 7a–7d done (sessions 196–199), 7e done (session 200; 7e-b with the user's Westwood PDF), 7f-a/7f-b done (sessions 201–202), 7g-a/7g-b done (sessions 203–204); Phase 7 done and released (session 205, e27df432). Phase 8 (data-blocked limitations): 8a done (session 205). Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6j done (sessions 179–194); Gemini hero done (session 195). Phase 7 (Known limitations: features): 7a–7d done (sessions 196–199), 7e done (session 200; 7e-b with the user's Westwood PDF), 7f-a/7f-b done (sessions 201–202), 7g-a/7g-b done (sessions 203–204); Phase 7 done and released (session 205, e27df432). Phase 8 (data-blocked limitations): 8a, 8b done (sessions 205–206). Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -113,9 +113,9 @@ Evidence for a later extension. Reopen an item only with a new source or a user 
 - `heat-capacity` (session 185: + GaAs, diamond): MgF₂, ZnSe, BaF₂ and fused silica are not offered (no cited θ_D). GaAs below 298 K unchecked
   (session 190: Piesbergen 1963 Tab. 3, within 2.4 % at 100–273 K, 24 % low at 50 K); above 600 K data sets spread by up to 10 J/(mol·K) (Pässler, AIP Adv. 3, 082108 (2013), abstract). `damage-threshold` and `radiation-damage` have user inputs, no presets.
 - `electro-optic`, `photorefractive` (session 143: KTP added; session 203: BaTiO₃ unclamped/clamped on `electro-optic`, Wemple 1968
-  indices 0.4–0.7 µm; session 204: BaTiO₃ on `photorefractive`, Feinberg 1980 e-wave r_eff(β), Zgonik 1994 ε): SBN, BSO and LiTaO₃
-  are still out (custom crystal only); no beam walk-off, anisotropic mobility or grating piezo/elasto-optic terms. LiTaO₃ has only a vendor r₃₃ (Crylink 30.4, no r₁₃ or λ;
-  Casson 2004 JOSA B is paywalled, OSTI refuses connections). KTP's r (Cheng 1994) are the unclamped values
+  indices 0.4–0.7 µm; session 204: BaTiO₃ on `photorefractive`, Feinberg 1980 e-wave r_eff(β), Zgonik 1994 ε; session 206: LiTaO₃ on
+  `electro-optic`, Casson 2004 unclamped r(λ) 632.8–1558 nm, Bond 1965 indices): SBN and BSO are still out (custom crystal only), LiTaO₃
+  is off `photorefractive` (no ε); no beam walk-off, anisotropic mobility or grating piezo/elasto-optic terms. KTP's r (Cheng 1994) are the unclamped values
   (vendor tables, session 190; Cheng itself paywalled). Wilson & Hawkes now cites the 3rd ed. (1998); Table 3.1 is the same in all three.
 - `nonlinear-crystals` (user decision, session 130: lean SHG page): CLBO, KTA, AgGaS₂, ZGP, GaSe and OP-GaAs and the walk-off,
   acceptance and damage columns were dropped (no downloadable source; CASTECH/findlight PDFs return HTML). OP-GaAs QPM
@@ -124,7 +124,8 @@ Evidence for a later extension. Reopen an item only with a new source or a user 
 - `rare-earth-absorption` (+ `rare-earth-doped`, `fiber-amplifier`; session 148: Er Barnes 1991 Table V/Fig. 6(c), Yb Melkumov 2004):
   Er 1480/1550 nm σ are read off a figure (±0.15e-25 m², scale ±20 %). Nd, Tm, Ho still out. `color-centers`: F(KCl), Ti:sapphire, ruby and SiV⁻ dropped (no open
   source read); LiF F₂/F₂⁺ have no cited σ.
-- `nonlinear-index` (session 147: + DeSalvo 1064 nm rows, Si at 1800 nm; session 205: + gases, CS₂, FS 1024 nm): GaAs, AlGaAs, chalcogenide and SF glasses still out
+- `nonlinear-index` (session 147: + DeSalvo 1064 nm rows, Si at 1800 nm; session 205: + gases, CS₂, FS 1024 nm; session 206: sapphire
+  n₂(λ), Major 2004, E ∥ c, 270–1550 nm, held above): only sapphire has n₂ dispersion. GaAs, AlGaAs, chalcogenide and SF glasses still out
   (Sheik-Bahae 1991 JQE has no open copy; CREOL hosts only the 1990 PRL, figures only). DeSalvo calcite dropped: Table II n 1.59 fits neither axis.
   Candidates: Dinu 2003 / Bristow 2007 (Si), Sheik-Bahae 1991 (semiconductors), Milam 1998 (silica 1064 nm).
 - `brillouin-scattering` (session 148: + As₂Se₃ Abedin 2005, As₂S₃ Pant 2011, diamond Bai 2020): diamond's p now (p₁₁ + 2p₁₂ − 2p₄₄)/3
@@ -302,12 +303,9 @@ sources: Ar⁺/CO₂ g₀, Nd/Tm/Ho σ, Sheik-Bahae n₂, ZBLAN, LiTaO₃, …) 
 ## Phase 8 — data-blocked limitations (user, session 205: "Data blocked items")
 Open-access hunt (session 205, 4 agents; PDFs were in the session scratchpad). Open primary data found only for the Kerr rows.
 - [x] 8a `nonlinear-index` gases, CS₂, FS 1024 nm (session 205, `phase-8/8a-kerr-data`, PR #243). See Done.
-User uploads (session 205) are kept outside git in `C:devphotonics-calculators-refs` (PDF + pdftotext .txt; pdftotext drops
-minus signs and ±, and can shift table labels: confirm each value on the rendered PDF page with Read `pages`).
-- [ ] 8b `electro-optic` LiTaO₃: Casson 2004 JOSA B 21, 1948 Table 2, unclamped r₃₃/r₁₃ (pm/V) 30.5/7.62 at 632.8 nm, 29.6/6.96
-  at 980, 27.7/6.55 at 1330, 27.4/6.92 at 1558, with n_e/n_o from Gervais & Fonseca (Palik); 632.8 r₃₃ is pinned to the literature
-  30.5 (Onuki 1972). No ε (photorefractive stays out). + `nonlinear-index` sapphire n₂(λ): Major 2004 OL 29, 602 Eq. 2, double
-  exponential, 270–1550 nm, E ∥ c, ±25–30 % (3.3 → 2.8e-16 cm²/W over 550–1550 nm; check signs on the PDF).
+User uploads (session 205) are kept outside git in `C:/dev/photonics-calculators-refs` (PDF + pdftotext .txt; pdftotext drops
+minus signs and ±, and can shift table labels: confirm each value on the rendered PDF page, see HANDOVER for pypdfium2).
+- [x] 8b `electro-optic` LiTaO₃ + `nonlinear-index` sapphire n₂(λ) (session 206, `phase-8/8b-litao3-sapphire`, PR #244). See Done.
 - [ ] 8c Tm³⁺ on `rare-earth-absorption` (and the doped-fibre presets if they fit): Agger & Povlsen 2006 OE 14, 50 — ³F₄ band only,
   Table 1 σ_a,peak 4.2–4.5, σ_e,peak 3.5–3.9e-25 m², σ_a(1600 nm) 3.5 (Tm1) / 4.3 (Tm2) e-25 m², σ_e/σ_a(1740) 1.20/1.25,
   τ(³F₄) 650/560 µs, τ_rad 6.0–6.6 ms; peak wavelengths only in figures. Nd³⁺ (Barnes 1991 Opt. Commun. 82, 283): σ_e 1.3 ± 0.2e-24
@@ -320,7 +318,7 @@ minus signs and ±, and can shift table labels: confirm each value on the render
   Table 2 compilation; ε and n only secondary); ZBLAN Knoop 190–250 kg/mm², dn/dT −8 to −15e-6/K for fluoride glasses (Poulain,
   APL Photonics 9, 091103 (2024), read only via a page summary); Tm³⁺ σ only as Smith & Smith 2016's literature survey.
 - Needs a user upload: Nd³⁺ silica σ (Barnes, Morkel, Townsend 1991 Opt. Commun.); Tm³⁺ (Agger & Povlsen 2006 OE 14, 50;
-  Jackson & King 1999 JQE 35, 1679); Yb:YAG κ 10 at.% (Patel 2001); LiTaO₃ r, ε (Casson 2004 JOSA B 21, 1948); SBN r, ε, n
+  Jackson & King 1999 JQE 35, 1679); Yb:YAG κ 10 at.% (Patel 2001); LiTaO₃ ε (for `photorefractive`; Casson 2004 has none); SBN r, ε, n
   (Ducharme 1987 JQE 23, 2116; Woike 2001 pss(a) 186, R13); BSO ε, n (Gunter & Huignard vol. 2); ZBLAN κ (PRB 60, 15173);
   Ar⁺ g₀/I_sat (1982 Chinese "loss, gain and saturation parameters of Ar⁺ lasers", OSTI 6537069; Verdeyen ch. 8–9); CO₂
   g₀/I_sat (Appl. Opt. 12, 1934 (1973); Zhang 2020 Infrared Phys. Technol. 111, 103537); n₂ of SF59 (Nikolakakos 2004 JSTQE 10,
@@ -344,6 +342,7 @@ minus signs and ±, and can shift table labels: confirm each value on the render
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 8b (session 206, `phase-8/8b-litao3-sapphire`, PR #244): `electro-optic` LiTaO₃ unclamped r(λ) (Casson 2004 Table 2, 632.8–1558 nm, linear in λ; r 800 nm 30.0666/7.30217 pm/V; V_π 1558 nm, d 1 mm, L 20 mm 397.14 V), Bond 1965 n in 1/λ² (≤ 3e-4 from Casson); `nonlinear-index` sapphire E ∥ c n₂(λ) Major 2004 Eq. 2 (2.979696e-20 m²/W at 1064 nm), n₀ = n_e, held above 1550 nm, none below 270 nm.
 - 8a nonlinear-index (session 205, `phase-8/8a-kerr-data`, PR #243): + N₂ 7.9/O₂ 8.1/Ar 10.1e-24 m²/W and air 7.96e-24 (Zahedpour 2015, 1 atm), CS₂ 2.0e-19 / 2.86e-18 > 10 ps (Reichert 2014), FS 2.18e-20 at 1024 nm (Wahlstrand & Cruz 2026); DeSalvo 7.5e-14 esu example relabelled BaF₂ (pdftotext shifts Table I labels; fused silica = 7.8 eV row). 1260 tests.
 - 7g-b photorefractive (session 204, `phase-7/7g-b-batio3-photorefractive`, PR #242): BaTiO₃ unclamped/clamped, e-beams with K at β from c; Feinberg 1980 eq. 19 r_eff (closed form = full 4mm tensor sum to 1e-10), ε_K = ε₁₁sin²β + ε₃₃cos²β (Zgonik Tables II/III); 632.8 nm β 45° θ 0: 958.28 pm/V; page default Γ 26.73 cm⁻¹.
 - 7g-a materials data (session 203, `phase-7/7g-materials-data`, PR #241): `thermal-expansion` Si α(T) (Okada & Tokumaru 1984, 120–1500 K; α(300) 2.56806, 100 mm 20→120 °C 28.741 µm, cancellation-free mean); `electro-optic` BaTiO₃ unclamped/clamped (Zgonik via Petraru Table 2.2, Wemple n; V_π 24.914/80.655 V at 1 mm × 20 mm, 633 nm); 1255 tests.
