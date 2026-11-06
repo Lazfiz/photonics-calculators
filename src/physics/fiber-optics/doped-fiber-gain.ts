@@ -37,7 +37,7 @@ export interface CrossSection {
 }
 
 export interface DopantPreset {
-  readonly id: "Er" | "Yb" | "Tm";
+  readonly id: "Er" | "Yb" | "Tm" | "Ho";
   readonly name: string;
   readonly host: string;
   /** Where the cross-sections and lifetime come from. */
@@ -52,7 +52,7 @@ export interface DopantPreset {
 
 /**
  * Measured cross-sections for the ions a two-level model describes (Er pumped at 980 nm, where the ⁴I₁₁/₂ level
- * empties in µs, or in band at 1480 nm; Yb; Tm pumped in band, ³H₆ ↔ ³F₄ only, so not at 790 nm). Real fibres vary with the host glass by tens of percent: use the fibre's
+ * empties in µs, or in band at 1480 nm; Yb; Tm pumped in band, ³H₆ ↔ ³F₄ only, so not at 790 nm; Ho pumped in band, ⁵I₈ ↔ ⁵I₇). Real fibres vary with the host glass by tens of percent: use the fibre's
  * own data where there is any.
  * - Er³⁺ in GeO₂–Al₂O₃–SiO₂: W. L. Barnes, R. I. Laming, E. J. Tarbox, P. R. Morkel, IEEE J. Quantum Electron. 27, 1004
  *   (1991), doi:10.1109/3.83335. σ_a(980) 1.7 ± 0.3e-25 m² (Table V); 1480 and 1550 nm read from Fig. 6(c), ±0.15e-25 m² reading
@@ -66,6 +66,12 @@ export interface DopantPreset {
  *   (p. 54), τ(³F₄) 650 µs (p. 52). σ_a(1740) and both σ at 1900 nm come from the vector data of Figs. 3 and 4 (the two
  *   figures agree to ±0.05e-25 m²; Fig. 4 gives 3.395/2.830 = 1.20 at 1740 nm). The emission curve is only defined
  *   over 1580–2060 nm.
+ * - Ho³⁺ in silica (iXblue HDF-PM-8-130; co-dopants not stated): J. Le Gouët, F. Gustave, P. Bourdon, T. Robin, A. Laurent,
+ *   B. Cadier, Opt. Express 28, 22307 (2020), doi:10.1364/OE.394011; values from arXiv:2003.14188v1. Text: σ_a(1946) peak
+ *   4.3 ± 0.2e-25 m² (fibre #2), σ_e peak 6.0 ± 0.4e-25 m² (σ_e/σ_a peaks 1.40 ± 0.06, measured gain, not McCumber),
+ *   σ_e(1995) = (58/57)·4.3 = 4.38e-25 m², σ_a/σ_e(1908) 1.9/1.6e-25 m², τ(⁵I₇) 0.7 ± 0.1 ms. σ_e(1946) and both σ at
+ *   1995 and 2120 nm are read from the raster Fig. 1 (axes calibrated on its gridlines; the reading reproduces the five
+ *   text values to ±0.05e-25 m²; 2120 nm sits on a steep edge, ±0.1e-25 m²). Ion pairs (15 %) are not modelled.
  */
 export const DOPANT_PRESETS: readonly DopantPreset[] = [
   {
@@ -88,6 +94,18 @@ export const DOPANT_PRESETS: readonly DopantPreset[] = [
     signals: [
       { lambda: 1900e-9, sigmaA: 0.17e-25, sigmaE: 2.84e-25 },
       { lambda: 1740e-9, sigmaA: 2.83e-25, sigmaE: 3.40e-25 },
+    ],
+  },
+  {
+    id: "Ho", name: "Holmium (Ho³⁺)", host: "silica", source: "Le Gouët et al. 2020", molarMass: 0.16493, tau: 0.7e-3,
+    pumps: [
+      { lambda: 1908e-9, sigmaA: 1.9e-25, sigmaE: 1.6e-25 },
+      { lambda: 1946e-9, sigmaA: 4.3e-25, sigmaE: 5.9e-25 },
+    ],
+    // The first signal (the paper's 2120 nm laser line) is the amplifier pages' preset.
+    signals: [
+      { lambda: 2120e-9, sigmaA: 0.18e-25, sigmaE: 1.30e-25 },
+      { lambda: 1995e-9, sigmaA: 1.93e-25, sigmaE: 4.38e-25 },
     ],
   },
 ];

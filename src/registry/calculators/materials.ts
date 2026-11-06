@@ -659,9 +659,9 @@ export const materials: CalculatorEntry[] = [
     slug: "rare-earth-absorption",
     title: "Rare-Earth Dopant Absorption",
     keywords: ["Rare Earth Absorption Spectra"],
-    description: "Absorption coefficient of Er³⁺, Yb³⁺ or Tm³⁺ in silica from the cross-section and wt-ppm concentration: α in m⁻¹ and dB/m, absorption length and transmission over a path.",
+    description: "Absorption coefficient of Er³⁺, Yb³⁺, Tm³⁺ or Ho³⁺ in silica from the cross-section and wt-ppm concentration: α in m⁻¹ and dB/m, absorption length and transmission over a path.",
     tier: "textbook",
-    modelNote: "Small-signal absorption α = Γσ_aN of an unpumped sample (no bleaching or excited-state absorption) and T = e^(−αL) without surface reflections. N from wt-ppm in silica (2201 kg/m³). Preset cross-sections, shared with the fibre amplifier pages, are measured in one fibre each: Er³⁺ in GeO₂–Al₂O₃–SiO₂ (Barnes 1991; 980 nm from Table V, 1480 and 1550 nm read from Fig. 6 to ±0.15e-25 m²), Yb³⁺ in aluminosilicate (Melkumov 2004) and Tm³⁺ in Al/La silica (Agger & Povlsen 2006; ³F₄ band only, 1740 and 1900 nm read from Figs. 3–4). They vary with the host by tens of percent. Nd and Ho are not offered.",
+    modelNote: "Small-signal absorption α = Γσ_aN of an unpumped sample (no bleaching or excited-state absorption) and T = e^(−αL) without surface reflections. N from wt-ppm in silica (2201 kg/m³). Preset cross-sections, shared with the fibre amplifier pages, are measured in one fibre each: Er³⁺ in GeO₂–Al₂O₃–SiO₂ (Barnes 1991; 980 nm from Table V, 1480 and 1550 nm read from Fig. 6 to ±0.15e-25 m²), Yb³⁺ in aluminosilicate (Melkumov 2004) and Tm³⁺ in Al/La silica (Agger & Povlsen 2006; ³F₄ band only, 1740 and 1900 nm read from Figs. 3–4) and Ho³⁺ in silica (Le Gouët et al. 2020; ⁵I₇ band only, σ_a(1946) 4.3 ± 0.2e-25 m², 1995 and 2120 nm read from Fig. 1). They vary with the host by tens of percent. Nd is not offered.",
     references: [
       {
         citation: "Giles C. R., Desurvire E. (1991). Modeling erbium-doped fiber amplifiers. J. Lightwave Technol. 9, 271–283. Absorption α = Γσ_aN, eqs. (6)–(9).",
@@ -679,9 +679,13 @@ export const materials: CalculatorEntry[] = [
         citation: "Agger S. D., Povlsen J. H. (2006). Emission and absorption cross section of thulium doped silica fibers. Opt. Express 14, 50–57. Al/La-silica fibre Tm1: σ_a(1600) 3.5e-25 m², σ_e/σ_a 0.10 (1600 nm) and 1.20 (1740 nm), τ 650 µs; 1740 and 1900 nm read from the vector data of Figs. 3–4.",
         url: "https://doi.org/10.1364/OPEX.14.000050",
       },
+      {
+        citation: "Le Gouët J., Gustave F., Bourdon P., Robin T., Laurent A., Cadier B. (2020). Realization and simulation of high-power holmium doped fiber lasers for long-range transmission. Opt. Express 28, 22307; arXiv:2003.14188. Silica fibre: σ_a(1946) 4.3 ± 0.2e-25 m² (fibre #2, 425 dB/m), σ_e/σ_a 1.40 ± 0.06 at the peaks, 1.9/1.6e-25 m² at 1908 nm, τ 0.7 ms; 1995 and 2120 nm read from the raster Fig. 1.",
+        url: "https://doi.org/10.1364/OE.394011",
+      },
     ],
     related: [
-      { href: "/fiber-optics/rare-earth-doped", note: "Pumped Er, Yb or Tm fibre: overlap, gain, saturation power and noise figure." },
+      { href: "/fiber-optics/rare-earth-doped", note: "Pumped Er, Yb, Tm or Ho fibre: overlap, gain, saturation power and noise figure." },
       { href: "/spectroscopy/lambert-beer-law", note: "Beer–Lambert absorbance from ε, concentration and path." },
     ],
   },

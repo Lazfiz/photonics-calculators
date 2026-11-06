@@ -23,6 +23,11 @@ const PRESETS = [
   // N is Agger & Povlsen's peak density for their Tm1 fibre, defined with their Γ: 0.58 from their Er fibre of the same design
   // (0.63 m⁻¹ / (8.7e24 m⁻³ · 1.24e-25 m²) at 1470 nm). Γ_s 0.5 and r 3.5 µm are illustrative; the gain peaks near 0.6 m at 200 mW.
   { id: "tm1600", label: "TDFA, 1600 nm in-band pump", ion: 2, pump: 0, N: 8.4e25, r: 3.5, L: 0.6, gp: 0.58, gs: 0.5 },
+  // Le Gouët's fibre #1: N 3.7e25 m⁻³ (±16 %), 8 µm core, NA 0.17. Γ from their eq. (1), 1 − exp(−2a²/w²), with Marcuse's
+  // mode radius: 0.78 at 1908 nm (w 4.6 µm; 0.76 at 1946 nm as they state) and 0.72 at 2120 nm (w 5.0 µm). With σ_a(1908)
+  // this gives 23.8 dB/m against their measured 25.2 ± 0.3 dB/m. The gain peaks near 2 m at 200 mW (7.9 dB). Their laser
+  // pumps at 1940 nm, so the preset is not that laser.
+  { id: "ho1908", label: "HDFA, 1908 nm in-band pump", ion: 3, pump: 0, N: 3.7e25, r: 4, L: 2, gp: 0.78, gs: 0.72 },
 ] as const;
 
 function Card({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone: string }) {
@@ -145,7 +150,8 @@ export default function FiberAmplifierCalculator() {
         </select>
         <p className="text-xs text-gray-400 mt-2">
           Presets fill measured cross-sections (Er in alumino-germanosilicate, Barnes et al. 1991; Yb in aluminosilicate,
-          Melkumov et al. 2004; Tm in Al/La silica, Agger &amp; Povlsen 2006, signal at 1900 nm). They vary with the
+          Melkumov et al. 2004; Tm in Al/La silica, Agger &amp; Povlsen 2006, signal at 1900 nm; Ho in silica, Le Gouët et
+          al. 2020, signal at 2120 nm). They vary with the
           host glass by tens of percent: enter your fibre&apos;s own data where you have it.
         </p>
       </div>

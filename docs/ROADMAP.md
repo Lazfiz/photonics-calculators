@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 207, 2026-11-06)
+## Status (session 208, 2026-11-06)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
@@ -307,13 +307,13 @@ User uploads (session 205) are kept outside git in `C:/dev/photonics-calculators
 minus signs and ±, and can shift table labels: confirm each value on the rendered PDF page, see HANDOVER for pypdfium2).
 - [x] 8b `electro-optic` LiTaO₃ + `nonlinear-index` sapphire n₂(λ) (session 206, `phase-8/8b-litao3-sapphire`, PR #244). See Done.
 - [x] 8c Tm³⁺ on `rare-earth-absorption`, `rare-earth-doped`, `fiber-amplifier` (session 207, `phase-8/8c-tm-absorption`, PR #245). See Done.
+- [x] 8d Ho³⁺ on the same three pages (session 208, `phase-8/8d-ho-absorption`, PR #246). See Done.
 - Nd³⁺ (Barnes 1991 Opt. Commun. 82, 283): σ_e 1.3 ± 0.2e-24
   m² spectroscopic (0.75 laser method) at 1.088 µm, τ 460 µs, branching 0.56/0.40/0.04; no σ_a at 808 nm, so Nd waits for one.
 - Received but not unblocking: Nachshon 1973 (Appl. Opt. 12, 1935) gives only I_s ∝ p² (p > 20 torr) and a₀l = 3.32, no absolute
   I_s or g₀ (CO₂ stays out). Ducharme 1987 (JQE 23, 2116): SBN:60 (x = 0.61) unclamped r₁₃ 47 ± 5, r₃₃ 235 ± 21 pm/V at 514.5 nm,
   BaTiO₃ r₁₃ 19.5, r₃₃ 97 (no ε, no SBN indices): SBN needs Woike 2001 or Kip 1996 (SBN:61 Sellmeier) and ε.
-- Open but partial (a stage only with the user's go): Ho³⁺ silica σ_a 4.3 ± 0.2e-25 m² at 1946 nm, σ_e/σ_a 1.40 at 1995 nm
-  (Le Gouët 2020, arXiv:2003.14188; full spectra only in Fig. 1); BSO r₄₁ 4.2 ± 2.0 pm/V, 40 ± 12°/mm (Efremidis 2009, figures +
+- Open but partial (a stage only with the user's go): BSO r₄₁ 4.2 ± 2.0 pm/V, 40 ± 12°/mm (Efremidis 2009, figures +
   Table 2 compilation; ε and n only secondary); ZBLAN Knoop 190–250 kg/mm², dn/dT −8 to −15e-6/K for fluoride glasses (Poulain,
   APL Photonics 9, 091103 (2024), read only via a page summary).
 - Needs a user upload: Nd³⁺ silica σ (Barnes, Morkel, Townsend 1991 Opt. Commun.); Tm³⁺ ³H₄ band, 790 nm pump with
@@ -341,6 +341,7 @@ minus signs and ±, and can shift table labels: confirm each value on the render
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 8d (session 208, `phase-8/8d-ho-absorption`, PR #246): Ho³⁺ (Le Gouët 2020, Opt. Express 28, 22307; arXiv:2003.14188v1) in DOPANT_PRESETS: pumps 1908 nm 1.9/1.6 (text), 1946 nm 4.3 (text)/5.9; signals 2120 nm 0.18/1.30, 1995 nm 1.93/4.38 (σ_e from the measured gain) e-25 m², τ 0.7 ms; raster Fig. 1 digitized (reproduces 5 text values to ±0.05); HDFA preset fibre #1 N 3.7e25, Γ 0.78/0.72, L 2 m → 7.9 dB at 200 mW; golden fibre #2 428.6 vs 425 ± 5 dB/m, 1000 wt-ppm α(1946) 15.0080 dB/m.
 - 8c (session 207, `phase-8/8c-tm-absorption`, PR #245): Tm³⁺ (Agger & Povlsen 2006, Al/La fibre Tm1) in DOPANT_PRESETS: 1600 nm σ_a 3.5, σ_e 0.35 (text), 1740 nm 2.83/3.40 (ratio 1.20 from text), 1900 nm 0.17/2.84 (vector data of Figs. 3–4) e-25 m², τ 650 µs; in-band TDFA presets (fiber-amplifier: N 8.4e25, Γ_p 0.58, Γ_s 0.5, L 0.6 m, 15.3 dB); every amplifier preset sets L and Γ. 1000 wt-ppm α(1600) 11.9263 dB/m.
 - 8b (session 206, `phase-8/8b-litao3-sapphire`, PR #244): `electro-optic` LiTaO₃ unclamped r(λ) (Casson 2004 Table 2, 632.8–1558 nm, linear in λ; r 800 nm 30.0666/7.30217 pm/V; V_π 1558 nm, d 1 mm, L 20 mm 397.14 V), Bond 1965 n in 1/λ² (≤ 3e-4 from Casson); `nonlinear-index` sapphire E ∥ c n₂(λ) Major 2004 Eq. 2 (2.979696e-20 m²/W at 1064 nm), n₀ = n_e, held above 1550 nm, none below 270 nm.
 - 8a nonlinear-index (session 205, `phase-8/8a-kerr-data`, PR #243): + N₂ 7.9/O₂ 8.1/Ar 10.1e-24 m²/W and air 7.96e-24 (Zahedpour 2015, 1 atm), CS₂ 2.0e-19 / 2.86e-18 > 10 ps (Reichert 2014), FS 2.18e-20 at 1024 nm (Wahlstrand & Cruz 2026); DeSalvo 7.5e-14 esu example relabelled BaF₂ (pdftotext shifts Table I labels; fused silica = 7.8 eV row). 1260 tests.
