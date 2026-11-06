@@ -1,0 +1,112 @@
+FSO Link Budget
+
+Free-space optical link budget from transmitter divergence, receiver aperture, path loss and atmospheric attenuation, with presets and the margin versus range.
+
+Share
+
+Model: Textbook approximation
+
+Short urban
+Campus
+Long link
+TX power
+10 dBm
+⟦10⟧
+-10–30 dBm
+TX divergence (full, 1/e²)
+0.1 mrad
+⟦0.1⟧
+0.05–10 mrad
+RX aperture diameter
+20 cm
+⟦20⟧
+1–50 cm
+Range
+0.2 km
+⟦0.2⟧
+0.05–10 km
+Wavelength
+850 nm
+⟦850⟧
+780–1600 nm
+Atmospheric attenuation
+3 dB/km
+⟦3⟧
+0–100 dB/km
+Misc loss (optics, pointing)
+2 dB
+⟦2⟧
+0–20 dB
+RX sensitivity
+-30 dBm
+⟦-30⟧
+-60–0 dBm
+
+TX gain 8/θ²
+
+95.05 dBi
+
+θ = 0.0500 mrad half-angle
+
+RX gain (πD/λ)²
+
+117.38 dBi
+
+Free-space path loss
+
+189.42 dB
+
+atmosphere 0.6 dB
+
+Received power
+
+7.40 dBm
+
+Friis: 7.40 dBm
+
+Margin vs -30 dBm
+
+37.40 dB
+
+Received power vs range
+
+PNG
+CSV
+Received power
+Sensitivity
+Current
+Model (Friis transmission)
+
+P_r = P_t + G_t + G_r − 20 log₁₀(4πR/λ) − γ_atm·R − L_misc [dB]
+
+The transmitter is a Gaussian beam of full 1/e² divergence θ, so its on-axis gain is 8/(θ/2)². The receiver collects the plane wave over its aperture: G_r = (πD/λ)². The free-space path loss and the two gains together are the beam spreading: for a small receiver the product equals 2a²/w(R)², the share of a Gaussian beam of radius w = θR/2 that falls on an aperture of radius a. Closer in, or for a large receiver, the card shows the exact capture 1 − exp(−2a²/w(R)²) with w(R) = w₀√(1 + (R/z_R)²). Atmospheric attenuation is per kilometre: take it from the fog, rain or snow calculators. With θ fixed, λ cancels in P_r (G_t·G_r/FSPL = D²/(2θ²R²) for a small receiver); it matters only through the atmospheric attenuation, which you enter for your wavelength, and the diffraction-limited waist.
+
+Not modelled: turbulence fading, pointing jitter statistics and background noise. The sensitivity is the receiver's power at the target bit error rate.
+
+MODEL AND REFERENCES
+
+Textbook approximation. A standard approximation from the literature (for example paraxial, plane-wave or Gaussian-beam), valid within the range the page states. About the tiers
+
+Budget table from Friis (G_t = 8/θ², θ half-angle; G_r = (πD/λ)²); the received power is the exact Gaussian capture 1 − exp(−2a²/w²), which Friis matches far out. Atmosphere in dB/km; no turbulence.
+
+Friis H. T. (1946). A note on a simple transmission formula. Proc. IRE 34(5), 254–256. doi:10.1109/jrproc.1946.234568
+Degnan J. J., Klein B. J. (1974). Optical antenna gain. 2: Receiving antennas. Appl. Opt. 13(10), 2397. doi:10.1364/ao.13.002397
+Kim I. I., Korevaar E. (2001). Availability of free-space optics (FSO) and hybrid FSO/RF systems. Proc. SPIE 4530, 84. doi:10.1117/12.449800
+
+RELATED CALCULATORS
+
+FSO Geometric Loss
+
+Geometric spreading loss of a divergent FSO beam: top-hat footprint from exit aperture and divergence versus the exact Gaussian-beam capture by the receiver aperture.
+
+Lasercom Link Budget
+
+Lasercom link budget with Gaussian-beam transmit and receive gains, free-space path loss, spot size at the receiver, and pointing and atmospheric losses.
+
+Optical Antenna Gain
+
+Telescope transmit gain (Klein–Degnan, clipped and obscured Gaussian beam), receive gain, far-field divergence, beam waist and Rayleigh range, with beam quality M² up to 10 as a Gaussian Schell-model beam.
+
+Point-Ahead Angle
+
+Point-ahead angle 2v⊥/c from the transverse relative velocity, compared with the diffraction half-angle, with the miss distance and light time for LEO and GEO laser links.

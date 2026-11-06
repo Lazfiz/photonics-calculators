@@ -1,0 +1,60 @@
+Mode-Locked Laser
+
+Mode-locked laser: cavity length for a repetition rate, transform-limited bandwidth of a sech² or Gaussian pulse, number of locked modes, pulse energy and peak power.
+
+Share
+
+Model: Textbook approximation
+
+Repetition rate (MHz) ⟦1000⟧
+Pulse duration, FWHM (fs) ⟦30⟧
+Centre wavelength (nm) ⟦800⟧
+Average power (mW) ⟦2000⟧
+Pulse shape
+sech² (soliton, Δν τ = 0.315)
+Gaussian (Δν τ = 0.441)
+ ⟦Gaussian (Δν τ = 0.441)⟧
+Cavity
+Linear (standing wave), L = c/2f
+Ring, perimeter = c/f
+ ⟦Ring, perimeter = c/f⟧
+
+Ring perimeter (optical)
+
+0.2998 m
+
+pulse period 1.000 ns
+
+Transform-limited bandwidth
+
+31.41 nm
+
+Δν = 0.4413/τ = 14.71 THz
+
+Locked modes in the FWHM
+
+1.471e4
+
+Δν/f_rep; 11.2 optical cycles in the pulse
+
+Peak power
+
+62.63 kW
+
+E = P/f = 2.000 nJ; duty 0.003000 %
+
+The pulse train repeats once per cavity round trip, f_rep = c/2L (linear) or c/L (ring), with L the optical length. A transform-limited pulse of intensity FWHM τ spans Δν = K/τ, K = 0.4413 (Gaussian) or 0.3148 (sech²), so about Δν/f_rep modes oscillate in phase. A chirped pulse is longer than this limit for the same bandwidth. Peak power: 0.939 E/τ (Gaussian), 0.881 E/τ (sech²).
+
+Single pulse
+
+PNG
+CSV
+Intensity
+MODEL AND REFERENCES
+
+Textbook approximation. A standard approximation from the literature (for example paraxial, plane-wave or Gaussian-beam), valid within the range the page states. About the tiers
+
+Transform-limited pulses: Δν·τ = 0.4413 (Gaussian) or 0.3148 (sech²), intensity FWHMs. The mode count is the number of modes f_rep apart inside Δν. Peak power from the shape factor, energy P/f_rep. Chirp, pedestals and the mode-locking mechanism itself are not modelled.
+
+Haus H. A. (2000). Mode-locking of lasers. IEEE J. Sel. Top. Quantum Electron. 6, 1173–1185. doi:10.1109/2944.902165
+Diels J.-C., Rudolph W. (2006). Ultrashort Laser Pulse Phenomena, 2nd ed., ch. 1. Academic Press.

@@ -1,0 +1,58 @@
+Afterpulsing in APDs
+
+Afterpulse probability, trap dynamics, and dead time trade-offs in avalanche photodiodes.
+
+Model: Textbook approximation
+
+Trap 1 Lifetime τ₁ (ns) ⟦20⟧
+Trap 1 Amplitude η₁ (P_ap at t_d = 0) ⟦0.05⟧
+Trap 2 Lifetime τ₂ (ns) ⟦200⟧
+Trap 2 Amplitude η₂ (0 = off) ⟦0⟧
+Dead Time t_d (ns) ⟦50⟧
+True Count Rate (cps) ⟦1000000⟧
+
+Afterpulse Probability
+
+0.410%
+
+per recorded avalanche
+
+Afterpulse Rate
+
+3.909e+3 cps
+
+recorded rate × P_ap
+
+Recorded Rate
+
+0.9524 Mcps
+
+non-paralyzable dead time
+
+Trap 1 Released in 50 ns
+
+91.8%
+
+1 − e^(−t_d/τ₁), harmless
+
+P_ap = Σ η_k · exp(−t_d / τ_k) [Cova 1991; Ziarkash 2018]
+
+R_ap = m · P_ap, m = R / (1 + R·t_d)
+
+A carrier trapped during an avalanche and released after the dead time retriggers the diode. A longer dead time lets more traps empty harmlessly, at the cost of a lower maximum count rate.
+
+PNG
+CSV
+Rate vs Dead Time
+PNG
+CSV
+Afterpulse Rate (cps)
+Recorded Rate (Mcps)
+MODEL AND REFERENCES
+
+Textbook approximation. A standard approximation from the literature (for example paraxial, plane-wave or Gaussian-beam), valid within the range the page states. About the tiers
+
+Each trap level empties exponentially, so the afterpulse probability is Σ η·e^(−t_d/τ) over up to two levels, with the recorded rate from a non-paralyzable dead time. η and τ are device fits (the defaults give 0.41 %, the order of a Si SPCM at 50 ns), and the afterpulse rate is first order in R·τ: afterpulses of afterpulses are left out.
+
+Cova S., Lacaita A., Ripamonti G. (1991). Trapping phenomena in avalanche photodiodes on nanosecond scale. IEEE Electron Device Lett. 12, 685–687. Afterpulsing from trap release, η·e^(−t/τ). doi:10.1109/55.116955
+Ziarkash A. W., Joshi S. K., Stipčević M., Ursin R. (2018). Comparative study of afterpulsing behavior and models in single photon counting avalanche photo diode detectors. Sci. Rep. 8, 5076. Multiple-exponential model; measured P_ap 0.01–8.5 % at 22–53 ns dead time (SPCM-AQ4C 0.16–0.29 % at 50 ns). doi:10.1038/s41598-018-23398-z

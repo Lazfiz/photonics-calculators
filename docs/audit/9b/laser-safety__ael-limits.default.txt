@@ -1,0 +1,52 @@
+Accessible Emission Limits (AEL)
+
+IEC 60825-1:2014 accessible emission limits of Classes 1, 2, 3R and 3B from 180 nm to 1 mm: for one emission of a given duration, and for a CW laser over the class time base.
+
+Model: Textbook approximation
+
+EDUCATIONAL ONLY — NOT COMPLIANCE-GRADE
+
+These pages implement the published exposure limits for the cases each one states, but they are educational tools: no laser safety officer has signed them off.
+
+Do not use these results alone for PPE selection, NHZ / NOHD approval, controlled-area sign-off, enclosure/interlock approval, or formal classification.
+Always verify against ANSI Z136.1, IEC 60825-1, your local procedures, and the responsible laser safety officer / CLSO.
+Wavelength (nm) ⟦633⟧
+Emission duration (s) ⟦1e-8⟧
+Apparent source α (mrad) ⟦1.5⟧
+Time base above 400 nm
+100 s
+30 000 s (intended long-term viewing)
+ ⟦100 s⟧
+⟦unchecked⟧
+EU: EN 60825-1:2014/A11:2021 skin AEL at 1250–1400 nm
+Class	One emission of 10.0 ns	CW (power through the stop)	CW set by
+Class 1 / 1M	77.0 nJ through 7.00 mm	385 µW (time base 100 s)	Retina, thermal
+Class 2 / 2M	77.0 nJ through 7.00 mm	1.00 mW (time base 250 ms)	Class 2 (C₆ × 1 mW)
+Class 3R	385 nJ through 7.00 mm	5.00 mW (time base 250 ms)	Class 2 (C₆ × 1 mW)
+Class 3B	30.0 mJ through 7.00 mm	500 mW (time base 100 s)	Class 3B cap (0.5 W)
+Class 4	Anything above Class 3B
+PNG
+CSV
+Class 1 / 1M
+Class 2 / 2M
+Class 3R
+Class 3B
+t
+
+AEL of one emission against its duration, 1 ns to 30 000 s, at this wavelength, as energy through the stop (log scales). Class 2 exists only at 400–700 nm and Class 3R only from 302.5 nm.
+
+An accessible emission limit (AEL) is the most a product may emit through a measurement stop: the eye's exposure limit times the stop's area for Classes 1, 1M, 2, 2M and 3R, fixed values for 3B. Here they are rebuilt from those limits (ICNIRP 2013 from 400 nm; IEC's own UV values over a 1 mm stop below), so they differ from IEC 60825-1:2014's tables by its rounding to two figures: Class 1 at 633 nm is 0.385 mW here, 3.9×10⁻⁴ W in the table. Class 2 is the Class 1 AEL below 0.25 s and C₆ × 1 mW from 0.25 s; Class 3R is five times Class 1 (Class 2 at 400–700 nm). From 1250 to 1400 nm Classes 1 and 3R are also capped at the Class 3B AEL, 0.5 W through 7 mm; the EU amendment A11 adds the skin limit through 1 → 3.5 mm (0.1 W from 0.35 s).
+
+For a CW laser the product has to meet each AEL for every emission duration up to its time base: 0.25 s for Classes 2, 2M and 3R in the visible, 100 s above 400 nm (30 000 s if long-term viewing is intended), 30 000 s in the UV. The CW column is that power with all of the beam inside the stop; a wider beam may emit more (see the classification page). Not covered: pulse trains (the N^−0.25 rule and pulse grouping), Class 1C.
+
+MODEL AND REFERENCES
+
+Textbook approximation. A standard approximation from the literature (for example paraxial, plane-wave or Gaussian-beam), valid within the range the page states. About the tiers
+
+AELs rebuilt from the limits they come from (ICNIRP 2013 from 400 nm, IEC's UV values over 1 mm), so within IEC's two-figure rounding; Class 3B cap at 1250–1400 nm, EU A11 optional. Not modelled: pulse trains, Class 1C.
+
+IEC 60825-1:2014. Safety of laser products – Part 1: Equipment classification and requirements. 4.3 e) (time bases), Tables 3–8 (AELs), Table 10 (measurement conditions). webstore.iec.ch
+IEC 60825-1:1993+A1:1997+A2:2001. Tables 1–4 (AELs of Classes 1, 2, 3R and 3B) and Table 10: the UV and Class 3B values used here.
+ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 2–5 and 8. doi:10.1097/HP.0b013e3182983fd4
+Schulmeister, K. (2017). The new edition of the international laser product safety standard IEC 60825-1. White paper, Seibersdorf Laboratories. AELs from the MPEs; Class 3B cap at 1250–1400 nm. seibersdorf-laboratories.at
+Schulmeister, K. (2022). The European Amendment A11:2021 to EN 60825-1. White paper, Seibersdorf Laboratories. Skin AEL at 1250–1400 nm. seibersdorf-laboratories.at

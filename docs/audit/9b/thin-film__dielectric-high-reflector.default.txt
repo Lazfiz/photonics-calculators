@@ -1,0 +1,60 @@
+Dielectric High Reflector
+
+Quarter-wave dielectric stack HR mirror — stopband width, peak reflectance, and dispersion.
+
+Model: Exact
+
+Design
+(HL)ᴺH: high index on both faces
+(LH)ᴺ: low index facing the incident medium
+ ⟦(HL)ᴺH: high index on both faces⟧
+Design wavelength λ₀ (nm) ⟦1064⟧
+nH (high index) ⟦2.35⟧
+nL (low index) ⟦1.45⟧
+nsubstrate ⟦1.52⟧
+nincident ⟦1⟧
+Pairs (N) ⟦10⟧
+
+Reflectance at λ₀
+
+99.9930 %
+
+1 − R = 7.04e-5
+
+Stop band (R ≥ 50 %)
+
+372 nm
+
+909.7 nm – 1281.4 nm
+
+Group delay at λ₀
+
+1.972 fs
+
+Semi-infinite stack: 1.972 fs; GDD(λ₀) = 0
+
+Zone of the infinite stack: 923.4 nm – 1255.0 nm (332 nm, Δg = 0.1522)
+
+Layers: 21; dH = 113.2 nm, dL = 183.4 nm
+
+R(λ₀) = ((n₀ − Y)/(n₀ + Y))², each quarter-wave layer mapping the admittance Y → n²/Y from Y = ns. The stop band is the actual stack's, from λ₀ out to the first 50 % points (side lobes excluded); the zone λ₀/(1 ± Δg), Δg = (2/π) asin((nH − nL)/(nH + nL)), is the limit of many pairs. Group delay τ = d(arg r)/dω and GDD = d²(arg r)/dω² on reflection, front face as reference. At λ₀ the semi-infinite stack gives τ = λ₀n₀/(2cΔn) with H outermost and λ₀nHnL/(2cn₀Δn) with L outermost.
+
+Reflectance and transmittance
+PNG
+CSV
+Reflectance
+Transmittance
+Dispersion on reflection, inside the stop band
+PNG
+CSV
+GD (fs)
+GDD (fs²)
+MODEL AND REFERENCES
+
+Exact. The equations are exact within the stated assumptions, or are a standard's tabulated values. The results are as good as the inputs. About the tiers
+
+Transfer matrix of (HL)^N H or (LH)^N quarter-wave stacks, normal incidence, constant lossless indices, back surface ignored. Group delay and GDD are central differences of arg r.
+
+Macleod H. A. (2010). Thin-Film Optical Filters, 4th ed., ch. 2 and ch. 6 (multilayer high-reflectance coatings). CRC Press. doi:10.1201/9781420073034
+Born M., Wolf E. (1999). Principles of Optics, 7th ed., §1.6.5 (periodically stratified media). Cambridge University Press.
+Babic D. I., Corzine S. W. (1992). Analytic expressions for the reflection delay, penetration depth, and absorptance of quarter-wave dielectric mirrors. IEEE J. Quantum Electron. 28, 514. doi:10.1109/3.123281

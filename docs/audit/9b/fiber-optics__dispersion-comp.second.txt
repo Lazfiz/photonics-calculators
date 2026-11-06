@@ -1,0 +1,104 @@
+Dispersion Compensation
+
+Calculates chromatic dispersion limits and DCF (dispersion-compensating fiber) requirements: the rms pulse broadening of a span, the 4Bσ ≤ 1 bit-rate limit and power penalty, the DCF length that cancels the dispersion at one wavelength, and the residual dispersion that a slope mismatch leaves across the band.
+
+Share
+
+Model: Textbook approximation
+
+Span D (ps/nm/km) ⟦17⟧
+Span slope S (ps/nm²/km) ⟦0.058⟧
+Span length (km) ⟦20⟧
+DDCF (ps/nm/km) ⟦-100⟧
+SDCF (ps/nm²/km) ⟦-0.2⟧
+Reference λ₀ for D, S (nm) ⟦1550⟧
+Source rms width σλ (nm) ⟦0.01⟧
+Bit rate (Gb/s) ⟦10⟧
+Channel λ (nm) ⟦1560⟧
+Span without compensation (at 1560 nm)
+
+Accumulated dispersion
+
+351.6 ps/nm
+
+(D + S(λ − λ₀)) · L
+
+RMS broadening
+
+15.5 ps
+
+σ_b = √(σ_D² + λ²|D_acc|/4πc), optimum input pulse; 4Bσ = 0.619
+
+Dispersion-limited bit rate
+
+11.6 Gb/s
+
+above 10 Gb/s; 4Bσ ≤ 1, total width with the optimum pulse
+
+Dispersion penalty
+
+1.05 dB
+
+With DCF (dispersion nulled at λ₀ = 1550 nm)
+
+DCF length
+
+3.40 km
+
+Lc = −D·L / DDCF
+
+Residual slope
+
+0.480 ps/nm²
+
+59 % of the span slope compensated
+
+Usable band (≤ 1 dB)
+
+wider than ±100 nm
+
+limited by the curvature of D(λ), not modelled
+
+Residual at 1560 nm
+
+4.800 ps/nm
+
+Sres · (λ − λ₀)
+
+RMS broadening
+
+1.76 ps
+
+σ_b = √(σ_D² + λ²|D_acc|/4πc), optimum input pulse
+
+Dispersion penalty
+
+0.0108 dB
+
+Residual Dispersion after DCF vs Wavelength
+PNG
+CSV
+Residual after DCF
+±1 dB penalty
+Channel
+
+The DCF cancels the span's dispersion only at λ₀. Elsewhere the residual is Sres·(λ − λ₀); the dashed lines mark where the penalty reaches 1 dB at 10 Gb/s (±343 ps/nm).
+
+Model
+
+σD = √((Daccσλ)² + ½ (Saccσλ²)²), σb = √(σD² + λ²|Dacc|/4πc), δ = −5 log₁₀(1 − (4Bσb)²) dB
+
+Lc = −D·L / DDCF, Sres = S·L + SDCF·Lc, Dacc(λ) = Sres(λ − λ₀)
+
+Agrawal, Fiber-Optic Communication Systems, §2.4.2–2.4.3 and §5.4.4: for a broad source (σλ much larger than the modulation bandwidth, ≈ λ²B/c, 0.08 nm at 10 Gb/s and 1550 nm) σb reduces to σD; for a narrow one the transmitted Gaussian pulse is taken at its optimum width, so the λ²|Dacc|/4πc term sets the limit. D varies linearly with λ. A DCF compensates the whole band only when its relative slope SDCF/DDCFequals the span's S/D.
+
+Textbook approximation. Not included: the coherent β₃ term in the usable band; the curvature of D(λ), which is large for real DCFs away from their design band; PMD, nonlinearity and DCF loss.
+
+MODEL AND REFERENCES
+
+Textbook approximation. A standard approximation from the literature (for example paraxial, plane-wave or Gaussian-beam), valid within the range the page states. About the tiers
+
+Linear dispersion model D(λ) = D + S(λ − λ₀), Gaussian source of any width launched as the optimum Gaussian pulse (coherent β₃ term at λ₀ left out). Not included: dispersion curvature, PMD, nonlinear effects and DCF loss.
+
+Agrawal G. P. (2021). Fiber-Optic Communication Systems, 5th ed., §2.4.3 and §5.4.4. Wiley.
+NPTEL, Optical Communication, Module 12, “System degradation and power penalty”. Tabulated power-penalty values used as a check.

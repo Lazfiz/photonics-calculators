@@ -1,0 +1,77 @@
+Faraday Rotation & Verdet Constants
+
+Faraday rotation θ = VBL in TGG, TSAG, CeF₃ and fused silica, with the Verdet constant's dispersion from published fits, the field or length for a 45° isolator rotator, and YIG's saturated rotation at 1550 nm.
+
+Share
+
+Model: Textbook approximation
+
+TGG (Tb₃Ga₅O₁₂)
+TSAG (Tb₃Sc₂Al₃O₁₂)
+CeF₃
+Fused silica (SiO₂)
+YIG (Y₃Fe₅O₁₂)
+Wavelength (nm) ⟦1064⟧
+Magnetic field B (T) ⟦1.2⟧
+Length L (mm) ⟦10⟧
+
+paramagnetic; Vojna et al. 2019, Table 2; fit range 400–1100 nm.
+
+Verdet constant V
+
+-37.5 rad/(T·m)
+
+paramagnetic: negative
+
+Faraday rotation θ = V·B·L
+
+-25.786°
+
+non-reciprocal: a return pass doubles it, so an isolator's 45° becomes 90° and the input polarizer blocks the return
+
+Field for 45° at this length
+
+2.094 T
+
+Length for 45° at this field
+
+17.45 mm
+
+Verdet constant against wavelength
+PNG
+CSV
+TGG (Tb₃Ga₅O₁₂)
+TSAG (Tb₃Sc₂Al₃O₁₂)
+CeF₃
+Fused silica (SiO₂)
+selected
+Materials at 1064 nm
+Material	V (rad/(T·m))	Kind	Range	Source
+TGG (Tb₃Ga₅O₁₂)	-37.5	paramagnetic	400–1100 nm	Vojna et al. 2019, Table 2
+TSAG (Tb₃Sc₂Al₃O₁₂)	-48.84	paramagnetic	400–1100 nm	Vojna et al. 2019, Table 2
+CeF₃	—	paramagnetic	300–700 nm	Vojna et al. 2019, Table 1
+Fused silica (SiO₂)	1.407	diamagnetic	300–1100 nm	Tran et al. 2024
+YIG (Y₃Fe₅O₁₂)	—	ferrimagnetic	1550 nm only	Vojna et al. 2019, Table 3
+
+Click a row to select the material.
+
+Model
+
+θ = V B L
+
+Sign convention (Vojna et al.): V < 0 when the medium rotates the polarization clockwise for light propagating along B. Tb³⁺ and Ce³⁺ paramagnets are negative, diamagnetic glass is positive. The rotation does not reverse with the beam, so a round trip doubles it.
+
+|V| = F λ₀²/(λ² − λ₀²) + G
+
+Single-transition fit of Vojna et al. 2019: TGG F 820.3 rad/(T·m), G −6.2, λ₀ 239.3 nm; TSAG F 756.7, λ₀ 262 nm; CeF₃ F 743.6, λ₀ 239 nm, stopped at 700 nm because it underestimates 1064 nm by 15 %. Fused silica uses V = α/(λ² − λ₀²) + β (Tran et al. 2024), fitted to 310 ± 3 °/(T·m) at 532 nm.
+
+YIG is ferrimagnetic: its rotation saturates (304 rad/m at 1550 nm) and stops growing with B, so the field input has no effect on it.
+
+MODEL AND REFERENCES
+
+Textbook approximation. A standard approximation from the literature (for example paraxial, plane-wave or Gaussian-beam), valid within the range the page states. About the tiers
+
+θ = VBL is exact for a uniform field. V(λ) at room temperature comes from published fits inside their ranges: the single-transition model for the Tb³⁺ and Ce³⁺ paramagnets (Vojna et al.), a dispersion fit for fused silica (Tran et al.). YIG is ferrimagnetic, so only its saturated rotation at 1550 nm is given.
+
+Vojna D., Slezák O., Lucianetti A., Mocek T. (2019). Verdet constant of magneto-active materials developed for high-power Faraday devices. Appl. Sci. 9, 3160. Eq. 13 and Tables 1–3. doi:10.3390/app9153160
+Tran D.-B.-A., Edwards E., Tew D. P., Peverall R., Ritchie G. A. D. (2024). Continuous-wave cavity ringdown for high-sensitivity polarimetry and magnetometry measurements. J. Chem. Phys. 160, 054201. Fused silica Verdet dispersion, eq. 2. doi:10.1063/5.0187832

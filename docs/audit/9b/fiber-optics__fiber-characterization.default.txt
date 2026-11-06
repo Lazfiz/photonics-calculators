@@ -1,0 +1,99 @@
+Fiber Characterization
+
+Step-index fiber parameters from the core and cladding indices and core radius: V, cutoff, MFD, effective area and index, nonlinear γ, core confinement and datasheet dispersion.
+
+Model: Textbook approximation
+
+Wavelength (nm) ⟦1550⟧
+Core Index n₁ ⟦1.44937⟧
+Cladding Index n₂ ⟦1.444⟧
+Core Radius (µm) ⟦4.1⟧
+Zero-Dispersion λ₀ (nm) ⟦1310⟧
+Zero-Dispersion Slope S₀ (ps/nm²/km) ⟦0.092⟧
+
+V-number
+
+2.072
+
+Single-mode
+
+Theoretical LP11 cutoff
+
+1335 nm
+
+λc from a and NA; measured fibre and cable cutoffs are lower
+
+MFD
+
+10.08 µm
+
+Gaussian fit; Petermann II 9.88 µm
+
+Effective area
+
+79.8 µm²
+
+π w² (Gaussian fit)
+
+Nonlinear γ
+
+1.32 /(W·km)
+
+2πn₂/(λA_eff), n₂ = 2.6e-20 m²/W
+
+Numerical aperture
+
+0.1246
+
+Acceptance half-angle 7.16°
+
+Relative index Δ
+
+0.370 %
+
+(n₁² − n₂²)/(2n₁²)
+
+Effective index
+
+1.44636
+
+b = 0.4389; 76.0 % of power in the core
+
+Dispersion D
+
+17.46 ps/(nm·km)
+
+From λ₀ and S₀ you enter (datasheet), not from the geometry
+
+V-number vs Wavelength
+PNG
+CSV
+V-number
+LP11 cutoff
+1550 nm
+Mode Field Diameter vs Wavelength
+PNG
+CSV
+Petermann II
+Gaussian fit
+1550 nm
+Model
+
+V = 2πa·NA/λ, NA = √(n₁² − n₂²), λc = 2πa·NA/2.405
+
+w/a = 0.65 + 1.619/V^1.5 + 2.879/V^6, A_eff = πw², γ = 2πn₂/(λA_eff)
+
+n_eff² = n₂² + b(n₁² − n₂²), b = W²/V², D = (S₀/4)(λ − λ₀⁴/λ³)
+
+Weakly guiding step-index fibre with the exact LP01 eigenvalues (Gloge 1971), Marcuse's Gaussian MFD fit and the exact Petermann II MFD. Defaults are an SMF-28-like step equivalent with phase indices (pure-silica cladding 1.4440 at 1550 nm). Dispersion uses the ITU-T G.652 form with your λ₀ and S₀; waveguide dispersion of the step profile is not computed.
+
+MODEL AND REFERENCES
+
+Textbook approximation. A standard approximation from the literature (for example paraxial, plane-wave or Gaussian-beam), valid within the range the page states. About the tiers
+
+Step-index LP01 (Gloge): V, cutoff, b, n_eff, core power, Petermann II and Marcuse-fit MFD, A_eff and γ. Weak guidance (Δ ≪ 1); Marcuse fit for 1.2 < V < 2.4; cutoff is the theoretical LP11 value. D uses the G.652 λ₀/S₀ form you enter, not the geometry.
+
+Gloge D. (1971). Weakly Guiding Fibers. Appl. Opt. 10, 2252. LP modes, eigenvalue equation and core power fraction. doi:10.1364/ao.10.002252
+Marcuse D. (1977). Loss Analysis of Single-Mode Fiber Splices. Bell Syst. Tech. J. 56, 703–718. Gaussian fit of the mode-field radius. doi:10.1002/j.1538-7305.1977.tb00534.x
+Agrawal G. P. (2019). Nonlinear Fiber Optics, 6th ed., §2.3. Academic Press. Nonlinear coefficient γ = 2πn₂/(λA_eff). doi:10.1016/C2018-0-01168-8
+ITU-T G.652 (11/2016). Characteristics of a single-mode optical fibre and cable. D(λ) = (S₀/4)(λ − λ₀⁴/λ³). itu.int

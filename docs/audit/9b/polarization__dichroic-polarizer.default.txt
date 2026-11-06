@@ -1,0 +1,65 @@
+Dichroic Polarizer
+
+Model absorbing dichroic polarizers from the complex index of each principal axis: principal transmittances, extinction ratio and crossed-pair leakage.
+
+Model: Exact
+
+each principal axis: N = n − iκ,  α = 4πκ/λ,  R = ((n − 1)² + κ²)/((n + 1)² + κ²)
+
+k = (1 − R)² e−αd/(1 − R² e−2αd)  (normal incidence, incoherent reflections)
+
+extinction k₁/k₂,  efficiency (k₁ − k₂)/(k₁ + k₂),  crossed pair H₉₀ = k₁k₂
+
+Wavelength (nm) ⟦550⟧
+Thickness (mm) ⟦0.1⟧
+n, pass axis ⟦1.62⟧
+κ, pass axis ⟦0.00001⟧
+n, block axis ⟦1.64⟧
+κ, block axis ⟦0.003⟧
+
+κ is the imaginary part of the index (absorption index), not an absorption coefficient: κ = 3 × 10⁻³ at 550 nm is α = 68.5 mm⁻¹. A metal has κ of order 1 to 10 and blocks both axes. The defaults are illustrative, not a measured material.
+
+k₁ (pass axis)
+
+87.36 %
+
+α = 0.2285 mm⁻¹, R = 5.60 % per face
+
+k₂ (block axis)
+
+9.34e-4
+
+α = 68.54 mm⁻¹, R = 5.88 % per face
+
+Extinction ratio k₁/k₂
+
+29.7 dB
+
+efficiency 99.7863 %; κ ratio 300
+
+Unpolarized light
+
+one sheet 43.73 %
+
+two crossed: 8.16e-4; parallel: 38.16 %
+
+Principal transmittances against thickness (log₁₀)
+PNG
+CSV
+log₁₀ k₁ (pass)
+log₁₀ k₂ (block)
+Extinction ratio and pass transmittance against thickness
+PNG
+CSV
+Extinction ratio (dB)
+k₁ (%)
+MODEL AND REFERENCES
+
+Exact. The equations are exact within the stated assumptions, or are a standard's tabulated values. The results are as good as the inputs. About the tiers
+
+Slab at normal incidence, N = n − iκ per principal axis, face reflectance including κ, multiple reflections added in power; ratios from logs. Not modelled: dispersion, scattering, oblique light.
+
+Shurcliff W. A. (1962). Polarized Light: Production and Use, ch. 3 Polarizers: classes and performance parameters, pp. 32–42 (principal transmittances k₁, k₂). Harvard University Press. doi:10.4159/harvard.9780674424135.c4
+Shurcliff W. A. (1962). Polarized Light: Production and Use, ch. 4 Dichroic polarizers, pp. 43–64. Harvard University Press. doi:10.4159/harvard.9780674424135.c5
+Macleod H. A. (2010). Thin-Film Optical Filters, 4th ed., ch. 2 Basic Theory, pp. 13–71. CRC Press. doi:10.1201/9781420073034-c2
+Born M., Wolf E. (1999). Principles of Optics, 7th ed., §1.5 Reflection and refraction of a plane wave (Fresnel formulae, total reflection). Cambridge University Press. doi:10.1017/CBO9781139644181.010

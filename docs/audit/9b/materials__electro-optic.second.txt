@@ -1,0 +1,108 @@
+Electro-Optic Coefficients
+
+Pockels-effect half-wave voltage of longitudinal KDP, KD*P and ADP cells and transverse LiNbO₃, LiTaO₃, KTP, BaTiO₃ and BSO modulators: retardation and single-polarization phase, V_π·L, the index change −½n³rE and the crossed-polarizer transmission, with BSO's optical activity.
+
+Share
+
+Model: Textbook approximation
+
+KDP (KH₂PO₄)
+KD*P (KD₂PO₄)
+ADP (NH₄H₂PO₄)
+LiNbO₃ (congruent)
+LiTaO₃ (congruent)
+KTP (KTiOPO₄)
+BaTiO₃ (unclamped)
+BaTiO₃ (clamped)
+BSO (Bi₁₂SiO₂₀)
+Custom
+Wavelength (nm) ⟦1064⟧
+Voltage V (V) ⟦3000⟧
+Crystal length L (mm) ⟦10⟧
+
+42m, longitudinal; r₆₃ Wilson & Hawkes Table 3.1; n_o Zernike 1964; index model 213.8–1529 nm. Field and light along z: E = V/L, and V_π does not depend on the crystal size.
+
+Half-wave voltage V_π (retardation)
+
+15.06 kV
+
+λ/(2n_o³r₆₃): amplitude modulator between crossed polarizers
+
+Phase half-wave voltage (one polarization)
+
+30.11 kV
+
+λ/(n_o³r₆₃): twice the retardation value
+
+Field E
+
+0.3 MV/m
+
+V/L
+
+Index change Δn = −½n³rE
+
+-5.300e-6
+
+x′ axis; y′ changes by +½n_o³r₆₃E
+
+Retardation Γ / phase φ
+
+0.1992π / 0.09962π
+
+crossed polarizers pass 9.479 %
+
+Amplitude modulator between crossed polarizers
+PNG
+CSV
+T = sin²(πV/2V_π)
+selected
+Crystals at 1064 nm
+Crystal	Geometry	r (pm/V)	n	V_π retardation	Source
+KDP (KH₂PO₄)	longitudinal	r₆₃ 10.6	1.4938	15.06 kV	r₆₃ Wilson & Hawkes Table 3.1; n_o Zernike 1964
+KD*P (KD₂PO₄)	longitudinal	r₆₃ 26.4	—	—	r₆₃ and n_o = 1.51 Wilson & Hawkes Table 3.1 and Example 3.3
+ADP (NH₄H₂PO₄)	longitudinal	r₆₃ 8.5	—	—	r₆₃ and n_o ≈ 1.52 Wilson & Hawkes Table 3.1
+LiNbO₃ (congruent)	transverse	r₃₃ 30.8, r₁₃ 8.6	2.1555	499.9 V	r₃₃, r₁₃ (clamped, 633 nm) and ε₃₃ Weis & Gaylord 1985; n_o, n_e Zelmon et al. 1997
+LiTaO₃ (congruent)	transverse	r₃₃ 29.1, r₁₃ 6.86	2.1397	486.6 V	r₃₃, r₁₃ (unclamped, 632.8–1558 nm, interpolated) Casson et al. 2004, Table 2, scaled to r₃₃ = 30.5 pm/V at 632.8 nm (Onuki et al. 1972); n_o, n_e Bond 1965
+KTP (KTiOPO₄)	transverse	r₃₃ 36.3, r₂₃ 15.7	1.8297	766.3 V	r₃₃, r₂₃ (unclamped, 633 nm) Cheng et al. 1994 via Xie & Pfister 2005; n_y, n_z Kato & Takaoka 2002
+BaTiO₃ (unclamped)	transverse	r₃₃ 105, r₁₃ 8	—	—	r₃₃ 105 ± 10, r₁₃ 8 ± 2 (unclamped, below the acoustic resonances; 633 nm) Zgonik et al. 1994, Table III; n_o, n_e Wemple et al. 1968
+BaTiO₃ (clamped)	transverse	r₃₃ 40.6, r₁₃ 10.2	—	—	r₃₃ 40.6 ± 2.5, r₁₃ 10.2 ± 0.6 (clamped, above the piezoelectric resonances; 633 nm) Zgonik et al. 1994, Table II; n_o, n_e Wemple et al. 1968
+BSO (Bi₁₂SiO₂₀)	transverse [110]	r₄₁ —	—	—	r₄₁ (unclamped, dc), n and optical activity at 500–800 nm, interpolated: Efremidis et al. 2009, Fig. 3
+
+Click a row to select the crystal. Transverse rows use the gap and length above.
+
+Model
+
+Δn = −½ n³ r E
+
+Longitudinal KDP-type cell: the field along the optic axis makes the x′ and y′ axes (at 45° to x, y) differ by n_o³r₆₃E, so the retardation is Γ = 2πn_o³r₆₃V/λ and V_π = λ/(2n_o³r₆₃). A beam polarized along x′ alone sees half that change, so a phase modulator needs twice the voltage.
+
+Transverse LiNbO₃ modulator: the field along z across a gap d acts over the length L, so V_π scales as d/L. The z-polarized beam uses r₃₃; the z–o retardation uses n_e³r₃₃ − n_o³r₁₃ and adds to the crystal's natural birefringence, which a real modulator compensates.
+
+KTP (biaxial, mm2) in the same geometry with light along x: the z polarization uses n_z³r₃₃ and the y polarization n_y³r₂₃, so the retardation uses n_z³r₃₃ − n_y³r₂₃. Its r₃₃ and r₂₃ are 633 nm values.
+
+r is taken at its reference wavelength (633 nm for LiNbO₃ and KTP) and only n follows the Sellmeier fit, so V_π far from it is approximate. LiTaO₃ is the exception: its unclamped r₃₃ and r₁₃ were measured at 632.8, 980, 1330 and 1558 nm and are interpolated between them (r₃₃ falls from 30.5 to 27.4 pm/V), so its V_π holds over that range only. LiNbO₃'s r₃₃ and r₁₃ are the clamped (high-frequency) values; below the acoustic resonances the unclamped ones are a few per cent larger. KTP's r₃₃ and r₂₃ are the unclamped (low-frequency) values; vendor tables give 35.0 and 13.8 pm/V clamped.
+
+LiTaO₃ (3m) works like LiNbO₃ but its birefringence is small and of the other sign (n_e − n_o ≈ +0.004), so the natural retardation of a transverse modulator is about 20× smaller. Its coefficients are the unclamped (low-frequency) values of Casson et al., scaled to the literature r₃₃ = 30.5 pm/V at 632.8 nm; their r₁₃ there is 7.62 pm/V against 8.4 in the older interferometric value. Its permittivity is not tabulated here.
+
+BaTiO₃ (4mm) uses the same z-field geometry with n_e³r₃₃ − n_o³r₁₃, for a poled single-domain crystal at 633 nm and 23 °C. Its piezoelectric part is large: clamped r₃₃ is 40.6 against 105 pm/V unclamped, so V_π rises about 3× above the first acoustic resonance (≈ 0.1 MHz for a 2 cm crystal). Its largest coefficient, r₄₂ = 1300 pm/V (clamped 730), needs a field across the c-axis and is not modelled; n_e and r also change strongly with temperature.
+
+BSO (Bi₁₂SiO₂₀, cubic 23) is isotropic until a field is applied. With the field along [110] and the light along [1̄10], the induced axes lie at ±45° between [110] and [001] and differ by n³r₄₁E, so V_π = λd/(2n³r₄₁L). The crystal is also optically active: it rotates the polarization by ρL (21 °/mm at 633 nm), and the rotation adds in quadrature to the induced birefringence (Efremidis et al. 2009, eqs. 8–10). With the analyzer crossed to the zero-field output, the transmission becomes (cos ρL·ρL·S − sin ρL·cos Δ)² + cos²ρL·(Γ/2)²S², Δ = √((Γ/2)² + (ρL)²), S = sin Δ/Δ, which falls short of 1 at V_π once ρL is large: keep ρL small or compensate it. r₄₁, n and ρ are Efremidis et al.'s, measured with a dc field (unclamped) from 500 to 800 nm: r₄₁ falls from 4.1 to 2.0 pm/V, below the older single-wavelength values in the red (3.8–5.0 pm/V at 633–850 nm).
+
+MODEL AND REFERENCES
+
+Textbook approximation. A standard approximation from the literature (for example paraxial, plane-wave or Gaussian-beam), valid within the range the page states. About the tiers
+
+Principal-axis geometries with r fixed at its reference wavelength; only n follows the Sellmeier fits (Zernike KDP, Zelmon LiNbO₃, Kato KTP, Wemple BaTiO₃ over 0.4–0.7 µm), and KD*P and ADP use one published index. LiTaO₃'s unclamped r₃₃ and r₁₃ are Casson et al.'s at 632.8, 980, 1330 and 1558 nm (scaled to r₃₃ = 30.5 pm/V at 632.8 nm), interpolated linearly, with Bond's tabulated indices; it is offered over 632.8–1558 nm only. LiNbO₃ uses clamped (high-frequency) coefficients; KTP's 633 nm r₃₃ and r₂₃ are low-frequency measurements whose clamping the source doesn't state. BaTiO₃ comes unclamped (r₃₃ 105, r₁₃ 8 pm/V) and clamped (40.6, 10.2); r₄₂ = 1300 (clamped 730) pm/V needs a field across c and is not modelled. The z–o retardation of a transverse modulator adds to the natural birefringence. BSO (field along [110]): Efremidis et al.'s r₄₁, n and optical activity at 500–800 nm (Fig. 3, interpolated; below 560 nm r₄₁ may read low from screening), with the rotation in the crossed-polarizer transmission.
+
+Wilson J., Hawkes J. F. B. (1998). Optoelectronics: An Introduction, 3rd ed. Prentice Hall Europe, ISBN 0-13-103961-X (the same Table 3.1 in the 1983 and 1989 editions). Table 3.1 (r₆₃ of KDP, KD*P, ADP) and Example 3.2 (KDP V_π = 14.5 kV at 1.06 µm).
+Weis R. S., Gaylord T. K. (1985). Lithium niobate: summary of physical properties and crystal structure. Appl. Phys. A 37, 191–203. doi:10.1007/BF00614817
+Zelmon D. E., Small D. L., Jundt D. (1997). Infrared corrected Sellmeier coefficients for congruently grown lithium niobate and 5 mol.% magnesium oxide–doped lithium niobate. J. Opt. Soc. Am. B 14, 3319. doi:10.1364/JOSAB.14.003319
+Casson J. L., Gahagan K. T., Scrymgeour D. A., Jain R. K., Robinson J. M., Gopalan V., Sander R. K. (2004). Electro-optic coefficients of lithium tantalate at near-infrared wavelengths. J. Opt. Soc. Am. B 21, 1948–1952. Table 2: unclamped r₃₃ and r₁₃ of LiTaO₃ at 632.8, 980, 1330 and 1558 nm. doi:10.1364/JOSAB.21.001948
+Onuki K., Uchida N., Saku T. (1972). Interferometric method for measuring electro-optic coefficients in crystals. J. Opt. Soc. Am. 62, 1030–1032. LiTaO₃ r₃₃ = 30.5 pm/V at 632.8 nm, which sets Casson et al.'s scale. doi:10.1364/JOSA.62.001030
+Bond W. L. (1965). Measurement of the refractive indices of several crystals. J. Appl. Phys. 36, 1674–1677. LiTaO₃ n_o and n_e, tabulated (via the refractiveindex.info database). doi:10.1063/1.1703106
+Xie D., Pfister O. (2005). Low-frequency measurements of electro-optic coefficients of Na:KTiOPO₄ and RbTiOAsO₄. arXiv:physics/0507123. Eqs. 3–4 (Δn_y, Δn_z of a z field) and KTP r₂₃ = 15.7, r₃₃ = 36.3 pm/V at 633 nm (low-frequency, unclamped), quoted from Cheng L. K. et al. (1994), J. Cryst. Growth 137, 107–115. arxiv.org
+Kato K., Takaoka E. (2002). Sellmeier and thermo-optic dispersion formulas for KTP. Appl. Opt. 41, 5040–5044 (coefficients via the refractiveindex.info database). doi:10.1364/AO.41.005040
+Zgonik M., Bernasconi P., Duelli M., Schlesser R., Günter P., Garrett M. H., Rytz D., Zhu Y., Wu X. (1994). Dielectric, elastic, piezoelectric, electro-optic, and elasto-optic tensors of BaTiO₃ crystals. Phys. Rev. B 50, 5941–5949. Table II (clamped r) and Table III (stress-free r), 633 nm, 23 °C. doi:10.1103/PhysRevB.50.5941
+Wemple S. H., DiDomenico M. Jr., Camlibel I. (1968). Dielectric and optical properties of melt-grown BaTiO₃. J. Phys. Chem. Solids 29, 1797–1803 (n_o, n_e single-oscillator fits, 0.4–0.7 µm, via the refractiveindex.info database). doi:10.1016/0022-3697(68)90164-9
+Efremidis A. T., Deliolanis N. C., Manolikas C., Vanidhis E. D. (2009). Dispersion of electro-optic coefficients in sillenite crystals. Appl. Phys. B 95, 467–473. Eqs. 8–10 (BSO field along [110], light along [1̄10]) and Fig. 3: r₄₁, n and optical activity of BSO at 500–800 nm. doi:10.1007/s00340-009-3498-8

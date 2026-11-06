@@ -1,0 +1,50 @@
+Telecentric Lens Design
+
+Magnification change Δm/m = −Δz/(s_EP + Δz) of an ordinary lens against a telecentric lens with a residual chief-ray slope, and the depth of field λ/NA² + e/(m·NA).
+
+Model: Textbook approximation
+
+Magnification |m| ⟦0.5⟧
+Object-side NA ⟦0.025⟧
+Wavelength (nm) ⟦550⟧
+Acceptable blur at the sensor (µm) ⟦10⟧
+Object field height h (mm) ⟦5⟧
+Ordinary lens: entrance pupil distance (mm) ⟦200⟧
+Object displacement Δz, + away (mm) ⟦0.5⟧
+Telecentric lens: residual slope at h (°) ⟦0.1⟧
+Results
+Ordinary: chief ray at h, atan(h/s_EP)
+1.432°
+Ordinary: Δm/m = −Δz/(s_EP + Δz)
+-0.249 %
+Ordinary: edge image shift
+-6.23 µm
+Telecentric: equivalent pupil h/tan θ_t
+2865 mm
+Telecentric: Δm/m
+-0.0175 %
+Telecentric: edge image shift
+-0.44 µm
+Depth of field, wave λ/NA²
+0.880 mm
+Depth of field, geometric e/(m·NA)
+0.800 mm
+Depth of field, total
+1.680 mm
+
+With the sensor fixed, an image point lands where its chief ray does, so a lens whose entrance pupil sits s_EP from the object changes magnification as the object moves. Telecentricity puts the pupil at infinity; a residual slope θ_t at the field edge acts like a distant pupil. A negative slope is hypercentric.
+
+Magnification change vs object displacement
+PNG
+CSV
+Ordinary lens, s_EP 200 mm
+Telecentric, 0.1° residual
+Current Δz
+MODEL AND REFERENCES
+
+Textbook approximation. A standard approximation from the literature (for example paraxial, plane-wave or Gaussian-beam), valid within the range the page states. About the tiers
+
+Paraxial chief ray with the sensor fixed: the blur centroid follows the chief ray. A residual telecentric slope is treated as a distant entrance pupil. The depth of field is Inoué's sum of a wave and a geometric term in air.
+
+Greivenkamp J. E. (2004). Field Guide to Geometrical Optics. SPIE Press. Telecentricity: the entrance pupil at infinity keeps the chief ray parallel to the axis, so magnification does not change with focus. doi:10.1117/3.547461
+Inoué S., Spring K. R. (1997). Microscope Image Formation. In: Video Microscopy, 2nd ed., ch. 2, pp. 13–117. Plenum. Total depth of field d = λ₀n/NA² + n·e/(M·NA). doi:10.1007/978-1-4615-5859-0_2

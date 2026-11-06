@@ -1,0 +1,75 @@
+Computer-Generated Holography
+
+Replay field λz/Δx, diffraction angle, replay spot and first-order efficiency of a phase-quantised hologram on a pixelated SLM.
+
+Share
+
+Model: Textbook approximation
+
+Wavelength λ (nm) ⟦1064⟧
+SLM pixel pitch Δx (µm) ⟦3.74⟧
+SLM width N_x (px) ⟦4160⟧
+SLM height N_y (px) ⟦2464⟧
+Replay distance or Fourier-lens focal length z (mm) ⟦200⟧
+Pixel fill factor (area) ⟦0.6⟧
+Modulation
+Phase (kinoform)
+Binary amplitude
+ ⟦Phase (kinoform)⟧
+Phase bit depth
+1 bit (2 levels)
+2 bit (4 levels)
+3 bit (8 levels)
+4 bit (16 levels)
+6 bit (64 levels)
+8 bit (256 levels)
+10 bit (1024 levels)
+ ⟦8 bit (256 levels)⟧
+Results
+Largest diffraction angle arcsin(λ/2Δx)
+8.178°
+Replay field λz/Δx
+56.90 mm
+Replay spot λz/(NΔx), x × y
+13.68 × 23.09 µm
+Resolvable spots N_x × N_y
+4160 × 2464
+Angular resolution λ/(N_xΔx)
+0.06839 mrad
+First-order efficiency
+99.99 %
+Pixel envelope at the field edge
+0.594
+SLM aperture N_xΔx × N_yΔx
+15.56 × 9.215 mm
+Hologram frame size
+10.25 MB
+First-order efficiency against bit depth
+PNG
+CSV
+Phase, 2^bits levels
+Binary amplitude
+Current
+Pixel envelope across the replay field (x)
+PNG
+CSV
+Fill factor 0.6
+Fill factor 1
+Model
+
+θ_max = arcsin(λ/(2Δx)), replay field λz/Δx, spot λz/(NΔx)
+
+η = sinc²(π/L) for L phase levels (4/π² = 40.5 % binary), 1/π² = 10.1 % binary amplitude
+
+Envelope sinc²(π√F Δx f), f = x/(λz); at the field edge sinc²(π√F/2)
+
+Scalar paraxial replay of a pixelated SLM, either in the Fresnel region at distance z or in the focal plane of a lens of focal length z. The replayed pattern repeats every λz/Δx; beyond it lie the higher orders. The efficiency is the first-order efficiency of an L-level phase staircase (Swanson 1989) and assumes ideal phase levels; fringing fields between pixels, phase flicker, the zero order from the dead space and the iterative algorithm's own error are not included. The frame size counts the bits per pixel only.
+
+MODEL AND REFERENCES
+
+Textbook approximation. A standard approximation from the literature (for example paraxial, plane-wave or Gaussian-beam), valid within the range the page states. About the tiers
+
+Scalar paraxial replay of a pixelated SLM at distance z, or in the focal plane of a lens of focal length z. The efficiency is the first-order efficiency of an L-level phase staircase with ideal levels; fringing fields, phase flicker, the dead-space zero order and algorithm error are not included.
+
+Swanson G. J. (1989). Binary optics technology: the theory and design of multi-level diffractive optical elements. MIT Lincoln Laboratory Technical Report 854. First-order efficiency sinc²(π/L) of an L-level phase profile. apps.dtic.mil
+Schnars U., Jüptner W. P. O. (2002). Digital recording and numerical reconstruction of holograms. Meas. Sci. Technol. 13, R85–R101. Fresnel pixel λz/(NΔx) and the pitch-limited diffraction angle. doi:10.1088/0957-0233/13/9/201

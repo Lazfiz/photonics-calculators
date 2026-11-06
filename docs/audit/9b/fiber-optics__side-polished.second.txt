@@ -1,0 +1,72 @@
+Side-Polished Fiber
+
+Evanescent power beyond the polished face, overlay index shift and polished-coupler transfer of a side-polished single-mode fiber.
+
+Share
+
+Model: Textbook approximation
+
+Remaining Cladding d (µm) ⟦0.5⟧
+Core Diameter (µm) ⟦9⟧
+Wavelength (nm) ⟦1310⟧
+Overlay Index ⟦1.44⟧
+Core Index n₁ ⟦1.4494⟧
+Cladding Index n₂ ⟦1.444⟧
+Block Radius R (cm) ⟦10⟧
+
+V = 2.70 > 2.405: the fibre is not single-mode; only LP01 is computed.
+
+Power beyond the face
+
+1.40 %
+
+V = 2.698, n_eff = 1.44722
+
+Intensity at the face
+
+57.1 %
+
+of the core-boundary value; field 1/e length a/W (intensity a/2W) = 2.16 µm
+
+Overlay shift Δn_eff
+
+-5.57e-5
+
+first-order, η(n_ov² − n₂²)/(2n_eff)
+
+Polished coupler
+
+51.1 %
+
+coupled to a twin fibre; κ₀ = 1.01e+3 m⁻¹, L_eff = 0.79 mm
+
+The coupler result assumes the gap between the two polished faces is index-matched to the cladding (n₂); with this overlay it is indicative only.
+
+Evanescent Power and Coupler Transfer vs Remaining Cladding
+PNG
+CSV
+Power beyond the face (%)
+Polished coupler, coupled (%)
+Your d
+Model
+
+ψ(r) = J₀(U) K₀(Wr/a)/K₀(W) in the cladding; η = ∫_(x > a+d) ψ² dA / ∫ψ² dA
+
+κ(D) = (NA/(n₁a)) (U²/V³) K₀(WD/a)/K₁²(W), D(z) = 2(a + d) + z²/R, P₂ = sin²(∫κ dz)
+
+The exact LP01 mode of the unpolished step-index fibre (eigenvalues U, W) gives the field beyond the polished face, which lies a distance d from the core boundary. Its tail decays as K₀(Wr/a), faster near the core than a pure exponential. η is the fraction of the mode power on the far side of the face; an overlay of index n_ov shifts n_eff to first order by η(n_ov² − n₂²)/(2n_eff).
+
+Coupler: two identical fibres, each bent to radius R in a block and polished, are placed face to face. Their core spacing grows as z²/R away from the centre, so the coupling κ (Snyder's coefficient) acts over an effective length close to Digonnet and Shaw's √(πaR/W). The fibres are identical, so the transfer is complete when ∫κ dz = π/2.
+
+Not included: the change of the mode itself near the face (first order overestimates the shift for n_ov < n₂ and underestimates it as n_ov approaches n_eff), polarization (scalar LP model; polished-fibre polarizers rely on it), polishing scatter and roughness, and a gap index different from n₂ in the coupler.
+
+MODEL AND REFERENCES
+
+Textbook approximation. A standard approximation from the literature (for example paraxial, plane-wave or Gaussian-beam), valid within the range the page states. About the tiers
+
+Exact LP01 K₀ tail: power beyond the face by quadrature, first-order overlay shift of n_eff; twin-fibre coupler, Snyder κ over D(z) = D₀ + z²/R. Scalar; mode change near the face not modelled.
+
+Gloge D. (1971). Weakly guiding fibers. Appl. Opt. 10, 2252. LP01 field, eigenvalue equation and power normalization. doi:10.1364/ao.10.002252
+Snyder A. W. (1972). Coupled-mode theory for optical fibers. J. Opt. Soc. Am. 62, 1267. Coupling coefficient of two identical step-index cores. doi:10.1364/josa.62.001267
+Digonnet M. J. F., Shaw H. J. (1982). Analysis of a tunable single mode optical fiber coupler. IEEE J. Quantum Electron. 18, 746. Polished-coupler geometry and effective interaction length. doi:10.1109/jqe.1982.1071574
+Snyder A. W., Love J. D. (1983). Optical Waveguide Theory. Chapman & Hall (Springer reprint 1984). Step-profile modes, perturbation theory and weakly coupled fibres. doi:10.1007/978-1-4613-2813-1

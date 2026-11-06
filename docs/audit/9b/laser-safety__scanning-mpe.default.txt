@@ -1,0 +1,95 @@
+Scanned Beam MPE
+
+Largest power of a scanned laser beam within the eye limits, 180 nm to 1 mm, and how soon a stopped beam exceeds them.
+
+Model: Textbook approximation
+
+EDUCATIONAL ONLY — NOT COMPLIANCE-GRADE
+
+These pages implement the published exposure limits for the cases each one states, but they are educational tools: no laser safety officer has signed them off.
+
+Do not use these results alone for PPE selection, NHZ / NOHD approval, controlled-area sign-off, enclosure/interlock approval, or formal classification.
+Always verify against ANSI Z136.1, IEC 60825-1, your local procedures, and the responsible laser safety officer / CLSO.
+Wavelength (nm) ⟦532⟧
+Beam power (mW) ⟦5⟧
+Beam diameter at the scanner, 1/e² (mm) ⟦1⟧
+Divergence, 1/e² full angle (mrad) ⟦1⟧
+Eye distance from the scanner (cm) ⟦100⟧
+Scan angle, full (°) ⟦30⟧
+Scan rate (sweeps or periods per s) ⟦100⟧
+Scan pattern (triangle: both; sawtooth, polygon: one)
+Both directions
+One direction
+ ⟦Both directions⟧
+Exposure time (s) ⟦0.25⟧
+Apparent source α (mrad) ⟦1.5⟧
+
+Max beam power, scanned
+
+7.68 mW
+
+Retina, thermal, rule 1: single pass
+
+Your power / max
+
+0.651×
+
+Within every eye limit
+
+Pass over the eye
+
+66.2 µs
+
+105 m/s across 7.00 mm, 50 passes in 0.250 s; beam 2.00 mm
+
+Scanning allows
+
+7.84×
+
+the power of the beam held still on the eye for 0.250 s (980 µW)
+
+Limit	1. Single pass	2. Groups of passes (average)	3. C_P × single pass	Max beam power	Your power / max
+Retina, thermal	7.68 mW	72.9 mW
+full train: 50 passes
+	7.68 mW
+C_P = 1.00, n = 50
+	7.68 mW	0.651× (within)
+Retina, photochemical (blue light)	n/a before 10 s	—	—	—	doesn't apply
+
+Beam powers: each pass over a limit's aperture is one pulse, its energy proportional to the power. Rule 3 applies to the retinal thermal limit only; "—" means the rule doesn't apply (rule 2 needs two passes).
+
+If the scan stops: limit reached after
+
+368 µs
+
+Retina, thermal: a scan-failure safeguard has to stop the emission within this time.
+
+Max beam power, held still
+
+980 µW
+
+For 0.250 s; yours is 5.10× that.
+
+A beam that sweeps across the eye delivers one pulse each time it crosses the pupil, and ICNIRP 2013 (Health Phys. 105:271, p. 287) applies its repetitive-pulse rules to it: (1) each pass within the limit for one pulse of its duration, (2) every group of passes within the limit for the time it spans, up to the whole exposure (the average power), (3) for the retinal thermal limit, each pass within C_P times the single-pass limit. The pass lasts from half power to half power through the aperture (W/v, about 7 mm/v for a beam narrower than the pupil); its energy is all the light that gets through. The cornea's 1 mm aperture sees a shorter pass than the retina's 7 mm one. A beam under 1 mm (1/e diameter) is held to its peak instead: on the cornea below 0.35 s (ICNIRP Table 5 note c) and, in the infrared, on the anterior segment (Table 7 note b with note d). Each pass then lasts d·√(ln 2/2)/v at a point on the line the beam axis sweeps, and delivers P·√(8/π)/(d·v) there.
+
+The beam is taken to sweep through the centre of the pupil, with the eye on the centre of the scan line and focused on the scanner, so the retinal image stays put and every pass lands on the same spot (IEC 60825-1:2014's default evaluation of scanned emission; Schulmeister 2025). Speed ω·r at distance r from the pivot: ω = Θ·f for one direction, 2Θ·f for both. Use 0.25 s for an accidental glance at a visible beam and 10 s or more for invisible ones. Not modelled: the turning points of a scan (slower, with passes in pairs), sinusoidal and raster scans, pulsed lasers (each pass a group of pulses), and a moving retinal image, which is less restrictive.
+
+If the scanner stops, the beam is stationary: "If the scan stops" above gives the time a stopped beam takes to exceed the limits, which bounds the reaction time of the scan-failure safeguard that IEC 60825-1 requires when the classification relies on the scan.
+
+PNG
+CSV
+Scanned
+Held still
+Your power
+Your distance
+
+Largest beam power against the distance of the eye from the scanner, scanned (blue) and held still (dotted), for this beam, scan and exposure. Closer in, the beam is slower and each pass longer, so the scanned limit falls; where the sweep no longer clears the pupil the scanned line stops.
+
+MODEL AND REFERENCES
+
+Textbook approximation. A standard approximation from the literature (for example paraxial, plane-wave or Gaussian-beam), valid within the range the page states. About the tiers
+
+Each pass over the 7 mm (retina) or 1–3.5 mm (cornea) aperture is a pulse of half-power duration under ICNIRP rules 1–3; still retinal image, eye on the scan centre. Not modelled: turning points, raster, pulsed lasers.
+
+ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Repetitive pulse exposures (p. 287), Tables 4, 5 and 8. doi:10.1097/HP.0b013e3182983fd4
+Schulmeister, K. (2025). Extended source AEL analysis of scanned laser emission for IEC 60825-1. White paper, Ed. 2, Seibersdorf Laboratories. Pulse per pass, pass duration and energy (4.2.5, 6.2.3). seibersdorf-laboratories.at

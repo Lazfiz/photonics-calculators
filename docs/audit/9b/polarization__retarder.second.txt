@@ -1,0 +1,63 @@
+Waveplate / Retarder
+
+Polarization state transformation by a birefringent waveplate with variable retardance and fast-axis orientation.
+
+Share
+
+Model: Exact
+
+Retardance (°) ⟦60⟧
+Fast Axis (°) ⟦30⟧
+Input Pol. (°) ⟦0⟧
+
+Intensity
+
+1.000
+
+State
+
+Right-handed elliptical
+
+Ellipticity angle χ
+
+24.3°
+
+Orientation ψ
+
+9.6°
+
+Stokes Parameters
+S₀
+1.000
+S₁
+0.625
+S₂
+0.217
+S₃
+0.750
+
+Convention (Goldstein): RCP = [1, i]/√2 turns clockwise as seen by the receiver; S₃ > 0 is right-handed.
+
+PNG
+CSV
+Input
+Output
+
+Key Formulas
+
+Jones matrix: R(−θ) · diag(1, e−iΓ) · R(θ), R(θ) = [[cos θ, sin θ], [−sin θ, cos θ]]
+
+Γ = retardance, θ = fast axis angle
+
+Stokes: S₀ = |Eₓ|² + |E_y|², S₁ = |Eₓ|² − |E_y|²
+
+S₂ = 2 Re(Eₓ* E_y), S₃ = 2 Im(Eₓ* E_y)
+
+MODEL AND REFERENCES
+
+Exact. The equations are exact within the stated assumptions, or are a standard's tabulated values. The results are as good as the inputs. About the tiers
+
+Ideal lossless linear retarder R(−θ)·diag(1, e^(−iΓ))·R(θ) on linearly polarized light, Goldstein convention (S₃ > 0 is right-handed). Not modelled: dispersion of Γ, reflections, tilt.
+
+Goldstein D. H. (2011). Polarized Light, 3rd ed., ch. The Jones Matrix Formalism, pp. 201–231. CRC Press. doi:10.1201/b10436
+Jones R. C. (1941). A new calculus for the treatment of optical systems, I. Description and discussion of the calculus. J. Opt. Soc. Am. 31(7), 488–493. doi:10.1364/JOSA.31.000488

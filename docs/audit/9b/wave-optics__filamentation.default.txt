@@ -1,0 +1,57 @@
+Filamentation Dynamics
+
+Where a femtosecond filament starts: critical power for self-focusing, peak power against it, and the Marburger collapse distance of a collimated or lens-focused Gaussian beam.
+
+Model: Textbook approximation
+
+Wavelength (nm) ⟦800⟧
+Pulse energy (µJ) ⟦1⟧
+Pulse duration, Gaussian FWHM (fs) ⟦100⟧
+Beam radius at the entrance, 1/e² (µm) ⟦50⟧
+n₂ (×10⁻¹⁶ cm²/W) ⟦2.4⟧
+Linear index n₀ ⟦1.45⟧
+Geometric focus depth in the medium (mm, n₀f for a lens at the entrance face; 0 = collimated) ⟦0⟧
+
+Critical power P_cr
+
+2.759 MW
+
+3.77 λ²/(8π n₀ n₂); 0.2937 µJ at this duration
+
+Peak power
+
+9.394 MW
+
+0.9394 E/FWHM; P/P_cr = 3.405
+
+Collapse distance
+
+5.319 mm
+
+Marburger, collimated beam
+
+Rayleigh range z_R
+
+14.24 mm
+
+π n₀ w²/λ inside the medium
+
+Above the critical power the Kerr lens beats diffraction and a Gaussian beam self-focuses. A collimated beam collapses after z_sf = 0.367 z_R / √((√(P/P_cr) − 0.852)² − 0.0219), Dawes and Marburger's fit to numerical solutions. Near the collapse the intensity climbs until multiphoton ionisation makes a plasma that defocuses the beam and absorbs energy. The intensity then clamps, at about 4×10¹³ W/cm² in air (Kasparian, Sauerbrey & Chin 2000), and a filament forms. The filament's length and plasma density need a full propagation model; this page gives the threshold and where the filament starts. P uses the pulse's peak power, which self-focuses first. Far above P_cr, small irregularities in the beam make it break into several filaments.
+
+Collapse distance against peak power
+
+PNG
+CSV
+Collimated (Marburger)
+This pulse
+MODEL AND REFERENCES
+
+Textbook approximation. A standard approximation from the literature (for example paraxial, plane-wave or Gaussian-beam), valid within the range the page states. About the tiers
+
+Gaussian beam, instantaneous Kerr effect. P_cr = 3.77 λ²/(8π n₀ n₂) and the Dawes–Marburger fit z_sf = 0.367 z_R/√((√(P/P_cr) − 0.852)² − 0.0219), with a lens 1/z′ = 1/z_sf + 1/f. Only the onset: plasma defocusing, multiphoton absorption and the filament length aren't modelled. Default n₂ and n₀ are fused silica at 800 nm.
+
+Fibich G., Gaeta A. L. (2000). Critical power for self-focusing in bulk media and in hollow waveguides. Opt. Lett. 25, 335–337. doi:10.1364/OL.25.000335
+Marburger J. H. (1975). Self-focusing: theory. Prog. Quantum Electron. 4, 35–110. doi:10.1016/0079-6727(75)90003-8
+Dubietis A., Tamošauskas G., Šuminas R., Jukna V., Couairon A. (2017). Ultrafast supercontinuum generation in bulk condensed media. Lith. J. Phys. 57(3). Lens-shifted collapse distance and n₂ of fused silica (Table 1). doi:10.3952/physics.v57i3.3541
+Couairon A., Mysyrowicz A. (2007). Femtosecond filamentation in transparent media. Phys. Rep. 441, 47–189. doi:10.1016/j.physrep.2006.12.005
+Kasparian J., Sauerbrey R., Chin S. L. (2000). The critical laser intensity of self-guided light filaments in air. Appl. Phys. B 71, 877–879. doi:10.1007/s003400000463
