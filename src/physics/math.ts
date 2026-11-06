@@ -378,6 +378,28 @@ export function firstCrossing(f: (x: number) => number, a: number, b: number, le
 }
 
 /**
+ * Maximum of f on [a, b] by golden-section search, for f unimodal there: the bracket shrinks by
+ * (√5 − 1)/2 per step until it is 1e-13·|b − a| wide (at most 100 steps). Returns the better of the two
+ * last interior points; NaN in both fields if a or b isn't finite or a sample is NaN.
+ */
+export function goldenSectionMax(f: (x: number) => number, a: number, b: number): { x: number; fx: number } {
+  const nan = { x: NaN, fx: NaN };
+  if (!(Number.isFinite(a) && Number.isFinite(b))) return nan;
+  const r = (Math.sqrt(5) - 1) / 2;
+  const tol = 1e-13 * Math.abs(b - a);
+  let lo = a, hi = b;
+  let x1 = hi - r * (hi - lo), x2 = lo + r * (hi - lo);
+  let f1 = f(x1), f2 = f(x2);
+  for (let k = 0; k < 100 && Math.abs(hi - lo) > tol; k++) {
+    if (Number.isNaN(f1) || Number.isNaN(f2)) return nan;
+    if (f1 > f2) { hi = x2; x2 = x1; f2 = f1; x1 = hi - r * (hi - lo); f1 = f(x1); }
+    else { lo = x1; x1 = x2; f1 = f2; x2 = lo + r * (hi - lo); f2 = f(x2); }
+  }
+  if (Number.isNaN(f1) || Number.isNaN(f2)) return nan;
+  return f1 > f2 ? { x: x1, fx: f1 } : { x: x2, fx: f2 };
+}
+
+/**
  * Mean (trapezoidal rule), minimum and maximum of f over [a, b] from `intervals` + 1 evenly spaced
  * samples. NaN in every field if a or b isn't finite, a ≥ b, or a sample is NaN.
  */

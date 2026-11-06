@@ -15,6 +15,7 @@ import {
   expE1Scaled,
   firstCrossing,
   GAUSSIAN_FWHM_PER_SIGMA,
+  goldenSectionMax,
   integrateTanhSinh,
   intervalStats,
   lnFactorial,
@@ -256,4 +257,14 @@ test("expE1Scaled = eˣ E₁(x)", () => {
   assertRel(expE1Scaled(1e6), 1e-6 * (1 - 1e-6 + 2e-12), 1e-15, "tail");
   assertRel(expE1Scaled(1 - 1e-12), expE1Scaled(1 + 1e-12), 1e-11, "continuity at 1");
   assert.ok(Number.isNaN(expE1Scaled(0)));
+});
+
+test("goldenSectionMax: maximum of a unimodal function", () => {
+  // sin x on [0, 3]: maximum 1 at π/2; −(x − 2)² peaks at the bracket end b = 2 (edge case).
+  const s = goldenSectionMax(Math.sin, 0, 3);
+  assert.ok(Math.abs(s.x - Math.PI / 2) < 1e-7 && Math.abs(s.fx - 1) < 1e-14, `${s.x}`);
+  const edge = goldenSectionMax((x) => -((x - 2) ** 2), 0, 2);
+  assert.ok(Math.abs(edge.x - 2) < 1e-11, `${edge.x}`);
+  assert.ok(Number.isNaN(goldenSectionMax(() => NaN, 0, 1).x));
+  assert.ok(Number.isNaN(goldenSectionMax(Math.sin, 0, Infinity).fx));
 });

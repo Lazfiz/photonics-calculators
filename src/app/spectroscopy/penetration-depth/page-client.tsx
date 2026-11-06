@@ -33,7 +33,7 @@ export default function PenetrationDepthPage() {
   const dp = penetrationDepth(lambda, n0, n, k, theta);
   const tir = n0 * Math.sin(theta) > n;
   const regime = k === 0 ? (tir ? "evanescent: total internal reflection" : "lossless: the wave does not decay")
-    : tir ? "evanescent and absorbing (frustrated TIR)" : "refracted wave, absorbed";
+    : tir ? "evanescent and absorbing: attenuated total reflection (ATR)" : "refracted wave, absorbed";
 
   const vsAngle = (() => {
     const ds = Array.from({ length: 179 }, (_, i) => i * 0.5);

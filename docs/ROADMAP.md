@@ -5,12 +5,12 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 211, 2026-11-06)
+## Status (session 212, 2026-11-06)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
   textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) and 5w-13 (materials) and 5w-14 (spectroscopy) and 5w-15 (thin-film + polarization) done (sessions 163–177): 5w is complete; KRS-5
-  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6j done (sessions 179–194); Gemini hero done (session 195). Phase 7 (Known limitations: features): 7a–7d done (sessions 196–199), 7e done (session 200; 7e-b with the user's Westwood PDF), 7f-a/7f-b done (sessions 201–202), 7g-a/7g-b done (sessions 203–204); Phase 7 done and released (session 205, e27df432). Phase 8 (data-blocked limitations): 8a–8e done (sessions 205–209). Phase 9 (credibility): 9a done (session 210), 9b-1 blind audit done (session 211: 0 errors, 7 minor in 30). Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6j done (sessions 179–194); Gemini hero done (session 195). Phase 7 (Known limitations: features): 7a–7d done (sessions 196–199), 7e done (session 200; 7e-b with the user's Westwood PDF), 7f-a/7f-b done (sessions 201–202), 7g-a/7g-b done (sessions 203–204); Phase 7 done and released (session 205, e27df432). Phase 8 (data-blocked limitations): 8a–8e done (sessions 205–209). Phase 9 (credibility): 9a done (session 210), 9b-1 blind audit done (session 211: 0 errors, 7 minor in 30), 9b-2 fixes done (session 212). Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -330,7 +330,7 @@ minus signs and ±, and can shift table labels: confirm each value on the render
 - 9b Blind audit: 30 random tiered pages (`scripts/audit-sample.ts`, seed 20261106, 3 per category), recomputed from
   the rendered page against their cited references before reading the code. Results: `docs/audit/9b-blind-audit.md`.
   - [x] 9b-1 Sample, blind recompute and results file (session 211, `phase-9/9b-blind-audit`, PR #249). See Done.
-  - [ ] 9b-2 Fix the 7 MINOR findings (table in `docs/audit/9b-blind-audit.md`); narrow-bandpass ships its golden test.
+  - [x] 9b-2 Fix the 7 MINOR findings (session 212, `phase-9/9b-2-minor-fixes`, PR #250). See Done.
   - [ ] 9b-3 Publish the sample, method and error rate on About `#verification`.
 
 ## Decisions (keep)
@@ -350,6 +350,7 @@ minus signs and ±, and can shift table labels: confirm each value on the render
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 9b-2 (session 212, `phase-9/9b-2-minor-fixes`, PR #250): 7 MINOR audit findings fixed (6 wording, 1 physics); `cavityPassband` refines the ripple peak by golden section (`goldenSectionMax` in `math.ts`): narrow-bandpass peak 99.67 → 99.69 %; 1280 tests.
 - 9b-1 (session 211, `phase-9/9b-blind-audit`, PR #249): `scripts/audit-sample.ts` (seed 20261106, 3/category) + `scripts/page-capture.mjs`; 5 Opus reviewers recomputed 30 production pages blind at 2 points each: 0 ERROR, 7 MINOR, 23 OK, 59/60 points agree; `docs/audit/9b-blind-audit.md` + 60 captures in `docs/audit/9b/`.
 - 9a (session 210, `phase-9/9a-report-button`, PR #248): `ReportProblem` form in `calculator-shell.tsx` and on About → `POST /api/report` (`src/lib/report.ts`: honeypot, caps, known-href check, 5/10 min per-IP per-instance limit) → Resend email with page URL + query + `VERCEL_GIT_COMMIT_SHA`; 503 without env → prefilled GitHub-issue fallback. About: verification section (411/411 tiered, 1205 physics tests in 182 files of 1279, 969 distinct refs / 1293 citations, 819 linked) from `src/lib/test-stats.json` (`scripts/test-stats.ts`, kept in step by `tests/test-stats.test.ts`).
 - 8e (session 209, `phase-8/8e-bso-zblan`): `electro-optic` BSO (Efremidis 2009, Appl. Phys. B 95, 467; Fig. 3 digitized every 20 nm, 500–800 nm): r₄₁ 4.14→2.03 pm/V, n 2.6656→2.5016, ρ 40.05→12.14 °/mm; 633 nm r₄₁ 2.7285, n 2.560005, ρ 21.1825, V_π 691.397 V (d 1, L 10 mm); gyrotropic Jones transmission vs a 4000-slab product. The box's "4.2 ± 2.0" and "40 ± 12" were misreads of the 500→800 nm ranges. `infrared-glass` ZBLAN Knoop 250 kg/mm², dn/dT −11.5e-6/K (midpoint of −8 to −15, Poulain 2024 APL Photonics 9, 091103); n(2 µm, 100 °C) 1.48707.

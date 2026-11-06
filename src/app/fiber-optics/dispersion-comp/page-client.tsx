@@ -131,12 +131,12 @@ export default function DispersionCompPage() {
       <h3 className="text-lg font-semibold mb-3">Span without compensation (at {channelWavelength} nm)</h3>
       <div className="grid gap-4 sm:grid-cols-4 mb-8">
         <ResultCard label="Accumulated dispersion" value={`${fmt(calc.Dacc_psnm, 4)} ps/nm`} tone="blue" subtext="(D + S(λ − λ₀)) · L" />
-        <ResultCard label="RMS broadening" value={`${fmt(calc.sigmaUnc_ps)} ps`} tone="purple" subtext={`σ_b = √(σ_D² + λ²|D_acc|/4πc), optimum input pulse; 4Bσ = ${fmt(4 * bitRate * 1e-3 * calc.sigmaUnc_ps)}`} />
+        <ResultCard label="RMS broadening" value={`${fmt(calc.sigmaUnc_ps)} ps`} tone="purple" subtext={`σ_b = √(σ_D² + λ²|D_acc|/4πc), added to the optimum input pulse; 4Bσ_b = ${fmt(4 * bitRate * 1e-3 * calc.sigmaUnc_ps)}`} />
         <ResultCard
           label="Dispersion-limited bit rate"
           value={`${fmt(calc.Bmax_Gbps)} Gb/s`}
           tone={calc.Bmax_Gbps < bitRate ? "red" : "green"}
-          subtext={(calc.Bmax_Gbps < bitRate ? `below ${bitRate} Gb/s` : `above ${bitRate} Gb/s`) + "; 4Bσ ≤ 1, total width with the optimum pulse"}
+          subtext={(calc.Bmax_Gbps < bitRate ? `below ${bitRate} Gb/s` : `above ${bitRate} Gb/s`) + "; 4Bσ ≤ 1, σ the total output width with the optimum input pulse (√(λ²|D_acc|/2πc) for a narrow source)"}
         />
         <ResultCard label="Dispersion penalty" value={fmtPenalty(calc.penaltyUnc)} tone={penaltyTone(calc.penaltyUnc)} />
       </div>
@@ -184,7 +184,7 @@ export default function DispersionCompPage() {
           <p>
             Agrawal, Fiber-Optic Communication Systems, §2.4.2–2.4.3 and §5.4.4: for a broad source (σ<sub>λ</sub> much larger than the
             modulation bandwidth, ≈ λ²B/c, 0.08 nm at 10 Gb/s and 1550 nm) σ<sub>b</sub> reduces to σ<sub>D</sub>; for a narrow one the
-            transmitted Gaussian pulse is taken at its optimum width, so the λ²|D<sub>acc</sub>|/4πc term sets the limit. D varies linearly with λ. A DCF compensates the whole band only when its relative slope S<sub>DCF</sub>/D<sub>DCF</sub> equals the
+            transmitted Gaussian pulse is taken at its optimum width, which adds λ²|D<sub>acc</sub>|/4πc to σ<sub>b</sub>² for the penalty. The bit-rate limit uses the total output width σ instead, √(λ²|D<sub>acc</sub>|/2πc) = √(|β<sub>2</sub>|L) for a narrow source. D varies linearly with λ. A DCF compensates the whole band only when its relative slope S<sub>DCF</sub>/D<sub>DCF</sub> equals the
             span&apos;s S/D.
           </p>
           <p>

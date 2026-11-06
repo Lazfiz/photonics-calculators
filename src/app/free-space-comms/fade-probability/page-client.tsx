@@ -81,7 +81,7 @@ export default function FadeProbabilityPage() {
         <ResultCard label="P(fade), log-normal" value={fmt(results.pLn)} tone="orange" subtext="log-normal (weak-turbulence comparison)" />
         {n > 1 && (
           <ResultCard label={`P^N, N = ${n}`} value={fmt(results.pN)} tone="cyan"
-            subtext="N uncorrelated receivers, selection combining: P^N (separation ≫ √(λL))" />
+            subtext="N uncorrelated receivers, selection combining: P^N (separation ≫ max(√(λL), L/(kρ₀)))" />
         )}
       </div>
 
@@ -100,7 +100,7 @@ export default function FadeProbabilityPage() {
         </p>
         <p>
           P(I &lt; t⟨I⟩) with t = 10^(−F/10) for a fade of F dB below the mean. For N receivers whose separation is far
-          larger than √(λL), the fades are independent and selection combining fails only when all fail: P^N.
+          larger than both √(λL) and L/(kρ₀) (the scattering-disk size that sets the correlation width in strong turbulence; ρ₀ is the spatial coherence radius, k = 2π/λ), the fades are independent and selection combining fails only when all fail: P^N.
         </p>
       </div>
     </>

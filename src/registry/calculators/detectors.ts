@@ -6,7 +6,7 @@ export const detectors: CalculatorEntry[] = [
     title: "Afterpulsing in APDs",
     description: "Afterpulse probability, trap dynamics, and dead time trade-offs in avalanche photodiodes.",
     tier: "textbook",
-    modelNote: "Each trap level empties exponentially, so the afterpulse probability is Σ η·e^(−t_d/τ) over up to two levels, with the recorded rate from a non-paralyzable dead time. η and τ are device fits (the defaults give 0.41 %, the order of a Si SPCM at 50 ns), and the afterpulse rate is first order in R·τ: afterpulses of afterpulses are left out.",
+    modelNote: "Each trap level empties exponentially, so the afterpulse probability is Σ η·e^(−t_d/τ) over up to two levels, with the recorded rate from a non-paralyzable dead time. η and τ are device fits (the defaults give 0.41 %, the order of a Si SPCM at 50 ns), and the afterpulse rate is first order in P_ap (no afterpulse cascades) and in R·τ (no trap saturation).",
     references: [
       {
         citation: "Cova S., Lacaita A., Ripamonti G. (1991). Trapping phenomena in avalanche photodiodes on nanosecond scale. IEEE Electron Device Lett. 12, 685–687. Afterpulsing from trap release, η·e^(−t/τ).",

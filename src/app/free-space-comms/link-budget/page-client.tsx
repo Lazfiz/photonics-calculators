@@ -100,7 +100,7 @@ export default function LinkBudgetPage() {
         <ResultCard label="TX gain 8/θ²" value={`${calc.txGain.toFixed(2)} dBi`} tone="purple" subtext={`θ = ${(divergence / 2).toPrecision(3)} mrad half-angle`} />
         <ResultCard label="RX gain (πD/λ)²" value={`${calc.rxGain.toFixed(2)} dBi`} tone="purple" />
         <ResultCard label="Free-space path loss" value={`${calc.fspl.toFixed(2)} dB`} tone="blue" subtext={`atmosphere ${calc.atmos.toFixed(1)} dB`} />
-        <ResultCard label="Received power" value={`${calc.pr.toFixed(2)} dBm`} tone="green" subtext={`Friis: ${calc.friisPr.toFixed(2)} dBm`} />
+        <ResultCard label="Received power" value={`${calc.pr.toFixed(2)} dBm`} tone="green" subtext={`Friis${calc.capped ? " (capped at P_t)" : ""}: ${calc.friisPr.toFixed(2)} dBm`} />
         <ResultCard label={`Margin vs ${sensitivity} dBm`} value={`${margin.toFixed(2)} dB`} tone={margin >= 0 ? "yellow" : "red"} />
       </div>
 
@@ -125,7 +125,7 @@ export default function LinkBudgetPage() {
           capture 1 − exp(−2a²/w(R)²) with w(R) = w₀√(1 + (R/z_R)²). Atmospheric attenuation is per kilometre: take it from the{" "}
           <Link href="/free-space-comms/fog-attenuation" className="underline">fog</Link>,{" "}<Link href="/free-space-comms/rain-attenuation" className="underline">rain</Link> or{" "}
           <Link href="/free-space-comms/snow-attenuation" className="underline">snow</Link> calculators. With θ fixed, λ cancels in P_r
-          (G_t·G_r/FSPL = D²/(2θ²R²) for a small receiver); it matters only through the atmospheric attenuation, which you
+          (G_t·G_r/FSPL = 2D²/(θ²R²) for a small receiver); it matters only through the atmospheric attenuation, which you
           enter for your wavelength, and the diffraction-limited waist.
         </p>
         <p className="text-gray-500">

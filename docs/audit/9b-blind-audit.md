@@ -72,7 +72,19 @@ confidence (Clopper–Pearson, 1 − 0.05^(1/30)). The audit can't show that the
 Points: 59 of 60 rendered points agree with the recomputation within display rounding; the 60th is the
 narrow-bandpass peak, 0.02 percentage points low.
 
-## Follow-up (9b-2)
-Fix the 7 MINOR pages (the narrow-bandpass fix ships a golden test: default stack → peak T 0.996913 at 1549.586 and
-1550.414 nm, T(λ₀) 0.957420, FWHM 1.13437 nm, transfer matrix, Macleod 2010 ch. 8). Optional notes: KD\*P/ADP range to
-1064 nm, Stokes input in the URL on `mueller-polarimetry`, the `dichroic-polarizer` tier.
+## Follow-up (9b-2, done)
+All 7 MINOR findings are fixed on `phase-9/9b-2-minor-fixes`:
+- `detectors/afterpulsing`: the model note names both approximations, first order in P_ap (no afterpulse cascades)
+  and in R·τ (no trap saturation). Above P_ap = 1 the card already reads "Afterpulses per Avalanche".
+- `fiber-optics/dispersion-comp`: σ_b (added broadening, 4πc, used by the penalty) and σ (total output width, 2πc
+  for a narrow source, used by B_max) are named apart, on the cards and in the note.
+- `free-space-comms/fade-probability`: receivers are uncorrelated at separations ≫ max(√(λL), L/(kρ₀)).
+- `free-space-comms/link-budget`: "Friis (capped at P_t)" when capped; G_tG_r/FSPL = 2D²/(θ²R²) with θ the full angle.
+- `spectroscopy/libs-analysis`: "ground-term weights"; Griem 1974 added to the references.
+- `spectroscopy/penetration-depth`: "attenuated total reflection (ATR)".
+- `thin-film/narrow-bandpass`: `cavityPassband` refines the ripple peak by golden section (`goldenSectionMax` in
+  `src/physics/math.ts`). Default stack: peak T 0.9969127 at 1549.586 and 1550.414 nm, FWHM 1.13437 nm, matching a
+  1e-6 nm transfer-matrix scan (`tests/thin-film-cavity-filter.test.ts`).
+
+Not done (optional notes): KD*P/ADP range to 1064 nm, Stokes input in the URL on `mueller-polarimetry`, the
+`dichroic-polarizer` tier.
