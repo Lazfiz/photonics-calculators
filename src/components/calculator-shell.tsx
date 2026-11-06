@@ -3,6 +3,7 @@ import Link from "next/link";
 import ErrorBoundary from "./error-boundary";
 import { KnownIssueNotice, ModelBadge, ModelReferences } from "./model-references";
 import RelatedCalculatorLinks, { type RelatedCalculatorItem } from "./related-calculator-links";
+import ReportProblem from "./report-problem";
 import ShareButton from "./share-button";
 import UrlStateReveal from "./url-state-reveal";
 import { JsonLdScript } from "../lib/json-ld";
@@ -26,8 +27,9 @@ function relatedCalculators(calculator: Calculator): RelatedCalculatorItem[] {
 
 /**
  * The frame of every calculator page, rendered by its page.tsx around the client component: JSON-LD,
- * breadcrumbs, heading, lede, share button, model tier, the "Model and references" section and related
- * links, all from the registry entry. A server component: the registry stays out of client bundles.
+ * breadcrumbs, heading, lede, share button, model tier, the "Model and references" section, the "Report a
+ * problem" form and related links, all from the registry entry. A server component: the registry stays out
+ * of client bundles.
  */
 export default function CalculatorShell({ href, children, maxWidthClassName = "max-w-4xl" }: CalculatorShellProps) {
   const calculator = getCalculator(href);
@@ -70,6 +72,7 @@ export default function CalculatorShell({ href, children, maxWidthClassName = "m
           </div>
           <UrlStateReveal />
           <ModelReferences calculator={calculator} />
+          <ReportProblem />
           {related.length > 0 && <RelatedCalculatorLinks currentHref={href} items={related} />}
         </div>
       </main>
