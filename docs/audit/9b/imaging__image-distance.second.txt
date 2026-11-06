@@ -1,0 +1,55 @@
+Thin Lens Image Distance
+
+Image distance, magnification and conjugate ratio of a thin lens, from the object distance or from the magnification, for real and virtual images.
+
+Share
+
+Model: Textbook approximation
+
+Focal length f (mm, negative for a diverging lens) ⟦50⟧
+Given
+Object distance o: find the image
+Magnification M: find both conjugates
+ ⟦Magnification M: find both conjugates⟧
+Magnification M (negative for an inverted image) ⟦3⟧
+Results
+Object distance o
+33.33 mm
+Image distance i
+-100.00 mm
+Magnification M = −i/o
+3.0000×
+Image
+virtual, upright, enlarged
+Conjugate ratio |i/o|
+3.0000
+Object-to-image distance |o + i|
+66.67 mm
+Newtonian x = o − f, x′ = i − f
+-16.67, -150.00 mm
+
+The distances run from the lens (its principal planes, for a thick lens). A microscope objective's working distance, from its front lens to the sample, is set by its mechanics and is shorter than o.
+
+Image distance vs object distance
+PNG
+CSV
+Real image (i > 0)
+Virtual image (i < 0)
+Current
+Model
+
+1/o + 1/i = 1/f, i = f·o/(o − f), M = −i/o
+
+From M: o = f(1 − 1/M), i = f(1 − M)
+
+Newtonian: x·x′ = f², x = o − f, x′ = i − f
+
+Paraxial thin lens in air, real-is-positive signs: o > 0 for a real object in front of the lens, i > 0 for a real image behind it, f > 0 for a converging lens. An object inside the focal length of a converging lens gives a virtual, upright, enlarged image (a magnifier); a diverging lens always gives a virtual, upright, reduced one. The real object-to-image distance is shortest, 4f, at M = −1.
+
+MODEL AND REFERENCES
+
+Textbook approximation. A standard approximation from the literature (for example paraxial, plane-wave or Gaussian-beam), valid within the range the page states. About the tiers
+
+Paraxial thin lens in air with real-is-positive signs. Distances are from the lens's principal planes, so an objective's working distance, from its front lens, is shorter than the object distance.
+
+Greivenkamp J. E. (2004). Field Guide to Geometrical Optics. SPIE Press. Gaussian imaging equation, transverse magnification and Newtonian equations. doi:10.1117/3.547461

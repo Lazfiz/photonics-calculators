@@ -1,0 +1,93 @@
+Zigzag Slab Laser
+
+Zigzag slab laser: bounce angle and total internal reflection, threshold and output power, slope efficiency, heat density, temperature profile and the thermal lens the zigzag cancels.
+
+Model: Textbook approximation
+
+Slab and resonator
+Slab width W (mm) ⟦10⟧
+Slab thickness t (mm, cooled faces) ⟦2⟧
+Slab length L (mm) ⟦50⟧
+Thickness crossings N ⟦8⟧
+Crystal index n ⟦1.82⟧
+Output coupler reflectance (HR = 1) ⟦0.9⟧
+Scatter loss (1/cm) ⟦0.002⟧
+Absorbed pump power (W) ⟦200⟧
+Pump efficiency η_p (absorbed → upper level) ⟦0.8⟧
+Gain medium (defaults: Nd:YAG)
+Laser wavelength λ (nm) ⟦1064⟧
+Pump wavelength λ_p (nm) ⟦808⟧
+Emission cross-section σ (10⁻¹⁹ cm²) ⟦2.8⟧
+Upper-level lifetime τ (µs) ⟦230⟧
+Heat fraction of the absorbed pump ⟦0.32⟧
+Thermal conductivity κ (W/(m K)) ⟦14⟧
+dn/dT (10⁻⁶/K) ⟦7.3⟧
+
+Zigzag angle θ
+
+17.74°
+
+face incidence 72.26°; critical 33.33°
+
+Zigzag path L/cos θ
+
+52.50 mm
+
+aperture W t cos θ = 19.05 mm²
+
+Threshold (absorbed pump)
+
+57.43 W
+
+δ = 12.64 % round trip
+
+Output power
+
+72.23 W
+
+slope 50.66 %; P_sat = 552.2 W
+
+Heat density Q
+
+64.00 W/cm³
+
+heat fraction × pump / W t L
+
+Centre temperature rise
+
+2.286 K
+
+Q t²/(8κ); mean 1.524 K
+
+Straight-through thermal lens
+
+0.5993 m
+
+κ/((dn/dT) Q L); the zigzag cancels it to first order
+
+θ = atan(N t/L). Four-level gain: P_th = δ h c A/(2η_p σ τ λ_p), A = W t cos θ, δ = −ln R_oc + 2α_s L/cos θ; output from Rigrod with the mode filling the slab.
+
+ΔT(y) = Q(t²/4 − y²)/(2κ). A straight-through ray sees n(y) = n₀ − (dn/dT)Qy²/(2κ), a lens f = κ/((dn/dT)QL); each zigzag ray samples the whole profile, so this lens and its depolarisation cancel to first order (stress and end effects are not modelled).
+
+Output power versus absorbed pump power
+
+PNG
+CSV
+Output power
+This pump
+
+Temperature across the slab thickness
+
+PNG
+CSV
+Temperature rise above the faces
+MODEL AND REFERENCES
+
+Textbook approximation. A standard approximation from the literature (for example paraxial, plane-wave or Gaussian-beam), valid within the range the page states. About the tiers
+
+Four-level gain with uniform inversion over the slab, the zigzag beam filling the aperture W t cos θ, Rigrod output. Infinite-slab heat conduction with uniform heat density; the straight-through lens keeps only dn/dT (no stress-optic, end-bulging or edge effects). Heat fraction 0.32: Fan's (1993) estimate for Nd:YAG pumped at 808 nm and lasing at 1064 nm (non-lasing, he measured 0.37–0.43).
+
+Eggleston J. M., Kane T. J., Kuhn K., Unternahrer J., Byer R. L. (1984). The slab geometry laser — Part I: Theory. IEEE J. Quantum Electron. 20, 289–301. doi:10.1109/JQE.1984.1072386
+Kane T. J., Eggleston J. M., Byer R. L. (1985). The slab geometry laser — Part II: Thermal effects in a finite slab. IEEE J. Quantum Electron. 21, 1195–1210. doi:10.1109/JQE.1985.1072799
+Fan T. Y. (1993). Heat generation in Nd:YAG and Yb:YAG. IEEE J. Quantum Electron. 29, 1457–1459. Abstract: 1.04 at.% Nd:YAG pumped at 808 nm, 0.37–0.43 non-lasing, about 0.32 with 1064 nm extraction. doi:10.1109/3.234394
+Koechner W. (2006). Solid-State Laser Engineering, 6th ed., ch. 2–3 and 7. Springer. doi:10.1007/0-387-29338-8

@@ -1,0 +1,80 @@
+Mueller Polarimetry
+
+Build optical systems using Mueller matrices and analyze polarization transformations.
+
+Model: Exact
+
+S_out = M · S_in, M_total = M_n · ... · M_2 · M_1
+
+Mueller calculus: 4×4 matrices operate on 4×1 Stokes vectors
+
+Convention (Goldstein): RCP = [1, i]/√2 turns clockwise as seen by the receiver; S₃ > 0 is right-handed.
+
+Input Stokes Vector
+S₀ ⟦1⟧
+S₁ ⟦1⟧
+S₂ ⟦0⟧
+S₃ ⟦0⟧
+H linear
++45° linear
+RCP
+Partial
+Element 1
+Linear Polarizer
+Retarder (QWP/HWP)
+Rotator
+Depolarizer
+ ⟦Retarder (QWP/HWP)⟧
+Retardance (°) ⟦90⟧
+Fast axis (°) ⟦0⟧
+Element 2
+Linear Polarizer
+Retarder (QWP/HWP)
+Rotator
+Depolarizer
+ ⟦Linear Polarizer⟧
+Transmission axis (°) ⟦0⟧
+
+Output S₀
+
+1.000
+
+Output DOP
+
+100.0%
+
+Analyzer angle (°) ⟦45⟧
+
+Final Intensity
+
+0.500
+
+Analyzer Scan
+PNG
+CSV
+Output Stokes
+
+S₁
+
+1.000
+
+S₂
+
+0.000
+
+S₃
+
+0.000
+
+|S|
+
+1.000
+
+MODEL AND REFERENCES
+
+Exact. The equations are exact within the stated assumptions, or are a standard's tabulated values. The results are as good as the inputs. About the tiers
+
+Ideal polarizer, retarder, rotator and depolarizer diag(1, d, d, d) with d = 1 − p/100, element 1 first, Goldstein signs; then an ideal analyzer, I = ½(S₀ + S₁ cos 2θ + S₂ sin 2θ).
+
+Goldstein D. H. (2011). Polarized Light, 3rd ed., ch. Mueller Matrices for Polarizing Components, pp. 93–115. CRC Press. doi:10.1201/b10436
+Cloude S. R. (1986). Group theory and polarisation algebra. Optik 75, 26–36: a Mueller matrix is physical when its coherency matrix has no negative eigenvalue.

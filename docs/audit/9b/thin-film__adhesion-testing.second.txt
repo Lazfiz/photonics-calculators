@@ -1,0 +1,65 @@
+Adhesion Testing
+
+Thin-film adhesion tests: Benjamin–Weaver shear stress from a scratch critical load, Kendall peel energy, ASTM D3359 tape classes, and bend-test film stress with crack and delamination driving forces.
+
+Share
+
+Model: Textbook approximation
+
+Test method
+Scratch test
+Peel test
+Tape test (ASTM D3359 B)
+Bend test
+ ⟦Bend test⟧
+Substrate thickness (mm) ⟦0.2⟧
+Bend radius at the substrate mid-plane (mm) ⟦10⟧
+Film Young's modulus (GPa) ⟦70⟧
+Film Poisson's ratio ⟦0.2⟧
+Film thickness (nm) ⟦100⟧
+Residual film stress (MPa; tensile > 0) ⟦100⟧
+
+Film strain (convex side)
+
+1.000 %
+
+h_s / (2R), tensile
+
+Film stress along the bend
+
+829 MPa
+
+σ_res + E_f ε / (1 − ν_f²)
+
+G, channel crack
+
+1.863 J/m²
+
+1.976 σ² h / Ē_f; cracks when ≥ film toughness
+
+G, interface delamination
+
+0.471 J/m²
+
+σ² h / (2 Ē_f); debonds when ≥ interface toughness
+
+Model
+
+A film on the convex side of a wide substrate bent to radius R carries ε = hs/(2R) with no strain across the bend (plane strain). G = Z σ²h/Ēffrom Hutchinson & Suo for a film much thinner than the substrate: Z = 1.976 for a channel crack with matched film and substrate moduli, ½ for steady-state delamination. A substrate more compliant than the film (a polymer) raises the channel-crack Z, and a stiffer one lowers it; the delamination G doesn't depend on the substrate. Residual stress from deposition and thermal mismatch, often hundreds of MPa in optical coatings, adds to the bending stress. A film in net compression (or on the concave side) buckles instead, which isn't modelled.
+
+PNG
+CSV
+Channel crack
+Delamination
+MODEL AND REFERENCES
+
+Textbook approximation. A standard approximation from the literature (for example paraxial, plane-wave or Gaussian-beam), valid within the range the page states. About the tiers
+
+Benjamin–Weaver shear stress for a plastic substrate (ranks coatings; not a work of adhesion); Kendall elastic peel; ASTM D3359 B classes; bend-test G for a thin film, matched moduli (Hutchinson–Suo).
+
+Benjamin P., Weaver C. (1960). Measurement of adhesion of thin films. Proc. R. Soc. Lond. A 254, 163–176. doi:10.1098/rspa.1960.0012
+Bull S. J., Berasetegui E. G. (2006). An overview of the potential of quantitative coating adhesion measurement by scratch testing. Tribol. Int. 39, 99–114. Eq. 1: τ = kHa/√(R² − a²), k = 0.2–1. doi:10.1016/j.triboint.2005.04.013
+Kendall K. (1975). Thin-film peeling — the elastic term. J. Phys. D 8, 1449–1452. doi:10.1088/0022-3727/8/13/005
+Hutchinson J. W., Suo Z. (1991). Mixed mode cracking in layered materials. Adv. Appl. Mech. 29, 63–191. doi:10.1016/S0065-2156(08)70164-9
+ASTM D3359-23. Standard Test Methods for Rating Adhesion by Tape Test. ASTM International. doi:10.1520/D3359-23
+Ohring M. (2002). Materials Science of Thin Films, 2nd ed., ch. 12 (adhesion tests). Academic Press. doi:10.1016/b978-012524975-1/50015-x

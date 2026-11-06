@@ -1,0 +1,70 @@
+Jacquinot Advantage
+
+Field of view, field-stop size and étendue of an FTIR interferometer, and its throughput ratio to a grating spectrometer of the same resolving power.
+
+Share
+
+Model: Textbook approximation
+
+Interferometer
+Max OPD L (cm) ⟦4⟧
+Highest Wavenumber ν̃ (cm⁻¹) ⟦4000⟧
+Collimator Focal Length (mm) ⟦150⟧
+Beam Diameter (mm) ⟦50⟧
+
+Resolution Δν̃ = 1/L
+
+0.2500 cm⁻¹
+
+resolving power R = ν̃L = 1.600e+4
+
+Max Solid Angle Ω = 2πΔν̃/ν̃
+
+0.0003927 sr
+
+half-angle 11.18 mrad (0.641°)
+
+Field (J-) Stop Diameter
+
+3.354 mm
+
+2f tan α at the collimator focus
+
+FTS Étendue A·Ω
+
+0.007711 cm²·sr
+
+beam area 19.63 cm²
+
+Grating Spectrometer at the Same R and Beam Area
+Collimator Focal Length f (mm) ⟦500⟧
+Slit Height h (mm) ⟦20⟧
+Littrow Angle θ (°) ⟦45⟧
+
+Jacquinot Advantage Ω_FTS/Ω_slit
+
+78.54×
+
+π f/(h tan θ); Jacquinot's 2πf/h = 157.1 assumes 2 tan θ = 1
+
+Slit Width Needed for R
+
+62.50 µm
+
+w = 2f tan θ/R (slit-limited; diffraction limit mNρ must exceed R)
+
+PNG
+CSV
+Ω_max at Δν̃ = 0.250 cm⁻¹
+Current
+
+The highest wavenumber in the band sets the field stop: a ray at angle θ sees the path difference x cos θ, so its lines appear at ν̃ cos θ; the field is limited to the cone where that shift stays below the resolution.
+
+MODEL AND REFERENCES
+
+Textbook approximation. A standard approximation from the literature (for example paraxial, plane-wave or Gaussian-beam), valid within the range the page states. About the tiers
+
+Geometric optics: unapodized resolution 1/L, circular field stop, grating spectrometer in Littrow limited by its slit width; both instruments share the beam area.
+
+Jacquinot P. (1954). The luminosity of spectrometers with prisms, gratings, or Fabry-Perot etalons. J. Opt. Soc. Am. 44, 761–765. doi:10.1364/JOSA.44.000761
+Griffiths P. R., de Haseth J. A. (2007). Fourier Transform Infrared Spectrometry, 2nd ed., ch. 7. Wiley.

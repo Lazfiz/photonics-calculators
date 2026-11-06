@@ -1,0 +1,156 @@
+Optical Glass Catalog
+
+Interactive glass map and dispersion curves. Sellmeier: n²(λ) = 1 + Σ Bᵢλ²/(λ² − Cᵢ), with SCHOTT catalog coefficients.
+
+Share
+
+Model: Exact
+
+Select Glasses (click to toggle)
+N-BK7
+N-FK5
+N-BAK4
+N-SK16
+N-LAK9
+LLF1
+F2
+N-LASF9
+N-SF11
+N-SF6
+PNG
+CSV
+N-BK7
+N-FK5
+N-BAK4
+N-SK16
+N-LAK9
+LLF1
+F2
+N-LASF9
+N-SF11
+N-SF6
+PNG
+CSV
+N-BK7
+N-FK5
+N-LAK9
+N-SF11
+SCHOTT Glass Properties
+Glass	nd	Vd	ρ (g/cm³)	dn/dT at 546 nm, 20 °C (×10⁻⁶/K)
+N-BK7	1.51680	64.17	2.51	+1.49
+N-FK5	1.48749	70.41	2.45	-2.44
+N-BAK4	1.56883	55.98	3.05	+2.40
+N-SK16	1.62041	60.32	3.58	+0.75
+N-LAK9	1.69100	54.71	3.51	+2.11
+LLF1	1.54814	45.75	2.94	+1.36
+F2	1.62004	36.37	3.60	+2.76
+N-LASF9	1.85025	32.17	4.41	+3.30
+N-SF11	1.78472	25.68	3.22	+0.62
+N-SF6	1.80518	25.36	3.37	-0.21
+Abbe Number from the Dispersion Formula
+Material
+N-BK7
+N-FK5
+N-BAK4
+N-SK16
+N-LAK9
+LLF1
+F2
+N-LASF9
+N-SF11
+N-SF6
+Fused silica (SiO₂)
+Calcium fluoride (CaF₂)
+Barium fluoride (BaF₂)
+Magnesium fluoride (MgF₂, ordinary)
+Sodium chloride (NaCl)
+Lithium fluoride (LiF)
+Potassium bromide (KBr)
+Caesium iodide (CsI)
+ZBLAN fluoride glass
+Zinc sulfide (ZnS, cubic CVD)
+ ⟦N-BK7⟧
+
+n_F (486.13 nm, H)
+
+1.52238
+
+n_d (587.56 nm, He)
+
+1.51680
+
+n_C (656.27 nm, H)
+
+1.51432
+
+Abbe number V_d
+
+64.17
+
+catalog 64.17
+
+PNG
+CSV
+n(λ)
+F, d, C lines
+Temperature Coefficient dn/dT (TIE-19)
+Glass
+N-BK7
+N-FK5
+N-BAK4
+N-SK16
+N-LAK9
+LLF1
+F2
+N-LASF9
+N-SF11
+N-SF6
+ ⟦N-SF6⟧
+Wavelength (nm) ⟦1014⟧
+Temperature T₀ (°C) ⟦-40⟧
+Temperature change ΔT (K) ⟦100⟧
+
+n at 20 °C
+
+1.774856
+
+catalog formula (relative to air)
+
+dn/dT at T₀
+
+-3.141 ×10⁻⁶/K
+
+absolute (vacuum)
+
+Δn, -40 → 60 °C
+
+-2.500e-4
+
+absolute (vacuum)
+
+Mean dn/dT over ΔT
+
+-2.500 ×10⁻⁶/K
+
+PNG
+CSV
+dn/dT
+T₀, T₀ + ΔT
+Data
+
+n²(λ) = 1 + Σ Bᵢλ²/(λ² − Cᵢ), Vd = (nd − 1)/(nF − nC)
+
+Δnabs(T) = (n² − 1)/(2n) · (D₀ΔT + D₁ΔT² + D₂ΔT³ + (E₀ΔT + E₁ΔT²)/(λ² − λTK²)), ΔT = T − 20 °C
+
+Sellmeier coefficients, nd, Vd, density and thermo-optic coefficients from the SCHOTT optical glass catalog (2017). Each formula reproduces its catalog nd to 1e-5 and Vdto 0.01. dn/dT and Δn are absolute (in vacuum), from SCHOTT TIE-19, valid from −100 to +140 °C and 365 to 1014 nm (SCHOTT data sheets); n is the catalog index at 20 °C. Values relative to air are larger by about n × 0.9×10⁻⁶/K, from the air's own dn/dT ≈ −(nair− 1)/T. Curves cover each glass's 0.3–2.5 µm data range. The crystal and fused silica Vdcome from each set's published formula (fused silica: Malitson 1965, Vd 67.82).
+
+MODEL AND REFERENCES
+
+Exact. The equations are exact within the stated assumptions, or are a standard's tabulated values. The results are as good as the inputs. About the tiers
+
+SCHOTT catalog values: Sellmeier fits that reproduce each glass's catalog n_d to 1e-5 and V_d to 0.01. V_d of the crystals and fused silica comes from their published formulas. dn/dT and Δn are TIE-19's absolute (vacuum) values for −100 to +140 °C and 365–1014 nm (SCHOTT's stated range); values relative to air are larger by about n × 0.9e-6 /K. Valid inside each fit's wavelength range.
+
+SCHOTT optical glass catalog (Zemax AGF 2017-01-20). Sellmeier coefficients, n_d, V_d and density.
+SCHOTT (2016). TIE-19, temperature coefficient of the absolute refractive index (D₀, D₁, D₂, E₀, E₁, λ_TK).
+SCHOTT optical glass data sheets (2017-01-20), Explanations: the dn/dT constants are valid from −100 to +140 °C and 0.365 to 1.014 µm. N-BK7 sheet: Δn_abs/ΔT at 1060 nm, e and g of 0.3, 0.8, 1.2 (−40/−20 °C) and 1.1, 1.6, 2.1 ×10⁻⁶/K (+20/+40 °C). refractiveindex.info
+Malitson I. H. (1965). Interspecimen comparison of the refractive index of fused silica. J. Opt. Soc. Am. 55, 1205. Fused silica V_d 67.82. doi:10.1364/JOSA.55.001205

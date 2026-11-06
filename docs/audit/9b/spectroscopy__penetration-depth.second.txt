@@ -1,0 +1,61 @@
+Penetration Depth Calculator
+
+Optical penetration depth from the complex index n + ik at any angle of incidence: d_p = λ₀/(4π Im √(N² − n₀² sin²θ)), covering absorbing media, metals (skin depth) and total internal reflection.
+
+Share
+
+Model: Exact
+
+Vacuum Wavelength λ₀ (nm) ⟦488⟧
+Incident-Medium Index n₀ ⟦1.52⟧
+Angle of Incidence θ (°) ⟦70⟧
+Refractive Index n ⟦1.33⟧
+Extinction Coefficient k ⟦0⟧
+
+Absorption Coefficient α
+
+0.000 cm⁻¹
+
+4πk/λ₀ = 0.000 m⁻¹
+
+Intensity Depth d_p at θ
+
+74.57 nm
+
+1/e of intensity, normal to the surface; evanescent: total internal reflection
+
+Field 1/e Depth 2d_p
+
+149.1 nm
+
+amplitude falls to 1/e
+
+Depth at Normal Incidence 1/α
+
+∞
+
+λ in medium λ₀/n = 366.9 nm
+
+Normal incidence: α = 4πk/λ₀, intensity I(z) = I₀ e^(−αz), d_p = 1/α.
+
+Oblique incidence from index n₀: k_z = (2π/λ₀) √(N² − n₀² sin²θ), N = n + ik, so d_p = λ₀ / (4π · Im √(N² − n₀² sin²θ)).
+
+This one formula gives 1/α at normal incidence and the evanescent TIR depth for k = 0 above the critical angle. The intensity is the depth-dependent factor of the transmitted field; reflection losses at the surface are not included.
+
+PNG
+CSV
+Intensity
+|Field|
+z = d_p
+PNG
+CSV
+d_p(θ)
+Current θ
+MODEL AND REFERENCES
+
+Exact. The equations are exact within the stated assumptions, or are a standard's tabulated values. The results are as good as the inputs. About the tiers
+
+Exact plane-wave result for one planar interface from a lossless medium: the depth is that of the transmitted (or evanescent) field; reflection at the surface is not included.
+
+Born M., Wolf E. (1999). Principles of Optics, 7th ed., ch. 14 (optics of metals). Cambridge University Press.
+Axelrod D. (2001). Total internal reflection fluorescence microscopy in cell biology. Traffic 2, 764–774 (eq. 2). doi:10.1034/j.1600-0854.2001.21104.x

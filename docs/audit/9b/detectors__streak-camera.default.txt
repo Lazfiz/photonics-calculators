@@ -1,0 +1,85 @@
+Streak Camera
+
+Temporal resolution of a streak camera: the slit image, one pixel and screen blur (lengths converted to time by the sweep speed), the tube's own spread and trigger jitter, convolved; and the time window on the screen.
+
+Model: Textbook approximation
+
+Sweep Speed on Screen (mm/ns) ⟦157.33333333333334⟧
+Slit Width (µm, imaged 1:1 on the cathode) ⟦10⟧
+Tube Magnification (cathode → screen) ⟦2.77⟧
+Pixel Size on Screen (µm) ⟦9.75⟧
+Pixels along the Sweep ⟦968⟧
+Tube Spread FWHM (ps, transit time + deflection) ⟦0.5⟧
+Screen Length along the Sweep (mm) ⟦18⟧
+Trigger Jitter, Summed Sweeps (ps FWHM; rms × 2.355) ⟦0⟧
+Limiting Resolution at the Cathode (lp/mm) ⟦35⟧
+Data-Sheet Temporal Resolution (ps) ⟦0.8⟧
+
+Slit-Image Term
+
+176.059 fs
+
+w·M / v
+
+Pixel Term
+
+61.970 fs
+
+p / v (time per pixel)
+
+Temporal Resolution (FWHM)
+
+692.280 fs
+
+Rectangles ⊗ Gaussian; the tube, blur and jitter term dominates. Quadrature would give 705.538 fs
+
+Screen Blur Term
+
+461.461 fs
+
+72.6 µm FWHM on the screen: 35 lp/mm read as 5 % MTF, times M
+
+Tube Spread the Data Sheet Allows
+
+640.938 fs
+
+Largest Gaussian tube term that keeps the total at 800.000 fs with these slit, pixel, blur and jitter terms; valid at the sweep the spec was measured at (C16910: fastest), and it also holds the test pulse width
+
+Time Window
+
+59.987 ps
+
+968 pixels × p / v (inside the 18 mm screen)
+
+Key Formulas
+
+Δtslit = wslit·M / vsweep; Δtpixel = p / vsweep
+
+Gaussian terms: ΔtG = √(Δttube² + Δtjitter² + (b/v)²) (Gaussians add in quadrature)
+
+Δt = FWHM of rect(Δtslit) ⊗ rect(Δtpixel) ⊗ Gauss(ΔtG); no Gaussian: max(Δtslit, Δtpixel)
+
+Twindow = min(Npixels·p, Lscreen) / vsweep; a FWHM below 2p/v is undersampled
+
+Blur: Gaussian MTF exp(−2π²σ²f²) = 5 % at the limiting resolution f, FWHM = 2.3548·√(ln 20 / 2)/(π f) at the cathode (26.2 µm at 35 lp/mm), times M on the screen
+
+Tube spread: the tube's own Gaussian term, chiefly transit-time dispersion from the photoelectron energy spread, ≈ 2.63·√Δε / E ps (Δε FWHM of the photoelectron energy distribution in eV, extraction field E in kV/mm; Shakya & Chang 2005 after Chang et al. 1996), plus deflection dispersion. The delay between electrons leaving the cathode with 0 and with Δε, √(2m_eΔε)/(eE) = 3.37·√Δε / E ps, bounds it from above. A data-sheet resolution includes the slit and readout, so it bounds the tube term from above.
+
+Resolution vs Sweep Speed
+PNG
+CSV
+Total (convolution FWHM)
+Slit image
+One pixel
+Tube, blur and jitter
+MODEL AND REFERENCES
+
+Textbook approximation. A standard approximation from the literature (for example paraxial, plane-wave or Gaussian-beam), valid within the range the page states. About the tiers
+
+Slit image and pixel are rectangles, tube, blur and jitter Gaussians; exact FWHM of their convolution. Blur: 5 % Gaussian MTF at the cathode limit, × M. Trigger jitter is entered as FWHM. Defaults: C16910, 60 ps sweep.
+
+Hamamatsu Photonics (2008). Guide to Streak Cameras, cat. no. SHSS0006E. Temporal resolution as the FWHM of the streak image of a delta pulse; trigger jitter in summed sweeps. hamamatsu.com
+Hamamatsu Photonics. Streak camera C16910 data sheet, cat. no. SHSS0026E06: temporal resolution < 800 fs, Ø18 mm P-43 phosphor screen, 35 lp/mm at the photocathode centre, effective photocathode 0.15 × 4.5 mm and working area 12.48 × 9.44 mm (1280 × 968 pixels) with an ORCA-Flash4.0 V3 behind 3:2 output optics, 1:1 input optics, fastest sweep ≈ 60 ps per full screen. hamamatsu.com
+Zavoisky E. K., Fanchenko S. D. (1965). Image converter high-speed photography with 10⁻⁹–10⁻¹⁴ sec time resolution. Appl. Opt. 4, 1155–1167. Technical (slit image/sweep speed) and physical (energy spread) limits of the time resolution. doi:10.1364/AO.4.001155
+Shakya M. M., Chang Z. (2005). Achieving 280 fs resolution with a streak camera by reducing the deflection dispersion. Appl. Phys. Lett. 87, 041103. Transit-time dispersion 2.63·√Δε/E ps (Δε in eV, E in kV/mm) and deflection dispersion as tube terms. doi:10.1063/1.2001732
+Chang Z., Rundquist A., Zhou J., et al. (1996). Demonstration of a sub-picosecond x-ray streak camera. Appl. Phys. Lett. 69, 133. Source of the 2.63·√Δε/E transit-time estimate. doi:10.1063/1.118099

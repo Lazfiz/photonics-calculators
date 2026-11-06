@@ -1,0 +1,59 @@
+Narrow Bandpass Filter
+
+Multiple-cavity Fabry-Perot filter with long quarter-wave mirrors: a narrow, flat-topped pass band, its FWHM, peak transmittance and ripple.
+
+Share
+
+Model: Exact
+
+Centre wavelength λ₀ (nm) ⟦532⟧
+nH (high index) ⟦2.3⟧
+nL (low index) ⟦1.38⟧
+nsubstrate ⟦1.52⟧
+Spacer index (half-wave spacer) ⟦1.38⟧
+Mirror pairs p (HL pairs per mirror) ⟦4⟧
+Cavities ⟦2⟧
+
+Peak transmittance
+
+99.26 %
+
+Ripple peaks at 531.703 and 532.297 nm
+
+Transmittance at λ₀
+
+98.74 %
+
+FWHM
+
+2.276 nm
+
+530.865 – 533.140 nm
+
+λ₀ / FWHM
+
+233.8
+
+Resolving power (Q), not a finesse
+
+Layers: 35; mirror zone (infinite stack) 458.3 – 634.0 nm
+
+Each cavity is (HL)p S (LH)p with a half-wave spacer S; cavities are coupled by a quarter-wave L layer. Exact transfer matrix at normal incidence from air, lossless and non-dispersive layers, back surface ignored. FWHM: from λ₀ outward to where T first falls to half the peak, found by bisection. There are no matching layers, so the peak T is below 100 % and a multi-cavity pass band ripples (Macleod, Thin-Film Optical Filters, ch. 8).
+
+Pass band (λ₀ ± 2.5 FWHM)
+PNG
+CSV
+T (%)
+FWHM
+Whole stop band
+PNG
+CSV
+Reflectance
+Transmittance
+MODEL AND REFERENCES
+
+Exact. The equations are exact within the stated assumptions, or are a standard's tabulated values. The results are as good as the inputs. About the tiers
+
+Transfer matrix of (HL)^p S (LH)^p cavities with half-wave spacers and quarter-wave couplers, normal incidence, constant lossless indices, back surface ignored. FWHM by bisection, not from the plot grid.
+
+Macleod H. A. (2010). Thin-Film Optical Filters, 4th ed., ch. 2 and ch. 8 (multiple-cavity band-pass filters). CRC Press. doi:10.1201/9781420073034

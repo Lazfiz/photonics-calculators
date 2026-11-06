@@ -1,0 +1,49 @@
+Maximum Safe Exposure Duration
+
+Calculate the maximum safe exposure time for a CW laser beam based on MPE limits.
+
+Model: Exact
+
+EDUCATIONAL ONLY — NOT COMPLIANCE-GRADE
+
+These pages implement the published exposure limits for the cases each one states, but they are educational tools: no laser safety officer has signed them off.
+
+Do not use these results alone for PPE selection, NHZ / NOHD approval, controlled-area sign-off, enclosure/interlock approval, or formal classification.
+Always verify against ANSI Z136.1, IEC 60825-1, your local procedures, and the responsible laser safety officer / CLSO.
+Wavelength (nm) ⟦532⟧
+Power (mW) ⟦100⟧
+Beam Diameter, 1/e² (mm) ⟦3⟧
+
+Max Safe Exposure Time
+
+770 ns
+
+Limited by
+
+Retina, thermal
+
+Limit	Max time	Aperture (mm)	Beam irradiance over it (W/m²)	Limit (J/m²)
+Retina, thermal	770 ns	7.00	2598	2.00e-3
+Retina, photochemical (blue light)	10.0 s	7.00	2598	4365
+
+Aperture, irradiance and limit are at the limit's max time (at 30 000 s if it isn't reached).
+
+Exposure limits for the eye from ICNIRP 2013 (Health Phys. 105:271, Tables 3, 5, 7 and 8) for a point source (intrabeam viewing of a collimated beam, C_E = 1) and a CW exposure of 1 ns to 30 000 s. From 10 s on, the UV limits equal the EU limit values (Directive 2006/25/EC, Annex II, Table 2.3). The beam is a round Gaussian, centred, and its power is averaged over the limiting aperture: 7 mm for the retina; 1 mm, growing to 3.5 mm at 10 s, in the UV and from 1.4 µm to 100 µm; 11 mm beyond. A smaller pupil does not raise the limits. From 400 to 600 nm the thermal and the photochemical limits both apply; from 400 to 1400 nm the skin limit (twice it from 700 nm) protects the cornea and lens, which matters only from 1150 nm, where C_C raises the retinal limit. Not covered: pulses and extended sources. A beam under 1 mm (1/e diameter, d/√2 for the 1/e² d) is held to its peak on the cornea below 0.35 s (ICNIRP 2013 Table 5 note c).
+
+PNG
+CSV
+Limit: Retina, thermal
+Limit: Retina, photochemical (blue light)
+Beam over 7.0 mm
+t_max
+
+Each limit as an irradiance, H(t)/t, and the beam irradiance over that limit's aperture. The beam is safe up to the first crossing.
+
+MODEL AND REFERENCES
+
+Exact. The equations are exact within the stated assumptions, or are a standard's tabulated values. The results are as good as the inputs. About the tiers
+
+ICNIRP point-source eye limits (180 nm – 1 mm, 1 ns – 30 ks) for a CW round TEM₀₀ beam centred on the averaging aperture (its peak if under 1 mm (1/e) on the cornea below 0.35 s, ICNIRP Table 5 note c). Not modelled: extended sources, pulses.
+
+ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 3, 5, 7 and 8. doi:10.1097/HP.0b013e3182983fd4
+EU Directive 2006/25/EC, Annex II, Table 2.3. Cross-check of the UV exposure limits from 10 s.

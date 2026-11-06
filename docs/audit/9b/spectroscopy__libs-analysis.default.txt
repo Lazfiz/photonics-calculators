@@ -1,0 +1,101 @@
+LIBS Analysis Calculator
+
+Stark and Doppler widths of a LIBS plasma line, electron density from a Stark width, the Saha ratio and the McWhirter LTE limit.
+
+Model: Textbook approximation
+
+Stark width from nₑ
+nₑ from measured Stark width
+H
+C
+Na
+Mg
+Al
+Si
+Ca
+Ti
+Fe
+Cu
+Ar
+Plasma temperature T (K) ⟦10000⟧
+Electron density nₑ (10¹⁶ cm⁻³) ⟦10⟧
+Stark half-width w at 10¹⁶ cm⁻³ (nm) ⟦0.01⟧
+Line wavelength (nm) ⟦500⟧
+Emitter mass (u) ⟦40.078⟧
+Instrument FWHM (Gaussian, nm) ⟦0.05⟧
+Ionisation energy χ (eV) ⟦6.113⟧
+Partition-function ratio U⁺/U⁰ ⟦2⟧
+Largest level gap ΔE (eV, McWhirter) ⟦3⟧
+
+Doppler FWHM
+
+0.005657 nm
+
+v_p = 2037 m/s; with instrument 0.05032 nm
+
+Stark FWHM
+
+0.2000 nm
+
+Δλ_S = 2w · nₑ / 10¹⁶ cm⁻³
+
+Observed FWHM (Voigt, exact)
+
+0.2128 nm
+
+Gaussian 0.05032 nm ⊗ Lorentzian 0.2000 nm
+
+Saha ratio n⁺/n⁰
+
+80.19
+
+ionised fraction 98.8 % (single ionisation)
+
+McWhirter LTE limit
+
+4.320e+15 cm⁻³
+
+nₑ is 23.1× the limit: necessary condition met
+
+Line profile
+
+PNG
+CSV
+Doppler + instrument (Gaussian)
+Stark (Lorentzian)
+Observed line (Voigt)
+
+Δλ_D = λ₀ √(8 k_B T ln 2 / (m c²)), Δ_G = √(Δλ_D² + Δλ_inst²)
+
+Δλ_S = 2w · nₑ / 10¹⁶ cm⁻³
+
+n⁺nₑ/n⁰ = 2 (U⁺/U⁰) (2π mₑ k_B T / h²)^(3/2) exp(−χ / k_B T)
+
+nₑ ≥ 1.6×10¹² √T ΔE³ cm⁻³ (T in K, ΔE in eV)
+
+Electron-impact Stark broadening of an isolated line is Lorentzian with a width linear in nₑ; w is the tabulated electron-impact half-width at 10¹⁶ cm⁻³ for the chosen line and temperature (typically 0.001–0.1 nm; Griem's 1974 tables give w directly. Tables of measured full widths w_m at a density nₑ,m, such as the Konjević critical reviews, give w = (w_m/2)·10¹⁶ cm⁻³/nₑ,m), and ion broadening, a few percent for ionic lines, is neglected. Hydrogen Balmer lines follow the linear Stark effect instead (nₑ ∝ Δλ^(3/2)). The Saha ratio assumes LTE, single ionisation and no lowering of the ionisation energy; take U⁺/U⁰ from partition-function tables (the ground-state weights alone give ½ for Na, 2 for Ca and ⅙ for Al). The McWhirter criterion is necessary but not sufficient for LTE in a transient LIBS plasma.
+
+MODEL AND REFERENCES
+
+Textbook approximation. A standard approximation from the literature (for example paraxial, plane-wave or Gaussian-beam), valid within the range the page states. About the tiers
+
+Isolated-line electron-impact Stark width linear in nₑ (w from tables, ion broadening neglected), Doppler and instrument Gaussians in quadrature, exact Voigt; Saha in LTE for single ionisation without ionisation-potential lowering. Not for hydrogen Balmer lines.
+
+Konjević N., Lesage A., Fuhr J. R., Wiese W. L. (2002). Experimental Stark widths and shifts for spectral lines of neutral and ionized atoms. J. Phys. Chem. Ref. Data 31, 819–927. doi:10.1063/1.1486456
+Cristoforetti G., De Giacomo A., Dell'Aglio M., et al. (2010). Local thermodynamic equilibrium in laser-induced breakdown spectroscopy: beyond the McWhirter criterion. Spectrochim. Acta B 65, 86–95. doi:10.1016/j.sab.2009.11.005
+Griem H. R. (1997). Principles of Plasma Spectroscopy. Cambridge University Press (Saha equation, Stark broadening).
+NIST Atomic Spectra Database, ionization energies. physics.nist.gov
+
+RELATED CALCULATORS
+
+Spectral Line Broadening
+
+Doppler, pressure and natural line widths and the exact Voigt profile, with the Olivero and pseudo-Voigt (TCH) approximations; or combine any Gaussian and Lorentzian widths.
+
+Spectral Resolution Calculator
+
+Compare spectral resolution across grating, prism, and Fabry-Pérot spectrometers.
+
+Spectral Deconvolution & Band Model
+
+Overlapping Gaussian, Lorentzian or pseudo-Voigt bands: areas, band width and centroid, whether neighbours resolve, and least-squares heights with standard errors from a simulated noisy spectrum; or a vibronic (Huang–Rhys) absorption and emission band with its Stokes shift.

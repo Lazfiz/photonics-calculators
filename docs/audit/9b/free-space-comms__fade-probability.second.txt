@@ -1,0 +1,67 @@
+FSO Fade Probability
+
+Gamma-gamma and log-normal fade probability versus fade threshold for an FSO link in turbulence, with aperture averaging and N uncorrelated receivers.
+
+Share
+
+Model: Textbook approximation
+
+Wavelength (nm) ⟦850⟧
+Cn² (m⁻²ᐟ³) ⟦1e-13⟧
+Link Distance (km) ⟦2⟧
+Fade Threshold (dB below mean) ⟦6⟧
+Receiver Diameter (cm, 0 = point) ⟦5⟧
+Independent Receivers N ⟦2⟧
+
+Rytov variance σ_R²
+
+14.3
+
+Scintillation index σ_I²(D)
+
+0.165
+
+Gamma-gamma α, β
+
+6.92, 56.8
+
+P(fade > 6.00 dB), gamma-gamma
+
+3.21e-3
+
+primary result, weak to strong
+
+P(fade), log-normal
+
+4.14e-4
+
+log-normal (weak-turbulence comparison)
+
+P^N, N = 2
+
+1.03e-5
+
+N uncorrelated receivers, selection combining: P^N (separation ≫ √(λL))
+
+Fade probability vs threshold
+PNG
+CSV
+gamma-gamma
+log-normal
+gamma-gamma, 2 receivers
+Model
+
+I = XY, α = 1/(e^σ²lnX − 1), β = 1/(e^σ²lnY − 1)
+
+Gamma-gamma irradiance with α and β set by the aperture-averaged large- and small-scale log variances (Al-Habash, Andrews & Phillips, Opt. Eng. 40, 1554, 2001). It is valid from weak to strong turbulence. The log-normal curve is the weak-turbulence comparison and underestimates deep fades in moderate to strong turbulence.
+
+P(I < t⟨I⟩) with t = 10^(−F/10) for a fade of F dB below the mean. For N receivers whose separation is far larger than √(λL), the fades are independent and selection combining fails only when all fail: P^N.
+
+MODEL AND REFERENCES
+
+Textbook approximation. A standard approximation from the literature (for example paraxial, plane-wave or Gaussian-beam), valid within the range the page states. About the tiers
+
+Gamma-gamma irradiance with α, β from the aperture-averaged plane-wave log variances (weak to strong turbulence); log-normal for comparison. P^N assumes N uncorrelated receivers with selection combining.
+
+Al-Habash M. A., Andrews L. C., Phillips R. L. (2001). Mathematical model for the irradiance probability density function of a laser beam propagating through turbulent media. Opt. Eng. 40(8), 1554–1562. doi:10.1117/1.1386641
+Andrews L. C., Phillips R. L. (2005). Laser Beam Propagation through Random Media, 2nd ed. SPIE. Gamma-gamma model with aperture averaging.

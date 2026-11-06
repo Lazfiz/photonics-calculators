@@ -1,0 +1,76 @@
+Detector Responsivity
+
+Interactive responsivity calculator from quantum efficiency and wavelength, with presets and wavelength sweeps.
+
+Share
+
+Model: Exact
+
+405 nm
+532 nm
+850 nm
+1310 nm
+1550 nm
+QE 0.2
+QE 0.5
+QE 0.8
+QE 0.95
+Quantum efficiency
+0.6
+⟦0.6⟧
+0–1
+Wavelength
+405 nm
+⟦405⟧
+200–2000 nm
+
+Responsivity
+
+0.1960 A/W
+
+η = 1 limit 0.3267 A/W
+
+Photons per watt
+
+2.039e+18 /s
+
+Current @ 1 mW
+
+196.0 µA
+
+ℛ = η·q·λ / (h·c) = η · λ[µm] / 1.23984 A/W
+
+At fixed quantum efficiency the responsivity rises linearly with wavelength, because each watt carries more photons. Without internal gain η ≤ 1, so a datasheet responsivity above the η = 1 line is impossible for a PIN photodiode. Real detectors have η(λ) that falls at short and long wavelengths; see the spectral-response page.
+
+Responsivity vs wavelength
+
+PNG
+CSV
+η = 0.6
+η = 1 (limit)
+Current point
+MODEL AND REFERENCES
+
+Exact. The equations are exact within the stated assumptions, or are a standard's tabulated values. The results are as good as the inputs. About the tiers
+
+ℛ = η·q·λ/(h·c) with exact SI constants, for a wavelength-independent η and no internal gain.
+
+Saleh B. E. A., Teich M. C. (1991). Fundamentals of Photonics. Wiley. §17.1 Quantum efficiency and responsivity, ℛ = η·λ₀/1.24 (λ₀ in µm). doi:10.1002/0471213748
+
+RELATED CALCULATORS
+
+Readout Noise
+
+Readout noise, dark current, shot noise, and SNR analysis for image sensors.
+
+kTC Reset Noise
+
+kTC reset noise voltage, noise charge, and conversion gain for image sensors.
+
+Detector Saturation
+
+Full well capacity, dynamic range with ADC quantization noise, SNR at saturation, and a nonlinearity roll-off.
+
+Shot Noise
+
+Shot noise current, SNR, and noise vs signal analysis for photodetectors.
