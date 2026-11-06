@@ -5,12 +5,12 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 213, 2026-11-06)
+## Status (session 214, 2026-11-06)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
   textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) and 5w-13 (materials) and 5w-14 (spectroscopy) and 5w-15 (thin-film + polarization) done (sessions 163–177): 5w is complete; KRS-5
-  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6j done (sessions 179–194); Gemini hero done (session 195). Phase 7 (Known limitations: features): 7a–7d done (sessions 196–199), 7e done (session 200; 7e-b with the user's Westwood PDF), 7f-a/7f-b done (sessions 201–202), 7g-a/7g-b done (sessions 203–204); Phase 7 done and released (session 205, e27df432). Phase 8 (data-blocked limitations): 8a–8e done (sessions 205–209). Phase 9 (credibility): 9a done (session 210), 9b-1 blind audit done (session 211: 0 errors, 7 minor in 30), 9b-2 fixes done (session 212), 9b-3 audit on About done (session 213); Phase 9 done. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6j done (sessions 179–194); Gemini hero done (session 195). Phase 7 (Known limitations: features): 7a–7d done (sessions 196–199), 7e done (session 200; 7e-b with the user's Westwood PDF), 7f-a/7f-b done (sessions 201–202), 7g-a/7g-b done (sessions 203–204); Phase 7 done and released (session 205, e27df432). Phase 8 (data-blocked limitations): 8a–8e done (sessions 205–209). Phase 9 (credibility): 9a done (session 210), 9b-1 blind audit done (session 211: 0 errors, 7 minor in 30), 9b-2 fixes done (session 212), 9b-3 audit on About done (session 213); Phase 9 done and released (session 214, 433c0b4c). Phase 10 planned (session 214); 10c done. Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -335,8 +335,7 @@ minus signs and ±, and can shift table labels: confirm each value on the render
 ## Phase 10 — reach, fixes, mobile, cross-checks (user, session 214: "plan fixes … other ideas, improvements")
 Evidence (session 214, Vercel Web Analytics 2026-10-07 → 11-06): 9 visitors, 55 pageviews, no search-engine referrers,
 ≈ half on mobile. No Search Console/Bing verification in `src/`, no Open Graph images. One box per session, in this order.
-- [ ] 10c Get found: release `main` (user's yes), Google Search Console + Bing verification (user creates the accounts,
-  gives the tokens), submit `sitemap.xml`, check `robots.ts` and the index coverage.
+- [x] 10c Get found (session 214, `phase-10/10c-get-found`, PR #252 + #253). See Done.
 - [ ] 10a Audit fixes: KD*P/ADP range to 1064 nm (`pockels.ts`), Stokes input and element types in `useURLState` on
   `mueller-polarimetry`, `dichroic-polarizer` tier vs the (1+κ²/n²) exit-face term. Golden tests with sources.
 - [ ] 10e Mobile pass: phone hero (cropped layout, tap to highlight, tap again to open, auto-cycle) and a 375 px check
@@ -366,6 +365,7 @@ Evidence (session 214, Vercel Web Analytics 2026-10-07 → 11-06): 9 visitors, 5
 
 ## Done (one line each; detail in the archive and the PR descriptions)
 - 9b-3 (session 213, `phase-9/9b-3-about-audit`, PR #251): About `#verification` states the blind audit (30 pages, seed 20261106, 0 errors, < 9.5 % at 95 %, 7 minor fixed, AI-reviewer limits) and links `docs/audit/9b-blind-audit.md`.
+- 10c (session 214, `phase-10/10c-get-found`, PR #252): Phase 9 released (433c0b4c, report form tested by email); Google Search Console verified via `metadata.verification.google` (released 54d6990b), sitemap read: 423 pages. Bing import from GSC left to the user.
 - 9b-2 (session 212, `phase-9/9b-2-minor-fixes`, PR #250): 7 MINOR audit findings fixed (6 wording, 1 physics); `cavityPassband` refines the ripple peak by golden section (`goldenSectionMax` in `math.ts`): narrow-bandpass peak 99.67 → 99.69 %; 1280 tests.
 - 9b-1 (session 211, `phase-9/9b-blind-audit`, PR #249): `scripts/audit-sample.ts` (seed 20261106, 3/category) + `scripts/page-capture.mjs`; 5 Opus reviewers recomputed 30 production pages blind at 2 points each: 0 ERROR, 7 MINOR, 23 OK, 59/60 points agree; `docs/audit/9b-blind-audit.md` + 60 captures in `docs/audit/9b/`.
 - 9a (session 210, `phase-9/9a-report-button`, PR #248): `ReportProblem` form in `calculator-shell.tsx` and on About → `POST /api/report` (`src/lib/report.ts`: honeypot, caps, known-href check, 5/10 min per-IP per-instance limit) → Resend email with page URL + query + `VERCEL_GIT_COMMIT_SHA`; 503 without env → prefilled GitHub-issue fallback. About: verification section (411/411 tiered, 1205 physics tests in 182 files of 1279, 969 distinct refs / 1293 citations, 819 linked) from `src/lib/test-stats.json` (`scripts/test-stats.ts`, kept in step by `tests/test-stats.test.ts`).

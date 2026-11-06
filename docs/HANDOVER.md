@@ -1,30 +1,32 @@
-# Handover — 2026-11-06 (session 213 → session 214)
+# Handover — 2026-11-06 (session 214 → session 215)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 213 did 9b-3 on `phase-9/9b-3-about-audit` (PR #251): About `#verification` now states the blind audit.
-Phase 9 is done. 9a, 9b-1, 9b-2 and 9b-3 are on `main` (or pending in #251); none is released. No open ROADMAP stage
-is left: ask the user what comes next (a release, the optional items below, or a new phase).
+Session 214 planned Phase 10 (user: "plan fixes … other ideas, improvements"; all four groups chosen) and did 10c on
+`phase-10/10c-get-found` (PR #252, merged + released) and `phase-10/10c-handover` (PR #253, this handover).
+Next stage: **10a** audit fixes, then 10e → 10d → 10b → 10f.
 
 ## State
-- About `#verification` bullet (`src/app/about/page.tsx`): 30 tiered pages, 3 per category, seed 20261106; recomputed
-  from the live page at two input sets before reading code; 0 wrong, < 9.5 % at 95 % (Clopper–Pearson); 7 minor, all
-  fixed; limits (Claude reviewers, 8 pages against source text, 22 against the textbook result); links
-  `docs/audit/9b-blind-audit.md` on GitHub (`blob/main`). The numbers are hard-coded, not computed.
-- `goldenSectionMax(f, a, b)` in `src/physics/math.ts`; `chromatic-dispersion.ts` still has its own local golden
-  section (`optimumOutputRmsWidth`) that could move to it.
-- 1280 tests. 5 pre-existing eslint warnings (unused imports, thin-film pages); not errors.
+- Released: `release` = 54d6990b (Phase 9 + the Search Console tag). The report form works in production (user's
+  test email arrived with page and commit).
+- Google Search Console: URL-prefix property `https://photonics-calculators.vercel.app/` verified by
+  `metadata.verification.google` in `src/app/layout.tsx`; `sitemap.xml` read, 423 pages discovered. Bing import from
+  GSC is the user's (optional).
+- Baseline (Vercel Web Analytics 2026-10-07 → 11-06): 9 visitors, 55 pageviews, no search referrers, ≈ half mobile.
+- 1280 tests. 5 eslint warnings (10b).
 
 ## Next actions
-1. `/ship` PR #251. No physics changed: no post-merge-check values (after a release:
-   `thin-film/narrow-bandpass=99.69` still covers 9b-2).
-2. Release only when the user asks (push `main` to `release`). Then check `/about#verification` and `/about#report`
-   and send a test report (see `REPORT_TO_EMAIL` and the Resend sender note: `onboarding@resend.dev` only delivers to the
-   Resend account owner).
-3. Optional from the audit: KD*P/ADP range to 1064 nm (`pockels.ts:166,171`); Stokes input and element types into
-   `useURLState` on `mueller-polarimetry`; the `dichroic-polarizer` tier.
+1. 10a on a new branch: KD*P/ADP range to 1064 nm (`pockels.ts:166,171`); Stokes input and element types into
+   `useURLState` on `polarization/mueller-polarimetry` (one state per field, not in a `.map`); `dichroic-polarizer`
+   tier vs the (1+κ²/n²) exit-face term. Golden tests with sources; `physics-reviewer` on the changed pages.
+   post-merge-check: the changed pages' new default values (read them from the built HTML).
+2. Release only when the user asks.
+3. In a week or two: ask the user for the Search Console Pages/Performance reports (indexed count, queries) for 10d.
 4. Still missing data: BSO ε, SBN, Nd σ_a at 808 nm, CO₂ g₀ and I_s, SF59 n₂, the Tm ³H₄ band, ZBLAN κ and band.
 
 ## Non-obvious facts
+- **Session 214:** Vercel Web Analytics on the hobby plan only answers for the last 31 days (400 otherwise); team
+  `team_LaEJuanZGFVc5UHhLD6LRaiq`, project `prj_wTWqQ2nFEuhYGHa06aUYA6Cb4XIH`. A new GSC property's "Request
+  indexing" quota runs out after a few requests ("Quota exceeded", resets daily); the sitemap is what matters.
 - **Session 212:** `page-capture.mjs` against the running dev server on 3300 works after `npm run check` ends
   (`OUT=<dir> PORT=9333 … http://localhost:3300 "/cat/slug"`). The afterpulsing card already switches to "Afterpulses
   per Avalanche" above P_ap = 1, so no cap was needed.
