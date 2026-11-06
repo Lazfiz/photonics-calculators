@@ -42,7 +42,7 @@ export default function RareEarthAbsorptionPage() {
   const [overlapRaw, setOverlap] = useURLState("overlap", 1);
   const [lengthRaw, setLength] = useURLState("length", 0.1); // m
 
-  const line = DOPANT_LINES.find((l) => l.id === lineId) ?? DOPANT_LINES[3];
+  const line = DOPANT_LINES.find((l) => l.id === lineId) ?? DOPANT_LINES.find((l) => l.id === "Yb976") ?? DOPANT_LINES[0];
   const ion = DOPANT_PRESETS.find((p) => p.id === line.ion) ?? DOPANT_PRESETS[0];
   const presetSigma = Number((line.sigmaA / SIGMA_UNIT).toPrecision(6));
   const sigmaInput = sigmaRaw > 0 ? sigmaRaw : presetSigma;
@@ -128,7 +128,8 @@ export default function RareEarthAbsorptionPage() {
         <p className="text-xs text-gray-400 mt-3">
           Small-signal absorption of an unpumped sample: every ion in the ground state. A strong pump bleaches the
           absorption, and Er at 1550 nm turns into gain once inverted; the Rare-Earth-Doped Fiber Amplifier page models
-          that. Nd, Tm and Ho are not offered: their cross-sections need their own sourced data.
+          that. Tm is offered in its ³F₄ band only (1600–1900 nm), not at its 790 nm ³H₄ pump band. Nd and Ho are not
+          offered: their cross-sections need their own sourced data.
         </p>
       </div>
     </>

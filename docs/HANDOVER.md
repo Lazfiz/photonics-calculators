@@ -1,31 +1,36 @@
-# Handover — 2026-11-06 (session 206 → session 207)
+# Handover — 2026-11-06 (session 207 → session 208)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 206 did Phase 8b (LiTaO₃ on `electro-optic`, sapphire n₂(λ) on `nonlinear-index`) on `phase-8/8b-litao3-sapphire`
-(PR #244, to open with `/ship`). PR #243 (8a) is merged, not released. Next: 8c (Tm³⁺), by the user's choice.
+Session 207 did Phase 8c (Tm³⁺ on `rare-earth-absorption`, `rare-earth-doped`, `fiber-amplifier`) on `phase-8/8c-tm-absorption`
+(PR #245, to open with `/ship`). PRs #243–#244 are merged, not released. Phase 8 has no open box left: ask the user for the next.
 
 ## State
-- `materials/pockels.ts`: + `litao3` (Casson 2004 Table 2 unclamped r₃₃/r₁₃ at 632.8/980/1330/1558 nm, `rDispersion`, linear in λ;
-  Bond 1965 n_o/n_e rows 0.6–1.6 µm interpolated in 1/λ²; range 632.8–1558 nm; ε NaN, so not on `photorefractive`).
-  New `transverseCoefficients(crystal, λ)` (r at λ; reference values for crystals without a table); local `interpolate`.
-- `materials/kerr-index.ts`: + `sapphireN2(λ)` (Major 2004 Eq. 2, `SAPPHIRE_N2_RANGE` 270–1550 nm), optional
-  `KerrMedium.dispersion`, `kerrValuesAt(medium, λ)` → status fixed | fit | held (above: 1550 nm value) | below (NaN).
-  The sapphire row is now E ∥ c, n₀ = n_e (Malitson & Dodge), n₂(800) 3.1117e-20 (Dubietis's 3.1, +0.4 %).
-- Golden: LiTaO₃ r(800 nm) 30.06659/7.302166 pm/V; V_π 1558 nm, d 1 mm, L 20 mm = 397.14 V; sapphire n₂ 1064 nm
-  2.979696e-20, 270 nm 5.60714e-20 m²/W.
-- physics-reviewer: LiTaO₃ OK; sapphire edge jumps (+11 % / −45 % back to the 800 nm value) fixed with `kerrValuesAt`.
-  Gate: 1262 tests, 5 eslint warnings (unchanged). 411/411 tiered.
+- `fiber-optics/doped-fiber-gain.ts`: DOPANT_PRESETS + `Tm` (Agger & Povlsen 2006, Al/La fibre Tm1, τ 650 µs): pump 1600 nm
+  σ_a 3.5, σ_e 0.35 (text: η_p 0.10); signals 1900 nm 0.17/2.84 (first: the amplifier pages' preset) and 1740 nm 2.83/3.40
+  (text ratio 1.20), e-25 m², read from the PDF's vector paths of Figs. 3–4. `id` union is now "Er" | "Yb" | "Tm".
+- `materials/dopant-absorption.ts`: DOPANT_LINES sorted by λ per ion (Er980…Yb1064, Tm1600, Tm1740, Tm1900).
+- `fiber-amplifier` presets each set N, r, L, Γ_p, Γ_s (Er L 10 m, Γ 0.8 as before). TDFA: N 8.4e25 (Agger's peak N), Γ_p 0.58
+  (from their same-design Er fibre: 0.63 m⁻¹/(8.7e24·1.24e-25)), Γ_s 0.5 and r 3.5 µm illustrative, L 0.6 m → 15.3 dB at 200 mW.
+- Golden: Tm 1000 wt-ppm α(1600) 11.9263 dB/m, T(10 cm) 0.759866; in-band inversion limit 1/1.1. Gate: 1264 tests, 5 eslint
+  warnings (unchanged). 411/411 tiered. physics-reviewer: data and calibration confirmed (to ±0.005); fixes applied
+  (author is S. D. Agger, Γ pairing with Agger's N, presets reset L/Γ).
 
 ## Next actions
 1. Build ran before push (check its log); `/ship`; merge on the user's yes. Release only on request, then
-   `node scripts/post-merge-check.mjs <sha> materials/electro-optic materials/nonlinear-index` (load only: defaults unchanged),
-   and a URL-state check: `/materials/electro-optic?material=litao3&wavelength=1558` shows V_π 397.1 V (headless dump-dom, below).
-2. Phase 8c (Tm³⁺ on `rare-earth-absorption`, Agger & Povlsen 2006): values in ROADMAP Phase 8. The uploads are in
-   `C:/dev/photonics-calculators-refs` (outside git). Still missing: SBN indices/ε, Nd σ_a at 808 nm, CO₂ I_s and g₀, SF59 n₂.
+   `node scripts/post-merge-check.mjs <sha> materials/rare-earth-absorption fiber-optics/fiber-amplifier fiber-optics/rare-earth-doped`
+   (load only: defaults unchanged), and a URL-state check: `/materials/rare-earth-absorption?line=Tm1600` shows 11.93 dB/m.
+2. Next stage, user's choice: Phase 8 "open but partial" items (Ho³⁺ Le Gouët 2020, BSO Efremidis 2009, ZBLAN) only with a go;
+   or the "Later" items (phone hero, traffic/SEO pass). Still missing data: SBN indices/ε, Nd σ_a at 808 nm, CO₂ I_s and g₀,
+   SF59 n₂, Tm ³H₄ band (Jackson & King 1999).
 3. Still wanted from before: Bai 2020 (APL Photonics 5, 031301), Patel 2001 (Yb:YAG κ), Siegman "Lasers" ch. 11/21,
    Degnan 1989, Egner, Andresen & Hell 2002 (J. Microsc. 206, 24).
 
 ## Non-obvious facts
+- **Session 207:** figures in vector PDFs (Optics Express) can be read exactly: pypdfium2 `page.get_objects(max_depth=5)`, path
+  objects (type 2) → `raw.FPDFPath_CountSegments` / `FPDFPath_GetPathSegment` / `FPDFPathSegment_GetPoint`, colour from
+  `FPDFPageObj_GetStrokeColor`; calibrate on the gridline paths and tick-label text positions, map colours via the legend
+  segments. Check against a value stated in the text (here σ_a(1600) 3.504 vs 3.5). `python -E` ignores PYTHONIOENCODING: print
+  with `ascii()`. `tsx --test` prints `ℹ tests/pass/fail` and `✖`, not TAP `# pass`.
 - **Session 206:** Read's PDF `pages` fails here (no pdftoppm). Render a crop with pypdfium2 (`pip install --target
   <scratchpad>/pylib pypdfium2`; Pillow is installed): `pdfium.PdfDocument(p)[i].render(scale=2).to_pil().crop(box)`, run with
   `python -E -P`. devctl holds a whole `a && b` line: if it gives up, later steps (a heredoc file write) never ran. One file's
@@ -52,15 +57,12 @@ Session 206 did Phase 8b (LiTaO₃ on `electro-optic`, sapphire n₂(λ) on `non
   `x·1e9` of a whole-nm λ can sit 1e-13 off: snap it before interpolating.
 - **Session 201:** Strehl = ∫OTF ν dν / ∫MTF₀ ν dν (∫MTF₀ν dν = 1/8) checks any OTF quadrature. React Compiler lint
   (`preserve-manual-memoization`) fails a `useMemo` whose deps are derived in render; a module-level pure function passes.
-- **Session 200:** scanned PDFs: `python -E -P` (not `-I`) extracts page strips; arXiv: `curl` + `pdftotext` works;
-  headless Chrome screenshots of PDFs come out blank. `csqrt` of a k = 0 argument has Im −0 and can return the growing branch.
+- **Session 200:** `csqrt` of a k = 0 argument has Im −0 and can return the growing branch.
 - **Session 199:** for a unimodal f, Σ f(x₀ + kΔx)·Δx ≤ ∫f + Δx·max f. Watch NaN in "Q > limit" searches: write
   `!(Q <= limit)`. A dev server of this repo may already run on 3300; SSR doesn't apply URL state.
 - **Session 198:** `devctl` (CPU scheduler shared with other projects) holds a *whole* Bash command line while it waits and
   gives up after 90 s with exit 75: run tests and gates with `run_in_background` (they queue), and check `git diff --stat`
   before trusting a test count.
-- **Session 197:** check a quadrature against an independent brute-force integral rather than its own refinement.
-- **Session 196:** Optica PDFs behind bot checks: the user can upload them; read one with `pdftotext -layout`.
 - **Session 194:** verify a lock-in harmonic formula by brute force. Table values stored in SI need `+x.toPrecision(6)`.
 - **Session 193:** headless checks: CDP `Page.captureScreenshot` with a `clip` at `Emulation.setDeviceMetricsOverride` width
   360. Node edit scripts in a quoted heredoc turn `\r\n` inside a template into real CRLF: write test text with the Write tool.

@@ -37,7 +37,7 @@ export interface CrossSection {
 }
 
 export interface DopantPreset {
-  readonly id: "Er" | "Yb";
+  readonly id: "Er" | "Yb" | "Tm";
   readonly name: string;
   readonly host: string;
   /** Where the cross-sections and lifetime come from. */
@@ -51,8 +51,8 @@ export interface DopantPreset {
 }
 
 /**
- * Measured cross-sections for the two ions a two-level model describes (Er pumped at 980 nm, where the ⁴I₁₁/₂ level
- * empties in µs, or in band at 1480 nm; Yb). Real fibres vary with the host glass by tens of percent: use the fibre's
+ * Measured cross-sections for the ions a two-level model describes (Er pumped at 980 nm, where the ⁴I₁₁/₂ level
+ * empties in µs, or in band at 1480 nm; Yb; Tm pumped in band, ³H₆ ↔ ³F₄ only, so not at 790 nm). Real fibres vary with the host glass by tens of percent: use the fibre's
  * own data where there is any.
  * - Er³⁺ in GeO₂–Al₂O₃–SiO₂: W. L. Barnes, R. I. Laming, E. J. Tarbox, P. R. Morkel, IEEE J. Quantum Electron. 27, 1004
  *   (1991), doi:10.1109/3.83335. σ_a(980) 1.7 ± 0.3e-25 m² (Table V); 1480 and 1550 nm read from Fig. 6(c), ±0.15e-25 m² reading
@@ -61,6 +61,11 @@ export interface DopantPreset {
  * - Yb³⁺ in aluminosilicate: M. A. Melkumov, I. A. Bufetov, K. S. Kravtsov, A. V. Shubin, E. M. Dianov, Quantum Electron.
  *   34, 843 (2004), doi:10.1070/QE2004v034n09ABEH002688; values from the authors' full report, arXiv:1502.02885,
  *   Appendix 2 (pm² = 1e-24 m²) and τ 0.83 ms (Table 1).
+ * - Tm³⁺ in Al/La-codoped silica (fibre "Tm1"): S. D. Agger, J. H. Povlsen, Opt. Express 14, 50 (2006),
+ *   doi:10.1364/OPEX.14.000050. σ_a(1600) 3.5 ± 0.1e-25 m² and σ_e/σ_a(1600) 0.10 ± 0.02 (p. 53), σ_e/σ_a(1740) 1.20 ± 0.02
+ *   (p. 54), τ(³F₄) 650 µs (p. 52). σ_a(1740) and both σ at 1900 nm come from the vector data of Figs. 3 and 4 (the two
+ *   figures agree to ±0.05e-25 m²; Fig. 4 gives 3.395/2.830 = 1.20 at 1740 nm). The emission curve is only defined
+ *   over 1580–2060 nm.
  */
 export const DOPANT_PRESETS: readonly DopantPreset[] = [
   {
@@ -75,6 +80,15 @@ export const DOPANT_PRESETS: readonly DopantPreset[] = [
     id: "Yb", name: "Ytterbium (Yb³⁺)", host: "aluminosilicate", source: "Melkumov et al. 2004", molarMass: 0.173045, tau: 0.83e-3,
     pumps: [{ lambda: 976e-9, sigmaA: 2.69e-24, sigmaE: 2.97e-24 }],
     signals: [{ lambda: 1064e-9, sigmaA: 5.7e-27, sigmaE: 3.1e-25 }],
+  },
+  {
+    id: "Tm", name: "Thulium (Tm³⁺)", host: "Al/La-codoped silica", source: "Agger & Povlsen 2006", molarMass: 0.168934, tau: 0.65e-3,
+    pumps: [{ lambda: 1600e-9, sigmaA: 3.5e-25, sigmaE: 0.35e-25 }],
+    // The first signal is the amplifier pages' preset.
+    signals: [
+      { lambda: 1900e-9, sigmaA: 0.17e-25, sigmaE: 2.84e-25 },
+      { lambda: 1740e-9, sigmaA: 2.83e-25, sigmaE: 3.40e-25 },
+    ],
   },
 ];
 

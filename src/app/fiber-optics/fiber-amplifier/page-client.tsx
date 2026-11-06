@@ -15,11 +15,14 @@ const dB = (x: number) => 10 * Math.log10(x);
 // Text for a result, or a dash when the model has no finite value.
 const show = (x: number, text: () => string) => (Number.isFinite(x) ? text() : "—");
 
-// Preset = ion, pump line and the old page's fibre (N, core radius).
+// Preset = ion, pump line and a fibre (N, core radius, length, overlaps); each sets every field so switching resets them.
 const PRESETS = [
-  { id: "er980", label: "EDFA, 980 nm pump", ion: 0, pump: 0, N: 1e24, r: 2.2 },
-  { id: "er1480", label: "EDFA, 1480 nm pump", ion: 0, pump: 1, N: 1e24, r: 2.2 },
-  { id: "yb976", label: "YDFA, 976 nm pump", ion: 1, pump: 0, N: 3e25, r: 3.5, L: 1.5 }, // pump is absorbed within about 1.5 m
+  { id: "er980", label: "EDFA, 980 nm pump", ion: 0, pump: 0, N: 1e24, r: 2.2, L: 10, gp: 0.8, gs: 0.8 },
+  { id: "er1480", label: "EDFA, 1480 nm pump", ion: 0, pump: 1, N: 1e24, r: 2.2, L: 10, gp: 0.8, gs: 0.8 },
+  { id: "yb976", label: "YDFA, 976 nm pump", ion: 1, pump: 0, N: 3e25, r: 3.5, L: 1.5, gp: 0.8, gs: 0.8 }, // pump is absorbed within about 1.5 m
+  // N is Agger & Povlsen's peak density for their Tm1 fibre, defined with their Γ: 0.58 from their Er fibre of the same design
+  // (0.63 m⁻¹ / (8.7e24 m⁻³ · 1.24e-25 m²) at 1470 nm). Γ_s 0.5 and r 3.5 µm are illustrative; the gain peaks near 0.6 m at 200 mW.
+  { id: "tm1600", label: "TDFA, 1600 nm in-band pump", ion: 2, pump: 0, N: 8.4e25, r: 3.5, L: 0.6, gp: 0.58, gs: 0.5 },
 ] as const;
 
 function Card({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone: string }) {
@@ -78,7 +81,9 @@ export default function FiberAmplifierCalculator() {
     setTau(ion.tau * 1e3);
     setN(p.N);
     setRadius(p.r);
-    if ("L" in p) setLength(p.L);
+    setLength(p.L);
+    setGp(p.gp);
+    setGs(p.gs);
   };
 
   const fiber: DopedFiber = useMemo(() => ({ N, area: Math.PI * (r_um * 1e-6) ** 2, tau: tau_ms * 1e-3 }), [N, r_um, tau_ms]);
@@ -140,7 +145,7 @@ export default function FiberAmplifierCalculator() {
         </select>
         <p className="text-xs text-gray-400 mt-2">
           Presets fill measured cross-sections (Er in alumino-germanosilicate, Barnes et al. 1991; Yb in aluminosilicate,
-          Melkumov et al. 2004). They vary with the
+          Melkumov et al. 2004; Tm in Al/La silica, Agger &amp; Povlsen 2006, signal at 1900 nm). They vary with the
           host glass by tens of percent: enter your fibre&apos;s own data where you have it.
         </p>
       </div>
