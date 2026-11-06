@@ -5,12 +5,12 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 209, 2026-11-06)
+## Status (session 210, 2026-11-06)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
   textbook-tier pass, user choice): 5w-1 to 5w-3 (detectors) and 5w-4 to 5w-6 (imaging) done, 5w-7 and 5w-8 (fiber-optics) and 5w-9, 5w-10 (wave-optics) and 5w-11 (free-space-comms) and 5w-12 (laser-safety) and 5w-13 (materials) and 5w-14 (spectroscopy) and 5w-15 (thin-film + polarization) done (sessions 163–177): 5w is complete; KRS-5
-  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6j done (sessions 179–194); Gemini hero done (session 195). Phase 7 (Known limitations: features): 7a–7d done (sessions 196–199), 7e done (session 200; 7e-b with the user's Westwood PDF), 7f-a/7f-b done (sessions 201–202), 7g-a/7g-b done (sessions 203–204); Phase 7 done and released (session 205, e27df432). Phase 8 (data-blocked limitations): 8a–8e done (sessions 205–209). Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
+  Sellmeier done (session 178). Phase 6 (open findings, accuracy first): 6a–6j done (sessions 179–194); Gemini hero done (session 195). Phase 7 (Known limitations: features): 7a–7d done (sessions 196–199), 7e done (session 200; 7e-b with the user's Westwood PDF), 7f-a/7f-b done (sessions 201–202), 7g-a/7g-b done (sessions 203–204); Phase 7 done and released (session 205, e27df432). Phase 8 (data-blocked limitations): 8a–8e done (sessions 205–209). Phase 9 (credibility): 9a done (session 210). Phase 4: every page is tiered and imports a tested physics module; the open findings remain.
 
 Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its untiered pages).
 
@@ -323,20 +323,7 @@ minus signs and ±, and can shift table labels: confirm each value on the render
   Bot-checked hosts (opg.optica.org, DTIC, Soton eprints, DTU Orbit, HAL): Optics Express papers are open in a browser.
 
 ## Phase 9 — credibility (user, session 209: "The credibility is the most important bit")
-- [ ] 9a (user's pick: report button + About fix first; delivery "Form → email") "Report a problem" on every calculator,
-  added once in `calculator-shell.tsx` (client form island). It sends the page href, the current query string (inputs),
-  the deployed SHA and the message. Delivery: a Next 16 route handler (read `node_modules/next/dist/docs/` first) emails it
-  through Resend. The key comes from Vercel env `RESEND_API_KEY` plus `REPORT_TO_EMAIL`; the user sets both, and code never
-  reads `.env*`. Guards: honeypot field, length caps, a per-IP rate limit, no address on the page. A fallback message
-  shows when it isn't configured.
-
-  About fixes:
-  - Drop "being reviewed one by one".
-  - Correct the chart wording: Plotly and SVG.
-  - State the verification: tier counts, the golden-test count and the reference counts.
-  - Link the report form.
-
-  Branch `phase-9/9a-report-button`.
+- [x] 9a Report-a-problem form + About fix (session 210, `phase-9/9a-report-button`, PR #248). See Done.
 - [ ] 9b Blind audit: 25–30 random tiered pages, recomputed by hand against their cited references. Fix the findings and
   publish the error rate on About.
 
@@ -357,6 +344,7 @@ minus signs and ±, and can shift table labels: confirm each value on the render
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 9a (session 210, `phase-9/9a-report-button`, PR #248): `ReportProblem` form in `calculator-shell.tsx` and on About → `POST /api/report` (`src/lib/report.ts`: honeypot, caps, known-href check, 5/10 min per-IP per-instance limit) → Resend email with page URL + query + `VERCEL_GIT_COMMIT_SHA`; 503 without env → prefilled GitHub-issue fallback. About: verification section (411/411 tiered, 1205 physics tests in 182 files of 1279, 969 distinct refs / 1293 citations, 819 linked) from `src/lib/test-stats.json` (`scripts/test-stats.ts`, kept in step by `tests/test-stats.test.ts`).
 - 8e (session 209, `phase-8/8e-bso-zblan`): `electro-optic` BSO (Efremidis 2009, Appl. Phys. B 95, 467; Fig. 3 digitized every 20 nm, 500–800 nm): r₄₁ 4.14→2.03 pm/V, n 2.6656→2.5016, ρ 40.05→12.14 °/mm; 633 nm r₄₁ 2.7285, n 2.560005, ρ 21.1825, V_π 691.397 V (d 1, L 10 mm); gyrotropic Jones transmission vs a 4000-slab product. The box's "4.2 ± 2.0" and "40 ± 12" were misreads of the 500→800 nm ranges. `infrared-glass` ZBLAN Knoop 250 kg/mm², dn/dT −11.5e-6/K (midpoint of −8 to −15, Poulain 2024 APL Photonics 9, 091103); n(2 µm, 100 °C) 1.48707.
 - 8d (session 208, `phase-8/8d-ho-absorption`, PR #246): Ho³⁺ (Le Gouët 2020, Opt. Express 28, 22307; arXiv:2003.14188v1) in DOPANT_PRESETS: pumps 1908 nm 1.9/1.6 (text), 1946 nm 4.3 (text)/5.9; signals 2120 nm 0.18/1.30, 1995 nm 1.93/4.38 (σ_e from the measured gain) e-25 m², τ 0.7 ms; raster Fig. 1 digitized (reproduces 5 text values to ±0.05); HDFA preset fibre #1 N 3.7e25, Γ 0.78/0.72, L 2 m → 7.9 dB at 200 mW; golden fibre #2 428.6 vs 425 ± 5 dB/m, 1000 wt-ppm α(1946) 15.0080 dB/m.
 - 8c (session 207, `phase-8/8c-tm-absorption`, PR #245): Tm³⁺ (Agger & Povlsen 2006, Al/La fibre Tm1) in DOPANT_PRESETS: 1600 nm σ_a 3.5, σ_e 0.35 (text), 1740 nm 2.83/3.40 (ratio 1.20 from text), 1900 nm 0.17/2.84 (vector data of Figs. 3–4) e-25 m², τ 650 µs; in-band TDFA presets (fiber-amplifier: N 8.4e25, Γ_p 0.58, Γ_s 0.5, L 0.6 m, 15.3 dB); every amplifier preset sets L and Γ. 1000 wt-ppm α(1600) 11.9263 dB/m.

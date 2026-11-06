@@ -1,77 +1,80 @@
-# Handover — 2026-11-06 (session 209 → session 210)
+# Handover — 2026-11-06 (session 210 → session 211)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 209 did Phase 8e (BSO on `electro-optic`, ZBLAN Knoop and dn/dT on `infrared-glass`) on `phase-8/8e-bso-zblan`.
-PR: see Next actions 1. Not released. Sources are in `C:/dev/photonics-calculators-refs`: efremidis2009-sillenite.pdf and
-poulain2024-hmfg.pdf.
+Session 210 did Phase 9a (the "Report a problem" form and the About fix) on `phase-9/9a-report-button`, PR #248. It is not
+released. Next: 9b, the blind audit.
 
 ## State
-- `materials/pockels.ts`: crystal `bso`, geometry "cubic" (field along [110], light along [1̄10]), with tables every 20 nm
-  over 500–800 nm digitized from Efremidis 2009 (Appl. Phys. B 95, 467), Fig. 3 (vector paths):
-  - r₄₁ 4.14→2.03 pm/V;
-  - n 2.6656→2.5016;
-  - ρ 40.05→12.14 °/mm.
-  New functions: `cubicCoefficients`, `cubicHalfWaveVoltage` (V_π = λd/(2n³r₄₁L)) and `gyrotropicTransmission(Γ, ρL)`.
-  The last is a closed-form Jones result (exp(−i(Γ/2 σ₁ + ρL σ₂)), analyzer at 90° + ρL); a test compares it with a
-  4000-slab product. The page draws curves with and without ρL out to 4·V_π.
-- The ROADMAP's "4.2 ± 2.0 pm/V" and "40 ± 12 °/mm" were misreads: they are the 500→800 nm ranges.
-- Goldens at 633 nm: r₄₁ 2.7285, n 2.560005, ρ 21.1825 °/mm, V_π 691.397 V (d 1 mm, L 10 mm).
-- Caveats:
-  - Fig. 3 uses its own n (2.560 at 633 nm, vs Gospodinov's 2.528), so n³r₄₁ stays the measured product.
-  - Screening of the dc field below 560 nm is stated on the page.
-  - BSO has no ε yet.
-  - physics-reviewer: OK, and its fixes are applied.
-- `window-materials.ts` ZBLAN, from Poulain 2024 (APL Photonics 9, 091103):
-  - Knoop 250 kg/mm² ("around 250 for ZBLAN"; Table IV gives 190–250 for fluorozirconates).
-  - dn/dT −11.5e-6/K: the midpoint of the −8 to −15 range given for fluoride glasses (his ref. 32, Izumitani 1987).
-  - No band or conductivity.
-  - Golden: n(2 µm) 1.487990, and 1.487070 at 100 °C.
-- Gate: 1269 tests; 411/411 pages tiered.
+- `src/lib/report.ts`: `REPORT_LIMITS`, `parseReport(raw, knownHref)`, `reportEmail(report, origin, sha)` and `RateLimiter`.
+  It has no registry import, because the client form reads the limits.
+- `src/app/api/report/route.ts`: `POST` is the only dynamic route (ƒ in the build).
+  - Without `RESEND_API_KEY` or `REPORT_TO_EMAIL` it answers 503 `not-configured`.
+  - It limits 5 reports per IP per 10 min, per instance only.
+  - A filled honeypot gets 200 and no email is sent.
+  - Bad input gets 400; a Resend error gets 502.
+  - The sender is `REPORT_FROM_EMAIL` or `onboarding@resend.dev`.
+  - The body is the page URL with its query, `VERCEL_GIT_COMMIT_SHA`, the reply-to address and the message.
+- `src/components/report-problem.tsx` is a client component: a `<details id="report">` placed in the shell after
+  `ModelReferences`, and opened on About.
+  - On a 503, 5xx or network error it shows a prefilled GitHub issue link instead.
+  - It sets `suppressHydrationWarning` on `<details>`: a click on the summary before hydration toggles `open` natively.
+- About:
+  - Removed "being reviewed one by one".
+  - Charts are now described as SVG, or Plotly where a plot needs zoom.
+  - New `#verification` section: 411/411 tiered; 1205 physics tests in 182 files out of 1279; 969 distinct references
+    (1293 citations), 819 of them linked. The section includes the form.
+  - The home footer links `/about#report`.
+- `src/lib/test-stats.json` is written by `npx tsx scripts/test-stats.ts`. **`tests/test-stats.test.ts` fails whenever
+  the test count changes**, so rerun the script after adding tests.
+- Gate: 1279 tests; the build is green.
 
 ## Next actions
-1. 8e is merged (PR #247) and released: `release` = 1968d6e1. post-merge-check ALL PASS on the 8d and 8e pages.
-2. Next: Phase 9a (user's pick). Add a "Report a problem" form on every calculator; delivery is Resend email via a route
-   handler (see the ROADMAP box). Also fix the About page. Branch `phase-9/9a-report-button` holds the box.
-   - Done (session 209): `RESEND_API_KEY` and `REPORT_TO_EMAIL` are set in Vercel as Production, sensitive. Only names were checked
-     via MCP; never decrypt. Preview has neither, so the form must fall back gracefully.
-   - Then 9b: the blind audit.
+1. `/ship` PR #248. There are no physics pages, so there are no post-merge-check values. After a release, check
+   production by hand:
+   - `/about#report` loads;
+   - a test report from a calculator page arrives at `REPORT_TO_EMAIL`.
+   Resend's `onboarding@resend.dev` sender only delivers to the Resend account owner's address. If `REPORT_TO_EMAIL` is
+   a different address, verify a domain in Resend and set `REPORT_FROM_EMAIL`.
+2. Next: 9b, the blind audit:
+   - recompute 25–30 random tiered pages by hand against their cited references;
+   - fix the findings;
+   - publish the error rate on About, in the `#verification` section.
 3. Still missing data: BSO ε, SBN, Nd σ_a at 808 nm, CO₂ g₀ and I_s, SF59 n₂, the Tm ³H₄ band, ZBLAN κ and band.
 
 ## Non-obvious facts
-- **Session 209:** `python -I` hides the user site, so PIL is missing: use `python -E -P` for pypdfium2 renders. A scratchpad
-  `.ts` probe needs absolute `C:/dev/…` imports. Port 3300 already serves this working copy (dev server): reuse it.
-- **Session 208:** raster figures: extract the image (pypdfium2 `PdfImage.get_bitmap(render=False).to_pil()`), find the frame
-  and gridlines by counting dark/grey pixels per row and column, then take a colour-weighted centroid per column (blue b − r,
-  red r − g). Check against every value the text states. devctl may end a background task with only its "waiting" line
-  while the command still runs later: write to a log and wait on the log (Monitor until-loop); two queued runs share it.
-- **Session 207:** figures in vector PDFs (Optics Express) can be read exactly: pypdfium2 `page.get_objects(max_depth=5)`, path
-  objects (type 2) → `raw.FPDFPath_CountSegments` / `FPDFPath_GetPathSegment` / `FPDFPathSegment_GetPoint`, colour from
-  `FPDFPageObj_GetStrokeColor`; calibrate on the gridline paths and tick-label text positions, map colours via the legend
-  segments. Check against a value stated in the text (here σ_a(1600) 3.504 vs 3.5). `python -E` ignores PYTHONIOENCODING: print
-  with `ascii()`. `tsx --test` prints `ℹ tests/pass/fail` and `✖`, not TAP `# pass`.
-- **Session 206:** Read's PDF `pages` fails here (no pdftoppm). Render a crop with pypdfium2 (`pip install --target
-  <scratchpad>/pylib pypdfium2`; Pillow is installed): `pdfium.PdfDocument(p)[i].render(scale=2).to_pil().crop(box)`, run with
-  `python -E -P`. devctl holds a whole `a && b` line: if it gives up, later steps (a heredoc file write) never ran. One file's
-  hunks in two commits: `git diff -U1 f > p`, cut the wanted hunks, `git apply --cached --unidiff-zero`. n is nearly linear
-  in 1/λ²: interpolate tabulated indices there. A fit with a range needs defined edges: hold or NaN, never snap back.
-- **Session 205:** pdftotext can shift a table's row labels when a row's name cell is empty: DeSalvo 1996 Table I printed
-  "SiO₂" on BaF₂'s row. Cross-check a row against a stated property (band gap, a worked example in the text) before
-  trusting it. Open-access Optica papers (Optics Express, OL via arXiv) are blocked to curl by Radware; arXiv, UCF STARS,
-  PMC and NTRS work. A URL-state value on production: `chrome --headless=new --dump-dom --virtual-time-budget=8000 <url>`
-  then strip tags and grep (no CDP script needed). `post-merge-check … | tail` hides its exit code: read its MISSING lines.
-  refractiveindex.info "formula 2" is n² − 1 = Σ Bλ²/(λ² − C) with C already squared.
-- **Session 198:** `devctl` (CPU scheduler shared with other projects) holds a *whole* Bash command line while it waits and
-  gives up after 90 s with exit 75: run tests and gates with `run_in_background` (they queue), and check `git diff --stat`
-  before trusting a test count.
-- **Editing:** long Bash heredocs with mixed quotes fail. Apply edits with a replace-once node script (fails unless the old
-  text occurs exactly once).
-- **Session 160:** Chrome extension screenshots time out on this site; use a headless CDP script (pattern in `scripts/ui-check.mjs`).
-  A bare `python -` or `cat > file` with no input hangs. Port 3000 can be another project: use 3100 or 3300.
-  Prefix `MSYS_NO_PATHCONV=1` for ui-check and chrome.
-- **Charts:** `SimpleChart` pads axes 5 %; `SimpleLineChart` starts axes at the data min/max, has no y2. `null` and non-finite
-  values break lines. `SimpleChart` draws nothing until measured.
-- **Pages:** `useURLState` in `.map` breaks hooks; per page `xRaw` from `useURLState`, `x = clamp(xRaw, lo, hi, default)`. NaN/∞
-  show as "—" with a reason. JSX text needs `&apos;`; registry/JSX text can't hold `{…}`. `npm run dev` touches
-  `next-env.d.ts`: `git checkout` it.
-- **Shell:** probes are scratchpad `.ts` files run from the repo (`node --import tsx <abs path>`, imports as `C:/dev/…`).
-  `git grep` skips untracked files. CI ≈ 2–3 min. Wrap chrome/ui-check/server commands in `timeout <s>`; never `taskkill /IM chrome.exe`.
+- **Session 210:**
+  - For a CDP probe, copy lines 1–79 of `scripts/ui-check.mjs` (Chrome launch, `send`, `evaluate`, console logs) and
+    append the steps. Chrome sometimes fails to open its debug port (`fetch failed`, ECONNREFUSED 9333); rerun it.
+  - Set a controlled textarea from CDP with the native value setter plus an `input` event.
+  - While `npm run check` runs, the dev server on port 3300 is too slow for probes. A probe that clicks before hydration
+    triggers attribute mismatches.
+- **Session 209:** `python -I` hides the user site, so PIL is missing: use `python -E -P` for pypdfium2 renders. A
+  scratchpad `.ts` probe needs absolute `C:/dev/…` imports. Port 3300 already serves this working copy.
+- **Session 208:** raster figures:
+  - Extract the image with pypdfium2 `PdfImage.get_bitmap(render=False).to_pil()`.
+  - Find the frame and gridlines by counting dark and grey pixels per row and column.
+  - Take a colour-weighted centroid per column: blue b − r, red r − g.
+  - Check the result against every value the text states.
+  devctl may end a background task with only its "waiting" line: write to a log and wait on the log.
+- **Session 207:** figures in vector PDFs can be read exactly:
+  - Get the path objects with pypdfium2 `page.get_objects(max_depth=5)` (type 2), then `FPDFPath_*` segments with
+    `FPDFPageObj_GetStrokeColor`.
+  - Calibrate on the gridlines and the tick-label positions.
+  `python -E` ignores PYTHONIOENCODING, so print with `ascii()`.
+- **Session 206:** Read's PDF `pages` fails here: render a crop with pypdfium2 and run it with `python -E -P`. One
+  file's hunks can go into two commits: `git diff -U1 f > p`, cut the hunks, then `git apply --cached --unidiff-zero`. n
+  is nearly linear in 1/λ², so interpolate tabulated indices there.
+- **Session 205:** pdftotext can shift a table's row labels; cross-check a row against a stated property. Curl gets
+  Radware-blocked on Optica; arXiv, UCF STARS, PMC and NTRS work. A URL-state value on production: `chrome
+  --headless=new --dump-dom --virtual-time-budget=8000 <url>`. `post-merge-check … | tail` hides its exit code.
+- **Session 198:** `devctl` holds a *whole* Bash command line and gives up after 90 s (exit 75): run gates with
+  `run_in_background`, and check `git diff --stat` before trusting a test count.
+- **Editing:** long Bash heredocs with mixed quotes fail. Apply edits with a replace-once node script.
+- **Session 160:** Chrome extension screenshots time out on this site; use a headless CDP script. Port 3000 can be
+  another project: use 3100 or 3300. Prefix `MSYS_NO_PATHCONV=1` for ui-check and chrome.
+- **Charts:** `SimpleChart` pads axes 5 %. `SimpleLineChart` starts axes at the data min/max and has no y2. `null` and
+  non-finite values break lines.
+- **Pages:** `useURLState` in `.map` breaks hooks. NaN/∞ show as "—" with a reason. JSX text needs `&apos;`. `npm run
+  dev` touches `next-env.d.ts`: `git checkout` it.
+- **Shell:** probes are scratchpad `.ts` files run from the repo (`node --import tsx <abs path>`). `git grep` skips
+  untracked files. CI takes ≈ 2–3 min. Wrap chrome, ui-check and server commands in `timeout <s>`.
