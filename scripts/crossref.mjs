@@ -3,7 +3,7 @@
 //   node scripts/crossref.mjs -q "Marcuse curvature loss formula optical fibers"   # search: top 3 matches
 // Line: DOI | type | year | authors | title | container volume(issue):pages
 const API = "https://api.crossref.org/works";
-const HEADERS = { "User-Agent": "photonics-calculators reference check (https://photonics-calculators.vercel.app)" };
+const HEADERS = { "User-Agent": "photonics-calculators reference check (https://photonicscalculators.com)" };
 
 function line(work) {
   const authors = (work.author ?? []).map((a) => a.family ?? a.name ?? "?");

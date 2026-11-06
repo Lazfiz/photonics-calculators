@@ -3,7 +3,7 @@
 ~470 interactive optics/photonics calculators (laser safety, fiber, thin film, imaging,
 spectroscopy, detectors, materials, wave optics, polarization, free-space comms).
 Next.js 16 App Router + React 19 + TypeScript (strict) + Tailwind 4, statically prerendered on
-Vercel: https://photonics-calculators.vercel.app. Developed with Claude Code only.
+Vercel: https://photonicscalculators.com (the old photonics-calculators.vercel.app host 308s there). Developed with Claude Code only.
 
 **Plan & status:** `docs/ROADMAP.md` holds the open work, the status table, open findings and decisions. Session
 handover: `docs/HANDOVER.md`. Continue from the first unchecked ROADMAP box; don't re-review the codebase. History

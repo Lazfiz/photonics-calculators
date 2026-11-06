@@ -42,14 +42,14 @@ test("report: rejects unknown pages, bad JSON, and lengths outside the caps", ()
 test("report: the email names the page with its inputs, the commit and the reply address", () => {
   const email = reportEmail(
     { href: HREF, query: "lambda=633", message: "The figure of merit looks off.", contact: "a@b.org" },
-    "https://photonics-calculators.vercel.app",
+    "https://photonicscalculators.com",
     "abc1234",
   );
   assert.equal(email.subject, `Problem report: ${HREF}`);
   assert.equal(
     email.text,
     [
-      `Page: https://photonics-calculators.vercel.app${HREF}?lambda=633`,
+      `Page: https://photonicscalculators.com${HREF}?lambda=633`,
       "Commit: abc1234",
       "Reply to: a@b.org",
       "",
@@ -68,7 +68,7 @@ test("report: the rate limiter allows `limit` hits per window per key", () => {
 });
 
 const request = (raw: string, ip: string) =>
-  new Request("https://photonics-calculators.vercel.app/api/report", {
+  new Request("https://photonicscalculators.com/api/report", {
     method: "POST",
     headers: { "content-type": "application/json", "x-forwarded-for": `${ip}, 10.0.0.1` },
     body: raw,
@@ -118,7 +118,7 @@ test("report route: sends one email through Resend with a reply-to", async () =>
   assert.deepEqual(sent.to, ["owner@example.org"]);
   assert.equal(sent.reply_to, "a@b.org");
   assert.equal(sent.subject, `Problem report: ${HREF}`);
-  assert.match(sent.text, /^Page: https:\/\/photonics-calculators\.vercel\.app\/materials\/acousto-optic\?lambda=633\n/);
+  assert.match(sent.text, /^Page: https:\/\/photonicscalculators\.com\/materials\/acousto-optic\?lambda=633\n/);
 });
 
 test("report route: honeypot answers ok without sending; bad input is a 400", async () => {

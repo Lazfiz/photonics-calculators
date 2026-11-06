@@ -1,8 +1,9 @@
 // A calculator page's metadata and JSON-LD, generated from its registry entry. Server-side only.
 import type { Metadata } from "next";
+import { SITE_URL } from "../lib/site";
 import { displayName, getCalculator, getCategory, type Calculator } from "./index";
 
-export const SITE_URL = "https://photonics-calculators.vercel.app";
+export { SITE_URL };
 
 /** `export const metadata = calculatorMetadata(href)` in each calculator's page.tsx. */
 export function calculatorMetadata(href: string): Metadata {

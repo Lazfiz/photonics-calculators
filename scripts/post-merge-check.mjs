@@ -5,7 +5,7 @@
 // loaded. Repeat a page to check several values. BASE overrides the production URL.
 import { execFileSync } from "node:child_process";
 
-const BASE = process.env.BASE ?? "https://photonics-calculators.vercel.app";
+const BASE = process.env.BASE ?? "https://photonicscalculators.com";
 const [sha, ...specs] = process.argv.slice(2);
 if (!sha || specs.length === 0) {
   console.error("Usage: node scripts/post-merge-check.mjs <sha> <category/slug>[=<value>] …");

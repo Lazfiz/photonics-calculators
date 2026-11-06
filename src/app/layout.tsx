@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { totalCalculatorCount } from "@/lib/home-categories";
+import { SITE_URL } from "@/lib/site";
 import { URL_STATE_PENDING_SCRIPT } from "@/lib/url-state-pending";
 import "./globals.css";
 
@@ -12,10 +13,8 @@ export const viewport: Viewport = {
   themeColor: "#030712",
 };
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://photonics-calculators.vercel.app";
-
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(SITE_URL),
   icons: {
     icon: "/favicon.ico",
     apple: "/icon-192.png",
@@ -42,7 +41,7 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "Photonics Calculators",
     locale: "en_US",
-    url: siteUrl,
+    url: SITE_URL,
   },
   twitter: {
     card: "summary_large_image",
@@ -75,7 +74,7 @@ export default function RootLayout({
               applicationCategory: "UtilitiesApplication",
               operatingSystem: "Any",
               offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-              url: process.env.NEXT_PUBLIC_SITE_URL || "https://photonics-calculators.vercel.app",
+              url: SITE_URL,
             }),
           }}
         />

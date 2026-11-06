@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 
-import nextConfig from "../next.config.mjs";
+import nextConfig, { OLD_HOST } from "../next.config.mjs";
+import { SITE_URL } from "../src/lib/site";
 import { findCalculator } from "../src/registry";
 import calculatorRedirects from "../src/registry/redirects.json";
 import { CATEGORY_IDS } from "../src/registry/types";
@@ -24,8 +25,15 @@ test("each redirect goes from a removed page to a registered calculator, in one 
   }
 });
 
-test("next.config.mjs serves every redirect as permanent", async () => {
-  const served = await nextConfig.redirects!();
+test("next.config.mjs sends the old host to SITE_URL first, then serves every redirect as permanent", async () => {
+  const [host, ...served] = await nextConfig.redirects!();
+  assert.deepEqual(host, {
+    source: "/:path*",
+    has: [{ type: "host", value: OLD_HOST }],
+    destination: `${SITE_URL}/:path*`,
+    permanent: true,
+  });
+  assert.notEqual(new URL(SITE_URL).host, OLD_HOST);
   assert.deepEqual(
     served,
     entries.map(([source, destination]) => ({ source, destination, permanent: true })),
