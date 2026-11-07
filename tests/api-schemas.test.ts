@@ -1,6 +1,5 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import { NextRequest } from "next/server";
 
 import { GET } from "../src/app/api/v1/[category]/[slug]/route";
@@ -9,6 +8,7 @@ import { apiPath, buildOpenApi } from "../src/registry/api";
 import { schemas } from "../src/schemas";
 import { parseInputs, runSchema } from "../src/schemas/run";
 import type { CalculatorSchema } from "../src/schemas/types";
+import { pageDefaults } from "../scripts/page-defaults";
 
 const ORIGIN = "https://photonicscalculators.com";
 
@@ -43,17 +43,13 @@ test("API schemas: each names a registry page and has well-formed inputs, output
   }
 });
 
-test("API schemas: input keys and defaults match the page's useURLState calls", () => {
+test("API schemas: input keys and defaults match the page's useURLState calls", async () => {
   for (const schema of schemas) {
-    const source = readFileSync(`src/app${schema.href}/page-client.tsx`, "utf8");
-    // A numeric literal default is an input; a string literal one is a choice.
-    const pageDefaults = new Map<string, number | string>(
-      [...source.matchAll(/useURLState\(\s*"([^"]+)",\s*(?:"([^"]*)"|([-+.\deE]+))/g)]
-        .map((m) => [m[1], m[2] ?? Number(m[3])]),
-    );
+    // A numeric default is an input; a string one is a choice.
+    const defaults = await pageDefaults(schema.href);
     const inputs = [...(schema.choices ?? []), ...schema.inputs];
-    assert.deepEqual([...pageDefaults.keys()].sort(), inputs.map((i) => i.key).sort(), `${schema.href} keys`);
-    for (const input of inputs) assert.equal(input.default, pageDefaults.get(input.key), `${schema.href} ${input.key}`);
+    assert.deepEqual([...defaults.keys()].sort(), inputs.map((i) => i.key).sort(), `${schema.href} keys`);
+    for (const input of inputs) assert.equal(input.default, defaults.get(input.key), `${schema.href} ${input.key}`);
   }
 });
 
