@@ -1,50 +1,48 @@
-# Handover — 2026-11-07 (session 221 → session 222)
+# Handover — 2026-11-07 (session 222 → session 223)
 
-**Start here:** session 221 did 11b on `phase-11/11b-mcp-server` (PR #260): a stateless MCP server at `/mcp`,
-`/checks.json`, llms.txt and About lines. 11a-2b is released (9d5840a8). Next: `/ship` #260, then 11c (schemas per
-category); 11b-2 (connect real clients to production) after the user's release.
+**Start here:** session 222 did 11c-1a on `phase-11/11c-1a-free-space-comms` (PR #261): API schemas with 1–3
+reference checks for 13 free-space-comms pages (acquisition-tracking … fog-attenuation). 11b is released (ec76f000).
+Next: `/ship` #261, then 11c-1b (the other 13 free-space-comms pages, listed in ROADMAP); 11b-2 waits on the user.
 
 ## State
-- `src/mcp/server.ts`: `handleMessage(message, ctx)` → `JsonRpcResponse | null` (null for notifications and client
-  responses); `PROTOCOL_VERSIONS` (2025-11-25, 2025-06-18, 2025-03-26, 2024-11-05; initialize echoes a supported one,
-  else the newest); `SERVER_INFO`, `ERROR`, `rpcError`. Methods: initialize, ping, tools/list, tools/call; others
-  -32601; unknown tool -32602; tool failures are `isError` results with the reason (parseInputs' text).
-- `src/mcp/tools.ts`: `tools` (find_calculator, run_calculator, get_checks, report_problem), `ToolContext {ip,
-  origin}`, `resolveCalculator` ("cat/slug", "/cat/slug", page or API URL, or a unique bare slug), `describeSchema`,
-  `findCalculators(query, limit)` (site `searchItems` first, then pages matching most non-filler words). Results go
-  out as JSON text + `structuredContent`. report_problem: `parseReport` checks, own 5/10 min limiter, slug "about".
-- `src/app/mcp/route.ts`: POST only (GET/DELETE 405, OPTIONS 204 CORS); 400 on an unsupported
-  `MCP-Protocol-Version` header; 64 KB body cap; batches answered; notifications → 202 empty.
-- `src/lib/report-send.ts`: `sendReport(report, origin, source)`, `reportsConfigured()`; `/api/report` uses it.
-  `reportEmail(..., source)` adds a "Source: form|mcp" line and "(MCP)" in the subject.
-- `src/registry/checks.ts`: `schemaChecks(schema)` (inputs with units, expected vs model, relativeDifference, pass,
-  pageUrl, apiUrl), `buildChecksJson()`; `src/app/checks.json/route.ts` is force-static.
-- `tests/mcp.test.ts` (8 tests) calls the route's `POST` directly with a fresh IP per call. 1302 tests.
-- 20 runnable schemas (list in `src/schemas/index.ts`). Not in the API yet: string results (laser-safety governing
-  limit, Stokes handedness).
+- 33 runnable schemas (`src/schemas/index.ts`); new folder `src/schemas/free-space-comms/` (13 files). No physics or
+  page changed. Counts in About, llms.txt and the MCP text come from `schemas.length`.
+- Contract: `src/schemas/types.ts` (`defineSchema`, inputs = every numeric `useURLState` key with the page default and
+  input-component range, string keys = `choices`, outputs in page units, `compute` SI→SI through `src/physics/`,
+  `checks` 1–3 with `basis` printed|computed). `tests/api-schemas.test.ts` checks keys/defaults vs the page source.
+- Pages whose toggles are plain `useState` (ber's modulation) can't be inputs: the schema outputs both variants.
+- String results (laser class on eye-safety-fso, laser-safety governing limit, Stokes handedness) are left out.
+- 1302 tests (the schema tests loop over schemas, so the count doesn't move).
 
 ## Next actions
-1. `/ship` PR #260. Release only when the user asks; after it: `node scripts/post-merge-check.mjs <sha>
-   polarization/stokes=0.6164 spectroscopy/ftir-resolution=0.6034 imaging/tirf=110.3`, then POST
-   `{"jsonrpc":"2.0","id":1,"method":"tools/list"}` to `https://photonicscalculators.com/mcp` (4 tools),
-   `curl -s https://photonicscalculators.com/checks.json` (20 calculators, all `pass`), `/llms.txt` (MCP line), then
+1. `/ship` PR #261. Release only when the user asks; after it: `node scripts/post-merge-check.mjs <sha>
+   free-space-comms/beam-wander=7.85 free-space-comms/beam-wander=0.934 polarization/stokes=0.6164`, then
+   `curl -s https://photonicscalculators.com/checks.json` (33 calculators, all `pass`), then
    `node --import tsx scripts/indexnow.ts`.
-2. 11b-2: ask the user to run `claude mcp add --transport http photonics https://photonicscalculators.com/mcp` and the
-   MCP Inspector (`npx @modelcontextprotocol/inspector`) against production, or to allow the download.
-3. 11c: schemas category by category (each > 40 pages split a/b). Analytics can't rank pages.
+2. 11c-1b: the same brief for the other 13 free-space-comms pages. Three parallel `implementer` agents (4/4/5 pages)
+   took 17–27 min each, ≈ 120–150k tokens each; review = read each schema's checks + spot-check 1–2 values by hand.
+3. 11b-2: the user runs `claude mcp add --transport http photonics https://photonicscalculators.com/mcp` and the
+   MCP Inspector (`npx @modelcontextprotocol/inspector`) against production, or allows the download (asked in 222).
 4. In a week or two: ask the user for the Search Console Pages/Performance reports (indexed count, queries) for 10d.
 5. Still missing data: BSO ε, SBN, Nd σ_a at 808 nm, CO₂ g₀ and I_s, SF59 n₂, the Tm ³H₄ band, ZBLAN κ and band.
 6. IndexNow posts to www.bing.com/indexnow; ask the user whether Bing Webmaster lists the submissions.
 7. 10g-2 left: Resend domain records + `REPORT_FROM_EMAIL` (optional).
 
 ## Non-obvious facts
+- **Session 222:** a check can't expect 0: tolerances are relative ("a relative check needs a nonzero value").
+  `api-schemas` and `mcp` tests stop at the first failing schema, so parallel agents saw each other's half-written
+  files fail: tell them to run their own schemas through `parseInputs`/`runSchema` in scratch. Agents must not cite a
+  value "as transcribed in the repo" as `printed`: verify against the source (Europe PMC REST
+  `…/rest/<PMCID>/fullTextXML` reads MDPI papers; use `offset` for tables near the end). Never send an Agent call
+  with a placeholder prompt: stop it at once with TaskStop. An implementer left `until grep -q "eslint-done" …; do
+  sleep 5; done` running after it finished (also in 221): `.claude/hooks/block-wait-loops.mjs` now blocks unbounded
+  until/while-sleep loops (allowed under `timeout N`). Find strays with `ps -ef` + `/proc/<pid>/cmdline`.
 - **Session 221:** the auto-mode classifier blocks `npx -y @modelcontextprotocol/inspector` (external code); a node
   fetch script doing the handshake over HTTP stood in. Port 3400 was held by a process from elsewhere: dev/probe
   servers went on 3410. find_calculator ranks via the site search, so "anti-reflection coating thickness" doesn't
   surface `thin-film/single-ar` in the top 5 (search-tag issue, not MCP).
 - **Session 220:** Git Bash rewrites a `/category/slug` argument into `C:/Program Files/Git/category/slug` for any
-  node script: prefix `MSYS_NO_PATHCONV=1`. Two implementer agents writing 4 schemas each in parallel, sharing
-  `src/schemas/index.ts` through Edit only, worked (5 and 13 min).
+  node script: prefix `MSYS_NO_PATHCONV=1`.
 - **Session 219:** when `devctl` answers exit 75 ("not started"), **nothing** on that command line ran: put edits in
   their own command (or use Edit). `tsx --test` doesn't type-check: only `npm run check` catches test-file type
   errors. `Record<I, number> & Record<C, string>` collapses to `never` when the schema type is erased.
@@ -63,8 +61,8 @@ category); 11b-2 (connect real clients to production) after the user's release.
   pypdfium2. PDF figures: render crops with pypdfium2, calibrate on gridlines.
 - **Session 198:** `devctl` holds a whole Bash command line and gives up after 90 s: run gates with
   `run_in_background`, and check `git diff --stat` before trusting a test count.
-- **Editing:** a node replace script inside a bash heredoc mangles `\/` and `\n` in regex text (again in session
-  221): edit such lines with Edit. `sed -i` with escaped regex text is unreliable.
+- **Editing:** a node replace script inside a bash heredoc mangles `\/` and `\n` in regex text: edit such lines with
+  Edit. `sed -i` with escaped regex text is unreliable.
 - **Session 160:** Chrome extension screenshots time out on this site; use headless CDP. Prefix
   `MSYS_NO_PATHCONV=1` for ui-check and chrome.
 - **Charts:** `SimpleChart` pads axes 5 %. `SimpleLineChart` starts axes at the data min/max and has no y2.
