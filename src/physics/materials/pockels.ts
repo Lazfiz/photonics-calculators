@@ -9,6 +9,14 @@
  *   so the retardation is Γ = 2π n_o³ r₆₃ V / λ and V_π = λ / (2 n_o³ r₆₃), independent of the crystal size. A beam
  *   polarized along x′ alone gets the phase π n_o³ r₆₃ V / λ, which needs twice that voltage for π (J. Wilson &
  *   J. Hawkes, Optoelectronics: An Introduction, Table 3.1 and Example 3.2).
+ * - n_o of the KDP family, n² = A + B₁λ²/(λ² − C₁) + B₂/(λ² − C₂), λ in µm: KDP and ADP from F. Zernike, J. Opt. Soc. Am.
+ *   54, 1215 (1964), doi:10.1364/JOSA.54.001215, 213.8–1529 nm at 24.8 °C (refractiveindex.info, CC0); ADP agrees with
+ *   L. Zhu et al., Chin. Opt. Lett. 13, 041601 (2015), doi:10.3788/COL201513.041601, Table 1 fit, to 1 × 10⁻⁴ at 1064 nm.
+ *   KD*P (highly deuterated) from K. W. Kirby & L. G. DeShazer, J. Opt. Soc. Am. B 4, 1072 (1987),
+ *   doi:10.1364/JOSAB.4.001072, as tabulated by D. Eimerl, Ferroelectrics 72, 95 (1987) and in vendor sheets: A 2.240921,
+ *   B₁ 2.246956, C₁ 11.26591², B₂ 0.009676, C₂ 0.124981². It gives n_o = 1.4931 at 1064 nm, the value EKSMA lists as measured,
+ *   and is used over 266–1064 nm, where vendor tables agree with it to 5 × 10⁻⁴. r₆₃ stays at its Table 3.1 value at
+ *   every λ; in KD*P it also falls with the deuteration level, which sets most of the spread of quoted V_π.
  * - Transverse z-field modulator (3m crystals such as LiNbO₃, light along x or y, electrode gap d, length L): a
  *   z-polarized beam gets φ = π n_e³ r₃₃ V L / (λ d), V_π = λ d / (n_e³ r₃₃ L); the retardation between z and the
  *   ordinary polarization is Γ = π (n_e³ r₃₃ − n_o³ r₁₃) V L / (λ d) on top of the natural birefringence.
@@ -72,7 +80,7 @@
 import { epsilon_0, k_B, q } from "../constants";
 import { sinc } from "../math";
 import { biaxialIndices, biaxialRange } from "./biaxial-data";
-import { fromResonanceWavelengths, refractiveIndex } from "./sellmeier";
+import { fromResonanceWavelengths, fromSquaredForm, refractiveIndex, type SellmeierModel } from "./sellmeier";
 import { crystalIndices, crystalRange } from "./uniaxial-data";
 
 export type PockelsId = "kdp" | "kdp-d" | "adp" | "linbo3" | "litao3" | "ktp" | "batio3" | "batio3-clamped" | "bso";
@@ -99,7 +107,7 @@ export interface PockelsCrystal {
   indices: (lambda: number) => { no: number; ne: number };
   /** Labels of the polarization across z when it isn't the ordinary one (biaxial crystals). */
   perp?: { n: string; nz: string; r: string };
-  /** Wavelength range of the index model, m (fixed indices: the range of the source's examples). */
+  /** Wavelength range of the index model, m. */
   range: [number, number];
   /** Static relative permittivity ε₃₃ along z (photorefractive E_q), or NaN where not tabulated. */
   epsilon: number;
@@ -108,7 +116,12 @@ export interface PockelsCrystal {
   source: string;
 }
 
-const fixed = (n: number) => () => ({ no: n, ne: NaN });
+// n_o of KD*P and ADP (see the header); the longitudinal cell needs no n_e. B₂/(λ² − C₂) = (B₂/C₂)(λ²/(λ² − C₂) − 1).
+const kdpFamily = (A: number, B1: number, C1: number, B2: number, C2: number, range_um: [number, number]) =>
+  fromSquaredForm(A - B2 / C2, [B1, B2 / C2], [C1, C2], range_um);
+const KDPD_O = kdpFamily(2.240921, 2.246956, 11.26591 ** 2, 0.009676, 0.124981 ** 2, [0.266, 1.064]);
+const ADP_O = kdpFamily(2.302842, 15.102464, 400, 0.011125165, 0.01325366, [0.2138, 1.529]);
+const ordinaryOnly = (model: SellmeierModel) => (lambda: number) => ({ no: refractiveIndex(model, lambda), ne: NaN });
 
 // BaTiO₃ n_o and n_e, Wemple et al. 1968 (see the header).
 const BATIO3_O = fromResonanceWavelengths(1, [4.187], [0.223], [0.4, 0.7]);
@@ -163,13 +176,13 @@ export const POCKELS: Record<PockelsId, PockelsCrystal> = {
   },
   "kdp-d": {
     name: "KD*P (KD₂PO₄)", pointGroup: "42m", geometry: "longitudinal", r: { r63: 26.4e-12 },
-    indices: fixed(1.51), range: [633e-9, 1060e-9], epsilon: NaN,
-    source: "r₆₃ and n_o = 1.51 Wilson & Hawkes Table 3.1 and Example 3.3",
+    indices: ordinaryOnly(KDPD_O), range: [KDPD_O.range[0], KDPD_O.range[1]], epsilon: NaN,
+    source: "r₆₃ Wilson & Hawkes Table 3.1; n_o Kirby & DeShazer 1987",
   },
   adp: {
     name: "ADP (NH₄H₂PO₄)", pointGroup: "42m", geometry: "longitudinal", r: { r63: 8.5e-12 },
-    indices: fixed(1.52), range: [633e-9, 1060e-9], epsilon: NaN,
-    source: "r₆₃ and n_o ≈ 1.52 Wilson & Hawkes Table 3.1",
+    indices: ordinaryOnly(ADP_O), range: [ADP_O.range[0], ADP_O.range[1]], epsilon: NaN,
+    source: "r₆₃ Wilson & Hawkes Table 3.1; n_o Zernike 1964",
   },
   linbo3: {
     name: "LiNbO₃ (congruent)", pointGroup: "3m", geometry: "transverse", r: { r33: 30.8e-12, r13: 8.6e-12 },
