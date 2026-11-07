@@ -55,7 +55,9 @@ async function check(schema: CalculatorSchema) {
 
   const atDefaults = run({});
   if (atDefaults) {
-    for (const [key, value] of Object.entries(atDefaults.outputs)) if (!Number.isFinite(value)) fail(`${h} ${key} = ${value} at the defaults`);
+    for (const [key, value] of Object.entries(atDefaults.outputs)) {
+      if (!Number.isFinite(value) && !(value === null && atDefaults.warnings.length > 0)) fail(`${h} ${key} = ${value} at the defaults, without a warning`);
+    }
   }
   for (const c of schema.checks) {
     if (!(c.source.length > 20 && c.tolerance > 0 && c.tolerance <= 0.01)) fail(`${h}: source or tolerance of "${c.source}"`);

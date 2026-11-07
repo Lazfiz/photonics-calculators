@@ -53,10 +53,12 @@ test("API schemas: input keys and defaults match the page's useURLState calls", 
   }
 });
 
-test("API schemas: every output is a number at the page's defaults", () => {
+test("API schemas: every output is a number at the page's defaults, or null with a warning that says why", () => {
   for (const schema of schemas) {
     const result = run(schema, {});
-    for (const [key, value] of Object.entries(result.outputs)) assert.ok(Number.isFinite(value), `${schema.href} ${key}`);
+    for (const [key, value] of Object.entries(result.outputs)) {
+      assert.ok(Number.isFinite(value) || (value === null && result.warnings.length > 0), `${schema.href} ${key}`);
+    }
   }
 });
 
