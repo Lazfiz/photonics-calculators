@@ -4,10 +4,11 @@ import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { CrystalNote, CrystalSelect, isCrystalId, resolveIndices } from "../../../components/crystal-select";
+import { CrystalNote, CrystalSelect, isCrystalId } from "../../../components/crystal-select";
 import { fix } from "../../../components/polarization-format";
 import { CRYSTAL_IDS, UNIAXIAL_CRYSTALS } from "../../../physics/materials/uniaxial-data";
-import { glanWindow, splitterAngles, type SplitterType } from "../../../physics/polarization/prism-polarizers";
+import { glanWindow, prismPolarizer, splitterAngles, type SplitterType } from "../../../physics/polarization/prism-polarizers";
+import { resolveCrystalIndices } from "../../../physics/polarization/uniaxial";
 
 const DEG = Math.PI / 180;
 const clamp = (v: number, lo: number, hi: number) => (Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : lo);
@@ -49,9 +50,8 @@ export default function BirefringentPolarizerPage() {
   const cNo = clamp(customNo, 1, 5);
   const cNe = clamp(customNe, 1, 5);
 
-  const { no, ne } = resolveIndices(material, lambda, cNo, cNe);
-  const split = design === "glan" ? null : splitterAngles(design, no, ne, alpha);
-  const glan = design === "glan" ? glanWindow({ no, ne, hypotenuse: alpha, gapIndex: 1, axis: "in-plane" }) : null;
+  const { no, ne } = resolveCrystalIndices(material, lambda, cNo, cNe);
+  const { split, glan } = prismPolarizer(design, no, ne, alpha);
 
   const angleChart = useMemo(() => {
     const a = Array.from({ length: 159 }, (_, i) => 1 + i * 0.5);
@@ -74,7 +74,7 @@ export default function BirefringentPolarizerPage() {
     return [{
       x: ids.map((id) => UNIAXIAL_CRYSTALS[id].name),
       y: ids.map((id) => {
-        const n = resolveIndices(id, lambda, NaN, NaN);
+        const n = resolveCrystalIndices(id, lambda, NaN, NaN);
         return Math.abs(n.ne - n.no);
       }),
       type: "bar" as const, name: "|Δn|", marker: { color: "#60a5fa" },

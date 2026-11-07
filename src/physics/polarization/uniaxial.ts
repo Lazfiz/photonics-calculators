@@ -17,6 +17,8 @@
  *   Appl. Opt. 49, 2769 (2010), doi:10.1364/AO.49.002769). Γ = 2πΔn d/λ at normal incidence on an axis
  *   parallel to the faces.
  */
+import { CRYSTAL_IDS, crystalIndices, crystalRange, type CrystalId } from "../materials/uniaxial-data";
+
 
 /** Extraordinary index for a wave normal at θ to the optic axis. */
 export function extraordinaryIndex(no: number, ne: number, theta: number): number {
@@ -137,4 +139,26 @@ export function beamSeparation(w: PlateWaves, d: number, incidence: number): num
 /** Retardance of the e wave relative to the o wave after a plate of thickness d at wavelength λ, rad. */
 export function plateRetardance(w: PlateWaves, d: number, lambda: number): number {
   return ((2 * Math.PI * d) / lambda) * (w.e.kz - w.o.kz);
+}
+
+/** True when `v` names one of the tabulated uniaxial crystals (anything else is the page's custom-index option). */
+export function isCrystalId(v: string): v is CrystalId {
+  return (CRYSTAL_IDS as readonly string[]).includes(v);
+}
+
+/** n_o and n_e at λ (m): the named crystal's Sellmeier fits (NaN outside their range) or the custom values. */
+export function resolveCrystalIndices(material: string, lambda: number, customNo: number, customNe: number): { no: number; ne: number } {
+  if (!isCrystalId(material)) return { no: customNo, ne: customNe };
+  const [lo, hi] = crystalRange(material);
+  if (!(lambda >= lo && lambda <= hi)) return { no: NaN, ne: NaN };
+  return crystalIndices(material, lambda);
+}
+
+/** Δn(λ) = n_e − n_o for a named crystal, or the constant `customDn` for custom indices. */
+export function crystalBirefringence(material: string, customDn: number): (lambda: number) => number {
+  if (!isCrystalId(material)) return () => customDn;
+  return (lambda) => {
+    const { no, ne } = resolveCrystalIndices(material, lambda, NaN, NaN);
+    return ne - no;
+  };
 }

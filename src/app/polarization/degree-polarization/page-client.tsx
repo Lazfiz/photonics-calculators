@@ -5,7 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { CONVENTION_NOTE, fix, stokesProblem } from "../../../components/polarization-format";
-import { applyMueller, muellerRetarderBandSweep } from "../../../physics/polarization/mueller";
+import { retarderBandDopSweep } from "../../../physics/polarization/mueller";
 import { degreeOfPolarization, ellipseAngles, isPhysicalStokes, polarizedIntensity, type Stokes } from "../../../physics/polarization/stokes";
 
 const DEG = Math.PI / 180;
@@ -63,22 +63,9 @@ export default function DegreeOfPolarizationPage() {
     if (!spectralMode || !results) return null;
     const S: Stokes = [s0, s1, s2, s3];
 
-    // Band-averaged DoP as the band widens from 0 to B: one sweep over ascending widths, the last being B itself.
-    const n = clamp(Math.ceil((8 * waves * bw) / lambda0) + 1, 61, 801);
-    const widths_nm = Array.from({ length: n }, (_, i) => (i === n - 1 ? bw : (bw * i) / (n - 1)));
-    const matrices = muellerRetarderBandSweep(waves, lambda0 * NM, widths_nm.map((w) => w * NM), Math.PI / 4);
-    const bandwidths: number[] = [];
-    const dopVals: number[] = [];
-    matrices.forEach((M, i) => {
-      const d = degreeOfPolarization(applyMueller(M, S));
-      if (Number.isFinite(d)) {
-        bandwidths.push(widths_nm[i]);
-        dopVals.push(d);
-      }
-    });
-
-    const avgS = applyMueller(matrices[n - 1], S); // NaN when the band holds too many retardance cycles
-    return { avgS, avgDop: degreeOfPolarization(avgS), bandwidths, dopVals };
+    // Band-averaged DoP as the band widens from 0 to B (mueller.ts).
+    const sweep = retarderBandDopSweep(S, waves, lambda0 * NM, bw * NM, Math.PI / 4);
+    return { avgS: sweep.avgS, avgDop: sweep.avgDop, bandwidths: sweep.bandwidths.map((w) => w / NM), dopVals: sweep.dop };
   }, [spectralMode, results, lambda0, bw, waves, s0, s1, s2, s3]);
 
   const plotLayout: Partial<Plotly.Layout> = {

@@ -9,26 +9,16 @@ import { fix } from "../../../components/polarization-format";
 import { useURLState } from "../../../hooks/use-url-state";
 import { cssRgb, srgbEncode } from "../../../physics/cie-colour";
 import {
-  type ChainPlate, type ChainRetarder, analyzerOfMinimum, chainTransmissionSlope, pixelVisibility, retarderChainAveraged, retarderChainColour, retarderChainTransmission,
-  senarmontRetardance,
+  type ChainPlate, type CompensatorKind, chainTransmissionSlope, pixelVisibility, retarderChainAveraged, retarderChainColour, retarderChainTransmission,
+  compensatorPlate, sampleChain as chainOf, senarmontReading, type CompensatorPlate as Comp,
 } from "../../../physics/polarization/interference-colours";
-import { C_NBK7, kirschMaxRetardance, kirschRetardanceField } from "../../../physics/polarization/photoelasticity";
+import { C_NBK7_TPA, kirschMaxRetardance, kirschRetardanceField } from "../../../physics/polarization/photoelasticity";
 import RgbaCanvas from "../../../components/rgba-canvas";
 
 const DEG = Math.PI / 180;
-const FULL_WAVE = 550e-9;
-const C_DEFAULT = Number((C_NBK7 / 1e-12).toFixed(2)); // TPa⁻¹
 const clamp = (v: number, lo: number, hi: number) => (Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : lo);
 const GREY_HOLE = [107, 114, 128] as const;
 
-/** A compensator plate: retardance R (m) and slow-axis azimuth (rad). */
-interface Comp { R: number; axis: number }
-/** Sample then compensator, as retardances Γ = 2πR/λ at one wavelength. */
-function chainOf(lambda: number, R: number, axis: number, comp: Comp | null): ChainRetarder[] {
-  const chain = [{ gamma: (2 * Math.PI * R) / lambda, axis }];
-  if (comp) chain.push({ gamma: (2 * Math.PI * comp.R) / lambda, axis: comp.axis });
-  return chain;
-}
 /** Sample then compensator as constant retardances, for the white-light colour. */
 function platesOf(R: number, axis: number, comp: Comp | null): ChainPlate[] {
   const plates: ChainPlate[] = [{ R: () => R, axis }];
@@ -68,7 +58,7 @@ export default function BirefringenceImagingPage() {
   const [SIn, setS] = useURLState("stress", 10);
   const [aIn, setHole] = useURLState("hole", 1);
   const [dIn, setThick] = useURLState("thickness", 10);
-  const [CIn, setC] = useURLState("stressOptic", C_DEFAULT);
+  const [CIn, setC] = useURLState("stressOptic", C_NBK7_TPA);
   const [lightIn, setLight] = useURLState("light", "mono");
 
   // useURLState doesn't clamp: keep URL values inside the input ranges.
@@ -76,9 +66,12 @@ export default function BirefringenceImagingPage() {
   const Rs = clamp(RsIn, 0, 2000) * 1e-9, phi = clamp(phiIn, 0, 180) * DEG;
   const lambda_nm = clamp(lambdaIn, 200, 2000), lambda = lambda_nm * 1e-9;
   const kind = ["qwp", "full", "custom"].includes(compIn) ? compIn : "none";
-  const compR = kind === "qwp" ? lambda / 4 : kind === "full" ? FULL_WAVE : clamp(cRIn, 0, 2000) * 1e-9;
-  const compAxis = kind === "full" ? P + Math.PI / 4 : kind === "qwp" ? P : clamp(cAxisIn, 0, 180) * DEG;
-  const hasComp = kind !== "none";
+  const compPlate = useMemo(
+    () => compensatorPlate(kind as CompensatorKind, P, lambda, clamp(cRIn, 0, 2000) * 1e-9, clamp(cAxisIn, 0, 180) * DEG),
+    [kind, P, lambda, cRIn, cAxisIn],
+  );
+  const compR = compPlate ? compPlate.R : 0, compAxis = compPlate ? compPlate.axis : 0;
+  const hasComp = compPlate !== null;
   const white = lightIn === "white";
 
   const compOf = (): Comp | null => (hasComp ? { R: compR, axis: compAxis } : null);
@@ -93,8 +86,7 @@ export default function BirefringenceImagingPage() {
   // Sénarmont: λ/4 slow axis along P; the analyzer minimum and, for φ = P ± 45°, the retardance it reads.
   const senarmont = useMemo(() => {
     if (kind !== "qwp") return null;
-    const m = analyzerOfMinimum(P, chainOf(lambda, Rs, phi, { R: lambda / 4, axis: P }));
-    return { A: m.A, T: m.T, R: senarmontRetardance(P, phi, m.A, lambda) };
+    return senarmontReading(P, phi, Rs, lambda);
   }, [kind, lambda, Rs, phi, P]);
 
   const waves = Math.max(2, Math.ceil(Rs / lambda));
@@ -223,7 +215,7 @@ export default function BirefringenceImagingPage() {
         <ValidatedNumberInput label="Plate thickness d (mm)" value={dIn} onChange={setThick} min={0.1} max={100} step="0.5" />
         <ValidatedNumberInput label="Stress-optic coefficient C (TPa⁻¹)" value={CIn} onChange={setC} min={0.01} max={100} step="0.01" />
       </div>
-      <p className="text-xs text-gray-500 mb-4">C = {C_DEFAULT} TPa⁻¹ is N-BK7 (Schott). The image uses the polarizer, analyzer, wavelength and compensator above; the field spans ±4a.</p>
+      <p className="text-xs text-gray-500 mb-4">C = {C_NBK7_TPA} TPa⁻¹ is N-BK7 (Schott). The image uses the polarizer, analyzer, wavelength and compensator above; the field spans ±4a.</p>
       <div className="mb-4"><Toggle label="Light" value={white ? "white" : "mono"} options={[["mono", `Monochromatic, ${fix(lambda_nm, 0)} nm`], ["white", "White (D65)"]]} onChange={setLight} /></div>
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <RgbaCanvas rgba={image.rgba} size={image.N} stale={deferred !== stressParams}

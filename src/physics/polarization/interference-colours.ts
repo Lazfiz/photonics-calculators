@@ -189,3 +189,41 @@ export function retarderChainColour(
   });
   return srgbFromXyz(xyzFromSamples(T));
 }
+
+/** Compensator choices of the birefringence-imaging page. */
+export type CompensatorKind = "none" | "qwp" | "full" | "custom";
+
+/** Retardance of the full-wave (first-order red, "tint") plate, m. */
+export const FULL_WAVE_RETARDANCE = 550e-9;
+
+/** A compensator plate: retardance R (m) and slow-axis azimuth (rad). */
+export interface CompensatorPlate {
+  R: number;
+  axis: number;
+}
+
+/**
+ * The compensator behind the sample: none; a λ/4 plate with its slow axis along the polarizer (Sénarmont); the
+ * 550 nm full-wave plate at P + 45°; or a custom plate (customR in m, customAxis in rad).
+ */
+export function compensatorPlate(
+  kind: CompensatorKind, P: number, lambda: number, customR: number, customAxis: number,
+): CompensatorPlate | null {
+  if (kind === "none") return null;
+  if (kind === "qwp") return { R: lambda / 4, axis: P };
+  if (kind === "full") return { R: FULL_WAVE_RETARDANCE, axis: P + Math.PI / 4 };
+  return { R: customR, axis: customAxis };
+}
+
+/** Sample then compensator, as retardances Γ = 2πR/λ at one wavelength. */
+export function sampleChain(lambda: number, R: number, axis: number, comp: CompensatorPlate | null): ChainRetarder[] {
+  const chain = [{ gamma: (2 * Math.PI * R) / lambda, axis }];
+  if (comp) chain.push({ gamma: (2 * Math.PI * comp.R) / lambda, axis: comp.axis });
+  return chain;
+}
+
+/** Sénarmont reading: the analyzer angle of minimum behind sample and λ/4 plate (slow axis along P), and the retardance it gives. */
+export function senarmontReading(P: number, phi: number, R: number, lambda: number): { A: number; T: number; R: number } {
+  const m = analyzerOfMinimum(P, sampleChain(lambda, R, phi, { R: lambda / 4, axis: P }));
+  return { A: m.A, T: m.T, R: senarmontRetardance(P, phi, m.A, lambda) };
+}

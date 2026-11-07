@@ -75,3 +75,6 @@ export function kirschRetardanceField(
   }
   return { R, azimuth };
 }
+
+/** N-BK7 stress-optic coefficient in TPa⁻¹ (10⁻¹² Pa⁻¹), rounded to the data sheet's three digits: the pages' input default. */
+export const C_NBK7_TPA = Number((C_NBK7 / 1e-12).toFixed(2));
