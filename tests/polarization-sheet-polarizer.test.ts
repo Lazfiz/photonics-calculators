@@ -24,12 +24,37 @@ test("lossless slab: T = (1 − R)/(1 + R) = 0.92308 for n = 1.5, the one-plate 
   assertAbs(Math.exp(lnT), plateStackTransmittance(0.04, 1), 1e-15, "same as one plate");
 });
 
-test("absorbing slab: T = (1 − R)²τ/(1 − R²τ²) with τ = exp(−4πκd/λ)", () => {
+test("absorbing slab: T = (1 − R)²(1 + κ²/n²)τ/(1 − R²τ²) with τ = exp(−4πκd/λ)", () => {
   // n = 1.64, κ = 3e-3, d = 0.1 mm, λ = 550 nm: αd = 4π·3e-3·1e-4/5.5e-7 = 6.85438.
   const R = faceReflectance(1.64, 3e-3), tau = Math.exp((-4 * Math.PI * 3e-3 * 1e-4) / 550e-9);
   assertAbs((-4 * Math.PI * 3e-3 * 1e-4) / 550e-9, -6.85438, 1e-5, "−αd");
-  const T = ((1 - R) ** 2 * tau) / (1 - R * R * tau * tau);
+  const T = ((1 - R) ** 2 * (1 + (3e-3 / 1.64) ** 2) * tau) / (1 - R * R * tau * tau);
   assertAbs(slabLogTransmittance(1.64, 3e-3, 1e-4, 550e-9), Math.log(T), 1e-12, "ln T");
+  // The exit-face factor is 1 + 3.35e-6 here: (1 − R)² alone is within 4e-6 in ln T.
+  assertAbs(slabLogTransmittance(1.64, 3e-3, 1e-4, 550e-9) - slabLogTransmittanceFrom(R, Math.log(tau)), 3.346e-6, 1e-9, "factor");
+});
+
+test("metal-like κ: the face amplitudes t = 2/(1 + N), t′ = 2N/(N + 1) give |tt′|² = (1 − R)²(1 + κ²/n²) (Harbecke 1986)", () => {
+  // N = 1.2 − 7i, d = 1 µm, λ = 10 µm: |N|² = 50.44, |1 + N|² = 2.2² + 49 = 53.84, |tt′|² = 807.04/2898.7456 = 0.278410.
+  const n = 1.2, k = 7, d = 1e-6, lambda = 10e-6;
+  const tt2 = (16 * (n * n + k * k)) / ((1 + n) ** 2 + k * k) ** 2;
+  assertAbs(tt2, 0.278410, 1e-6, "|tt′|²");
+  const R = faceReflectance(n, k), tau = Math.exp((-4 * Math.PI * k * d) / lambda);
+  // R = (0.04 + 49)/(4.84 + 49) = 0.910847; (1 − R)² = 0.0079484, 35 times less than |tt′|².
+  assertAbs(R, 49.04 / 53.84, 1e-15, "R");
+  const T = (tt2 * tau) / (1 - R * R * tau * tau);
+  assertAbs(slabLogTransmittance(n, k, d, lambda), Math.log(T), 1e-12, "ln T");
+  assert.ok(Math.exp(slabLogTransmittance(n, k, d, lambda)) < 1, "T < 1");
+});
+
+test("the page's thinnest sheet, d = 1 µm at λ = 20 µm (d/λ = 0.05): T ≤ 1 for n ∈ [1, 5], κ ∈ [1e-4, 10]; n ≤ 0 is NaN", () => {
+  for (let n = 1; n <= 5; n += 0.25) {
+    for (let e = -4; e <= 1; e += 0.125) {
+      const lnT = slabLogTransmittance(n, 10 ** e, 1e-6, 20e-6);
+      assert.ok(lnT <= 0, `n = ${n}, κ = ${10 ** e}: ln T = ${lnT}`);
+    }
+  }
+  assert.ok(Number.isNaN(slabLogTransmittance(0, 1, 1e-6, 20e-6)));
 });
 
 test("log domain: a metal-like κ = 2 over 0.1 mm still gives a finite extinction ratio (the old page printed Infinity)", () => {
