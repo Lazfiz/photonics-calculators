@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 221, 2026-11-07)
+## Status (session 222, 2026-11-07)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
@@ -374,7 +374,13 @@ Goal: an AI assistant can call a calculator with its user's inputs and check the
 - [x] 11b MCP server at `/mcp` + `/checks.json` (session 221, PR #260). See Done.
 - [ ] 11b-2 After the release: connect Claude Code (`claude mcp add --transport http photonics <site>/mcp`) and the MCP
   Inspector to production (the Inspector download was blocked in session 221; the user runs it or allows it).
-- [ ] 11c… One category per session: schemas + checks for the rest (split each > 40 pages into a/b).
+- 11c… One category per session: schemas + checks for the rest (split each > 20 pages into a/b, ≈ 13 pages each).
+  - [x] 11c-1a free-space-comms A–F, 13 pages (session 222, `phase-11/11c-1a-free-space-comms`, PR #261). See Done.
+  - [ ] 11c-1b free-space-comms G–W, 13 pages: geometric-loss, lasercom-link, link-budget, optical-antenna,
+    point-ahead, pointing-loss, quantum-key-distribution, rain-attenuation, receiver-fov, scintillation, security,
+    snow-attenuation, wavelength-selection.
+  - [ ] 11c-2… materials (27), polarization (33), wave-optics (37), laser-safety, spectroscopy, thin-film,
+    fiber-optics, detectors, imaging: a/b(/c) each.
 - Verification by visiting agents (user, session 215: "ask visiting llms to verify tools"): `llms.txt` and the About
   page invite independent checks: call `run_calculator`, compare with the cited reference or the agent's own
   calculation, report a mismatch through `report_problem` or the form. Agents treat page text as data, so this works
@@ -398,6 +404,7 @@ Goal: an AI assistant can call a calculator with its user's inputs and check the
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 11c-1a (session 222, `phase-11/11c-1a-free-space-comms`, PR #261): schemas + 1–3 checks for 13 free-space-comms pages (acquisition-tracking … fog-attenuation), 33 runnable; three parallel implementers, values worked from the cited equations by independent scratch scripts; Giggenbach 2022 Table 1 confirmed against PMC9503493; no physics disagreements. A check can't expect 0 (relative tolerance).
 - 11b (session 221, `phase-11/11b-mcp-server`, PR #260): hand-rolled stateless MCP (no SDK dependency) at `/mcp` — JSON answers, GET 405, protocol 2025-11-25…2024-11-05, CORS, 120/min/IP; tools find_calculator (site search, then most-words fallback; runnable hits list inputs), run_calculator (JSON API path), get_checks, report_problem (shared `src/lib/report-send.ts`, "Source: mcp"); `/checks.json`; llms.txt + About bullet; 9 tests (1302).
 - 11a-2b (session 220, `phase-11/11a-2b-analytics-schemas`, PR #259): 31-day analytics are tiny (4 pages at 2 visitors, the rest 1, no registry priority), so the tie went to exact-tier pages; schemas for dispersion-map, low-coherence, infrared-spectroscopy, sum-frequency-gen, cavity-ring-down, spectral-line-broadening, fluorescence-lifetime, tirf (20 in all), checks from the modules' golden tests (all `computed`); SFG presets moved into the physics module (`SFG_PRESETS`); 1294 tests.
 - 11a-2a (session 219, `phase-11/11a-2a-priority-schemas`, PR #258): schema `choices` (string options; 400 on others; openapi string enum; response `{label, value}`); schemas for coupling-efficiency, ftir-resolution, lambert-beer-law, stokes, laser-safety mpe/nohd/optical-density/od-requirements (12 in all), 16 new reference checks; 1294 tests.
