@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 218, 2026-11-07)
+## Status (session 219, 2026-11-07)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
@@ -369,9 +369,8 @@ Goal: an AI assistant can call a calculator with its user's inputs and check the
   JSON with values, units, tier, `modelNote`, references, page URL); 400 with the reason on out-of-range input; rate
   limit like `/api/report`. `/openapi.json` generated from the schemas. Read the Next 16 route-handler docs first.
   - [x] 11a-1 API infrastructure + 4 pages (session 218, `phase-11/11a-1-api-infra`, PR #257). See Done.
-  - [ ] 11a-2 16 more: the other priority ≥ 86 pages (coupling-efficiency, ftir-resolution, lambert-beer-law, stokes,
-    mpe, nohd, optical-density, od-requirements) + 8 by Vercel Analytics pageviews. Choice inputs (`solve`) get an
-    `options` input kind.
+  - [x] 11a-2a 8 priority ≥ 86 pages + choice inputs (session 219, PR #258). See Done.
+  - [ ] 11a-2b 8 more by Vercel Analytics pageviews (last 31 days).
 - [ ] 11b Remote MCP server at `/mcp` (streamable HTTP, stateless): tools `find_calculator(query)`,
   `run_calculator(slug, inputs)`, `get_checks(slug)` and `report_problem(slug, inputs, message)` (goes to the same
   Resend path, tagged `source: mcp`). Test with Claude Code and the MCP Inspector; add the endpoints to `llms.txt`.
@@ -399,6 +398,7 @@ Goal: an AI assistant can call a calculator with its user's inputs and check the
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 11a-2a (session 219, `phase-11/11a-2a-priority-schemas`, PR #258): schema `choices` (string options; 400 on others; openapi string enum; response `{label, value}`); schemas for coupling-efficiency, ftir-resolution, lambert-beer-law, stokes, laser-safety mpe/nohd/optical-density/od-requirements (12 in all), 16 new reference checks; 1294 tests.
 - 11a-1 (session 218, `phase-11/11a-1-api-infra`, PR #257): `src/schemas/` (typed inputs = page URL keys with unit, toSI, default, range; outputs; 1–3 `checks` with `basis` printed/computed) for gaussian-beam, blackbody, airy-disk, single-ar; `GET /api/v1/<category>/<slug>` (page units + SI, tier, modelNote, references, pageUrl; 400 with reason, 404, 60/min/IP, CORS *, s-maxage 1 day); prerendered `/openapi.json` (3.1); `llms.txt` API line; 1294 tests.
 - 10a (session 217, `phase-10/10a-audit-fixes`, PR #256): KD*P n_o Kirby & DeShazer 1987 (266–1064 nm, 1.4931 at 1064, V_π 6054 V) and ADP Zernike 1964 (213.8–1529 nm) replace fixed 1.51/1.52; `mueller-polarimetry` Stokes s0–s3 and element1/2 in the URL; `dichroic-polarizer` slab T gains the exit-face factor 1 + κ²/n² (Harbecke 1986), n > 0 guard, < 10λ warning. 1286 tests.
 - 10h (session 216, `phase-10/10h-ai-discovery`, PR #255): robots.txt names 13 AI crawlers as allowed; `/llms.txt` from the registry (411 links with tier, about/verification, source, cite); per-page `WebApplication` JSON-LD (free, `EducationalApplication`, citations moved onto it, WebPage `mainEntity`); IndexNow key in `public/` + `scripts/indexnow.ts`, run after each release (`/ship` step 5); 1283 tests.

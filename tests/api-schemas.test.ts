@@ -28,7 +28,12 @@ test("API schemas: each names a registry page and has well-formed inputs, output
   for (const schema of schemas) {
     const calculator = findCalculator(schema.href);
     assert.ok(calculator, `${schema.href} is not in the registry`);
-    assert.ok(unique(schema.inputs.map((i) => i.key)) && unique(schema.outputs.map((o) => o.key)), schema.href);
+    const choices = schema.choices ?? [];
+    assert.ok(unique([...choices, ...schema.inputs].map((i) => i.key)) && unique(schema.outputs.map((o) => o.key)), schema.href);
+    for (const choice of choices) {
+      const values = choice.options.map((o) => o.value);
+      assert.ok(values.length >= 2 && unique(values) && values.includes(choice.default), `${schema.href} ${choice.key}`);
+    }
     for (const input of schema.inputs) {
       assert.ok(input.min < input.max && input.default >= input.min && input.default <= input.max, `${schema.href} ${input.key}`);
       assert.ok(input.toSI > 0, `${schema.href} ${input.key} toSI`);
@@ -41,11 +46,14 @@ test("API schemas: each names a registry page and has well-formed inputs, output
 test("API schemas: input keys and defaults match the page's useURLState calls", () => {
   for (const schema of schemas) {
     const source = readFileSync(`src/app${schema.href}/page-client.tsx`, "utf8");
-    const pageDefaults = new Map(
-      [...source.matchAll(/useURLState\(\s*"([^"]+)",\s*([-+.\deE]+)/g)].map((m) => [m[1], Number(m[2])]),
+    // A numeric literal default is an input; a string literal one is a choice.
+    const pageDefaults = new Map<string, number | string>(
+      [...source.matchAll(/useURLState\(\s*"([^"]+)",\s*(?:"([^"]*)"|([-+.\deE]+))/g)]
+        .map((m) => [m[1], m[2] ?? Number(m[3])]),
     );
-    assert.deepEqual([...pageDefaults.keys()].sort(), schema.inputs.map((i) => i.key).sort(), `${schema.href} keys`);
-    for (const input of schema.inputs) assert.equal(input.default, pageDefaults.get(input.key), `${schema.href} ${input.key}`);
+    const inputs = [...(schema.choices ?? []), ...schema.inputs];
+    assert.deepEqual([...pageDefaults.keys()].sort(), inputs.map((i) => i.key).sort(), `${schema.href} keys`);
+    for (const input of inputs) assert.equal(input.default, pageDefaults.get(input.key), `${schema.href} ${input.key}`);
   }
 });
 
@@ -60,7 +68,7 @@ test("API schemas: the reference checks hold", () => {
   for (const schema of schemas) {
     for (const check of schema.checks) {
       assert.ok(check.source.length > 20 && check.tolerance > 0 && check.tolerance <= 0.01, `${schema.href}: ${check.source}`);
-      const result = run(schema, check.inputs as Record<string, number>);
+      const result = run(schema, check.inputs as Record<string, number | string>);
       for (const [key, expected] of Object.entries(check.expect) as [string, number][]) {
         assert.ok(expected !== 0, `${schema.href} ${key}: a relative check needs a nonzero value`);
         const actual = result.outputs[key];
@@ -84,6 +92,16 @@ test("API inputs: unknown, repeated, non-numeric and out-of-range values are rej
   assert.match(error("wavelength=150"), /= 150 nm is outside 200 to 11000 nm/);
   // The range is inclusive, and unset inputs take the page's defaults.
   assert.equal(error("wavelength=200&waist=10000"), "");
+  const lambert = schemas.find((s) => s.href === "/spectroscopy/lambert-beer-law")!;
+  const solve = (q: string) => {
+    const parsed = parseInputs(lambert, new URLSearchParams(q));
+    return parsed.ok ? parsed.values.solve : parsed.error;
+  };
+  assert.equal(solve(""), "A");
+  assert.equal(solve("solve=eps"), "eps");
+  assert.equal(solve("solve=E"), 'Solve for (solve) must be one of A, c, eps, not "E".');
+  assert.match(String(solve("solve=A&solve=c")), /given 2 times/);
+  assert.match(String(solve("nope=1")), /Inputs: solve, concentration,/);
   const blackbody = schemas.find((s) => s.href === "/spectroscopy/blackbody")!;
   const swapped = parseInputs(blackbody, new URLSearchParams("bandFromNm=800&bandToNm=400"));
   assert.ok(!swapped.ok && /bandToNm must be larger/.test(swapped.error));
@@ -103,6 +121,19 @@ test("API results: a null value comes with a warning (R at the waist, TIR in the
   assert.equal(tir.outputs.quarterWaveThickness, null);
   assert.equal(tir.outputs.filmAngle, null);
   assert.ok(tir.outputs.reflectance !== null && tir.warnings.length === 1);
+  // ε = 0 leaves no concentration that gives A; φ = 0 never spreads the beam.
+  const lambert = schemas.find((s) => s.href === "/spectroscopy/lambert-beer-law")!;
+  const noC = run(lambert, { solve: "c", extinctionCoeff: 0 });
+  assert.equal(noC.outputs.concentration, null);
+  assert.match(noC.warnings.join(" "), /no concentration/);
+  const nohd = schemas.find((s) => s.href === "/laser-safety/nohd")!;
+  const collimated = run(nohd, { divergence: 0 });
+  assert.equal(collimated.outputs.nohd, null);
+  assert.match(collimated.warnings.join(" "), /doesn't spread/);
+  // A 1/e diameter is 1/√2 of the 1/e² one: the same beam both ways.
+  const od = schemas.find((s) => s.href === "/laser-safety/optical-density")!;
+  const odOneOverE = run(od, { beamDiam: 2, beamDefinition: "1/e" }).outputs.od!;
+  assert.ok(Math.abs(odOneOverE / run(od, { beamDiam: 2 * Math.SQRT2 }).outputs.od! - 1) < 1e-12);
 });
 
 test("GET /api/v1/<category>/<slug>: 200 with units, tier and page URL; 400 and 404 with the reason", async () => {
@@ -121,6 +152,11 @@ test("GET /api/v1/<category>/<slug>: 200 with units, tier and page URL; 400 and 
   assert.equal(body.outputs.beamRadius.unit, "µm");
   assert.ok(Math.abs(body.outputs.beamRadius.value / 504.5673516 - 1) < 1e-9);
   assert.ok(Math.abs(body.outputs.beamRadius.siValue / 5.045673516e-4 - 1) < 1e-9);
+
+  const choice = await (await get("/api/v1/spectroscopy/lambert-beer-law?solve=c&absorbance=1", "192.0.2.10")).json();
+  assert.deepEqual(choice.inputs.solve, { label: "Solve for", value: "c" });
+  assert.match(choice.pageUrl, /lambert-beer-law\?solve=c&concentration=/);
+  assert.ok(Math.abs(choice.outputs.concentration.value / 2e-5 - 1) < 1e-12);
 
   const bad = await get("/api/v1/wave-optics/gaussian-beam?waist=0", "192.0.2.10");
   assert.equal(bad.status, 400);
@@ -143,4 +179,9 @@ test("/openapi.json describes every schema's parameters and outputs", () => {
     { type: "number", minimum: 100, maximum: 40000, default: 5778 });
   const outputs = op.responses[200].content["application/json"].schema.allOf[1].properties?.outputs.required;
   assert.deepEqual(outputs, ["peakWavelength", "peakSpectralRadiance", "exitance", "radiance", "bandFraction"]);
+  const nohd = doc.paths[apiPath("/laser-safety/nohd")].get.parameters;
+  assert.deepEqual(nohd.slice(0, 2).map((p) => p.schema), [
+    { type: "string", enum: ["1/e2", "1/e"], default: "1/e2" },
+    { type: "string", enum: ["linear", "gaussian"], default: "linear" },
+  ]);
 });
