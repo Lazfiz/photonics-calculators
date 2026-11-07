@@ -1,6 +1,7 @@
 # Handover — 2026-11-06 (session 215 → session 216)
 
-**Start here:** read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
+**Start here:** session 215 also released 10g-1 (300759e2), did GSC + Bing, and planned 10h/10i/Phase 11 on branch
+`phase-10/10h-ai-discovery`: continue 10h there (first unchecked box after 10g-2) and ship both in one PR. Read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
 Session 215 did 10g-1 (the domain move's code and Vercel side) on `phase-10/10g-domain-move` (PR #254). It's not
 released yet. Next: 10g-2 once the user releases, then 10a → 10e → 10d → 10b → 10f.
 
