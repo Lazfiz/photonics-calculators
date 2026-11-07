@@ -25,6 +25,25 @@ test("KDP longitudinal half-wave voltage: Wilson & Hawkes Example 3.2 and the 54
   assertRel(longitudinalHalfWaveVoltage(546e-9, no, POCKELS.kdp.r.r63!), 7457, 1e-3, "KDP table");
 });
 
+test("KD*P and ADP n_o: Kirby & DeShazer 1987 and Zernike 1964 fits, with V_π at 1064 nm by hand", () => {
+  const kdpd = POCKELS["kdp-d"], adp = POCKELS.adp;
+  // KD*P n_o = 1.4931 at 1.06 µm, measured (EKSMA Optics KDP/DKDP data sheet); vendor table (United Crystals,
+  // "Properties of KDP, DKDP and ADP") 1.5074, 1.5257, 1.5539 at 532, 355, 266 nm.
+  assertRel(kdpd.indices(1064e-9).no, 1.4931, 1e-4, "KD*P 1064 nm");
+  assertRel(kdpd.indices(532e-9).no, 1.5074, 5e-4, "KD*P 532 nm");
+  assertRel(kdpd.indices(355e-9).no, 1.5257, 5e-4, "KD*P 355 nm");
+  assertRel(kdpd.indices(266e-9).no, 1.5539, 5e-4, "KD*P 266 nm");
+  // ADP: Zhu et al., Chin. Opt. Lett. 13, 041601 (2015), Table 1 (A 2.29933, B 0.61290, C 18.52848, D 0.01143,
+  // E 0.01245, n² = A + Bλ²/(λ² − C) + D/(λ² − E)) gives 1.50654 at 1064 nm; United Crystals 1.5280 at 532 nm.
+  assertRel(adp.indices(1064e-9).no, 1.50654, 1e-4, "ADP 1064 nm");
+  assertRel(adp.indices(532e-9).no, 1.5280, 5e-4, "ADP 532 nm");
+  // λ/(2 n_o³ r₆₃) at 1064 nm: 1.064e-6 / (2 · 1.49311³ · 26.4e-12) = 6054 V for KD*P, and 1.50663 → 18 301 V for ADP.
+  assertRel(longitudinalHalfWaveVoltage(1064e-9, kdpd.indices(1064e-9).no, kdpd.r.r63!), 6054, 1e-3, "KD*P V_π");
+  assertRel(longitudinalHalfWaveVoltage(1064e-9, adp.indices(1064e-9).no, adp.r.r63!), 18301, 1e-3, "ADP V_π");
+  // Both ranges now reach the Nd:YAG line.
+  assert.ok(kdpd.range[0] <= 266e-9 && kdpd.range[1] >= 1064e-9 && adp.range[1] >= 1064e-9);
+});
+
 test("a single polarization needs twice the retardation half-wave voltage in a longitudinal cell", () => {
   const Vret = longitudinalHalfWaveVoltage(633e-9, 1.51, 26.4e-12);
   assertRel(phaseHalfWaveVoltage(633e-9, 1.51, 26.4e-12, 1e-2, 1e-2), 2 * Vret, 1e-12, "phase vs retardation");

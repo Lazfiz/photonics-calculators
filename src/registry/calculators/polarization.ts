@@ -102,6 +102,10 @@ const macleodBasic: Reference = {
   citation: "Macleod H. A. (2010). Thin-Film Optical Filters, 4th ed., ch. 2 Basic Theory, pp. 13–71. CRC Press.",
   url: "https://doi.org/10.1201/9781420073034-c2",
 };
+const harbecke1986: Reference = {
+  citation: "Harbecke B. (1986). Coherent and incoherent reflection and transmission of multilayer structures. Appl. Phys. B 39, 165–170.",
+  url: "https://doi.org/10.1007/BF00697414",
+};
 const macleodTilted: Reference = {
   citation: "Macleod H. A. (2010). Thin-Film Optical Filters, 4th ed., ch. 9 Tilted Coatings (MacNeille polarizer), pp. 403–469. CRC Press.",
   url: "https://doi.org/10.1201/9781420073034-c9",
@@ -253,8 +257,8 @@ export const polarization: CalculatorEntry[] = [
     title: "Dichroic Polarizer",
     description: "Model absorbing dichroic polarizers from the complex index of each principal axis: principal transmittances, extinction ratio and crossed-pair leakage.",
     tier: "exact",
-    modelNote: "Slab at normal incidence, N = n − iκ per principal axis, face reflectance including κ, multiple reflections added in power; ratios from logs. Not modelled: dispersion, scattering, oblique light.",
-    references: [shurcliffParameters, shurcliffDichroic, macleodBasic, bornWolfFresnel],
+    modelNote: "Slab many wavelengths thick at normal incidence, light broadband against its fringe spacing, N = n − iκ per principal axis, face reflectance including κ, multiple reflections added in power with both faces' amplitude coefficients (the exit face adds 1 + κ²/n², which matters only for metal-like κ); ratios from logs. Not modelled: dispersion, scattering, oblique light.",
+    references: [shurcliffParameters, shurcliffDichroic, macleodBasic, bornWolfFresnel, harbecke1986],
   },
   {
     slug: "double-refraction",

@@ -18,8 +18,9 @@ async function main(): Promise<void> {
     console.log(`dry run: ${urlList.length} URLs, key file live`);
     return;
   }
-  // One request takes up to 10 000 URLs.
-  const res = await fetch("https://api.indexnow.org/indexnow", {
+  // One request takes up to 10 000 URLs. Bing's endpoint, not api.indexnow.org: the shared one still answered 403
+  // SiteVerificationNotCompleted for this key while Bing took it (session 217). Engines share submissions either way.
+  const res = await fetch("https://www.bing.com/indexnow", {
     method: "POST",
     headers: { "Content-Type": "application/json; charset=utf-8" },
     body: JSON.stringify({ host: new URL(SITE_URL).host, key: INDEXNOW_KEY, keyLocation, urlList }),

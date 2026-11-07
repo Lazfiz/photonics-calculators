@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 216, 2026-11-07)
+## Status (session 217, 2026-11-07)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
@@ -79,8 +79,6 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 
 ## Open findings (actionable; accepted model limits are under "Known limitations")
 **Physics / data**
-- 9b blind audit (session 211), optional notes: KD*P/ADP range to 1064 nm (`pockels.ts`), Stokes input
-  in the URL on `mueller-polarimetry`, `dichroic-polarizer` tier "Exact" vs the (1+κ²/n²) exit-face term.
 - Laser safety (watch): re-check the classes when IEC 60825-1 Ed. 4 is published (only a BSI draft in 2026).
 - `spectroscopy/conc-mirror` and `jacquinot` (session 104) both show the Jacquinot ratio π f/(h tan θ) from `throughput.ts`;
   conc-mirror adds the mirror cone and slit étendue. Merge into jacquinot only if the user asks.
@@ -345,8 +343,7 @@ Evidence (session 214, Vercel Web Analytics 2026-10-07 → 11-06): 9 visitors, 5
   (423); home page indexed on 11-06. Bing: both sites imported, sitemap submitted, 100 URLs sent (quota 100/day); the
   new Bing UI has no Site Move (the 308s do it). Left: Resend (optional).
 - [x] 10h AI discovery quick wins (session 216, `phase-10/10h-ai-discovery`, PR #255). See Done.
-- [ ] 10a Audit fixes: KD*P/ADP range to 1064 nm (`pockels.ts`), Stokes input and element types in `useURLState` on
-  `mueller-polarimetry`, `dichroic-polarizer` tier vs the (1+κ²/n²) exit-face term. Golden tests with sources.
+- [x] 10a Audit fixes (session 217, `phase-10/10a-audit-fixes`, PR #256). See Done.
 - [ ] 10i Presence where models learn (user posts; Claude drafts): GitHub README with the category list and links,
   "Show HN", r/Optics and r/Photonics, Physics Stack Exchange answers that link one specific calculator where it truly
   helps, awesome lists. Chinese agents (DeepSeek, Qwen, Kimi, Doubao): Baidu Webmaster (ziyuan.baidu.com, user's
@@ -398,6 +395,7 @@ Goal: an AI assistant can call a calculator with its user's inputs and check the
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 10a (session 217, `phase-10/10a-audit-fixes`, PR #256): KD*P n_o Kirby & DeShazer 1987 (266–1064 nm, 1.4931 at 1064, V_π 6054 V) and ADP Zernike 1964 (213.8–1529 nm) replace fixed 1.51/1.52; `mueller-polarimetry` Stokes s0–s3 and element1/2 in the URL; `dichroic-polarizer` slab T gains the exit-face factor 1 + κ²/n² (Harbecke 1986), n > 0 guard, < 10λ warning. 1286 tests.
 - 10h (session 216, `phase-10/10h-ai-discovery`, PR #255): robots.txt names 13 AI crawlers as allowed; `/llms.txt` from the registry (411 links with tier, about/verification, source, cite); per-page `WebApplication` JSON-LD (free, `EducationalApplication`, citations moved onto it, WebPage `mainEntity`); IndexNow key in `public/` + `scripts/indexnow.ts`, run after each release (`/ship` step 5); 1283 tests.
 - 10g-1 (session 215, `phase-10/10g-domain-move`, PR #254): photonicscalculators.com (user bought it 2026-11-06) is canonical; Vercel www → apex 308; `SITE_URL` in `src/lib/site.ts` feeds canonicals, JSON-LD, sitemap, robots; `next.config.mjs` 308s the vercel.app host first; 1280 tests.
 - 9b-3 (session 213, `phase-9/9b-3-about-audit`, PR #251): About `#verification` states the blind audit (30 pages, seed 20261106, 0 errors, < 9.5 % at 95 %, 7 minor fixed, AI-reviewer limits) and links `docs/audit/9b-blind-audit.md`.

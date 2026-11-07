@@ -64,7 +64,7 @@ export default function DichroicPolarizerPage() {
     <>
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-gray-300 text-sm font-mono space-y-1">
         <p>each principal axis: N = n − iκ, &nbsp;α = 4πκ/λ, &nbsp;R = ((n − 1)² + κ²)/((n + 1)² + κ²)</p>
-        <p>k = (1 − R)² e<sup>−αd</sup>/(1 − R² e<sup>−2αd</sup>) &nbsp;(normal incidence, incoherent reflections)</p>
+        <p>k = (1 − R)²(1 + κ²/n²) e<sup>−αd</sup>/(1 − R² e<sup>−2αd</sup>) &nbsp;(normal incidence, incoherent reflections)</p>
         <p>extinction k₁/k₂, &nbsp;efficiency (k₁ − k₂)/(k₁ + k₂), &nbsp;crossed pair H₉₀ = k₁k₂</p>
       </div>
 
@@ -83,6 +83,7 @@ export default function DichroicPolarizerPage() {
         α = 68.5 mm⁻¹. A metal has κ of order 1 to 10 and blocks both axes. The defaults are illustrative, not a measured material.
       </p>
 
+      {d < 10 * lambda && <p className="text-sm text-yellow-400 mb-4">The sheet is less than 10 wavelengths thick: interference between its faces, which this incoherent model leaves out, can change k₁ and k₂.</p>}
       {swapped && <p className="text-sm text-yellow-400 mb-4">The &quot;block&quot; axis transmits more than the &quot;pass&quot; axis: the ratios below are below 1 (negative dB).</p>}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

@@ -1,36 +1,34 @@
-# Handover — 2026-11-07 (session 216 → session 217)
+# Handover — 2026-11-07 (session 217 → session 218)
 
-**Start here:** session 216 did 10h (AI discovery quick wins) on `phase-10/10h-ai-discovery` (PR #255, with the
-10h/10i/Phase 11 ROADMAP commit). Not released. Next: 10a on a new branch, then Phase 11a. Read this file, then
-`docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
+**Start here:** session 217 did 10a (audit fixes) on `phase-10/10a-audit-fixes` (PR #256). 10h (PR #255) is released
+(e4e1aa49); 10a is not. Next: Phase 11a. It is too big for one session: split it into 11a-1 (schema type, `/api/v1`
+route, `/openapi.json`, 3–4 pages, checks test) and 11a-2 (the rest of the 20 pages) before starting.
 
 ## State
-- `src/app/robots.ts`: `*` allowed plus an explicit allow rule for `AI_CRAWLERS` (13 bots, exported, tested).
-- `/llms.txt`: `src/app/llms.txt/route.ts` (force-static, text/plain) ← `buildLlmsTxt()` in `src/registry/llms.ts`:
-  summary, tier definitions, about/verification, source, how to cite, then per category every non-hidden calculator
-  as `- [title](url): description (tier)`. 110 kB. Phase 11 adds the API/MCP lines.
-- `calculatorJsonLd`: WebPage (`mainEntity` → `<url>#calculator`) + `WebApplication` (free offer,
-  `EducationalApplication`, category as sub-category, `citation` from `references`, moved off the WebPage) + breadcrumb.
-  No rating (none exists): Google's Software App rich result wants one, so GSC may list these as "invalid" items for
-  that enhancement. Harmless; don't fake ratings.
-- IndexNow: `INDEXNOW_KEY` in `src/lib/site.ts`, `public/<key>.txt`; `scripts/indexnow.ts [--dry-run]` checks the
-  live key file, reads the live sitemap and posts all URLs to `api.indexnow.org`. `/ship` step 5 runs it after a release.
-- `tests/ai-discovery.test.ts` (robots, llms.txt lists every listed calculator once with its tier, key file). 1283 tests.
-- 10g-2 left: Resend domain records + `REPORT_FROM_EMAIL` (optional).
+- `pockels.ts`: KD*P n_o = Kirby & DeShazer 1987 (266–1064 nm), ADP = Zernike 1964 (213.8–1529 nm), both via the local
+  `kdpFamily` → `fromSquaredForm`; n_e stays NaN (longitudinal cells only need n_o). Fixed-index note gone from the page.
+- `sheet-polarizer.ts`: `slabLogTransmittance` adds log1p((κ/n)²) (exit face, |tt′|²) and guards n > 0;
+  `slabLogTransmittanceFrom` (polymer-polarizer) keeps (1 − R)², fine for κ ≪ n. Page warns when d < 10λ.
+- `mueller-polarimetry`: URL keys `s0`–`s3`, `element1`, `element2` (unknown names fall back to the defaults).
+- 1286 tests; `physics-reviewer` passed all three pages (its wording and guard notes applied).
 
 ## Next actions
-1. Release only when the user asks. After it: `node scripts/post-merge-check.mjs <sha> fiber-optics/chromatic-dispersion
-   laser-safety/ael-limits`; `curl -s https://photonicscalculators.com/llms.txt | head -5`; `curl -s …/robots.txt`;
-   then `node --import tsx scripts/indexnow.ts` (expects HTTP 200 or 202). Optionally run Google's Rich Results Test
-   on one page to see the WebApplication node.
-2. 10a on a new branch: KD*P/ADP range to 1064 nm (`pockels.ts:166,171`); Stokes input and element types into
-   `useURLState` on `polarization/mueller-polarimetry` (one state per field, not in a `.map`); `dichroic-polarizer`
-   tier vs the (1+κ²/n²) exit-face term. Golden tests with sources; `physics-reviewer` on the changed pages.
-3. Phase 11a (schemas, `/api/v1`, `/openapi.json`); read the Next 16 route-handler docs first.
-4. In a week or two: ask the user for the Search Console Pages/Performance reports (indexed count, queries) for 10d.
-5. Still missing data: BSO ε, SBN, Nd σ_a at 808 nm, CO₂ g₀ and I_s, SF59 n₂, the Tm ³H₄ band, ZBLAN κ and band.
+1. `/ship` this branch (PR #256). Release only when the user asks; after it: `node scripts/post-merge-check.mjs <sha>
+   materials/electro-optic polarization/dichroic-polarizer`, `curl -s https://photonicscalculators.com/llms.txt | head -5`,
+   then `node --import tsx scripts/indexnow.ts` (HTTP 200/202).
+2. Split 11a in the ROADMAP, then 11a-1 on a new branch; read `node_modules/next/dist/docs/` route-handler guide first.
+3. In a week or two: ask the user for the Search Console Pages/Performance reports (indexed count, queries) for 10d.
+4. Still missing data: BSO ε, SBN, Nd σ_a at 808 nm, CO₂ g₀ and I_s, SF59 n₂, the Tm ³H₄ band, ZBLAN κ and band.
+5. IndexNow: api.indexnow.org kept answering 403 SiteVerificationNotCompleted, Bing's endpoint took all 423 URLs (HTTP
+   200, session 217), so `scripts/indexnow.ts` now posts to www.bing.com/indexnow. Bing Webmaster's IndexNow page showed
+   "Get started" before that submission; ask the user in a day or two whether it lists submissions.
+6. 10g-2 left: Resend domain records + `REPORT_FROM_EMAIL` (optional).
 
 ## Non-obvious facts
+- **Session 217:** refractiveindex.info has no KD*P (GitHub API: `contents/database/data/main`); nlo.ipfran.ru fails TLS
+  (curl and WebFetch; `curl -k` is blocked). WebFetch saves PDFs it can't parse under `~/.claude/projects/…/tool-results/`:
+  `pdftotext -raw` on that file reads vendor tables (EKSMA's CDN PDF too). Vendor index tables are probably computed
+  from the same Sellmeier: call them "tabulated", not independent measurements.
 - **Session 216:** `devctl` refuses a foreground command while another project (Entendue) keeps the CPU busy: run it
   with `run_in_background`. `node --import tsx -e 'import("./src/x.ts")'` needs a relative path (an absolute `C:`
   path fails) and hands back CJS interop: call `m.default.fn`.

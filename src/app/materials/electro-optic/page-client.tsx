@@ -133,7 +133,6 @@ export default function ElectroOpticPage() {
   const outside = "outside the index model's range";
   const rotationL = m.rotation * L; // rad
   const chart = transmissionChart(m.VpiRet, voltage, rotationL);
-  const fixedIndex = choice === "kdp-d" || choice === "adp";
   const perp = crystal?.perp ?? ORDINARY;
 
   return (
@@ -178,7 +177,6 @@ export default function ElectroOpticPage() {
         {longitudinal ? "Field and light along z: E = V/L, and V_π does not depend on the crystal size."
           : cubic ? "Field along [110] across the gap d, light along [1̄10]: E = V/d, induced axes at ±45° between [110] and [001]."
           : "Field along z across the gap d, light across it: E = V/d."}{" "}
-        {fixedIndex && <span className="text-yellow-400">n_o is a single published value, without dispersion.</span>}
         {!Number.isFinite(m.n) && <span className="text-yellow-400">The wavelength is {outside}.</span>}
       </p>
 
