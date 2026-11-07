@@ -1,13 +1,13 @@
 // tests/api-schemas.test.ts's per-schema assertions for schema files not yet in src/schemas/index.ts, so parallel
 // agents can check their own files without seeing each other's half-written ones.
 //   npx tsx scripts/check-schema.ts src/schemas/<category>/<slug>.ts …   # prints failures, then ALL PASS or N FAILURES
-import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { findCalculator } from "../src/registry/index";
 import { parseInputs, runSchema } from "../src/schemas/run";
 import type { CalculatorSchema } from "../src/schemas/types";
+import { pageDefaults } from "./page-defaults";
 
 let failures = 0;
 const fail = (message: string) => {
@@ -18,7 +18,7 @@ const unique = (keys: string[]) => new Set(keys).size === keys.length;
 const query = (inputs: Record<string, number | string>) =>
   new URLSearchParams(Object.entries(inputs).map(([k, v]) => [k, String(v)]));
 
-function check(schema: CalculatorSchema) {
+async function check(schema: CalculatorSchema) {
   const h = schema.href;
   const run = (inputs: Record<string, number | string>) => {
     const parsed = parseInputs(schema, query(inputs));
@@ -44,16 +44,13 @@ function check(schema: CalculatorSchema) {
   for (const output of schema.outputs) if (!(output.toSI > 0)) fail(`${h} ${output.key} toSI`);
   if (!(schema.checks.length >= 1 && schema.checks.length <= 3)) fail(`${h}: 1–3 checks`);
 
-  const source = readFileSync(`src/app${h}/page-client.tsx`, "utf8");
-  const pageDefaults = new Map<string, number | string>(
-    [...source.matchAll(/useURLState\(\s*"([^"]+)",\s*(?:"([^"]*)"|([-+.\deE]+))/g)].map((m) => [m[1], m[2] ?? Number(m[3])]),
-  );
+  const defaults = await pageDefaults(h);
   const inputs = [...choices, ...schema.inputs];
-  const pageKeys = [...pageDefaults.keys()].sort().join(", ");
+  const pageKeys = [...defaults.keys()].sort().join(", ");
   const schemaKeys = inputs.map((i) => i.key).sort().join(", ");
   if (pageKeys !== schemaKeys) fail(`${h} keys: page [${pageKeys}], schema [${schemaKeys}]`);
   for (const input of inputs) {
-    if (input.default !== pageDefaults.get(input.key)) fail(`${h} ${input.key}: default ${input.default}, page ${pageDefaults.get(input.key)}`);
+    if (input.default !== defaults.get(input.key)) fail(`${h} ${input.key}: default ${input.default}, page ${defaults.get(input.key)}`);
   }
 
   const atDefaults = run({});
@@ -78,7 +75,7 @@ function check(schema: CalculatorSchema) {
 async function main() {
   for (const file of process.argv.slice(2)) {
     const mod = (await import(pathToFileURL(resolve(file)).href)) as { default: CalculatorSchema | { default: CalculatorSchema } };
-    check("href" in mod.default ? mod.default : mod.default.default);
+    await check("href" in mod.default ? mod.default : mod.default.default);
   }
   console.log(failures ? `${failures} FAILURES` : "ALL PASS");
   process.exitCode = failures ? 1 : 0;
