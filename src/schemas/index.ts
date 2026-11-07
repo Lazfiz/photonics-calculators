@@ -14,6 +14,19 @@ import diversityReception from "./free-space-comms/diversity-reception";
 import eyeSafetyFso from "./free-space-comms/eye-safety-fso";
 import fadeProbability from "./free-space-comms/fade-probability";
 import fogAttenuation from "./free-space-comms/fog-attenuation";
+import geometricLoss from "./free-space-comms/geometric-loss";
+import lasercomLink from "./free-space-comms/lasercom-link";
+import linkBudget from "./free-space-comms/link-budget";
+import opticalAntenna from "./free-space-comms/optical-antenna";
+import pointAhead from "./free-space-comms/point-ahead";
+import pointingLoss from "./free-space-comms/pointing-loss";
+import quantumKeyDistribution from "./free-space-comms/quantum-key-distribution";
+import rainAttenuation from "./free-space-comms/rain-attenuation";
+import receiverFov from "./free-space-comms/receiver-fov";
+import scintillation from "./free-space-comms/scintillation";
+import security from "./free-space-comms/security";
+import snowAttenuation from "./free-space-comms/snow-attenuation";
+import wavelengthSelection from "./free-space-comms/wavelength-selection";
 import airyDisk from "./imaging/airy-disk";
 import lowCoherence from "./imaging/low-coherence";
 import tirf from "./imaging/tirf";
@@ -40,6 +53,8 @@ export const schemas: readonly CalculatorSchema[] = [
   dispersionMap, lowCoherence, infraredSpectroscopy, sumFrequencyGen,
   acquisitionTracking, adaptiveOptics, apertureAveraging, atmosphericLoss, backgroundNoise, beamWander, ber, bpskQpsk,
   channelCapacity, diversityReception, eyeSafetyFso, fadeProbability, fogAttenuation,
+  geometricLoss, lasercomLink, linkBudget, opticalAntenna, pointAhead, pointingLoss, quantumKeyDistribution,
+  rainAttenuation, receiverFov, scintillation, security, snowAttenuation, wavelengthSelection,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));
