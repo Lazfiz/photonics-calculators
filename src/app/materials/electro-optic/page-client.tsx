@@ -5,8 +5,8 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  POCKELS, crossedPolarizerTransmission, cubicCoefficients, cubicHalfWaveVoltage, gyrotropicTransmission, longitudinalHalfWaveVoltage,
-  phaseHalfWaveVoltage, pockelsIndexChange, transverseCoefficients, transverseHalfWaveVoltage, type PockelsGeometry, type PockelsId,
+  POCKELS, crossedPolarizerTransmission, cubicCoefficients, gyrotropicTransmission, modulator, pockelsIndexChange, transverseCoefficients,
+  type PockelsGeometry, type PockelsId,
 } from "../../../physics/materials/pockels";
 
 const IDS = ["kdp", "kdp-d", "adp", "linbo3", "litao3", "ktp", "batio3", "batio3-clamped", "bso"] as const satisfies readonly PockelsId[];
@@ -34,47 +34,6 @@ const kV = (V: number) => (Number.isFinite(V) ? (Math.abs(V) >= 1000 ? `${sig(V 
 const ORDINARY = { n: "n_o", nz: "n_e", r: "r₁₃" };
 const rangeNm = (id: PockelsId) => POCKELS[id].range.map((x) => +(x * 1e9).toFixed(1)).join("–");
 const GEOMETRY_LABEL: Record<PockelsGeometry, string> = { longitudinal: "longitudinal", transverse: "transverse", cubic: "transverse [110]" };
-
-interface Modulator {
-  geometry: PockelsGeometry;
-  /** Index (n_o for longitudinal, n_e for transverse, n for cubic) and coefficient the single-polarization phase uses. */
-  n: number;
-  r: number;
-  /** Retardation half-wave voltage, or NaN when it needs a second coefficient. */
-  VpiRet: number;
-  VpiPhase: number;
-  /** Rotatory power, rad/m (0 for the crystals without optical activity here). */
-  rotation: number;
-}
-
-function modulator(choice: Choice, lambda: number, d: number, L: number, custom: { n: number; r: number; geometry: PockelsGeometry }): Modulator {
-  if (choice === "custom") {
-    const { n, r, geometry } = custom;
-    const dd = geometry === "longitudinal" ? L : d;
-    const VpiRet = geometry === "longitudinal" ? longitudinalHalfWaveVoltage(lambda, n, r) : NaN;
-    return { geometry, n, r, VpiRet, VpiPhase: phaseHalfWaveVoltage(lambda, n, r, dd, L), rotation: 0 };
-  }
-  const c = POCKELS[choice];
-  const [lo, hi] = c.range;
-  const inRange = lambda >= lo * (1 - 1e-9) && lambda <= hi * (1 + 1e-9);
-  const { no, ne } = c.indices(lambda);
-  if (c.geometry === "longitudinal") {
-    const n = inRange ? no : NaN;
-    return { geometry: "longitudinal", n, r: c.r.r63!, VpiRet: longitudinalHalfWaveVoltage(lambda, n, c.r.r63!), VpiPhase: phaseHalfWaveVoltage(lambda, n, c.r.r63!, L, L), rotation: 0 };
-  }
-  if (c.geometry === "cubic") {
-    const n = inRange ? no : NaN;
-    const { r41, rotation } = cubicCoefficients(c, lambda);
-    return { geometry: "cubic", n, r: r41, VpiRet: cubicHalfWaveVoltage(lambda, n, r41, d, L), VpiPhase: phaseHalfWaveVoltage(lambda, n, r41, d, L), rotation };
-  }
-  const n = inRange ? ne : NaN;
-  const { r33, r13 } = transverseCoefficients(c, lambda);
-  return {
-    geometry: "transverse", n, r: r33,
-    VpiRet: transverseHalfWaveVoltage(lambda, inRange ? no : NaN, n, r33, r13, d, L),
-    VpiPhase: phaseHalfWaveVoltage(lambda, n, r33, d, L), rotation: 0,
-  };
-}
 
 /** T(V) between crossed polarizers; with a rotation ρL ≠ 0 (rad) a second curve has the analyzer crossed to the zero-field output. */
 function transmissionChart(Vpi: number, V: number, rotationL: number) {

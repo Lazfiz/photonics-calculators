@@ -269,6 +269,53 @@ export function cubicCoefficients(crystal: PockelsCrystal, lambda: number): { r4
 export const cubicHalfWaveVoltage = (lambda: number, n: number, r41: number, d: number, L: number) =>
   pos(lambda) && pos(n) && pos(r41) && pos(d) && pos(L) ? (lambda * d) / (2 * n ** 3 * r41 * L) : NaN;
 
+export interface Modulator {
+  geometry: PockelsGeometry;
+  /** Index (n_o for longitudinal, n_e for transverse, n for cubic) and coefficient the single-polarization phase uses. */
+  n: number;
+  r: number;
+  /** Retardation half-wave voltage, or NaN when it needs a second coefficient. */
+  VpiRet: number;
+  VpiPhase: number;
+  /** Rotatory power, rad/m (0 for the crystals without optical activity here). */
+  rotation: number;
+}
+
+/**
+ * A table crystal in its own geometry, or a custom n, r and geometry: indices (NaN outside the crystal's dispersion
+ * range), coefficient and half-wave voltages. d is the electrode gap, L the length along the light.
+ */
+export function modulator(
+  choice: PockelsId | "custom", lambda: number, d: number, L: number, custom: { n: number; r: number; geometry: PockelsGeometry },
+): Modulator {
+  if (choice === "custom") {
+    const { n, r, geometry } = custom;
+    const dd = geometry === "longitudinal" ? L : d;
+    const VpiRet = geometry === "longitudinal" ? longitudinalHalfWaveVoltage(lambda, n, r) : NaN;
+    return { geometry, n, r, VpiRet, VpiPhase: phaseHalfWaveVoltage(lambda, n, r, dd, L), rotation: 0 };
+  }
+  const c = POCKELS[choice];
+  const [lo, hi] = c.range;
+  const inRange = lambda >= lo * (1 - 1e-9) && lambda <= hi * (1 + 1e-9);
+  const { no, ne } = c.indices(lambda);
+  if (c.geometry === "longitudinal") {
+    const n = inRange ? no : NaN;
+    return { geometry: "longitudinal", n, r: c.r.r63!, VpiRet: longitudinalHalfWaveVoltage(lambda, n, c.r.r63!), VpiPhase: phaseHalfWaveVoltage(lambda, n, c.r.r63!, L, L), rotation: 0 };
+  }
+  if (c.geometry === "cubic") {
+    const n = inRange ? no : NaN;
+    const { r41, rotation } = cubicCoefficients(c, lambda);
+    return { geometry: "cubic", n, r: r41, VpiRet: cubicHalfWaveVoltage(lambda, n, r41, d, L), VpiPhase: phaseHalfWaveVoltage(lambda, n, r41, d, L), rotation };
+  }
+  const n = inRange ? ne : NaN;
+  const { r33, r13 } = transverseCoefficients(c, lambda);
+  return {
+    geometry: "transverse", n, r: r33,
+    VpiRet: transverseHalfWaveVoltage(lambda, inRange ? no : NaN, n, r33, r13, d, L),
+    VpiPhase: phaseHalfWaveVoltage(lambda, n, r33, d, L), rotation: 0,
+  };
+}
+
 /** Intensity transmission sin²(Γ/2) of a retarder between crossed polarizers at 45° to its axes. */
 export const crossedPolarizerTransmission = (retardation: number) => Math.sin(retardation / 2) ** 2;
 
