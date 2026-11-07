@@ -26,6 +26,10 @@ export function buildLlmsTxt(): string {
     `- JSON API (${schemas.length} calculators so far): GET ${SITE_URL}${apiPath("/<category>/<slug>")} with the ` +
       `page's URL query, e.g. ${SITE_URL}${apiPath("/wave-optics/gaussian-beam")}?wavelength=1064&waist=500&z=100. ` +
       `Inputs, units, ranges and outputs: ${SITE_URL}/openapi.json. Each result carries the model tier and references.`,
+    `- MCP server (streamable HTTP, no key): ${SITE_URL}/mcp, with the tools find_calculator, run_calculator, ` +
+      `get_checks and report_problem. Claude Code: \`claude mcp add --transport http photonics ${SITE_URL}/mcp\`.`,
+    `- Reference cases with this deployment's results: ${SITE_URL}/checks.json. Please check results that matter ` +
+      "against the cited source or your own calculation, and report a disagreement (report_problem, or the form).",
     `- Source code: ${REPO_URL}`,
     '- Mistakes: the "Report a problem" form at the bottom of each calculator page.',
     '- How to cite: "<calculator title>. Photonics Calculators. <page URL> (accessed <date>)." For the physics, ' +

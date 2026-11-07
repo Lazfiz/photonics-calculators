@@ -79,13 +79,17 @@ export function parseReport(raw: string, knownHref: (href: string) => boolean): 
   return { ok: true, report: { href, query, message, contact } };
 }
 
+/** Where a report came from: the page's form, or an AI agent through the MCP server's `report_problem`. */
+export type ReportSource = "form" | "mcp";
+
 /** The plain-text email for one report. `origin` is the site that served the form. */
-export function reportEmail(report: Report, origin: string, sha: string | undefined) {
+export function reportEmail(report: Report, origin: string, sha: string | undefined, source: ReportSource = "form") {
   const url = `${origin}${report.href}${report.query ? `?${report.query}` : ""}`;
   return {
-    subject: `Problem report: ${report.href}`,
+    subject: `Problem report${source === "mcp" ? " (MCP)" : ""}: ${report.href}`,
     text: [
       `Page: ${url}`,
+      `Source: ${source}`,
       `Commit: ${sha ?? "unknown (not a Vercel build)"}`,
       `Reply to: ${report.contact || "(none given)"}`,
       "",

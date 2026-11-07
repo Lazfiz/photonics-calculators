@@ -50,6 +50,7 @@ test("report: the email names the page with its inputs, the commit and the reply
     email.text,
     [
       `Page: https://photonicscalculators.com${HREF}?lambda=633`,
+      "Source: form",
       "Commit: abc1234",
       "Reply to: a@b.org",
       "",
@@ -57,7 +58,10 @@ test("report: the email names the page with its inputs, the commit and the reply
     ].join("\n"),
   );
   const bare = reportEmail({ href: HREF, query: "", message: "m", contact: "" }, "http://localhost:3300", undefined);
-  assert.match(bare.text, /^Page: http:\/\/localhost:3300\/materials\/acousto-optic\nCommit: unknown/);
+  assert.match(bare.text, /^Page: http:\/\/localhost:3300\/materials\/acousto-optic\nSource: form\nCommit: unknown/);
+  const agent = reportEmail({ href: HREF, query: "", message: "m", contact: "" }, "https://x.org", "abc1234", "mcp");
+  assert.equal(agent.subject, `Problem report (MCP): ${HREF}`);
+  assert.match(agent.text, /\nSource: mcp\n/);
 });
 
 test("report: the rate limiter allows `limit` hits per window per key", () => {

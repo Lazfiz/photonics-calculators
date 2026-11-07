@@ -7,6 +7,7 @@ import testStats from "../../lib/test-stats.json";
 import { calculators } from "../../registry";
 import { TIERS, UNREVIEWED, type TierInfo } from "../../registry/tiers";
 import type { ModelTier } from "../../registry/types";
+import { schemas } from "../../schemas";
 
 export const metadata: Metadata = {
   alternates: { canonical: `${SITE_URL}/about` },
@@ -115,6 +116,16 @@ export default function AboutPage() {
             <li>
               The pages cite {distinctReferences.length} distinct references ({allReferences.length} citations in
               all); {linkedReferences} of them link to a DOI or an open copy.
+            </li>
+            <li>
+              AI assistants and scripts can check the results too. {schemas.length} calculators so far run with
+              any inputs through a JSON API (
+              <a href="/openapi.json" className="text-blue-400 hover:text-blue-300">/openapi.json</a>) and an MCP
+              server at <code>{SITE_URL}/mcp</code>; their reference cases, with
+              this deployment&apos;s result next to each expected value, are in{" "}
+              <a href="/checks.json" className="text-blue-400 hover:text-blue-300">/checks.json</a>. An agent can
+              rerun a case, compare it with the source or its own calculation, and report a disagreement through
+              the MCP tool <code>report_problem</code> or the form below.
             </li>
           </ul>
           <p className="mt-4 text-sm text-gray-400">
