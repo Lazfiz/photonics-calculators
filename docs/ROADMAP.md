@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 224, 2026-11-07)
+## Status (session 225, 2026-11-07)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
@@ -79,7 +79,7 @@ Open findings, one PR each; each claim goes through an adversarial `physics-revi
 
 ## Open findings (actionable; accepted model limits are under "Known limitations")
 **Physics / data**
-- API (11c-2a): an output that is NaN at the page's defaults can't be in a schema (the test wants finite defaults), so `crystal-properties` leaves out quartz's optical rotation (default crystal calcite). Allow null-at-defaults outputs if more pages need it.
+- API (11c-2a, eased 11c-2b): an output may now be null at the page's defaults if a warning says why, so `crystal-properties` can add quartz's optical rotation (left out in 11c-2a; default crystal calcite).
 - Laser safety (watch): re-check the classes when IEC 60825-1 Ed. 4 is published (only a BSI draft in 2026).
 - `spectroscopy/conc-mirror` and `jacquinot` (session 104) both show the Jacquinot ratio π f/(h tan θ) from `throughput.ts`;
   conc-mirror adds the mirror cone and slit étendue. Merge into jacquinot only if the user asks.
@@ -379,7 +379,7 @@ Goal: an AI assistant can call a calculator with its user's inputs and check the
   - [x] 11c-1a free-space-comms A–F, 13 pages (session 222, `phase-11/11c-1a-free-space-comms`, PR #261). See Done.
   - [x] 11c-1b free-space-comms G–W, 13 pages (session 223, `phase-11/11c-1b-free-space-comms`, PR #262). See Done.
   - [x] 11c-2a materials A–N, 14 pages (session 224, `phase-11/11c-2a-materials`, PR #263). See Done.
-  - [ ] 11c-2b materials O–X, 13 pages: optical-glass-catalog … x-ray-optics.
+  - [x] 11c-2b materials O–X, 13 pages (session 225, `phase-11/11c-2b-materials`, PR #264). See Done.
   - [ ] 11c-3… polarization (33), wave-optics (37), laser-safety, spectroscopy, thin-film, fiber-optics, detectors,
     imaging: a/b(/c) each.
 - Verification by visiting agents (user, session 215: "ask visiting llms to verify tools"): `llms.txt` and the About
@@ -405,6 +405,7 @@ Goal: an AI assistant can call a calculator with its user's inputs and check the
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 11c-2b (session 225, `phase-11/11c-2b-materials`, PR #264): schemas + 1–3 checks for 13 materials pages (optical-glass-catalog … x-ray-optics), 73 runnable; printed checks: Be and Si δ, β at 10 keV (CXRO, Henke 1993); dispatch moved into pockels.ts (photorefractive), bandgap.ts, dopant-absorption.ts, thermal-conduction.ts, two-photon.ts; `page-defaults` reads numeric and bare imported constants; null at defaults allowed with a warning (polymer NA).
 - 11c-2a (session 224, `phase-11/11c-2a-materials`, PR #263): schemas + 1–3 checks for 14 materials pages (acousto-optic … nonlinear-index), 60 runnable; printed checks: N-BK7 n_d 1.51680 and n(1060) 1.50669 (SCHOTT sheet), NV⁻ ZPL 637 nm (Doherty 2013), diamond Brillouin 71 GHz (Williams 2018), Ge n 4.0026 at 11 µm + dn/dT/κ/Knoop (Crystran), silica/BK7 n₂ (Dubietis 2017 Table 1); `modulator()` moved into pockels.ts; `scripts/page-defaults.ts` resolves constant and imported-member defaults for the schema test.
 - 11c-1b (session 223, `phase-11/11c-1b-free-space-comms`, PR #262): schemas + 1–3 checks for the other 13 free-space-comms pages (geometric-loss … wavelength-selection), 46 runnable; three parallel implementers (5–8 min each) checked with a scratch copy of the schema test; 2 printed checks (Carrasco-Casado 2020 51 µrad, Ma 2005 142.05 km); wavelength-selection re-cited to ICNIRP 2013 Tables 5, 8; qkd.ts docstring: 142.015 km vs the printed 142.05.
 - 11c-1a (session 222, `phase-11/11c-1a-free-space-comms`, PR #261): schemas + 1–3 checks for 13 free-space-comms pages (acquisition-tracking … fog-attenuation), 33 runnable; three parallel implementers, values worked from the cited equations by independent scratch scripts; Giggenbach 2022 Table 1 confirmed against PMC9503493; no physics disagreements. A check can't expect 0 (relative tolerance).
