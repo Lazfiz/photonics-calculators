@@ -61,6 +61,17 @@ import thermalExpansion from "./materials/thermal-expansion";
 import transparencyRange from "./materials/transparency-range";
 import twoPhotonAbsorption from "./materials/two-photon-absorption";
 import xRayOptics from "./materials/x-ray-optics";
+import birefringence from "./polarization/birefringence";
+import birefringenceImaging from "./polarization/birefringence-imaging";
+import birefringentPolarizer from "./polarization/birefringent-polarizer";
+import brewsterPolarizer from "./polarization/brewster-polarizer";
+import circularDichroism from "./polarization/circular-dichroism";
+import conoscopic from "./polarization/conoscopic";
+import degreePolarization from "./polarization/degree-polarization";
+import depolarization from "./polarization/depolarization";
+import dichroicPolarizer from "./polarization/dichroic-polarizer";
+import doubleRefraction from "./polarization/double-refraction";
+import fresnelPolarization from "./polarization/fresnel-polarization";
 import stokes from "./polarization/stokes";
 import blackbody from "./spectroscopy/blackbody";
 import cavityRingDown from "./spectroscopy/cavity-ring-down";
@@ -86,6 +97,8 @@ export const schemas: readonly CalculatorSchema[] = [
   diamondOptics, electroOptic, heatCapacity, infraredGlass, magnetoOptic, nonlinearCrystals, nonlinearIndex,
   opticalGlassCatalog, photoelastic, photorefractive, polymerOptics, radiationDamage, ramanScattering, rareEarthAbsorption,
   semiconductorBandgap, thermalConductivityOptics, thermalExpansion, transparencyRange, twoPhotonAbsorption, xRayOptics,
+  birefringence, birefringenceImaging, birefringentPolarizer, brewsterPolarizer, circularDichroism, conoscopic,
+  degreePolarization, depolarization, dichroicPolarizer, doubleRefraction, fresnelPolarization,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));
