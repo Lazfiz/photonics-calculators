@@ -1,26 +1,27 @@
-# Handover — 2026-11-07 (session 222 → session 223)
+# Handover — 2026-11-07 (session 223 → session 224)
 
-**Start here:** session 222 did 11c-1a on `phase-11/11c-1a-free-space-comms` (PR #261): API schemas with 1–3
-reference checks for 13 free-space-comms pages (acquisition-tracking … fog-attenuation). 11b is released (ec76f000).
-Next: `/ship` #261, then 11c-1b (the other 13 free-space-comms pages, listed in ROADMAP); 11b-2 waits on the user.
+**Start here:** session 223 did 11c-1b on `phase-11/11c-1b-free-space-comms` (PR #262): API schemas with 1–3
+reference checks for the other 13 free-space-comms pages (geometric-loss … wavelength-selection); free-space-comms has
+all 26. 11c-1a is released (e9c9b54b). Next: `/ship` #262, then 11c-2a (materials A–N, 14 pages, listed in ROADMAP).
 
 ## State
-- 33 runnable schemas (`src/schemas/index.ts`); new folder `src/schemas/free-space-comms/` (13 files). No physics or
-  page changed. Counts in About, llms.txt and the MCP text come from `schemas.length`.
-- Contract: `src/schemas/types.ts` (`defineSchema`, inputs = every numeric `useURLState` key with the page default and
-  input-component range, string keys = `choices`, outputs in page units, `compute` SI→SI through `src/physics/`,
-  `checks` 1–3 with `basis` printed|computed). `tests/api-schemas.test.ts` checks keys/defaults vs the page source.
-- Pages whose toggles are plain `useState` (ber's modulation) can't be inputs: the schema outputs both variants.
-- String results (laser class on eye-safety-fso, laser-safety governing limit, Stokes handedness) are left out.
+- 46 runnable schemas (`src/schemas/index.ts`). No physics or page changed, except the `qkd.ts` docstring: the
+  cutoff is 142.015 km, Ma et al. print 142.05 km (their own eqs. give 142.0145). Counts in About, llms.txt and the MCP
+  text come from `schemas.length`.
+- New `scripts/check-schema.ts` (see below). Contract unchanged: `src/schemas/types.ts`, `tests/api-schemas.test.ts`.
+- Printed checks: point-ahead 51 µrad (Carrasco-Casado & Mata-Calvo 2020, arXiv:2012.13166), QKD 142.05 km (Ma et al.
+  2005, arXiv:quant-ph/0503005, tolerance 5e-4). All others are computed from the cited equations in scratch scripts.
+- Inputs with integer meaning that are numeric URL keys (rain `mu`, wavelength-selection `eye`) are rounded or
+  tested ≠ 0 as the page does; the API accepts fractions.
 - 1302 tests (the schema tests loop over schemas, so the count doesn't move).
 
 ## Next actions
-1. `/ship` PR #261. Release only when the user asks; after it: `node scripts/post-merge-check.mjs <sha>
-   free-space-comms/beam-wander=7.85 free-space-comms/beam-wander=0.934 polarization/stokes=0.6164`, then
-   `curl -s https://photonicscalculators.com/checks.json` (33 calculators, all `pass`), then
+1. `/ship` PR #262. Release only when the user asks; after it: `node scripts/post-merge-check.mjs <sha>
+   free-space-comms/point-ahead=46.70 free-space-comms/rain-attenuation=10.09`, then
+   `curl -s https://photonicscalculators.com/checks.json` (46 calculators, all `pass`), then
    `node --import tsx scripts/indexnow.ts`.
-2. 11c-1b: the same brief for the other 13 free-space-comms pages. Three parallel `implementer` agents (4/4/5 pages)
-   took 17–27 min each, ≈ 120–150k tokens each; review = read each schema's checks + spot-check 1–2 values by hand.
+2. 11c-2a/b: materials, same brief (three implementers of 4–5 pages, each told to run `scripts/check-schema.ts` on
+   its own files and not to touch `index.ts`); review = citation constants + 1–2 values by hand per group.
 3. 11b-2: the user runs `claude mcp add --transport http photonics https://photonicscalculators.com/mcp` and the
    MCP Inspector (`npx @modelcontextprotocol/inspector`) against production, or allows the download (asked in 222).
 4. In a week or two: ask the user for the Search Console Pages/Performance reports (indexed count, queries) for 10d.
@@ -29,6 +30,11 @@ Next: `/ship` #261, then 11c-1b (the other 13 free-space-comms pages, listed in 
 7. 10g-2 left: Resend domain records + `REPORT_FROM_EMAIL` (optional).
 
 ## Non-obvious facts
+- **Session 223:** `npx tsx scripts/check-schema.ts <files>` runs the schema test's assertions on unregistered
+  schema files: give it to parallel agents, keep `src/schemas/index.ts` for the main session. Agents then took 5–8 min
+  and 100–135k tokens each (4–5 pages). They cite equation numbers from memory and say so: check every citation
+  constant (`scripts/crossref.mjs -q`) and re-cite to sources the repo already audited (the IEC "Tables 3–4" became
+  ICNIRP 2013 Tables 5, 8). `node --import tsx -e 'import("./src/x.ts")'` gives the exports under `.default`.
 - **Session 222:** a check can't expect 0: tolerances are relative ("a relative check needs a nonzero value").
   `api-schemas` and `mcp` tests stop at the first failing schema, so parallel agents saw each other's half-written
   files fail: tell them to run their own schemas through `parseInputs`/`runSchema` in scratch. Agents must not cite a

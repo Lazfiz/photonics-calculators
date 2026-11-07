@@ -12,7 +12,8 @@
  * Q₁ = Y₁μe^(−μ). The GYS cutoff below moves by 0.0006 km. Key rate, their eq. (1) (GLLP, D. Gottesman et al., Quantum Inf. Comput. 4, 325 (2004)):
  *   R = q·{−Q_μ f(E_μ) H₂(E_μ) + Q₁[1 − H₂(e₁)]},  q = ½ for standard BB84.
  * With the GYS parameters of their Table 1 (α = 0.21 dB/km, e_d = 3.3 %, Y₀ = 1.7×10⁻⁶, η_Bob = 0.045), μ = 0.48 and
- * f = 1.22, the key vanishes at 142.05 km (their Fig. 2).
+ * f = 1.22, the key vanishes at 142.015 km; their text on Fig. 2 prints 142.05 km, and their eqs. (10)–(11) give 142.0145 km,
+ * so the 0.035 km gap is theirs (rounded inputs, presumably).
  *
  * The repeaterless bound −log₂(1 − η) (S. Pirandola, R. Laurenza, C. Ottaviani, L. Banchi, Nat. Commun. 8, 15043
  * (2017)) caps the secret bits per channel use of any point-to-point protocol over a pure-loss channel.
