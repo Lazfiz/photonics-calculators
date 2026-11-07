@@ -1,7 +1,7 @@
-# Handover — 2026-11-07 (session 219 → session 220)
+# Handover — 2026-11-07 (session 220 → session 221)
 
-**Start here:** session 219 did 11a-2a (choice inputs + 8 priority schemas) on `phase-11/11a-2a-priority-schemas`
-(PR #258). 11a-1 and 10a are released (c3738618). Next: 11a-2b, 8 schemas for the most-viewed pages.
+**Start here:** session 220 merged PR #258 (11a-2a, not released) and did 11a-2b (8 schemas by pageviews) on
+`phase-11/11a-2b-analytics-schemas` (PR #259). 11a-1 and 10a are released (c3738618). Next: 11b, the MCP server.
 
 ## State
 - `src/schemas/types.ts`: `InputSpec` (numbers: key = page `useURLState` key, `unit`, `toSI`, `siUnit`, `default`,
@@ -12,22 +12,26 @@
   `runSchema`; `InputValues = Record<string, number | string>`.
 - `src/registry/api.ts`: choices go first in parameters (`type: "string", enum, default`) and in `pageUrl`; a choice
   input in the response is `{label, value}` (`components.schemas.Choice`; `inputs` is `oneOf` Quantity/Choice).
-- 12 schemas: wave-optics/gaussian-beam, spectroscopy/blackbody, ftir-resolution, lambert-beer-law, imaging/airy-disk,
-  thin-film/single-ar, fiber-optics/coupling-efficiency, polarization/stokes, laser-safety/mpe, nohd, optical-density,
-  od-requirements. `src/schemas/laser-safety/common.ts`: `BEAM_DEFINITION` choice, `toOneOverESquared`,
-  `WAVELENGTH`, `EXPOSURE` (T_MIN–T_MAX), `SAFETY_FACTOR`, `ICNIRP_2013`.
+- 20 schemas: wave-optics/gaussian-beam, spectroscopy/blackbody, ftir-resolution, lambert-beer-law, cavity-ring-down,
+  spectral-line-broadening, fluorescence-lifetime, infrared-spectroscopy, sum-frequency-gen, imaging/airy-disk, tirf,
+  low-coherence, thin-film/single-ar, fiber-optics/coupling-efficiency, dispersion-map, polarization/stokes,
+  laser-safety/mpe, nohd, optical-density, od-requirements. `src/schemas/laser-safety/common.ts`: `BEAM_DEFINITION`
+  choice, `toOneOverESquared`, `WAVELENGTH`, `EXPOSURE` (T_MIN–T_MAX), `SAFETY_FACTOR`, `ICNIRP_2013`.
+- Session 220's 8 checks are all `computed` (taken from the modules' golden tests; no source prints those values).
+  `SFG_PRESETS` now lives in `src/physics/spectroscopy/sum-frequency.ts` (page + schema share it). Inputs that only
+  shape a chart (tMax, resolution, isotopes, wavelength marker) are still schema inputs: the defaults test needs every
+  `useURLState` key. IR schema answers 400 for HCl > 1200 K (the page clamps).
 - `tests/api-schemas.test.ts` (8 tests): the defaults test reads string-literal defaults as choices; choice parse
   errors; GET with `solve=c`; openapi enums for nohd. 1294 tests.
 - Not in the API yet: string results (the governing limit name on the laser-safety pages, Stokes handedness).
 
 ## Next actions
-1. `/ship` this branch (PR #258). Release only when the user asks; after it: `node scripts/post-merge-check.mjs <sha>
-   polarization/stokes=0.6164 spectroscopy/ftir-resolution=0.6034`, then `curl -s
+1. `/ship` this branch (PR #259). Release only when the user asks; after it: `node scripts/post-merge-check.mjs <sha>
+   polarization/stokes=0.6164 spectroscopy/ftir-resolution=0.6034 imaging/tirf=110.3`, then `curl -s
    "https://photonicscalculators.com/api/v1/spectroscopy/lambert-beer-law?solve=c&absorbance=1"` (concentration 2e-5),
-   `/openapi.json` (12 paths), then `node --import tsx scripts/indexnow.ts` (HTTP 200/202).
-2. 11a-2b: get the 8 most-viewed pages without a schema from Vercel Web Analytics (project below, last 31 days only),
-   then one schema each, as in session 219.
-3. Then 11b (MCP server at `/mcp`); `/checks.json` from the schemas' `checks`.
+   `/api/v1/imaging/tirf` (depth 110.344 nm), `/openapi.json` (20 paths), then `node --import tsx scripts/indexnow.ts`.
+2. 11b (MCP server at `/mcp`, see ROADMAP); `/checks.json` from the schemas' `checks`. Read the Next 16 route docs.
+3. 11c: schemas category by category. Analytics can't rank pages (31 days: 4 pages at 2 visitors, the rest 1).
 4. In a week or two: ask the user for the Search Console Pages/Performance reports (indexed count, queries) for 10d.
 5. Still missing data: BSO ε, SBN, Nd σ_a at 808 nm, CO₂ g₀ and I_s, SF59 n₂, the Tm ³H₄ band, ZBLAN κ and band.
 6. IndexNow posts to www.bing.com/indexnow (api.indexnow.org answered 403); ask the user whether Bing Webmaster
@@ -35,6 +39,9 @@
 7. 10g-2 left: Resend domain records + `REPORT_FROM_EMAIL` (optional).
 
 ## Non-obvious facts
+- **Session 220:** Git Bash rewrites a `/category/slug` argument into `C:/Program Files/Git/category/slug` for any
+  node script: prefix `MSYS_NO_PATHCONV=1`. Two implementer agents writing 4 schemas each in parallel, sharing
+  `src/schemas/index.ts` through Edit only, worked (5 and 13 min). The 1-visitor pages carry no registry `priority`.
 - **Session 219:** when `devctl` answers exit 75 ("not started"), **nothing** on that command line ran, including a
   `cat > script <<EOF` and `node script` before the gated command: put edits in their own command (or use Edit).
   `tsx --test` doesn't type-check: only `npm run check` catches test-file type errors. `Record<I, number> &
@@ -44,9 +51,6 @@
   `node:test`, so tests call `GET` directly (the rate limiter is module-level: use a fresh IP per test). Probe a build
   with `npx next start -p 3400` in the background, then curl it; stop it with TaskStop. A node replace script inside a
   bash heredoc mangled `\/` in regex text: edit regex lines with Edit.
-- **Session 217:** refractiveindex.info has no KD*P; nlo.ipfran.ru fails TLS. WebFetch saves PDFs it can't parse under
-  `~/.claude/projects/…/tool-results/`: `pdftotext -raw` on that file reads vendor tables. Vendor index tables are
-  probably computed from the same Sellmeier: call them "tabulated", not independent measurements.
 - **Session 216:** `devctl` refuses a foreground command while another project keeps the CPU busy: run it with
   `run_in_background`. `node --import tsx -e 'import("./src/x.ts")'` needs a relative path and hands back CJS
   interop: call `m.default.fn`.
@@ -55,8 +59,6 @@
   import. A `cat > file` with no heredoc hangs. Keep `rc=$?` right after a command, before any pipe.
 - **Session 214:** Vercel Web Analytics on the hobby plan only answers for the last 31 days (400 otherwise); project
   `prj_wTWqQ2nFEuhYGHa06aUYA6Cb4XIH`. GSC "Request indexing" quota runs out after a few requests; the sitemap matters.
-- **Session 212:** `page-capture.mjs` against the dev server on 3300 works after `npm run check` ends
-  (`OUT=<dir> PORT=9333 … http://localhost:3300 "/cat/slug"`).
 - **Session 211:** 5 physics-reviewer agents × 6 pages: 10–17 min in parallel, 70–105k tokens each. Fetches that
   worked: ICNIRP 2013, Seibersdorf, Hamamatsu, refractiveindex.info yml, Dubietis 2017. MDPI and AIP block bots. Do
   regex cleanup of CDP results on the Node side, not inside an `evaluate` template literal.
