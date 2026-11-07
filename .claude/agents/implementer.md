@@ -13,6 +13,10 @@ Rules:
 - Don't change physics formulas unless the brief says so. If you spot a physics bug, report it and leave it.
 - Run the gates named in the brief (by default the `verify` skill's `npm run check`; tsc is slow, so run it in
   the background and read only the error lines).
+- Long commands: start the command itself with `run_in_background` and wait for its completion notification. Never
+  write `until/while … sleep` loops that wait for a marker in a log (a hook blocks them): if the command fails or
+  devctl doesn't start it (exit 75), the marker never comes and the loop outlives you.
+- Before your report, nothing you started may still run: stop each background task with TaskStop.
 - Don't commit, push or open PRs unless the brief says to. Never use `--no-verify` or force-push.
 - Keep tool output small: tails, counts and failures.
 

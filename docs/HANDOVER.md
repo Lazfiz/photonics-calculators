@@ -34,7 +34,9 @@ Next: `/ship` #261, then 11c-1b (the other 13 free-space-comms pages, listed in 
   files fail: tell them to run their own schemas through `parseInputs`/`runSchema` in scratch. Agents must not cite a
   value "as transcribed in the repo" as `printed`: verify against the source (Europe PMC REST
   `…/rest/<PMCID>/fullTextXML` reads MDPI papers; use `offset` for tables near the end). Never send an Agent call
-  with a placeholder prompt: stop it at once with TaskStop.
+  with a placeholder prompt: stop it at once with TaskStop. An implementer left `until grep -q "eslint-done" …; do
+  sleep 5; done` running after it finished (also in 221): `.claude/hooks/block-wait-loops.mjs` now blocks unbounded
+  until/while-sleep loops (allowed under `timeout N`). Find strays with `ps -ef` + `/proc/<pid>/cmdline`.
 - **Session 221:** the auto-mode classifier blocks `npx -y @modelcontextprotocol/inspector` (external code); a node
   fetch script doing the handshake over HTTP stood in. Port 3400 was held by a process from elsewhere: dev/probe
   servers went on 3410. find_calculator ranks via the site search, so "anti-reflection coating thickness" doesn't
