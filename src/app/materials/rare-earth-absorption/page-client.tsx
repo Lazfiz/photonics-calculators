@@ -3,11 +3,10 @@
 import SimpleLineChart from "../../../components/simple-line-chart";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { DOPANT_PRESETS, SILICA_DENSITY, ionDensityFromWtPpm } from "../../../physics/fiber-optics/doped-fiber-gain";
-import { DOPANT_LINES, dopantAbsorption, type DopantLine } from "../../../physics/materials/dopant-absorption";
+import { DOPANT_PRESETS, SILICA_DENSITY } from "../../../physics/fiber-optics/doped-fiber-gain";
+import { DOPANT_LINES, SIGMA_UNIT, dopantAbsorption, dopantLineAbsorption, type DopantLine } from "../../../physics/materials/dopant-absorption";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
-const SIGMA_UNIT = 1e-25; // m², the unit of the cross-section input
 const show = (x: number, text: () => string) => (Number.isFinite(x) ? text() : "—");
 const COLORS = ["#60a5fa", "#f87171", "#34d399", "#fbbf24"];
 const lineLabel = (l: DopantLine) => `${l.ion} ${Math.round(l.lambda * 1e9)} nm (${l.role})`;
@@ -42,17 +41,13 @@ export default function RareEarthAbsorptionPage() {
   const [overlapRaw, setOverlap] = useURLState("overlap", 1);
   const [lengthRaw, setLength] = useURLState("length", 0.1); // m
 
-  const line = DOPANT_LINES.find((l) => l.id === lineId) ?? DOPANT_LINES.find((l) => l.id === "Yb976") ?? DOPANT_LINES[0];
-  const ion = DOPANT_PRESETS.find((p) => p.id === line.ion) ?? DOPANT_PRESETS[0];
+  const { line, ion, N, sigmaA, ...r } = dopantLineAbsorption(lineId, sigmaRaw, ppmRaw, overlapRaw, lengthRaw);
   const presetSigma = Number((line.sigmaA / SIGMA_UNIT).toPrecision(6));
   const sigmaInput = sigmaRaw > 0 ? sigmaRaw : presetSigma;
-  const sigmaA = clamp(sigmaInput, 1e-3, 1000, presetSigma) * SIGMA_UNIT;
   const ppm = clamp(ppmRaw, 0, 50000, 1000);
   const overlap = clamp(overlapRaw, 0, 1, 1);
   const length = clamp(lengthRaw, 1e-4, 1000, 0.1);
 
-  const N = ionDensityFromWtPpm(ppm, ion.molarMass);
-  const r = dopantAbsorption(sigmaA, N, length, overlap);
   const series = transmissionSeries(line, sigmaA, N, overlap, length);
 
   return (

@@ -48,6 +48,19 @@ import infraredGlass from "./materials/infrared-glass";
 import magnetoOptic from "./materials/magneto-optic";
 import nonlinearCrystals from "./materials/nonlinear-crystals";
 import nonlinearIndex from "./materials/nonlinear-index";
+import opticalGlassCatalog from "./materials/optical-glass-catalog";
+import photoelastic from "./materials/photoelastic";
+import photorefractive from "./materials/photorefractive";
+import polymerOptics from "./materials/polymer-optics";
+import radiationDamage from "./materials/radiation-damage";
+import ramanScattering from "./materials/raman-scattering";
+import rareEarthAbsorption from "./materials/rare-earth-absorption";
+import semiconductorBandgap from "./materials/semiconductor-bandgap";
+import thermalConductivityOptics from "./materials/thermal-conductivity-optics";
+import thermalExpansion from "./materials/thermal-expansion";
+import transparencyRange from "./materials/transparency-range";
+import twoPhotonAbsorption from "./materials/two-photon-absorption";
+import xRayOptics from "./materials/x-ray-optics";
 import stokes from "./polarization/stokes";
 import blackbody from "./spectroscopy/blackbody";
 import cavityRingDown from "./spectroscopy/cavity-ring-down";
@@ -71,6 +84,8 @@ export const schemas: readonly CalculatorSchema[] = [
   rainAttenuation, receiverFov, scintillation, security, snowAttenuation, wavelengthSelection,
   acoustoOptic, birefringentCrystals, brillouinScattering, chromaticDispersion, colorCenters, crystalProperties, damageThreshold,
   diamondOptics, electroOptic, heatCapacity, infraredGlass, magnetoOptic, nonlinearCrystals, nonlinearIndex,
+  opticalGlassCatalog, photoelastic, photorefractive, polymerOptics, radiationDamage, ramanScattering, rareEarthAbsorption,
+  semiconductorBandgap, thermalConductivityOptics, thermalExpansion, transparencyRange, twoPhotonAbsorption, xRayOptics,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));

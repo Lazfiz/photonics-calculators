@@ -13,6 +13,8 @@
  * lens power of this cylinder (`slabThermalLens` in wave-optics/slab-laser.ts).
  */
 
+import { WINDOW_MATERIALS, type WindowMaterialId } from "./window-materials";
+
 /** Face-to-face temperature drop P d/(kA), K; NaN unless d, k, A > 0 and P ≥ 0. */
 export function slabConductionRise(power: number, thickness: number, k: number, area: number): number {
   if (!(power >= 0 && thickness > 0 && k > 0 && area > 0)) return NaN;
@@ -29,4 +31,13 @@ export function cylinderCentreRise(power: number, k: number, length: number): nu
 export function rodThermalLens(power: number, k: number, area: number, dndT: number): number {
   if (!(power >= 0 && k > 0 && area > 0 && Number.isFinite(dndT))) return NaN;
   return power === 0 || dndT === 0 ? Infinity : (2 * k * area) / (power * dndT);
+}
+
+/** URL sentinel of the dn/dT input, outside its ±1000 (10⁻⁶/K) range: use the material's preset, so 0 stays a valid entry. */
+export const DNDT_PRESET = 1e6;
+
+/** The data-sheet room-temperature k (W/(m·K)) and dn/dT (10⁻⁶/K, NaN where the sheet has none) a material fills in. */
+export function windowThermalPreset(id: WindowMaterialId): { k: number; dndtPpm: number } {
+  const mat = WINDOW_MATERIALS[id];
+  return { k: mat.conductivity ?? 1, dndtPpm: mat.dnDT === null ? NaN : Number((mat.dnDT / 1e-6).toPrecision(4)) };
 }

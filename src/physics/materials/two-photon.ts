@@ -227,3 +227,27 @@ export function tpaTransmission(beta: number, intensity: number, length: number)
   if (!(beta >= 0) || !(intensity >= 0) || !(length >= 0)) return NaN;
   return 1 / (1 + beta * intensity * length);
 }
+
+/** A user-entered medium: measured β (m/W) at λ_ref (m) and the direct gap E_g (eV). */
+export interface TpaCustomMedium {
+  betaRef: number;
+  lambdaRef: number;
+  bandGap_eV: number;
+}
+
+/**
+ * β (m/W) at λ and the regimes at λ and at the measurement wavelength, for a preset (`medium`) or, with `medium` null,
+ * a custom medium scaled by F₂ from its measurement. This is the dispatch the 2PA page and its API schema share.
+ */
+export function tpaEvaluate(
+  medium: TpaMedium | null, custom: TpaCustomMedium, lambda: number,
+): { beta: number; regime: MediumRegime | null; refRegime: MediumRegime | null } {
+  if (medium) {
+    return { beta: mediumBeta(medium, lambda), regime: mediumRegime(medium, lambda), refRegime: mediumRegime(medium, medium.lambda) };
+  }
+  return {
+    beta: scaledBeta(custom.betaRef, custom.lambdaRef, lambda, custom.bandGap_eV),
+    regime: tpaRegime(lambda, custom.bandGap_eV),
+    refRegime: tpaRegime(custom.lambdaRef, custom.bandGap_eV),
+  };
+}
