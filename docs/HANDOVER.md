@@ -1,28 +1,31 @@
-# Handover — 2026-11-07 (session 225 → session 226)
+# Handover — 2026-11-07 (session 226 → session 227)
 
-**Start here:** session 225 did 11c-2b on `phase-11/11c-2b-materials` (PR #264): API schemas with 1–3 reference
-checks for 13 materials pages (optical-glass-catalog … x-ray-optics). Materials is complete (27/27). 11c-2a is released
-(d77f075b). Next: `/ship` #264, then 11c-3a (polarization, 33 pages, split a/b/c).
+**Start here:** session 226 did 11c-3a on `phase-11/11c-3a-polarization` (PR #265): API schemas with 1–3 computed
+checks for 11 polarization pages (birefringence … fresnel-polarization). 11c-2b is released (1e546e0b). Next: `/ship`
+#265, then 11c-3b (glans-prism … polarimetry, 11 pages).
 
 ## State
-- 73 runnable schemas (`src/schemas/index.ts`). Contract unchanged (`src/schemas/types.ts`).
-- Dispatch moved from pages into physics modules: `crystalMedium`/`customMedium`/`photorefractiveGrating`
-  (pockels.ts), `SEMICONDUCTOR_GAPS` (bandgap.ts), `dopantLineAbsorption`/`findDopantLine`/`SIGMA_UNIT`
-  (dopant-absorption.ts), `windowThermalPreset`/`DNDT_PRESET` (thermal-conduction.ts), `tpaEvaluate` (two-photon.ts).
-- `scripts/page-defaults.ts` now resolves numeric file constants (`const X = 1e6;`) and bare imported constants.
-- `tests/api-schemas.test.ts` + `scripts/check-schema.ts`: an output may be null at the page's defaults when the
-  result carries a warning (polymer NA with cladding "none"). `crystal-properties` can now add quartz's rotation.
-- `tests/mcp.test.ts` "not runnable yet" example is `polarization/birefringence`: move it when polarization gets done.
-- 1302 tests (schema checks run inside per-schema loops, so the count doesn't grow).
+- 84 runnable schemas (`src/schemas/index.ts`). Contract unchanged (`src/schemas/types.ts`).
+- Dispatch moved from pages into physics modules: `isCrystalId`/`resolveCrystalIndices`/`crystalBirefringence`
+  (uniaxial.ts; `components/crystal-select.tsx` re-exports them as `resolveIndices`/`birefringenceOf`, so 11c-3b/c
+  schemas for glans-prism, retarder-types, waveplate-order, orthoconoscopic can import the physics ones),
+  `prismPolarizer` (prism-polarizers.ts), `conoscopeSetup` (conoscopy.ts), `compensatorPlate`/`sampleChain`/
+  `senarmontReading` (interference-colours.ts), `C_NBK7_TPA` (photoelasticity.ts), `retarderBandDopSweep`
+  (mueller.ts), `plateBandModel` (spectral-depolarization.ts). Tests: `tests/polarization-page-dispatch.test.ts`,
+  `tests/polarization-schema-moves.test.ts`.
+- All 11c-3a checks are `computed` (1e-8; Born & Wolf, Shurcliff, Collett FG05, Goldstein, Dally & Riley, Cloude,
+  Greenfield). Citations follow the physics-module headers; DOIs checked with crossref.
+- `tests/mcp.test.ts` "not runnable yet" example is now `wave-optics/bessel-beam`: move it when wave-optics is done.
+- 1309 tests.
 
 ## Next actions
-1. `/ship` PR #264. Release only when the user asks; after it: `node scripts/post-merge-check.mjs <sha>
-   materials/polymer-optics=1.49081 materials/transparency-range=1.44402` (PMMA n at 633 nm, fused silica at
-   1550 nm, `toFixed(5)`), then `curl -s https://photonicscalculators.com/checks.json` (73 calculators, all `pass`),
-   then `node --import tsx scripts/indexnow.ts`.
-2. 11c-3a: polarization (33 pages) in three parts of ≈ 11. Brief: `docs/api-schema-brief.md` (point each implementer
-   at it plus its 3–4 pages and allowed files). Review = citation constants (`scripts/crossref.mjs`), a deviation run
-   of every check vs its tolerance, 1–2 values by hand per group; then register in `index.ts`, tsc, `npm run check`.
+1. `/ship` PR #265. Release only when the user asks; after it: `node scripts/post-merge-check.mjs <sha>
+   polarization/circular-dichroism=329.814 polarization/brewster-polarizer=56.66` (CD ellipticity in mdeg at
+   A_L 0.8, A_R 0.79; Brewster angle for n 1.52), then `curl -s https://photonicscalculators.com/checks.json`
+   (84 calculators, all `pass`), then `node --import tsx scripts/indexnow.ts`.
+2. 11c-3b: glans-prism, jones-calculus, jones-chain, liquid-crystal-polarizer, microscope-polarizer, mueller-matrix,
+   mueller-polarimetry, optical-activity, orthoconoscopic, poincare-sphere, polarimetry. Brief:
+   `docs/api-schema-brief.md`; same review (crossref, deviation run, 1–2 values by hand per group, tsc after all).
 3. 11b-2: the user runs `claude mcp add --transport http photonics https://photonicscalculators.com/mcp` and the
    MCP Inspector (`npx @modelcontextprotocol/inspector`) against production, or allows the download (asked in 222).
 4. In a week or two: ask the user for the Search Console Pages/Performance reports (indexed count, queries) for 10d.
@@ -31,6 +34,11 @@ checks for 13 materials pages (optical-glass-catalog … x-ray-optics). Material
 7. 10g-2 left: Resend domain records + `REPORT_FROM_EMAIL` (optional).
 
 ## Non-obvious facts
+- **Session 226:** three implementers (4 + 4 + 3 pages) took 4–8 min each, no devctl stall. An agent reported a schema
+  "about 1 s" that measured 100–120 ms (conoscopic, 121² grid): time it before cutting an output. Agents copied a
+  "use client" helper into a physics module and left the original: make the component re-export the physics version.
+  New tests change `src/lib/test-stats.json`: run `npx tsx scripts/test-stats.ts` before the gate. A deviation run
+  needs `runSchema(schema, values).outputs[key]` (a record, page units).
 - **Session 225:** the machine-wide `devctl` gate queues `npx …` and `node node_modules/…` behind other projects' jobs
   (a 28-min `cargo install` stalled all three agents ≈ 40 min; `node C:/dev/_control/bin/devctl.mjs status` shows the
   queue). `node --import tsx …` is not gated and runs at once: tell agents to use it for check-schema and tests. One
@@ -60,12 +68,8 @@ checks for 13 materials pages (optical-glass-catalog … x-ray-optics). Material
   passes on a clean checkout. Probe a build with `npx next start -p <port>` in the background, stop it with TaskStop.
 - **Session 215:** the Vercel MCP has no "update project domain" tool; `vercel api /v9/projects/<prj>/domains/<name>?teamId=…
   -X PATCH --input -` works. `scripts/codemods/*` are type-checked too. Keep `rc=$?` right after a command.
-- **Session 214:** Vercel Web Analytics on hobby answers only for the last 31 days; project
-  `prj_wTWqQ2nFEuhYGHa06aUYA6Cb4XIH`. GSC "Request indexing" quota runs out fast; the sitemap matters.
 - **Session 211:** physics-reviewer agents: 10–17 min, 70–105k tokens each. Fetches that worked: ICNIRP 2013,
   Seibersdorf, Hamamatsu, refractiveindex.info yml, CXRO getdb.pl. MDPI, AIP and Optica block bots; arXiv, PMC, NTRS work.
-- **Sessions 205–210:** CDP probes: `scripts/page-capture.mjs` or lines 1–79 of `ui-check.mjs`. `python -E -P` for
-  pypdfium2. PDF figures: render crops with pypdfium2, calibrate on gridlines.
 - **Editing:** a node replace script inside a bash heredoc mangles `\/` and `\n` in regex text: edit such lines with
   Edit. `sed -i` with escaped regex text is unreliable.
 - **Session 160:** Chrome extension screenshots time out on this site; use headless CDP. Prefix
