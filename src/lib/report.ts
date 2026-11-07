@@ -121,3 +121,9 @@ export class RateLimiter {
     return entry.count <= this.limit;
   }
 }
+
+/** The rate-limit key: the first x-forwarded-for address (Vercel sets it), else x-real-ip. */
+export function clientIp(request: Request): string {
+  const forwarded = request.headers.get("x-forwarded-for");
+  return forwarded?.split(",")[0].trim() || request.headers.get("x-real-ip") || "unknown";
+}
