@@ -1,33 +1,32 @@
-# Handover — 2026-11-07 (session 218 → session 219)
+# Handover — 2026-11-07 (session 219 → session 220)
 
-**Start here:** session 218 did 11a-1 (API infrastructure + 4 pages) on `phase-11/11a-1-api-infra` (PR #257). PR #256
-(10a) is merged to `main` but not released. Next: 11a-2, the other 16 pages (list in the ROADMAP box).
+**Start here:** session 219 did 11a-2a (choice inputs + 8 priority schemas) on `phase-11/11a-2a-priority-schemas`
+(PR #258). 11a-1 and 10a are released (c3738618). Next: 11a-2b, 8 schemas for the most-viewed pages.
 
 ## State
-- `src/schemas/types.ts`: `InputSpec` (key = page `useURLState` key, `unit`, `toSI`, `siUnit`, `default`, `min`,
-  `max`), `OutputSpec`, `ReferenceCheck` (`source`, `basis: "printed" | "computed"`, `inputs`, `expect`, `tolerance`
-  relative), `CalculatorSchema` (`validate?`, `compute(si) → { values (SI), warnings? }`), `defineSchema` (infers keys,
-  so typos fail tsc). No registry imports there, so page clients may import schemas later.
-- `src/schemas/run.ts`: `parseInputs(schema, URLSearchParams)` (unknown/repeated/non-finite/out-of-range → error text;
-  missing → default; then `validate`), `runSchema` (non-finite → null). `src/schemas/index.ts`: `schemas`, `findSchema`.
-- Schemas: wave-optics/gaussian-beam, spectroscopy/blackbody, imaging/airy-disk, thin-film/single-ar.
-- `src/registry/api.ts`: `apiCalculator`, `apiResponse` (inputs/outputs keyed, `{label, value, unit, siValue,
-  siUnit}`, `calculator` with tier, modelNote, references, `pageUrl`), `buildOpenApi` (3.1, `operationId`
-  `<category>_<slug>` with `_` for `-`).
-- Routes: `src/app/api/v1/[category]/[slug]/route.ts` (dynamic; 60/min/IP; CORS *; 200 `s-maxage=86400`),
-  `src/app/openapi.json/route.ts` (force-static). `clientIp` moved to `src/lib/report.ts`. `llms.txt` has a JSON API line.
-- `tests/api-schemas.test.ts` (8 tests): keys and defaults vs each page's `useURLState` calls (regex on the
-  page source), every output finite at defaults, all checks, parse errors, GET 200/400/404/429, openapi. 1294 tests.
+- `src/schemas/types.ts`: `InputSpec` (numbers: key = page `useURLState` key, `unit`, `toSI`, `siUnit`, `default`,
+  `min`, `max`), `ChoiceSpec` (`key`, `label`, `options: {value, label}[]`, `default`), `SchemaInputs<I, C>` (mapped
+  type: choice keys → string, input keys → number, SI), `OutputSpec`, `ReferenceCheck` (`basis: "printed" |
+  "computed"`, `tolerance` relative), `CalculatorSchema` (`choices?`, `validate?`, `compute`), `defineSchema<I, O, C>`.
+- `src/schemas/run.ts`: `parseInputs` (choices: one of the option values, else 400 text; numbers as before),
+  `runSchema`; `InputValues = Record<string, number | string>`.
+- `src/registry/api.ts`: choices go first in parameters (`type: "string", enum, default`) and in `pageUrl`; a choice
+  input in the response is `{label, value}` (`components.schemas.Choice`; `inputs` is `oneOf` Quantity/Choice).
+- 12 schemas: wave-optics/gaussian-beam, spectroscopy/blackbody, ftir-resolution, lambert-beer-law, imaging/airy-disk,
+  thin-film/single-ar, fiber-optics/coupling-efficiency, polarization/stokes, laser-safety/mpe, nohd, optical-density,
+  od-requirements. `src/schemas/laser-safety/common.ts`: `BEAM_DEFINITION` choice, `toOneOverESquared`,
+  `WAVELENGTH`, `EXPOSURE` (T_MIN–T_MAX), `SAFETY_FACTOR`, `ICNIRP_2013`.
+- `tests/api-schemas.test.ts` (8 tests): the defaults test reads string-literal defaults as choices; choice parse
+  errors; GET with `solve=c`; openapi enums for nohd. 1294 tests.
+- Not in the API yet: string results (the governing limit name on the laser-safety pages, Stokes handedness).
 
 ## Next actions
-1. `/ship` this branch (PR #257). Release only when the user asks; after it: `node scripts/post-merge-check.mjs <sha>
-   wave-optics/gaussian-beam=0.2027 imaging/airy-disk=0.353`, then `curl -s
-   "https://photonicscalculators.com/api/v1/imaging/airy-disk?wavelength=1000&na=1"` (airyRadius 0.6098) and
-   `/openapi.json` (4 paths), `curl -s https://photonicscalculators.com/llms.txt | grep "JSON API"`, then
-   `node --import tsx scripts/indexnow.ts` (HTTP 200/202).
-2. 11a-2: lambert-beer-law needs a choice input (`solve`): add an `options` kind to `InputSpec`, a string branch in
-   `parseInputs`, an `enum` in the openapi parameter, and widen the defaults regex in the test (it matches numeric
-   literals only). Get the 8 most-viewed pages from Vercel Web Analytics (project below, last 31 days only).
+1. `/ship` this branch (PR #258). Release only when the user asks; after it: `node scripts/post-merge-check.mjs <sha>
+   polarization/stokes=0.6164 spectroscopy/ftir-resolution=0.6034`, then `curl -s
+   "https://photonicscalculators.com/api/v1/spectroscopy/lambert-beer-law?solve=c&absorbance=1"` (concentration 2e-5),
+   `/openapi.json` (12 paths), then `node --import tsx scripts/indexnow.ts` (HTTP 200/202).
+2. 11a-2b: get the 8 most-viewed pages without a schema from Vercel Web Analytics (project below, last 31 days only),
+   then one schema each, as in session 219.
 3. Then 11b (MCP server at `/mcp`); `/checks.json` from the schemas' `checks`.
 4. In a week or two: ask the user for the Search Console Pages/Performance reports (indexed count, queries) for 10d.
 5. Still missing data: BSO ε, SBN, Nd σ_a at 808 nm, CO₂ g₀ and I_s, SF59 n₂, the Tm ³H₄ band, ZBLAN κ and band.
@@ -36,6 +35,10 @@
 7. 10g-2 left: Resend domain records + `REPORT_FROM_EMAIL` (optional).
 
 ## Non-obvious facts
+- **Session 219:** when `devctl` answers exit 75 ("not started"), **nothing** on that command line ran, including a
+  `cat > script <<EOF` and `node script` before the gated command: put edits in their own command (or use Edit).
+  `tsx --test` doesn't type-check: only `npm run check` catches test-file type errors. `Record<I, number> &
+  Record<C, string>` collapses to `never` values when the schema type is erased; the mapped `SchemaInputs` doesn't.
 - **Session 218:** `RouteContext<'/api/v1/[category]/[slug]'>` is generated by `next dev/build/typegen`; the route
   types `ctx` inline instead, so `tsc` passes on a clean checkout. `new NextRequest(url, { headers })` works under
   `node:test`, so tests call `GET` directly (the rate limiter is module-level: use a fresh IP per test). Probe a build
