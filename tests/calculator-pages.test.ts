@@ -82,7 +82,7 @@ test("calculatorMetadata: canonical, title and description from the entry", () =
   assert.throws(() => calculatorMetadata("/fiber-optics/no-such-page"));
 });
 
-test("calculatorJsonLd: WebPage and a breadcrumb that matches the page, no FAQ", () => {
+test("calculatorJsonLd: WebPage, its free WebApplication and a breadcrumb that matches the page, no FAQ", () => {
   // References are tested below; strip them so this stays a fixture of the base graph.
   const calculator = { ...getCalculator("/fiber-optics/chromatic-dispersion"), references: undefined };
   const url = `${SITE_URL}/fiber-optics/chromatic-dispersion`;
@@ -96,6 +96,20 @@ test("calculatorJsonLd: WebPage and a breadcrumb that matches the page, no FAQ",
         url,
         isPartOf: { "@type": "WebSite", name: "Photonics Calculators", url: SITE_URL },
         about: { "@type": "Thing", name: "Fiber Optics" },
+        mainEntity: { "@id": `${url}#calculator` },
+      },
+      {
+        "@type": "WebApplication",
+        "@id": `${url}#calculator`,
+        name: "Chromatic Dispersion Calculator",
+        description: "Calculate chromatic dispersion, pulse broadening, and system penalties for single-mode fiber.",
+        url,
+        applicationCategory: "EducationalApplication",
+        applicationSubCategory: "Fiber Optics",
+        operatingSystem: "Any (web browser)",
+        browserRequirements: "Requires JavaScript",
+        isAccessibleForFree: true,
+        offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
       },
       {
         "@type": "BreadcrumbList",
@@ -111,7 +125,7 @@ test("calculatorJsonLd: WebPage and a breadcrumb that matches the page, no FAQ",
   // One spelling of the category everywhere (the old pages said "Free Space Comms").
   const fso = JSON.stringify(calculatorJsonLd(getCalculator("/free-space-comms/link-budget")));
   assert.match(fso, /"name":"Free-Space Comms"/);
-  assert.doesNotMatch(fso, /FAQPage|Free Space Comms/);
+  assert.doesNotMatch(fso, /FAQPage|aggregateRating|Free Space Comms/);
 });
 
 test("jsonLdHtml escapes < so a string can't close the script tag", () => {
@@ -131,13 +145,14 @@ const audited = {
   ],
 };
 
-test("calculatorJsonLd lists the references as citations, with a url only where the entry has one", () => {
+test("calculatorJsonLd lists the references as the WebApplication's citations, with a url only where the entry has one", () => {
   const graph = (calculatorJsonLd(audited) as { "@graph": Record<string, unknown>[] })["@graph"];
-  assert.deepEqual(graph[0].citation, [
+  assert.equal(graph[1]["@type"], "WebApplication");
+  assert.deepEqual(graph[1].citation, [
     { "@type": "CreativeWork", name: audited.references[0].citation },
     { "@type": "CreativeWork", name: audited.references[1].citation, url: audited.references[1].url },
   ]);
-  assert.equal("citation" in (calculatorJsonLd({ ...audited, references: undefined }) as { "@graph": object[] })["@graph"][0], false);
+  assert.equal("citation" in (calculatorJsonLd({ ...audited, references: undefined }) as { "@graph": object[] })["@graph"][1], false);
 });
 
 test("the model badge and section: tier, definition, note and numbered references; unreviewed without a tier", () => {

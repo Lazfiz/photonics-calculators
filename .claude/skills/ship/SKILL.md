@@ -30,3 +30,5 @@ A commit, push, completed task or merged PR does not authorise a production rele
    - The script waits for the Vercel status and checks each value in the prerendered HTML. It then loads every page
      in headless Chrome and prints a few lines.
    - Report that summary. On a miss, inspect the page with `curl -s <url> | sed 's/<[^>]*>/ /g' | grep -o "<text>"`.
+   - Once the check passes: `node --import tsx scripts/indexnow.ts` submits every sitemap URL to IndexNow (Bing and
+     others). It prints one line; report it.

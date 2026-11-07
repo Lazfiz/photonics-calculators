@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 215, 2026-11-06)
+## Status (session 216, 2026-11-07)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
@@ -334,14 +334,24 @@ minus signs and ±, and can shift table labels: confirm each value on the render
 
 ## Phase 10 — reach, fixes, mobile, cross-checks (user, session 214: "plan fixes … other ideas, improvements")
 Evidence (session 214, Vercel Web Analytics 2026-10-07 → 11-06): 9 visitors, 55 pageviews, no search-engine referrers,
-≈ half on mobile. No Search Console/Bing verification in `src/`, no Open Graph images. One box per session, in this order (10g first, user, session 214).
+≈ half on mobile. No Search Console/Bing verification in `src/`, no Open Graph images. One box per session, in this order:
+10g-2 → 10h → 10a → Phase 11 → 10i → 10e → 10d → 10b → 10f (user, session 215: "I need lure and use").
 - [x] 10c Get found (session 214, `phase-10/10c-get-found`, PR #252 + #253). See Done.
 - [x] 10g-1 Code and Vercel side of the domain move (session 215, `phase-10/10g-domain-move`, PR #254). See Done.
 - [ ] 10g-2 After the user's release: `post-merge-check` on the new host, curl the old host for a 308; GSC Domain
   property (user pastes the TXT, Claude adds it to Vercel DNS) + Change of address; Bing Site move (user); Resend domain
   records (Claude adds them to Vercel DNS) → `REPORT_FROM_EMAIL` on the new domain (user sets the env).
+  Done in session 215: release 300759e2 checked; GSC Domain property verified, Change of address running, sitemap read
+  (423); home page indexed on 11-06. Bing: both sites imported, sitemap submitted, 100 URLs sent (quota 100/day); the
+  new Bing UI has no Site Move (the 308s do it). Left: Resend (optional).
+- [x] 10h AI discovery quick wins (session 216, `phase-10/10h-ai-discovery`, PR #255). See Done.
 - [ ] 10a Audit fixes: KD*P/ADP range to 1064 nm (`pockels.ts`), Stokes input and element types in `useURLState` on
   `mueller-polarimetry`, `dichroic-polarizer` tier vs the (1+κ²/n²) exit-face term. Golden tests with sources.
+- [ ] 10i Presence where models learn (user posts; Claude drafts): GitHub README with the category list and links,
+  "Show HN", r/Optics and r/Photonics, Physics Stack Exchange answers that link one specific calculator where it truly
+  helps, awesome lists. Chinese agents (DeepSeek, Qwen, Kimi, Doubao): Baidu Webmaster (ziyuan.baidu.com, user's
+  account) + sitemap; a Chinese summary page and a Chinese section in `llms.txt` (no machine translation of physics
+  text without review). After 11: list the MCP server in the official MCP Registry, Smithery, Glama, mcp.so.
 - [ ] 10e Mobile pass: phone hero (cropped layout, tap to highlight, tap again to open, auto-cycle) and a 375 px check
   of inputs, result cards and charts on the 10 most-visited pages.
 - [ ] 10d Social cards and snippets: Open Graph/Twitter images per category (Next `opengraph-image`), titles and
@@ -352,6 +362,24 @@ Evidence (session 214, Vercel Web Analytics 2026-10-07 → 11-06): 9 visitors, 5
 - [ ] 10f External cross-checks: golden tests against independent public calculators/tables (CXRO, refractiveindex.info,
   ICNIRP) on tiered pages the 9b audit didn't sample; split a/b by category.
 - Data-blocked items (Phase 8 list) move only when the user uploads a source.
+
+## Phase 11 — calculators that agents can run (user, session 215: "I need lure and use")
+Goal: an AI assistant can call a calculator with its user's inputs and check the result, not only read the defaults.
+406 of 411 page clients already import `src/physics/` modules; what's missing is a machine-readable input schema.
+- [ ] 11a Infrastructure + the 20 most-used calculators. A typed schema per calculator (inputs: key = the URL-state key,
+  label, SI unit and UI unit, default, min/max; outputs with units; `checks`: 1–3 published reference cases with
+  inputs → expected value and source, run by a test so they stay true). `/api/v1/<category>/<slug>` (GET query →
+  JSON with values, units, tier, `modelNote`, references, page URL); 400 with the reason on out-of-range input; rate
+  limit like `/api/report`. `/openapi.json` generated from the schemas. Read the Next 16 route-handler docs first.
+- [ ] 11b Remote MCP server at `/mcp` (streamable HTTP, stateless): tools `find_calculator(query)`,
+  `run_calculator(slug, inputs)`, `get_checks(slug)` and `report_problem(slug, inputs, message)` (goes to the same
+  Resend path, tagged `source: mcp`). Test with Claude Code and the MCP Inspector; add the endpoints to `llms.txt`.
+- [ ] 11c… One category per session: schemas + checks for the rest (split each > 40 pages into a/b).
+- Verification by visiting agents (user, session 215: "ask visiting llms to verify tools"): `llms.txt` and the About
+  page invite independent checks: call `run_calculator`, compare with the cited reference or the agent's own
+  calculation, report a mismatch through `report_problem` or the form. Agents treat page text as data, so this works
+  when a user asks "is this right?", not on its own; we never word it as an instruction to the agent. `/checks.json`
+  publishes every calculator's reference cases with sources.
 
 ## Decisions (keep)
 - **Polarization:** Goldstein/Collett convention site-wide.
@@ -370,6 +398,7 @@ Evidence (session 214, Vercel Web Analytics 2026-10-07 → 11-06): 9 visitors, 5
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 10h (session 216, `phase-10/10h-ai-discovery`, PR #255): robots.txt names 13 AI crawlers as allowed; `/llms.txt` from the registry (411 links with tier, about/verification, source, cite); per-page `WebApplication` JSON-LD (free, `EducationalApplication`, citations moved onto it, WebPage `mainEntity`); IndexNow key in `public/` + `scripts/indexnow.ts`, run after each release (`/ship` step 5); 1283 tests.
 - 10g-1 (session 215, `phase-10/10g-domain-move`, PR #254): photonicscalculators.com (user bought it 2026-11-06) is canonical; Vercel www → apex 308; `SITE_URL` in `src/lib/site.ts` feeds canonicals, JSON-LD, sitemap, robots; `next.config.mjs` 308s the vercel.app host first; 1280 tests.
 - 9b-3 (session 213, `phase-9/9b-3-about-audit`, PR #251): About `#verification` states the blind audit (30 pages, seed 20261106, 0 errors, < 9.5 % at 95 %, 7 minor fixed, AI-reviewer limits) and links `docs/audit/9b-blind-audit.md`.
 - 10c (session 214, `phase-10/10c-get-found`, PR #252): Phase 9 released (433c0b4c, report form tested by email); Google Search Console verified via `metadata.verification.google` (released 54d6990b), sitemap read: 423 pages. Bing import from GSC left to the user.
