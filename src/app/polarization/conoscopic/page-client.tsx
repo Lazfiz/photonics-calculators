@@ -8,7 +8,7 @@ import { CrystalNote, isCrystalId } from "../../../components/crystal-select";
 import { fix } from "../../../components/polarization-format";
 import { useURLState } from "../../../hooks/use-url-state";
 import { CRYSTAL_IDS, UNIAXIAL_CRYSTALS, crystalIndices, crystalRange } from "../../../physics/materials/uniaxial-data";
-import { type PrincipalIndices, conoscopicFigure, opticAxialAngle } from "../../../physics/polarization/conoscopy";
+import { conoscopeSetup, conoscopicFigure, opticAxialAngle } from "../../../physics/polarization/conoscopy";
 import RgbaCanvas from "../../../components/rgba-canvas";
 
 const DEG = Math.PI / 180;
@@ -60,13 +60,10 @@ export default function ConoscopicPage() {
   const lambdaUsed_nm = Math.round(clamp(lambda, lo, hi) * 1e9);
   const heldMono = id && light === "mono" && (lambda < lo || lambda > hi);
   const heldWhite = id && light === "white" && lo > 380e-9;
-  const { no, ne } = id ? crystalIndices(id, clamp(lambda, lo, hi)) : { no: NaN, ne: NaN };
-  const indices: PrincipalIndices = id
-    ? (ne > no ? [no, no, ne] : [ne, no, no])
-    : [clamp(nAlphaIn, 1, 3), clamp(nBetaIn, 1, 3), clamp(nGammaIn, 1, 3)];
+  const { indices, valid, NA } = conoscopeSetup(
+    id, lambda, [clamp(nAlphaIn, 1, 3), clamp(nBetaIn, 1, 3), clamp(nGammaIn, 1, 3)], NAin,
+  );
   const [n1, n2, n3] = indices;
-  const valid = n1 > 0 && n1 <= n2 && n2 <= n3 && n1 < n3;
-  const NA = valid ? Math.min(NAin, 0.98 * n1) : NaN;
   const axial = opticAxialAngle(indices);
 
   const params = useMemo(

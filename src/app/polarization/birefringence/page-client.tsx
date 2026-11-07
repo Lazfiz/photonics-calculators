@@ -4,9 +4,10 @@ import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { CrystalNote, CrystalSelect, birefringenceOf, isCrystalId, materialRange, resolveIndices } from "../../../components/crystal-select";
+import { CrystalNote, CrystalSelect, isCrystalId, materialRange } from "../../../components/crystal-select";
 import { fix, plateTypeLabel } from "../../../components/polarization-format";
 import { fullWaveWavelengths, plateOrder, retardance } from "../../../physics/polarization/retarders";
+import { crystalBirefringence, resolveCrystalIndices } from "../../../physics/polarization/uniaxial";
 
 const clamp = (v: number, lo: number, hi: number) => (Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : lo);
 const CHART_RANGE: [number, number] = [300e-9, 1500e-9];
@@ -25,7 +26,7 @@ export default function BirefringencePage() {
   const cNo = clamp(customNo, 1, 5);
   const cNe = clamp(customNe, 1, 5);
 
-  const { no, ne } = resolveIndices(material, lambda, cNo, cNe);
+  const { no, ne } = resolveCrystalIndices(material, lambda, cNo, cNe);
   const dn = ne - no;
   const gamma = retardance(dn, d, lambda);
   const order = plateOrder(dn, d, lambda);
@@ -33,7 +34,7 @@ export default function BirefringencePage() {
   const { curve, crossings } = useMemo(() => {
     const [lo, hi] = materialRange(material, CHART_RANGE);
     const a = Math.max(lo, CHART_RANGE[0]), b = Math.min(hi, CHART_RANGE[1]);
-    const dnOf = birefringenceOf(material, cNe - cNo);
+    const dnOf = crystalBirefringence(material, cNe - cNo);
     const l = Array.from({ length: 400 }, (_, i) => a + ((b - a) * i) / 399);
     const crossings = a < b ? fullWaveWavelengths(dnOf, d, a, b) : [];
     return { curve: { l, waves: l.map((x) => (Math.abs(dnOf(x)) * d) / x) }, crossings };
@@ -99,7 +100,7 @@ export default function BirefringencePage() {
           <ChartPanel bare
             data={[
               { type: "scatter", mode: "lines", x: curve.l.map((x) => x * 1e9), y: curve.waves, line: { color: "#3b82f6", width: 2 }, name: "|Δn|·d/λ (waves)" },
-              { type: "scatter", mode: "markers", x: shown.map((x) => x * 1e9), y: shown.map((x) => Math.round((Math.abs(birefringenceOf(material, cNe - cNo)(x)) * d) / x)), marker: { size: 6, color: "#34d399" }, name: "Full wave" },
+              { type: "scatter", mode: "markers", x: shown.map((x) => x * 1e9), y: shown.map((x) => Math.round((Math.abs(crystalBirefringence(material, cNe - cNo)(x)) * d) / x)), marker: { size: 6, color: "#34d399" }, name: "Full wave" },
               { type: "scatter", mode: "markers", x: [lambda * 1e9], y: [order.waves], marker: { size: 10, color: "#f59e0b" }, name: "Selected λ" },
             ]}
             layout={{

@@ -4,10 +4,10 @@ import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { CrystalNote, CrystalSelect, isCrystalId, materialRange, resolveIndices } from "../../../components/crystal-select";
+import { CrystalNote, CrystalSelect, isCrystalId, materialRange } from "../../../components/crystal-select";
 import { fix } from "../../../components/polarization-format";
 import {
-  beamSeparation, extraordinaryIndex, maxWalkoff, plateRetardance, plateWaves, walkoffAngle,
+  beamSeparation, extraordinaryIndex, maxWalkoff, plateRetardance, plateWaves, resolveCrystalIndices, walkoffAngle,
 } from "../../../physics/polarization/uniaxial";
 
 const DEG = Math.PI / 180;
@@ -32,7 +32,7 @@ export default function DoubleRefractionPage() {
   const cNo = clamp(customNo, 1, 5);
   const cNe = clamp(customNe, 1, 5);
 
-  const { no, ne } = resolveIndices(material, lambda, cNo, cNe);
+  const { no, ne } = resolveCrystalIndices(material, lambda, cNo, cNe);
   const w = plateWaves(no, ne, geometry(aoi, alpha));
   const rayE = Math.atan2(w.e.ray[0], w.e.ray[2]);
   const separation = beamSeparation(w, d, aoi);
@@ -62,7 +62,7 @@ export default function DoubleRefractionPage() {
     const a = Math.max(lo, 250e-9), b = Math.min(hi, 2500e-9);
     const l = Array.from({ length: 300 }, (_, i) => a * (b / a) ** (i / 299));
     const y = l.map((x) => {
-      const n = resolveIndices(material, x, cNo, cNe);
+      const n = resolveCrystalIndices(material, x, cNo, cNe);
       return plateRetardance(plateWaves(n.no, n.ne, geometry(aoi, alpha)), d, x) / (2 * Math.PI);
     });
     return [{ x: l.map((x) => x * 1e9), y, type: "scatter" as const, mode: "lines" as const, name: "Retardance (waves)", line: { color: "#a78bfa", width: 2 } }];

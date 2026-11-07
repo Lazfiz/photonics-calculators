@@ -9,7 +9,7 @@ import { fix, stokesProblem } from "../../../components/polarization-format";
 import { CRYSTAL_IDS, UNIAXIAL_CRYSTALS, crystalIndices, crystalRange, type CrystalId } from "../../../physics/materials/uniaxial-data";
 import { applyMueller, muellerDepolarizer } from "../../../physics/polarization/mueller";
 import {
-  muellerRetarderSpectral, plateRetardances, retardanceForVisibility, spectralVisibility, wavenumberBand, type SpectrumShape,
+  muellerRetarderSpectral, plateBandModel, type SpectrumShape,
 } from "../../../physics/polarization/spectral-depolarization";
 import { type Stokes, degreeOfPolarization } from "../../../physics/polarization/stokes";
 
@@ -63,18 +63,14 @@ export default function DepolarizationPage() {
   // SI at the physics boundary; Δn(λ) = |n_e − n_o| from the Sellmeier fits.
   const lambda0 = lambda0_nm * 1e-9;
   const dn = (lam: number) => { const n = crystalIndices(id, lam); return Math.abs(n.ne - n.no); };
-  const { phase, group } = plateRetardances(thickness_mm * 1e-3, dn, lambda0);
-  const { sigma0, dSigma } = wavenumberBand(lambda0, dLambda_nm * 1e-9);
-  // The linear-phase model expands about the band centre in wavenumber, λ_c = 1/σ₀ (spectral-depolarization.ts).
-  const centre = plateRetardances(thickness_mm * 1e-3, dn, 1 / sigma0);
   const axis = axis_deg * DEG;
-  const M = spectral ? muellerRetarderSpectral(centre.phase, centre.group, sigma0, dSigma, shape, axis) : muellerDepolarizer(d);
+  // The linear-phase model expands about the band centre in wavenumber, λ_c = 1/σ₀ (spectral-depolarization.ts).
+  const { phase, group, centre, sigma0, dSigma, M: Mplate, visibility, halfThickness } =
+    plateBandModel(thickness_mm * 1e-3, dn, lambda0, dLambda_nm * 1e-9, shape, axis);
+  const M = spectral ? Mplate : muellerDepolarizer(d);
   const Sout = applyMueller(M, Sin);
   const dopIn = degreeOfPolarization(Sin), dopOut = degreeOfPolarization(Sout);
-  const visibility = spectralVisibility(centre.group, dSigma, shape);
-  // V is even in R_g, so the plate length scale uses |B_g|.
-  const groupBirefringence = Math.abs(centre.group) / (thickness_mm * 1e-3);
-  const halfThickness_mm = groupBirefringence > 0 ? (retardanceForVisibility(0.5, dSigma, shape) / groupBirefringence) * 1e3 : NaN;
+  const halfThickness_mm = halfThickness * 1e3;
 
   const chart = (() => {
     const dop = (m: number[][]) => degreeOfPolarization(applyMueller(m, [s0, s1, s2, s3]));

@@ -25,6 +25,7 @@
  */
 import { type RGB, COLOUR_WAVELENGTHS, srgbEncode } from "../cie-colour";
 import { largestSymmetricEigenvalue } from "../math";
+import { type CrystalId, crystalIndices, crystalRange } from "../materials/uniaxial-data";
 import { interferenceColour, pixelVisibility, polariscopeTransmission } from "./interference-colours";
 
 export type Vec3 = [number, number, number];
@@ -249,4 +250,24 @@ export function conoscopicFigure(s: FigureSettings, N: number): { rgba: Uint8Cla
     }
   }
   return { rgba, maxR };
+}
+
+/**
+ * Principal indices, validity and effective NA of a conoscope page. A named uniaxial crystal uses n_o, n_e at the
+ * wavelength held at its fit range's edge, ordered n_α ≤ n_β ≤ n_γ (positive: [n_o, n_o, n_e]; negative:
+ * [n_e, n_o, n_o]); `id` null takes the custom (biaxial) indices as given. `valid`: n_α ≤ n_β ≤ n_γ with n_α < n_γ
+ * (NaN indices fail). The NA is limited to 0.98 n_α, the widest cone the plate accepts; NaN when not valid.
+ */
+export function conoscopeSetup(
+  id: CrystalId | null, lambda: number, custom: PrincipalIndices, NAin: number,
+): { indices: PrincipalIndices; valid: boolean; NA: number } {
+  let indices = custom;
+  if (id) {
+    const [lo, hi] = crystalRange(id);
+    const { no, ne } = crystalIndices(id, Math.min(hi, Math.max(lo, lambda)));
+    indices = ne > no ? [no, no, ne] : [ne, no, no];
+  }
+  const [n1, n2, n3] = indices;
+  const valid = n1 > 0 && n1 <= n2 && n2 <= n3 && n1 < n3;
+  return { indices, valid, NA: valid ? Math.min(NAin, 0.98 * n1) : NaN };
 }

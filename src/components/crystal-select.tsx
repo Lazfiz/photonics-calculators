@@ -1,32 +1,13 @@
 "use client";
 
 // Crystal picker shared by the birefringence pages: the uniaxial Sellmeier sets plus a custom option.
-import { refractiveIndex } from "../physics/materials/sellmeier";
-import { CRYSTAL_IDS, UNIAXIAL_CRYSTALS, crystalRange, type CrystalId } from "../physics/materials/uniaxial-data";
+import { CRYSTAL_IDS, UNIAXIAL_CRYSTALS, crystalRange } from "../physics/materials/uniaxial-data";
+import { crystalBirefringence, isCrystalId, resolveCrystalIndices } from "../physics/polarization/uniaxial";
 
 export const CUSTOM = "custom";
 
-export function isCrystalId(v: string): v is CrystalId {
-  return (CRYSTAL_IDS as readonly string[]).includes(v);
-}
-
-/** n_o and n_e at λ (m): the crystal's fits (NaN outside their range) or the custom values. */
-export function resolveIndices(material: string, lambda: number, customNo: number, customNe: number): { no: number; ne: number } {
-  if (!isCrystalId(material)) return { no: customNo, ne: customNe };
-  const [lo, hi] = crystalRange(material);
-  if (!(lambda >= lo && lambda <= hi)) return { no: NaN, ne: NaN };
-  const c = UNIAXIAL_CRYSTALS[material];
-  return { no: refractiveIndex(c.o, lambda), ne: refractiveIndex(c.e, lambda) };
-}
-
-/** Δn(λ) = n_e − n_o for a crystal, or a constant for the custom option. */
-export function birefringenceOf(material: string, customDn: number): (lambda: number) => number {
-  if (!isCrystalId(material)) return () => customDn;
-  return (lambda) => {
-    const { no, ne } = resolveIndices(material, lambda, NaN, NaN);
-    return ne - no;
-  };
-}
+// The crystal-or-custom dispatch lives in the physics module so API schemas share it.
+export { isCrystalId, resolveCrystalIndices as resolveIndices, crystalBirefringence as birefringenceOf };
 
 /** Wavelength range (m) where Δn(λ) is defined: the fit range, or `fallback` for custom indices. */
 export function materialRange(material: string, fallback: [number, number]): [number, number] {

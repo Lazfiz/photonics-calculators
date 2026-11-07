@@ -6,7 +6,7 @@
  * of polarizers, retarders and rotators. Angles in radians.
  */
 import { type JonesMatrix, adjoint, matMul } from "./jones";
-import type { Stokes } from "./stokes";
+import { type Stokes, degreeOfPolarization } from "./stokes";
 
 export type MuellerMatrix = number[][];
 
@@ -230,4 +230,28 @@ export function muellerRetarderBandSweep(
 ): MuellerMatrix[] {
   const { meanCos, meanSin } = bandAveragedRetardanceSweep(m, lambda0, bandwidths);
   return meanCos.map((c, i) => (Number.isNaN(c) ? nanMatrix() : retarderFromCosSin(c, meanSin[i], fastAxis)));
+}
+
+/**
+ * Band-averaged Stokes vector and DoP of light S through a non-dispersive retarder (m waves at λ0, fast axis θ)
+ * as the band, flat in wavelength and centred on λ0, widens from 0 to the full width B (m): one cumulative
+ * sweep over ascending widths, the last being B itself. `bandwidths` and `dop` hold the widths (m) and DoPs that
+ * are finite; `avgS` and `avgDop` are at B (NaN when the band holds too many retardance cycles).
+ */
+export function retarderBandDopSweep(
+  S: Stokes, m: number, lambda0: number, B: number, fastAxis: number,
+): { avgS: Stokes; avgDop: number; bandwidths: number[]; dop: number[] } {
+  const n = Math.min(801, Math.max(61, Math.ceil((8 * m * B) / lambda0) + 1));
+  const widths = Array.from({ length: n }, (_, i) => (i === n - 1 ? B : (B * i) / (n - 1)));
+  const matrices = muellerRetarderBandSweep(m, lambda0, widths, fastAxis);
+  const bandwidths: number[] = [], dop: number[] = [];
+  matrices.forEach((M, i) => {
+    const d = degreeOfPolarization(applyMueller(M, S));
+    if (Number.isFinite(d)) {
+      bandwidths.push(widths[i]);
+      dop.push(d);
+    }
+  });
+  const avgS = applyMueller(matrices[n - 1], S);
+  return { avgS, avgDop: degreeOfPolarization(avgS), bandwidths, dop };
 }

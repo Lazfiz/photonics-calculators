@@ -249,3 +249,17 @@ export function splitterAngles(type: SplitterType, no: number, ne: number, wedge
   const factor = type === "wollaston" ? 2 : 1;
   return { s, p, separation: Math.abs(s - p), smallAngle: factor * Math.abs(ne - no) * Math.tan(wedge) };
 }
+
+export type PolarizerDesign = "glan" | SplitterType;
+
+/**
+ * One birefringent prism polarizer at normal incidence: a two-wedge splitter's exit angles for `angle` = wedge
+ * angle α, or a Glan-Taylor prism's (air gap, optic axis in the plane of incidence) polarizing window for
+ * `angle` = hypotenuse angle. Exactly one of `split` and `glan` is set.
+ */
+export function prismPolarizer(
+  design: PolarizerDesign, no: number, ne: number, angle: number,
+): { split: SplitterAngles | null; glan: GlanWindow | null } {
+  if (design === "glan") return { split: null, glan: glanWindow({ no, ne, hypotenuse: angle, gapIndex: 1, axis: "in-plane" }) };
+  return { split: splitterAngles(design, no, ne, angle), glan: null };
+}

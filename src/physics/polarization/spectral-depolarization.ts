@@ -87,3 +87,25 @@ export function retardanceForVisibility(v: number, dSigma: number, shape: Spectr
   }
   return (lo + hi) / 2 / (Math.PI * dSigma);
 }
+
+/**
+ * A plate of thickness d (m) with birefringence Δn(λ) in a band of centre λ₀ and full width Δλ (m): the retardances at
+ * λ₀, the band-centre model (R and R_g at λ_c = 1/σ₀) and its band-averaged Mueller matrix, the fringe visibility, and
+ * the thickness at which the visibility falls to 0.5 (m; NaN without group birefringence).
+ */
+export function plateBandModel(
+  d: number, deltaN: (lambda: number) => number, lambda0: number, dLambda: number, shape: SpectrumShape, fastAxis: number,
+): {
+  phase: number; group: number; centre: { phase: number; group: number }; sigma0: number; dSigma: number;
+  M: MuellerMatrix; visibility: number; halfThickness: number;
+} {
+  const { phase, group } = plateRetardances(d, deltaN, lambda0);
+  const { sigma0, dSigma } = wavenumberBand(lambda0, dLambda);
+  const centre = plateRetardances(d, deltaN, 1 / sigma0);
+  const M = muellerRetarderSpectral(centre.phase, centre.group, sigma0, dSigma, shape, fastAxis);
+  const visibility = spectralVisibility(centre.group, dSigma, shape);
+  // V is even in R_g, so the plate length scale uses |B_g|.
+  const groupBirefringence = Math.abs(centre.group) / d;
+  const halfThickness = groupBirefringence > 0 ? retardanceForVisibility(0.5, dSigma, shape) / groupBirefringence : NaN;
+  return { phase, group, centre, sigma0, dSigma, M, visibility, halfThickness };
+}
