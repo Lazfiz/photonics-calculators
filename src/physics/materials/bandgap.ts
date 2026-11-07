@@ -50,3 +50,27 @@ export function ingaasBandGap(x: number, T: number): number {
   if (!(x >= 0 && x <= 1)) return NaN;
   return (1 - x) * varshniBandGap(T, VARSHNI.gaas) + x * varshniBandGap(T, VARSHNI.inas) - x * (1 - x) * GAINAS_BOWING_EV;
 }
+
+export type SemiconductorId = "GaAs" | "InP" | "GaP" | "Si" | "Ge" | "InAs" | "GaSb" | "InSb" | "GaN" | "InGaAs";
+
+export interface SemiconductorGap {
+  name: string;
+  /** True when the listed gap is direct (GaP lists its indirect X gap). */
+  direct: boolean;
+  /** Band gap in eV at T in K. */
+  bandGap: (T: number) => number;
+}
+
+/** The materials of the band-gap page: Varshni sets above, and In₀.₅₃Ga₀.₄₇As lattice-matched to InP. */
+export const SEMICONDUCTOR_GAPS: Record<SemiconductorId, SemiconductorGap> = {
+  GaAs: { name: "GaAs", direct: true, bandGap: (T) => varshniBandGap(T, VARSHNI.gaas) },
+  InP: { name: "InP", direct: true, bandGap: (T) => varshniBandGap(T, VARSHNI.inp) },
+  GaP: { name: "GaP", direct: false, bandGap: (T) => varshniBandGap(T, VARSHNI.gap) },
+  Si: { name: "Si", direct: false, bandGap: (T) => varshniBandGap(T, VARSHNI.si) },
+  Ge: { name: "Ge", direct: false, bandGap: (T) => varshniBandGap(T, VARSHNI.ge) },
+  InAs: { name: "InAs", direct: true, bandGap: (T) => varshniBandGap(T, VARSHNI.inas) },
+  GaSb: { name: "GaSb", direct: true, bandGap: (T) => varshniBandGap(T, VARSHNI.gasb) },
+  InSb: { name: "InSb", direct: true, bandGap: (T) => varshniBandGap(T, VARSHNI.insb) },
+  GaN: { name: "GaN (wurtzite)", direct: true, bandGap: (T) => varshniBandGap(T, VARSHNI.gan) },
+  InGaAs: { name: "In₀.₅₃Ga₀.₄₇As", direct: true, bandGap: (T) => ingaasBandGap(INGAAS_LATTICE_MATCHED_X, T) },
+};

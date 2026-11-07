@@ -6,8 +6,8 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { hc_eV_nm } from "../../../physics/constants";
 import {
-  NEAR_EDGE_RATIO, SI_FIT_MIN_LAMBDA, TPA_MEDIA, indirectBeta, linearEdge_eV, mediumBeta, mediumRegime, nearEdgeReference, scaledBeta, scalingBeta,
-  tpaRegime, tpaTransmission, twoPhotonRatio,
+  NEAR_EDGE_RATIO, SI_FIT_MIN_LAMBDA, TPA_MEDIA, indirectBeta, linearEdge_eV, nearEdgeReference, scaledBeta, scalingBeta,
+  tpaEvaluate, tpaTransmission, twoPhotonRatio,
   type TpaMediumId,
 } from "../../../physics/materials/two-photon";
 
@@ -100,9 +100,7 @@ export default function TwoPhotonAbsorptionPage() {
   const bandGap_eV = medium ? medium.bandGap_eV : clamp(gapRaw, 0.05, 15, 1.42);
   const lambda = wavelength_nm * 1e-9;
   const L = thickness_mm * 1e-3;
-  const regime = medium ? mediumRegime(medium, lambda) : tpaRegime(lambda, bandGap_eV);
-  const refRegime = medium ? mediumRegime(medium, lambdaRef) : tpaRegime(lambdaRef, bandGap_eV);
-  const beta = medium ? mediumBeta(medium, lambda) : scaledBeta(betaRef, lambdaRef, lambda, bandGap_eV);
+  const { beta, regime, refRegime } = tpaEvaluate(medium, { betaRef, lambdaRef, bandGap_eV }, lambda);
   const eq1 = medium && medium.n !== null && medium.Ep_eV !== null ? { n: medium.n, Ep_eV: medium.Ep_eV } : null;
   const betaEq1 = eq1 ? scalingBeta(lambda, eq1.n, bandGap_eV, eq1.Ep_eV) : NaN;
   const indirect = medium?.gap === "indirect";

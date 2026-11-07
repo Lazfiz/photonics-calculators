@@ -4,30 +4,16 @@ import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 import { cutoffWavelength } from "../../../physics/detectors/ingaas";
-import { INGAAS_LATTICE_MATCHED_X, VARSHNI, ingaasBandGap, varshniBandGap } from "../../../physics/materials/bandgap";
+import { SEMICONDUCTOR_GAPS, type SemiconductorGap, type SemiconductorId } from "../../../physics/materials/bandgap";
 
-interface Semiconductor {
-  name: string;
-  direct: boolean;
-  color: string;
-  /** Band gap in eV at T in K. */
-  bandGap: (T: number) => number;
-}
-
-// Varshni sets from materials/bandgap.ts: Si, Ge (Sze 1981); III–V (Vurgaftman et al. 2001); GaP is its X (indirect) gap.
-const varshni = (p: (typeof VARSHNI)[keyof typeof VARSHNI]) => (T: number) => varshniBandGap(T, p);
-const SEMICONDUCTORS: Record<string, Semiconductor> = {
-  GaAs: { name: "GaAs", direct: true, color: "#f87171", bandGap: varshni(VARSHNI.gaas) },
-  InP: { name: "InP", direct: true, color: "#60a5fa", bandGap: varshni(VARSHNI.inp) },
-  GaP: { name: "GaP", direct: false, color: "#34d399", bandGap: varshni(VARSHNI.gap) },
-  Si: { name: "Si", direct: false, color: "#f59e0b", bandGap: varshni(VARSHNI.si) },
-  Ge: { name: "Ge", direct: false, color: "#a78bfa", bandGap: varshni(VARSHNI.ge) },
-  InAs: { name: "InAs", direct: true, color: "#ec4899", bandGap: varshni(VARSHNI.inas) },
-  GaSb: { name: "GaSb", direct: true, color: "#84cc16", bandGap: varshni(VARSHNI.gasb) },
-  InSb: { name: "InSb", direct: true, color: "#fb923c", bandGap: varshni(VARSHNI.insb) },
-  GaN: { name: "GaN (wurtzite)", direct: true, color: "#06b6d4", bandGap: varshni(VARSHNI.gan) },
-  InGaAs: { name: "In₀.₅₃Ga₀.₄₇As", direct: true, color: "#e879f9", bandGap: T => ingaasBandGap(INGAAS_LATTICE_MATCHED_X, T) },
+const COLORS: Record<SemiconductorId, string> = {
+  GaAs: "#f87171", InP: "#60a5fa", GaP: "#34d399", Si: "#f59e0b", Ge: "#a78bfa",
+  InAs: "#ec4899", GaSb: "#84cc16", InSb: "#fb923c", GaN: "#06b6d4", InGaAs: "#e879f9",
 };
+// Band-gap sets live in materials/bandgap.ts (Si, Ge: Sze 1981; III–V: Vurgaftman et al. 2001; GaP is its X (indirect) gap).
+const SEMICONDUCTORS: Record<string, SemiconductorGap & { color: string }> = Object.fromEntries(
+  (Object.keys(SEMICONDUCTOR_GAPS) as SemiconductorId[]).map((id) => [id, { ...SEMICONDUCTOR_GAPS[id], color: COLORS[id] }]),
+);
 
 /** Absorption edge hc/E_g in nm for E_g in eV. */
 const egToWavelength = (eg: number) => cutoffWavelength(eg) * 1e9;

@@ -79,6 +79,7 @@
 
 import { epsilon_0, k_B, q } from "../constants";
 import { sinc } from "../math";
+import { refractionAngle } from "../polarization/fresnel";
 import { biaxialIndices, biaxialRange } from "./biaxial-data";
 import { fromResonanceWavelengths, fromSquaredForm, refractiveIndex, type SellmeierModel } from "./sellmeier";
 import { crystalIndices, crystalRange } from "./uniaxial-data";
@@ -388,3 +389,35 @@ export const balancedGratingPeriod = (Neff: number, epsilon: number, T: number) 
  */
 export const twoBeamSignalGain = (gammaL: number, beta: number) =>
   Number.isFinite(gammaL) && pos(beta) ? (1 + beta) / (1 + beta * Math.exp(-gammaL)) : NaN;
+
+/** Beam index, static permittivity along K and r_eff(θ_in) of one crystal and grating direction. */
+export interface PhotorefractiveMedium { n: number; epsilon: number; rEff: (thetaIn: number) => number }
+
+/** A custom crystal: n, ε along K and r_eff (m/V) as entered, whatever the beam angle. */
+export const customMedium = (n: number, epsilon: number, rEff: number): PhotorefractiveMedium => ({ n, epsilon, rEff: () => rEff });
+
+/** A tabulated crystal with e-polarized beams and K at β from c (LiNbO₃: β = 0, no r₄₂ term); NaN outside its index fit. */
+export function crystalMedium(id: "linbo3" | "batio3" | "batio3-clamped", lambda: number, beta: number): PhotorefractiveMedium {
+  const c = POCKELS[id];
+  const [lo, hi] = c.range;
+  const inRange = lambda >= lo * (1 - 1e-9) && lambda <= hi * (1 + 1e-9);
+  const { no, ne } = inRange ? c.indices(lambda) : { no: NaN, ne: NaN };
+  return {
+    n: extraordinaryIndex(no, ne, Math.PI / 2 - beta),
+    epsilon: gratingPermittivity(c.epsilon11 ?? c.epsilon, c.epsilon, beta),
+    rEff: (thetaIn) => eWaveEffectiveCoefficient(no, ne, c.r.r13!, c.r.r33!, c.r.r42 ?? 0, beta, thetaIn),
+  };
+}
+
+export interface PhotorefractiveGrating { period: number; thetaIn: number; rEff: number; ED: number; Eq: number; Esc: number; gamma: number }
+
+/** Steady-state diffusion grating and coupling gain for two beams crossing at the full outside angle 2θ (rad). */
+export function photorefractiveGrating(lambda: number, fullAngle: number, m: PhotorefractiveMedium, T: number, Neff: number): PhotorefractiveGrating {
+  const period = gratingPeriod(lambda, fullAngle / 2);
+  const thetaIn = refractionAngle(1, m.n, fullAngle / 2);
+  const rEff = m.rEff(thetaIn);
+  const ED = diffusionField(period, T);
+  const Eq = trapLimitedField(period, Neff, m.epsilon);
+  const Esc = spaceChargeField(ED, Eq);
+  return { period, thetaIn, rEff, ED, Eq, Esc, gamma: twoBeamCouplingGain(lambda, m.n, rEff, Esc, thetaIn) };
+}

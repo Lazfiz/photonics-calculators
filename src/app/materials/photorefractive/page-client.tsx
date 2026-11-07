@@ -5,13 +5,11 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  POCKELS, balancedGratingPeriod, diffusionField, eWaveEffectiveCoefficient, extraordinaryIndex, gratingPeriod, gratingPermittivity,
-  spaceChargeField, trapLimitedField, twoBeamCouplingGain, twoBeamSignalGain,
+  POCKELS, balancedGratingPeriod, crystalMedium, customMedium, photorefractiveGrating, twoBeamSignalGain,
+  type PhotorefractiveMedium as Medium,
 } from "../../../physics/materials/pockels";
-import { refractionAngle } from "../../../physics/polarization/fresnel";
 
 type Choice = "linbo3" | "batio3" | "batio3-clamped" | "custom";
-type Crystal = Exclude<Choice, "custom">;
 const CHOICES: readonly Choice[] = ["linbo3", "batio3", "batio3-clamped", "custom"];
 const LABELS: Record<Choice, string> = {
   linbo3: "LiNbO₃ (K ∥ c)", batio3: "BaTiO₃ (unclamped)", "batio3-clamped": "BaTiO₃ (clamped)", custom: "Custom",
@@ -32,35 +30,6 @@ const layout = (x: string, y: string) => ({
   xaxis: { title: x, gridcolor: "#374151" }, yaxis: { title: y, gridcolor: "#374151" },
   margin: { t: 20, r: 20, b: 50, l: 60 }, height: 300,
 });
-
-/** Beam index, static permittivity along K and r_eff(θ_in) of one crystal and grating direction. */
-interface Medium { n: number; epsilon: number; rEff: (thetaIn: number) => number }
-
-/** A tabulated crystal with e-polarized beams and K at β from c (LiNbO₃: β = 0, no r₄₂ term). */
-function crystalMedium(id: Crystal, lambda: number, beta: number): Medium {
-  const c = POCKELS[id];
-  const [lo, hi] = c.range;
-  const inRange = lambda >= lo * (1 - 1e-9) && lambda <= hi * (1 + 1e-9);
-  const { no, ne } = inRange ? c.indices(lambda) : { no: NaN, ne: NaN };
-  return {
-    n: extraordinaryIndex(no, ne, Math.PI / 2 - beta),
-    epsilon: gratingPermittivity(c.epsilon11 ?? c.epsilon, c.epsilon, beta),
-    rEff: (thetaIn) => eWaveEffectiveCoefficient(no, ne, c.r.r13!, c.r.r33!, c.r.r42 ?? 0, beta, thetaIn),
-  };
-}
-
-interface Grating { period: number; thetaIn: number; rEff: number; ED: number; Eq: number; Esc: number; gamma: number }
-
-/** Steady-state diffusion grating and gain for two beams crossing at the full outside angle 2θ. */
-function grating(lambda: number, fullAngle: number, m: Medium, T: number, Neff: number): Grating {
-  const period = gratingPeriod(lambda, fullAngle / 2);
-  const thetaIn = refractionAngle(1, m.n, fullAngle / 2);
-  const rEff = m.rEff(thetaIn);
-  const ED = diffusionField(period, T);
-  const Eq = trapLimitedField(period, Neff, m.epsilon);
-  const Esc = spaceChargeField(ED, Eq);
-  return { period, thetaIn, rEff, ED, Eq, Esc, gamma: twoBeamCouplingGain(lambda, m.n, rEff, Esc, thetaIn) };
-}
 
 function lineChart(xs: number[], f: (x: number) => number, selected: number) {
   const pts = xs.map((x) => ({ x, y: f(x) })).filter((p) => Number.isFinite(p.y));
@@ -101,15 +70,15 @@ export default function PhotorefractivePage() {
   const Neff = traps * 1e22;
 
   const mediumAt = (b_deg: number): Medium => (custom
-    ? { n: clamp(nRaw, 1, 5, 2.2), epsilon: clamp(epsRaw, 1, 1e5, 28), rEff: () => clamp(rRaw, 0.01, 5000, 30.8) * 1e-12 }
+    ? customMedium(clamp(nRaw, 1, 5, 2.2), clamp(epsRaw, 1, 1e5, 28), clamp(rRaw, 0.01, 5000, 30.8) * 1e-12)
     : crystalMedium(choice, lambda, batio3 ? b_deg * DEG : 0));
   const m = mediumAt(beta_deg);
-  const g = grating(lambda, angle_deg * DEG, m, T, Neff);
+  const g = photorefractiveGrating(lambda, angle_deg * DEG, m, T, Neff);
   const balanced = balancedGratingPeriod(Neff, m.epsilon, T);
   const dn = 0.5 * m.n ** 3 * g.rEff * g.Esc;
   const signalGain = twoBeamSignalGain(g.gamma * length_mm * 1e-3, ratio);
-  const angleChart = lineChart(ANGLES, (a) => grating(lambda, a * DEG, m, T, Neff).gamma / 100, angle_deg);
-  const betaChart = batio3 ? lineChart(BETAS, (b) => grating(lambda, angle_deg * DEG, mediumAt(b), T, Neff).gamma / 100, beta_deg) : [];
+  const angleChart = lineChart(ANGLES, (a) => photorefractiveGrating(lambda, a * DEG, m, T, Neff).gamma / 100, angle_deg);
+  const betaChart = batio3 ? lineChart(BETAS, (b) => photorefractiveGrating(lambda, angle_deg * DEG, mediumAt(b), T, Neff).gamma / 100, beta_deg) : [];
   const outOfRange = !custom && !Number.isFinite(m.n);
   const crystal = custom ? null : POCKELS[choice];
 

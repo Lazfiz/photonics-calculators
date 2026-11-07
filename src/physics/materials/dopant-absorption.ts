@@ -13,7 +13,7 @@
  *   amplifier pages.
  */
 
-import { DOPANT_PRESETS, type DopantPreset } from "../fiber-optics/doped-fiber-gain";
+import { DOPANT_PRESETS, ionDensityFromWtPpm, type DopantPreset } from "../fiber-optics/doped-fiber-gain";
 import { DB_PER_E_FOLD } from "../fiber-optics/macro-bending-loss";
 
 export interface AbsorptionResult {
@@ -65,3 +65,28 @@ export const DOPANT_LINES: readonly DopantLine[] = DOPANT_PRESETS.flatMap((p) =>
     })),
   ).sort((a, b) => a.lambda - b.lambda),
 );
+
+/** The unit of the cross-section input of the absorption page, m². */
+export const SIGMA_UNIT = 1e-25;
+
+/** The line with this id; Yb 976 nm (then the first line) for an unknown id. */
+export function findDopantLine(id: string): DopantLine {
+  return DOPANT_LINES.find((l) => l.id === id) ?? DOPANT_LINES.find((l) => l.id === "Yb976") ?? DOPANT_LINES[0];
+}
+
+const clampTo = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+
+/**
+ * Absorption of a rare-earth-doped silica sample on one line, as the absorption page computes it. sigmaInput is σ_a in
+ * units of 1e-25 m² (0 or less: the line's preset, rounded to 6 digits), ppm the ion's weight fraction in 10⁻⁶, length
+ * in m. Inputs are clamped to the page ranges: σ_a 0.001–1000, ppm 0–50000, Γ 0–1, L 1e-4–1000 m.
+ */
+export function dopantLineAbsorption(lineId: string, sigmaInput: number, ppm: number, overlap: number, length: number) {
+  const line = findDopantLine(lineId);
+  const ion = DOPANT_PRESETS.find((p) => p.id === line.ion) ?? DOPANT_PRESETS[0];
+  const presetSigma = Number((line.sigmaA / SIGMA_UNIT).toPrecision(6));
+  const sigmaA = clampTo(sigmaInput > 0 ? sigmaInput : presetSigma, 1e-3, 1000, presetSigma) * SIGMA_UNIT;
+  const N = ionDensityFromWtPpm(clampTo(ppm, 0, 50000, 1000), ion.molarMass);
+  const result = dopantAbsorption(sigmaA, N, clampTo(length, 1e-4, 1000, 0.1), clampTo(overlap, 0, 1, 1));
+  return { line, ion, sigmaA, N, ...result };
+}
