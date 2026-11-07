@@ -117,7 +117,7 @@ test("MCP run_calculator: the API's numbers for the inputs given; errors say why
   assert.equal(range.isError, true);
   assert.match(range.content[0].text, /wavelength/);
   assert.match((await call("run_calculator", { slug: "nope/nope" })).content[0].text, /find_calculator/);
-  const notYet = await call("run_calculator", { slug: "materials/acousto-optic" });
+  const notYet = await call("run_calculator", { slug: "polarization/birefringence" });
   assert.equal(notYet.isError, true);
   assert.match(notYet.content[0].text, /can't be run here yet/);
 });

@@ -34,6 +34,20 @@ import mpe from "./laser-safety/mpe";
 import nohd from "./laser-safety/nohd";
 import odRequirements from "./laser-safety/od-requirements";
 import laserOpticalDensity from "./laser-safety/optical-density";
+import acoustoOptic from "./materials/acousto-optic";
+import birefringentCrystals from "./materials/birefringent-crystals";
+import brillouinScattering from "./materials/brillouin-scattering";
+import chromaticDispersion from "./materials/chromatic-dispersion";
+import colorCenters from "./materials/color-centers";
+import crystalProperties from "./materials/crystal-properties";
+import damageThreshold from "./materials/damage-threshold";
+import diamondOptics from "./materials/diamond-optics";
+import electroOptic from "./materials/electro-optic";
+import heatCapacity from "./materials/heat-capacity";
+import infraredGlass from "./materials/infrared-glass";
+import magnetoOptic from "./materials/magneto-optic";
+import nonlinearCrystals from "./materials/nonlinear-crystals";
+import nonlinearIndex from "./materials/nonlinear-index";
 import stokes from "./polarization/stokes";
 import blackbody from "./spectroscopy/blackbody";
 import cavityRingDown from "./spectroscopy/cavity-ring-down";
@@ -55,6 +69,8 @@ export const schemas: readonly CalculatorSchema[] = [
   channelCapacity, diversityReception, eyeSafetyFso, fadeProbability, fogAttenuation,
   geometricLoss, lasercomLink, linkBudget, opticalAntenna, pointAhead, pointingLoss, quantumKeyDistribution,
   rainAttenuation, receiverFov, scintillation, security, snowAttenuation, wavelengthSelection,
+  acoustoOptic, birefringentCrystals, brillouinScattering, chromaticDispersion, colorCenters, crystalProperties, damageThreshold,
+  diamondOptics, electroOptic, heatCapacity, infraredGlass, magnetoOptic, nonlinearCrystals, nonlinearIndex,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));
