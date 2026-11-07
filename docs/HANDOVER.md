@@ -1,80 +1,73 @@
-# Handover — 2026-11-07 (session 220 → session 221)
+# Handover — 2026-11-07 (session 221 → session 222)
 
-**Start here:** session 220 merged PR #258 (11a-2a, not released) and did 11a-2b (8 schemas by pageviews) on
-`phase-11/11a-2b-analytics-schemas` (PR #259). 11a-1 and 10a are released (c3738618). Next: 11b, the MCP server.
+**Start here:** session 221 did 11b on `phase-11/11b-mcp-server` (PR #260): a stateless MCP server at `/mcp`,
+`/checks.json`, llms.txt and About lines. 11a-2b is released (9d5840a8). Next: `/ship` #260, then 11c (schemas per
+category); 11b-2 (connect real clients to production) after the user's release.
 
 ## State
-- `src/schemas/types.ts`: `InputSpec` (numbers: key = page `useURLState` key, `unit`, `toSI`, `siUnit`, `default`,
-  `min`, `max`), `ChoiceSpec` (`key`, `label`, `options: {value, label}[]`, `default`), `SchemaInputs<I, C>` (mapped
-  type: choice keys → string, input keys → number, SI), `OutputSpec`, `ReferenceCheck` (`basis: "printed" |
-  "computed"`, `tolerance` relative), `CalculatorSchema` (`choices?`, `validate?`, `compute`), `defineSchema<I, O, C>`.
-- `src/schemas/run.ts`: `parseInputs` (choices: one of the option values, else 400 text; numbers as before),
-  `runSchema`; `InputValues = Record<string, number | string>`.
-- `src/registry/api.ts`: choices go first in parameters (`type: "string", enum, default`) and in `pageUrl`; a choice
-  input in the response is `{label, value}` (`components.schemas.Choice`; `inputs` is `oneOf` Quantity/Choice).
-- 20 schemas: wave-optics/gaussian-beam, spectroscopy/blackbody, ftir-resolution, lambert-beer-law, cavity-ring-down,
-  spectral-line-broadening, fluorescence-lifetime, infrared-spectroscopy, sum-frequency-gen, imaging/airy-disk, tirf,
-  low-coherence, thin-film/single-ar, fiber-optics/coupling-efficiency, dispersion-map, polarization/stokes,
-  laser-safety/mpe, nohd, optical-density, od-requirements. `src/schemas/laser-safety/common.ts`: `BEAM_DEFINITION`
-  choice, `toOneOverESquared`, `WAVELENGTH`, `EXPOSURE` (T_MIN–T_MAX), `SAFETY_FACTOR`, `ICNIRP_2013`.
-- Session 220's 8 checks are all `computed` (taken from the modules' golden tests; no source prints those values).
-  `SFG_PRESETS` now lives in `src/physics/spectroscopy/sum-frequency.ts` (page + schema share it). Inputs that only
-  shape a chart (tMax, resolution, isotopes, wavelength marker) are still schema inputs: the defaults test needs every
-  `useURLState` key. IR schema answers 400 for HCl > 1200 K (the page clamps).
-- `tests/api-schemas.test.ts` (8 tests): the defaults test reads string-literal defaults as choices; choice parse
-  errors; GET with `solve=c`; openapi enums for nohd. 1294 tests.
-- Not in the API yet: string results (the governing limit name on the laser-safety pages, Stokes handedness).
+- `src/mcp/server.ts`: `handleMessage(message, ctx)` → `JsonRpcResponse | null` (null for notifications and client
+  responses); `PROTOCOL_VERSIONS` (2025-11-25, 2025-06-18, 2025-03-26, 2024-11-05; initialize echoes a supported one,
+  else the newest); `SERVER_INFO`, `ERROR`, `rpcError`. Methods: initialize, ping, tools/list, tools/call; others
+  -32601; unknown tool -32602; tool failures are `isError` results with the reason (parseInputs' text).
+- `src/mcp/tools.ts`: `tools` (find_calculator, run_calculator, get_checks, report_problem), `ToolContext {ip,
+  origin}`, `resolveCalculator` ("cat/slug", "/cat/slug", page or API URL, or a unique bare slug), `describeSchema`,
+  `findCalculators(query, limit)` (site `searchItems` first, then pages matching most non-filler words). Results go
+  out as JSON text + `structuredContent`. report_problem: `parseReport` checks, own 5/10 min limiter, slug "about".
+- `src/app/mcp/route.ts`: POST only (GET/DELETE 405, OPTIONS 204 CORS); 400 on an unsupported
+  `MCP-Protocol-Version` header; 64 KB body cap; batches answered; notifications → 202 empty.
+- `src/lib/report-send.ts`: `sendReport(report, origin, source)`, `reportsConfigured()`; `/api/report` uses it.
+  `reportEmail(..., source)` adds a "Source: form|mcp" line and "(MCP)" in the subject.
+- `src/registry/checks.ts`: `schemaChecks(schema)` (inputs with units, expected vs model, relativeDifference, pass,
+  pageUrl, apiUrl), `buildChecksJson()`; `src/app/checks.json/route.ts` is force-static.
+- `tests/mcp.test.ts` (8 tests) calls the route's `POST` directly with a fresh IP per call. 1302 tests.
+- 20 runnable schemas (list in `src/schemas/index.ts`). Not in the API yet: string results (laser-safety governing
+  limit, Stokes handedness).
 
 ## Next actions
-1. `/ship` this branch (PR #259). Release only when the user asks; after it: `node scripts/post-merge-check.mjs <sha>
-   polarization/stokes=0.6164 spectroscopy/ftir-resolution=0.6034 imaging/tirf=110.3`, then `curl -s
-   "https://photonicscalculators.com/api/v1/spectroscopy/lambert-beer-law?solve=c&absorbance=1"` (concentration 2e-5),
-   `/api/v1/imaging/tirf` (depth 110.344 nm), `/openapi.json` (20 paths), then `node --import tsx scripts/indexnow.ts`.
-2. 11b (MCP server at `/mcp`, see ROADMAP); `/checks.json` from the schemas' `checks`. Read the Next 16 route docs.
-3. 11c: schemas category by category. Analytics can't rank pages (31 days: 4 pages at 2 visitors, the rest 1).
+1. `/ship` PR #260. Release only when the user asks; after it: `node scripts/post-merge-check.mjs <sha>
+   polarization/stokes=0.6164 spectroscopy/ftir-resolution=0.6034 imaging/tirf=110.3`, then POST
+   `{"jsonrpc":"2.0","id":1,"method":"tools/list"}` to `https://photonicscalculators.com/mcp` (4 tools),
+   `curl -s https://photonicscalculators.com/checks.json` (20 calculators, all `pass`), `/llms.txt` (MCP line), then
+   `node --import tsx scripts/indexnow.ts`.
+2. 11b-2: ask the user to run `claude mcp add --transport http photonics https://photonicscalculators.com/mcp` and the
+   MCP Inspector (`npx @modelcontextprotocol/inspector`) against production, or to allow the download.
+3. 11c: schemas category by category (each > 40 pages split a/b). Analytics can't rank pages.
 4. In a week or two: ask the user for the Search Console Pages/Performance reports (indexed count, queries) for 10d.
 5. Still missing data: BSO ε, SBN, Nd σ_a at 808 nm, CO₂ g₀ and I_s, SF59 n₂, the Tm ³H₄ band, ZBLAN κ and band.
-6. IndexNow posts to www.bing.com/indexnow (api.indexnow.org answered 403); ask the user whether Bing Webmaster
-   lists the submissions.
+6. IndexNow posts to www.bing.com/indexnow; ask the user whether Bing Webmaster lists the submissions.
 7. 10g-2 left: Resend domain records + `REPORT_FROM_EMAIL` (optional).
 
 ## Non-obvious facts
+- **Session 221:** the auto-mode classifier blocks `npx -y @modelcontextprotocol/inspector` (external code); a node
+  fetch script doing the handshake over HTTP stood in. Port 3400 was held by a process from elsewhere: dev/probe
+  servers went on 3410. find_calculator ranks via the site search, so "anti-reflection coating thickness" doesn't
+  surface `thin-film/single-ar` in the top 5 (search-tag issue, not MCP).
 - **Session 220:** Git Bash rewrites a `/category/slug` argument into `C:/Program Files/Git/category/slug` for any
   node script: prefix `MSYS_NO_PATHCONV=1`. Two implementer agents writing 4 schemas each in parallel, sharing
-  `src/schemas/index.ts` through Edit only, worked (5 and 13 min). The 1-visitor pages carry no registry `priority`.
-- **Session 219:** when `devctl` answers exit 75 ("not started"), **nothing** on that command line ran, including a
-  `cat > script <<EOF` and `node script` before the gated command: put edits in their own command (or use Edit).
-  `tsx --test` doesn't type-check: only `npm run check` catches test-file type errors. `Record<I, number> &
-  Record<C, string>` collapses to `never` values when the schema type is erased; the mapped `SchemaInputs` doesn't.
-- **Session 218:** `RouteContext<'/api/v1/[category]/[slug]'>` is generated by `next dev/build/typegen`; the route
-  types `ctx` inline instead, so `tsc` passes on a clean checkout. `new NextRequest(url, { headers })` works under
-  `node:test`, so tests call `GET` directly (the rate limiter is module-level: use a fresh IP per test). Probe a build
-  with `npx next start -p 3400` in the background, then curl it; stop it with TaskStop. A node replace script inside a
-  bash heredoc mangled `\/` in regex text: edit regex lines with Edit.
+  `src/schemas/index.ts` through Edit only, worked (5 and 13 min).
+- **Session 219:** when `devctl` answers exit 75 ("not started"), **nothing** on that command line ran: put edits in
+  their own command (or use Edit). `tsx --test` doesn't type-check: only `npm run check` catches test-file type
+  errors. `Record<I, number> & Record<C, string>` collapses to `never` when the schema type is erased.
+- **Session 218:** `RouteContext<...>` is generated by `next dev/build/typegen`; routes type `ctx` inline so `tsc`
+  passes on a clean checkout. `new NextRequest(url, { headers })` and plain `Request` work under `node:test`. Probe a
+  build with `npx next start -p <port>` in the background, stop it with TaskStop or taskkill.
 - **Session 216:** `devctl` refuses a foreground command while another project keeps the CPU busy: run it with
-  `run_in_background`. `node --import tsx -e 'import("./src/x.ts")'` needs a relative path and hands back CJS
-  interop: call `m.default.fn`.
+  `run_in_background`. `node --import tsx -e 'import("./src/x.ts")'` needs a relative path and gives CJS interop.
 - **Session 215:** the Vercel MCP has no "update project domain" tool; `vercel api /v9/projects/<prj>/domains/<name>?teamId=…
-  -X PATCH --input -` with `{"redirect":…}` works. `scripts/codemods/*` are type-checked too: don't remove exports they
-  import. A `cat > file` with no heredoc hangs. Keep `rc=$?` right after a command, before any pipe.
-- **Session 214:** Vercel Web Analytics on the hobby plan only answers for the last 31 days (400 otherwise); project
-  `prj_wTWqQ2nFEuhYGHa06aUYA6Cb4XIH`. GSC "Request indexing" quota runs out after a few requests; the sitemap matters.
-- **Session 211:** 5 physics-reviewer agents × 6 pages: 10–17 min in parallel, 70–105k tokens each. Fetches that
-  worked: ICNIRP 2013, Seibersdorf, Hamamatsu, refractiveindex.info yml, Dubietis 2017. MDPI and AIP block bots. Do
-  regex cleanup of CDP results on the Node side, not inside an `evaluate` template literal.
-- **Sessions 205–210:** CDP probes: `scripts/page-capture.mjs` or lines 1–79 of `ui-check.mjs`; on ECONNREFUSED rerun.
-  A controlled textarea needs the native value setter plus an `input` event. `python -E -P` for pypdfium2 (PIL is in
-  the user site). PDF figures: Read's `pages` fails; render crops with pypdfium2, calibrate on gridlines. pdftotext can
-  shift table row labels. Optica blocks curl; arXiv, UCF STARS, PMC, NTRS work.
+  -X PATCH --input -` works. `scripts/codemods/*` are type-checked too. Keep `rc=$?` right after a command.
+- **Session 214:** Vercel Web Analytics on hobby answers only for the last 31 days; project
+  `prj_wTWqQ2nFEuhYGHa06aUYA6Cb4XIH`. GSC "Request indexing" quota runs out fast; the sitemap matters.
+- **Session 211:** physics-reviewer agents: 10–17 min, 70–105k tokens each. Fetches that worked: ICNIRP 2013,
+  Seibersdorf, Hamamatsu, refractiveindex.info yml. MDPI, AIP and Optica block bots; arXiv, PMC, NTRS work.
+- **Sessions 205–210:** CDP probes: `scripts/page-capture.mjs` or lines 1–79 of `ui-check.mjs`. `python -E -P` for
+  pypdfium2. PDF figures: render crops with pypdfium2, calibrate on gridlines.
 - **Session 198:** `devctl` holds a whole Bash command line and gives up after 90 s: run gates with
   `run_in_background`, and check `git diff --stat` before trusting a test count.
-- **Editing:** long Bash heredocs with mixed quotes fail. Apply edits with a replace-once node script (Write it first).
-  `sed -i` with escaped regex text is unreliable here: use Edit.
-- **Session 160:** Chrome extension screenshots time out on this site; use a headless CDP script on port 3100 or
-  3300. Prefix `MSYS_NO_PATHCONV=1` for ui-check and chrome.
-- **Charts:** `SimpleChart` pads axes 5 %. `SimpleLineChart` starts axes at the data min/max and has no y2. `null` and
-  non-finite values break lines.
-- **Pages:** `useURLState` in `.map` breaks hooks. NaN/∞ show as "—" with a reason. JSX text needs `&apos;`. `npm run
-  dev` touches `next-env.d.ts`: `git checkout` it. After adding tests rerun `npx tsx scripts/test-stats.ts`.
-- **Shell:** probes are scratchpad `.ts` files run from the repo (`node --import tsx <abs path>`). `git grep` skips
-  untracked files. CI takes ≈ 2–3 min. Wrap chrome, ui-check and server commands in `timeout <s>`.
+- **Editing:** a node replace script inside a bash heredoc mangles `\/` and `\n` in regex text (again in session
+  221): edit such lines with Edit. `sed -i` with escaped regex text is unreliable.
+- **Session 160:** Chrome extension screenshots time out on this site; use headless CDP. Prefix
+  `MSYS_NO_PATHCONV=1` for ui-check and chrome.
+- **Charts:** `SimpleChart` pads axes 5 %. `SimpleLineChart` starts axes at the data min/max and has no y2.
+- **Pages:** `useURLState` in `.map` breaks hooks. JSX text needs `&apos;`. `npm run dev` touches `next-env.d.ts`:
+  `git checkout` it. After adding tests rerun `npx tsx scripts/test-stats.ts`.
+- **Shell:** probes are scratchpad scripts run from the repo. `git grep` skips untracked files. CI ≈ 2–3 min.

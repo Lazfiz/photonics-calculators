@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 220, 2026-11-07)
+## Status (session 221, 2026-11-07)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
@@ -371,9 +371,9 @@ Goal: an AI assistant can call a calculator with its user's inputs and check the
   - [x] 11a-1 API infrastructure + 4 pages (session 218, `phase-11/11a-1-api-infra`, PR #257). See Done.
   - [x] 11a-2a 8 priority ≥ 86 pages + choice inputs (session 219, PR #258). See Done.
   - [x] 11a-2b 8 pages by Vercel Analytics pageviews (session 220, PR #259). See Done.
-- [ ] 11b Remote MCP server at `/mcp` (streamable HTTP, stateless): tools `find_calculator(query)`,
-  `run_calculator(slug, inputs)`, `get_checks(slug)` and `report_problem(slug, inputs, message)` (goes to the same
-  Resend path, tagged `source: mcp`). Test with Claude Code and the MCP Inspector; add the endpoints to `llms.txt`.
+- [x] 11b MCP server at `/mcp` + `/checks.json` (session 221, PR #260). See Done.
+- [ ] 11b-2 After the release: connect Claude Code (`claude mcp add --transport http photonics <site>/mcp`) and the MCP
+  Inspector to production (the Inspector download was blocked in session 221; the user runs it or allows it).
 - [ ] 11c… One category per session: schemas + checks for the rest (split each > 40 pages into a/b).
 - Verification by visiting agents (user, session 215: "ask visiting llms to verify tools"): `llms.txt` and the About
   page invite independent checks: call `run_calculator`, compare with the cited reference or the agent's own
@@ -398,6 +398,7 @@ Goal: an AI assistant can call a calculator with its user's inputs and check the
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 11b (session 221, `phase-11/11b-mcp-server`, PR #260): hand-rolled stateless MCP (no SDK dependency) at `/mcp` — JSON answers, GET 405, protocol 2025-11-25…2024-11-05, CORS, 120/min/IP; tools find_calculator (site search, then most-words fallback; runnable hits list inputs), run_calculator (JSON API path), get_checks, report_problem (shared `src/lib/report-send.ts`, "Source: mcp"); `/checks.json`; llms.txt + About bullet; 9 tests (1302).
 - 11a-2b (session 220, `phase-11/11a-2b-analytics-schemas`, PR #259): 31-day analytics are tiny (4 pages at 2 visitors, the rest 1, no registry priority), so the tie went to exact-tier pages; schemas for dispersion-map, low-coherence, infrared-spectroscopy, sum-frequency-gen, cavity-ring-down, spectral-line-broadening, fluorescence-lifetime, tirf (20 in all), checks from the modules' golden tests (all `computed`); SFG presets moved into the physics module (`SFG_PRESETS`); 1294 tests.
 - 11a-2a (session 219, `phase-11/11a-2a-priority-schemas`, PR #258): schema `choices` (string options; 400 on others; openapi string enum; response `{label, value}`); schemas for coupling-efficiency, ftir-resolution, lambert-beer-law, stokes, laser-safety mpe/nohd/optical-density/od-requirements (12 in all), 16 new reference checks; 1294 tests.
 - 11a-1 (session 218, `phase-11/11a-1-api-infra`, PR #257): `src/schemas/` (typed inputs = page URL keys with unit, toSI, default, range; outputs; 1–3 `checks` with `basis` printed/computed) for gaussian-beam, blackbody, airy-disk, single-ar; `GET /api/v1/<category>/<slug>` (page units + SI, tier, modelNote, references, pageUrl; 400 with reason, 404, 60/min/IP, CORS *, s-maxage 1 day); prerendered `/openapi.json` (3.1); `llms.txt` API line; 1294 tests.
