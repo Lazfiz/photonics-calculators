@@ -1,6 +1,8 @@
 // /llms.txt (https://llmstxt.org): a Markdown map of the site for language models and AI agents, generated from the
 // registry. Server-side only.
 import { SITE_URL } from "../lib/site";
+import { schemas } from "../schemas";
+import { apiPath } from "./api";
 import { calculators, categories } from "./index";
 import { TIERS, UNREVIEWED, tierInfo } from "./tiers";
 
@@ -21,6 +23,9 @@ export function buildLlmsTxt(): string {
     `- Model tier: how far a page's model can be trusted, set by a physics audit (${SITE_URL}/about#model-tiers).`,
     ...tiers,
     `- How the calculators are checked (tests, blind audit): ${SITE_URL}/about#verification`,
+    `- JSON API (${schemas.length} calculators so far): GET ${SITE_URL}${apiPath("/<category>/<slug>")} with the ` +
+      `page's URL query, e.g. ${SITE_URL}${apiPath("/wave-optics/gaussian-beam")}?wavelength=1064&waist=500&z=100. ` +
+      `Inputs, units, ranges and outputs: ${SITE_URL}/openapi.json. Each result carries the model tier and references.`,
     `- Source code: ${REPO_URL}`,
     '- Mistakes: the "Report a problem" form at the bottom of each calculator page.',
     '- How to cite: "<calculator title>. Photonics Calculators. <page URL> (accessed <date>)." For the physics, ' +

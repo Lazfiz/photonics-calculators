@@ -1,4 +1,4 @@
-import { parseReport, RateLimiter, reportEmail } from "../../../lib/report";
+import { clientIp, parseReport, RateLimiter, reportEmail } from "../../../lib/report";
 import { findCalculator } from "../../../registry";
 
 /** Pages that take reports: every calculator, plus About for general ones. */
@@ -6,11 +6,6 @@ const knownHref = (href: string) => href === "/about" || findCalculator(href) !=
 
 // Five reports per IP per ten minutes, per server instance.
 const limiter = new RateLimiter(5, 10 * 60 * 1000);
-
-function clientIp(request: Request): string {
-  const forwarded = request.headers.get("x-forwarded-for");
-  return forwarded?.split(",")[0].trim() || request.headers.get("x-real-ip") || "unknown";
-}
 
 /**
  * Emails a "Report a problem" form through Resend. The key and the recipient come from the Vercel env

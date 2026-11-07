@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 217, 2026-11-07)
+## Status (session 218, 2026-11-07)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
@@ -363,11 +363,15 @@ Evidence (session 214, Vercel Web Analytics 2026-10-07 → 11-06): 9 visitors, 5
 ## Phase 11 — calculators that agents can run (user, session 215: "I need lure and use")
 Goal: an AI assistant can call a calculator with its user's inputs and check the result, not only read the defaults.
 406 of 411 page clients already import `src/physics/` modules; what's missing is a machine-readable input schema.
-- [ ] 11a Infrastructure + the 20 most-used calculators. A typed schema per calculator (inputs: key = the URL-state key,
+- 11a Infrastructure + the 20 most-used calculators. A typed schema per calculator (inputs: key = the URL-state key,
   label, SI unit and UI unit, default, min/max; outputs with units; `checks`: 1–3 published reference cases with
   inputs → expected value and source, run by a test so they stay true). `/api/v1/<category>/<slug>` (GET query →
   JSON with values, units, tier, `modelNote`, references, page URL); 400 with the reason on out-of-range input; rate
   limit like `/api/report`. `/openapi.json` generated from the schemas. Read the Next 16 route-handler docs first.
+  - [x] 11a-1 API infrastructure + 4 pages (session 218, `phase-11/11a-1-api-infra`, PR #257). See Done.
+  - [ ] 11a-2 16 more: the other priority ≥ 86 pages (coupling-efficiency, ftir-resolution, lambert-beer-law, stokes,
+    mpe, nohd, optical-density, od-requirements) + 8 by Vercel Analytics pageviews. Choice inputs (`solve`) get an
+    `options` input kind.
 - [ ] 11b Remote MCP server at `/mcp` (streamable HTTP, stateless): tools `find_calculator(query)`,
   `run_calculator(slug, inputs)`, `get_checks(slug)` and `report_problem(slug, inputs, message)` (goes to the same
   Resend path, tagged `source: mcp`). Test with Claude Code and the MCP Inspector; add the endpoints to `llms.txt`.
@@ -395,6 +399,7 @@ Goal: an AI assistant can call a calculator with its user's inputs and check the
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 11a-1 (session 218, `phase-11/11a-1-api-infra`, PR #257): `src/schemas/` (typed inputs = page URL keys with unit, toSI, default, range; outputs; 1–3 `checks` with `basis` printed/computed) for gaussian-beam, blackbody, airy-disk, single-ar; `GET /api/v1/<category>/<slug>` (page units + SI, tier, modelNote, references, pageUrl; 400 with reason, 404, 60/min/IP, CORS *, s-maxage 1 day); prerendered `/openapi.json` (3.1); `llms.txt` API line; 1294 tests.
 - 10a (session 217, `phase-10/10a-audit-fixes`, PR #256): KD*P n_o Kirby & DeShazer 1987 (266–1064 nm, 1.4931 at 1064, V_π 6054 V) and ADP Zernike 1964 (213.8–1529 nm) replace fixed 1.51/1.52; `mueller-polarimetry` Stokes s0–s3 and element1/2 in the URL; `dichroic-polarizer` slab T gains the exit-face factor 1 + κ²/n² (Harbecke 1986), n > 0 guard, < 10λ warning. 1286 tests.
 - 10h (session 216, `phase-10/10h-ai-discovery`, PR #255): robots.txt names 13 AI crawlers as allowed; `/llms.txt` from the registry (411 links with tier, about/verification, source, cite); per-page `WebApplication` JSON-LD (free, `EducationalApplication`, citations moved onto it, WebPage `mainEntity`); IndexNow key in `public/` + `scripts/indexnow.ts`, run after each release (`/ship` step 5); 1283 tests.
 - 10g-1 (session 215, `phase-10/10g-domain-move`, PR #254): photonicscalculators.com (user bought it 2026-11-06) is canonical; Vercel www → apex 308; `SITE_URL` in `src/lib/site.ts` feeds canonicals, JSON-LD, sitemap, robots; `next.config.mjs` 308s the vercel.app host first; 1280 tests.

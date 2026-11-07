@@ -22,6 +22,7 @@ test("llms.txt links every listed calculator once, with its tier, under its cate
   const text = buildLlmsTxt();
   assert.match(text, /^# Photonics Calculators\n\n> \d+ free, open-source/);
   assert.match(text, /\/about#verification/);
+  assert.match(text, /^- JSON API \(\d+ calculators so far\): GET https:\S+\/api\/v1\/<category>\/<slug> .+\/openapi\.json\./m);
   const links = [...text.matchAll(/^- \[[^\]]+\]\((https:[^)]+)\): .+ \((Exact|Textbook approximation|Illustrative|Not yet reviewed)\)$/gm)];
   const listed = calculators.filter((calculator) => !calculator.hidden);
   assert.deepEqual(
