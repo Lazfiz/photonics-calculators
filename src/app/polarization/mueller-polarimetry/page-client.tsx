@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -19,7 +19,11 @@ import { analyzerIntensity, degreeOfPolarization, isPhysicalStokes, polarizedInt
 
 const DEG = Math.PI / 180;
 
-type ElementKind = "polarizer" | "retarder" | "rotator" | "depolarizer";
+const ELEMENT_KINDS = ["polarizer", "retarder", "rotator", "depolarizer"] as const;
+type ElementKind = (typeof ELEMENT_KINDS)[number];
+/** A URL value that names no element falls back to the default. */
+const elementKind = (v: string, fallback: ElementKind): ElementKind =>
+  (ELEMENT_KINDS as readonly string[]).includes(v) ? (v as ElementKind) : fallback;
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
@@ -41,11 +45,20 @@ const PARAM_LABELS: Record<ElementKind, string> = {
 };
 
 export default function MuellerPolarimetryPage() {
-  const [inputS, setInputS] = useState<Stokes>([1, 1, 0, 0]); // H linear
-  const [element1, setElement1] = useState<ElementKind>("retarder");
+  // One URL param per Stokes component; the default is H linear.
+  const [s0, setS0] = useURLState("s0", 1);
+  const [s1, setS1] = useURLState("s1", 1);
+  const [s2, setS2] = useURLState("s2", 0);
+  const [s3, setS3] = useURLState("s3", 0);
+  const inputS = useMemo<Stokes>(() => [s0, s1, s2, s3], [s0, s1, s2, s3]);
+  const stokesSetters = [setS0, setS1, setS2, setS3];
+  const setInputS = (s: Stokes) => stokesSetters.forEach((set, i) => set(s[i]));
+  const [element1In, setElement1] = useURLState("element1", "retarder");
+  const element1 = elementKind(element1In, "retarder");
   const [param1, setParam1] = useURLState("param1", 90); // retardance, angle or depolarization
   const [axis1, setAxis1] = useURLState("axis1", 0); // fast axis of a retarder
-  const [element2, setElement2] = useState<ElementKind>("polarizer");
+  const [element2In, setElement2] = useURLState("element2", "polarizer");
+  const element2 = elementKind(element2In, "polarizer");
   const [param2, setParam2] = useURLState("param2", 0);
   const [axis2, setAxis2] = useURLState("axis2", 0);
   const [analyzerAngle, setAnalyzerAngle] = useURLState("analyzerAngle", 45);
@@ -118,10 +131,7 @@ export default function MuellerPolarimetryPage() {
             <span className="text-sm text-gray-300">{label}</span>
             <input type="number" value={inputS[i]} onChange={e => {
               const v = +e.target.value;
-              if (!Number.isFinite(v)) return;
-              const newS: Stokes = [...inputS];
-              newS[i] = v;
-              setInputS(newS);
+              if (Number.isFinite(v)) stokesSetters[i](v);
             }} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
           </label>
         ))}
