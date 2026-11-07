@@ -3,7 +3,7 @@
 import { SITE_URL } from "../lib/site";
 import { findSchema, schemas } from "../schemas";
 import type { RunResult } from "../schemas/run";
-import type { CalculatorSchema, InputSpec } from "../schemas/types";
+import type { CalculatorSchema, ChoiceSpec, InputSpec } from "../schemas/types";
 import { findCalculator, getCalculator, type Calculator } from "./index";
 import { tierInfo } from "./tiers";
 
@@ -31,16 +31,20 @@ function describeCalculator(calculator: Calculator) {
   };
 }
 
-/** The 200 body: inputs and outputs keyed by the page's keys, in the page's units and in SI. */
+/** The 200 body: inputs and outputs keyed by the page's keys, in the page's units and in SI; choices as their values. */
 export function apiResponse(calculator: Calculator, schema: CalculatorSchema, run: RunResult) {
-  const query = new URLSearchParams(schema.inputs.map((input) => [input.key, String(run.inputs[input.key])]));
+  const choices = schema.choices ?? [];
+  const query = new URLSearchParams([...choices, ...schema.inputs].map((input) => [input.key, String(run.inputs[input.key])]));
   return {
     calculator: describeCalculator(calculator),
     pageUrl: `${SITE_URL}${calculator.href}?${query}`,
-    inputs: Object.fromEntries(schema.inputs.map((input) => {
-      const value = run.inputs[input.key];
-      return [input.key, { label: input.label, value, unit: input.unit, siValue: value * input.toSI, siUnit: input.siUnit }];
-    })),
+    inputs: Object.fromEntries([
+      ...choices.map((choice) => [choice.key, { label: choice.label, value: run.inputs[choice.key] }]),
+      ...schema.inputs.map((input) => {
+        const value = run.inputs[input.key] as number;
+        return [input.key, { label: input.label, value, unit: input.unit, siValue: value * input.toSI, siUnit: input.siUnit }];
+      }),
+    ]),
     outputs: Object.fromEntries(schema.outputs.map((output) => [output.key, {
       label: output.label,
       value: run.outputs[output.key],
@@ -63,6 +67,22 @@ function parameter(input: InputSpec) {
     schema: { type: "number", minimum: input.min, maximum: input.max, default: input.default },
   };
 }
+
+function choiceParameter(choice: ChoiceSpec) {
+  return {
+    name: choice.key,
+    in: "query",
+    required: false,
+    description: `${choice.label}: ${choice.options.map((option) => `${option.value} = ${option.label}`).join("; ")}.`,
+    schema: { type: "string", enum: choice.options.map((option) => option.value), default: choice.default },
+  };
+}
+
+const choiceValue = {
+  type: "object",
+  required: ["label", "value"],
+  properties: { label: { type: "string" }, value: { type: "string", description: "The chosen option's value." } },
+};
 
 const quantity = {
   type: "object",
@@ -91,7 +111,7 @@ export function buildOpenApi() {
         description: `${calculator.description} Model tier: ${tierInfo(calculator.tier).label}.` +
           (calculator.modelNote ? ` ${calculator.modelNote}` : ""),
         externalDocs: { url: `${SITE_URL}${calculator.href}` },
-        parameters: schema.inputs.map(parameter),
+        parameters: [...(schema.choices ?? []).map(choiceParameter), ...schema.inputs.map(parameter)],
         responses: {
           200: {
             description: "Results at the given inputs; inputs left out take the page's defaults.",
@@ -129,6 +149,7 @@ export function buildOpenApi() {
     components: {
       schemas: {
         Quantity: quantity,
+        Choice: choiceValue,
         Result: {
           type: "object",
           required: ["calculator", "pageUrl", "inputs", "outputs", "warnings"],
@@ -150,7 +171,10 @@ export function buildOpenApi() {
               },
             },
             pageUrl: { type: "string", description: "The page with these inputs." },
-            inputs: { type: "object", additionalProperties: { $ref: "#/components/schemas/Quantity" } },
+            inputs: {
+              type: "object",
+              additionalProperties: { oneOf: [{ $ref: "#/components/schemas/Quantity" }, { $ref: "#/components/schemas/Choice" }] },
+            },
             outputs: { type: "object", additionalProperties: { $ref: "#/components/schemas/Quantity" } },
             warnings: { type: "array", items: { type: "string" } },
           },
@@ -158,7 +182,7 @@ export function buildOpenApi() {
         Error: { type: "object", required: ["error"], properties: { error: { type: "string" } } },
       },
       responses: {
-        BadInput: { description: "Unknown input, not a number, or outside the page's range.", ...error },
+        BadInput: { description: "Unknown input, not a number, outside the page's range, or not one of the options.", ...error },
         TooMany: { description: "Rate limit; try again in a minute.", ...error },
       },
     },

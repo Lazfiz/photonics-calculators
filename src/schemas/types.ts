@@ -20,6 +20,21 @@ export interface InputSpec<K extends string = string> {
   max: number;
 }
 
+/** A choice the page reads from its URL query ("solve", "apodization"). The API takes the same key and values. */
+export interface ChoiceSpec<C extends string = string> {
+  /** The page's `useURLState` key. */
+  key: C;
+  label: string;
+  options: readonly { value: string; label: string }[];
+  /** The page's default; one of the option values. */
+  default: string;
+}
+
+/** What `validate` and `compute` get: numbers in SI, choices as their option values. */
+export type SchemaInputs<I extends string = string, C extends string = string> = {
+  [K in I | C]: K extends C ? string : number;
+};
+
 /** A result the page shows, in the page's unit. */
 export interface OutputSpec<K extends string = string> {
   key: K;
@@ -34,12 +49,12 @@ export interface OutputSpec<K extends string = string> {
  * A reference case that `tests/api-schemas.test.ts` runs through the API code path and `/checks.json` will
  * publish. Inputs left out take their defaults; values are in the page's units.
  */
-export interface ReferenceCheck<I extends string = string, O extends string = string> {
+export interface ReferenceCheck<I extends string = string, O extends string = string, C extends string = string> {
   /** Citation (authors, year, title, venue, equation or table), as in the registry's references. */
   source: string;
   /** "printed": the source prints the expected value. "computed": worked by hand from the source's equations. */
   basis: "printed" | "computed";
-  inputs: Partial<Record<I, number>>;
+  inputs: Partial<SchemaInputs<I, C>>;
   expect: Partial<Record<O, number>>;
   /** Largest relative difference accepted; it covers the rounding of a printed value. */
   tolerance: number;
@@ -51,20 +66,24 @@ export interface ComputeResult<O extends string = string> {
   warnings?: string[];
 }
 
-export interface CalculatorSchema<I extends string = string, O extends string = string> {
+export interface CalculatorSchema<I extends string = string, O extends string = string, C extends string = string> {
   /** `/<category>/<slug>`, the registry href. */
   href: string;
   inputs: readonly InputSpec<I>[];
+  /** Inputs that take one of a few named values. */
+  choices?: readonly ChoiceSpec<C>[];
   outputs: readonly OutputSpec<O>[];
   /** Rejects input combinations the ranges can't express; returns the reason. */
-  validate?(si: Record<NoInfer<I>, number>): string | undefined;
+  validate?(si: SchemaInputs<NoInfer<I>, NoInfer<C>>): string | undefined;
   /** SI in, SI out, through the same `src/physics/` functions the page calls. */
-  compute(si: Record<NoInfer<I>, number>): ComputeResult<NoInfer<O>>;
+  compute(si: SchemaInputs<NoInfer<I>, NoInfer<C>>): ComputeResult<NoInfer<O>>;
   /** 1–3 reference cases. */
-  checks: readonly ReferenceCheck<NoInfer<I>, NoInfer<O>>[];
+  checks: readonly ReferenceCheck<NoInfer<I>, NoInfer<O>, NoInfer<C>>[];
 }
 
 /** Infers the input and output keys, so a typo in `compute` or `checks` fails tsc. */
-export function defineSchema<I extends string, O extends string>(schema: CalculatorSchema<I, O>): CalculatorSchema {
+export function defineSchema<I extends string, O extends string, C extends string = never>(
+  schema: CalculatorSchema<I, O, C>,
+): CalculatorSchema {
   return schema as unknown as CalculatorSchema;
 }
