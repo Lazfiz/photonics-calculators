@@ -6,7 +6,7 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { abs2 } from "../../../physics/complex";
 import {
-  localMaxima, resonantSusceptibility, sfgIntensity, sfgWavelength, type SfgResonance,
+  localMaxima, resonantSusceptibility, SFG_PRESETS as PRESETS, sfgIntensity, sfgWavelength, type SfgResonance,
 } from "../../../physics/spectroscopy/sum-frequency";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -14,35 +14,6 @@ const fmt = (x: number, digits: number) => (Number.isFinite(x) ? x.toFixed(digit
 const perCm = 100; // 1 cm⁻¹ in 1/m
 const IR_MIN = 500;
 const IR_MAX = 5000;
-
-// Band assignments: Lambert et al. 2005 (alkyl CH) and Du et al. 1993 (air/water OH). Amplitudes and widths are
-// illustrative, in cm⁻¹ (A/Γ is the peak |χ_R| of a lone resonance).
-const PRESETS: Record<string, { label: string; range: [number, number]; modes: { name: string; center: number; amplitude: number; halfWidth: number }[] }> = {
-  ch: {
-    label: "Alkyl chains, CH stretches (ssp; e.g. a thiol monolayer)",
-    range: [2800, 3050],
-    modes: [
-      { name: "CH₂ symmetric (d⁺)", center: 2850, amplitude: 1.5, halfWidth: 6 },
-      { name: "CH₃ symmetric (r⁺)", center: 2878, amplitude: 8, halfWidth: 5 },
-      { name: "CH₃ Fermi resonance (r⁺_FR)", center: 2938, amplitude: 5, halfWidth: 7 },
-      { name: "CH₃ asymmetric (r⁻)", center: 2965, amplitude: 2, halfWidth: 6 },
-    ],
-  },
-  water: {
-    label: "Air/water, OH stretches (ssp)",
-    range: [2900, 3900],
-    modes: [
-      { name: "H-bonded OH, ≈ 3200", center: 3200, amplitude: 60, halfWidth: 100 },
-      { name: "H-bonded OH, ≈ 3400", center: 3400, amplitude: 50, halfWidth: 100 },
-      // Im χ⁽²⁾ = −AΓ/(Δ² + Γ²): A > 0 gives Im χ⁽²⁾ < 0. Heterodyne-detected SFG puts the free OH (pointing to the vapour)
-      // positive and the whole H-bonded band negative (Nihonyanagi et al., J. Chem. Phys. 143, 124707 (2015),
-      // doi:10.1063/1.4931485). Earlier phase-sensitive data (Ji et al., PRL 100, 096102 (2008)) showed a positive band near
-      // 3200 cm⁻¹, now attributed to phase-reference artefacts and still debated (Tang et al., Chem. Rev. 120, 3633 (2020)).
-      // The amplitudes are illustrative.
-      { name: "Free OH, ≈ 3700", center: 3700, amplitude: -15, halfWidth: 15 },
-    ],
-  },
-};
 
 export default function SumFrequencyGenPage() {
   const [visRaw, setVis] = useURLState("visWavelength", 532);
