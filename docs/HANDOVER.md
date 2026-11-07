@@ -1,37 +1,39 @@
-# Handover — 2026-11-06 (session 215 → session 216)
+# Handover — 2026-11-07 (session 216 → session 217)
 
-**Start here:** session 215 also released 10g-1 (300759e2), did GSC + Bing, and planned 10h/10i/Phase 11 on branch
-`phase-10/10h-ai-discovery`: continue 10h there (first unchecked box after 10g-2) and ship both in one PR. Read this file, then `docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 215 did 10g-1 (the domain move's code and Vercel side) on `phase-10/10g-domain-move` (PR #254). It's not
-released yet. Next: 10g-2 once the user releases, then 10a → 10e → 10d → 10b → 10f.
+**Start here:** session 216 did 10h (AI discovery quick wins) on `phase-10/10h-ai-discovery` (PR #255, with the
+10h/10i/Phase 11 ROADMAP commit). Not released. Next: 10a on a new branch, then Phase 11a. Read this file, then
+`docs/ROADMAP.md`. Don't read `docs/archive/roadmap-history.md` whole: `grep -n` it.
 
 ## State
-- Domain: the user bought `photonicscalculators.com` on 2026-11-06 (Vercel registrar, Vercel DNS, auto-renew). Project
-  domains: apex serves; `www` → apex 308 (flipped in session 215 with `vercel api … -X PATCH`, user's choice "Apex").
-  `photonics-calculators.vercel.app` serves the old build until the release.
-- Code: `SITE_URL` in `src/lib/site.ts` (re-exported by `registry/metadata.ts` for old codemods) feeds canonicals,
-  JSON-LD, sitemap, robots and `metadataBase`; the `NEXT_PUBLIC_SITE_URL` fallback is gone. `next.config.mjs` exports
-  `OLD_HOST` and 308s `photonics-calculators.vercel.app/:path*` first (exact host, previews unaffected);
-  `tests/redirects.test.ts` pins it. `post-merge-check` and `crossref` default to the new host.
-- Released: `release` = 54d6990b (still the vercel.app canonicals). GSC: URL-prefix property for the old host only.
-- 1280 tests. 5 eslint warnings (10b).
+- `src/app/robots.ts`: `*` allowed plus an explicit allow rule for `AI_CRAWLERS` (13 bots, exported, tested).
+- `/llms.txt`: `src/app/llms.txt/route.ts` (force-static, text/plain) ← `buildLlmsTxt()` in `src/registry/llms.ts`:
+  summary, tier definitions, about/verification, source, how to cite, then per category every non-hidden calculator
+  as `- [title](url): description (tier)`. 110 kB. Phase 11 adds the API/MCP lines.
+- `calculatorJsonLd`: WebPage (`mainEntity` → `<url>#calculator`) + `WebApplication` (free offer,
+  `EducationalApplication`, category as sub-category, `citation` from `references`, moved off the WebPage) + breadcrumb.
+  No rating (none exists): Google's Software App rich result wants one, so GSC may list these as "invalid" items for
+  that enhancement. Harmless; don't fake ratings.
+- IndexNow: `INDEXNOW_KEY` in `src/lib/site.ts`, `public/<key>.txt`; `scripts/indexnow.ts [--dry-run]` checks the
+  live key file, reads the live sitemap and posts all URLs to `api.indexnow.org`. `/ship` step 5 runs it after a release.
+- `tests/ai-discovery.test.ts` (robots, llms.txt lists every listed calculator once with its tier, key file). 1283 tests.
+- 10g-2 left: Resend domain records + `REPORT_FROM_EMAIL` (optional).
 
 ## Next actions
 1. Release only when the user asks. After it: `node scripts/post-merge-check.mjs <sha> fiber-optics/chromatic-dispersion
-   laser-safety/ael-limits` (BASE defaults to the new host), then `curl -sI https://photonics-calculators.vercel.app/about`
-   must give 308 → `https://photonicscalculators.com/about`.
-2. 10g-2 (user steps, Claude does the DNS): GSC → add a **Domain** property, paste the TXT here; add it with the Vercel
-   MCP `create_record` (team `team_LaEJuanZGFVc5UHhLD6LRaiq`, domain `photonicscalculators.com`). Then GSC Change of
-   address (old URL-prefix property → new), resubmit the sitemap. Bing Site move. Resend: add the domain there, Claude
-   adds its records, user sets `REPORT_FROM_EMAIL` to an address on the new domain. Keep the old GSC tag in
-   `layout.tsx` (the old property must stay verified for Change of address).
-3. 10a on a new branch: KD*P/ADP range to 1064 nm (`pockels.ts:166,171`); Stokes input and element types into
+   laser-safety/ael-limits`; `curl -s https://photonicscalculators.com/llms.txt | head -5`; `curl -s …/robots.txt`;
+   then `node --import tsx scripts/indexnow.ts` (expects HTTP 200 or 202). Optionally run Google's Rich Results Test
+   on one page to see the WebApplication node.
+2. 10a on a new branch: KD*P/ADP range to 1064 nm (`pockels.ts:166,171`); Stokes input and element types into
    `useURLState` on `polarization/mueller-polarimetry` (one state per field, not in a `.map`); `dichroic-polarizer`
    tier vs the (1+κ²/n²) exit-face term. Golden tests with sources; `physics-reviewer` on the changed pages.
+3. Phase 11a (schemas, `/api/v1`, `/openapi.json`); read the Next 16 route-handler docs first.
 4. In a week or two: ask the user for the Search Console Pages/Performance reports (indexed count, queries) for 10d.
 5. Still missing data: BSO ε, SBN, Nd σ_a at 808 nm, CO₂ g₀ and I_s, SF59 n₂, the Tm ³H₄ band, ZBLAN κ and band.
 
 ## Non-obvious facts
+- **Session 216:** `devctl` refuses a foreground command while another project (Entendue) keeps the CPU busy: run it
+  with `run_in_background`. `node --import tsx -e 'import("./src/x.ts")'` needs a relative path (an absolute `C:`
+  path fails) and hands back CJS interop: call `m.default.fn`.
 - **Session 215:** the Vercel MCP has no "update project domain" tool; `vercel api /v9/projects/<prj>/domains/<name>?teamId=…
   -X PATCH --input -` with `{"redirect":…}` works (CLI is logged in). `scripts/codemods/*` are type-checked too: don't
   remove exports they import. A `cat > file` with no heredoc waits on stdin and hangs the command. `npm run check; echo

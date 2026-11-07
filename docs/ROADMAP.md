@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 215, 2026-11-06)
+## Status (session 216, 2026-11-07)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
@@ -344,17 +344,7 @@ Evidence (session 214, Vercel Web Analytics 2026-10-07 → 11-06): 9 visitors, 5
   Done in session 215: release 300759e2 checked; GSC Domain property verified, Change of address running, sitemap read
   (423); home page indexed on 11-06. Bing: both sites imported, sitemap submitted, 100 URLs sent (quota 100/day); the
   new Bing UI has no Site Move (the 308s do it). Left: Resend (optional).
-- [ ] 10h AI discovery, quick wins (user, session 215: "lure got, Claude, Gemini and Chinese agents"). Evidence: GPTBot,
-  ClaudeBot, PerplexityBot, Bytespider and Baiduspider get 200; page HTML holds title, formulas, default results, tier
-  and references, but prerendered pages ignore the query, so a fetching agent only sees the defaults.
-  - IndexNow: key file in `public/`, a script that posts every sitemap URL (`api.indexnow.org`), run after each
-    release (add to `/ship` step 5). Bing feeds ChatGPT search, Copilot and DuckDuckGo.
-  - `/llms.txt` route from the registry: what the site is, categories, each calculator's URL, one line and tier, how to
-    cite, and (after Phase 11) the API, MCP and verification pointers. Test that it lists every non-hidden calculator.
-  - Per-calculator JSON-LD: `WebApplication` (free, `applicationCategory`, `citation` from `references`) next to
-    the WebPage; extend `tests/calculator-pages.test.ts`.
-  - robots.ts: name the AI crawlers explicitly (GPTBot, OAI-SearchBot, ChatGPT-User, ClaudeBot, Claude-User,
-    Claude-SearchBot, PerplexityBot, Google-Extended, Applebot-Extended, Bytespider, Baiduspider, CCBot) as allowed.
+- [x] 10h AI discovery quick wins (session 216, `phase-10/10h-ai-discovery`, PR #255). See Done.
 - [ ] 10a Audit fixes: KD*P/ADP range to 1064 nm (`pockels.ts`), Stokes input and element types in `useURLState` on
   `mueller-polarimetry`, `dichroic-polarizer` tier vs the (1+κ²/n²) exit-face term. Golden tests with sources.
 - [ ] 10i Presence where models learn (user posts; Claude drafts): GitHub README with the category list and links,
@@ -408,6 +398,7 @@ Goal: an AI assistant can call a calculator with its user's inputs and check the
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 10h (session 216, `phase-10/10h-ai-discovery`, PR #255): robots.txt names 13 AI crawlers as allowed; `/llms.txt` from the registry (411 links with tier, about/verification, source, cite); per-page `WebApplication` JSON-LD (free, `EducationalApplication`, citations moved onto it, WebPage `mainEntity`); IndexNow key in `public/` + `scripts/indexnow.ts`, run after each release (`/ship` step 5); 1283 tests.
 - 10g-1 (session 215, `phase-10/10g-domain-move`, PR #254): photonicscalculators.com (user bought it 2026-11-06) is canonical; Vercel www → apex 308; `SITE_URL` in `src/lib/site.ts` feeds canonicals, JSON-LD, sitemap, robots; `next.config.mjs` 308s the vercel.app host first; 1280 tests.
 - 9b-3 (session 213, `phase-9/9b-3-about-audit`, PR #251): About `#verification` states the blind audit (30 pages, seed 20261106, 0 errors, < 9.5 % at 95 %, 7 minor fixed, AI-reviewer limits) and links `docs/audit/9b-blind-audit.md`.
 - 10c (session 214, `phase-10/10c-get-found`, PR #252): Phase 9 released (433c0b4c, report form tested by email); Google Search Console verified via `metadata.verification.google` (released 54d6990b), sitemap read: 423 pages. Bing import from GSC left to the user.
