@@ -19,8 +19,9 @@ route, `/openapi.json`, 3–4 pages, checks test) and 11a-2 (the rest of the 20 
 2. Split 11a in the ROADMAP, then 11a-1 on a new branch; read `node_modules/next/dist/docs/` route-handler guide first.
 3. In a week or two: ask the user for the Search Console Pages/Performance reports (indexed count, queries) for 10d.
 4. Still missing data: BSO ε, SBN, Nd σ_a at 808 nm, CO₂ g₀ and I_s, SF59 n₂, the Tm ³H₄ band, ZBLAN κ and band.
-5. IndexNow still answers 403 SiteVerificationNotCompleted (third try, session 217): ask the user to check that Bing
-   Webmaster lists the key; retry after the next release.
+5. IndexNow: api.indexnow.org kept answering 403 SiteVerificationNotCompleted, Bing's endpoint took all 423 URLs (HTTP
+   200, session 217), so `scripts/indexnow.ts` now posts to www.bing.com/indexnow. Bing Webmaster's IndexNow page showed
+   "Get started" before that submission; ask the user in a day or two whether it lists submissions.
 6. 10g-2 left: Resend domain records + `REPORT_FROM_EMAIL` (optional).
 
 ## Non-obvious facts
