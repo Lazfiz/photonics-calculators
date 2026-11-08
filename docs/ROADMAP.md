@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 226, 2026-11-07)
+## Status (session 227, 2026-11-08)
 - Phases 0–1 are done.
 - Phase 2: registry, trust data, duplicate merge and lint rules are done; 2-inline-b done (b1–b6, session 156).
 - Phase 3 done (3a–3e, sessions 157–161). Phase 5 spot-check done (session 162: 2 bugs in 20 pages). Phase 5w (full
@@ -381,7 +381,7 @@ Goal: an AI assistant can call a calculator with its user's inputs and check the
   - [x] 11c-2a materials A–N, 14 pages (session 224, `phase-11/11c-2a-materials`, PR #263). See Done.
   - [x] 11c-2b materials O–X, 13 pages (session 225, `phase-11/11c-2b-materials`, PR #264). See Done.
   - [x] 11c-3a polarization birefringence … fresnel-polarization, 11 pages (session 226, `phase-11/11c-3a-polarization`, PR #265). See Done.
-  - [ ] 11c-3b polarization glans-prism … polarimetry, 11 pages.
+  - [x] 11c-3b polarization glans-prism … polarimetry, 11 pages (session 227, `phase-11/11c-3b-polarization`, PR #266). See Done.
   - [ ] 11c-3c polarization polarization-scrambling … wire-grid, 10 pages.
   - [ ] 11c-4… wave-optics (37), laser-safety, spectroscopy, thin-film, fiber-optics, detectors, imaging: a/b(/c) each.
 - Verification by visiting agents (user, session 215: "ask visiting llms to verify tools"): `llms.txt` and the About
@@ -407,6 +407,7 @@ Goal: an AI assistant can call a calculator with its user's inputs and check the
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+- 11c-3b (session 227, `phase-11/11c-3b-polarization`, PR #266): schemas + 1–3 computed checks for 11 polarization pages (glans-prism … polarimetry), 95 runnable; jones-calculus, jones-chain and mueller-matrix chains moved to URL state (6 slots, user choice); dispatch moved into uniaxial.ts, twisted-nematic.ts, optical-activity.ts, jones.ts, mueller.ts.
 - 11c-3a (session 226, `phase-11/11c-3a-polarization`, PR #265): schemas + 1–3 computed checks for 11 polarization pages (birefringence … fresnel-polarization), 84 runnable; dispatch moved into uniaxial.ts (`resolveCrystalIndices`, `crystalBirefringence`; `crystal-select.tsx` re-exports them), prism-polarizers.ts, conoscopy.ts, interference-colours.ts, mueller.ts (`retarderBandDopSweep`), spectral-depolarization.ts (`plateBandModel`); MCP not-runnable example is now `wave-optics/bessel-beam`.
 - 11c-2b (session 225, `phase-11/11c-2b-materials`, PR #264): schemas + 1–3 checks for 13 materials pages (optical-glass-catalog … x-ray-optics), 73 runnable; printed checks: Be and Si δ, β at 10 keV (CXRO, Henke 1993); dispatch moved into pockels.ts (photorefractive), bandgap.ts, dopant-absorption.ts, thermal-conduction.ts, two-photon.ts; `page-defaults` reads numeric and bare imported constants; null at defaults allowed with a warning (polymer NA).
 - 11c-2a (session 224, `phase-11/11c-2a-materials`, PR #263): schemas + 1–3 checks for 14 materials pages (acousto-optic … nonlinear-index), 60 runnable; printed checks: N-BK7 n_d 1.51680 and n(1060) 1.50669 (SCHOTT sheet), NV⁻ ZPL 637 nm (Doherty 2013), diamond Brillouin 71 GHz (Williams 2018), Ge n 4.0026 at 11 µm + dn/dT/κ/Knoop (Crystran), silica/BK7 n₂ (Dubietis 2017 Table 1); `modulator()` moved into pockels.ts; `scripts/page-defaults.ts` resolves constant and imported-member defaults for the schema test.
