@@ -4,10 +4,9 @@ import SimpleLineChart from "../../../components/simple-line-chart";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { gParameter, resonatorStability, twoMirrorMode } from "../../../physics/wave-optics/two-mirror-resonator";
+import { mirrorRadius } from "../../../physics/wave-optics/two-mirror-resonator";
 import { radiusAtDistance } from "../../../physics/wave-optics/gaussian-beam";
-import { laserOutput, logarithmicLoss, meanSquareRadius, roundTripLoss } from "../../../physics/wave-optics/laser-resonator";
-import { optimumOutputCoupler } from "../../../physics/fiber-optics/doped-fiber-gain";
+import { gasLaserCw, laserOutput } from "../../../physics/wave-optics/laser-resonator";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
@@ -39,30 +38,16 @@ export default function GasLaserResonatorPage() {
   const R2_mm = clamp(r2Raw, -1e7, 1e7, 5000);
   const R_oc = clamp(rOcRaw, 0.01, 0.9999, 0.99);
   const R_hr = clamp(rHrRaw, 0.01, 1, 0.999);
-  const internal = logarithmicLoss(clamp(lossRaw, 0, 50, 1) / 100); // single pass, −ln(1 − f) of power
   const g0 = clamp(g0Raw, 0, 100, 0.15);
   const iSat = clamp(iSatRaw, 1e-3, 1e6, 25) * 1e4; // W/m²
 
-  const toRadius = (R_mm: number) => (R_mm === 0 ? Infinity : R_mm * 1e-3);
-  const g1 = gParameter(L, toRadius(R1_mm));
-  const g2 = gParameter(L, toRadius(R2_mm));
-  const stability = resonatorStability(g1, g2);
-  const mode = twoMirrorMode(lambda, L, g1, g2);
-  const statusTone = stability === "stable" ? "green" : stability === "marginal" ? "yellow" : "red";
   const a = d_mm * 5e-4; // bore radius, m
-  const fresnel = (a * a) / (lambda * L);
-  const wMax = Math.max(mode.w1, mode.w2);
-  const clipLoss = Math.exp((-2 * a * a) / (wMax * wMax)); // power outside the bore at the larger mirror spot
-
-  // Gain fills the tube: the mode saturates it over its mean-square radius, P_sat = I_sat π⟨w²⟩/2.
-  const g0l = g0 * L;
-  const pSat = (iSat * Math.PI * meanSquareRadius(mode.w0, mode.zR, mode.z1, L)) / 2;
-  const delta = roundTripLoss(R_hr, R_oc, internal);
-  const gTh = delta / (2 * L);
-  const pOut = laserOutput(g0l, R_hr, R_oc, internal, pSat);
-  const rearR = R_hr * Math.exp(-2 * internal);
-  const best = optimumOutputCoupler(g0l, rearR);
-  const pBest = best.output * pSat;
+  const op = gasLaserCw({
+    lambda, L, boreRadius: a, R1: mirrorRadius(R1_mm) * 1e-3, R2: mirrorRadius(R2_mm) * 1e-3, R_hr, R_oc,
+    lossPerPass: clamp(lossRaw, 0, 50, 1) / 100, g0, iSat,
+  });
+  const { g1, g2, stability, mode, internal, fresnel, wMax, clipLoss, g0l, pSat, delta, gTh, pOut, best, pBest } = op;
+  const statusTone = stability === "stable" ? "green" : stability === "marginal" ? "yellow" : "red";
 
   const rLo = Math.max(0.01, Math.min(R_oc, Number.isFinite(best.R2) ? best.R2 : 1) - 0.02);
   const curve = Number.isFinite(pSat)

@@ -157,3 +157,43 @@ export function bboTypeICut(lambdaPump: number, lambdaSignal: number): CrystalCu
     dEff: (BBO_D.d31 * Math.sin(theta) + BBO_D.d22 * Math.cos(theta)) * 1e-12,
   };
 }
+
+export interface SroResult {
+  /** Idler vacuum wavelength, m. */
+  lambdaIdler: number;
+  /** Pump intensity P/(πw²), W/m². */
+  intensity: number;
+  /** Gain coefficient g, 1/m. */
+  g: number;
+  /** Walk-off effective length, m. */
+  Leff: number;
+  /** g·L_eff. */
+  gL: number;
+  /** Threshold g·L_eff for the round-trip loss. */
+  gThL: number;
+  /** Threshold pump power, W. */
+  Pth: number;
+  /** Phase mismatch Δk, 1/m. */
+  dk: number;
+  /** Single-pass signal gain cosh²(g L_eff) − 1. */
+  singlePassGain: number;
+}
+
+/**
+ * The SRO page's results in SI: crystal length L (m), pump power (W), pump and signal radius w (m), walk-off angle ρ (rad),
+ * round-trip signal power loss α (0–1).
+ */
+export function sroModel(p: ParametricProcess, L: number, pumpPower: number, w: number, rho: number, loss: number): SroResult {
+  const area = Math.PI * w * w;
+  const Leff = walkOffEffectiveLength(L, w, rho);
+  const intensity = pumpPower / area;
+  const g = parametricGainCoefficient(p, intensity);
+  return {
+    lambdaIdler: idlerWavelength(p.lambdaPump, p.lambdaSignal),
+    intensity, g, Leff, gL: g * Leff,
+    gThL: sroThresholdGainLength(loss),
+    Pth: sroThresholdIntensity(p, Leff, loss) * area,
+    dk: phaseMismatch(p),
+    singlePassGain: Math.cosh(g * Leff) ** 2 - 1,
+  };
+}
