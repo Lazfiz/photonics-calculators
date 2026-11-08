@@ -7,8 +7,9 @@ import { useURLState } from "../../../hooks/use-url-state";
 import { c } from "../../../physics/constants";
 import {
   LOW_GAIN_BANDWIDTH_FACTOR, degeneracyLimits, detunedMismatch, parametricGain,
-  opaModel, pplnOpaParameters,
+  pplnOpaParameters,
 } from "../../../physics/wave-optics/three-wave";
+import { opaModel } from "../../../physics/wave-optics/optical-parametric-amplifier";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");

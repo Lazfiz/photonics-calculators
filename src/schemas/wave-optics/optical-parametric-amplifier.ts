@@ -1,4 +1,4 @@
-import { opaModel } from "../../physics/wave-optics/three-wave";
+import { opaModel } from "../../physics/wave-optics/optical-parametric-amplifier";
 import { defineSchema } from "../types";
 
 export default defineSchema({
