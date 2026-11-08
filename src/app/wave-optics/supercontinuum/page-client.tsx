@@ -4,9 +4,8 @@ import SimpleLineChart from "../../../components/simple-line-chart";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { c } from "../../../physics/constants";
 import {
-  dispersionLength, dispersiveWaveShift, dispersiveWaveShiftNonlinear, fissionLength, fundamentalSolitonPower, sechPeakPower, sechT0, solitonContent, solitonOrder,
+  dispersionLength, dispersiveWaveShift, dispersiveWaveWavelength, dispersiveWaveShiftNonlinear, fissionLength, fundamentalSolitonPower, sechPeakPower, sechT0, solitonContent, solitonOrder,
 } from "../../../physics/wave-optics/soliton";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -42,7 +41,6 @@ export default function SupercontinuumPage() {
   const N = solitonOrder(peak, beta2, gamma, t0);
   const Lfiss = fissionLength(t0, beta2, N);
   const anomalous = beta2 < 0;
-  const omega0 = (2 * Math.PI * c) / lambda;
   const shift0 = dispersiveWaveShift(beta2, beta3);
   // Phase matching to the radiating soliton's nonlinear wavenumber γP_s/2 (Skryabin & Gorbach 2010, Eqs. 3, 7, 10): the first
   // soliton ejected at fission has P_s = (2N − 1)²P₁ (Satsuma–Yajima); the input P₀ bounds later, weaker ones. The leading order drops it.
@@ -50,7 +48,7 @@ export default function SupercontinuumPage() {
   const Ps = content.count > 0 ? content.amplitude ** 2 * P1 : NaN;
   const shift = dispersiveWaveShiftNonlinear(beta2, beta3, gamma, Ps);
   const shiftP0 = dispersiveWaveShiftNonlinear(beta2, beta3, gamma, peak);
-  const toWavelength = (w: number) => (anomalous && omega0 + w > 0 ? (2 * Math.PI * c) / (omega0 + w) : NaN);
+  const toWavelength = (w: number) => dispersiveWaveWavelength(lambda, beta2, w);
   const lambdaDW = toWavelength(shift);
   const lambdaDW0 = toWavelength(shift0);
   const lambdaDWP0 = toWavelength(shiftP0);

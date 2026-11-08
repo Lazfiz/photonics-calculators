@@ -4,10 +4,7 @@ import SimpleLineChart from "../../../components/simple-line-chart";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import {
-  fourLevelGain, fourLevelSlopeEfficiency, fourLevelThreshold, laserOutput, roundTripLoss, saturationIntensity,
-} from "../../../physics/wave-optics/laser-resonator";
-import { slabTemperatureRise, slabThermalLens, totalInternalReflection, zigzagAngle } from "../../../physics/wave-optics/slab-laser";
+import { slabLaser, slabTemperatureRise } from "../../../physics/wave-optics/slab-laser";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
@@ -49,22 +46,10 @@ export default function SlabLaserPage() {
   const kappa = clamp(kappaRaw, 0.1, 2000, 14);
   const dndT = clamp(dndTRaw, -100, 100, 7.3) * 1e-6;
 
-  const theta = zigzagAngle(L, t, N);
-  const tir = totalInternalReflection(theta, n);
-  const pathLength = L / Math.cos(theta);
-  // Uniform inversion over the slab volume W t L, integrated along the zigzag L/cos θ: area A = W t cos θ.
-  const area = W * t * Math.cos(theta);
-  const internal = scatter * pathLength;
-  const delta = roundTripLoss(1, R_oc, internal);
-  const pTh = fourLevelThreshold(delta, lambdaP, sigma, tau, area, etaP);
-  const pSat = saturationIntensity(lambda, sigma, tau) * area;
-  const output = (p: number) => laserOutput(fourLevelGain(p, lambdaP, sigma, tau, area, etaP), 1, R_oc, internal, pSat);
-  const pOut = output(pump);
-  const slope = fourLevelSlopeEfficiency(lambda, lambdaP, 1, R_oc, internal, area, area, etaP);
-
-  const Q = (heat * pump) / (W * t * L); // W/m³
-  const dTCentre = slabTemperatureRise(Q, t, kappa);
-  const lens = slabThermalLens(Q, kappa, dndT, L);
+  const op = slabLaser({
+    width: W, thickness: t, length: L, crossings: N, n, lambda, lambdaP, pump, etaP, R_oc, scatter, sigma, tau, heatFraction: heat, kappa, dndT,
+  });
+  const { theta, tir, pathLength, area, delta, pTh, pSat, pOut, slope, Q, dTCentre, lens, outputAt: output } = op;
 
   const pMax = Math.max(2 * pump, 1.5 * (Number.isFinite(pTh) ? pTh : 0), 1);
   const powerCurve = Array.from({ length: 121 }, (_, i) => {

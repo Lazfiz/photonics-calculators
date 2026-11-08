@@ -12,6 +12,8 @@
  *   f = κ/((dn/dT) Q L)             straight-through thermal lens; the zigzag averages it out to first order
  */
 
+import { fourLevelGain, fourLevelSlopeEfficiency, fourLevelThreshold, laserOutput, roundTripLoss, saturationIntensity } from "./laser-resonator";
+
 /** Zigzag angle to the slab axis atan(N t/L), rad. */
 export function zigzagAngle(length: number, thickness: number, crossings: number): number {
   if (!(length > 0 && thickness > 0 && crossings > 0)) return NaN;
@@ -33,4 +35,56 @@ export function slabTemperatureRise(Q: number, thickness: number, kappa: number,
 export function slabThermalLens(Q: number, kappa: number, dndT: number, length: number): number {
   if (!(Q >= 0 && kappa > 0 && length > 0 && Number.isFinite(dndT))) return NaN;
   return Q === 0 || dndT === 0 ? Infinity : kappa / (dndT * Q * length);
+}
+
+export interface SlabLaserInputs {
+  /** Slab width, thickness (cooled direction) and length, m; thickness crossings N (rounded to an integer). */
+  width: number;
+  thickness: number;
+  length: number;
+  crossings: number;
+  /** Crystal index. */
+  n: number;
+  /** Laser and pump wavelength, m. */
+  lambda: number;
+  lambdaP: number;
+  /** Absorbed pump power, W, and the fraction of it that reaches the upper level. */
+  pump: number;
+  etaP: number;
+  /** Output-coupler reflectance (the other mirror is a perfect reflector) and bulk scatter loss, 1/m. */
+  R_oc: number;
+  scatter: number;
+  /** Emission cross-section, m², and upper-level lifetime, s. */
+  sigma: number;
+  tau: number;
+  /** Heat fraction of the absorbed pump, conductivity W/(m K) and dn/dT, 1/K. */
+  heatFraction: number;
+  kappa: number;
+  dndT: number;
+}
+
+/**
+ * Zigzag slab laser (the page's chain, kept in one place): bounce geometry, four-level threshold and Rigrod output with the
+ * mode filling the slab (uniform inversion over W t L integrated along the zigzag, aperture A = W t cos θ), heat density,
+ * centre temperature rise and straight-through thermal lens. `outputAt(p)` is the output power at absorbed pump p.
+ * Model tier: textbook (see the module header).
+ */
+export function slabLaser(p: SlabLaserInputs) {
+  const N = Math.round(p.crossings);
+  const theta = zigzagAngle(p.length, p.thickness, N);
+  const tir = totalInternalReflection(theta, p.n);
+  const pathLength = p.length / Math.cos(theta);
+  const area = p.width * p.thickness * Math.cos(theta);
+  const internal = p.scatter * pathLength;
+  const delta = roundTripLoss(1, p.R_oc, internal);
+  const pTh = fourLevelThreshold(delta, p.lambdaP, p.sigma, p.tau, area, p.etaP);
+  const pSat = saturationIntensity(p.lambda, p.sigma, p.tau) * area;
+  const outputAt = (pump: number) =>
+    laserOutput(fourLevelGain(pump, p.lambdaP, p.sigma, p.tau, area, p.etaP), 1, p.R_oc, internal, pSat);
+  const pOut = outputAt(p.pump);
+  const slope = fourLevelSlopeEfficiency(p.lambda, p.lambdaP, 1, p.R_oc, internal, area, area, p.etaP);
+  const Q = (p.heatFraction * p.pump) / (p.width * p.thickness * p.length); // W/m³
+  const dTCentre = slabTemperatureRise(Q, p.thickness, p.kappa);
+  const lens = slabThermalLens(Q, p.kappa, p.dndT, p.length);
+  return { theta, tir, pathLength, area, internal, delta, pTh, pSat, pOut, slope, Q, dTCentre, lens, outputAt };
 }

@@ -8,6 +8,8 @@
  * twice ours. Mode m is cut off at V = mπ/2, so the slab carries ⌊2V/π⌋ + 1 TE modes and as many TM modes.
  */
 
+import { numericalAperture } from "../fiber-optics/step-index-modes";
+
 /** Normalized frequency V = (π d/λ)√(n₁² − n₂²); NaN without guidance (n₁ ≤ n₂). */
 export function slabV(n1: number, n2: number, thickness: number, lambda: number): number {
   if (!(n1 > n2 && n2 > 0 && thickness > 0 && lambda > 0)) return NaN;
@@ -68,4 +70,46 @@ export function slabTEField(x: number, a: number, V: number, b: number, m: numbe
   const t = x / a;
   if (Math.abs(t) <= 1) return inner(t);
   return inner(Math.sign(t)) * Math.exp(-w * (Math.abs(t) - 1));
+}
+
+export interface SlabSummary {
+  V: number;
+  /** Numerical aperture √(n₁² − n₂²). */
+  NA: number;
+  /** Guided modes per polarization (0 without guidance). */
+  modes: number;
+  bTE: number;
+  bTM: number;
+  neffTE: number;
+  neffTM: number;
+  /** TE₀ power fraction in the core. */
+  confinement: number;
+  /** Critical angle asin(n₂/n₁), rad. */
+  criticalAngle: number;
+  /** Acceptance half-angle in air asin(NA), rad (π/2 when NA ≥ 1). */
+  acceptance: number;
+  /** Largest thickness with a single guided mode per polarization (V = π/2): λ/(2 NA), m. */
+  singleModeThickness: number;
+}
+
+/** Everything the page and the API show for a symmetric slab. TM₀ uses r = n₁²/n₂². NaN fields without guidance. */
+export function slabSummary(n1: number, n2: number, thickness: number, lambda: number): SlabSummary {
+  const V = slabV(n1, n2, thickness, lambda);
+  const guided = Number.isFinite(V);
+  const NA = guided ? numericalAperture(n1, n2) : NaN;
+  const bTE = slabModeB(V, 0);
+  const bTM = slabModeB(V, 0, (n1 * n1) / (n2 * n2));
+  return {
+    V,
+    NA,
+    modes: guided ? slabModeCount(V) : 0,
+    bTE,
+    bTM,
+    neffTE: slabEffectiveIndex(bTE, n1, n2),
+    neffTM: slabEffectiveIndex(bTM, n1, n2),
+    confinement: slabTEConfinement(V, bTE, 0),
+    criticalAngle: guided ? Math.asin(n2 / n1) : NaN,
+    acceptance: NA >= 1 ? Math.PI / 2 : Math.asin(NA),
+    singleModeThickness: guided ? lambda / (2 * NA) : NaN,
+  };
 }

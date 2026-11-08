@@ -28,7 +28,7 @@
  * Pulse Phenomena, 2nd ed., ch. 1); about Δν/f_rep modes lie inside the FWHM.
  */
 
-import { c } from "../constants";
+import { c, h } from "../constants";
 import { logarithmicLoss } from "./laser-resonator";
 
 /** Single-pass logarithmic loss γ = γ_i + (γ₁ + γ₂)/2, with γ_i = −ln(1 − internal fraction) and γ_j = −ln R_j. */
@@ -242,4 +242,50 @@ export function frequencyWidth(dlambda: number, lambda0: number): number {
 export function cavityLengthForRepRate(repRate: number, ring = false): number {
   if (!(repRate > 0 && Number.isFinite(repRate))) return NaN;
   return ring ? c / repRate : c / (2 * repRate);
+}
+
+export interface QSwitchedCavityInputs {
+  /** Pump given as the small-signal gain g₀l (true) or as the inversion ratio r (false). */
+  fixedGain: boolean;
+  /** g₀l (used when `fixedGain`) and r (used otherwise). */
+  g0l: number;
+  ratio: number;
+  /** Wavelength, m; emission cross-section, m²; top-hat mode diameter in the rod, m. */
+  lambda: number;
+  sigma: number;
+  modeDiameter: number;
+  /** Output-coupler reflectance (the other mirror is a perfect reflector) and internal loss per pass (fraction of power). */
+  R_oc: number;
+  internalLoss: number;
+  /** Mirror spacing (raised to the rod length when shorter), rod length, m, and rod index. */
+  cavityLength: number;
+  rodLength: number;
+  n: number;
+}
+
+/**
+ * Four-level Q-switched laser from its cavity (the page's chain, kept in one place): single-pass losses, r or g₀l (one is the
+ * input, the other follows from r = g₀l/γ), photon lifetime τ_c = L_e/(cγ) with L_e = L + (n − 1)l, the Wagner–Lengyel
+ * pulse (energy, peak, width estimate), the integrated waveform's FWHM (r ≤ 50 only: the RK4 shape costs ≈ r/τ_c steps),
+ * fluence, and Degnan's energy-optimum coupling at the same g₀l with the pulse at that coupling. Model tier: textbook
+ * (mean-field, instantaneous switch, see the module header).
+ */
+export function qSwitchedLaser(p: QSwitchedCavityInputs) {
+  const gamma = singlePassLoss(1, p.R_oc, p.internalLoss);
+  const gammaI = singlePassLoss(1, 1, p.internalLoss);
+  const r = p.fixedGain ? p.g0l / gamma : p.ratio;
+  const g0l = p.fixedGain ? p.g0l : r * gamma;
+  const opticalLength = Math.max(p.rodLength, p.cavityLength) + (p.n - 1) * p.rodLength;
+  const tauC = photonLifetime(opticalLength, gamma);
+  const area = (Math.PI * p.modeDiameter * p.modeDiameter) / 4;
+  const hv = (h * c) / p.lambda;
+  const pulse = qSwitchPulse(r, hv, area, p.sigma, Math.log(1 / p.R_oc), tauC);
+  const integrate = r <= 50;
+  const wave = integrate ? qSwitchWaveform(r) : { t: [], shape: [], fwhm: NaN, extracted: NaN };
+  const fwhm = wave.fwhm * tauC;
+  const fluence = pulse.energy / area;
+  const opt = qSwitchOptimumCoupling(g0l, gammaI, hv, area, p.sigma);
+  const optTauC = photonLifetime(opticalLength, gammaI + opt.couplerLoss / 2);
+  const optPulse = qSwitchPulse(opt.ratio, hv, area, p.sigma, opt.couplerLoss, optTauC);
+  return { gamma, gammaI, r, g0l, opticalLength, tauC, area, hv, pulse, integrate, wave, fwhm, fluence, opt, optTauC, optPulse };
 }

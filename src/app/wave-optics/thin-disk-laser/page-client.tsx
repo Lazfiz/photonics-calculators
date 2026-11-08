@@ -4,17 +4,13 @@ import SimpleLineChart from "../../../components/simple-line-chart";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { logarithmicLoss, roundTripLoss } from "../../../physics/wave-optics/laser-resonator";
 import {
-  diskTemperatureRise, multipassAbsorption, pumpAbsorption, quasiThreeLevelSlope, quasiThreeLevelThreshold, thresholdInversion,
+  diskTemperatureRise, multipassAbsorption, thinDiskLaser,
 } from "../../../physics/wave-optics/quasi-three-level";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
 const round6 = (x: number) => Number(x.toPrecision(6));
-
-// Yttrium sites in YAG, 1.38e22 cm⁻³: 1 at.% doping = 1.38e20 ions/cm³ (Koechner, Solid-State Laser Engineering, ch. 2).
-const YAG_SITES = 1.38e28;
 
 export default function ThinDiskLaserPage() {
   const [thicknessRaw, setThickness] = useURLState("diskThickness", 200); // µm
@@ -39,12 +35,12 @@ export default function ThinDiskLaserPage() {
   const d = clamp(thicknessRaw, 10, 5000, 200) * 1e-6;
   const diskD = clamp(diameterRaw, 0.1, 1000, 10) * 1e-3;
   const spotD = clamp(spotRaw, 0.01, 1000, 3) * 1e-3;
-  const N = clamp(dopingRaw, 0.01, 100, 10) * 0.01 * YAG_SITES;
+  const doping = clamp(dopingRaw, 0.01, 100, 10) * 0.01;
   const M = Math.round(clamp(pumpPassesRaw, 1, 100, 16));
   const m = Math.round(clamp(laserPassesRaw, 1, 100, 2));
   const pump = clamp(pumpRaw, 0, 1e6, 200);
   const R_oc = clamp(rOcRaw, 0.01, 0.9999, 0.97);
-  const otherLoss = logarithmicLoss(clamp(lossRaw, 0, 50, 1) / 100); // −ln(1 − f) of power per round trip
+  const otherLoss = clamp(lossRaw, 0, 50, 1) / 100; // fraction of power per round trip
   const lambda = clamp(wavelengthRaw, 300, 5000, 1030) * 1e-9;
   const lambdaP = clamp(pumpWavelengthRaw, 200, 5000, 940) * 1e-9;
   const sigmaE = clamp(sigmaERaw, 1e-4, 1e4, 2.4) * 1e-24; // m²
@@ -55,19 +51,11 @@ export default function ThinDiskLaserPage() {
   const heat = clamp(heatRaw, 0, 1, 0.087);
   const kappa = clamp(kappaRaw, 0.1, 2000, 6.3);
 
-  const area = Math.PI * (spotD / 2) ** 2;
-  const delta = roundTripLoss(1, R_oc, otherLoss / 2);
-  const beta = thresholdInversion(delta, m, d, N, sigmaE, sigmaA);
-  const betaTr = sigmaA / (sigmaA + sigmaE);
-  const betaBleach = sigmaAP / (sigmaAP + sigmaEP);
-  const alphaUnpumped = pumpAbsorption(N, sigmaAP, sigmaEP, 0);
-  const alphaTh = beta <= 1 ? pumpAbsorption(N, sigmaAP, sigmaEP, beta) : NaN;
-  const etaAbs = multipassAbsorption(alphaTh, d, M);
-  const pTh = quasiThreeLevelThreshold(N, d, beta, area, lambdaP, tau, etaAbs);
-  const slope = quasiThreeLevelSlope(etaAbs, lambdaP, lambda, R_oc, delta);
-  const pOut = Number.isFinite(pTh) ? Math.max(0, slope * (pump - pTh)) : NaN;
-  const absorbedIntensity = (etaAbs * pump) / area;
-  const dT = diskTemperatureRise(absorbedIntensity, heat, d, kappa);
+  const op = thinDiskLaser({
+    thickness: d, spotDiameter: spotD, doping, pumpPasses: M, laserPasses: m, pump, R_oc, otherLoss, lambda, lambdaP,
+    sigmaE, sigmaA, sigmaAP, sigmaEP, tau, heatFraction: heat, kappa,
+  });
+  const { N, area, delta, beta, betaTr, betaBleach, alphaUnpumped, alphaTh, etaAbs, pTh, slope, pOut, absorbedIntensity, dT } = op;
   const reachable = Number.isFinite(pTh);
 
   const passCurve = (alpha: number) =>

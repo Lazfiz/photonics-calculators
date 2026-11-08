@@ -5,10 +5,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { sinc } from "../../../physics/math";
-import { confocalParameter } from "../../../physics/imaging/second-harmonic-generation";
-import {
-  gaussianMixingPower, mixingEfficiency, qpmPeriod as qpmPeriodOf, sumFrequencyWavelength, threeWaveMismatch,
-} from "../../../physics/wave-optics/three-wave";
+import { sfgPower, sumFrequencyModel, type SumFrequencyInput } from "../../../physics/wave-optics/sum-frequency";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
@@ -42,20 +39,11 @@ export default function SumFrequencyPage() {
   const n3 = clamp(n3Raw, 1, 5, 2.2027);
   const deltaK = clamp(deltaKRaw, -1e4, 1e4, 0) * 1e3;
 
-  const lambda3 = sumFrequencyWavelength(lambda1, lambda2);
-  const power = (length: number, dk: number) =>
-    gaussianMixingPower(mixingEfficiency({ lambdaOut: lambda3, length, deff, n1, n2, nOut: n3, deltaK: dk }), P1, P2, w, w);
-  const P3 = power(L, deltaK);
+  const input: SumFrequencyInput = { lambda1, lambda2, deff, length: L, power1: P1, power2: P2, waist: w, n1, n2, n3, deltaK };
+  const { lambda3, power3: P3, normalized, qpmPeriod, confocalMin: bMin, focusingRatio: xi, photonFraction } = sumFrequencyModel(input);
+  const power = (length: number, dk: number) => sfgPower(input, length, dk);
   const phase = (deltaK * L) / 2;
   const sinc2 = sinc(phase) ** 2;
-  const normalized = P1 > 0 && P2 > 0 ? P3 / (P1 * P2) : NaN;
-  // Index mismatch without phase matching: Δk = 2π(n₃/λ₃ − n₁/λ₁ − n₂/λ₂); first-order QPM period 2π/|Δk|.
-  const deltaKMaterial = threeWaveMismatch(n1, lambda1, n2, lambda2, n3, lambda3);
-  const qpmPeriod = qpmPeriodOf(deltaKMaterial);
-  const bMin = Math.min(confocalParameter(lambda1, n1, w), confocalParameter(lambda2, n2, w));
-  const xi = L / bMin;
-  // Fraction of the weaker input's photons converted: (P₃/hν₃) / min(P₁/hν₁, P₂/hν₂).
-  const photonFraction = P3 * lambda3 / Math.min(P1 * lambda1, P2 * lambda2);
 
   const warnings = [
     xi > 0.5 && `L is ${fmt(xi, 3)} times the smaller confocal parameter 2πnw²/λ (${fmt(bMin * 1e3, 3)} mm): the beams change size in the crystal, so the plane-wave value overestimates P₃. Widen the beams or use a Boyd–Kleinman focusing model.`,

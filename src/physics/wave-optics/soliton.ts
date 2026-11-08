@@ -20,6 +20,7 @@
  * Soliton fission of an N ≫ 1 input happens near L_fiss ≈ L_D/N (Dudley, Genty & Coen 2006, Rev. Mod. Phys. 78, 1135).
  */
 
+import { c } from "../constants";
 import { fftRadix2 } from "../fft";
 
 /** FWHM/T₀ of a sech² intensity profile, 2 ln(1 + √2) = 1.7627. */
@@ -103,6 +104,15 @@ export function dispersiveWaveShiftNonlinear(beta2: number, beta3: number, gamma
     else hi = mid;
   }
   return Math.sign(beta3) * (lo + hi) / 2;
+}
+
+/**
+ * Vacuum wavelength, m, of a dispersive wave at angular-frequency offset Ω (rad/s) from a pump of wavelength λ:
+ * λ_DW = 2πc/(ω₀ + Ω), ω₀ = 2πc/λ. NaN unless β₂ < 0 (no soliton otherwise), Ω is finite and ω₀ + Ω > 0.
+ */
+export function dispersiveWaveWavelength(lambdaPump: number, beta2: number, omegaShift: number): number {
+  const omega0 = (2 * Math.PI * c) / lambdaPump;
+  return beta2 < 0 && omega0 + omegaShift > 0 ? (2 * Math.PI * c) / (omega0 + omegaShift) : NaN;
 }
 
 export interface SolitonContent {
