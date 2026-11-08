@@ -4,9 +4,8 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { SILICON_LAMBDA_MAX, SILICON_LAMBDA_MIN, siliconAbsorption } from "../../../physics/materials/silicon-absorption";
-import { WATER_LAMBDA_MAX, WATER_LAMBDA_MIN, waterAbsorption, waterSource } from "../../../physics/materials/water-absorption";
-import { absorbedFraction, absorptionDepth, depthForAbsorbedFraction } from "../../../physics/spectroscopy/depth";
+import { waterSource } from "../../../physics/materials/water-absorption";
+import { ABSORBER_MODELS, absorptionSummary, type AbsorberMaterial } from "../../../physics/spectroscopy/absorption-depth";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const r6 = (x: number) => (Number.isFinite(x) ? Number(x.toPrecision(6)) : NaN);
@@ -15,10 +14,10 @@ const fmtLen = (m: number) =>
   m === Infinity ? "∞" : !Number.isFinite(m) ? "—"
     : m >= 1 ? `${fmt(m)} m` : m >= 1e-3 ? `${fmt(m * 1e3)} mm` : m >= 1e-6 ? `${fmt(m * 1e6)} µm` : `${fmt(m * 1e9)} nm`;
 
-type Material = "silicon" | "water" | "custom";
+type Material = AbsorberMaterial;
 const MATERIALS: Record<Exclude<Material, "custom">, { label: string; alpha: (lambda: number) => number; min: number; max: number; note: string }> = {
-  silicon: { label: "Silicon (crystalline, 300 K)", alpha: siliconAbsorption, min: SILICON_LAMBDA_MIN, max: SILICON_LAMBDA_MAX, note: "Green 2008, band-to-band" },
-  water: { label: "Water (pure liquid)", alpha: waterAbsorption, min: WATER_LAMBDA_MIN, max: WATER_LAMBDA_MAX, note: "Pope & Fry 1997 / Segelstein 1981" },
+  silicon: { label: "Silicon (crystalline, 300 K)", ...ABSORBER_MODELS.silicon, note: "Green 2008, band-to-band" },
+  water: { label: "Water (pure liquid)", ...ABSORBER_MODELS.water, note: "Pope & Fry 1997 / Segelstein 1981" },
 };
 
 export default function AbsorptionDepthPage() {
@@ -38,10 +37,7 @@ export default function AbsorptionDepthPage() {
   const wlMin = clamp(wlMinRaw, minNm, maxNm - 10, minNm);
   const wlMax = clamp(wlMaxRaw, wlMin + 10, maxNm, maxNm);
 
-  const alpha = model ? model.alpha(wlNm * 1e-9) : clamp(alphaRaw, 0, 1e8, 1000) * 100; // 1/m
-  const delta = absorptionDepth(alpha);
-  const d90 = depthForAbsorbedFraction(alpha, 0.9);
-  const absorbed = absorbedFraction(alpha, thickness);
+  const { alpha, delta, d90, absorbed } = absorptionSummary(material, wlNm * 1e-9, clamp(alphaRaw, 0, 1e8, 1000) * 100, thickness); // α in 1/m
   const source = material === "water" ? waterSource(wlNm * 1e-9) : model?.note;
 
   const spectrum = (() => {

@@ -10,6 +10,8 @@
  * 3rd ed. (Pearson, 2010), ch. 4 (sampling, aliasing) and ch. 10 (spectral analysis with windows).
  */
 import { dft } from "../fft";
+import { createRng, gaussian } from "../random";
+import { windowSamples, type WindowName } from "./apodization-comparison";
 
 /** One-sided amplitude spectrum, bins k = 0 … ⌊N/2⌋. `w` defaults to the boxcar. */
 export function amplitudeSpectrum(x: readonly number[], fs: number, w?: readonly number[]): { f: number[]; amplitude: number[] } {
@@ -36,4 +38,42 @@ export function noiseFloorRms(sigma: number, w: readonly number[]): number {
   const s1 = w.reduce((s, v) => s + v, 0);
   const s2 = w.reduce((s, v) => s + v * v, 0);
   return s1 > 0 ? (2 * sigma * Math.sqrt(s2)) / s1 : NaN;
+}
+
+export interface ToneReading {
+  /** True frequency and amplitude, Hz and signal units. */
+  f: number;
+  a: number;
+  /** Frequency after sampling (aliased), Hz, and its position in bins. */
+  fa: number;
+  bin: number;
+  /** Largest spectrum amplitude within ±1 bin of the tone. */
+  read: number;
+}
+
+/**
+ * Two sinusoids plus Gaussian white noise (σ, fixed seed 1, so server, client and API agree), sampled N times at f_s,
+ * windowed by `win` and transformed. Frequencies in Hz, all else in signal units. N ≥ 4, f_s > 0.
+ */
+export function twoToneAnalysis(
+  p: { f1: number; a1: number; f2: number; a2: number; sigma: number; N: number; fs: number; win: WindowName },
+) {
+  const { f1, a1, f2, a2, sigma, N, fs, win } = p;
+  const rng = createRng(1);
+  const time = Array.from({ length: N }, (_, n) => n / fs);
+  const signal = time.map((t) => a1 * Math.sin(2 * Math.PI * f1 * t) + a2 * Math.sin(2 * Math.PI * f2 * t) + sigma * gaussian(rng));
+  const w = windowSamples(win, N);
+  const spec = amplitudeSpectrum(signal, fs, w);
+  const df = fs / N;
+  const floor = noiseFloorRms(sigma, w);
+  const tones: ToneReading[] = [
+    { f: f1, a: a1 },
+    { f: f2, a: a2 },
+  ].map(({ f, a }) => {
+    const fa = aliasedFrequency(f, fs);
+    const k = Math.round(fa / df);
+    const near = spec.amplitude.slice(Math.max(0, k - 1), Math.min(spec.amplitude.length, k + 2));
+    return { f, a, fa, bin: fa / df, read: Math.max(...near) };
+  });
+  return { time, signal, spec, df, floor, tones };
 }
