@@ -255,3 +255,35 @@ export function retarderBandDopSweep(
   const avgS = applyMueller(matrices[n - 1], S);
   return { avgS, avgDop: degreeOfPolarization(avgS), bandwidths, dop };
 }
+
+const DEG = Math.PI / 180;
+
+/** Ideal Mueller matrices of common elements, by a stable id (URL-safe) with the label the calculator shows. */
+export const MUELLER_ELEMENTS: Record<string, { label: string; matrix: MuellerMatrix }> = {
+  "h-polarizer": { label: "Horizontal Polarizer", matrix: muellerPolarizer(0) },
+  "v-polarizer": { label: "Vertical Polarizer", matrix: muellerPolarizer(90 * DEG) },
+  "45-polarizer": { label: "45° Polarizer", matrix: muellerPolarizer(45 * DEG) },
+  "qwp-h": { label: "Quarter-Wave (Fast-H)", matrix: muellerRetarder(90 * DEG, 0) },
+  "qwp-v": { label: "Quarter-Wave (Fast-V)", matrix: muellerRetarder(90 * DEG, 90 * DEG) },
+  "hwp-h": { label: "Half-Wave (Fast-H)", matrix: muellerRetarder(180 * DEG, 0) },
+  "rcp": { label: "Right Circular Polarizer", matrix: muellerCircularPolarizer("right") },
+  "lcp": { label: "Left Circular Polarizer", matrix: muellerCircularPolarizer("left") },
+  "rotator-45": { label: "Rotator (+45°)", matrix: muellerRotator(45 * DEG) },
+};
+
+export const MUELLER_ELEMENT_KINDS = ["polarizer", "retarder", "rotator", "depolarizer"] as const;
+export type MuellerElementKind = (typeof MUELLER_ELEMENT_KINDS)[number];
+
+/** A value that names no element kind falls back to `fallback`. */
+export const muellerElementKind = (v: string, fallback: MuellerElementKind): MuellerElementKind =>
+  (MUELLER_ELEMENT_KINDS as readonly string[]).includes(v) ? (v as MuellerElementKind) : fallback;
+
+/** The Mueller matrix of one element: `param` is an angle (°), the retardance (°) or the depolarization (%, clamped to 0–100). */
+export function muellerElementMatrix(kind: MuellerElementKind, param: number, fastAxisDeg: number): MuellerMatrix {
+  switch (kind) {
+    case "polarizer": return muellerPolarizer(param * DEG);
+    case "retarder": return muellerRetarder(param * DEG, fastAxisDeg * DEG);
+    case "rotator": return muellerRotator(param * DEG);
+    case "depolarizer": return muellerDepolarizer(1 - Math.min(100, Math.max(0, param)) / 100);
+  }
+}

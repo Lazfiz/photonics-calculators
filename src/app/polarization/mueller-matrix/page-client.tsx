@@ -1,53 +1,50 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
+import { useURLState } from "../../../hooks/use-url-state";
 import ChartPanel from "../../../components/chart-panel";
 import { CONVENTION_NOTE, fix, stokesProblem } from "../../../components/polarization-format";
-import {
-  applyMueller,
-  chainMueller,
-  muellerCircularPolarizer,
-  muellerPolarizer,
-  muellerRetarder,
-  muellerRotator,
-  type MuellerMatrix,
-} from "../../../physics/polarization/mueller";
+import { MUELLER_ELEMENTS as ELEMENTS, applyMueller, chainMueller, type MuellerMatrix } from "../../../physics/polarization/mueller";
 import { degreeOfPolarization, isPhysicalStokes, type Stokes } from "../../../physics/polarization/stokes";
 
-const DEG = Math.PI / 180;
-
-// Ideal Mueller matrices for common elements
-const ELEMENTS: Record<string, MuellerMatrix> = {
-  "Horizontal Polarizer": muellerPolarizer(0),
-  "Vertical Polarizer": muellerPolarizer(90 * DEG),
-  "45° Polarizer": muellerPolarizer(45 * DEG),
-  "Quarter-Wave (Fast-H)": muellerRetarder(90 * DEG, 0),
-  "Quarter-Wave (Fast-V)": muellerRetarder(90 * DEG, 90 * DEG),
-  "Half-Wave (Fast-H)": muellerRetarder(180 * DEG, 0),
-  "Right Circular Polarizer": muellerCircularPolarizer("right"),
-  "Left Circular Polarizer": muellerCircularPolarizer("left"),
-  "Rotator (+45°)": muellerRotator(45 * DEG),
-};
-
+const NONE = "none";
+const DEFAULT_ELEMENT = "h-polarizer";
 const STOKES_LABELS = ["S₀ (I)", "S₁", "S₂", "S₃"];
 
 export default function MuellerMatrixPage() {
-  const [elements, setElements] = useState<string[]>(["Horizontal Polarizer"]);
-  const [inputStokes, setInputStokes] = useState<Stokes>([1, 1, 0, 0]); // horizontal linear
+  // Input state is mirrored to the URL: one param per Stokes component, and six element slots
+  // (element1..6, "none" = empty); the chain is the non-empty slots in order.
+  const [s0, setS0] = useURLState("s0", 1);
+  const [s1, setS1] = useURLState("s1", 1);
+  const [s2, setS2] = useURLState("s2", 0);
+  const [s3, setS3] = useURLState("s3", 0);
+  const inputStokes = useMemo<Stokes>(() => [s0, s1, s2, s3], [s0, s1, s2, s3]);
+  const stokesSetters = [setS0, setS1, setS2, setS3];
+  const setInputStokes = (S: Stokes) => stokesSetters.forEach((set, i) => set(S[i]));
+  const [slot1, setSlot1] = useURLState("element1", DEFAULT_ELEMENT);
+  const [slot2, setSlot2] = useURLState("element2", NONE);
+  const [slot3, setSlot3] = useURLState("element3", NONE);
+  const [slot4, setSlot4] = useURLState("element4", NONE);
+  const [slot5, setSlot5] = useURLState("element5", NONE);
+  const [slot6, setSlot6] = useURLState("element6", NONE);
+  const slotSetters = [setSlot1, setSlot2, setSlot3, setSlot4, setSlot5, setSlot6];
+  // An id that names no element is treated as empty.
+  const slots = [slot1, slot2, slot3, slot4, slot5, slot6].map((v) => (Object.hasOwn(ELEMENTS, v) ? v : NONE));
+  const slotOf = slots.map((v, i) => (v !== NONE ? i : -1)).filter((i) => i >= 0);
+  const elements = slotOf.map((i) => slots[i]);
 
-  const addElement = () => setElements([...elements, "Horizontal Polarizer"]);
-  const removeElement = (i: number) => setElements(elements.filter((_, idx) => idx !== i));
-  const updateElement = (i: number, val: string) => {
-    const copy = [...elements];
-    copy[i] = val;
-    setElements(copy);
+  const addElement = () => {
+    const free = slots.findIndex((v) => v === NONE);
+    if (free >= 0) slotSetters[free](DEFAULT_ELEMENT);
   };
+  const removeElement = (i: number) => slotSetters[slotOf[i]](NONE);
+  const updateElement = (i: number, val: string) => slotSetters[slotOf[i]](val);
 
   const problem = stokesProblem(inputStokes);
 
   // Element 1 acts first: M = M_n ⋯ M_1.
   const combinedMatrix = useMemo(
-    () => chainMueller(elements.map((name) => ELEMENTS[name]).filter((M): M is MuellerMatrix => M !== undefined)),
+    () => chainMueller(elements.map((id) => ELEMENTS[id]?.matrix).filter((M): M is MuellerMatrix => M !== undefined)),
     [elements],
   );
 
@@ -100,7 +97,7 @@ export default function MuellerMatrixPage() {
 
       <div className="flex items-center gap-3 mb-4">
         <h2 className="text-lg font-semibold text-gray-200">Optical Elements (light travels →)</h2>
-        <button onClick={addElement} className="bg-blue-600 hover:bg-blue-500 text-white text-sm px-3 py-1 rounded">+ Add Element</button>
+        <button onClick={addElement} disabled={slotOf.length >= slots.length} className="bg-blue-600 disabled:opacity-50 hover:bg-blue-500 text-white text-sm px-3 py-1 rounded">+ Add Element</button>
       </div>
 
       <div className="space-y-2 mb-6">
@@ -109,7 +106,7 @@ export default function MuellerMatrixPage() {
             <span className="text-gray-500 text-sm w-6">{i + 1}.</span>
             <select value={el} onChange={e => updateElement(i, e.target.value)}
               className="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white text-sm">
-              {Object.keys(ELEMENTS).map(name => <option key={name} value={name}>{name}</option>)}
+              {Object.entries(ELEMENTS).map(([id, { label }]) => <option key={id} value={id}>{label}</option>)}
             </select>
             <button onClick={() => removeElement(i)} className="text-red-400 hover:text-red-300 text-sm px-2">✕</button>
           </div>

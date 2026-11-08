@@ -1,48 +1,21 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
+import { useURLState } from "../../../hooks/use-url-state";
 import ChartPanel from "../../../components/chart-panel";
 import type { Complex } from "../../../physics/complex";
 import {
-  LCP,
-  RCP,
-  circularPolarizer,
-  ellipticalState,
+  JONES_CHAIN_ELEMENTS,
+  JONES_CHAIN_INPUTS,
   intensity,
-  linearPolarizer,
-  linearRetarder,
-  linearState,
   propagate,
   stokesFromJones,
-  type JonesMatrix,
   type JonesVector,
 } from "../../../physics/polarization/jones";
 import { CONVENTION_NOTE, degOrDash, fix, stateLabel } from "../../../components/polarization-format";
 import { axisRatio, ellipseAngles } from "../../../physics/polarization/stokes";
 
-const DEG = Math.PI / 180;
-
-const ELEMENTS: Record<string, JonesMatrix> = {
-  "Horizontal Polarizer": linearPolarizer(0),
-  "Vertical Polarizer": linearPolarizer(90 * DEG),
-  "45° Polarizer": linearPolarizer(45 * DEG),
-  "Quarter-Wave (Fast-H)": linearRetarder(90 * DEG, 0),
-  "Quarter-Wave (Fast-V)": linearRetarder(90 * DEG, 90 * DEG),
-  "Half-Wave (Fast-H)": linearRetarder(180 * DEG, 0),
-  "Half-Wave (Fast-45°)": linearRetarder(180 * DEG, 45 * DEG),
-  "Right Circular Polarizer": circularPolarizer("right"),
-  "Left Circular Polarizer": circularPolarizer("left"),
-};
-
-// Unit intensity
-const INPUT_STATES: Record<string, JonesVector> = {
-  "Horizontal": linearState(0),
-  "Vertical": linearState(90 * DEG),
-  "45° Linear": linearState(45 * DEG),
-  "RCP": RCP,
-  "LCP": LCP,
-  "Elliptical (ψ 20°, χ 15°)": ellipticalState(20 * DEG, 15 * DEG),
-};
+const inputOf = (id: string) => JONES_CHAIN_INPUTS[id] ?? JONES_CHAIN_INPUTS.h;
 
 function fmt(c: Complex): string {
   const r = fix(c.re, 3);
@@ -62,20 +35,33 @@ function ellipsePoints(E: JonesVector, n = 200): { x: number[]; y: number[] } {
 }
 
 export default function JonesChainPage() {
-  const [elements, setElements] = useState<string[]>(["Quarter-Wave (Fast-H)"]);
-  const [inputState, setInputState] = useState("Horizontal");
+  const [input, setInput] = useURLState("input", "h");
+  const [e1, setE1] = useURLState("element1", "qwp-fast-h");
+  const [e2, setE2] = useURLState("element2", "none");
+  const [e3, setE3] = useURLState("element3", "none");
+  const [e4, setE4] = useURLState("element4", "none");
+  const [e5, setE5] = useURLState("element5", "none");
+  const [e6, setE6] = useURLState("element6", "none");
+  const setters = [setE1, setE2, setE3, setE4, setE5, setE6];
+  const defaults = ["qwp-fast-h", "none", "none", "none", "none", "none"];
+  // An unknown id in the URL falls back to the slot's default.
+  const slots = [e1, e2, e3, e4, e5, e6].map((v, i) => (v === "none" || Object.hasOwn(JONES_CHAIN_ELEMENTS, v) ? v : defaults[i]));
+  const active = slots.flatMap((id, slot) => (id === "none" ? [] : [{ id, slot }]));
+  const firstFree = slots.indexOf("none");
 
-  const addElement = () => setElements([...elements, "Quarter-Wave (Fast-H)"]);
-  const removeElement = (i: number) => setElements(elements.filter((_, idx) => idx !== i));
+  const addElement = () => { if (firstFree >= 0) setters[firstFree]("qwp-fast-h"); };
+  const removeElement = (slot: number) => setters[slot]("none");
 
-  const inputField = INPUT_STATES[inputState];
+  const inputState = Object.hasOwn(JONES_CHAIN_INPUTS, input) ? input : "h";
+  const inputField = inputOf(inputState).jones;
 
   // Element 1 acts first.
   const outputField = useMemo(() => {
-    const matrices = elements.map((name) => ELEMENTS[name]).filter((M): M is JonesMatrix => M !== undefined);
-    const states = propagate(matrices, INPUT_STATES[inputState]);
+    const matrices = active.map(({ id }) => JONES_CHAIN_ELEMENTS[id].matrix);
+    const states = propagate(matrices, inputField);
     return states[states.length - 1];
-  }, [elements, inputState]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slots.join(","), inputField]);
 
   const outIntensity = intensity(outputField);
   const transmission = outIntensity / intensity(inputField);
@@ -105,27 +91,27 @@ export default function JonesChainPage() {
       <div className="grid gap-4 sm:grid-cols-2 mb-6">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Input Polarization</span>
-          <select value={inputState} onChange={e => setInputState(e.target.value)}
+          <select value={inputState} onChange={e => setInput(e.target.value)}
             className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
-            {Object.keys(INPUT_STATES).map(s => <option key={s} value={s}>{s}</option>)}
+            {Object.entries(JONES_CHAIN_INPUTS).map(([id, st]) => <option key={id} value={id}>{st.label}</option>)}
           </select>
         </label>
       </div>
 
       <div className="flex items-center gap-3 mb-4">
         <h2 className="text-lg font-semibold text-gray-200">Jones Elements</h2>
-        <button onClick={addElement} className="bg-blue-600 hover:bg-blue-500 text-white text-sm px-3 py-1 rounded">+ Add</button>
+        <button onClick={addElement} disabled={firstFree < 0} className="bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white text-sm px-3 py-1 rounded">+ Add</button>
       </div>
 
       <div className="space-y-2 mb-6">
-        {elements.map((el, i) => (
-          <div key={i} className="flex items-center gap-2">
+        {active.map(({ id: el, slot }, i) => (
+          <div key={slot} className="flex items-center gap-2">
             <span className="text-gray-500 text-sm w-6">{i + 1}.</span>
-            <select value={el} onChange={e => { const c = [...elements]; c[i] = e.target.value; setElements(c); }}
+            <select value={el} onChange={e => setters[slot](e.target.value)}
               className="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white text-sm">
-              {Object.keys(ELEMENTS).map(n => <option key={n} value={n}>{n}</option>)}
+              {Object.entries(JONES_CHAIN_ELEMENTS).map(([id, e]) => <option key={id} value={id}>{e.label}</option>)}
             </select>
-            <button onClick={() => removeElement(i)} className="text-red-400 hover:text-red-300 text-sm px-2">✕</button>
+            <button onClick={() => removeElement(slot)} className="text-red-400 hover:text-red-300 text-sm px-2">✕</button>
           </div>
         ))}
       </div>

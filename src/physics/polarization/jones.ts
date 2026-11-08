@@ -136,3 +136,78 @@ export function circularPolarizer(hand: "right" | "left"): JonesMatrix {
     [complex(0, s), re(0.5)],
   ];
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// Element and input-state tables of the Jones-calculus and Jones-chain pages (shared with their API schemas).
+// ---------------------------------------------------------------------------------------------------------------
+const D2R = Math.PI / 180;
+
+export type JonesCalculusElementType =
+  | "polarizer-h" | "polarizer-v" | "polarizer-45" | "polarizer-135"
+  | "qwp-fast-h" | "qwp-fast-v" | "hwp-fast-h" | "hwp-fast-v" | "rotator";
+
+/** Elements the Jones-calculus page offers. `hasAngle`: the element takes a rotation angle (degrees). */
+export const JONES_CALCULUS_ELEMENTS: readonly {
+  type: JonesCalculusElementType; label: string; hasAngle: boolean; defaultAngle: number;
+}[] = [
+  { type: "polarizer-h", label: "Polarizer → H", hasAngle: false, defaultAngle: 0 },
+  { type: "polarizer-v", label: "Polarizer → V", hasAngle: false, defaultAngle: 0 },
+  { type: "polarizer-45", label: "Polarizer → 45°", hasAngle: false, defaultAngle: 0 },
+  { type: "polarizer-135", label: "Polarizer → 135°", hasAngle: false, defaultAngle: 0 },
+  { type: "qwp-fast-h", label: "λ/4 fast axis H", hasAngle: false, defaultAngle: 0 },
+  { type: "qwp-fast-v", label: "λ/4 fast axis V", hasAngle: false, defaultAngle: 0 },
+  { type: "hwp-fast-h", label: "λ/2 fast axis H", hasAngle: false, defaultAngle: 0 },
+  { type: "hwp-fast-v", label: "λ/2 fast axis V", hasAngle: false, defaultAngle: 0 },
+  { type: "rotator", label: "Rotator", hasAngle: true, defaultAngle: 45 },
+];
+
+/** Jones matrix of a Jones-calculus page element; `angleDeg` is used by the rotator only (default 45°). */
+export function jonesCalculusMatrix(type: JonesCalculusElementType, angleDeg?: number): JonesMatrix {
+  switch (type) {
+    case "polarizer-h": return linearPolarizer(0);
+    case "polarizer-v": return linearPolarizer(90 * D2R);
+    case "polarizer-45": return linearPolarizer(45 * D2R);
+    case "polarizer-135": return linearPolarizer(135 * D2R);
+    case "qwp-fast-h": return linearRetarder(90 * D2R, 0);
+    case "qwp-fast-v": return linearRetarder(90 * D2R, 90 * D2R);
+    case "hwp-fast-h": return linearRetarder(180 * D2R, 0);
+    case "hwp-fast-v": return linearRetarder(180 * D2R, 90 * D2R);
+    case "rotator": return rotator((angleDeg ?? 45) * D2R);
+    default: return IDENTITY;
+  }
+}
+
+export type JonesCalculusInputKey = "linear-h" | "linear-v" | "linear-45" | "linear-135" | "rcp" | "lcp";
+
+/** Input states of the Jones-calculus page (unit intensity). */
+export const JONES_CALCULUS_INPUTS: Record<JonesCalculusInputKey, { jones: JonesVector; label: string }> = {
+  "linear-h": { jones: linearState(0), label: "Linear H" },
+  "linear-v": { jones: linearState(90 * D2R), label: "Linear V" },
+  "linear-45": { jones: linearState(45 * D2R), label: "Linear 45°" },
+  "linear-135": { jones: linearState(-45 * D2R), label: "Linear 135°" }, // 135° = −45°
+  rcp: { jones: RCP, label: "RCP" },
+  lcp: { jones: LCP, label: "LCP" },
+};
+
+/** Elements of the Jones-chain page, keyed by id. */
+export const JONES_CHAIN_ELEMENTS: Record<string, { label: string; matrix: JonesMatrix }> = {
+  "polarizer-h": { label: "Horizontal Polarizer", matrix: linearPolarizer(0) },
+  "polarizer-v": { label: "Vertical Polarizer", matrix: linearPolarizer(90 * D2R) },
+  "polarizer-45": { label: "45° Polarizer", matrix: linearPolarizer(45 * D2R) },
+  "qwp-fast-h": { label: "Quarter-Wave (Fast-H)", matrix: linearRetarder(90 * D2R, 0) },
+  "qwp-fast-v": { label: "Quarter-Wave (Fast-V)", matrix: linearRetarder(90 * D2R, 90 * D2R) },
+  "hwp-fast-h": { label: "Half-Wave (Fast-H)", matrix: linearRetarder(180 * D2R, 0) },
+  "hwp-fast-45": { label: "Half-Wave (Fast-45°)", matrix: linearRetarder(180 * D2R, 45 * D2R) },
+  "circ-polarizer-right": { label: "Right Circular Polarizer", matrix: circularPolarizer("right") },
+  "circ-polarizer-left": { label: "Left Circular Polarizer", matrix: circularPolarizer("left") },
+};
+
+/** Input states of the Jones-chain page, keyed by id (unit intensity). */
+export const JONES_CHAIN_INPUTS: Record<string, { label: string; jones: JonesVector }> = {
+  h: { label: "Horizontal", jones: linearState(0) },
+  v: { label: "Vertical", jones: linearState(90 * D2R) },
+  "linear-45": { label: "45° Linear", jones: linearState(45 * D2R) },
+  rcp: { label: "RCP", jones: RCP },
+  lcp: { label: "LCP", jones: LCP },
+  elliptical: { label: "Elliptical (ψ 20°, χ 15°)", jones: ellipticalState(20 * D2R, 15 * D2R) },
+};
