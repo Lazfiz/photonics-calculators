@@ -1,0 +1,21 @@
+name: Calculator request
+description: Suggest a new optics or photonics calculator, or a feature for an existing one.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What should it calculate?
+      description: Inputs, outputs and who would use it.
+    validations:
+      required: true
+  - type: textarea
+    id: reference
+    attributes:
+      label: Formula or reference
+      description: A textbook, paper (DOI) or standard that defines the calculation.
+  - type: input
+    id: existing
+    attributes:
+      label: Closest existing page, if any
+      placeholder: https://photonicscalculators.com/...

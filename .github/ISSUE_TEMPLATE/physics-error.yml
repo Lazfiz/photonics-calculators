@@ -1,0 +1,30 @@
+name: Physics or calculation error
+description: A calculator gives a wrong value, uses a wrong formula or cites a wrong source.
+labels: ["physics"]
+body:
+  - type: input
+    id: url
+    attributes:
+      label: Page URL with your inputs
+      description: Inputs are kept in the URL, so copy it from the address bar after entering them.
+      placeholder: https://photonicscalculators.com/wave-optics/gaussian-beam?wavelength=1064
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: What the calculator shows
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected, and why
+      description: The value you expected and how you got it (hand calculation, another tool, a measurement).
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Reference
+      description: Book and equation or table number, or paper and DOI, if you have one.
