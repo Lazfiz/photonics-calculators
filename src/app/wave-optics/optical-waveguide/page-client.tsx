@@ -4,8 +4,7 @@ import SimpleLineChart from "../../../components/simple-line-chart";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { slabEffectiveIndex, slabModeB, slabModeCount, slabTEConfinement, slabTEField, slabV } from "../../../physics/wave-optics/slab-waveguide";
-import { numericalAperture } from "../../../physics/fiber-optics/step-index-modes";
+import { slabModeB, slabModeCount, slabSummary, slabTEField } from "../../../physics/wave-optics/slab-waveguide";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
@@ -24,19 +23,12 @@ export default function OpticalWaveguidePage() {
   const lambda = clamp(wavelengthRaw, 100, 1e5, 1550) * 1e-9;
   const d = clamp(widthRaw, 0.01, 1e4, 10) * 1e-6;
 
-  const V = slabV(n1, n2, d, lambda);
+  const { V, NA, modes, bTE, neffTE, neffTM, confinement, criticalAngle: criticalRad, acceptance: acceptanceRad, singleModeThickness } =
+    slabSummary(n1, n2, d, lambda);
   const guided = Number.isFinite(V);
-  const NA = guided ? numericalAperture(n1, n2) : NaN;
-  const modes = guided ? slabModeCount(V) : 0;
-  const rTM = (n1 * n1) / (n2 * n2);
-  const bTE = slabModeB(V, 0);
-  const bTM = slabModeB(V, 0, rTM);
-  const neffTE = slabEffectiveIndex(bTE, n1, n2);
-  const neffTM = slabEffectiveIndex(bTM, n1, n2);
-  const confinement = slabTEConfinement(V, bTE, 0);
-  const criticalAngle = guided ? (Math.asin(n2 / n1) * 180) / Math.PI : NaN;
-  const acceptance = NA >= 1 ? 90 : (Math.asin(NA) * 180) / Math.PI;
-  const singleModeD = guided ? lambda / (2 * NA) : NaN; // V = π/2
+  const criticalAngle = (criticalRad * 180) / Math.PI;
+  const acceptance = (acceptanceRad * 180) / Math.PI;
+  const singleModeD = singleModeThickness;
 
   const vMax = guided ? Math.max(1.5 * V, Math.PI) : 0;
   const bvSeries = guided ? Array.from({ length: Math.min(slabModeCount(vMax), MAX_PLOTTED) }, (_, m) => {

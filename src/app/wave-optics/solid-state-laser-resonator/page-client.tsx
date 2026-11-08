@@ -4,11 +4,7 @@ import SimpleLineChart from "../../../components/simple-line-chart";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { gParameter, resonatorStability, twoMirrorMode } from "../../../physics/wave-optics/two-mirror-resonator";
-import { radiusAtDistance } from "../../../physics/wave-optics/gaussian-beam";
-import {
-  fourLevelGain, fourLevelSlopeEfficiency, fourLevelThreshold, laserOutput, roundTripLoss, saturationIntensity,
-} from "../../../physics/wave-optics/laser-resonator";
+import { solidStateRodLaser } from "../../../physics/wave-optics/laser-resonator";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
@@ -47,40 +43,24 @@ export default function SolidStateLaserResonatorPage() {
   const R_hr = clamp(rHrRaw, 0.01, 1, 0.999);
   const alpha = clamp(alphaRaw, 0, 10, 0.001); // cm⁻¹
 
-  // The crystal (index n, against the HR) shortens the cavity's effective length to L − l(1 − 1/n).
   const l = l_mm * 1e-3;
   const L = L_mm * 1e-3;
-  const fits = l < L;
-  const Leff = fits ? L - l * (1 - 1 / n) : NaN;
   const toRadius = (R_mm: number) => (R_mm === 0 ? Infinity : R_mm * 1e-3);
-  const g1 = gParameter(Leff, toRadius(R1_mm));
-  const g2 = gParameter(Leff, toRadius(R2_mm));
-  const stability = resonatorStability(g1, g2);
   const lambda = lambda_nm * 1e-9;
   const lambdaP = lambdaP_nm * 1e-9;
-  const mode = twoMirrorMode(lambda, Leff, g1, g2);
-  const radiusAt = (u: number) => radiusAtDistance(mode.w0, mode.zR, u - mode.z1); // u: reduced position
-  const toPhysical = (u: number) => (u < 0 ? u : u <= l / n ? u * n : u + l * (1 - 1 / n));
-  const waistPos = toPhysical(mode.z1);
-  const rodSpot = Math.max(radiusAt(0), radiusAt(l / n)); // w(u) is convex: the largest spot in the rod is at a face
-  const clipped = fits && Number.isFinite(rodSpot) && rodSpot > d_mm * 5e-4;
-
-  // Rod pumped uniformly over its cross-section, multimode output filling it.
-  const rodArea = Math.PI * (d_mm * 5e-4) ** 2;
-  const internal = alpha * 100 * l; // single-pass loss αl, natural log of power
-  const delta = roundTripLoss(R_hr, R_oc, internal);
-  const pTh = fourLevelThreshold(delta, lambdaP, sigma, tau, rodArea, etaP);
-  const g0l = fourLevelGain(pump, lambdaP, sigma, tau, rodArea, etaP);
-  const iSat = saturationIntensity(lambda, sigma, tau);
-  const pSat = iSat * rodArea;
-  const pOut = laserOutput(g0l, R_hr, R_oc, internal, pSat);
-  const slope = fourLevelSlopeEfficiency(lambda, lambdaP, R_hr, R_oc, internal, rodArea, rodArea, etaP);
+  // The crystal (index n, against the HR) shortens the cavity's effective length to L − l(1 − 1/n); the rod is pumped
+  // uniformly over its cross-section with multimode output filling it.
+  const op = solidStateRodLaser({
+    lambda, lambdaP, pump, etaP, sigma, tau, rodLength: l, rodDiameter: d_mm * 1e-3, n, L, R1: toRadius(R1_mm), R2: toRadius(R2_mm),
+    R_hr, R_oc, alpha: alpha * 100,
+  });
+  const { fits, Leff, g1, g2, stability, mode, waistPos, rodSpot, clipped, delta, pTh, g0l, iSat, pOut, slope, radiusAt, outputAt } = op;
   const statusTone = stability === "stable" ? "green" : stability === "marginal" ? "yellow" : "red";
 
   const pMax = Math.max(2 * pump, 1.5 * (Number.isFinite(pTh) ? pTh : 0), 1);
   const outputCurve = Array.from({ length: 101 }, (_, i) => {
     const p = (pMax * i) / 100;
-    return { x: round6(p), y: round6(laserOutput(fourLevelGain(p, lambdaP, sigma, tau, rodArea, etaP), R_hr, R_oc, internal, pSat)) };
+    return { x: round6(p), y: round6(outputAt(p)) };
   });
   const powerSeries = [
     { name: "Output power", color: "#60a5fa", points: outputCurve },
@@ -90,8 +70,7 @@ export default function SolidStateLaserResonatorPage() {
   const profile = Number.isFinite(mode.w0)
     ? Array.from({ length: 201 }, (_, i) => {
         const z = (L * i) / 200;
-        const u = z <= l ? z / n : z - l * (1 - 1 / n);
-        return { x: round6(z * 1e3), y: round6(radiusAt(u) * 1e6) };
+        return { x: round6(z * 1e3), y: round6(radiusAt(z) * 1e6) };
       })
     : [];
   const rodEdge = (d_mm / 2) * 1e3;

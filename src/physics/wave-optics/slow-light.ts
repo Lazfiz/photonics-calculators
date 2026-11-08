@@ -56,3 +56,53 @@ export function lorentzianGain(gain: number, fwhm: number, detuning: number): nu
   const x = (2 * detuning) / fwhm;
   return gain / (1 + x * x);
 }
+
+/** Power gain G in nepers from dB: G (Np) = G (dB)·ln 10/10. */
+export const NP_PER_DB = Math.LN10 / 10;
+
+export interface SlowLightInput {
+  /** true: the group index follows from a Lorentzian resonance; false: it is given. */
+  resonance: boolean;
+  /** Given group index (used when resonance is false). */
+  nGroup: number;
+  /** Background group index n₀. */
+  n0: number;
+  /** Centre wavelength, m. */
+  lambda: number;
+  /** Signal bandwidth Δλ, m (index model). */
+  dLambda: number;
+  /** Structure length, m. */
+  length: number;
+  /** Power gain at line centre, Np (resonance model). */
+  gainNp: number;
+  /** Resonance FWHM, Hz. */
+  fwhmHz: number;
+  /** Signal bandwidth Δν, Hz (resonance model). */
+  signalHz: number;
+}
+
+export interface SlowLightResult {
+  /** Resonance delay at line centre G/Γ, s. */
+  tauRes: number;
+  nGroup: number;
+  /** Total group delay, s. */
+  tau: number;
+  /** Delay of the background medium n₀ L/c, s. */
+  tau0: number;
+  /** tau − tau0, s. */
+  excess: number;
+  /** m/s; NaN for n_g ≤ 0 (fast light). */
+  vg: number;
+  /** Signal bandwidth, Hz. */
+  dnu: number;
+}
+
+/** The page's model dispatch: given group index or resonance-derived one, with delay, velocity and bandwidth. */
+export function slowLightModel(p: SlowLightInput): SlowLightResult {
+  const tauRes = lorentzianDelay(p.gainNp, p.fwhmHz, 0);
+  const ng = p.resonance ? groupIndexFromDelay(p.n0, tauRes, p.length) : p.nGroup;
+  const tau0 = groupDelay(p.n0, p.length);
+  const tau = p.resonance ? tau0 + tauRes : groupDelay(ng, p.length);
+  const dnu = p.resonance ? p.signalHz : bandwidthHz(p.lambda, Math.min(p.dLambda, 1.99 * p.lambda));
+  return { tauRes, nGroup: ng, tau, tau0, excess: tau - tau0, vg: groupVelocity(ng), dnu };
+}

@@ -6,13 +6,12 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { c } from "../../../physics/constants";
 import {
-  bandwidthHz, groupDelay, groupIndexFromDelay, groupVelocity, lorentzianDelay, lorentzianGain,
+  NP_PER_DB, lorentzianDelay, lorentzianGain, slowLightModel,
 } from "../../../physics/wave-optics/slow-light";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (v: number, d = 4) => (Number.isFinite(v) ? Number(v.toPrecision(d)).toString() : "—");
 const round6 = (v: number) => Math.round(v * 1e6) / 1e6;
-const NP_PER_DB = Math.LN10 / 10; // power gain: G (Np) = G (dB)·ln 10/10
 
 /** Time in s with an SI prefix. */
 function fmtTime(t: number): string {
@@ -57,13 +56,9 @@ export default function SlowLightPage() {
   const signalMHz = clamp(sigRaw, 1e-6, 1e9, 10);
 
   const gainNp = gainDb * NP_PER_DB;
-  const tauRes = lorentzianDelay(gainNp, fwhm_MHz * 1e6, 0);
-  const ng = resonance ? groupIndexFromDelay(n0, tauRes, L) : ngInput;
-  const tau0 = groupDelay(n0, L); // background medium
-  const tau = resonance ? tau0 + tauRes : groupDelay(ng, L);
-  const excess = tau - tau0;
-  const vg = groupVelocity(ng);
-  const dnu = resonance ? signalMHz * 1e6 : bandwidthHz(lambda, Math.min(dLambda, 1.99 * lambda));
+  const { tauRes, nGroup: ng, tau, tau0, excess, vg, dnu } = slowLightModel({
+    resonance, nGroup: ngInput, n0, lambda, dLambda, length: L, gainNp, fwhmHz: fwhm_MHz * 1e6, signalHz: signalMHz * 1e6,
+  });
   const wideSignal = resonance && dnu > fwhm_MHz * 1e6;
 
   return (

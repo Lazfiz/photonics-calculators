@@ -15,6 +15,7 @@
  *   ΔT = η_h η_abs P_p d/(2κA)       front-to-back rise, uniform heating, back face cooled
  */
 import { c, h } from "../constants";
+import { logarithmicLoss, roundTripLoss } from "./laser-resonator";
 
 /** Excited fraction at which the round-trip gain m d N(βσ_e − (1 − β)σ_a) equals the loss δ. */
 export function thresholdInversion(delta: number, passes: number, thickness: number, N: number, sigmaE: number, sigmaA: number): number {
@@ -52,4 +53,62 @@ export function quasiThreeLevelSlope(etaAbs: number, lambdaPump: number, lambda:
 export function diskTemperatureRise(absorbedIntensity: number, heatFraction: number, thickness: number, kappa: number): number {
   if (!(absorbedIntensity >= 0 && heatFraction >= 0 && heatFraction <= 1 && thickness > 0 && kappa > 0)) return NaN;
   return (heatFraction * absorbedIntensity * thickness) / (2 * kappa);
+}
+
+/** Yttrium sites in YAG, 1.38e22 cm⁻³ in 1/m³: 1 at.% doping = 1.38e20 ions/cm³ (Koechner, Solid-State Laser Engineering, ch. 2). */
+export const YAG_SITES = 1.38e28;
+
+export interface ThinDiskInputs {
+  /** Disk thickness and pump-spot diameter (top hat, mode of equal area), m. */
+  thickness: number;
+  spotDiameter: number;
+  /** Yb doping as a fraction of the Y sites (0.1 = 10 at.%). */
+  doping: number;
+  /** Pump passes through the disk M and laser passes per round trip m (rounded to integers). */
+  pumpPasses: number;
+  laserPasses: number;
+  /** Incident pump power, W. */
+  pump: number;
+  /** Output-coupler reflectance (the disk is the rear mirror) and other loss per round trip as a fraction of power. */
+  R_oc: number;
+  otherLoss: number;
+  /** Laser and pump wavelength, m. */
+  lambda: number;
+  lambdaP: number;
+  /** Cross-sections at λ (emission, absorption) and at λ_p (absorption, emission), m². */
+  sigmaE: number;
+  sigmaA: number;
+  sigmaAP: number;
+  sigmaEP: number;
+  /** Upper-level lifetime, s; heat fraction of the absorbed pump; conductivity, W/(m K). */
+  tau: number;
+  heatFraction: number;
+  kappa: number;
+}
+
+/**
+ * Yb:YAG thin-disk laser (the page's chain, kept in one place): threshold inversion with reabsorption, pump absorption at
+ * the threshold inversion after M passes, threshold pump power, slope efficiency, output power and the front-to-back
+ * temperature rise of the disk. `pTh` and `pOut` are NaN when the threshold inversion bleaches the pump (β ≥ β_bleach).
+ * Model tier: textbook (see the module header). The round-trip loss is δ = −ln R_oc plus the other loss.
+ */
+export function thinDiskLaser(p: ThinDiskInputs) {
+  const N = p.doping * YAG_SITES;
+  const M = Math.round(p.pumpPasses);
+  const m = Math.round(p.laserPasses);
+  const otherLoss = logarithmicLoss(p.otherLoss); // −ln(1 − f) of power per round trip
+  const area = Math.PI * (p.spotDiameter / 2) ** 2;
+  const delta = roundTripLoss(1, p.R_oc, otherLoss / 2);
+  const beta = thresholdInversion(delta, m, p.thickness, N, p.sigmaE, p.sigmaA);
+  const betaTr = p.sigmaA / (p.sigmaA + p.sigmaE);
+  const betaBleach = p.sigmaAP / (p.sigmaAP + p.sigmaEP);
+  const alphaUnpumped = pumpAbsorption(N, p.sigmaAP, p.sigmaEP, 0);
+  const alphaTh = beta <= 1 ? pumpAbsorption(N, p.sigmaAP, p.sigmaEP, beta) : NaN;
+  const etaAbs = multipassAbsorption(alphaTh, p.thickness, M);
+  const pTh = quasiThreeLevelThreshold(N, p.thickness, beta, area, p.lambdaP, p.tau, etaAbs);
+  const slope = quasiThreeLevelSlope(etaAbs, p.lambdaP, p.lambda, p.R_oc, delta);
+  const pOut = Number.isFinite(pTh) ? Math.max(0, slope * (p.pump - pTh)) : NaN;
+  const absorbedIntensity = (etaAbs * p.pump) / area;
+  const dT = diskTemperatureRise(absorbedIntensity, p.heatFraction, p.thickness, p.kappa);
+  return { N, M, area, delta, beta, betaTr, betaBleach, alphaUnpumped, alphaTh, etaAbs, pTh, slope, pOut, absorbedIntensity, dT };
 }

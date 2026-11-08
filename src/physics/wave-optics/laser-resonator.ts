@@ -19,6 +19,7 @@
 import { c, h } from "../constants";
 import { erfcx } from "../math";
 import { gParameter, resonatorStability, twoMirrorMode } from "./two-mirror-resonator";
+import { radiusAtDistance } from "./gaussian-beam";
 import { optimumOutputCoupler, rigrodOutput } from "../fiber-optics/doped-fiber-gain";
 
 /** Logarithmic loss −ln(1 − f) = −log1p(−f) (natural log of power) of a fractional power loss f per pass; NaN outside 0 ≤ f < 1. */
@@ -234,4 +235,67 @@ export function gasLaserCw(p: GasLaserInputs) {
   const best = optimumOutputCoupler(g0l, rearR);
   const pBest = best.output * pSat;
   return { g1, g2, stability, mode, internal, fresnel, wMax, clipLoss, g0l, pSat, delta, gTh, pOut, best, pBest };
+}
+
+export interface SolidStateRodInputs {
+  /** Laser and pump wavelength, m. */
+  lambda: number;
+  lambdaP: number;
+  /** Absorbed pump power, W, and the fraction of it that reaches the upper level. */
+  pump: number;
+  etaP: number;
+  /** Emission cross-section, m², and upper-level lifetime, s. */
+  sigma: number;
+  tau: number;
+  /** Crystal length and diameter, m, and refractive index (the crystal sits against the HR). */
+  rodLength: number;
+  rodDiameter: number;
+  n: number;
+  /** Mirror spacing, m; mirror radii in m (Infinity = flat). */
+  L: number;
+  R1: number;
+  R2: number;
+  /** Reflectances and the crystal's bulk loss per metre (natural log of power). */
+  R_hr: number;
+  R_oc: number;
+  alpha: number;
+}
+
+/**
+ * Solid-state rod laser in a two-mirror resonator (the page's chain, kept in one place): the crystal against the HR shortens
+ * the cavity to L − l(1 − 1/n); TEM₀₀ mode by Kogelnik–Li on that length; a rod pumped uniformly over its area A = πd²/4 with
+ * a multimode output filling it (four-level threshold, Rigrod output). `radiusAt(z)` is the TEM₀₀ radius at the physical
+ * distance z from the HR; `outputAt(p)` the output power at absorbed pump p. Model tier: textbook. NaN mode and Leff when the
+ * crystal does not fit (`fits` false); the aperture loss of a clipped mode is reported (`clipped`), not modelled.
+ */
+export function solidStateRodLaser(p: SolidStateRodInputs) {
+  const l = p.rodLength;
+  const fits = l < p.L;
+  const Leff = fits ? p.L - l * (1 - 1 / p.n) : NaN;
+  const g1 = gParameter(Leff, p.R1);
+  const g2 = gParameter(Leff, p.R2);
+  const stability = resonatorStability(g1, g2);
+  const mode = twoMirrorMode(p.lambda, Leff, g1, g2);
+  const radiusReduced = (u: number) => radiusAtDistance(mode.w0, mode.zR, u - mode.z1); // u: reduced position
+  const toPhysical = (u: number) => (u < 0 ? u : u <= l / p.n ? u * p.n : u + l * (1 - 1 / p.n));
+  const radiusAt = (z: number) => radiusReduced(z <= l ? z / p.n : z - l * (1 - 1 / p.n));
+  const waistPos = toPhysical(mode.z1);
+  const rodSpot = Math.max(radiusReduced(0), radiusReduced(l / p.n)); // w(u) is convex: the largest spot in the rod is at a face
+  const rodRadius = p.rodDiameter / 2;
+  const clipped = fits && Number.isFinite(rodSpot) && rodSpot > rodRadius;
+  const rodArea = Math.PI * rodRadius ** 2;
+  const internal = p.alpha * l; // single-pass loss αl
+  const delta = roundTripLoss(p.R_hr, p.R_oc, internal);
+  const pTh = fourLevelThreshold(delta, p.lambdaP, p.sigma, p.tau, rodArea, p.etaP);
+  const g0l = fourLevelGain(p.pump, p.lambdaP, p.sigma, p.tau, rodArea, p.etaP);
+  const iSat = saturationIntensity(p.lambda, p.sigma, p.tau);
+  const pSat = iSat * rodArea;
+  const pOut = laserOutput(g0l, p.R_hr, p.R_oc, internal, pSat);
+  const slope = fourLevelSlopeEfficiency(p.lambda, p.lambdaP, p.R_hr, p.R_oc, internal, rodArea, rodArea, p.etaP);
+  const outputAt = (pump: number) =>
+    laserOutput(fourLevelGain(pump, p.lambdaP, p.sigma, p.tau, rodArea, p.etaP), p.R_hr, p.R_oc, internal, pSat);
+  return {
+    fits, Leff, g1, g2, stability, mode, waistPos, rodSpot, clipped, rodArea, internal, delta, pTh, g0l, iSat, pSat, pOut, slope,
+    radiusAt, outputAt,
+  };
 }

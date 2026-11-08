@@ -4,9 +4,8 @@ import SimpleLineChart from "../../../components/simple-line-chart";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { c, h } from "../../../physics/constants";
 import { peakPower, type PulseShape } from "../../../physics/laser-safety/peak-power";
-import { photonLifetime, qSwitchOptimumCoupling, qSwitchPulse, qSwitchWaveform, singlePassLoss } from "../../../physics/wave-optics/pulsed-laser";
+import { qSwitchedLaser, qSwitchPulse, singlePassLoss } from "../../../physics/wave-optics/pulsed-laser";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
@@ -50,27 +49,12 @@ export default function QSwitchedLaserPage() {
   const avg = energy * repRate;
   const duty = width * repRate;
 
-  // Rate-equation pulse.
-  const gamma = singlePassLoss(1, R_oc, loss);
-  const gammaI = singlePassLoss(1, 1, loss);
-  // One of r and g₀l is the input; the other follows from r = g₀l/γ.
-  const r = fixedGain ? g0lIn / gamma : clamp(ratioRaw, 1.01, 50, 3);
-  const g0l = fixedGain ? g0lIn : r * gamma;
-  const opticalLength = cavity + (n - 1) * rod;
-  const tauC = photonLifetime(opticalLength, gamma);
-  const area = (Math.PI * d * d) / 4;
-  const hv = (h * c) / lambda;
-  const pulse = qSwitchPulse(r, hv, area, sigma, Math.log(1 / R_oc), tauC);
-  // The RK4 shape costs ≈ r·(1/τ_c) steps: integrate it up to r = 50 only (the ratio input's range).
-  const integrate = r <= 50;
-  const wave = integrate ? qSwitchWaveform(r) : { t: [], shape: [], fwhm: NaN, extracted: NaN };
-  const fwhm = wave.fwhm * tauC;
-  const fluence = pulse.energy / area;
-
-  // Degnan's optimum coupling at this pump (g₀l fixed), and the pulse at that coupling.
-  const opt = qSwitchOptimumCoupling(g0l, gammaI, hv, area, sigma);
-  const optTauC = photonLifetime(opticalLength, gammaI + opt.couplerLoss / 2);
-  const optPulse = qSwitchPulse(opt.ratio, hv, area, sigma, opt.couplerLoss, optTauC);
+  // Rate-equation pulse. One of r and g₀l is the input; the other follows from r = g₀l/γ.
+  const op = qSwitchedLaser({
+    fixedGain, g0l: g0lIn, ratio: clamp(ratioRaw, 1.01, 50, 3), lambda, sigma, modeDiameter: d, R_oc, internalLoss: loss,
+    cavityLength: cavity, rodLength: rod, n,
+  });
+  const { gamma, gammaI, r, g0l, opticalLength, tauC, area, hv, pulse, wave, fwhm, fluence, opt, optTauC, optPulse } = op;
   const optNote = !(gammaI > 0)
     ? "No optimum without internal loss: the energy keeps rising as R → 0."
     : !(g0l > gammaI) ? "No lasing at any coupling: g₀l must exceed the internal loss γ_i."
