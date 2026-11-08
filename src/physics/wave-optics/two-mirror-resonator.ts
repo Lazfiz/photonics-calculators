@@ -88,3 +88,8 @@ export function transverseModeSpacing(fsr: number, g1: number, g2: number): numb
 export function modeFrequency(fsr: number, g1: number, g2: number, q: number, order: number): number {
   return fsr * (q + ((order + 1) * oneWayGouyPhase(g1, g2)) / Math.PI);
 }
+
+/** Mirror radius as the resonator functions take it: 0 means a flat mirror (Infinity); other values pass through. */
+export function mirrorRadius(R: number): number {
+  return R === 0 ? Infinity : R;
+}

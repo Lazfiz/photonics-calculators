@@ -5,10 +5,9 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { c } from "../../../physics/constants";
-import { alphaFromDbPerKm, nonlinearCoefficient } from "../../../physics/fiber-optics/fiber-nonlinear";
+import { alphaFromDbPerKm } from "../../../physics/fiber-optics/fiber-nonlinear";
 import {
-  fwmDetuning, fwmGainCoefficient, fwmIdlerPower, fwmIdlerWavelength, fwmLinearMismatch, fwmLossyEvolution, fwmPhaseMatchedDetuning,
-  fwmSignalGain,
+  fwmDetuning, fwmIdlerPower, fwmIdlerWavelength, fwmLinearMismatch, fwmLossyEvolution, fwmNetGain, fwmSignalGain, fwmSummary,
 } from "../../../physics/wave-optics/four-wave-mixing";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -18,10 +17,6 @@ const dB = (x: number) => 10 * Math.log10(x);
 const fmtPower = (W: number) => !Number.isFinite(W)
   ? "—"
   : W >= 1 ? `${fmt(W)} W` : W >= 1e-3 ? `${fmt(W * 1e3)} mW` : W >= 1e-6 ? `${fmt(W * 1e6)} µW` : `${fmt(W * 1e9)} nW`;
-
-// Net signal gain: Hansryd's closed form when lossless, else the segmented solution with the pump decaying as e^(−αz).
-const netGain = (gamma: number, Pp: number, deltaBeta: number, alpha: number, L: number) =>
-  alpha > 0 ? fwmLossyEvolution(gamma, Pp, deltaBeta, alpha, L).at(-1)?.gain ?? NaN : fwmSignalGain(gamma * Pp, deltaBeta, L);
 
 export default function FourWaveMixingPage() {
   const [lambdaPumpRaw, setLambdaPump] = useURLState("wavelengthPump", 1550); // nm
@@ -47,26 +42,14 @@ export default function FourWaveMixingPage() {
   const alpha = alphaFromDbPerKm(clamp(lossRaw, 0, 1e4, 0)); // 1/m
   const lossy = alpha > 0;
 
-  const gamma = nonlinearCoefficient(n2, lambdaP, area);
-  const gammaP = gamma * Pp;
-  const lambdaI = fwmIdlerWavelength(lambdaP, lambdaS);
+  const params = { lambdaPump: lambdaP, lambdaSignal: lambdaS, pumpPower: Pp, seedPower: Ps, n2, area, length: L, beta2, beta4, alpha };
+  const {
+    gamma, gammaP, lambdaIdler: lambdaI, gain, idlerPower: Pi, deltaBeta, kappa, gainCoefficient: g, peakDetuning: omegaPk, peakGain,
+    peakShift, converted,
+  } = fwmSummary(params);
   const valid = Number.isFinite(lambdaI);
   const omega = fwmDetuning(lambdaP, lambdaS);
-  const deltaBeta = fwmLinearMismatch(beta2, omega, beta4);
-  const kappa = deltaBeta + 2 * gammaP;
-  const g = fwmGainCoefficient(gammaP, deltaBeta);
-  const gainAt = (db: number) => netGain(gamma, Pp, db, alpha, L);
-  const lossyEnd = valid && lossy ? fwmLossyEvolution(gamma, Pp, deltaBeta, alpha, L).at(-1) : undefined;
-  const gain = !valid ? NaN : lossy ? lossyEnd?.gain ?? NaN : fwmSignalGain(gammaP, deltaBeta, L);
-  const Pi = !valid ? NaN : lossy ? (lossyEnd ? (lambdaS / lambdaI) * lossyEnd.idler * Ps : NaN) : fwmIdlerPower(gain, Ps, lambdaS, lambdaI);
-  const omegaPk = fwmPhaseMatchedDetuning(beta2, gammaP, beta4);
-  const peakGain = lossy ? gainAt(fwmLinearMismatch(beta2, omegaPk, beta4)) : Math.cosh(gammaP * L) ** 2;
-  // Δλ of the gain peak on the long-wavelength side: 1/λ = 1/λ_p − Ω/(2πc).
-  const peakShift = 1 / (1 / lambdaP - omegaPk / (2 * Math.PI * c)) - lambdaP;
 
-  // Power converted from the pump, before the fiber loss: P_s(|B_s|² − 1) + P_i at the undamped amplitudes.
-  const unatt = lossy ? Math.exp(alpha * L) : 1;
-  const converted = Ps * (gain * unatt - 1) + Pi * unatt;
   const warnings = [
     !valid && "The signal frequency is above twice the pump frequency (λ_s < λ_p/2), so there is no idler: 1/λ_i = 2/λ_p − 1/λ_s.",
     valid && lossy && !Number.isFinite(gain) && "The fiber loss αL is in the thousands of nepers: nothing reaches the output.",
@@ -80,7 +63,7 @@ export default function FourWaveMixingPage() {
   const spectrum = Array.from({ length: 401 }, (_, i) => ((i - 200) / 200) * omegaSpan)
     .map((o) => ({ lambda: 1 / (1 / lambdaP + o / (2 * Math.PI * c)), o }))
     .filter((p) => p.lambda > 0 && Number.isFinite(fwmIdlerWavelength(lambdaP, p.lambda)))
-    .map((p) => ({ x: round6(p.lambda * 1e9), y: round6(dB(netGain(gamma, Pp, fwmLinearMismatch(beta2, p.o, beta4), alpha, L))) }))
+    .map((p) => ({ x: round6(p.lambda * 1e9), y: round6(dB(fwmNetGain(gamma, Pp, fwmLinearMismatch(beta2, p.o, beta4), alpha, L))) }))
     .filter((p) => Number.isFinite(p.y));
   const spectrumSeries = spectrum.length > 1 && Pp > 0 ? [{ name: "Signal gain G_s", color: "#60a5fa", points: spectrum }] : [];
   const marker = valid && Number.isFinite(gain)

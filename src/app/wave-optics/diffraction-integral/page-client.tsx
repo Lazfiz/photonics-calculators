@@ -6,8 +6,8 @@ import SimpleLineChart from "../../../components/simple-line-chart";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  MAX_CIRCULAR_FRESNEL_NUMBER, airyFirstZeroRadius, circularFraunhoferIntensity, circularFresnelIntensity,
-  circularOnAxisIntensity, circularOnAxisIntensityExact, fresnelEdgePhaseError, fresnelNumber, slitFirstZero, slitFraunhoferIntensity, slitFresnelIntensity,
+  MAX_CIRCULAR_FRESNEL_NUMBER, circularFraunhoferIntensity, circularFresnelIntensity, diffractionSummary, plotRadiusLimits,
+  slitFraunhoferIntensity, slitFresnelIntensity,
 } from "../../../physics/wave-optics/diffraction-integral";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -29,21 +29,19 @@ export default function DiffractionIntegralPage() {
   const lambda = wavelength * 1e-9;
   const a = a_um * 1e-6;
   const z = z_mm * 1e-3;
-  const NF = fresnelNumber(a, lambda, z);
+  const {
+    fresnelNumber: NF, tooNear, onAxisParaxial, onAxis, edgePhase, farFieldFirstZero, farFieldDistance,
+  } = diffractionSummary(slit ? "slit" : "circular", a, lambda, z);
 
   // Show the aperture region in the near field and 20 far-field zeros in the far field.
-  const zero_um = (slit ? slitFirstZero(a, lambda, z) : airyFirstZeroRadius(a, lambda, z)) * 1e6;
-  const obsCap_um = Math.max(3 * a_um, 40 * ((lambda * z) / a) * 1e6);
-  const obs_um = clamp(obsRaw, a_um / 10, obsCap_um, Math.min(500, obsCap_um));
+  const zero_um = farFieldFirstZero * 1e6;
+  const obsLimits = plotRadiusLimits(a, lambda, z);
+  const obsCap_um = obsLimits.max * 1e6;
+  const obs_um = clamp(obsRaw, obsLimits.min * 1e6, obsCap_um, Math.min(500, obsCap_um));
 
-  const tooNear = !slit && NF > MAX_CIRCULAR_FRESNEL_NUMBER;
-  const onAxisParaxial = slit ? slitFresnelIntensity(NF, 0) : circularOnAxisIntensity(NF);
-  const onAxis = slit ? onAxisParaxial : circularOnAxisIntensityExact(a, lambda, z);
-  // Phase the Fresnel step drops at the aperture edge; > 0.1 rad shifts the on-axis value by up to ≈ 0.2 I₀.
-  const edgePhase = Math.abs(fresnelEdgePhaseError(a, lambda, z));
   const farField = NF <= 1; // the Fraunhofer curve is worth overlaying
   const regime = NF < 0.1 ? "Fraunhofer (far field)" : NF <= 1 ? "Fresnel, near the far field" : "Fresnel (near field)";
-  const zFar_mm = ((a * a) / lambda) * 1e3; // N_F = 1
+  const zFar_mm = farFieldDistance * 1e3; // N_F = 1
   const angle = (a + obs_um * 1e-6) / z;
 
   const points = slit ? 801 : 401;

@@ -5,33 +5,38 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  gParameter, oneWayGouyPhase, resonatorFsr, resonatorStability, transverseModeSpacing, twoMirrorMode,
+  gParameter, mirrorRadius, oneWayGouyPhase, resonatorFsr, resonatorStability, transverseModeSpacing, twoMirrorMode,
 } from "../../../physics/wave-optics/two-mirror-resonator";
 import { fsrWavelength } from "../../../physics/spectroscopy/etalon";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
 const round6 = (x: number) => Number(x.toPrecision(6));
-const firstFinite = (...xs: number[]) => xs.find((x) => Number.isFinite(x)) ?? NaN;
 
 const ORDER_COLORS = ["#60a5fa", "#34d399", "#facc15", "#fb923c", "#f87171"];
 
-export default function CavityModeSpacingPage() {
-  // NaN when absent: links from the old cavity-stability page carry L, r1, r2 (mm) at a fixed 1064 nm.
-  const [lengthRaw, setLength] = useURLState("cavityLength", NaN); // mm
-  const [r1Raw, setR1] = useURLState("R1", NaN); // mm, 0 = flat
-  const [r2Raw, setR2] = useURLState("R2", NaN);
-  const [wavelengthRaw, setWavelength] = useURLState("wavelength", NaN); // nm
-  const [nRaw, setN] = useURLState("n", 1);
-  const [oldL] = useURLState("L", NaN);
-  const [oldR1] = useURLState("r1", NaN);
-  const [oldR2] = useURLState("r2", NaN);
-  const oldLink = [oldL, oldR1, oldR2].some(Number.isFinite);
+// Old-link keys are not inputs of the calculator (the API schema leaves them out), so they are read through a helper.
+const useLegacyParam = (key: string) => useURLState(key, NaN)[0];
 
-  const lengthIn = firstFinite(lengthRaw, oldL, oldLink ? 500 : 150);
-  const r1In = firstFinite(r1Raw, oldR1, oldLink ? 1000 : 100);
-  const r2In = firstFinite(r2Raw, oldR2, oldLink ? 1000 : 100);
-  const wavelengthIn = firstFinite(wavelengthRaw, oldLink ? 1064 : 1550);
+export default function CavityModeSpacingPage() {
+  // Links from the old cavity-stability page carry L, r1, r2 (mm) at a fixed 1064 nm instead of these keys.
+  const [lengthRaw, setLength] = useURLState("cavityLength", 150); // mm
+  const [r1Raw, setR1] = useURLState("R1", 100); // mm, 0 = flat
+  const [r2Raw, setR2] = useURLState("R2", 100);
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [nRaw, setN] = useURLState("n", 1);
+  const oldL = useLegacyParam("L");
+  const oldR1 = useLegacyParam("r1");
+  const oldR2 = useLegacyParam("r2");
+  const oldLink = [oldL, oldR1, oldR2].some(Number.isFinite);
+  // A new key at its default is absent from the URL (the store drops default values), so an old link's value applies.
+  const oldOr = (raw: number, dflt: number, old: number, oldDefault: number) =>
+    oldLink && raw === dflt ? (Number.isFinite(old) ? old : oldDefault) : raw;
+
+  const lengthIn = oldOr(lengthRaw, 150, oldL, 500);
+  const r1In = oldOr(r1Raw, 100, oldR1, 1000);
+  const r2In = oldOr(r2Raw, 100, oldR2, 1000);
+  const wavelengthIn = oldLink && wavelengthRaw === 1550 ? 1064 : wavelengthRaw;
 
   const L_mm = clamp(lengthIn, 0.1, 1e5, 150);
   const R1_mm = clamp(r1In, -1e7, 1e7, 100);
@@ -40,7 +45,7 @@ export default function CavityModeSpacingPage() {
   const n = clamp(nRaw, 1, 4, 1);
 
   const L = L_mm * 1e-3;
-  const toRadius = (R_mm: number) => (R_mm === 0 ? Infinity : R_mm * 1e-3);
+  const toRadius = (R_mm: number) => mirrorRadius(R_mm * 1e-3);
   const g1 = gParameter(L, toRadius(R1_mm));
   const g2 = gParameter(L, toRadius(R2_mm));
   const stability = resonatorStability(g1, g2);

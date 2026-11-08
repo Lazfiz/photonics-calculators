@@ -104,6 +104,18 @@ import spectralLineBroadening from "./spectroscopy/spectral-line-broadening";
 import sumFrequencyGen from "./spectroscopy/sum-frequency-gen";
 import singleAr from "./thin-film/single-ar";
 import type { CalculatorSchema } from "./types";
+import abcdMatrix from "./wave-optics/abcd-matrix";
+import attosecondPulse from "./wave-optics/attosecond-pulse";
+import besselBeam from "./wave-optics/bessel-beam";
+import cavityDumped from "./wave-optics/cavity-dumped";
+import cavityModeSpacing from "./wave-optics/cavity-mode-spacing";
+import chirpedPulse from "./wave-optics/chirped-pulse";
+import differenceFrequency from "./wave-optics/difference-frequency";
+import diffractionIntegral from "./wave-optics/diffraction-integral";
+import diodeLaserResonator from "./wave-optics/diode-laser-resonator";
+import dyeLaserResonator from "./wave-optics/dye-laser-resonator";
+import filamentation from "./wave-optics/filamentation";
+import fourWaveMixing from "./wave-optics/four-wave-mixing";
 import gaussianBeam from "./wave-optics/gaussian-beam";
 
 export const schemas: readonly CalculatorSchema[] = [
@@ -123,6 +135,8 @@ export const schemas: readonly CalculatorSchema[] = [
   glansPrism, jonesCalculus, jonesChain, liquidCrystalPolarizer, microscopePolarizer, muellerMatrix, muellerPolarimetry,
   opticalActivity, orthoconoscopic, poincareSphere, polarimetry, polarizationScrambling, polarizerExtinction, polarizerTypes,
   polarizingBeamsplitter, polymerPolarizer, retarder, retarderTypes, waveplateOrder, waveplateThickness, wireGrid,
+  abcdMatrix, attosecondPulse, besselBeam, cavityDumped, cavityModeSpacing, chirpedPulse,
+  differenceFrequency, diffractionIntegral, diodeLaserResonator, dyeLaserResonator, filamentation, fourWaveMixing,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));

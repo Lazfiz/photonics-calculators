@@ -15,6 +15,7 @@
  * The gain has the form of the χ⁽²⁾ OPA gain with Γ = γP and Δk = κ, so it reuses three-wave.ts.
  */
 import { c } from "../constants";
+import { nonlinearCoefficient } from "../fiber-optics/fiber-nonlinear";
 import { parametricGain } from "./three-wave";
 
 /** Idler wavelength from 2ω_p = ω_s + ω_i: 1/λ_i = 2/λ_p − 1/λ_s. NaN when the signal is above twice the pump frequency. */
@@ -125,4 +126,92 @@ export function fwmLossyEvolution(gamma: number, pumpPower: number, deltaBeta: n
     }
   }
   return out;
+}
+
+/** Net signal gain P_s(L)/P_s(0): Hansryd's closed form when lossless, else the segmented solution with the pump decaying as e^(−αz). */
+export function fwmNetGain(gamma: number, pumpPower: number, deltaBeta: number, alpha: number, length: number): number {
+  return alpha > 0
+    ? fwmLossyEvolution(gamma, pumpPower, deltaBeta, alpha, length).at(-1)?.gain ?? NaN
+    : fwmSignalGain(gamma * pumpPower, deltaBeta, length);
+}
+
+export interface FwmInput {
+  lambdaPump: number;
+  lambdaSignal: number;
+  /** Pump and seed powers, W. */
+  pumpPower: number;
+  seedPower: number;
+  /** Nonlinear index n₂, m²/W. */
+  n2: number;
+  /** Effective area, m². */
+  area: number;
+  /** Fibre length, m. */
+  length: number;
+  /** β₂ in s²/m, β₄ in s⁴/m at the pump. */
+  beta2: number;
+  beta4: number;
+  /** Power loss α, 1/m. */
+  alpha: number;
+}
+
+export interface FwmSummary {
+  /** γ = 2πn₂/(λA_eff), 1/(W·m). */
+  gamma: number;
+  gammaP: number;
+  lambdaIdler: number;
+  /** Signal gain G_s (net of loss), linear. NaN without an idler. */
+  gain: number;
+  idlerPower: number;
+  /** Linear mismatch Δβ and κ = Δβ + 2γP, 1/m. */
+  deltaBeta: number;
+  kappa: number;
+  /** Gain coefficient g, 1/m; NaN outside the gain band. */
+  gainCoefficient: number;
+  /** Detuning of the κ = 0 gain peak, rad/s (NaN if none). */
+  peakDetuning: number;
+  /** Gain at that peak, linear (net, with loss, when α > 0). */
+  peakGain: number;
+  /** Wavelength shift of the peak on the long side, m. */
+  peakShift: number;
+  /** Pump power taken by signal and idler before the fibre loss, W. */
+  converted: number;
+}
+
+/**
+ * The four-wave-mixing page's results (Hansryd et al. 2002; Agrawal, Nonlinear Fiber Optics, ch. 10): gains, idler power,
+ * mismatch and the κ = 0 peak, with the lossy evolution when α > 0.
+ */
+export function fwmSummary(p: FwmInput): FwmSummary {
+  const { lambdaPump, lambdaSignal, pumpPower: Pp, seedPower: Ps, length: L, alpha, beta2, beta4 } = p;
+  const lossy = alpha > 0;
+  const gamma = nonlinearCoefficient(p.n2, lambdaPump, p.area);
+  const gammaP = gamma * Pp;
+  const lambdaI = fwmIdlerWavelength(lambdaPump, lambdaSignal);
+  const valid = Number.isFinite(lambdaI);
+  const omega = fwmDetuning(lambdaPump, lambdaSignal);
+  const deltaBeta = fwmLinearMismatch(beta2, omega, beta4);
+  const lossyEnd = valid && lossy ? fwmLossyEvolution(gamma, Pp, deltaBeta, alpha, L).at(-1) : undefined;
+  const gain = !valid ? NaN : lossy ? lossyEnd?.gain ?? NaN : fwmSignalGain(gammaP, deltaBeta, L);
+  const idlerPower = !valid
+    ? NaN
+    : lossy ? (lossyEnd ? (lambdaSignal / lambdaI) * lossyEnd.idler * Ps : NaN) : fwmIdlerPower(gain, Ps, lambdaSignal, lambdaI);
+  const peakDetuning = fwmPhaseMatchedDetuning(beta2, gammaP, beta4);
+  const peakGain = lossy ? fwmNetGain(gamma, Pp, fwmLinearMismatch(beta2, peakDetuning, beta4), alpha, L) : Math.cosh(gammaP * L) ** 2;
+  // 1/λ = 1/λ_p − Ω/(2πc) on the long-wavelength side.
+  const peakShift = 1 / (1 / lambdaPump - peakDetuning / (2 * Math.PI * c)) - lambdaPump;
+  const unattenuated = lossy ? Math.exp(alpha * L) : 1;
+  return {
+    gamma,
+    gammaP,
+    lambdaIdler: lambdaI,
+    gain,
+    idlerPower,
+    deltaBeta,
+    kappa: deltaBeta + 2 * gammaP,
+    gainCoefficient: fwmGainCoefficient(gammaP, deltaBeta),
+    peakDetuning,
+    peakGain,
+    peakShift,
+    converted: Ps * (gain * unattenuated - 1) + idlerPower * unattenuated,
+  };
 }

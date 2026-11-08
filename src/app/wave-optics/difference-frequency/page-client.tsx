@@ -4,11 +4,7 @@ import SimpleLineChart from "../../../components/simple-line-chart";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { parametricGainCoefficient } from "../../../physics/wave-optics/optical-parametric-oscillator";
-import { confocalParameter } from "../../../physics/imaging/second-harmonic-generation";
-import {
-  gaussianMixingPower, idlerWavelength, mixingEfficiency, qpmPeriod as qpmPeriodOf, threeWaveMismatch,
-} from "../../../physics/wave-optics/three-wave";
+import { differenceFrequencyModel, differenceFrequencyPower } from "../../../physics/wave-optics/three-wave";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
@@ -42,28 +38,13 @@ export default function DifferenceFrequencyPage() {
   const nI = clamp(nIdlerRaw, 1, 5, 2.0814);
   const deltaK = clamp(deltaKRaw, -1e4, 1e4, 0) * 1e3;
 
-  const lambdaI = idlerWavelength(lambdaP, lambdaS);
+  const params = { lambdaPump: lambdaP, lambdaSignal: lambdaS, deff, length: L, pumpPower: Pp, signalPower: Ps, waist: w, nPump: nP, nSignal: nS, nIdler: nI, deltaK };
+  const power = (length: number, dk: number) => differenceFrequencyPower(params, length, dk);
+  const {
+    lambdaIdler: lambdaI, idlerPower: Pi, normalizedEfficiency: normalized, qpmPeriod, gainLength: gammaL,
+    confocalMin: bMin, limitingBeam: limiting, focusingRatio: xi,
+  } = differenceFrequencyModel(params);
   const valid = Number.isFinite(lambdaI);
-  const power = (length: number, dk: number) =>
-    gaussianMixingPower(mixingEfficiency({ lambdaOut: lambdaI, length, deff, n1: nP, n2: nS, nOut: nI, deltaK: dk }), Pp, Ps, w, w);
-  const Pi = power(L, deltaK);
-  const normalized = Pp > 0 && Ps > 0 ? Pi / (Pp * Ps) : NaN;
-  // Δk = 2π(n_p/λ_p − n_s/λ_s − n_i/λ_i) without phase matching; first-order QPM period 2π/|Δk|.
-  const deltaKMaterial = threeWaveMismatch(nS, lambdaS, nI, lambdaI, nP, lambdaP);
-  const qpmPeriod = qpmPeriodOf(deltaKMaterial);
-  // On-axis parametric gain ΓL at the Gaussian peak intensity 2P_p/(πw²): the low-gain law needs ΓL ≪ 1.
-  const gamma = parametricGainCoefficient(
-    { lambdaPump: lambdaP, lambdaSignal: lambdaS, dEff: Math.max(deff, 1e-30), nPump: nP, nSignal: nS, nIdler: nI },
-    (2 * Pp) / (Math.PI * w * w),
-  );
-  const gammaL = gamma * L;
-  // The idler polarisation ∝ E_p E_s* has radius w/√2 for equal pump and signal radius w.
-  const bP = confocalParameter(lambdaP, nP, w);
-  const bS = confocalParameter(lambdaS, nS, w);
-  const bI = valid ? confocalParameter(lambdaI, nI, w / Math.SQRT2) : NaN;
-  const bMin = Math.min(bP, bS, Number.isFinite(bI) ? bI : Infinity);
-  const limiting = bMin === bI ? "idler" : bMin === bS ? "signal" : "pump";
-  const xi = L / bMin;
 
   const warnings = [
     !valid && "The signal wavelength must be longer than the pump wavelength: the idler is at 1/λ_i = 1/λ_p − 1/λ_s.",

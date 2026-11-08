@@ -4,11 +4,10 @@ import SimpleLineChart from "../../../components/simple-line-chart";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { gParameter, resonatorStability, twoMirrorMode } from "../../../physics/wave-optics/two-mirror-resonator";
 import { radiusAtDistance } from "../../../physics/wave-optics/gaussian-beam";
+import { mirrorRadius } from "../../../physics/wave-optics/two-mirror-resonator";
 import {
-  flowTripletLifetime, fourLevelGain, fourLevelSlopeEfficiency, fourLevelThreshold, gaussianOverlapArea, gaussianSlopeSaturationArea,
-  laserOutput, logarithmicLoss, roundTripLoss, saturationIntensity, tripletGainFactor,
+  dyeLaserCw, flowTripletLifetime, fourLevelGain, laserOutput, tripletGainFactor,
 } from "../../../physics/wave-optics/laser-resonator";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -48,31 +47,18 @@ export default function DyeLaserResonatorPage() {
   const R1_mm = clamp(r1Raw, -1e7, 1e7, 50);
   const R2_mm = clamp(r2Raw, -1e7, 1e7, 50);
   const R_oc = clamp(rOcRaw, 0.01, 0.9999, 0.97);
-  const internal = logarithmicLoss(clamp(lossRaw, 0, 50, 1) / 100); // single pass, −ln(1 − f) of power
-
-  const toRadius = (R_mm: number) => (R_mm === 0 ? Infinity : R_mm * 1e-3);
-  const g1 = gParameter(L, toRadius(R1_mm));
-  const g2 = gParameter(L, toRadius(R2_mm));
-  const stability = resonatorStability(g1, g2);
-  const mode = twoMirrorMode(lambda, L, g1, g2);
+  const toRadius = (R_mm: number) => mirrorRadius(R_mm * 1e-3);
+  const op = dyeLaserCw({
+    lambda, lambdaP, pump, etaP, wp, sigmaE, tau, sigmaT, kST, tauT, flow, L, R1: toRadius(R1_mm), R2: toRadius(R2_mm), R_oc,
+    lossPerPass: clamp(lossRaw, 0, 50, 1) / 100, // single pass, −ln(1 − f) of power
+  });
+  const { g1, g2, stability, mode, internal, tauEff, factor, pumpArea, modeArea, delta, pTh, g0l, iSat, pSat, pOut, slope } = op;
   const statusTone = stability === "stable" ? "green" : stability === "marginal" ? "yellow" : "red";
 
   // Jet at the waist: triplets live τ_eff while the flow carries them across the pump spot and the mode.
   const factorAt = (v: number) => tripletGainFactor(sigmaE, sigmaT, kST, flowTripletLifetime(tauT, v, mode.w0, wp));
-  const tauEff = flowTripletLifetime(tauT, flow, mode.w0, wp);
-  const factor = factorAt(flow);
   const sigmaNet = sigmaE * factor;
-  const pumpArea = gaussianOverlapArea(mode.w0, wp);
-  const modeArea = gaussianSlopeSaturationArea(mode.w0, wp); // Laporta–Brussard near-threshold saturation area
-  const delta = roundTripLoss(1, R_oc, internal);
-  const pTh = factor > 0 ? fourLevelThreshold(delta, lambdaP, sigmaNet, tau, pumpArea, etaP) : NaN;
   const gainAt = (p: number) => (factor > 0 ? fourLevelGain(p, lambdaP, sigmaNet, tau, pumpArea, etaP) : NaN);
-  const g0l = gainAt(pump);
-  const iSat = saturationIntensity(lambda, sigmaE, tau);
-  const pSat = iSat * modeArea;
-  const pOut = laserOutput(g0l, 1, R_oc, internal, pSat);
-  // The gain grows with the net cross-section but saturates through σₑ, so triplets scale the slope by the same factor.
-  const slope = factor > 0 ? factor * fourLevelSlopeEfficiency(lambda, lambdaP, 1, R_oc, internal, modeArea, pumpArea, etaP) : NaN;
 
   const pMax = Math.max(2 * pump, 1.5 * (Number.isFinite(pTh) ? pTh : 0), 0.1);
   const powerSeries = [
