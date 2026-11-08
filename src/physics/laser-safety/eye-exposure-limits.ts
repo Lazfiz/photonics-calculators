@@ -413,3 +413,57 @@ export function exposureDuration(lambda: number, P: number, d: number, alpha = 0
   for (const l of limits) if (Number.isNaN(l.tMax) || (!Number.isNaN(first.tMax) && l.tMax < first.tMax)) first = l;
   return { tMax: first.tMax, limiting: first.tMax === Infinity ? null : first.kind, limits };
 }
+
+/**
+ * The retinal thermal limit of a point source and of an apparent source subtending α (rad), 400–1400 nm, at exposure t
+ * (s), with C_E, α_max(t) and T₂ (the extended-source page). λ in m.
+ */
+export function extendedSourceLimits(lambda: number, alpha: number, t: number) {
+  const point = eyeLimits(lambda)[0];
+  const extended = eyeLimits(lambda, alpha)[0];
+  return {
+    point, extended,
+    hPoint: exposureLimit(point, t),
+    hExt: exposureLimit(extended, t),
+    pPoint: limitMaxPower(point, 0, t),
+    pExt: limitMaxPower(extended, 0, t),
+    ce: correctionCE(alpha, t),
+    aMax: alphaMax(t),
+    T2: timeT2(alpha),
+  };
+}
+
+/**
+ * The retinal thermal and photochemical limits, 400–600 nm, for source subtense α (rad) at exposure t (s), the limit
+ * that governs, and the duration from which the photochemical one does (the thermal-vs-photochemical page).
+ */
+export function thermalVsPhotochemical(lambda: number, alpha: number, t: number) {
+  const limits = eyeLimits(lambda, alpha);
+  const thermal = limits.find((l) => l.kind === "retinalThermal")!;
+  const photo = limits.find((l) => l.kind === "retinalPhotochemical") ?? null; // none from 600 nm
+  const hTh = exposureLimit(thermal, t);
+  const hPh = photo ? exposureLimit(photo, t) : NaN; // NaN below 10 s
+  return {
+    thermal, photo, hTh, hPh,
+    pTh: limitMaxPower(thermal, 0, t),
+    pPh: photo ? limitMaxPower(photo, 0, t) : NaN,
+    governing: photo && Number.isFinite(hPh) && hPh <= hTh ? photo.kind : thermal.kind,
+    crossover: photochemicalCrossover(lambda, alpha),
+  };
+}
+
+/**
+ * Every eye limit at λ (m) for a CW beam of power P (W) and 1/e² diameter d (m) at exposure t (s), the one with the
+ * least max power, and P over it (the infrared-hazard page). governing is null outside 180 nm – 1 mm.
+ */
+export function infraredHazard(lambda: number, P: number, d: number, t: number) {
+  const rows = eyeLimits(lambda).map((limit) => ({
+    limit,
+    H: exposureLimit(limit, t),
+    D: limitingAperture(limit, t),
+    E: limitIrradiance(limit, P, d, t),
+    pMax: limitMaxPower(limit, d, t),
+  }));
+  const governing = rows.reduce<(typeof rows)[number] | null>((g, r) => (!g || r.pMax < g.pMax ? r : g), null);
+  return { rows, governing, ratio: governing ? P / governing.pMax : NaN };
+}

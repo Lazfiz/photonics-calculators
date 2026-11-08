@@ -9,7 +9,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { T_MAX } from "../../../physics/laser-safety/eye-exposure-limits";
-import { pulseTrainLimits, timeTi } from "../../../physics/laser-safety/pulse-train";
+import { pulseTrainLimits, timeTi, trainFromInputs } from "../../../physics/laser-safety/pulse-train";
 
 const RULE_NAMES = { 1: "single pulse", 2: "pulse groups (average)", 3: "C_P × single pulse" } as const;
 
@@ -27,12 +27,12 @@ export default function PulsedMPEPage() {
   const Q = Math.max(pulseEnergyRaw, 0) * 1e-6;
   const tau = Math.min(Math.max(pulseDurationRaw, 1e-6), T_MAX * 1e9) * 1e-9;
   const prf = Math.max(prfRaw, 0);
-  const T = Math.min(Math.max(exposureRaw, tau), T_MAX);
   const d = Math.max(beamDiamRaw, 0.01) * 1e-3;
   const alpha = Math.max(alphaRaw, 0) * 1e-3;
   const overlap = prf * tau > 1;
 
-  const train = useMemo(() => ({ duration: tau, prf, exposure: T }), [tau, prf, T]);
+  const train = useMemo(() => trainFromInputs(tau, prf, exposureRaw), [tau, prf, exposureRaw]);
+  const T = train.exposure;
   const result = useMemo(() => pulseTrainLimits(lambda, d, train, alpha), [lambda, d, train, alpha]);
   const covered = result.limits.length > 0 && Number.isFinite(result.qMax);
   const ratio = Q / result.qMax;

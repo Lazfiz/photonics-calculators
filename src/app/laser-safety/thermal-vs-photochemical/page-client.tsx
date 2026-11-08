@@ -8,7 +8,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  correctionCB, correctionCE, exposureLimit, eyeLimits, limitMaxPower, photochemicalCrossover, T_MAX, timeT2,
+  correctionCB, correctionCE, exposureLimit, T_MAX, thermalVsPhotochemical, timeT2,
 } from "../../../physics/laser-safety/eye-exposure-limits";
 
 export default function ThermalVsPhotochemicalPage() {
@@ -21,20 +21,7 @@ export default function ThermalVsPhotochemicalPage() {
   const t = Math.min(Math.max(exposureTime, 1e-6), T_MAX);
   const alpha = Math.max(alphaMrad, 0) * 1e-3;
 
-  const r = useMemo(() => {
-    const limits = eyeLimits(lambda, alpha);
-    const thermal = limits.find((l) => l.kind === "retinalThermal")!;
-    const photo = limits.find((l) => l.kind === "retinalPhotochemical") ?? null; // none from 600 nm
-    const hTh = exposureLimit(thermal, t);
-    const hPh = photo ? exposureLimit(photo, t) : NaN; // NaN below 10 s
-    return {
-      thermal, photo, hTh, hPh,
-      pTh: limitMaxPower(thermal, 0, t),
-      pPh: photo ? limitMaxPower(photo, 0, t) : NaN,
-      governing: photo && Number.isFinite(hPh) && hPh <= hTh ? photo.kind : thermal.kind,
-      crossover: photochemicalCrossover(lambda, alpha),
-    };
-  }, [lambda, alpha, t]);
+  const r = useMemo(() => thermalVsPhotochemical(lambda, alpha, t), [lambda, alpha, t]);
 
   const chartData = useMemo(() => {
     const times = Array.from({ length: 241 }, (_, i) => 1e-6 * Math.pow(T_MAX / 1e-6, i / 240));

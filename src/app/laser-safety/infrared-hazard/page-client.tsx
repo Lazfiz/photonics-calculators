@@ -8,7 +8,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  exposureLimit, eyeLimits, limitIrradiance, limitingAperture, limitMaxPower, T_MAX, T_MIN,
+  infraredHazard, limitMaxPower, T_MAX, T_MIN,
 } from "../../../physics/laser-safety/eye-exposure-limits";
 
 export default function InfraredHazardPage() {
@@ -23,18 +23,7 @@ export default function InfraredHazardPage() {
   const d = Math.max(beamDiameter, 0) * 1e-3;
   const t = Math.min(Math.max(exposureTime, T_MIN), T_MAX);
 
-  const rows = useMemo(
-    () =>
-      eyeLimits(lambda).map((limit) => {
-        const H = exposureLimit(limit, t);
-        const D = limitingAperture(limit, t);
-        const pMax = limitMaxPower(limit, d, t);
-        return { limit, H, D, E: limitIrradiance(limit, P, d, t), pMax };
-      }),
-    [lambda, P, d, t],
-  );
-  const governing = rows.reduce<(typeof rows)[number] | null>((g, r) => (!g || r.pMax < g.pMax ? r : g), null);
-  const ratio = governing ? P / governing.pMax : NaN;
+  const { rows, governing, ratio } = useMemo(() => infraredHazard(lambda, P, d, t), [lambda, P, d, t]);
 
   const chartData = useMemo(() => {
     const times = Array.from({ length: 271 }, (_, i) => T_MIN * Math.pow(T_MAX / T_MIN, i / 270));
