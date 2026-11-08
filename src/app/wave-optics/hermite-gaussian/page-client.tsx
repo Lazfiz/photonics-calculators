@@ -17,6 +17,7 @@ const round6 = (x: number) => Number(x.toPrecision(6));
 const MAX_INDEX = 10;
 // Old-link keys: p or l without family opens the Laguerre-Gaussian view; the schema has p, l as plain inputs.
 const useLegacyParam = (key: string) => useURLState(key, NaN)[0];
+const useRawText = (key: string) => useURLState(key, "")[0]; // "" when absent, so an explicit family=hg is visible
 
 export default function HigherOrderModesPage() {
   const [familyRaw, setFamily] = useURLState("family", "hg");
@@ -30,9 +31,10 @@ export default function HigherOrderModesPage() {
   const [lRaw, setL] = useURLState("l", 1);
   const oldP = useLegacyParam("p");
   const oldL = useLegacyParam("l");
-  const oldLgLink = Number.isFinite(oldP) || Number.isFinite(oldL);
+  const explicitFamily = useRawText("family");
+  const oldLgLink = explicitFamily !== "hg" && (Number.isFinite(oldP) || Number.isFinite(oldL));
 
-  // p or l in the URL without family=lg (old Laguerre-Gaussian link) opens LG; choosing HG resets p, l to their defaults, which removes them from the URL.
+  // p or l in the URL without family (old Laguerre-Gaussian link) opens LG; family=hg wins; choosing HG resets p, l to their defaults, which removes them from the URL.
   const family = familyRaw === "lg" || oldLgLink ? "lg" : "hg";
   const lg = family === "lg";
   const wavelength = clamp(wavelengthRaw, 200, 11000, 1550);
