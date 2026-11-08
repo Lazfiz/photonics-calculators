@@ -130,11 +130,23 @@ import stokes from "./polarization/stokes";
 import waveplateOrder from "./polarization/waveplate-order";
 import waveplateThickness from "./polarization/waveplate-thickness";
 import wireGrid from "./polarization/wire-grid";
+import absorptionCrossSection from "./spectroscopy/absorption-cross-section";
+import absorptionDepth from "./spectroscopy/absorption-depth";
+import apodizationComparison from "./spectroscopy/apodization-comparison";
 import blackbody from "./spectroscopy/blackbody";
 import cavityRingDown from "./spectroscopy/cavity-ring-down";
+import concMirror from "./spectroscopy/conc-mirror";
+import dispersiveElement from "./spectroscopy/dispersive-element";
+import dualCombSpectroscopy from "./spectroscopy/dual-comb-spectroscopy";
+import electronSpectroscopy from "./spectroscopy/electron-spectroscopy";
+import etalonFsr from "./spectroscopy/etalon-fsr";
 import fluorescenceLifetime from "./spectroscopy/fluorescence-lifetime";
+import fluorescenceQuantumYield from "./spectroscopy/fluorescence-quantum-yield";
+import fourierTransform from "./spectroscopy/fourier-transform";
 import ftirResolution from "./spectroscopy/ftir-resolution";
+import gratingEfficiency from "./spectroscopy/grating-efficiency";
 import infraredSpectroscopy from "./spectroscopy/infrared-spectroscopy";
+import jacquinot from "./spectroscopy/jacquinot";
 import lambertBeerLaw from "./spectroscopy/lambert-beer-law";
 import spectralLineBroadening from "./spectroscopy/spectral-line-broadening";
 import sumFrequencyGen from "./spectroscopy/sum-frequency-gen";
@@ -207,6 +219,8 @@ export const schemas: readonly CalculatorSchema[] = [
   eyeSafeWavelength, interlockDesign, multipleWavelength, peakPower, powerDensity, thermalLensHazard,
   classification, diffuseReflection, diodeLaserSafety, enclosureClass, fiberLaserSafety, greenLaserPointer,
   industrialLaserSafety, lidarSafety, medicalLaserSafety, researchLabSafety, scanningMpe, ultrafastLaserSafety,
+  absorptionCrossSection, absorptionDepth, apodizationComparison, concMirror, dispersiveElement, dualCombSpectroscopy,
+  electronSpectroscopy, etalonFsr, fluorescenceQuantumYield, fourierTransform, gratingEfficiency, jacquinot,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));
