@@ -1,12 +1,10 @@
 // /llms.txt (https://llmstxt.org): a Markdown map of the site for language models and AI agents, generated from the
 // registry. Server-side only.
-import { SITE_URL } from "../lib/site";
+import { REPO_URL, SITE_URL } from "../lib/site";
 import { schemas } from "../schemas";
 import { apiPath } from "./api";
 import { calculators, categories } from "./index";
 import { TIERS, UNREVIEWED, tierInfo } from "./tiers";
-
-export const REPO_URL = "https://github.com/Lazfiz/photonics-calculators";
 
 export function buildLlmsTxt(): string {
   const listed = calculators.filter((calculator) => !calculator.hidden);

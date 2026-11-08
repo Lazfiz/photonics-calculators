@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import ReportProblem from "../../components/report-problem";
 import { totalCalculatorCount } from "../../lib/home-categories";
-import { SITE_URL } from "../../lib/site";
+import { REPO_URL, SITE_URL } from "../../lib/site";
 import testStats from "../../lib/test-stats.json";
 import { calculators } from "../../registry";
 import { TIERS, UNREVIEWED, type TierInfo } from "../../registry/tiers";
@@ -61,6 +61,14 @@ export default function AboutPage() {
             spreadsheet every time they needed a quick NOHD or ABCD matrix
             calculation.
           </p>
+          <p>
+            The source code is on{" "}
+            <a href={REPO_URL} className="text-blue-400 hover:text-blue-300">GitHub</a> under the MIT License.
+            Corrections, references and new calculators are welcome: see the{" "}
+            <a href={`${REPO_URL}/blob/main/CONTRIBUTING.md`} className="text-blue-400 hover:text-blue-300">
+              contributing guide
+            </a>.
+          </p>
         </section>
 
         <section id="model-tiers" className="mt-12 scroll-mt-6">
@@ -105,7 +113,7 @@ export default function AboutPage() {
               experts, and 8 pages were checked against the source text, the other 22 against the standard
               textbook result.{" "}
               <a
-                href="https://github.com/Lazfiz/photonics-calculators/blob/main/docs/audit/9b-blind-audit.md"
+                href={`${REPO_URL}/blob/main/docs/audit/9b-blind-audit.md`}
                 rel="noopener noreferrer"
                 className="text-blue-400 hover:text-blue-300"
               >

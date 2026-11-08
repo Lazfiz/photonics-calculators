@@ -5,14 +5,13 @@ import { parseReport, RateLimiter } from "../lib/report";
 import { sendReport } from "../lib/report-send";
 import type { SearchItem } from "../lib/search-index-types";
 import { scoreItem, searchItems, searchTerms } from "../lib/site-search";
-import { SITE_URL } from "../lib/site";
+import { REPO_URL, SITE_URL } from "../lib/site";
 import { findSchema, schemas } from "../schemas";
 import { parseInputs, runSchema } from "../schemas/run";
 import type { CalculatorSchema } from "../schemas/types";
 import { apiResponse } from "../registry/api";
 import { schemaChecks } from "../registry/checks";
 import { calculators, findCalculator, type Calculator } from "../registry";
-import { REPO_URL } from "../registry/llms";
 import { buildSearchIndex } from "../registry/search";
 import { tierInfo } from "../registry/tiers";
 
