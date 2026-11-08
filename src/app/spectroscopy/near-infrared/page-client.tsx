@@ -6,7 +6,7 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { waterAbsorption } from "../../../physics/materials/water-absorption";
 import {
-  dpfFrontalHead, hbExtinction, localMaxima, mbllHaemoglobin, morseMaxLevel, morseTransition, morseWellDepth,
+  hbExtinction, localMaxima, mbllDpf, mbllHaemoglobin, morseMaxLevel, morseTransition, morseWellDepth,
 } from "../../../physics/spectroscopy/near-infrared";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -71,8 +71,8 @@ export default function NearInfraredPage() {
   const dCm = clamp(distRaw, 0.1, 20, 3);
   const dpfMode = dpfModeRaw === "manual" ? "manual" : "age";
   const age = clamp(ageRaw, 0, 70, 30);
-  const dpf1 = dpfMode === "age" ? dpfFrontalHead(age, l1 * 1e-9) : clamp(dpf1Raw, 1, 50, 6);
-  const dpf2 = dpfMode === "age" ? dpfFrontalHead(age, l2 * 1e-9) : clamp(dpf2Raw, 1, 50, 6);
+  const dpf1 = mbllDpf(dpfMode, age, l1 * 1e-9, clamp(dpf1Raw, 1, 50, 6));
+  const dpf2 = mbllDpf(dpfMode, age, l2 * 1e-9, clamp(dpf2Raw, 1, 50, 6));
   const dc = mbllHaemoglobin(l1 * 1e-9, l2 * 1e-9, dOD1, dOD2, dCm / 100, dpf1, dpf2);
   const outOfDpfRange = dpfMode === "age" && !(Number.isFinite(dpf1) && Number.isFinite(dpf2));
 

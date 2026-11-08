@@ -148,6 +148,17 @@ import gratingEfficiency from "./spectroscopy/grating-efficiency";
 import infraredSpectroscopy from "./spectroscopy/infrared-spectroscopy";
 import jacquinot from "./spectroscopy/jacquinot";
 import lambertBeerLaw from "./spectroscopy/lambert-beer-law";
+import libsAnalysis from "./spectroscopy/libs-analysis";
+import michelsonInterferometer from "./spectroscopy/michelson-interferometer";
+import microwaveSpectroscopy from "./spectroscopy/microwave-spectroscopy";
+import nearInfrared from "./spectroscopy/near-infrared";
+import opticalDensity from "./spectroscopy/optical-density";
+import opticalPathLength from "./spectroscopy/optical-path-length";
+import penetrationDepth from "./spectroscopy/penetration-depth";
+import phaseCorrection from "./spectroscopy/phase-correction";
+import pumpProbe from "./spectroscopy/pump-probe";
+import ramanShift from "./spectroscopy/raman-shift";
+import spectralCalibration from "./spectroscopy/spectral-calibration";
 import spectralLineBroadening from "./spectroscopy/spectral-line-broadening";
 import sumFrequencyGen from "./spectroscopy/sum-frequency-gen";
 import singleAr from "./thin-film/single-ar";
@@ -221,6 +232,9 @@ export const schemas: readonly CalculatorSchema[] = [
   industrialLaserSafety, lidarSafety, medicalLaserSafety, researchLabSafety, scanningMpe, ultrafastLaserSafety,
   absorptionCrossSection, absorptionDepth, apodizationComparison, concMirror, dispersiveElement, dualCombSpectroscopy,
   electronSpectroscopy, etalonFsr, fluorescenceQuantumYield, fourierTransform, gratingEfficiency, jacquinot,
+
+  libsAnalysis, michelsonInterferometer, microwaveSpectroscopy, nearInfrared, opticalDensity, opticalPathLength,
+  penetrationDepth, phaseCorrection, pumpProbe, ramanShift, spectralCalibration,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));
