@@ -6,7 +6,7 @@ import ts from "typescript";
 
 import * as K from "../src/physics/constants";
 
-// CLAUDE.md rule 4: constants come only from src/physics/constants.ts. The codemod
+// CONTRIBUTING.md (physics rules): constants come only from src/physics/constants.ts. The codemod
 // scripts/codemods/2026-10-08-inline-constants.ts replaced 273 rounded literals (3e8, 1.6e-19, …).
 // This fails on any numeric literal within 1 % of an SI constant or a unit-scaled one (GUARDS), whatever
 // its spelling. Comments, strings and JSX text aren't numeric literals, so formulas shown to the reader
