@@ -8,22 +8,11 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  eyeLimits, limitMaxPower, T_MAX, T_MIN, type EyeLimit, type EyeLimitKind,
+  eyeLimits, T_MAX, T_MIN, type EyeLimitKind,
 } from "../../../physics/laser-safety/eye-exposure-limits";
-import { retinalGain, retinalImageDiameter, retinalIrradiance } from "../../../physics/laser-safety/retinal-image";
+import { retinalGain, retinalImageDiameter, retinalIrradiance, tissueMaxPower } from "../../../physics/laser-safety/retinal-image";
 
 const RETINAL: readonly EyeLimitKind[] = ["retinalThermal", "retinalPhotochemical"];
-
-/** The lowest max power among the limits of one tissue, and which limit it is; null if the tissue has none at λ. */
-function tissueMax(limits: EyeLimit[], retina: boolean, d: number, t: number) {
-  let best: { kind: EyeLimitKind; pMax: number } | null = null;
-  for (const l of limits) {
-    if (RETINAL.includes(l.kind) !== retina) continue;
-    const pMax = limitMaxPower(l, d, t);
-    if (!best || pMax < best.pMax) best = { kind: l.kind, pMax };
-  }
-  return best;
-}
 
 export default function CornealVsRetinalPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1300, { min: 180, max: 1000000 }); // nm
@@ -37,15 +26,15 @@ export default function CornealVsRetinalPage() {
 
   const r = useMemo(() => {
     const limits = eyeLimits(lambda);
-    const retina = tissueMax(limits, true, d, t);
-    const front = tissueMax(limits, false, d, t);
+    const retina = tissueMaxPower(limits, true, d, t);
+    const front = tissueMaxPower(limits, false, d, t);
     const s = retinalImageDiameter(lambda, d);
     return { retina, front, s, gain: retinalGain(s) };
   }, [lambda, d, t]);
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 401 }, (_, i) => 180 * Math.pow(20000 / 180, i / 400));
-    const curve = (retina: boolean) => wls.map((nm) => tissueMax(eyeLimits(nm * 1e-9), retina, d, t)?.pMax ?? NaN);
+    const curve = (retina: boolean) => wls.map((nm) => tissueMaxPower(eyeLimits(nm * 1e-9), retina, d, t)?.pMax ?? NaN);
     const traces: Record<string, unknown>[] = [
       ...segmentedLine(wls, curve(true), "Retina", { color: "#60a5fa" }),
       ...segmentedLine(wls, curve(false), "Cornea / lens", { color: "#fbbf24" }),

@@ -11,7 +11,7 @@
  * Not modelled: absorption in the ocular media (the C_C factor of the limits accounts for it above 1150 nm),
  * aberrations of the eye, and the image of an extended (non-beam) source.
  */
-import { ALPHA_MIN } from "./eye-exposure-limits";
+import { ALPHA_MIN, eyeLimits, limitMaxPower, type EyeLimit, type EyeLimitKind } from "./eye-exposure-limits";
 
 /** Air-equivalent focal length of the relaxed eye, m. */
 export const EYE_FOCAL_LENGTH = 17e-3;
@@ -104,4 +104,31 @@ export function gaussianApparentSource(lambda: number, d0: number, theta: number
   const spot = ((lambda * f) / Math.PI) * Math.max(M2 / w, 2 / D);
   const radius = Math.hypot(blur, spot);
   return { M2, dCornea: 2 * w, curvature, accommodation, defocus, retinalDiameter: 2 * radius, alpha: (Math.SQRT2 * radius) / f };
+}
+
+const RETINAL_KINDS: readonly EyeLimitKind[] = ["retinalThermal", "retinalPhotochemical"];
+
+/**
+ * The lowest max power, W, among the limits of one tissue (the retina: thermal and photochemical; otherwise the front
+ * of the eye) for a beam of 1/e² diameter d (m) and duration t (s), and which limit it is; null if the tissue has no
+ * limit in the list (e.g. no retinal limit outside 400–1400 nm).
+ */
+export function tissueMaxPower(limits: readonly EyeLimit[], retina: boolean, d: number, t: number): { kind: EyeLimitKind; pMax: number } | null {
+  let best: { kind: EyeLimitKind; pMax: number } | null = null;
+  for (const l of limits) {
+    if (RETINAL_KINDS.includes(l.kind) !== retina) continue;
+    const pMax = limitMaxPower(l, d, t);
+    if (!best || pMax < best.pMax) best = { kind: l.kind, pMax };
+  }
+  return best;
+}
+
+/** The lowest max power, W, over every eye limit at λ (m) for a beam of 1/e² diameter d (m) and duration t (s), and which one. */
+export function governingMaxPower(lambda: number, d: number, t: number): { kind: EyeLimitKind; pMax: number } | null {
+  let governing: { kind: EyeLimitKind; pMax: number } | null = null;
+  for (const l of eyeLimits(lambda)) {
+    const pMax = limitMaxPower(l, d, t);
+    if (!governing || pMax < governing.pMax) governing = { kind: l.kind, pMax };
+  }
+  return governing;
 }

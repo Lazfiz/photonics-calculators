@@ -8,7 +8,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  alphaMax, correctionCE, exposureLimit, eyeLimits, limitMaxPower, T_MAX, T_MIN, timeT2,
+  exposureLimit, extendedSourceLimits, T_MAX, T_MIN,
 } from "../../../physics/laser-safety/eye-exposure-limits";
 
 export default function ExtendedSourcePage() {
@@ -21,20 +21,7 @@ export default function ExtendedSourcePage() {
   const alpha = Math.max(alphaMrad, 0) * 1e-3;
   const t = Math.min(Math.max(exposureTime, T_MIN), T_MAX);
 
-  const r = useMemo(() => {
-    const point = eyeLimits(lambda)[0];
-    const extended = eyeLimits(lambda, alpha)[0];
-    const hPoint = exposureLimit(point, t);
-    const hExt = exposureLimit(extended, t);
-    return {
-      point, extended, hPoint, hExt,
-      pPoint: limitMaxPower(point, 0, t),
-      pExt: limitMaxPower(extended, 0, t),
-      ce: correctionCE(alpha, t),
-      aMax: alphaMax(t),
-      T2: timeT2(alpha),
-    };
-  }, [lambda, alpha, t]);
+  const r = useMemo(() => extendedSourceLimits(lambda, alpha, t), [lambda, alpha, t]);
 
   const chartData = useMemo(() => {
     const times = Array.from({ length: 271 }, (_, i) => T_MIN * Math.pow(T_MAX / T_MIN, i / 270));

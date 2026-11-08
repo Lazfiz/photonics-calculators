@@ -118,6 +118,11 @@ export interface PulseTrain {
   readonly exposure: number;
 }
 
+/** The train a page builds from its inputs: the exposure time T (s) is raised to at least one pulse and capped at 30 ks. */
+export function trainFromInputs(tau: number, prf: number, exposureTime: number): PulseTrain {
+  return { duration: tau, prf, exposure: Math.min(Math.max(exposureTime, tau), T_MAX) };
+}
+
 const validTrain = ({ duration: tau, prf: f, exposure: T }: PulseTrain) =>
   tau > 0 && f >= 0 && f * tau <= 1 && T >= tau && T <= T_MAX;
 

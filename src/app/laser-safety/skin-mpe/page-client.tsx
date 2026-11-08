@@ -8,9 +8,9 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  ACTUAL_EXPOSURE_BELOW, exposureLimit, limitingAperture, limitIrradiance, limitMaxPower, T_MAX, T_MIN,
+  ACTUAL_EXPOSURE_BELOW, exposureLimit, limitIrradiance, T_MAX, T_MIN,
 } from "../../../physics/laser-safety/eye-exposure-limits";
-import { skinLimit } from "../../../physics/laser-safety/skin-exposure-limits";
+import { skinLimit, skinMpeResult } from "../../../physics/laser-safety/skin-exposure-limits";
 import { peakIrradiance } from "../../../physics/laser-safety/visual-interference";
 
 export default function SkinMpePage() {
@@ -27,14 +27,8 @@ export default function SkinMpePage() {
   const exposedArea = (Math.PI * d * d) / 4;
 
   const r = useMemo(() => {
-    const limit = skinLimit(lambda, exposedArea);
-    if (!limit) return null;
-    const H = exposureLimit(limit, t);
-    const D = limitingAperture(limit, t);
-    const E = limitIrradiance(limit, P, d, t);
-    const pMax = limitMaxPower(limit, d, t);
-    return { H, D, E, pMax, ratio: P / pMax };
-  }, [lambda, exposedArea, P, d, t]);
+    return skinMpeResult(lambda, P, d, t);
+  }, [lambda, P, d, t]);
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 601 }, (_, i) => 180 * Math.pow(1e6 / 180, i / 600));

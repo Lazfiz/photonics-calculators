@@ -17,7 +17,7 @@
  * note d).
  */
 import {
-  ACTUAL_EXPOSURE_BELOW, correctionCA, eyeLimits, fixedAperture, T_MAX, T_MIN, type AperturePiece, type Piece, type TabulatedLimit,
+  ACTUAL_EXPOSURE_BELOW, correctionCA, exposureLimit, eyeLimits, fixedAperture, limitIrradiance, limitingAperture, limitMaxPower, T_MAX, T_MIN, type AperturePiece, type Piece, type TabulatedLimit,
 } from "./eye-exposure-limits";
 
 export interface SkinLimit extends TabulatedLimit {
@@ -50,4 +50,30 @@ export function skinLimit(lambda: number, exposedArea = 0): SkinLimit | null {
   const areaFactor = Math.min(1, Math.max(0.1, 0.01 / exposedArea));
   const pieces = eye.map((s) => (s.t0 >= 10 && s.p === 1 ? { ...s, a: s.a * areaFactor } : s));
   return { kind: "skin", pieces, apertures };
+}
+
+export interface SkinMpeResult {
+  /** Skin limit H at t, J/m². */
+  H: number;
+  /** Averaging aperture, m. */
+  D: number;
+  /** Beam irradiance the limit compares (3.5 mm average, or the peak for d/√2 < 1 mm), W/m². */
+  E: number;
+  /** Largest power within the limit at every duration up to t, W. */
+  pMax: number;
+  /** P / pMax. */
+  ratio: number;
+}
+
+/**
+ * The page's skin-limit evaluation for a round Gaussian beam: power P (W), 1/e² diameter d (m), exposure t (s, clamped
+ * to 1 ns – 30 ks) at wavelength λ (m). The exposed area for the large-area rule is the area inside the 1/e² diameter.
+ * Null outside 180 nm – 1 mm.
+ */
+export function skinMpeResult(lambda: number, P: number, d: number, t: number): SkinMpeResult | null {
+  const tc = Math.min(Math.max(t, T_MIN), T_MAX);
+  const limit = skinLimit(lambda, (Math.PI * d * d) / 4);
+  if (!limit) return null;
+  const pMax = limitMaxPower(limit, d, tc);
+  return { H: exposureLimit(limit, tc), D: limitingAperture(limit, tc), E: limitIrradiance(limit, P, d, tc), pMax, ratio: P / pMax };
 }

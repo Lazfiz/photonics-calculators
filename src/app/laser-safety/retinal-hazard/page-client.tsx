@@ -7,9 +7,9 @@ import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { apertureIrradiance, eyeLimits, limitMaxPower, T_MAX, T_MIN, type EyeLimitKind } from "../../../physics/laser-safety/eye-exposure-limits";
+import { apertureIrradiance, T_MAX, T_MIN } from "../../../physics/laser-safety/eye-exposure-limits";
 import {
-  pupilPower, PUPIL_DIAMETER, retinalGain, retinalImageDiameter, retinalIrradiance,
+  governingMaxPower, pupilPower, PUPIL_DIAMETER, retinalGain, retinalImageDiameter, retinalIrradiance,
 } from "../../../physics/laser-safety/retinal-image";
 
 export default function RetinalHazardPage() {
@@ -28,12 +28,8 @@ export default function RetinalHazardPage() {
 
   const r = useMemo(() => {
     const s = retinalImageDiameter(lambda, d, D);
-    let governing: { kind: EyeLimitKind; pMax: number } | null = null;
     // Every eye limit: from 1150 nm the anterior segment must be checked too, and it binds from about 1.3 µm (ICNIRP 2013, p. 281).
-    for (const l of eyeLimits(lambda)) {
-      const pMax = limitMaxPower(l, d, t);
-      if (!governing || pMax < governing.pMax) governing = { kind: l.kind, pMax };
-    }
+    const governing = governingMaxPower(lambda, d, t);
     return {
       s,
       pIn: pupilPower(P, d, D),

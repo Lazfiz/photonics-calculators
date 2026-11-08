@@ -30,10 +30,22 @@ import wavelengthSelection from "./free-space-comms/wavelength-selection";
 import airyDisk from "./imaging/airy-disk";
 import lowCoherence from "./imaging/low-coherence";
 import tirf from "./imaging/tirf";
+import blueLightHazard from "./laser-safety/blue-light-hazard";
+import cornealVsRetinal from "./laser-safety/corneal-vs-retinal";
+import exposureDuration from "./laser-safety/exposure-duration";
+import extendedSource from "./laser-safety/extended-source";
+import infraredHazard from "./laser-safety/infrared-hazard";
 import mpe from "./laser-safety/mpe";
 import nohd from "./laser-safety/nohd";
 import odRequirements from "./laser-safety/od-requirements";
 import laserOpticalDensity from "./laser-safety/optical-density";
+import pulsedMpe from "./laser-safety/pulsed-mpe";
+import retinalHazard from "./laser-safety/retinal-hazard";
+import retinalImageSize from "./laser-safety/retinal-image-size";
+import skinMpe from "./laser-safety/skin-mpe";
+import thermalVsPhotochemical from "./laser-safety/thermal-vs-photochemical";
+import uvExposure from "./laser-safety/uv-exposure";
+import uvHazard from "./laser-safety/uv-hazard";
 import acoustoOptic from "./materials/acousto-optic";
 import birefringentCrystals from "./materials/birefringent-crystals";
 import brillouinScattering from "./materials/brillouin-scattering";
@@ -165,6 +177,8 @@ export const schemas: readonly CalculatorSchema[] = [
   m2Factor, modeLockedLaser, modeMatching, opticalFrequencyComb, opticalParametricAmplifier, opticalParametricOscillator,
   opticalWaveguide, qSwitchedLaser, ringCavity, selfPhaseModulation, slabLaser, slowLight, solidStateLaserResonator,
   soliton, spatialFilter, sumFrequency, supercontinuum, thinDiskLaser,
+  blueLightHazard, cornealVsRetinal, exposureDuration, extendedSource, infraredHazard, pulsedMpe, retinalHazard,
+  retinalImageSize, skinMpe, thermalVsPhotochemical, uvExposure, uvHazard,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));

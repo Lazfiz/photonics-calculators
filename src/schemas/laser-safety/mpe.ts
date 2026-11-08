@@ -45,7 +45,7 @@ export default defineSchema({
   },
   checks: [
     {
-      // 400–700 nm, 18 µs – 10 s: 18 t^0.75 J/m² = 6.364 J/m² at 0.25 s; over 7 mm that is 0.980 mW (IEC Class 2 ≈ 1 mW).
+      // 400–700 nm, 5 µs – 10 s: 18 t^0.75 J/m² = 6.364 J/m² at 0.25 s; over 7 mm that is 0.980 mW (IEC Class 2 ≈ 1 mW).
       source: TABLE_5,
       basis: "computed",
       inputs: { wavelength: 532, exposure: 0.25 },
