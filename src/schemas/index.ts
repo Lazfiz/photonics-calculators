@@ -129,6 +129,18 @@ import modeMatching from "./wave-optics/mode-matching";
 import opticalFrequencyComb from "./wave-optics/optical-frequency-comb";
 import opticalParametricAmplifier from "./wave-optics/optical-parametric-amplifier";
 import opticalParametricOscillator from "./wave-optics/optical-parametric-oscillator";
+import opticalWaveguide from "./wave-optics/optical-waveguide";
+import qSwitchedLaser from "./wave-optics/q-switched-laser";
+import ringCavity from "./wave-optics/ring-cavity";
+import selfPhaseModulation from "./wave-optics/self-phase-modulation";
+import slabLaser from "./wave-optics/slab-laser";
+import slowLight from "./wave-optics/slow-light";
+import solidStateLaserResonator from "./wave-optics/solid-state-laser-resonator";
+import soliton from "./wave-optics/soliton";
+import spatialFilter from "./wave-optics/spatial-filter";
+import sumFrequency from "./wave-optics/sum-frequency";
+import supercontinuum from "./wave-optics/supercontinuum";
+import thinDiskLaser from "./wave-optics/thin-disk-laser";
 
 export const schemas: readonly CalculatorSchema[] = [
   couplingEfficiency, airyDisk, mpe, nohd, odRequirements, laserOpticalDensity, stokes, blackbody, ftirResolution,
@@ -151,6 +163,8 @@ export const schemas: readonly CalculatorSchema[] = [
   differenceFrequency, diffractionIntegral, diodeLaserResonator, dyeLaserResonator, filamentation, fourWaveMixing,
   freeElectronLaser, gasLaserResonator, giresTournois, hermiteGaussian, injectionLocking, kerrLens,
   m2Factor, modeLockedLaser, modeMatching, opticalFrequencyComb, opticalParametricAmplifier, opticalParametricOscillator,
+  opticalWaveguide, qSwitchedLaser, ringCavity, selfPhaseModulation, slabLaser, slowLight, solidStateLaserResonator,
+  soliton, spatialFilter, sumFrequency, supercontinuum, thinDiskLaser,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));
