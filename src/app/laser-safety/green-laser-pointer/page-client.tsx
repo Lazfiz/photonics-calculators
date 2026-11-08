@@ -10,7 +10,7 @@ import { useURLState } from "../../../hooks/use-url-state";
 import { apertureIrradiance } from "../../../physics/laser-safety/eye-exposure-limits";
 import { effectiveDiameterAt, nominalOcularHazardDistance, roundBeam } from "../../../physics/laser-safety/hazard-distance";
 import { classifyCw } from "../../../physics/laser-safety/laser-classes";
-import { ICAO_LEVELS, peakIrradiance, rangeToIrradiance } from "../../../physics/laser-safety/visual-interference";
+import { ICAO_LEVELS, peakIrradiance, pointerEyeExposure, rangeToIrradiance } from "../../../physics/laser-safety/visual-interference";
 
 export default function GreenLaserPointerPage() {
   const [power, setPower] = useURLState("power", 5, { min: 0 }); // mW
@@ -25,12 +25,8 @@ export default function GreenLaserPointerPage() {
   const d = Math.max(beamDia, 1e-3) * 1e-3;
   const phi = Math.max(divergence, 0) * 1e-3;
   const r = Math.max(distance, 0);
-  const visible = wavelength >= 400 && wavelength <= 700;
-  // Eye exposure time, ICNIRP 2013 p. 285: 0.25 s for an unintended view of a visible beam, 10 s at 700–1400 nm.
-  // Elsewhere the longest expected exposure applies; 10 s is assumed.
-  const nearIr = wavelength > 700 && wavelength <= 1400;
-  const tEye = visible ? 0.25 : 10;
-  const outsideRule = !visible && !nearIr;
+  // Eye exposure time, ICNIRP 2013 p. 285 (visual-interference.ts).
+  const { visible, outsideRule, t: tEye } = pointerEyeExposure(lambda);
 
   const beam = useMemo(() => roundBeam(d, phi), [d, phi]);
   const cls = useMemo(() => classifyCw(lambda, P, { d, phi }), [lambda, P, d, phi]);

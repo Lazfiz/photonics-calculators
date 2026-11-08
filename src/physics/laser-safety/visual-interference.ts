@@ -34,3 +34,15 @@ export function rangeToIrradiance(P: number, beam: BeamGeometry, E: number): num
   if (!(P >= 0 && E > 0)) return NaN;
   return rangeToDiameter(beam, Math.sqrt((8 * P) / (Math.PI * E)));
 }
+
+/**
+ * Eye exposure time of the green-laser-pointer page (ICNIRP 2013 p. 285): 0.25 s for an unintended view of a visible
+ * (400–700 nm) beam, 10 s at 700–1400 nm; elsewhere the longest expected exposure applies and 10 s is assumed
+ * (`outsideRule`).
+ */
+export function pointerEyeExposure(lambda: number): { visible: boolean; outsideRule: boolean; t: number } {
+  const nm = Math.round(lambda * 1e15) / 1e6;
+  const visible = nm >= 400 && nm <= 700;
+  const nearIr = nm > 700 && nm <= 1400;
+  return { visible, outsideRule: !visible && !nearIr, t: visible ? 0.25 : 10 };
+}

@@ -58,6 +58,18 @@ import skinMpe from "./laser-safety/skin-mpe";
 import thermalVsPhotochemical from "./laser-safety/thermal-vs-photochemical";
 import uvExposure from "./laser-safety/uv-exposure";
 import uvHazard from "./laser-safety/uv-hazard";
+import classification from "./laser-safety/classification";
+import diffuseReflection from "./laser-safety/diffuse-reflection";
+import diodeLaserSafety from "./laser-safety/diode-laser-safety";
+import enclosureClass from "./laser-safety/enclosure-class";
+import fiberLaserSafety from "./laser-safety/fiber-laser-safety";
+import greenLaserPointer from "./laser-safety/green-laser-pointer";
+import industrialLaserSafety from "./laser-safety/industrial-laser-safety";
+import lidarSafety from "./laser-safety/lidar-safety";
+import medicalLaserSafety from "./laser-safety/medical-laser-safety";
+import researchLabSafety from "./laser-safety/research-lab-safety";
+import scanningMpe from "./laser-safety/scanning-mpe";
+import ultrafastLaserSafety from "./laser-safety/ultrafast-laser-safety";
 import acoustoOptic from "./materials/acousto-optic";
 import birefringentCrystals from "./materials/birefringent-crystals";
 import brillouinScattering from "./materials/brillouin-scattering";
@@ -193,6 +205,8 @@ export const schemas: readonly CalculatorSchema[] = [
   retinalImageSize, skinMpe, thermalVsPhotochemical, uvExposure, uvHazard,
   aelLimits, ansiIecComparison, atmosphericAttenuation, aversionResponse, beamDiameterConversion, beamExpander,
   eyeSafeWavelength, interlockDesign, multipleWavelength, peakPower, powerDensity, thermalLensHazard,
+  classification, diffuseReflection, diodeLaserSafety, enclosureClass, fiberLaserSafety, greenLaserPointer,
+  industrialLaserSafety, lidarSafety, medicalLaserSafety, researchLabSafety, scanningMpe, ultrafastLaserSafety,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));

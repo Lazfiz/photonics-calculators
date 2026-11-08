@@ -10,7 +10,7 @@ import { useURLState } from "../../../hooks/use-url-state";
 import { eyeLimits, limitMaxPower, T_MAX, T_MIN } from "../../../physics/laser-safety/eye-exposure-limits";
 import { effectiveDiameterAt, nominalOcularHazardDistance, requiredOpticalDensity, roundBeam } from "../../../physics/laser-safety/hazard-distance";
 import {
-  diffractionLimitedSpot, focusedDivergence, thermalRelaxationTime, TISSUE_DIFFUSIVITY, type TargetShape,
+  diffractionLimitedSpot, focusedDivergence, spotPowerDensity, thermalRelaxationTime, TISSUE_DIFFUSIVITY, type TargetShape,
 } from "../../../physics/laser-safety/surgical-laser";
 
 const SHAPES: Record<TargetShape, string> = {
@@ -41,7 +41,7 @@ export default function MedicalLaserSafetyPage() {
   const shape: TargetShape = targetShape in SHAPES ? (targetShape as TargetShape) : "cylinder";
 
   // Tissue side: power density over the 1/e² spot (the clinical P/A), fluence, thermal relaxation of the target.
-  const powerDensity = P / ((Math.PI * spot * spot) / 4) / 1e4; // W/cm²
+  const powerDensity = spotPowerDensity(P, spot) / 1e4; // W/cm²
   const fluence = powerDensity * tTissue; // J/cm²
   const trt = thermalRelaxationTime(Math.max(targetSize, 0) * 1e-6, shape);
   const minSpot = diffractionLimitedSpot(lambda, b0, f);

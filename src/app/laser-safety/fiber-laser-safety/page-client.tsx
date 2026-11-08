@@ -9,10 +9,9 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { exposureLimit, eyeLimits, limitingAperture, limitMaxPower, T_MAX, T_MIN } from "../../../physics/laser-safety/eye-exposure-limits";
 import {
-  effectiveDiameterAt, nominalOcularHazardDistance, requiredOpticalDensity, roundBeam,
+  effectiveDiameterAt, fiberModeNonParaxial, fiberOutputDivergence, nominalOcularHazardDistance, requiredOpticalDensity, roundBeam,
 } from "../../../physics/laser-safety/hazard-distance";
 import { peakIrradiance as tem00PeakIrradiance } from "../../../physics/laser-safety/visual-interference";
-import { divergenceHalfAngle } from "../../../physics/wave-optics/gaussian-beam";
 
 export default function FiberLaserSafetyPage() {
   const [power, setPower] = useURLState("power", 1000, { min: 0 }); // mW launched into the fiber
@@ -36,9 +35,9 @@ export default function FiberLaserSafetyPage() {
   const t = Math.min(Math.max(exposureTime, T_MIN), T_MAX);
 
   // 1/e² full-angle divergence: a TEM₀₀ mode diffracting from its waist w₀ = d/2, or the output filling the NA.
-  const phi = multimode ? 2 * Math.tan(Math.asin(NA)) : 2 * divergenceHalfAngle({ lambda, w0: d / 2 });
+  const phi = fiberOutputDivergence(lambda, d, NA, multimode);
   // The paraxial φ = 2λ/(πw₀) fails once λ/(πw₀) exceeds ~0.3 rad (MFD close to λ).
-  const nonParaxial = !multimode && lambda / (Math.PI * (d / 2)) > 0.3;
+  const nonParaxial = !multimode && fiberModeNonParaxial(lambda, d);
   const equivalentNA = Math.sin(Math.min(phi / 2, Math.PI / 2));
 
   const beam = useMemo(() => roundBeam(d, phi, "gaussian"), [d, phi]);

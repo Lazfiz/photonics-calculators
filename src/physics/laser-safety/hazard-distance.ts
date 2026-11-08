@@ -29,6 +29,7 @@ import {
   ALPHA_MIN, eyeLimits, limitMaxPower, T_MAX, T_MIN, type EyeLimitKind, type TabulatedLimit,
 } from "./eye-exposure-limits";
 import { expE1Scaled } from "../math";
+import { divergenceHalfAngle } from "../wave-optics/gaussian-beam";
 
 /** How a beam widens with range: a + rφ (the standards' formula) or √(a² + (rφ)²) (Gaussian, waist at the aperture). */
 export type BeamGrowth = "linear" | "gaussian";
@@ -303,4 +304,18 @@ export function diffuseHazardDistance(lambda: number, reflectedPower: number, d:
       return { kind, distance: hi };
     }),
   );
+}
+
+/**
+ * 1/e² full-angle divergence, rad, of the light leaving a fiber of mode-field (single-mode) or core (multimode)
+ * 1/e² diameter d (m) at λ (m): a TEM₀₀ mode diffracting from its waist w₀ = d/2, φ = 2λ/(πw₀) (paraxial), or the
+ * multimode output filling the numerical aperture, φ = 2 tan(asin NA).
+ */
+export function fiberOutputDivergence(lambda: number, d: number, na: number, multimode: boolean): number {
+  return multimode ? 2 * Math.tan(Math.asin(na)) : 2 * divergenceHalfAngle({ lambda, w0: d / 2 });
+}
+
+/** True once λ/(πw₀) exceeds ≈ 0.3 rad (MFD close to λ), where the paraxial single-mode divergence fails. */
+export function fiberModeNonParaxial(lambda: number, d: number): boolean {
+  return lambda / (Math.PI * (d / 2)) > 0.3;
 }
