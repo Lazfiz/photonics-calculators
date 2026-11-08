@@ -7,8 +7,8 @@ import { useURLState } from "../../../hooks/use-url-state";
 import { fix } from "../../../components/polarization-format";
 import {
   MOLAR_ROTATION_CONV_PER_SI, SPECIFIC_ROTATION_SI_PER_CONV, SUCROSE_DISPERSION_RANGE, SUCROSE_TEMPERATURE_COEFFICIENT, T_REF,
-  drudeSpecificRotation, molarRotation, observedRotation, outputAzimuth, specificRotationFromObserved,
-  sucroseSpecificRotation, temperatureCorrected,
+  molarRotation, observedRotation, outputAzimuth, specificRotationFromObserved,
+  substanceSpecificRotation, temperatureCorrected,
 } from "../../../physics/polarization/optical-activity";
 import RotationDiagram from "./rotation-diagram";
 
@@ -21,9 +21,7 @@ type Substance = "sucrose" | "custom";
 
 /** [α] at 20 °C in rad·m²/kg: the NIST/ICUMSA sucrose curve, or the one-term Drude form of the custom substance. */
 function specificRotationSI(s: Substance, alphaRefConv: number, lambdaRef_nm: number, lambda0_nm: number, lambda: number): number {
-  return s === "sucrose"
-    ? sucroseSpecificRotation(lambda)
-    : drudeSpecificRotation(alphaRefConv * SPECIFIC_ROTATION_SI_PER_CONV, lambdaRef_nm * 1e-9, lambda, lambda0_nm * 1e-9);
+  return substanceSpecificRotation(s === "sucrose", alphaRefConv * SPECIFIC_ROTATION_SI_PER_CONV, lambdaRef_nm * 1e-9, lambda0_nm * 1e-9, lambda);
 }
 
 const sense = (a: number) =>

@@ -85,3 +85,11 @@ export function molarRotation(specificRotation: number, molarMass: number): numb
 export function outputAzimuth(inputAzimuth: number, alpha: number): number {
   return inputAzimuth - alpha;
 }
+
+/**
+ * [α] at λ and 20 °C, rad·m²/kg: the NIST/ICUMSA sucrose curve, or the one-term Drude form of a custom substance
+ * with specific rotation `alphaRef` at `lambdaRef` and pole `lambda0`.
+ */
+export function substanceSpecificRotation(sucrose: boolean, alphaRef: number, lambdaRef: number, lambda0: number, lambda: number): number {
+  return sucrose ? sucroseSpecificRotation(lambda) : drudeSpecificRotation(alphaRef, lambdaRef, lambda, lambda0);
+}

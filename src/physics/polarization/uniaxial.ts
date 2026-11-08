@@ -162,3 +162,15 @@ export function crystalBirefringence(material: string, customDn: number): (lambd
     return ne - no;
   };
 }
+
+/** n_o and n_e of a named crystal at λ (m), with λ held at the edge of the Sellmeier fit range outside it. */
+export function crystalIndicesHeld(id: CrystalId, lambda: number): { no: number; ne: number } {
+  const [lo, hi] = crystalRange(id);
+  return crystalIndices(id, Number.isFinite(lambda) ? Math.min(hi, Math.max(lo, lambda)) : lo);
+}
+
+/** Section retardance R(λ) = |n(θc) − n_o|(λ)·d (m) of a named crystal, indices held at the fit-range edge outside it. */
+export function crystalSectionRetardance(id: CrystalId, thetaC: number, d: number, lambda: number): number {
+  const { no, ne } = crystalIndicesHeld(id, lambda);
+  return sectionRetardance(no, ne, thetaC, d);
+}

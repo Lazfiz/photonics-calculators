@@ -4,9 +4,8 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { fix } from "../../../components/polarization-format";
-import { goochTarryMinimum, lcTransmission } from "../../../physics/polarization/twisted-nematic";
+import { goochTarryMinimum, lcEffectiveBirefringence, lcTransmission } from "../../../physics/polarization/twisted-nematic";
 import { retardance } from "../../../physics/polarization/retarders";
-import { extraordinaryIndex } from "../../../physics/polarization/uniaxial";
 
 const DEG = Math.PI / 180;
 const clamp = (v: number, lo: number, hi: number) => (Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : lo);
@@ -43,7 +42,7 @@ export default function LiquidCrystalPolarizerPage() {
   const tilt = clamp(tiltDeg, 0, 90) * DEG;
 
   // VA: the director leans `tilt` from the cell normal; at normal incidence the wave sees n(tilt) − n_o.
-  const dnE = va ? extraordinaryIndex(no, no + dn, tilt) - no : dn;
+  const dnE = lcEffectiveBirefringence(va, dn, no, tilt);
   const gamma = retardance(dnE, d, lambda);
   const T = lcTransmission(twist, gamma, pol, ana);
   const firstMin = (goochTarryMinimum(1) * lambda) / dn;
@@ -66,7 +65,7 @@ export default function LiquidCrystalPolarizerPage() {
     if (va) {
       const t = Array.from({ length: 181 }, (_, i) => i * 0.5);
       const y = t.map((x) => {
-        const g = retardance(extraordinaryIndex(no, no + dn, x * DEG) - no, d, lambda);
+        const g = retardance(lcEffectiveBirefringence(true, dn, no, x * DEG), d, lambda);
         return lcTransmission(0, g, pol, ana);
       });
       return { x: t, y, title: "Director tilt from the normal (°)", minima: [] as number[], current: tilt / DEG };

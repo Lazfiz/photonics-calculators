@@ -16,6 +16,7 @@
 import { complex } from "../complex";
 import { sinc } from "../math";
 import { apply, linearState, matMul, rotation, type JonesMatrix } from "./jones";
+import { extraordinaryIndex } from "./uniaxial";
 
 /** Jones matrix of a twisted-nematic layer with twist Φ and retardance Γ = 2πΔn d/λ. */
 export function twistedNematicJones(twist: number, retardance: number): JonesMatrix {
@@ -50,4 +51,12 @@ export function goochTarryParallel(retardance: number): number {
 /** The k-th Gooch-Tarry minimum of a 90° cell: Δn d/λ = √(4k² − 1)/2. */
 export function goochTarryMinimum(k: number): number {
   return Math.sqrt(4 * k * k - 1) / 2;
+}
+
+/**
+ * Effective birefringence Δn_eff seen at normal incidence: Δn for a planar or twisted cell (director in the cell plane),
+ * n(θ_tilt) − n_o for a vertically aligned cell whose director leans `tilt` from the cell normal.
+ */
+export function lcEffectiveBirefringence(vertical: boolean, dn: number, no: number, tilt: number): number {
+  return vertical ? extraordinaryIndex(no, no + dn, tilt) - no : dn;
 }
