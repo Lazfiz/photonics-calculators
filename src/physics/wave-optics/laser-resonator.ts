@@ -19,7 +19,7 @@
 import { c, h } from "../constants";
 import { erfcx } from "../math";
 import { gParameter, resonatorStability, twoMirrorMode } from "./two-mirror-resonator";
-import { rigrodOutput } from "../fiber-optics/doped-fiber-gain";
+import { optimumOutputCoupler, rigrodOutput } from "../fiber-optics/doped-fiber-gain";
 
 /** Logarithmic loss −ln(1 − f) = −log1p(−f) (natural log of power) of a fractional power loss f per pass; NaN outside 0 ≤ f < 1. */
 export function logarithmicLoss(fraction: number): number {
@@ -187,4 +187,51 @@ export function dyeLaserCw(p: DyeLaserInputs) {
     ? factor * fourLevelSlopeEfficiency(p.lambda, p.lambdaP, 1, p.R_oc, internal, modeArea, pumpArea, p.etaP)
     : NaN;
   return { g1, g2, stability, mode, internal, tauEff, factor, pumpArea, modeArea, delta, pTh, g0l, iSat, pSat, pOut, slope };
+}
+
+export interface GasLaserInputs {
+  /** Wavelength, m. */
+  lambda: number;
+  /** Mirror spacing = gain length, m. */
+  L: number;
+  /** Bore radius, m. */
+  boreRadius: number;
+  /** Mirror radii of curvature, m (Infinity = flat). */
+  R1: number;
+  R2: number;
+  /** Reflectances of the high reflector and the output coupler. */
+  R_hr: number;
+  R_oc: number;
+  /** Other loss per pass (fraction of power). */
+  lossPerPass: number;
+  /** Small-signal gain coefficient, 1/m. */
+  g0: number;
+  /** Saturation intensity, W/m². */
+  iSat: number;
+}
+
+/**
+ * Gas laser (HeNe, Ar⁺, CO₂ type) with a measured gain coefficient in a two-mirror resonator: g parameters, TEM₀₀ mode,
+ * Fresnel number, bore clipping, threshold gain, Rigrod output with P_sat = I_sat π⟨w²⟩/2 and the optimum coupler (the
+ * page's chain, kept in one place). Model tier: textbook; the clipping loss is reported, not folded into the loss.
+ */
+export function gasLaserCw(p: GasLaserInputs) {
+  const g1 = gParameter(p.L, p.R1);
+  const g2 = gParameter(p.L, p.R2);
+  const stability = resonatorStability(g1, g2);
+  const mode = twoMirrorMode(p.lambda, p.L, g1, g2);
+  const internal = logarithmicLoss(p.lossPerPass);
+  const a = p.boreRadius;
+  const fresnel = (a * a) / (p.lambda * p.L);
+  const wMax = Math.max(mode.w1, mode.w2);
+  const clipLoss = Math.exp((-2 * a * a) / (wMax * wMax)); // power outside the bore at the larger mirror spot
+  const g0l = p.g0 * p.L;
+  const pSat = (p.iSat * Math.PI * meanSquareRadius(mode.w0, mode.zR, mode.z1, p.L)) / 2;
+  const delta = roundTripLoss(p.R_hr, p.R_oc, internal);
+  const gTh = delta / (2 * p.L);
+  const pOut = laserOutput(g0l, p.R_hr, p.R_oc, internal, pSat);
+  const rearR = p.R_hr * Math.exp(-2 * internal);
+  const best = optimumOutputCoupler(g0l, rearR);
+  const pBest = best.output * pSat;
+  return { g1, g2, stability, mode, internal, fresnel, wMax, clipLoss, g0l, pSat, delta, gTh, pOut, best, pBest };
 }

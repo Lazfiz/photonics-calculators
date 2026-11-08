@@ -7,7 +7,7 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { beamRadius, rayleighRange } from "../../../physics/wave-optics/gaussian-beam";
 import {
-  hgAmplitude1D, hgSecondMomentRadius, lgIntensity, lgRingRadius, lgSecondMomentRadius, modeGouyPhase,
+  hgAmplitude1D, hgSecondMomentRadius, lgIntensity, lgRingRadius, lgSecondMomentRadius, modeGouyPhase, peakIntensityPerWatt,
 } from "../../../physics/wave-optics/higher-order-modes";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -15,19 +15,27 @@ const index = (x: number, lo: number, hi: number, fallback: number) => (Number.i
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
 const round6 = (x: number) => Number(x.toPrecision(6));
 const MAX_INDEX = 10;
+// Old-link keys: p or l without family opens the Laguerre-Gaussian view; the schema has p, l as plain inputs.
+const useLegacyParam = (key: string) => useURLState(key, NaN)[0];
+const useRawText = (key: string) => useURLState(key, "")[0]; // "" when absent, so an explicit family=hg is visible
 
 export default function HigherOrderModesPage() {
-  const [familyRaw, setFamily] = useURLState("family", "");
+  const [familyRaw, setFamily] = useURLState("family", "hg");
   const [wavelengthRaw, setWavelength] = useURLState("wavelength", 1550); // nm
   const [waistRaw, setWaist] = useURLState("waist", 50); // µm, TEM₀₀ 1/e² waist radius
   const [zRaw, setZ] = useURLState("z", 5); // mm from the waist
   const [powerRaw, setPower] = useURLState("power", 1); // mW
   const [mRaw, setM] = useURLState("m", 2, { min: 0, max: MAX_INDEX });
   const [nRaw, setN] = useURLState("n", 1, { min: 0, max: MAX_INDEX });
-  const [pRaw, setP] = useURLState("p", NaN); // NaN when absent: a link from the old Laguerre-Gaussian page sets p or l
-  const [lRaw, setL] = useURLState("l", NaN);
+  const [pRaw, setP] = useURLState("p", 0);
+  const [lRaw, setL] = useURLState("l", 1);
+  const oldP = useLegacyParam("p");
+  const oldL = useLegacyParam("l");
+  const explicitFamily = useRawText("family");
+  const oldLgLink = explicitFamily !== "hg" && (Number.isFinite(oldP) || Number.isFinite(oldL));
 
-  const family = familyRaw === "lg" || familyRaw === "hg" ? familyRaw : Number.isFinite(pRaw) || Number.isFinite(lRaw) ? "lg" : "hg";
+  // p or l in the URL without family (old Laguerre-Gaussian link) opens LG; family=hg wins; choosing HG resets p, l to their defaults, which removes them from the URL.
+  const family = familyRaw === "lg" || oldLgLink ? "lg" : "hg";
   const lg = family === "lg";
   const wavelength = clamp(wavelengthRaw, 200, 11000, 1550);
   const waist_um = clamp(waistRaw, 1, 1e5, 50);
@@ -59,15 +67,7 @@ export default function HigherOrderModesPage() {
   const map = axis.map((y) => axis.map((x, i) => (lg ? lgIntensity(p, l, Math.hypot(x, y) * 1e-6, w) : ux[i] * hgAmplitude1D(n, y * 1e-6, w) ** 2)));
 
   // Peak intensity from a fine 1-D scan (HG is separable; LG depends on r only).
-  const scan = (f: (s: number) => number, s1: number) => {
-    let best = 0;
-    for (let i = 0; i <= 4000; i++) best = Math.max(best, f((s1 * i) / 4000));
-    return best;
-  };
-  const ext = ext_um * 1e-6;
-  const peakPerW = lg
-    ? scan((r) => lgIntensity(p, l, r, w), ext)
-    : scan((x) => hgAmplitude1D(m, x, w) ** 2, ext) * scan((y) => hgAmplitude1D(n, y, w) ** 2, ext);
+  const peakPerW = peakIntensityPerWatt(family, m, n, p, l, w, ext_um * 1e-6);
   const peak_Wcm2 = peakPerW * power_mW * 1e-3 * 1e-4;
 
   let peakMap = 0;
@@ -94,7 +94,7 @@ export default function HigherOrderModesPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-4">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Mode family</span>
-          <select value={family} onChange={(e) => setFamily(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
+          <select value={family} onChange={(e) => { setFamily(e.target.value); if (e.target.value === "hg") { setP(0); setL(1); } }} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             <option value="hg">Hermite-Gaussian TEMmn (rectangular)</option>
             <option value="lg">Laguerre-Gaussian LGpl (circular, OAM)</option>
           </select>

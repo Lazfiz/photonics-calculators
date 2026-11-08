@@ -5,15 +5,11 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { c } from "../../../physics/constants";
-import { wavelengthWidth } from "../../../physics/spectroscopy/wavenumber";
 import {
-  parametricGainCoefficient, phaseMismatch, qpmPeriod as qpmPeriodOf,
-} from "../../../physics/wave-optics/optical-parametric-oscillator";
-import {
-  LOW_GAIN_BANDWIDTH_FACTOR, degeneracyLimits, detunedMismatch, gainBandwidth, idlerPower, idlerWavelength, parametricGain,
+  LOW_GAIN_BANDWIDTH_FACTOR, degeneracyLimits, detunedMismatch, parametricGain,
   pplnOpaParameters,
 } from "../../../physics/wave-optics/three-wave";
-import { gaussianPeakIntensity } from "../../../physics/wave-optics/kerr";
+import { opaModel } from "../../../physics/wave-optics/optical-parametric-amplifier";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
@@ -50,18 +46,13 @@ export default function OPACalculator() {
   const deltaK0 = clamp(deltaKRaw, -1e4, 1e4, 0) * 1e3;
   const gvm = clamp(gvmRaw, -1e4, 1e4, -97.7) * 1e-12; // fs/mm → s/m
 
-  const process = { lambdaPump: lambdaP, lambdaSignal: lambdaS, dEff: deff, nPump: nP, nSignal: nS, nIdler: nI };
-  const lambdaI = idlerWavelength(lambdaP, lambdaS);
+  const model = opaModel({
+    lambdaPump: lambdaP, lambdaSignal: lambdaS, dEff: deff, nPump: nP, nSignal: nS, nIdler: nI,
+    pumpPower: Pp, radius: w, seedPower: Ps, deltaK: deltaK0, gvm, length: L,
+  });
+  const { lambdaIdler: lambdaI, peakIntensity: I0, gamma, gain: G, signalOut, idlerOut, pumpDrawn, bandwidth, qpmPeriod } = model;
   const valid = Number.isFinite(lambdaI);
-  const I0 = gaussianPeakIntensity(Pp, w); // on-axis intensity of a Gaussian pump
-  const gamma = parametricGainCoefficient(process, I0);
-  const G = parametricGain(gamma, deltaK0, L);
-  const signalOut = G * Ps;
-  const idlerOut = idlerPower(G, Ps, lambdaS, lambdaI);
-  const pumpDrawn = (G - 1) * Ps * (lambdaS / lambdaP); // one pump photon per signal photon gained
-  const bandwidth = gainBandwidth(gamma, L, gvm);
-  const bandwidthNm = wavelengthWidth(lambdaS, bandwidth);
-  const qpmPeriod = qpmPeriodOf(phaseMismatch(process));
+  const bandwidthNm = model.bandwidthWavelength;
   // Signal and idler swap roles at ν_p/2: the linear-GVM spectrum stays on the signal's side of it.
   const [detuneLo, detuneHi] = degeneracyLimits(lambdaP, lambdaS);
   // Signal detuned by Δν sees Δk₀ − 2πΔν δ_si; the gain peaks where that is zero.

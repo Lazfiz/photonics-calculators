@@ -117,6 +117,18 @@ import dyeLaserResonator from "./wave-optics/dye-laser-resonator";
 import filamentation from "./wave-optics/filamentation";
 import fourWaveMixing from "./wave-optics/four-wave-mixing";
 import gaussianBeam from "./wave-optics/gaussian-beam";
+import freeElectronLaser from "./wave-optics/free-electron-laser";
+import gasLaserResonator from "./wave-optics/gas-laser-resonator";
+import giresTournois from "./wave-optics/gires-tournois";
+import hermiteGaussian from "./wave-optics/hermite-gaussian";
+import injectionLocking from "./wave-optics/injection-locking";
+import kerrLens from "./wave-optics/kerr-lens";
+import m2Factor from "./wave-optics/m2-factor";
+import modeLockedLaser from "./wave-optics/mode-locked-laser";
+import modeMatching from "./wave-optics/mode-matching";
+import opticalFrequencyComb from "./wave-optics/optical-frequency-comb";
+import opticalParametricAmplifier from "./wave-optics/optical-parametric-amplifier";
+import opticalParametricOscillator from "./wave-optics/optical-parametric-oscillator";
 
 export const schemas: readonly CalculatorSchema[] = [
   couplingEfficiency, airyDisk, mpe, nohd, odRequirements, laserOpticalDensity, stokes, blackbody, ftirResolution,
@@ -137,6 +149,8 @@ export const schemas: readonly CalculatorSchema[] = [
   polarizingBeamsplitter, polymerPolarizer, retarder, retarderTypes, waveplateOrder, waveplateThickness, wireGrid,
   abcdMatrix, attosecondPulse, besselBeam, cavityDumped, cavityModeSpacing, chirpedPulse,
   differenceFrequency, diffractionIntegral, diodeLaserResonator, dyeLaserResonator, filamentation, fourWaveMixing,
+  freeElectronLaser, gasLaserResonator, giresTournois, hermiteGaussian, injectionLocking, kerrLens,
+  m2Factor, modeLockedLaser, modeMatching, opticalFrequencyComb, opticalParametricAmplifier, opticalParametricOscillator,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));

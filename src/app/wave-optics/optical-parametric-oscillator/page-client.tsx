@@ -4,8 +4,8 @@ import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import {
-  bboTypeICut, idlerWavelength, parametricGainCoefficient, phaseMismatch, qpmPeriod, sroThresholdGainLength,
-  sroThresholdIntensity, walkOffApertureLength, walkOffEffectiveLength,
+  bboTypeICut, idlerWavelength, parametricGainCoefficient, phaseMismatch, qpmPeriod,
+  sroModel, walkOffApertureLength, walkOffEffectiveLength,
 } from "../../../physics/wave-optics/optical-parametric-oscillator";
 import { LINBO3_D33_1313, pplnOpaParameters, qpmDeff } from "../../../physics/wave-optics/three-wave";
 
@@ -61,18 +61,9 @@ export default function OPOCalculator() {
   const apertureLength = walkOffApertureLength(w, rho);
 
   const r = useMemo(() => {
-    const Leff = walkOffEffectiveLength(crystalLength * 1e-3, w, rho);
-    const intensity = pumpPower / area;
-    const g = parametricGainCoefficient(process, intensity);
-    const gThL = sroThresholdGainLength(cavityLoss / 100);
-    const Pth = sroThresholdIntensity(process, Leff, cavityLoss / 100) * area;
-    const dk = phaseMismatch(process);
-    return {
-      lambdaIdler_nm: idlerWavelength(process.lambdaPump, process.lambdaSignal) * 1e9,
-      intensity, g, Leff, gL: g * Leff, gThL, Pth, dk,
-      singlePassGain: Math.cosh(g * Leff) ** 2 - 1,
-    };
-  }, [process, crystalLength, pumpPower, area, w, rho, cavityLoss]);
+    const m = sroModel(process, crystalLength * 1e-3, pumpPower, w, rho, cavityLoss / 100);
+    return { ...m, lambdaIdler_nm: m.lambdaIdler * 1e9 };
+  }, [process, crystalLength, pumpPower, w, rho, cavityLoss]);
 
   const valid = Number.isFinite(r.g) && Number.isFinite(r.Pth);
 

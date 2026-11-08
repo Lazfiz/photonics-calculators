@@ -94,3 +94,20 @@ export function modeGouyPhase(order: number, z: number, zR: number): number {
   if (!wholeIndex(order) || !(zR > 0) || !Number.isFinite(z)) return NaN;
   return (order + 1) * Math.atan(z / zR);
 }
+
+/**
+ * Peak unit-power intensity of a mode, W/m² per W, from a 4000-interval scan out to `extent` (m, just past the
+ * outermost lobe): HG is separable (product of the 1-D peaks); LG depends on r only.
+ */
+export function peakIntensityPerWatt(
+  family: "hg" | "lg", m: number, n: number, p: number, l: number, w: number, extent: number,
+): number {
+  const scan = (f: (s: number) => number) => {
+    let best = 0;
+    for (let i = 0; i <= 4000; i++) best = Math.max(best, f((extent * i) / 4000));
+    return best;
+  };
+  return family === "lg"
+    ? scan((r) => lgIntensity(p, l, r, w))
+    : scan((x) => hgAmplitude1D(m, x, w) ** 2) * scan((y) => hgAmplitude1D(n, y, w) ** 2);
+}
