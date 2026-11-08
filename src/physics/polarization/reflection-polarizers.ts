@@ -126,3 +126,13 @@ export function macNeilleResponse(d: MacNeilleDesign, lambda: number, thetaGlass
   const s = at("s"), p = at("p");
   return { Rs: s.R, Rp: p.R, Ts: s.T, Tp: p.T };
 }
+
+/**
+ * How far the H/L interfaces are from Brewster's angle: the p reflectance of one n_H → n_L interface at the design
+ * angle (0 when n_g² sin²θ_g = n_H²n_L²/(n_H² + n_L²)). NaN when n_g sin θ_g ≥ n_H (no propagating ray in H).
+ */
+export function macNeilleInterfaceRp(d: MacNeilleDesign): number {
+  const beta = d.nGlass * Math.sin(d.thetaGlass);
+  const thetaH = beta < d.nH ? Math.asin(beta / d.nH) : NaN;
+  return Number.isFinite(thetaH) ? fresnel(d.nH, d.nL, thetaH).Rp : NaN;
+}

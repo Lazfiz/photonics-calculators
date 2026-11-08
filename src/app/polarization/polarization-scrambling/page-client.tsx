@@ -8,13 +8,12 @@ import { useURLState } from "../../../hooks/use-url-state";
 import { fix } from "../../../components/polarization-format";
 import { applyMueller } from "../../../physics/polarization/mueller";
 import {
-  MAX_SAMPLES, type DriveWaveform, type ScramblerStage, combinationLock, combinationResonance, lockedGroup, residualDopVsTime,
-  scramblerMeanMueller, stageResonance, worstCaseResidualDop,
+  J0_ZERO, MAX_SAMPLES, type DriveWaveform, type ScramblerStage, combinationLock, combinationResonance, lockedGroup, residualDopVsTime,
+  scramblerMeanMueller, scramblerResidualDop, stageResonance, worstCaseResidualDop,
 } from "../../../physics/polarization/scrambler";
 import { degreeOfPolarization, stokesFromEllipse } from "../../../physics/polarization/stokes";
 
 const DEG = Math.PI / 180;
-const J0_ZERO = 2.4048256; // first zero of J₀ (Abramowitz & Stegun Table 9.5)
 const clamp = (v: number, lo: number, hi: number) => (Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : lo);
 const tab = (on: boolean) => `text-sm px-4 py-2 rounded ${on ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300 border border-gray-600"}`;
 const card = "bg-gray-900 border border-gray-800 rounded-lg p-4";
@@ -24,25 +23,25 @@ const layoutOf = (x: string, extra: Record<string, unknown> = {}) => ({
   margin: { t: 20, r: 20, b: 60, l: 60 }, height: 300, legend: { orientation: "h" as const, y: -0.3 },
 });
 
-/** URL state of one stage, clamped; angles in degrees, frequency in kHz. */
 /** "f₁ + f₂ − f₃ = 0" for the orders n. */
 function relationText(n: readonly number[]): string {
   const sub = ["₁", "₂", "₃"];
   return n.map((c, k) => `${k === 0 ? (c < 0 ? "−" : "") : c < 0 ? " − " : " + "}${Math.abs(c) === 1 ? "" : `${Math.abs(c)}`}f${sub[k]}`).join("") + " = 0";
 }
 
-function useStage(k: number, axis: number, kHz: number) {
-  const [axisIn, setAxis] = useURLState(`axis${k}`, axis);
-  const [ampIn, setAmp] = useURLState(`amplitude${k}`, J0_ZERO);
-  const [biasIn, setBias] = useURLState(`bias${k}`, 0);
-  const [freqIn, setFreq] = useURLState(`frequency${k}`, kHz);
-  const [phaseIn, setPhase] = useURLState(`phase${k}`, 0);
+type URLNumber = [number, (value: number | ((prev: number) => number)) => void];
+
+/** URL state of one stage, clamped; angles in degrees, frequency in kHz. The keys stay literal at the call site. */
+function stageOf(
+  [axisIn, setAxis]: URLNumber, [ampIn, setAmp]: URLNumber, [biasIn, setBias]: URLNumber, [freqIn, setFreq]: URLNumber,
+  [phaseIn, setPhase]: URLNumber,
+) {
   return {
     axis: clamp(axisIn, -180, 180), amp: clamp(ampIn, 0, 20), bias: clamp(biasIn, -20, 20), kHz: clamp(freqIn, 0.01, 1000),
     phase: clamp(phaseIn, -360, 360), setAxis, setAmp, setBias, setFreq, setPhase,
   };
 }
-type Stage = ReturnType<typeof useStage>;
+type Stage = ReturnType<typeof stageOf>;
 
 function StageInputs({ k, s }: { k: number; s: Stage }) {
   return (
@@ -64,7 +63,18 @@ export default function PolarizationScramblingPage() {
   const [waveformIn, setWaveform] = useURLState("waveform", "sine");
   const [psiIn, setPsi] = useURLState("azimuth", 45);
   const [chiIn, setChi] = useURLState("ellipticity", 0);
-  const s1 = useStage(1, 0, 1), s2 = useStage(2, 45, 1.4142), s3 = useStage(3, 0, 2.2361);
+  const s1 = stageOf(
+    useURLState("axis1", 0), useURLState("amplitude1", J0_ZERO), useURLState("bias1", 0), useURLState("frequency1", 1),
+    useURLState("phase1", 0),
+  );
+  const s2 = stageOf(
+    useURLState("axis2", 45), useURLState("amplitude2", J0_ZERO), useURLState("bias2", 0), useURLState("frequency2", 1.4142),
+    useURLState("phase2", 0),
+  );
+  const s3 = stageOf(
+    useURLState("axis3", 0), useURLState("amplitude3", J0_ZERO), useURLState("bias3", 0), useURLState("frequency3", 2.2361),
+    useURLState("phase3", 0),
+  );
 
   // useURLState doesn't clamp: keep URL values inside the input ranges.
   const n = Math.round(clamp(nIn, 1, 3));
@@ -83,8 +93,7 @@ export default function PolarizationScramblingPage() {
   }, [n, waveform, s1.axis, s1.bias, s1.amp, s1.kHz, s1.phase, s2.axis, s2.bias, s2.amp, s2.kHz, s2.phase,
     s3.axis, s3.bias, s3.amp, s3.kHz, s3.phase]);
 
-  const Sin = stokesFromEllipse(1, psi_deg * DEG, chi_deg * DEG);
-  const longTime = degreeOfPolarization(applyMueller(scramblerMeanMueller(stages), Sin));
+  const longTime = scramblerResidualDop(stages, psi_deg * DEG, chi_deg * DEG);
   const worst = worstCaseResidualDop(stages);
   const locked = lockedGroup(stages);
   const resonance = stageResonance(stages.map((s) => s.frequency));

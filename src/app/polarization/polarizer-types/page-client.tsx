@@ -10,6 +10,7 @@ import {
   POLARIZERS,
   coversWavelength,
   polarizerFigures,
+  polarizerThroughput,
   type PolarizerSpec,
 } from "../../../physics/polarization/polarizer-types";
 
@@ -47,10 +48,7 @@ export default function PolarizerTypesPage() {
   const rows = POLARIZER_IDS.filter((id) => selected.includes(id)).map((id) => {
     const spec = POLARIZERS[id];
     const f = polarizerFigures(spec);
-    // Aligned linear input: k₁ passes, and k₂ with the polarizer turned 90°. Unpolarized: (k₁ + k₂)/2 passes, of which
-    // k₂/2 is the blocked polarization.
-    const out = input === "aligned" ? P * f.k1 : P * f.tUnpolarized;
-    const leak = input === "aligned" ? P * f.k2 : (P * f.k2) / 2;
+    const { out, leak } = polarizerThroughput(spec, P, input);
     return { id, spec, f, out, leak, covers: coversWavelength(spec, lambda) };
   });
 
