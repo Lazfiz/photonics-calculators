@@ -25,8 +25,8 @@
  */
 import { epsilon_0, c } from "../constants";
 import { sinc } from "../math";
-import { sumFrequencyWavelength } from "../imaging/second-harmonic-generation";
-import { idlerWavelength, qpmPeriod, threeWaveMismatch } from "./optical-parametric-oscillator";
+import { confocalParameter, sumFrequencyWavelength } from "../imaging/second-harmonic-generation";
+import { idlerWavelength, parametricGainCoefficient, qpmPeriod, threeWaveMismatch } from "./optical-parametric-oscillator";
 import { groupIndex, refractiveIndex } from "../materials/sellmeier";
 import { UNIAXIAL_CRYSTALS, crystalRange } from "../materials/uniaxial-data";
 
@@ -155,5 +155,78 @@ export function pplnOpaParameters(lambdaPump: number, lambdaSignal: number): { n
     nSignal: refractiveIndex(e, lambdaSignal),
     nIdler: refractiveIndex(e, lambdaIdler),
     gvm: (groupIndex(e, lambdaSignal) - groupIndex(e, lambdaIdler)) / c,
+  };
+}
+
+export interface DifferenceFrequencyInput {
+  lambdaPump: number;
+  lambdaSignal: number;
+  /** d_eff, m/V. */
+  deff: number;
+  /** Crystal length, m. */
+  length: number;
+  /** Pump and signal powers, W. */
+  pumpPower: number;
+  signalPower: number;
+  /** 1/e² radius of both beams, m. */
+  waist: number;
+  nPump: number;
+  nSignal: number;
+  nIdler: number;
+  /** Residual phase mismatch Δk after phase matching, 1/m. */
+  deltaK: number;
+}
+
+/** Idler power of the collinear DFG law at crystal length `length` and residual mismatch `deltaK` (the page's curves vary these). */
+export function differenceFrequencyPower(p: DifferenceFrequencyInput, length: number, deltaK: number): number {
+  const lambdaI = idlerWavelength(p.lambdaPump, p.lambdaSignal);
+  const eta = mixingEfficiency({ lambdaOut: lambdaI, length, deff: p.deff, n1: p.nPump, n2: p.nSignal, nOut: p.nIdler, deltaK });
+  return gaussianMixingPower(eta, p.pumpPower, p.signalPower, p.waist, p.waist);
+}
+
+export interface DifferenceFrequencyResult {
+  /** 1/λ_i = 1/λ_p − 1/λ_s; NaN unless λ_s > λ_p. */
+  lambdaIdler: number;
+  /** Idler power, W. */
+  idlerPower: number;
+  /** P_i/(P_pP_s), 1/W. */
+  normalizedEfficiency: number;
+  /** Δk = 2π(n_p/λ_p − n_s/λ_s − n_i/λ_i) without phase matching, 1/m. */
+  materialMismatch: number;
+  /** First-order QPM period 2π/|Δk|, m. */
+  qpmPeriod: number;
+  /** On-axis parametric gain ΓL at the Gaussian peak pump intensity 2P_p/(πw²); the low-gain law needs ΓL ≪ 1. */
+  gainLength: number;
+  /** Smallest confocal parameter of pump, signal and idler (idler polarisation radius w/√2), m. */
+  confocalMin: number;
+  limitingBeam: "pump" | "signal" | "idler";
+  /** L divided by the smallest confocal parameter; the plane-wave value overestimates P_i above ≈ 0.5. */
+  focusingRatio: number;
+}
+
+/** The difference-frequency page's results in SI (Boyd, Nonlinear Optics, §2.2 and §2.8; Boyd–Kleinman 1968 for the focusing limit). */
+export function differenceFrequencyModel(p: DifferenceFrequencyInput): DifferenceFrequencyResult {
+  const lambdaI = idlerWavelength(p.lambdaPump, p.lambdaSignal);
+  const valid = Number.isFinite(lambdaI);
+  const Pi = differenceFrequencyPower(p, p.length, p.deltaK);
+  const materialMismatch = threeWaveMismatch(p.nSignal, p.lambdaSignal, p.nIdler, lambdaI, p.nPump, p.lambdaPump);
+  const gamma = parametricGainCoefficient(
+    { lambdaPump: p.lambdaPump, lambdaSignal: p.lambdaSignal, dEff: Math.max(p.deff, 1e-30), nPump: p.nPump, nSignal: p.nSignal, nIdler: p.nIdler },
+    (2 * p.pumpPower) / (Math.PI * p.waist * p.waist),
+  );
+  const bP = confocalParameter(p.lambdaPump, p.nPump, p.waist);
+  const bS = confocalParameter(p.lambdaSignal, p.nSignal, p.waist);
+  const bI = valid ? confocalParameter(lambdaI, p.nIdler, p.waist / Math.SQRT2) : NaN;
+  const confocalMin = Math.min(bP, bS, Number.isFinite(bI) ? bI : Infinity);
+  return {
+    lambdaIdler: lambdaI,
+    idlerPower: Pi,
+    normalizedEfficiency: p.pumpPower > 0 && p.signalPower > 0 ? Pi / (p.pumpPower * p.signalPower) : NaN,
+    materialMismatch,
+    qpmPeriod: qpmPeriod(materialMismatch),
+    gainLength: gamma * p.length,
+    confocalMin,
+    limitingBeam: confocalMin === bI ? "idler" : confocalMin === bS ? "signal" : "pump",
+    focusingRatio: p.length / confocalMin,
   };
 }

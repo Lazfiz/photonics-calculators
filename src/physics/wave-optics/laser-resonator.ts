@@ -18,6 +18,7 @@
  */
 import { c, h } from "../constants";
 import { erfcx } from "../math";
+import { gParameter, resonatorStability, twoMirrorMode } from "./two-mirror-resonator";
 import { rigrodOutput } from "../fiber-optics/doped-fiber-gain";
 
 /** Logarithmic loss −ln(1 − f) = −log1p(−f) (natural log of power) of a fractional power loss f per pass; NaN outside 0 ≤ f < 1. */
@@ -128,4 +129,62 @@ export function meanSquareRadius(w0: number, zR: number, z1: number, L: number):
   const a = -z1;
   const b = L - z1;
   return w0 * w0 * (1 + (a * a + a * b + b * b) / (3 * zR * zR));
+}
+
+export interface DyeLaserInputs {
+  /** Laser and pump wavelength, m. */
+  lambda: number;
+  lambdaP: number;
+  /** Absorbed pump power, W. */
+  pump: number;
+  etaP: number;
+  /** Pump spot radius in the jet, m. */
+  wp: number;
+  /** Emission and triplet-absorption cross-sections, m². */
+  sigmaE: number;
+  sigmaT: number;
+  /** Singlet lifetime, s. */
+  tau: number;
+  /** Intersystem crossing rate, 1/s. */
+  kST: number;
+  /** Triplet lifetime, s. */
+  tauT: number;
+  /** Jet flow speed, m/s. */
+  flow: number;
+  /** Mirror spacing, m; mirror radii in m (Infinity = flat, 0 is read as flat by the caller). */
+  L: number;
+  R1: number;
+  R2: number;
+  /** Output-coupler reflectance and other loss per pass (fraction of power). */
+  R_oc: number;
+  lossPerPass: number;
+}
+
+/**
+ * CW dye laser with a flowing jet at the waist of a two-mirror resonator: g parameters, TEM₀₀ mode, triplet-reduced
+ * gain, threshold, small-signal gain, Rigrod output and slope efficiency (the page's chain, kept in one place).
+ * Model tier: textbook, see the module header and `tripletGainFactor` / `flowTripletLifetime` for the triplet model. `pTh`, `pOut` and `slope`
+ * are NaN when the cavity is not stable or triplets kill the gain (`factor` ≤ 0).
+ */
+export function dyeLaserCw(p: DyeLaserInputs) {
+  const g1 = gParameter(p.L, p.R1);
+  const g2 = gParameter(p.L, p.R2);
+  const stability = resonatorStability(g1, g2);
+  const mode = twoMirrorMode(p.lambda, p.L, g1, g2);
+  const internal = logarithmicLoss(p.lossPerPass);
+  const tauEff = flowTripletLifetime(p.tauT, p.flow, mode.w0, p.wp);
+  const factor = tripletGainFactor(p.sigmaE, p.sigmaT, p.kST, tauEff);
+  const sigmaNet = p.sigmaE * factor;
+  const pumpArea = gaussianOverlapArea(mode.w0, p.wp);
+  const modeArea = gaussianSlopeSaturationArea(mode.w0, p.wp);
+  const delta = roundTripLoss(1, p.R_oc, internal);
+  const pTh = factor > 0 ? fourLevelThreshold(delta, p.lambdaP, sigmaNet, p.tau, pumpArea, p.etaP) : NaN;
+  const g0l = factor > 0 ? fourLevelGain(p.pump, p.lambdaP, sigmaNet, p.tau, pumpArea, p.etaP) : NaN;
+  const iSat = saturationIntensity(p.lambda, p.sigmaE, p.tau);
+  const pSat = iSat * modeArea;
+  const pOut = laserOutput(g0l, 1, p.R_oc, internal, pSat);
+  const slope = factor > 0
+    ? factor * fourLevelSlopeEfficiency(p.lambda, p.lambdaP, 1, p.R_oc, internal, modeArea, pumpArea, p.etaP)
+    : NaN;
+  return { g1, g2, stability, mode, internal, tauEff, factor, pumpArea, modeArea, delta, pTh, g0l, iSat, pSat, pOut, slope };
 }

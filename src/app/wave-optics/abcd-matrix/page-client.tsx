@@ -5,19 +5,12 @@ import { useMemo } from "react";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  determinant, expectedDeterminant, systemMatrix, traceRay, type AbcdElement,
+  DEFAULT_ELEMENTS, ELEMENT_LIMIT_MM, ELEMENT_PREFIX, MAX_ELEMENTS, abcdSummary, parseElements, type AbcdKind, type UiElement,
 } from "../../../physics/wave-optics/abcd";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits: number) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
-const MAX_ELEMENTS = 20;
-const LEN = 1e6; // mm, limit for distances, focal lengths and radii
-const DEFAULT_ELEMENTS = "d150_f100_d300";
-
-type Kind = AbcdElement["kind"];
-// UI element: lengths in mm. URL token per element, joined by "_": d<mm>, f<mm>, m, r<mm>, n<n₁>x<n₂>.
-type UiElement = { kind: Kind; a: number; b: number };
-
+type Kind = AbcdKind;
 const KINDS: { kind: Kind; label: string; a?: string; b?: string; defaults: [number, number] }[] = [
   { kind: "space", label: "Free space", a: "Distance d (mm)", defaults: [50, 0] },
   { kind: "lens", label: "Thin lens", a: "Focal length f (mm)", defaults: [100, 0] },
@@ -25,37 +18,13 @@ const KINDS: { kind: Kind; label: string; a?: string; b?: string; defaults: [num
   { kind: "curved-mirror", label: "Curved mirror", a: "Radius R (mm, concave > 0)", defaults: [200, 0] },
   { kind: "interface", label: "Flat interface", a: "n₁", b: "n₂", defaults: [1, 1.5] },
 ];
-const PREFIX: Record<Kind, string> = { space: "d", lens: "f", "flat-mirror": "m", "curved-mirror": "r", interface: "n" };
-
-function parseElements(s: string): UiElement[] {
-  const out: UiElement[] = [];
-  for (const token of s.split("_").slice(0, MAX_ELEMENTS)) {
-    const kind = (Object.keys(PREFIX) as Kind[]).find((k) => PREFIX[k] === token[0]);
-    if (!kind) continue;
-    const [a, b] = token.slice(1).split("x").map(Number);
-    if (kind === "flat-mirror") out.push({ kind, a: 0, b: 0 });
-    else if (kind === "space") out.push({ kind, a: clamp(a, 0, LEN, 50), b: 0 });
-    else if (kind === "interface") out.push({ kind, a: clamp(a, 1, 5, 1), b: clamp(b, 1, 5, 1.5) });
-    else out.push({ kind, a: clamp(a, -LEN, LEN, kind === "lens" ? 100 : 200), b: 0 });
-  }
-  return out;
-}
+const LEN = ELEMENT_LIMIT_MM;
 
 function serialize(els: UiElement[]): string {
   if (els.length === 0) return "0"; // an unknown token, so an empty list survives the round trip
   return els
-    .map((e) => PREFIX[e.kind] + (e.kind === "flat-mirror" ? "" : e.kind === "interface" ? `${e.a}x${e.b}` : `${e.a}`))
+    .map((e) => ELEMENT_PREFIX[e.kind] + (e.kind === "flat-mirror" ? "" : e.kind === "interface" ? `${e.a}x${e.b}` : `${e.a}`))
     .join("_");
-}
-
-function toPhysics(e: UiElement): AbcdElement {
-  switch (e.kind) {
-    case "space": return { kind: "space", d: e.a * 1e-3 };
-    case "lens": return { kind: "lens", f: e.a * 1e-3 };
-    case "flat-mirror": return { kind: "flat-mirror" };
-    case "curved-mirror": return { kind: "curved-mirror", R: e.a * 1e-3 };
-    case "interface": return { kind: "interface", n1: e.a, n2: e.b };
-  }
 }
 
 export default function ABCDMatrixPage() {
@@ -79,17 +48,9 @@ export default function ABCDMatrixPage() {
   };
 
   // SI matrix: B in m, C in 1/m. Shown with B in mm and C in 1/mm.
-  const physics = elements.map(toPhysics);
-  const M = systemMatrix(physics);
-  const det = determinant(M);
-  const detExpected = expectedDeterminant(physics);
-  const ray = traceRay(M, inputHeight * 1e-3, inputAngle * 1e-3);
-  const valid = [M.A, M.B, M.C, M.D].every(Number.isFinite);
-  const isImaging = valid && Math.abs(M.B) < 1e-9;
-  const efl_mm = valid && M.C !== 0 ? -1e3 / M.C : NaN; // −1/C in m, shown in mm (rear focal length f′ = n_out/P)
-  // Output medium index: n₂ of the last interface element (1 if none). Real-angle convention: C = −P/n_out, EFL = 1/P.
-  const nOut = [...elements].reverse().find((e) => e.kind === "interface")?.b ?? 1;
-  const eflPower_mm = Number.isFinite(efl_mm) ? efl_mm / nOut : NaN;
+  const { M, det, detExpected, ray, valid, isImaging, rearFocalLength, nOut, effectiveFocalLength } = abcdSummary(elements, inputHeight * 1e-3, inputAngle * 1e-3);
+  const efl_mm = rearFocalLength * 1e3; // rear focal length f′ = −1/C in mm
+  const eflPower_mm = effectiveFocalLength * 1e3; // f′/n_out, real-angle convention C = −P/n_out, EFL = 1/P
 
   return (
     <>

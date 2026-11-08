@@ -97,3 +97,80 @@ export function periodicEigenmode(M: Abcd, lambda: number): PeriodicEigenmode {
   const zR = b / den;
   return { m, w: Math.sqrt(lambda / (Math.PI * b)), z: a / den, zR, w0: Math.sqrt((lambda * zR) / Math.PI), gouy: Math.atan2(sinTheta, m) };
 }
+
+// ---- Element lists as the calculator page writes them in its URL ------------------------------------------------
+const clampTo = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+export const MAX_ELEMENTS = 20;
+/** Limit for distances, focal lengths and radii in the element list, mm. */
+export const ELEMENT_LIMIT_MM = 1e6;
+/** The page's default element list: d = 150 mm, f = 100 mm, d = 300 mm (imaging, magnification −2). */
+export const DEFAULT_ELEMENTS = "d150_f100_d300";
+
+export type AbcdKind = AbcdElement["kind"];
+/** An element as the page edits it, lengths in mm. */
+export type UiElement = { kind: AbcdKind; a: number; b: number };
+/** URL token prefix per element kind. */
+export const ELEMENT_PREFIX: Record<AbcdKind, string> = { space: "d", lens: "f", "flat-mirror": "m", "curved-mirror": "r", interface: "n" };
+
+/** Parses "d<mm>_f<mm>_m_r<mm>_n<n₁>x<n₂>" (tokens joined by "_", at most 20); unknown tokens are skipped, values clamped. */
+export function parseElements(s: string): UiElement[] {
+  const out: UiElement[] = [];
+  for (const token of s.split("_").slice(0, MAX_ELEMENTS)) {
+    const kind = (Object.keys(ELEMENT_PREFIX) as AbcdKind[]).find((k) => ELEMENT_PREFIX[k] === token[0]);
+    if (!kind) continue;
+    const [a, b] = token.slice(1).split("x").map(Number);
+    if (kind === "flat-mirror") out.push({ kind, a: 0, b: 0 });
+    else if (kind === "space") out.push({ kind, a: clampTo(a, 0, ELEMENT_LIMIT_MM, 50), b: 0 });
+    else if (kind === "interface") out.push({ kind, a: clampTo(a, 1, 5, 1), b: clampTo(b, 1, 5, 1.5) });
+    else out.push({ kind, a: clampTo(a, -ELEMENT_LIMIT_MM, ELEMENT_LIMIT_MM, kind === "lens" ? 100 : 200), b: 0 });
+  }
+  return out;
+}
+
+/** Page element (mm) to physics element (m). */
+export function toPhysicsElement(e: UiElement): AbcdElement {
+  switch (e.kind) {
+    case "space": return { kind: "space", d: e.a * 1e-3 };
+    case "lens": return { kind: "lens", f: e.a * 1e-3 };
+    case "flat-mirror": return { kind: "flat-mirror" };
+    case "curved-mirror": return { kind: "curved-mirror", R: e.a * 1e-3 };
+    case "interface": return { kind: "interface", n1: e.a, n2: e.b };
+  }
+}
+
+export interface AbcdSummary {
+  M: Abcd;
+  det: number;
+  detExpected: number;
+  ray: { y: number; theta: number };
+  /** All four entries finite (no f = 0 or R = 0 element). */
+  valid: boolean;
+  /** Imaging condition |B| < 1 nm. */
+  isImaging: boolean;
+  /** Rear focal length f′ = −1/C, m (NaN when C = 0). */
+  rearFocalLength: number;
+  /** Output medium index: n₂ of the last interface element (1 if none). */
+  nOut: number;
+  /** Effective focal length f′/n_out = 1/P with the real-angle convention C = −P/n_out, m. */
+  effectiveFocalLength: number;
+}
+
+/** System matrix, determinant, output ray (y₀ in m, θ₀ in rad) and focal lengths of an element list. */
+export function abcdSummary(elements: readonly UiElement[], y0: number, theta0: number): AbcdSummary {
+  const physics = elements.map(toPhysicsElement);
+  const M = systemMatrix(physics);
+  const valid = [M.A, M.B, M.C, M.D].every(Number.isFinite);
+  const rearFocalLength = valid && M.C !== 0 ? -1 / M.C : NaN;
+  const nOut = [...elements].reverse().find((e) => e.kind === "interface")?.b ?? 1;
+  return {
+    M,
+    det: determinant(M),
+    detExpected: expectedDeterminant(physics),
+    ray: traceRay(M, y0, theta0),
+    valid,
+    isImaging: valid && Math.abs(M.B) < 1e-9,
+    rearFocalLength,
+    nOut,
+    effectiveFocalLength: rearFocalLength / nOut,
+  };
+}

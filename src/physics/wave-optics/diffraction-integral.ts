@@ -118,3 +118,43 @@ export function slitFirstZero(a: number, lambda: number, z: number): number {
   if (!(a > 0 && lambda > 0 && z > 0)) return NaN;
   return (lambda * z) / (2 * a);
 }
+
+export type ApertureKind = "circular" | "slit";
+
+export interface DiffractionSummary {
+  /** Fresnel number a²/(λz). */
+  fresnelNumber: number;
+  /** Circular aperture closer than N_F = MAX_CIRCULAR_FRESNEL_NUMBER: the pattern is not computed. */
+  tooNear: boolean;
+  /** Paraxial on-axis intensity I(0)/I₀: 4 sin²(πN_F/2) (circular) or the slit's Fresnel-integral value. */
+  onAxisParaxial: number;
+  /** On-axis I(0)/I₀: exact Rayleigh–Sommerfeld for the circular aperture, the paraxial value for the slit. */
+  onAxis: number;
+  /** |Phase the Fresnel step drops at the aperture edge|, rad; above 0.1 the paraxial values are only approximate. */
+  edgePhase: number;
+  /** First zero of the far-field pattern: Airy dark ring radius (circular) or λz/(2a) (slit), m. */
+  farFieldFirstZero: number;
+  /** Distance where N_F = 1, a²/λ, m. */
+  farFieldDistance: number;
+}
+
+/** The page's scalar results for an aperture of radius or half-width a (m), wavelength λ (m), distance z (m). */
+export function diffractionSummary(aperture: ApertureKind, a: number, lambda: number, z: number): DiffractionSummary {
+  const slit = aperture === "slit";
+  const NF = fresnelNumber(a, lambda, z);
+  const onAxisParaxial = slit ? slitFresnelIntensity(NF, 0) : circularOnAxisIntensity(NF);
+  return {
+    fresnelNumber: NF,
+    tooNear: !slit && NF > MAX_CIRCULAR_FRESNEL_NUMBER,
+    onAxisParaxial,
+    onAxis: slit ? onAxisParaxial : circularOnAxisIntensityExact(a, lambda, z),
+    edgePhase: Math.abs(fresnelEdgePhaseError(a, lambda, z)),
+    farFieldFirstZero: slit ? slitFirstZero(a, lambda, z) : airyFirstZeroRadius(a, lambda, z),
+    farFieldDistance: (a * a) / lambda,
+  };
+}
+
+/** Allowed plotted radius on the screen, m: from a/10 up to the larger-of 3a and 40 far-field zero spacings λz/a. */
+export function plotRadiusLimits(a: number, lambda: number, z: number): { min: number; max: number } {
+  return { min: a / 10, max: Math.max(3 * a, 40 * ((lambda * z) / a)) };
+}
