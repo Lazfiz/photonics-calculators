@@ -83,7 +83,17 @@ import opticalActivity from "./polarization/optical-activity";
 import orthoconoscopic from "./polarization/orthoconoscopic";
 import poincareSphere from "./polarization/poincare-sphere";
 import polarimetry from "./polarization/polarimetry";
+import polarizationScrambling from "./polarization/polarization-scrambling";
+import polarizerExtinction from "./polarization/polarizer-extinction";
+import polarizerTypes from "./polarization/polarizer-types";
+import polarizingBeamsplitter from "./polarization/polarizing-beamsplitter";
+import polymerPolarizer from "./polarization/polymer-polarizer";
+import retarder from "./polarization/retarder";
+import retarderTypes from "./polarization/retarder-types";
 import stokes from "./polarization/stokes";
+import waveplateOrder from "./polarization/waveplate-order";
+import waveplateThickness from "./polarization/waveplate-thickness";
+import wireGrid from "./polarization/wire-grid";
 import blackbody from "./spectroscopy/blackbody";
 import cavityRingDown from "./spectroscopy/cavity-ring-down";
 import fluorescenceLifetime from "./spectroscopy/fluorescence-lifetime";
@@ -111,7 +121,8 @@ export const schemas: readonly CalculatorSchema[] = [
   birefringence, birefringenceImaging, birefringentPolarizer, brewsterPolarizer, circularDichroism, conoscopic,
   degreePolarization, depolarization, dichroicPolarizer, doubleRefraction, fresnelPolarization,
   glansPrism, jonesCalculus, jonesChain, liquidCrystalPolarizer, microscopePolarizer, muellerMatrix, muellerPolarimetry,
-  opticalActivity, orthoconoscopic, poincareSphere, polarimetry,
+  opticalActivity, orthoconoscopic, poincareSphere, polarimetry, polarizationScrambling, polarizerExtinction, polarizerTypes,
+  polarizingBeamsplitter, polymerPolarizer, retarder, retarderTypes, waveplateOrder, waveplateThickness, wireGrid,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));
