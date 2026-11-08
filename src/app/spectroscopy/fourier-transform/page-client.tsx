@@ -4,9 +4,8 @@ import SimpleLineChart from "../../../components/simple-line-chart";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { createRng, gaussian } from "../../../physics/random";
-import { WINDOWS, windowSamples, type WindowName } from "../../../physics/spectroscopy/apodization-comparison";
-import { aliasedFrequency, amplitudeSpectrum, noiseFloorRms } from "../../../physics/spectroscopy/fourier-transform";
+import { WINDOWS, type WindowName } from "../../../physics/spectroscopy/apodization-comparison";
+import { twoToneAnalysis } from "../../../physics/spectroscopy/fourier-transform";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (v: number, d = 4) => (Number.isFinite(v) ? Number(v.toPrecision(d)).toString() : "—");
@@ -32,24 +31,8 @@ export default function FourierTransformPage() {
   const N = Math.round(clamp(nRaw, 4, 8192, 256));
   const win: WindowName = WINDOW_NAMES.includes(windowRaw as WindowName) ? (windowRaw as WindowName) : "boxcar";
 
-  // N ≤ 8192 and one O(N log N) transform: recomputed on every render.
-  const rng = createRng(1); // fixed seed: same noise on server and client
-  const time = Array.from({ length: N }, (_, n) => n / fs);
-  const signal = time.map((t) => a1 * Math.sin(2 * Math.PI * f1 * t) + a2 * Math.sin(2 * Math.PI * f2 * t) + sigma * gaussian(rng));
-  const w = windowSamples(win, N);
-  const spec = amplitudeSpectrum(signal, fs, w);
-  const df = fs / N;
-  const floor = noiseFloorRms(sigma, w);
-
-  const tones = [
-    { f: f1, a: a1 },
-    { f: f2, a: a2 },
-  ].map(({ f, a }) => {
-    const fa = aliasedFrequency(f, fs);
-    const k = Math.round(fa / df);
-    const near = spec.amplitude.slice(Math.max(0, k - 1), Math.min(spec.amplitude.length, k + 2));
-    return { f, a, fa, bin: fa / df, read: Math.max(...near) };
-  });
+  // N ≤ 8192 and one O(N log N) transform: recomputed on every render (fixed noise seed: same on server and client).
+  const { time, signal, spec, df, floor, tones } = twoToneAnalysis({ f1, a1, f2, a2, sigma, N, fs, win });
   const aliased = tones.filter((t) => t.f > fs / 2);
 
   const signalSeries = [{ name: "x(t)", color: "#60a5fa", points: time.map((t, n) => ({ x: round6(t), y: round6(signal[n]) })) }];
