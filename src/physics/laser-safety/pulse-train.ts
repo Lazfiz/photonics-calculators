@@ -303,3 +303,22 @@ export function pulseTrainSafeDiameter(lambda: number, Q: number, train: PulseTr
   }
   return hi;
 }
+
+/**
+ * The train of the eye-safe-wavelength page from its inputs: pulse width (ns, clamped to 1e-4 ns – 30 ks), repetition
+ * rate (Hz, below 0 taken as 0) and exposure time (s, raised to one pulse, capped at 30 ks). Pulses that overlap
+ * (f·τ > 1) are evaluated as one pulse.
+ */
+export function eyeSafeTrain(pulseWidth_ns: number, prf: number, exposure: number): { tau: number; train: PulseTrain; overlap: boolean } {
+  const tau = Math.min(Math.max(pulseWidth_ns, 1e-4), T_MAX * 1e9) * 1e-9;
+  const f = Math.max(prf, 0);
+  const T = Math.min(Math.max(exposure, tau), T_MAX);
+  const overlap = f * tau > 1;
+  return { tau, train: { duration: tau, prf: overlap ? 0 : f, exposure: T }, overlap };
+}
+
+/** Largest energy per pulse (J) of a train in a beam of 1/e² diameter d (m) at λ (m), the limit and the rule that set it; null where no limit applies. */
+export function maxPulseEnergy(lambda: number, d: number, train: PulseTrain): { kind: EyeLimitKind; rule: PulseRule; qMax: number } | null {
+  const r = pulseTrainLimits(lambda, d, train);
+  return r.limiting && r.rule ? { kind: r.limiting, rule: r.rule, qMax: r.qMax } : null;
+}

@@ -30,6 +30,18 @@ import wavelengthSelection from "./free-space-comms/wavelength-selection";
 import airyDisk from "./imaging/airy-disk";
 import lowCoherence from "./imaging/low-coherence";
 import tirf from "./imaging/tirf";
+import aelLimits from "./laser-safety/ael-limits";
+import ansiIecComparison from "./laser-safety/ansi-iec-comparison";
+import atmosphericAttenuation from "./laser-safety/atmospheric-attenuation";
+import aversionResponse from "./laser-safety/aversion-response";
+import beamDiameterConversion from "./laser-safety/beam-diameter-conversion";
+import beamExpander from "./laser-safety/beam-expander";
+import eyeSafeWavelength from "./laser-safety/eye-safe-wavelength";
+import interlockDesign from "./laser-safety/interlock-design";
+import multipleWavelength from "./laser-safety/multiple-wavelength";
+import peakPower from "./laser-safety/peak-power";
+import powerDensity from "./laser-safety/power-density";
+import thermalLensHazard from "./laser-safety/thermal-lens-hazard";
 import blueLightHazard from "./laser-safety/blue-light-hazard";
 import cornealVsRetinal from "./laser-safety/corneal-vs-retinal";
 import exposureDuration from "./laser-safety/exposure-duration";
@@ -179,6 +191,8 @@ export const schemas: readonly CalculatorSchema[] = [
   soliton, spatialFilter, sumFrequency, supercontinuum, thinDiskLaser,
   blueLightHazard, cornealVsRetinal, exposureDuration, extendedSource, infraredHazard, pulsedMpe, retinalHazard,
   retinalImageSize, skinMpe, thermalVsPhotochemical, uvExposure, uvHazard,
+  aelLimits, ansiIecComparison, atmosphericAttenuation, aversionResponse, beamDiameterConversion, beamExpander,
+  eyeSafeWavelength, interlockDesign, multipleWavelength, peakPower, powerDensity, thermalLensHazard,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));

@@ -8,10 +8,8 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  FILTER_MATERIALS, filterTemperatureRise, timeToTemperatureRise, type FilterMaterialKey, type HeatDeposition,
+  AMBIENT_C, FILTER_MATERIALS, filterTemperatureRise, timeToTemperatureRise, type FilterMaterialKey, type HeatDeposition,
 } from "../../../physics/laser-safety/filter-heating";
-
-const AMBIENT_C = 25;
 
 export default function ThermalLensHazardPage() {
   const [power, setPower] = useURLState("power", 2000, { min: 0 }); // mW

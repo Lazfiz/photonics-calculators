@@ -7,8 +7,7 @@ import { finiteXY, fmtEnergy, fmtNum, LIMIT_LABELS } from "../../../components/e
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { T_MAX, type EyeLimitKind } from "../../../physics/laser-safety/eye-exposure-limits";
-import { pulseTrainLimits, type PulseRule, type PulseTrain } from "../../../physics/laser-safety/pulse-train";
+import { eyeSafeTrain, maxPulseEnergy, type PulseRule } from "../../../physics/laser-safety/pulse-train";
 
 const LASERS: readonly [number, string][] = [
   [355, "Nd:YAG ×3"], [532, "Nd:YAG ×2"], [905, "Diode (lidar)"], [1064, "Nd:YAG"], [1550, "Er fiber"],
@@ -16,12 +15,6 @@ const LASERS: readonly [number, string][] = [
 ];
 
 const RULE_NAMES: Record<PulseRule, string> = { 1: "single pulse", 2: "average", 3: "C_P" };
-
-/** Largest energy per pulse (J) of a train in a beam of 1/e² diameter d (m) at λ (m), the limit and the rule that set it. */
-function maxPulseEnergy(lambda: number, d: number, train: PulseTrain): { kind: EyeLimitKind; rule: PulseRule; qMax: number } | null {
-  const r = pulseTrainLimits(lambda, d, train);
-  return r.limiting && r.rule ? { kind: r.limiting, rule: r.rule, qMax: r.qMax } : null;
-}
 
 export default function EyeSafeWavelengthPage() {
   const [pulseEnergy, setPulseEnergy] = useURLState("pulseEnergy", 100, { min: 0 }); // mJ
@@ -32,12 +25,8 @@ export default function EyeSafeWavelengthPage() {
 
   // ICNIRP 2013 eye limits and repetitive-pulse rules: src/physics/laser-safety/pulse-train.ts. SI inside.
   const Q = Math.max(pulseEnergy, 0) * 1e-3;
-  const tau = Math.min(Math.max(pulseWidth, 1e-4), T_MAX * 1e9) * 1e-9;
+  const { tau, train, overlap } = useMemo(() => eyeSafeTrain(pulseWidth, prfRaw, exposureRaw), [pulseWidth, prfRaw, exposureRaw]);
   const d = Math.max(beamDiam, 0.01) * 1e-3;
-  const prf = Math.max(prfRaw, 0);
-  const T = Math.min(Math.max(exposureRaw, tau), T_MAX);
-  const overlap = prf * tau > 1;
-  const train = useMemo(() => ({ duration: tau, prf: overlap ? 0 : prf, exposure: T }), [tau, prf, overlap, T]);
   const single = useMemo(() => ({ duration: tau, prf: 0, exposure: tau }), [tau]);
 
   const rows = useMemo(() => LASERS.map(([nm, name]) => ({ nm, name, m: maxPulseEnergy(nm * 1e-9, d, train) })), [d, train]);

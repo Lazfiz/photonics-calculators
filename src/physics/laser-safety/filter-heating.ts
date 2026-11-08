@@ -43,6 +43,9 @@ export type FilterMaterialKey = keyof typeof FILTER_MATERIALS;
 /** Where the absorbed power is deposited: at the front face or evenly through the thickness. */
 export type HeatDeposition = "surface" | "volume";
 
+/** Ambient temperature the filter starts from, °C (room temperature); T_g minus this is the rise that softens it. */
+export const AMBIENT_C = 25;
+
 /** Thermal diffusivity κ = K/(ρc), m²/s. */
 export const thermalDiffusivity = (m: FilterMaterial) => m.K / (m.rho * m.cp);
 
