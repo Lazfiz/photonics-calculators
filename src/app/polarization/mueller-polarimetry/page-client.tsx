@@ -9,33 +9,18 @@ import { CONVENTION_NOTE, fix, stokesProblem } from "../../../components/polariz
 import {
   applyMueller,
   chainMueller,
-  muellerDepolarizer,
-  muellerPolarizer,
-  muellerRetarder,
-  muellerRotator,
-  type MuellerMatrix,
+  muellerElementKind,
+  muellerElementMatrix,
+  type MuellerElementKind,
 } from "../../../physics/polarization/mueller";
 import { analyzerIntensity, degreeOfPolarization, isPhysicalStokes, polarizedIntensity, type Stokes } from "../../../physics/polarization/stokes";
 
 const DEG = Math.PI / 180;
 
-const ELEMENT_KINDS = ["polarizer", "retarder", "rotator", "depolarizer"] as const;
-type ElementKind = (typeof ELEMENT_KINDS)[number];
-/** A URL value that names no element falls back to the default. */
-const elementKind = (v: string, fallback: ElementKind): ElementKind =>
-  (ELEMENT_KINDS as readonly string[]).includes(v) ? (v as ElementKind) : fallback;
-
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
-
-/** The Mueller matrix of one element: `param` is an angle (°), the retardance (°) or the depolarization (%). */
-function elementMatrix(kind: ElementKind, param: number, fastAxisDeg: number): MuellerMatrix {
-  switch (kind) {
-    case "polarizer": return muellerPolarizer(param * DEG);
-    case "retarder": return muellerRetarder(param * DEG, fastAxisDeg * DEG);
-    case "rotator": return muellerRotator(param * DEG);
-    case "depolarizer": return muellerDepolarizer(1 - clamp(param, 0, 100) / 100);
-  }
-}
+type ElementKind = MuellerElementKind;
+const elementKind = muellerElementKind;
+const elementMatrix = muellerElementMatrix;
 
 const PARAM_LABELS: Record<ElementKind, string> = {
   polarizer: "Transmission axis (°)",

@@ -72,6 +72,17 @@ import depolarization from "./polarization/depolarization";
 import dichroicPolarizer from "./polarization/dichroic-polarizer";
 import doubleRefraction from "./polarization/double-refraction";
 import fresnelPolarization from "./polarization/fresnel-polarization";
+import glansPrism from "./polarization/glans-prism";
+import jonesCalculus from "./polarization/jones-calculus";
+import jonesChain from "./polarization/jones-chain";
+import liquidCrystalPolarizer from "./polarization/liquid-crystal-polarizer";
+import microscopePolarizer from "./polarization/microscope-polarizer";
+import muellerMatrix from "./polarization/mueller-matrix";
+import muellerPolarimetry from "./polarization/mueller-polarimetry";
+import opticalActivity from "./polarization/optical-activity";
+import orthoconoscopic from "./polarization/orthoconoscopic";
+import poincareSphere from "./polarization/poincare-sphere";
+import polarimetry from "./polarization/polarimetry";
 import stokes from "./polarization/stokes";
 import blackbody from "./spectroscopy/blackbody";
 import cavityRingDown from "./spectroscopy/cavity-ring-down";
@@ -99,6 +110,8 @@ export const schemas: readonly CalculatorSchema[] = [
   semiconductorBandgap, thermalConductivityOptics, thermalExpansion, transparencyRange, twoPhotonAbsorption, xRayOptics,
   birefringence, birefringenceImaging, birefringentPolarizer, brewsterPolarizer, circularDichroism, conoscopic,
   degreePolarization, depolarization, dichroicPolarizer, doubleRefraction, fresnelPolarization,
+  glansPrism, jonesCalculus, jonesChain, liquidCrystalPolarizer, microscopePolarizer, muellerMatrix, muellerPolarimetry,
+  opticalActivity, orthoconoscopic, poincareSphere, polarimetry,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));

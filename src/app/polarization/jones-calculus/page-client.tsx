@@ -1,39 +1,25 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
+import { useURLState } from "../../../hooks/use-url-state";
 import type { Complex } from "../../../physics/complex";
 import {
   IDENTITY,
-  LCP,
-  RCP,
+  JONES_CALCULUS_ELEMENTS,
+  JONES_CALCULUS_INPUTS,
   intensity,
-  linearPolarizer,
-  linearRetarder,
-  linearState,
+  jonesCalculusMatrix,
   propagate,
-  rotator,
   stokesFromJones,
+  type JonesCalculusElementType,
+  type JonesCalculusInputKey,
   type JonesMatrix,
-  type JonesVector,
 } from "../../../physics/polarization/jones";
 import { CONVENTION_NOTE, degOrDash, fix, stateLabel } from "../../../components/polarization-format";
 import { ellipseAngles } from "../../../physics/polarization/stokes";
 
-const DEG = Math.PI / 180;
-
-type ElementType = "polarizer-h" | "polarizer-v" | "polarizer-45" | "polarizer-135" | "qwp-fast-h" | "qwp-fast-v" | "hwp-fast-h" | "hwp-fast-v" | "rotator";
-
-const ELEMENT_OPTIONS: { type: ElementType; label: string; hasAngle: boolean; defaultAngle: number }[] = [
-  { type: "polarizer-h", label: "Polarizer → H", hasAngle: false, defaultAngle: 0 },
-  { type: "polarizer-v", label: "Polarizer → V", hasAngle: false, defaultAngle: 0 },
-  { type: "polarizer-45", label: "Polarizer → 45°", hasAngle: false, defaultAngle: 0 },
-  { type: "polarizer-135", label: "Polarizer → 135°", hasAngle: false, defaultAngle: 0 },
-  { type: "qwp-fast-h", label: "λ/4 fast axis H", hasAngle: false, defaultAngle: 0 },
-  { type: "qwp-fast-v", label: "λ/4 fast axis V", hasAngle: false, defaultAngle: 0 },
-  { type: "hwp-fast-h", label: "λ/2 fast axis H", hasAngle: false, defaultAngle: 0 },
-  { type: "hwp-fast-v", label: "λ/2 fast axis V", hasAngle: false, defaultAngle: 0 },
-  { type: "rotator", label: "Rotator", hasAngle: true, defaultAngle: 45 },
-];
+type ElementType = JonesCalculusElementType;
+const ELEMENT_OPTIONS = JONES_CALCULUS_ELEMENTS;
 
 function cfmt(c: Complex): string {
   const r = fix(c.re, 3);
@@ -48,50 +34,45 @@ interface JonesEl {
   angle?: number;
 }
 
-function getJonesMatrix(el: JonesEl): JonesMatrix {
-  switch (el.type) {
-    case "polarizer-h": return linearPolarizer(0);
-    case "polarizer-v": return linearPolarizer(90 * DEG);
-    case "polarizer-45": return linearPolarizer(45 * DEG);
-    case "polarizer-135": return linearPolarizer(135 * DEG);
-    case "qwp-fast-h": return linearRetarder(90 * DEG, 0);
-    case "qwp-fast-v": return linearRetarder(90 * DEG, 90 * DEG);
-    case "hwp-fast-h": return linearRetarder(180 * DEG, 0);
-    case "hwp-fast-v": return linearRetarder(180 * DEG, 90 * DEG);
-    case "rotator": return rotator((el.angle ?? 45) * DEG);
-    default: return IDENTITY;
-  }
-}
+const getJonesMatrix = (el: JonesEl): JonesMatrix => jonesCalculusMatrix(el.type, el.angle);
 
-type InputPreset = "linear-h" | "linear-v" | "linear-45" | "linear-135" | "rcp" | "lcp";
-
-const INPUT_PRESETS: Record<InputPreset, { jones: JonesVector; label: string }> = {
-  "linear-h": { jones: linearState(0), label: "Linear H" },
-  "linear-v": { jones: linearState(90 * DEG), label: "Linear V" },
-  "linear-45": { jones: linearState(45 * DEG), label: "Linear 45°" },
-  "linear-135": { jones: linearState(-45 * DEG), label: "Linear 135°" }, // 135° = −45°
-  rcp: { jones: RCP, label: "RCP" },
-  lcp: { jones: LCP, label: "LCP" },
-};
+type InputPreset = JonesCalculusInputKey;
+const INPUT_PRESETS = JONES_CALCULUS_INPUTS;
 
 export default function JonesCalculusPage() {
-  const [elements, setElements] = useState<JonesEl[]>([]);
-  const [inputKey, setInputKey] = useState<InputPreset>("linear-h");
+  const [input, setInput] = useURLState("input", "linear-h");
+  const [e1, setE1] = useURLState("element1", "none");
+  const [e2, setE2] = useURLState("element2", "none");
+  const [e3, setE3] = useURLState("element3", "none");
+  const [e4, setE4] = useURLState("element4", "none");
+  const [e5, setE5] = useURLState("element5", "none");
+  const [e6, setE6] = useURLState("element6", "none");
+  const [a1, setA1] = useURLState("angle1", 45, { min: -180, max: 180 });
+  const [a2, setA2] = useURLState("angle2", 45, { min: -180, max: 180 });
+  const [a3, setA3] = useURLState("angle3", 45, { min: -180, max: 180 });
+  const [a4, setA4] = useURLState("angle4", 45, { min: -180, max: 180 });
+  const [a5, setA5] = useURLState("angle5", 45, { min: -180, max: 180 });
+  const [a6, setA6] = useURLState("angle6", 45, { min: -180, max: 180 });
+  const setters = [setE1, setE2, setE3, setE4, setE5, setE6];
+  const angleSetters = [setA1, setA2, setA3, setA4, setA5, setA6];
+  const angles = [a1, a2, a3, a4, a5, a6];
+  // An unknown id in the URL counts as an empty slot.
+  const slotTypes = [e1, e2, e3, e4, e5, e6].map((v) => ELEMENT_OPTIONS.find((o) => o.type === v)?.type ?? null);
+  const slotKey = slotTypes.map((t, i) => `${t}:${angles[i]}`).join(",");
+  const elements: (JonesEl & { slot: number })[] = slotTypes.flatMap((type, slot) => (type === null ? [] : [{ type, angle: angles[slot], slot }]));
+  const firstFree = slotTypes.indexOf(null);
+  const inputKey: InputPreset = Object.hasOwn(INPUT_PRESETS, input) ? (input as InputPreset) : "linear-h";
+  const setInputKey = (k: InputPreset) => setInput(k);
 
   const addElement = (type: ElementType, hasAngle: boolean, defaultAngle: number) => {
-    if (elements.length >= 5) return;
-    setElements([...elements, { type, angle: hasAngle ? defaultAngle : undefined }]);
+    if (firstFree < 0) return;
+    setters[firstFree](type);
+    if (hasAngle) angleSetters[firstFree](defaultAngle);
   };
 
-  const removeElement = (idx: number) => {
-    setElements(elements.filter((_, i) => i !== idx));
-  };
+  const removeElement = (slot: number) => setters[slot]("none");
 
-  const updateAngle = (idx: number, angle: number) => {
-    const newEls = [...elements];
-    newEls[idx] = { ...newEls[idx], angle };
-    setElements(newEls);
-  };
+  const updateAngle = (slot: number, angle: number) => angleSetters[slot](angle);
 
   const inputState = INPUT_PRESETS[inputKey].jones;
 
@@ -107,7 +88,8 @@ export default function JonesCalculusPage() {
         matrix: i === 0 ? IDENTITY : matrices[i - 1],
       };
     });
-  }, [elements, inputKey]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slotKey, inputKey]);
 
   const inputIntensity = intensity(inputState);
   const final = chain[chain.length - 1];
@@ -143,7 +125,7 @@ export default function JonesCalculusPage() {
 
         {/* Element chain */}
         <div className="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-lg p-5">
-          <h2 className="text-lg font-semibold mb-3">Element Chain ({elements.length}/5)</h2>
+          <h2 className="text-lg font-semibold mb-3">Element Chain ({elements.length}/6)</h2>
           <div className="flex flex-wrap gap-2 mb-4">
             {ELEMENT_OPTIONS.map((opt) => (
               <button key={opt.type} onClick={() => addElement(opt.type, opt.hasAngle, opt.defaultAngle)}
@@ -157,6 +139,7 @@ export default function JonesCalculusPage() {
           ) : (
             <div className="space-y-2">
               {elements.map((el, idx) => {
+                const slot = el.slot;
                 const opt = ELEMENT_OPTIONS.find((o) => o.type === el.type);
                 return (
                   <div key={idx} className="flex items-center gap-3 bg-gray-800 rounded px-3 py-2">
@@ -166,11 +149,11 @@ export default function JonesCalculusPage() {
                       <input type="number" value={el.angle ?? 0} step="1" aria-label={`Rotation angle of element ${idx + 1} (°)`}
                         onChange={(e) => {
                           const v = parseFloat(e.target.value);
-                          if (Number.isFinite(v)) updateAngle(idx, v);
+                          if (Number.isFinite(v)) updateAngle(slot, v);
                         }}
                         className="w-20 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm text-white" />
                     )}
-                    <button onClick={() => removeElement(idx)} className="text-red-400 hover:text-red-300 text-sm">✕</button>
+                    <button onClick={() => removeElement(slot)} className="text-red-400 hover:text-red-300 text-sm">✕</button>
                   </div>
                 );
               })}

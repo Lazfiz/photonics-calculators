@@ -9,12 +9,12 @@ import { CrystalNote, isCrystalId } from "../../../components/crystal-select";
 import { fix } from "../../../components/polarization-format";
 import { useURLState } from "../../../hooks/use-url-state";
 import { cssRgb } from "../../../physics/cie-colour";
-import { CRYSTAL_IDS, UNIAXIAL_CRYSTALS, crystalIndices, crystalRange, type CrystalId } from "../../../physics/materials/uniaxial-data";
+import { CRYSTAL_IDS, UNIAXIAL_CRYSTALS, crystalRange, type CrystalId } from "../../../physics/materials/uniaxial-data";
 import {
   type ChainRetarder, interferenceColour, michelLevyColour, retarderChainColour, retarderChainTransmission,
 } from "../../../physics/polarization/interference-colours";
 import { retardanceFromPath } from "../../../physics/polarization/retarders";
-import { sectionRetardance, sectionSlowAxis } from "../../../physics/polarization/uniaxial";
+import { crystalIndicesHeld, crystalSectionRetardance, sectionSlowAxis } from "../../../physics/polarization/uniaxial";
 
 const DEG = Math.PI / 180;
 const RED_PLATE = 550e-9; // first-order red plate: a full wave at 550 nm, slow axis at +45°
@@ -22,12 +22,7 @@ const STRIP_CELLS = 300;
 const STRIP_MAX_NM = 2000;
 const clamp = (v: number, lo: number, hi: number) => (Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : lo);
 
-/** Section retardance R(λ), m; the index data are held at the edge of their fit range outside it. */
-function retardanceAt(id: CrystalId, theta: number, d: number, lambda: number): number {
-  const [lo, hi] = crystalRange(id);
-  const { no, ne } = crystalIndices(id, clamp(lambda, lo, hi));
-  return sectionRetardance(no, ne, theta, d);
-}
+const retardanceAt = crystalSectionRetardance; // R(λ), m; indices held at the edge of their fit range outside it
 
 function Toggle<T extends string>({ label, value, options, onChange }: { label: string; value: T; options: [T, string][]; onChange: (v: T) => void }) {
   return (
@@ -62,7 +57,7 @@ export default function OrthoscopicPage() {
   const outsideRange = rangeLo > 380e-9 || rangeHi < 780e-9;
   const A = crossed ? Math.PI / 2 : 0;
 
-  const { no, ne } = crystalIndices(id, clamp(550e-9, ...crystalRange(id)));
+  const { no, ne } = crystalIndicesHeld(id, 550e-9);
   const positive = ne > no;
   const R550 = retardanceAt(id, theta, d, 550e-9);
   const dnEff = R550 / d;
