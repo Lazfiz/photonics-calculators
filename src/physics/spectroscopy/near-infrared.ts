@@ -78,6 +78,11 @@ export function dpfFrontalHead(ageYears: number, lambda: number): number {
   return 223.3 + 0.05624 * ageYears ** 0.8493 - 5.723e-7 * nm ** 3 + 0.001245 * nm ** 2 - 0.9025 * nm;
 }
 
+/** DPF the page uses at λ (m): the Scholkmann–Wolf value for "age" mode, else the entered value (manual). */
+export function mbllDpf(mode: "age" | "manual", ageYears: number, lambda: number, manualDpf: number): number {
+  return mode === "age" ? dpfFrontalHead(ageYears, lambda) : manualDpf;
+}
+
 /**
  * Δ[HbO₂] and Δ[HbR] (mol/m³) from optical-density changes at two wavelengths, source–detector distance d (m) and
  * the DPF at each wavelength. NaN when the two wavelengths give a singular system.

@@ -121,3 +121,17 @@ export function deltaA(lambda: number, p: Populations, bands: TransientBands, fr
 export function deltaTOverT(dA: number): number {
   return Math.expm1(-dA * Math.LN10);
 }
+
+/**
+ * Delay grid of the kinetic trace: n points from −max(3 FWHM_IRF, 5 % of tMax) to tMax, s. The negative part shows the
+ * rise through time zero. Inputs: IRF cross-correlation FWHM (s, ≥ 0) and maximum delay tMax (s, > 0).
+ */
+export function kineticTimes(irf: number, tMax: number, n = 401): number[] {
+  const tStart = -Math.max(3 * irf, 0.05 * tMax);
+  return Array.from({ length: n }, (_, i) => tStart + (i / (n - 1)) * (tMax - tStart));
+}
+
+/** Index of the point with the largest |ΔA total| (the first one on ties). */
+export function peakIndex(trace: readonly DeltaAParts[]): number {
+  return trace.reduce((best, p, i) => (Math.abs(p.total) > Math.abs(trace[best].total) ? i : best), 0);
+}

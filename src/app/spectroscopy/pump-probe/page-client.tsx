@@ -7,7 +7,7 @@ import { useURLState } from "../../../hooks/use-url-state";
 import { hc_eV_nm } from "../../../physics/constants";
 import { crossSectionFromEpsilon } from "../../../physics/spectroscopy/lambert-beer-law";
 import {
-  deltaA, deltaTOverT, excitationFraction, intermediatePeakTime, photonFluence, sequentialPopulations, type TransientBands,
+  deltaA, deltaTOverT, excitationFraction, intermediatePeakTime, kineticTimes, peakIndex, photonFluence, sequentialPopulations, type TransientBands,
 } from "../../../physics/spectroscopy/pump-probe";
 import { GAUSSIAN_FWHM_PER_SIGMA } from "../../../physics/math";
 
@@ -76,8 +76,7 @@ export default function PumpProbePage() {
 
   const delayList = delays.split(",").map((s) => s.trim()).filter((s) => s !== "").map(Number).filter(Number.isFinite).slice(0, 8).map((d) => clamp(d, -1e6, 1e6, 0));
 
-  const tStart = -Math.max(3 * irf, 0.05 * tMax);
-  const times = Array.from({ length: 401 }, (_, i) => tStart + (i / 400) * (tMax - tStart));
+  const times = kineticTimes(irf, tMax);
   const trace = times.map((t) => deltaA(probe, sequentialPopulations(t, tau1, tau2, sigma), bands, f, gsAbs));
   const mOD = (x: number) => r6(x * 1e3);
   const tPs = times.map((t) => r6(t / ps));
@@ -103,7 +102,7 @@ export default function PumpProbePage() {
     };
   });
 
-  const peakIdx = trace.reduce((best, p, i) => (Math.abs(p.total) > Math.abs(trace[best].total) ? i : best), 0);
+  const peakIdx = peakIndex(trace);
   const peak = trace[peakIdx].total;
   const saturated = Number.isFinite(f) && frontFace > 0.1;
 

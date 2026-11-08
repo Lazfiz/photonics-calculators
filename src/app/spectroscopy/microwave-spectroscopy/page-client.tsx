@@ -6,30 +6,26 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { c, h, k_B } from "../../../physics/constants";
 import {
-  DEBYE, DIATOMICS, mostPopulatedJ, reducedMass, rotationalConstant, rotationalConstantV, rotationalLines, rotationalPartition,
+  DEBYE, DIATOMICS, MICROWAVE_DEFAULTS, microwavePresetValues, mostPopulatedJ, reducedMass, rotationalConstant, rotationalConstantV, rotationalLines, rotationalPartition,
   type DiatomicConstants,
 } from "../../../physics/spectroscopy/diatomic";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits) : "—");
 const r6 = (x: number) => Number(x.toPrecision(6));
-const r10 = (x: number) => Number(x.toPrecision(10));
 const MHz = 1e6 / c; // MHz → m⁻¹
 const JPL = c * 1e10; // nm²·MHz per cm/molecule (= 2.99792458e18)
 
-const co = DIATOMICS.co;
-const presetValues = (k: typeof co) => ({
-  m1: k.m1, m2: k.m2, bondLength: r10(k.re * 1e10), alphaE: r6(k.alphaE / MHz), distortion: r6(k.De / MHz), dipoleMoment: r6(k.dipole / DEBYE),
-});
+const presetValues = microwavePresetValues;
 
 export default function MicrowaveSpectroscopyPage() {
-  const d = presetValues(co);
-  const [m1Raw, setM1] = useURLState("m1", d.m1);
-  const [m2Raw, setM2] = useURLState("m2", d.m2);
-  const [rRaw, setR] = useURLState("bondLength", d.bondLength);
-  const [alphaRaw, setAlpha] = useURLState("alphaE", d.alphaE);
-  const [dRaw, setD] = useURLState("distortion", d.distortion);
-  const [muRaw, setMu] = useURLState("dipoleMoment", d.dipoleMoment);
+  const d = MICROWAVE_DEFAULTS;
+  const [m1Raw, setM1] = useURLState("m1", MICROWAVE_DEFAULTS.m1);
+  const [m2Raw, setM2] = useURLState("m2", MICROWAVE_DEFAULTS.m2);
+  const [rRaw, setR] = useURLState("bondLength", MICROWAVE_DEFAULTS.bondLength);
+  const [alphaRaw, setAlpha] = useURLState("alphaE", MICROWAVE_DEFAULTS.alphaE);
+  const [dRaw, setD] = useURLState("distortion", MICROWAVE_DEFAULTS.distortion);
+  const [muRaw, setMu] = useURLState("dipoleMoment", MICROWAVE_DEFAULTS.dipoleMoment);
   const [tRaw, setT] = useURLState("temperature", 300);
   const [vRaw, setV] = useURLState("v", 0);
 

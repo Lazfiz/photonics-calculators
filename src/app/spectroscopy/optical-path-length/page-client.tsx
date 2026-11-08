@@ -4,9 +4,9 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { groupIndex, inRange, refractiveIndex, type SellmeierModel } from "../../../physics/materials/sellmeier";
-import { MATERIALS, SCHOTT_GLASSES } from "../../../physics/materials/sellmeier-data";
+import { groupIndex, refractiveIndex } from "../../../physics/materials/sellmeier";
 import { slabPath } from "../../../physics/spectroscopy/optical-path-length";
+import { SLAB_GLASSES as GLASSES, slabIndices } from "../../../physics/spectroscopy/slab-medium";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const r6 = (x: number) => (Number.isFinite(x) ? Number(x.toPrecision(6)) : NaN);
@@ -14,13 +14,6 @@ const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digit
 const fmtTime = (t: number) =>
   !Number.isFinite(t) ? "—" : t >= 1e-6 ? `${fmt(t * 1e6)} µs` : t >= 1e-9 ? `${fmt(t * 1e9)} ns` : `${fmt(t * 1e12)} ps`;
 const DEG = Math.PI / 180;
-
-const GLASSES: Record<string, { name: string; model: SellmeierModel }> = {
-  fusedSilica: MATERIALS.fusedSilica,
-  "N-BK7": SCHOTT_GLASSES["N-BK7"],
-  "N-SF11": SCHOTT_GLASSES["N-SF11"],
-  caf2: MATERIALS.caf2,
-};
 
 export default function OpticalPathLengthPage() {
   const [materialRaw, setMaterial] = useURLState("material", "custom");
@@ -31,16 +24,14 @@ export default function OpticalPathLengthPage() {
   const [passesRaw, setNumPasses] = useURLState("numPasses", 1);
   const [angleRaw, setAngleDeg] = useURLState("angleDeg", 0);
 
-  const glass = GLASSES[materialRaw] ?? null;
+  const glass = Object.hasOwn(GLASSES, materialRaw) ? GLASSES[materialRaw] : null;
   const material = glass ? materialRaw : "custom";
   const dCm = clamp(lengthRaw, 0, 1e5, 1);
   const lambda = clamp(wlRaw, 100, 20000, 800) * 1e-9;
   const passes = Math.round(clamp(passesRaw, 1, 1000, 1));
   const thetaDeg = clamp(angleRaw, 0, 89, 0);
   const theta = thetaDeg * DEG;
-  const glassOk = glass ? inRange(glass.model, lambda) : true;
-  const n = glass ? (glassOk ? refractiveIndex(glass.model, lambda) : NaN) : clamp(nRaw, 1, 5, 1.5);
-  const ng = glass ? (glassOk ? groupIndex(glass.model, lambda) : NaN) : clamp(ngRaw, 1, 5, 1.5);
+  const { n, ng, inRange: glassOk } = slabIndices(material, lambda, clamp(nRaw, 1, 5, 1.5), clamp(ngRaw, 1, 5, 1.5));
 
   const p = slabPath(dCm / 100, n, ng, passes, theta);
   const waves = p.opl / lambda;

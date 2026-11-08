@@ -14,6 +14,8 @@
  */
 import { fftRadix2, nextPow2 } from "../fft";
 import { cosineTransform } from "./ftir";
+import { unwrapPhase } from "../math";
+import { createRng, gaussian } from "../random";
 
 /** Interferogram samples I(nΔx), n = −nNeg … nPos − 1, of B(σ)e^(iφ(σ)) synthesized on a P-point grid (P ≥ 2(nNeg + nPos)). */
 export function synthesizeInterferogram(
@@ -184,4 +186,62 @@ export const DEMO_BANDS: readonly (readonly [number, number, number])[] = [
 export function demoSingleBeam(sigma: number, bands = DEMO_BANDS): number {
   const absorbance = bands.reduce((a, [c, w, A]) => a + A * gaussianLine(sigma, c, w), 0);
   return gaussianLine(sigma, 2000, 1600) * 10 ** -absorbance;
+}
+
+/** Sample step of the demo: one HeNe wavelength (632.8 nm) per sample, cm; Nyquist 7901 cm⁻¹. */
+export const DEMO_DX = 632.8e-7;
+
+export interface PhaseCorrectionDemoParams {
+  /** Samples after the largest sample (single-sided length). */
+  N: number;
+  /** Double-sided samples ±M used for the phase. */
+  M: number;
+  /** ZPD offset, samples (the ZPD lies ε samples before sample 0). */
+  eps: number;
+  /** Constant phase offset φ₀, rad. */
+  phi0: number;
+  /** Dispersion φ₂, rad: φ₂((σ − 2000)/2000)². */
+  phi2: number;
+  /** White noise, RMS, % of the centreburst. */
+  noisePct: number;
+  /** Seed of the noise realization (the page uses 1). */
+  seed?: number;
+}
+
+/**
+ * The whole phase-correction demo: synthesize the interferogram of `demoSingleBeam` with the phase error
+ * φ(σ) = 2πσεΔx + φ₀ + φ₂((σ − 2000)/2000)², add seeded white noise, find the ZPD, and run the four reconstructions.
+ * Returns the spectra, their relative RMS errors, and the RMS error of the low-resolution phase estimate (rad) over the
+ * bins where the true spectrum is at least 5 % of its peak, in the frame of the found ZPD.
+ */
+export function phaseCorrectionDemo({ N, M, eps, phi0, phi2, noisePct, seed = 1 }: PhaseCorrectionDemoParams) {
+  const dx = DEMO_DX;
+  const trueSpectrum = (s: number) => demoSingleBeam(s);
+  const phi = (s: number) => 2 * Math.PI * s * eps * dx + phi0 + phi2 * ((s - 2000) / 2000) ** 2;
+  const nNeg = N + 8;
+  const clean = synthesizeInterferogram(trueSpectrum, phi, dx, nNeg, N);
+  const peak = Math.max(...clean.map(Math.abs));
+  const rng = createRng(seed);
+  const record = { I: clean.map((v) => v + (noisePct / 100) * peak * gaussian(rng)), zero: nNeg, dx };
+  const z = findZpd(record);
+
+  const spectra: Record<"none" | "mertz" | "forman" | "magnitude", Spectrum> = {
+    none: uncorrectedSpectrum(record, z, M),
+    mertz: mertz(record, z, M),
+    forman: forman(record, z, M),
+    magnitude: magnitudeSpectrum(record, z, N - 8),
+  };
+  const errors = Object.fromEntries(Object.entries(spectra).map(([k, sp]) => [k, relativeRmsError(sp, trueSpectrum)])) as
+    Record<keyof typeof spectra, number>;
+
+  const p = lowResolutionPhase(record, z, M);
+  const shift = z - nNeg;
+  const tPeak = trueSpectrum(2000);
+  const sig = p.sigma.filter((s) => s >= 400 && trueSpectrum(s) >= 0.05 * tPeak);
+  const trueFrame = unwrapPhase(sig.map((s) => phi(s) + 2 * Math.PI * s * shift * dx));
+  const est = unwrapPhase(sig.map((s) => phaseAt(p, s)));
+  const turns = Math.round((est[0] - trueFrame[0]) / (2 * Math.PI));
+  const estAligned = est.map((v) => v - 2 * Math.PI * turns);
+  const phaseRms = Math.sqrt(estAligned.reduce((a, v, i) => a + (v - trueFrame[i]) ** 2, 0) / Math.max(1, sig.length));
+  return { spectra, errors, phaseRms, shift, sig, trueFrame, estAligned, trueSpectrum };
 }

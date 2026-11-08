@@ -4,20 +4,12 @@ import SimpleLineChart from "../../../components/simple-line-chart";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { unwrapPhase } from "../../../physics/math";
-import { createRng, gaussian } from "../../../physics/random";
-import {
-  demoSingleBeam, findZpd, forman, lowResolutionPhase, magnitudeSpectrum, mertz, phaseAt, relativeRmsError, synthesizeInterferogram,
-  uncorrectedSpectrum, type Spectrum,
-} from "../../../physics/spectroscopy/ftir-phase-correction";
+import { DEMO_DX, phaseCorrectionDemo, type Spectrum } from "../../../physics/spectroscopy/ftir-phase-correction";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (v: number, d = 3) => (Number.isFinite(v) ? Number(v.toPrecision(d)).toString() : "—");
 const round6 = (v: number) => Math.round(v * 1e6) / 1e6;
 
-const DX = 632.8e-7; // cm: one HeNe wavelength per sample, Nyquist 7901 cm⁻¹
-/** Single-beam spectrum: a broad source envelope times the transmittance of four Gaussian absorption bands. */
-const trueSpectrum = (s: number) => demoSingleBeam(s);
 const METHODS = { mertz: "Mertz", forman: "Forman", magnitude: "Magnitude" } as const;
 type Method = keyof typeof METHODS;
 const PLOT_LO = 400, PLOT_HI = 4000;
@@ -45,33 +37,8 @@ export default function PhaseCorrectionPage() {
   const noisePct = clamp(noiseRaw, 0, 5, 0.01);
   const method: Method = methodRaw in METHODS ? (methodRaw as Method) : "mertz";
 
-  // Phase error: ZPD ε samples before sample 0 (linear in σ), a constant offset and quadratic dispersion about 2000 cm⁻¹.
-  const phi = (s: number) => 2 * Math.PI * s * eps * DX + phi0 + phi2 * ((s - 2000) / 2000) ** 2;
-  const nNeg = N + 8;
-  const clean = synthesizeInterferogram(trueSpectrum, phi, DX, nNeg, N);
-  const peak = Math.max(...clean.map(Math.abs));
-  const rng = createRng(1);
-  const record = { I: clean.map((v) => v + (noisePct / 100) * peak * gaussian(rng)), zero: nNeg, dx: DX };
-  const z = findZpd(record);
-
-  const spectra: Record<Method | "none", Spectrum> = {
-    none: uncorrectedSpectrum(record, z, M),
-    mertz: mertz(record, z, M),
-    forman: forman(record, z, M),
-    magnitude: magnitudeSpectrum(record, z, N - 8),
-  };
-  const errors = Object.fromEntries(Object.entries(spectra).map(([k, sp]) => [k, relativeRmsError(sp, trueSpectrum)])) as Record<Method | "none", number>;
-
-  // Phase in the frame of the found ZPD, true and estimated, where the spectrum is at least 5 % of its peak.
-  const p = lowResolutionPhase(record, z, M);
-  const shift = z - nNeg;
-  const tPeak = trueSpectrum(2000);
-  const sig = p.sigma.filter((s) => s >= PLOT_LO && trueSpectrum(s) >= 0.05 * tPeak);
-  const trueFrame = unwrapPhase(sig.map((s) => phi(s) + 2 * Math.PI * s * shift * DX));
-  const est = unwrapPhase(sig.map((s) => phaseAt(p, s)));
-  const turns = Math.round((est[0] - trueFrame[0]) / (2 * Math.PI));
-  const estAligned = est.map((v) => v - 2 * Math.PI * turns);
-  const phaseRms = Math.sqrt(estAligned.reduce((a, v, i) => a + (v - trueFrame[i]) ** 2, 0) / Math.max(1, sig.length));
+  const { spectra, errors, phaseRms, shift, sig, trueFrame, estAligned, trueSpectrum } =
+    phaseCorrectionDemo({ N, M, eps, phi0, phi2, noisePct, seed: 1 });
 
   const truthSpectrum: Spectrum = { sigma: spectra.none.sigma, B: spectra.none.sigma.map(trueSpectrum) };
   const spectrumSeries = [
@@ -104,8 +71,8 @@ export default function PhaseCorrectionPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label={`Spectrum Error, ${METHODS[method]}`} value={`${fmt(100 * errors[method])} %`} tone="blue" subtext="RMS vs truth where B ≥ 5 % of peak" />
         <ResultCard label="Error Without Correction" value={`${fmt(100 * errors.none)} %`} tone="yellow" subtext="real part of the ramp-weighted transform" />
-        <ResultCard label="Phase Estimate Error" value={`${fmt(phaseRms)} rad`} tone="purple" subtext={`RMS; phase resolution ${fmt(1 / (2 * M * DX))} cm⁻¹`} />
-        <ResultCard label="Resolution 1/L" value={`${fmt(1 / (N * DX))} cm⁻¹`} tone="green" subtext={`ZPD found ${shift >= 0 ? "+" : ""}${shift} samples from 0`} />
+        <ResultCard label="Phase Estimate Error" value={`${fmt(phaseRms)} rad`} tone="purple" subtext={`RMS; phase resolution ${fmt(1 / (2 * M * DEMO_DX))} cm⁻¹`} />
+        <ResultCard label="Resolution 1/L" value={`${fmt(1 / (N * DEMO_DX))} cm⁻¹`} tone="green" subtext={`ZPD found ${shift >= 0 ? "+" : ""}${shift} samples from 0`} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 overflow-x-auto">

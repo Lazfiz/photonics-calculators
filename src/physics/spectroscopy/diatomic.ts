@@ -205,3 +205,19 @@ export function rovibrationalBand(k: DiatomicConstants, vUpper: number, T: numbe
   }
   return lines;
 }
+
+const sig = (x: number, digits: number) => Number(x.toPrecision(digits));
+
+/**
+ * The microwave page's input values (masses in u, r_e in Å, α_e and D in MHz, dipole in D) for one preset, rounded as
+ * the page shows them: r_e to 10 and the rest to 6 significant digits. Shared by the page and its API schema.
+ */
+export function microwavePresetValues(k: DiatomicConstants) {
+  const MHz = 1e6 / c; // MHz → m⁻¹
+  return {
+    m1: k.m1, m2: k.m2, bondLength: sig(k.re * 1e10, 10), alphaE: sig(k.alphaE / MHz, 6), distortion: sig(k.De / MHz, 6), dipoleMoment: sig(k.dipole / DEBYE, 6),
+  };
+}
+
+/** The microwave page's defaults: the ¹²C¹⁶O preset. */
+export const MICROWAVE_DEFAULTS = microwavePresetValues(DIATOMICS.co);
