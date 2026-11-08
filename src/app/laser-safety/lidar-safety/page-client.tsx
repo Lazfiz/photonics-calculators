@@ -8,11 +8,10 @@ import PulseTrainTable from "../../../components/pulse-train-table";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { T_MAX } from "../../../physics/laser-safety/eye-exposure-limits";
-import { effectiveDiameterAt, rangeToDiameter, roundBeam } from "../../../physics/laser-safety/hazard-distance";
-import { pulseTrainLimits, pulseTrainSafeDiameter } from "../../../physics/laser-safety/pulse-train";
-import { angularScan } from "../../../physics/laser-safety/scanned-beam";
-import { lidarHazardDistance, scannedPulseLimits, type ScannedPulseLevel } from "../../../physics/laser-safety/scanned-pulse-train";
+import { effectiveDiameterAt } from "../../../physics/laser-safety/hazard-distance";
+import { lidarSafety } from "../../../physics/laser-safety/lidar-safety";
+import { pulseTrainLimits } from "../../../physics/laser-safety/pulse-train";
+import { scannedPulseLimits, type ScannedPulseLevel } from "../../../physics/laser-safety/scanned-pulse-train";
 
 const RULE_NAMES = { 1: "single pulse", 2: "average power", 3: "C_P × single pulse" } as const;
 const LEVEL_NAMES: Record<ScannedPulseLevel, string> = {
@@ -40,51 +39,32 @@ export default function LidarSafetyPage() {
   const [scanRateRaw, setScanRate] = useURLState("scanRate", 10, { min: 0.001 }); // Hz
   const [direction, setDirection] = useURLState("scanDirection", "one");
 
-  // URL values aren't range-checked: clamp them here. SI inside; physics in src/physics/laser-safety/pulse-train.ts
-  // and scanned-pulse-train.ts.
+  // URL values aren't range-checked: lidarSafety clamps them. SI inside; physics in
+  // src/physics/laser-safety/lidar-safety.ts (dispatch), pulse-train.ts and scanned-pulse-train.ts.
   const lambda = wavelength * 1e-9;
-  const Q = Math.max(pulseEnergyRaw, 0) * 1e-6;
-  const prf = Math.max(repRateRaw, 0) * 1e3;
-  const tau = Math.max(pulseWidthRaw, 1e-4) * 1e-9;
-  const T = Math.min(Math.max(exposureRaw, tau), T_MAX);
-  const d = Math.max(beamDiaRaw, 1e-3) * 1e-3;
-  const phi = Math.max(divergenceRaw, 0) * 1e-3;
-  const range = Math.max(rangeRaw, 0);
-  const overlap = prf * tau > 1;
   const scanned = mode === "scanned";
-  const theta = (Math.min(Math.max(scanAngleRaw, 0.01), 360) * Math.PI) / 180;
-  const fScan = Math.max(scanRateRaw, 0.001);
   const both = direction === "both";
-
-  const beam = useMemo(() => roundBeam(d, phi), [d, phi]);
-  const train = useMemo(() => ({ duration: tau, prf, exposure: T }), [tau, prf, T]);
-  const pulses = useMemo(() => ({ duration: tau, prf }), [tau, prf]);
-  const scanAt = useCallback((r: number) => angularScan(theta, fScan, r, both, T), [theta, fScan, both, T]);
-  const dEye = effectiveDiameterAt(beam, range);
-  const atEye = useMemo(() => pulseTrainLimits(lambda, dEye, train), [lambda, dEye, train]);
-  const atOutput = useMemo(() => pulseTrainLimits(lambda, d, train), [lambda, d, train]);
-  const covered = atEye.limits.length > 0 && Number.isFinite(atEye.qMax);
-  const ratioOut = Q / atOutput.qMax;
-  const nohd = useMemo(() => rangeToDiameter(beam, pulseTrainSafeDiameter(lambda, Q, train)), [beam, lambda, Q, train]);
-  const nohdFinite = Number.isFinite(nohd) && nohd > 0;
-
-  // Scanned mode: a pulse train needs f > 0; at the window (r = 0) or where the sweep doesn't clear the eye, the beam
-  // is stationary.
-  const scanOn = scanned && prf > 0 && covered && !overlap;
-  const scanEye = useMemo(
-    () => (scanOn && range > 0 ? scannedPulseLimits(lambda, dEye, pulses, scanAt(range)) : null),
-    [scanOn, range, lambda, dEye, pulses, scanAt],
+  const lid = useMemo(
+    () =>
+      lidarSafety({
+        lambda,
+        pulseEnergy: pulseEnergyRaw * 1e-6,
+        prf: repRateRaw * 1e3,
+        pulseDuration: pulseWidthRaw * 1e-9,
+        beamDiameter: beamDiaRaw * 1e-3,
+        divergence: divergenceRaw * 1e-3,
+        range: rangeRaw,
+        exposure: exposureRaw,
+        scanned,
+        scanAngle: (scanAngleRaw * Math.PI) / 180,
+        scanRate: scanRateRaw,
+        bothDirections: both,
+      }),
+    [lambda, pulseEnergyRaw, repRateRaw, pulseWidthRaw, beamDiaRaw, divergenceRaw, rangeRaw, exposureRaw, scanned, scanAngleRaw, scanRateRaw, both],
   );
+  const { Q, prf, tau, T, d, range, overlap, beam, train, pulses, scanAt, dEye, atEye, covered, ratioOut, nohd, nohdFinite } = lid;
+  const { scanOn, scanEye, rSearch, nohdScan, nohdScanFinite, ratioEye, binding } = lid;
   const scanEyeOk = scanEye !== null && scanEye.status === "ok";
-  const rSearch = nohdFinite ? Math.max(4 * nohd, 1) : 1e5;
-  const nohdScan = useMemo(
-    () => (scanOn ? lidarHazardDistance(lambda, Q, beam, pulses, scanAt, rSearch) : NaN),
-    [scanOn, lambda, Q, beam, pulses, scanAt, rSearch],
-  );
-  const nohdScanFinite = Number.isFinite(nohdScan) && nohdScan > 0;
-  const qMaxEye = scanEyeOk ? scanEye.qMax : atEye.qMax;
-  const ratioEye = Q / qMaxEye;
-  const binding = scanEyeOk ? scanEye.limits.find((l) => l.kind === scanEye.limiting) : undefined;
 
   const ratios = useCallback(
     (r: number) => {

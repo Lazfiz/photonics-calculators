@@ -38,3 +38,8 @@ export function focusedDivergence(b0: number, f: number): number {
 export function diffractionLimitedSpot(lambda: number, b0: number, f: number): number {
   return lambda > 0 && b0 > 0 && f > 0 ? (4 * lambda * f) / (Math.PI * b0) : NaN;
 }
+
+/** Power density, W/m², of beam power P (W) over the 1/e² focal spot of diameter d (m): P/(πd²/4), the clinical P/A. NaN for d ≤ 0 or P < 0. */
+export function spotPowerDensity(P: number, d: number): number {
+  return d > 0 && P >= 0 ? P / ((Math.PI * d * d) / 4) : NaN;
+}
