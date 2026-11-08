@@ -24,7 +24,7 @@
  */
 import { besselJ, largestSymmetricEigenvalue } from "../math";
 import { type MuellerMatrix, applyMueller, chainMueller, muellerRetarder, retarderFromCosSin } from "./mueller";
-import { type Stokes, degreeOfPolarization } from "./stokes";
+import { type Stokes, degreeOfPolarization, stokesFromEllipse } from "./stokes";
 
 export type DriveWaveform = "sine" | "ramp";
 
@@ -66,6 +66,9 @@ export function stageMeanMueller(s: ScramblerStage): MuellerMatrix {
   const { meanCos, meanSin } = stageMeanCosSin(s);
   return retarderFromCosSin(meanCos, meanSin, s.axis);
 }
+
+/** First zero of J₀ (Abramowitz & Stegun Table 9.5): the drive amplitude Γm that scrambles one sine stage. */
+export const J0_ZERO = 2.4048256;
 
 /** Highest harmonic order p, q at which lockedGroup treats two frequencies as locked, q·f_i = p·f_j. */
 export const LOCK_MAX_ORDER = 12;
@@ -431,4 +434,9 @@ export function combinationResonance(freqs: readonly number[], maxTotalOrder = 5
     }
   }
   return best;
+}
+
+/** Residual DOP of the long-time average for a fully polarized input of azimuth ψ and ellipticity χ (rad). */
+export function scramblerResidualDop(stages: readonly ScramblerStage[], psi: number, chi: number): number {
+  return degreeOfPolarization(applyMueller(scramblerMeanMueller(stages), stokesFromEllipse(1, psi, chi)));
 }

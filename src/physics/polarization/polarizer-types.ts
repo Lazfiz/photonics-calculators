@@ -211,3 +211,17 @@ export function coversWavelength(spec: PolarizerSpec, lambda: number): boolean {
   const hi = spec.lambdaMin_nm === spec.lambdaMax_nm ? spec.lambdaMax_nm * 1.01 : spec.lambdaMax_nm;
   return lambda_nm >= lo && lambda_nm <= hi;
 }
+
+export type PolarizerInput = "aligned" | "unpolarized";
+
+/**
+ * Transmitted power and leakage (same unit as `power`) of one polarizer. Aligned linear input: out = P·k₁, and with
+ * the polarizer turned 90° the leak is P·k₂. Unpolarized input: out = P·(k₁ + k₂)/2, of which P·k₂/2 is the blocked
+ * polarization (the leak). NaN when the vendor states no transmission.
+ */
+export function polarizerThroughput(spec: PolarizerSpec, power: number, input: PolarizerInput): { out: number; leak: number } {
+  const f = polarizerFigures(spec);
+  return input === "aligned"
+    ? { out: power * f.k1, leak: power * f.k2 }
+    : { out: power * f.tUnpolarized, leak: (power * f.k2) / 2 };
+}

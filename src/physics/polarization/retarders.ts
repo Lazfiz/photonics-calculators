@@ -17,6 +17,10 @@
  *   reflections at the angle where δ = 45°, for 90° in all (n = 1.51: θ = 48°37′ or 54°37′, Born & Wolf).
  */
 
+import { refractiveIndex } from "../materials/sellmeier";
+import { SCHOTT_GLASSES } from "../materials/sellmeier-data";
+import { crystalBirefringence, plateRetardance, plateWaves, resolveCrystalIndices } from "./uniaxial";
+
 const TWO_PI = 2 * Math.PI;
 // Order-crossing search: log grid over the range, then bisection to a relative 1e-12.
 const CROSS_GRID = 2000;
@@ -138,4 +142,108 @@ export function tirAnglesForPhase(n: number, delta: number): [number, number] {
     return 0.5 * (lo + hi);
   };
   return [solve(thetaC, peak, true), solve(peak, Math.PI / 2, false)];
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Retarder-type comparison (quartz zero order, multi-order, compound, quartz + MgF₂ achromat, N-BK7 Fresnel rhomb).
+// Moved from the retarder-types page so the API schema shares it; behaviour unchanged.
+
+/** Common range of the quartz, MgF₂ and N-BK7 fits, m. */
+export const RETARDER_RANGE: [number, number] = [300e-9, 2000e-9];
+/** Bandwidth criterion: |Γ − target| ≤ 1 % of the target. */
+export const RETARDER_TOLERANCE = 0.01;
+/** Tilt of the 'change at tilt' column, rad (5°). */
+export const RETARDER_TILT = (5 * Math.PI) / 180;
+
+const dnQuartz = crystalBirefringence("quartz", NaN);
+const dnMgF2 = crystalBirefringence("mgf2", NaN);
+const nBK7 = (lambda: number) => refractiveIndex(SCHOTT_GLASSES["N-BK7"].model, lambda);
+const fold = (w: number) => w - Math.floor(w);
+
+/** e-relative-to-o retardance (waves) of a plate with its axis in the faces at azimuth φ from the tilt plane. */
+function tiltedWaves(crystal: "quartz" | "mgf2", d: number, azimuth: number, lambda: number, tilt: number): number {
+  const { no, ne } = resolveCrystalIndices(crystal, lambda, NaN, NaN);
+  const w = plateWaves(no, ne, { nIncident: 1, incidence: tilt, axisPolar: Math.PI / 2, axisAzimuth: azimuth });
+  return plateRetardance(w, d, lambda) / TWO_PI;
+}
+
+export interface RetarderType {
+  id: "zero" | "multi" | "compound" | "achromatic" | "rhomb";
+  name: string;
+  /** Plate thicknesses, m (zero, multi: [d]; compound: [d_m, d_whole]; achromatic: [quartz, MgF₂]; rhomb: []). */
+  d: number[];
+  /** Fresnel rhomb only: number of reflections and the cut angle, rad. */
+  reflections?: number;
+  theta?: number;
+  /** Retardance in waves at λ (unfolded) and with the beam tilted in the plane holding the first plate's axis. */
+  waves: (lambda: number, tilt: number) => number;
+  /** Fold to one wave before comparing with the target (multi-order plates). */
+  folded: boolean;
+}
+
+/** The five retarders for a target of R waves at λ₀ (order m for the multi-order one; achromat at λ₁, λ₂), m. */
+export function retarderTypes(lambda0: number, R: number, m: number, lambda1: number, lambda2: number): RetarderType[] {
+  const dn0 = dnQuartz(lambda0);
+  const d0 = plateThickness(dn0, lambda0, R);
+  const dm = plateThickness(dn0, lambda0, m + R);
+  const dWhole = plateThickness(dn0, lambda0, m);
+  const ach = achromaticPair(dnQuartz, dnMgF2, lambda1, lambda2, R);
+  // Fresnel rhomb: the fewest pairs of reflections whose 45°-or-less phase each adds up to R; cut at the larger angle.
+  const n0 = nBK7(lambda0);
+  const reflections = 2 * Math.ceil((R * TWO_PI) / (2 * tirMaxPhase(n0).delta));
+  const theta = tirAnglesForPhase(n0, (R * TWO_PI) / reflections)[1];
+  return [
+    { id: "zero", name: "Zero order", d: [d0], folded: false, waves: (l, t) => tiltedWaves("quartz", d0, 0, l, t) },
+    { id: "multi", name: `Multi-order (m = ${m})`, d: [dm], folded: true, waves: (l, t) => tiltedWaves("quartz", dm, 0, l, t) },
+    {
+      id: "compound", name: "Compound zero order", d: [dm, dWhole], folded: false,
+      waves: (l, t) => tiltedWaves("quartz", dm, 0, l, t) - tiltedWaves("quartz", dWhole, Math.PI / 2, l, t),
+    },
+    {
+      id: "achromatic", name: "Achromatic", d: [ach.d1, ach.d2], folded: false,
+      waves: (l, t) => ach.sign * (tiltedWaves("quartz", ach.d1, 0, l, t) - tiltedWaves("mgf2", ach.d2, Math.PI / 2, l, t)),
+    },
+    {
+      id: "rhomb", name: "Fresnel rhomb", d: [], reflections, theta, folded: false,
+      waves: (l, t) => {
+        const n = nBK7(l);
+        return (reflections * tirPhaseDifference(n, theta + Math.asin(Math.sin(t) / n))) / TWO_PI;
+      },
+    },
+  ];
+}
+
+/** Contiguous band around λ₀ where the (folded) retardance stays within the tolerance of the target, m. */
+export function retarderBand(t: RetarderType, lambda0: number, target: number): [number, number] {
+  const N = 4000;
+  const l = (i: number) => RETARDER_RANGE[0] * (RETARDER_RANGE[1] / RETARDER_RANGE[0]) ** (i / N);
+  const ok = (x: number) => {
+    const w = Math.abs(t.waves(x, 0));
+    return Math.abs((t.folded ? fold(w) : w) - target) <= RETARDER_TOLERANCE * target;
+  };
+  const i0 = Math.round((N * Math.log(lambda0 / RETARDER_RANGE[0])) / Math.log(RETARDER_RANGE[1] / RETARDER_RANGE[0]));
+  if (!ok(l(i0))) return [NaN, NaN];
+  let a = i0, b = i0;
+  while (a > 0 && ok(l(a - 1))) a--;
+  while (b < N && ok(l(b + 1))) b++;
+  // Refine each edge between its last good and first bad grid point (multi-order bands are narrower than a step).
+  const edge = (good: number, bad: number) => {
+    for (let k = 0; k < 40; k++) {
+      const mid = 0.5 * (good + bad);
+      if (ok(mid)) good = mid;
+      else bad = mid;
+    }
+    return good;
+  };
+  return [a > 0 ? edge(l(a), l(a - 1)) : l(a), b < N ? edge(l(b), l(b + 1)) : l(b)];
+}
+
+/** Table row of one type at λ₀: retardance (waves, folded for multi-order), the ±1 % band (m) and the change at 5° tilt. */
+export function retarderRow(t: RetarderType, lambda0: number, target: number): { at: number; band: [number, number]; tilt: number } {
+  const w0 = Math.abs(t.waves(lambda0, 0));
+  return {
+    at: t.folded ? fold(w0) : w0,
+    band: retarderBand(t, lambda0, target),
+    tilt: Math.abs(t.waves(lambda0, RETARDER_TILT)) - w0,
+  };
 }

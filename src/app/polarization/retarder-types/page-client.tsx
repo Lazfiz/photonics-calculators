@@ -4,69 +4,32 @@ import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { birefringenceOf, resolveIndices } from "../../../components/crystal-select";
 import { fix } from "../../../components/polarization-format";
-import { refractiveIndex } from "../../../physics/materials/sellmeier";
-import { SCHOTT_GLASSES } from "../../../physics/materials/sellmeier-data";
-import {
-  achromaticPair, plateThickness, tirAnglesForPhase, tirMaxPhase, tirPhaseDifference,
-} from "../../../physics/polarization/retarders";
-import { plateRetardance, plateWaves } from "../../../physics/polarization/uniaxial";
+import { retarderRow, retarderTypes, type RetarderType } from "../../../physics/polarization/retarders";
 
 const DEG = Math.PI / 180;
-const TWO_PI = 2 * Math.PI;
 const clamp = (v: number, lo: number, hi: number) => (Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : lo);
 const fold = (w: number) => w - Math.floor(w);
-// Common range of the quartz, MgF₂ and N-BK7 fits, m.
-const RANGE: [number, number] = [300e-9, 2000e-9];
-const TOLERANCE = 0.01; // bandwidth: |Γ − target| ≤ 1 % of the target
-const TILT = 5 * DEG;
 const COLORS = ["#3b82f6", "#ef4444", "#f59e0b", "#22c55e", "#a855f7"];
 
-const dnQuartz = birefringenceOf("quartz", NaN);
-const dnMgF2 = birefringenceOf("mgf2", NaN);
-const nBK7 = (lambda: number) => refractiveIndex(SCHOTT_GLASSES["N-BK7"].model, lambda);
+const NOTES: Record<RetarderType["id"], string> = {
+  zero: "Thin plate, often cemented to a window.",
+  multi: "One thick plate: right only near λ₀.",
+  compound: "Zero-order dispersion, multi-order tilt sensitivity.",
+  achromatic: "Exact at λ₁ and λ₂.",
+  rhomb: "Total internal reflection: nearly achromatic; displaces the beam.",
+};
 
-/** e-relative-to-o retardance (waves) of a plate with its axis in the faces at azimuth φ from the tilt plane. */
-function tiltedWaves(crystal: "quartz" | "mgf2", d: number, azimuth: number, lambda: number, tilt: number) {
-  const { no, ne } = resolveIndices(crystal, lambda, NaN, NaN);
-  const w = plateWaves(no, ne, { nIncident: 1, incidence: tilt, axisPolar: Math.PI / 2, axisAzimuth: azimuth });
-  return plateRetardance(w, d, lambda) / TWO_PI;
-}
-
-interface RetarderType {
-  name: string;
-  plates: string;
-  /** Retardance in waves at λ (unfolded) and with the beam tilted in the plane holding the first plate's axis. */
-  waves: (lambda: number, tilt: number) => number;
-  /** Fold to one wave before comparing with the target (multi-order plates). */
-  folded: boolean;
-  note: string;
-}
-
-/** Contiguous band around λ₀ where the (folded) retardance stays within the tolerance of the target, m. */
-function band(t: RetarderType, lambda0: number, target: number): [number, number] {
-  const N = 4000;
-  const l = (i: number) => RANGE[0] * (RANGE[1] / RANGE[0]) ** (i / N);
-  const ok = (x: number) => {
-    const w = Math.abs(t.waves(x, 0));
-    return Math.abs((t.folded ? fold(w) : w) - target) <= TOLERANCE * target;
-  };
-  const i0 = Math.round((N * Math.log(lambda0 / RANGE[0])) / Math.log(RANGE[1] / RANGE[0]));
-  if (!ok(l(i0))) return [NaN, NaN];
-  let a = i0, b = i0;
-  while (a > 0 && ok(l(a - 1))) a--;
-  while (b < N && ok(l(b + 1))) b++;
-  // Refine each edge between its last good and first bad grid point (multi-order bands are narrower than a step).
-  const edge = (good: number, bad: number) => {
-    for (let k = 0; k < 40; k++) {
-      const mid = 0.5 * (good + bad);
-      if (ok(mid)) good = mid;
-      else bad = mid;
-    }
-    return good;
-  };
-  return [a > 0 ? edge(l(a), l(a - 1)) : l(a), b < N ? edge(l(b), l(b + 1)) : l(b)];
+/** Description of the plates of one type (µm). */
+function platesText(t: RetarderType): string {
+  const um = (d: number, k = 1) => fix(d * 1e6, k);
+  switch (t.id) {
+    case "zero":
+    case "multi": return `quartz ${um(t.d[0])} µm`;
+    case "compound": return `quartz ${um(t.d[0])} − ${um(t.d[1])} µm, crossed`;
+    case "achromatic": return `quartz ${um(t.d[0])} + MgF₂ ${um(t.d[1])} µm, crossed`;
+    case "rhomb": return `N-BK7, ${t.reflections} reflections at ${fix((t.theta ?? NaN) / DEG, 2)}°`;
+  }
 }
 
 /** Band in nm: one decimal when it is narrower than 20 nm. */
@@ -89,45 +52,9 @@ export default function RetarderTypesPage() {
   const lambda1 = clamp(lambda1Nm, 350, 1800) * 1e-9;
   const lambda2 = clamp(lambda2Nm, 350, 1800) * 1e-9;
 
-  const types = useMemo<RetarderType[]>(() => {
-    const dn0 = dnQuartz(lambda0);
-    const d0 = plateThickness(dn0, lambda0, R);
-    const dm = plateThickness(dn0, lambda0, m + R);
-    const dWhole = plateThickness(dn0, lambda0, m);
-    const ach = achromaticPair(dnQuartz, dnMgF2, lambda1, lambda2, R);
-    // Fresnel rhomb: the fewest pairs of reflections whose 45°-or-less phase each adds up to R; cut at the larger angle.
-    const n0 = nBK7(lambda0);
-    const reflections = 2 * Math.ceil((R * TWO_PI) / (2 * tirMaxPhase(n0).delta));
-    const theta = tirAnglesForPhase(n0, (R * TWO_PI) / reflections)[1];
-    return [
-      { name: "Zero order", plates: `quartz ${fix(d0 * 1e6, 1)} µm`, folded: false,
-        waves: (l, t) => tiltedWaves("quartz", d0, 0, l, t), note: "Thin plate, often cemented to a window." },
-      { name: `Multi-order (m = ${m})`, plates: `quartz ${fix(dm * 1e6, 1)} µm`, folded: true,
-        waves: (l, t) => tiltedWaves("quartz", dm, 0, l, t), note: "One thick plate: right only near λ₀." },
-      { name: "Compound zero order", plates: `quartz ${fix(dm * 1e6, 1)} − ${fix(dWhole * 1e6, 1)} µm, crossed`, folded: false,
-        waves: (l, t) => tiltedWaves("quartz", dm, 0, l, t) - tiltedWaves("quartz", dWhole, Math.PI / 2, l, t),
-        note: "Zero-order dispersion, multi-order tilt sensitivity." },
-      { name: "Achromatic", plates: `quartz ${fix(ach.d1 * 1e6, 1)} + MgF₂ ${fix(ach.d2 * 1e6, 1)} µm, crossed`, folded: false,
-        waves: (l, t) => ach.sign * (tiltedWaves("quartz", ach.d1, 0, l, t) - tiltedWaves("mgf2", ach.d2, Math.PI / 2, l, t)),
-        note: "Exact at λ₁ and λ₂." },
-      { name: "Fresnel rhomb", plates: `N-BK7, ${reflections} reflections at ${fix(theta / DEG, 2)}°`, folded: false,
-        waves: (l, t) => {
-          const n = nBK7(l);
-          return (reflections * tirPhaseDifference(n, theta + Math.asin(Math.sin(t) / n))) / TWO_PI;
-        },
-        note: "Total internal reflection: nearly achromatic; displaces the beam." },
-    ];
-  }, [lambda0, R, m, lambda1, lambda2]);
+  const types = useMemo(() => retarderTypes(lambda0, R, m, lambda1, lambda2), [lambda0, R, m, lambda1, lambda2]);
 
-  const rows = useMemo(() => types.map((t) => {
-    const w0 = Math.abs(t.waves(lambda0, 0));
-    return {
-      t,
-      at: t.folded ? fold(w0) : w0,
-      band: band(t, lambda0, R),
-      tilt: Math.abs(t.waves(lambda0, TILT)) - w0,
-    };
-  }), [types, lambda0, R]);
+  const rows = useMemo(() => types.map((t) => ({ t, ...retarderRow(t, lambda0, R) })), [types, lambda0, R]);
 
   const spectral = useMemo(() => {
     const l = Array.from({ length: 600 }, (_, i) => 350e-9 * (1100 / 350) ** (i / 599));
@@ -207,15 +134,15 @@ export default function RetarderTypesPage() {
             </thead>
             <tbody>
               {rows.map((r) => (
-                <tr key={r.t.name} className="border-b border-gray-800">
+                <tr key={r.t.id} className="border-b border-gray-800">
                   <td className="py-2 px-2 font-medium">{r.t.name}</td>
-                  <td className="py-2 px-2">{r.t.plates}</td>
+                  <td className="py-2 px-2">{platesText(r.t)}</td>
                   <td className="text-right py-2 px-2 font-mono">{fix(r.at, 4)}</td>
                   <td className="text-right py-2 px-2 font-mono">
                     {Number.isFinite(r.band[0]) ? bandText(r.band) : "—"}
                   </td>
                   <td className="text-right py-2 px-2 font-mono">{fix(r.tilt, 4)}</td>
-                  <td className="py-2 px-2 text-gray-400">{r.t.note}</td>
+                  <td className="py-2 px-2 text-gray-400">{NOTES[r.t.id]}</td>
                 </tr>
               ))}
             </tbody>

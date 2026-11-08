@@ -4,9 +4,8 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { fix } from "../../../components/polarization-format";
-import { fresnel } from "../../../physics/polarization/fresnel";
 import {
-  macNeilleAngle, macNeilleGlassIndex, macNeilleResponse, type MacNeilleDesign,
+  macNeilleAngle, macNeilleGlassIndex, macNeilleInterfaceRp, macNeilleResponse, type MacNeilleDesign,
 } from "../../../physics/polarization/reflection-polarizers";
 
 const DEG = Math.PI / 180;
@@ -63,8 +62,7 @@ export default function PBSPage() {
   const matchedAngle = macNeilleAngle(nH, nL, nGlass);
   // How far the H/L interfaces are from Brewster's angle: their own p reflectance at this angle.
   const beta = nGlass * Math.sin(thetaGlass);
-  const thetaH = beta < nH ? Math.asin(beta / nH) : NaN;
-  const interfaceRp = Number.isFinite(thetaH) ? fresnel(nH, nL, thetaH).Rp : NaN;
+  const interfaceRp = macNeilleInterfaceRp(design);
   const evanescent = !(beta < nL);
 
   const spectral = spectralCharts(design);
