@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { REPO_URL } from "../lib/site";
 
 export default function AboutFooter() {
   return (
@@ -11,7 +12,11 @@ export default function AboutFooter() {
         Report a problem
       </Link>
       <span className="mx-2">·</span>
-      <span>Photonics Calculators — Free & Open Source</span>
+      <a href={REPO_URL} className="hover:text-blue-400 transition-colors">
+        Source on GitHub
+      </a>
+      <span className="mx-2">·</span>
+      <span>Photonics Calculators — Free & Open Source (MIT)</span>
     </footer>
   );
 }

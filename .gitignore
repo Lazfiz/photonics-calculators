@@ -2,11 +2,15 @@
 .env*
 .next/
 node_modules/
-# Vercel build output (keep project.json for repo linking)
-.vercel/*
-!.vercel/project.json
+.vercel/
 # TypeScript incremental build info
 tsconfig.tsbuildinfo
-# Claude Code personal overrides
-.claude/settings.local.json
+# Maintainer-local AI tooling and working notes (not part of the project)
+.claude/
+CLAUDE.md
 CLAUDE.local.md
+AGENTS.md
+docs/ROADMAP.md
+docs/HANDOVER.md
+docs/api-schema-brief.md
+docs/archive/
