@@ -5,7 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { stoneyCurvature } from "../../../physics/thin-film/stoney";
+import { stoneyCurvature, stoneyLayeredCurvature } from "../../../physics/thin-film/stoney";
 
 const fmtRadius = (kappa: number) => {
   if (!Number.isFinite(kappa)) return "—";
@@ -28,7 +28,7 @@ export default function CoatingStressPage() {
     return { perLayer, kappa1: perLayer(dFilm) };
   }, [sigmaFilm, dFilm, eSub, nuSub, tSub]);
   const { kappa1 } = curvature;
-  const kappaN = kappa1 * numLayers;
+  const kappaN = stoneyLayeredCurvature(sigmaFilm * 1e6, dFilm * 1e-9, numLayers, eSub * 1e9, nuSub, tSub * 1e-3);
 
   const layerData = useMemo(() => {
     const layers = Array.from({ length: Math.max(20, numLayers) }, (_, i) => i + 1);

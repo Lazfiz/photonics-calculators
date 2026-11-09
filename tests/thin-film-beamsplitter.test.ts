@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import * as cx from "../src/physics/complex";
 import {
   middleIndexForReflectance,
+  quarterWaveLadderReflectance,
   singleLayerIndexForReflectance,
   tunedSplitter,
   tunedSplitterLayers,
@@ -97,4 +98,18 @@ test("beamsplitter: the smallest quarter-wave stack is cut down; targets out of 
   assert.equal(tunedSplitter(0.03, nH, nL, 1, nSub, lambda0), null);
   assert.equal(tunedSplitter(0.5, nL, nH, 1, nSub, lambda0), null);
   assert.deepEqual(tunedSplitterLayers(nH, nL, 1.5, 0.5, lambda0), []);
+});
+
+// Macleod ch. 2: each quarter wave maps Y → n²/Y, so H(LH)^m on n_s has Y = n_H^(2m+2) / (n_L^(2m) n_s).
+test("beamsplitter: quarter-wave ladder H(LH)^m against the closed form", () => {
+  const R = (Y: number) => ((1 - Y) / (1 + Y)) ** 2;
+  const [nH, nL, ns] = [2.35, 1.45, 1.52];
+  for (let m = 0; m <= 3; m++) {
+    const closed = R(nH ** (2 * m + 2) / (nL ** (2 * m) * ns));
+    assert.ok(Math.abs(quarterWaveLadderReflectance(m, nH, nL, 1, ns) / closed - 1) < 1e-12);
+  }
+  // m = 1: Y = 2.35⁴/(1.45² × 1.52), R = 65.659162346 %.
+  assert.ok(Math.abs(quarterWaveLadderReflectance(1, nH, nL, 1, ns) - 0.6565916234601057) < 1e-12);
+  assert.ok(Number.isNaN(quarterWaveLadderReflectance(1.5, nH, nL, 1, ns)));
+  assert.ok(Number.isNaN(quarterWaveLadderReflectance(-1, nH, nL, 1, ns)));
 });

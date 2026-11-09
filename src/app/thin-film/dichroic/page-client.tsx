@@ -5,7 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { stopBandCentreAtAngle } from "../../../physics/thin-film/quarter-wave-stack";
+import { cosAngleInLayer, stopBandCentreAtAngle } from "../../../physics/thin-film/quarter-wave-stack";
 import { quarterWaveLayers, reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
 
 export default function DichroicPage() {
@@ -40,9 +40,8 @@ export default function DichroicPage() {
 
   // Angles inside the high- and low-index layers (Snell), and the first-order stop-band centre at this angle.
   const angleRad = (aoi * Math.PI) / 180;
-  const sinInc = nInc * Math.sin(angleRad);
-  const cosH = Math.sqrt(1 - (sinInc / nH) ** 2);
-  const cosL = Math.sqrt(1 - (sinInc / nL) ** 2);
+  const cosH = cosAngleInLayer(nInc, nH, angleRad);
+  const cosL = cosAngleInLayer(nInc, nL, angleRad);
   const centreNm = stopBandCentreAtAngle(designWl * 1e-9, nH, nL, angleRad, nInc) * 1e9;
   const fmt = (v: number, digits: number) => (Number.isFinite(v) ? v.toFixed(digits) : "—");
 

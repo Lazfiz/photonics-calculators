@@ -5,7 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { airyPeakWidth, coefficientOfFinesse } from "../../../physics/thin-film/interference";
+import { filmFaceSummary } from "../../../physics/thin-film/interference";
 import { stackResponse } from "../../../physics/thin-film/transfer-matrix";
 
 export default function AmplitudeSplittingPage() {
@@ -28,11 +28,8 @@ export default function AmplitudeSplittingPage() {
     ];
   }, [n1, nFilm, n2, thickness]);
 
-  const r01 = (n1 - nFilm) / (n1 + nFilm);
-  const r12 = (nFilm - n2) / (nFilm + n2);
-  const F = coefficientOfFinesse(r01 ** 2, r12 ** 2);
   // Finesse = FSR / FWHM = 2π / (4 asin(1/√F)); NaN for F < 1, where T never falls to half its peak.
-  const finesse = (2 * Math.PI) / airyPeakWidth(F);
+  const { r01, r12, F, finesse } = filmFaceSummary(n1, nFilm, n2);
   const fixed = (x: number, digits: number) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
 
   return (

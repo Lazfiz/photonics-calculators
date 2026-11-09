@@ -20,7 +20,7 @@
  * periods as equivalent layers).
  */
 
-import { firstCrossing } from "../math";
+import { firstCrossing, intervalStats } from "../math";
 import { stopBandHalfWidth } from "./quarter-wave-stack";
 import { stackResponse, type Layer, type Stack } from "./transfer-matrix";
 
@@ -125,4 +125,67 @@ export function incoherentLosslessFaces(R1: number, R2: number): { R: number; T:
   if (!(R1 >= 0 && R1 <= 1 && R2 >= 0 && R2 <= 1) || R1 * R2 === 1) return { R: NaN, T: NaN };
   const T = ((1 - R1) * (1 - R2)) / (1 - R1 * R2);
   return { R: 1 - T, T };
+}
+
+/** Above this many periods in all (stacks × periods), `blockingFilterResponse` computes no spectrum statistics. */
+export const MAX_TOTAL_PERIODS = 400;
+
+export interface BlockingFilterDesign {
+  type: EdgeType;
+  nH: number;
+  nL: number;
+  nSub: number;
+  /** Incident medium index. */
+  nInc: number;
+  /** Blocked (reflected) band, m. */
+  blockFrom: number;
+  blockTo: number;
+  /** Band to transmit, m. */
+  passFrom: number;
+  passTo: number;
+  /** Periods per stack, integer ≥ 1. */
+  periods: number;
+}
+
+export interface BlockingFilterResponse {
+  bandsOk: boolean;
+  indicesOk: boolean;
+  /** λ₀ of the stacks in series (m), incident side first. */
+  centres: number[];
+  stack: Stack;
+  /** Too many periods in all: no statistics. */
+  tooBig: boolean;
+  /** The transmitted band lies on the wrong side of the blocked band, or overlaps it. */
+  overlap: boolean;
+  /** Statistics over the bands (null unless the design is computable): R in the blocked band, T in the pass band
+   * (each on 1000 intervals, trapezoid mean), and the 50 % edge of the stack next to the pass band, m. */
+  results: { block: { mean: number; min: number }; pass: { mean: number; min: number }; edge: number } | null;
+}
+
+/**
+ * The cold-mirror / IR- / UV-blocking calculation: stacks in series (`staggeredDesignWavelengths`, each
+ * `edgeFilterLayers` with N periods) on a substrate, bands in m. `results` is null for invalid indices or bands,
+ * or more than MAX_TOTAL_PERIODS periods in all.
+ */
+export function blockingFilterResponse(d: BlockingFilterDesign): BlockingFilterResponse {
+  const { type, nH, nL, nSub, nInc, blockFrom, blockTo, passFrom, passTo, periods } = d;
+  const bandsOk = blockFrom > 0 && blockTo > blockFrom && passFrom > 0 && passTo > passFrom;
+  const indicesOk = nH > nL && nL > 0 && nSub > 0 && nInc > 0;
+  const centres = bandsOk && indicesOk ? staggeredDesignWavelengths(type, blockFrom, blockTo, nH, nL) : [];
+  const tooBig = centres.length * periods > MAX_TOTAL_PERIODS;
+  const ready = centres.length > 0 && !tooBig;
+  const overlap = type === "long-pass" ? passFrom < blockTo : passTo > blockFrom;
+  const stack = { incident: nInc, layers: edgeFilterLayers(type, centres, nH, nL, periods), substrate: { n: nSub } };
+  let results: BlockingFilterResponse["results"] = null;
+  if (ready) {
+    const R = (wl: number) => stackResponse(stack, wl).R;
+    const T = (wl: number) => stackResponse(stack, wl).T;
+    results = {
+      block: intervalStats(R, blockFrom, blockTo, 1000),
+      pass: intervalStats(T, passFrom, passTo, 1000),
+      // centres[0] is the stack next to the pass band.
+      edge: halfTransmissionEdge(stack, type, centres[0]),
+    };
+  }
+  return { bandsOk, indicesOk, centres, stack, tooBig, overlap, results };
 }

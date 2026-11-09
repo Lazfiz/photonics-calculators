@@ -5,19 +5,11 @@ import ChartPanel from "./chart-panel";
 import ValidatedNumberInput from "./validated-number-input";
 import { useURLState } from "../hooks/use-url-state";
 import { clampToRange } from "../lib/number-input";
-import { intervalStats } from "../physics/math";
-import {
-  edgeFilterLayers,
-  halfTransmissionEdge,
-  staggeredDesignWavelengths,
-  type EdgeType,
-} from "../physics/thin-film/edge-filter";
+import { blockingFilterResponse, type EdgeType } from "../physics/thin-film/edge-filter";
 import { stopBandHalfWidth } from "../physics/thin-film/quarter-wave-stack";
 import { stackResponse } from "../physics/thin-film/transfer-matrix";
 
 const NM = 1e-9;
-/** Above this many periods in all, the page stops computing (it would take seconds). */
-const MAX_TOTAL_PERIODS = 400;
 
 export interface BlockingFilterDefaults {
   nH: number;
@@ -62,32 +54,15 @@ export default function BlockingFilterCalculator({ type, defaults, blockName, pa
 
   // The URL isn't range-checked: an integer number of periods per stack in 1–40.
   const periods = Math.round(clampToRange(pairsRaw, 1, 40));
-  const bandsOk = blockFrom > 0 && blockTo > blockFrom && passFrom > 0 && passTo > passFrom;
-  const indicesOk = nH > nL && nL > 0 && nSub > 0 && nInc > 0;
-  const centres = useMemo(
-    () => (bandsOk && indicesOk ? staggeredDesignWavelengths(type, blockFrom * NM, blockTo * NM, nH, nL) : []),
-    [bandsOk, indicesOk, type, blockFrom, blockTo, nH, nL],
+  const response = useMemo(
+    () => blockingFilterResponse({
+      type, nH, nL, nSub, nInc, periods,
+      blockFrom: blockFrom * NM, blockTo: blockTo * NM, passFrom: passFrom * NM, passTo: passTo * NM,
+    }),
+    [type, nH, nL, nSub, nInc, periods, blockFrom, blockTo, passFrom, passTo],
   );
-  const tooBig = centres.length * periods > MAX_TOTAL_PERIODS;
-  const ready = centres.length > 0 && !tooBig;
-  const overlap = type === "long-pass" ? passFrom < blockTo : passTo > blockFrom;
-
-  const stack = useMemo(
-    () => ({ incident: nInc, layers: edgeFilterLayers(type, centres, nH, nL, periods), substrate: { n: nSub } }),
-    [nInc, type, centres, nH, nL, periods, nSub],
-  );
-
-  const results = useMemo(() => {
-    if (!ready) return null;
-    const R = (wl: number) => stackResponse(stack, wl * NM).R;
-    const T = (wl: number) => stackResponse(stack, wl * NM).T;
-    return {
-      block: intervalStats(R, blockFrom, blockTo, 1000),
-      pass: intervalStats(T, passFrom, passTo, 1000),
-      // centres[0] is the stack next to the pass band.
-      edge: halfTransmissionEdge(stack, type, centres[0]),
-    };
-  }, [ready, stack, blockFrom, blockTo, passFrom, passTo, type, centres]);
+  const { bandsOk, indicesOk, centres, stack, tooBig, overlap, results } = response;
+  const ready = results !== null;
 
   // Third-order zones, g = λ₀/λ in 3 ± Δg, that reach into the pass band.
   const dg = stopBandHalfWidth(nH, nL);
