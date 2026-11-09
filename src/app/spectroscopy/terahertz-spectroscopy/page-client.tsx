@@ -5,10 +5,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { c, h, k_B, q } from "../../../physics/constants";
-import {
-  absorptionCoefficient, complexIndex, constantPermittivity, extractIndex, lorentzPermittivity, maxAbsorption,
-  slabTransmissionPolar, waterPermittivity,
-} from "../../../physics/spectroscopy/terahertz";
+import { extractIndex, terahertzPoint, type TerahertzSample } from "../../../physics/spectroscopy/terahertz";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits) : "—");
@@ -41,13 +38,8 @@ export default function TerahertzSpectroscopyPage() {
   const n0 = clamp(nRaw, 1, 10, 1.5), a0 = clamp(aRaw, 0, 1e5, 5) * 100;
   const ei = clamp(eiRaw, 1, 100, 3), de = clamp(deRaw, 0, 100, 0.1), f0 = clamp(f0Raw, 0.01, 20, 1.2) * THz, g = clamp(gRaw, 0.001, 10, 0.05) * THz;
 
-  const eps = (f: number) => (m === "water" ? waterPermittivity(f, T) : m === "lorentz" ? lorentzPermittivity(f, ei, de, f0, g) : constantPermittivity(f, n0, a0));
-  const point = (f: number) => {
-    const nk = complexIndex(eps(f));
-    const alpha = absorptionCoefficient(nk, f);
-    const t = slabTransmissionPolar(nk, f, d);
-    return { nk, alpha, t, aMax: maxAbsorption(DR, nk.re, d) };
-  };
+  const sample: TerahertzSample = { model: m, temperature: T, epsInf: ei, deltaEps: de, f0, gamma: g, n: n0, alpha: a0 };
+  const point = (f: number) => terahertzPoint(sample, f, d, DR);
 
   const N = 400;
   const fs = Array.from({ length: N }, (_, i) => (fStart + ((fEnd - fStart) * i) / (N - 1)) * THz);

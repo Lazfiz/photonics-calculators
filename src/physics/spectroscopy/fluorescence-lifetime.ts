@@ -128,3 +128,20 @@ export function gaussianPulseBandwidth(fwhm: number, lambda0: number): { hz: num
   const r = (hz * lambda0) / c;
   return { hz, lambda: r < 2 ? (lambda0 * r) / (1 - (r / 2) ** 2) : Infinity };
 }
+
+/** The page's one- or two-component decay: α₂ = 0 gives one exponential (α = 1, τ₁); otherwise amplitudes 1 − α₂ and α₂. */
+export function twoComponentDecay(tau1: number, tau2: number, fraction2: number): DecayComponent[] {
+  return fraction2 > 0
+    ? [{ amplitude: 1 - fraction2, lifetime: tau1 }, { amplitude: fraction2, lifetime: tau2 }]
+    : [{ amplitude: 1, lifetime: tau1 }];
+}
+
+/**
+ * Fraction of the photons of one pulse that are emitted after the next pulse (period T): Σ αᵢτᵢ e^(−T/τᵢ) / Σ αᵢτᵢ.
+ * For one exponential it is e^(−T/τ). NaN if Σ αᵢτᵢ ≤ 0 or T < 0.
+ */
+export function lateFraction(components: DecayComponent[], period: number): number {
+  const total = components.reduce((s, c) => s + c.amplitude * c.lifetime, 0);
+  if (!(total > 0) || !(period >= 0)) return NaN;
+  return components.reduce((s, c) => s + c.amplitude * c.lifetime * Math.exp(-period / c.lifetime), 0) / total;
+}

@@ -6,8 +6,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  anamorphicMagnification, detectorCoverage, detectorWavelength, flatDetectorReciprocalDispersion,
-  gratingDiffractionLimit, gratingSlitBandpass, overlapFreeLimit,
+  anamorphicMagnification, detectorCoverage, detectorWavelength, overlapFreeLimit, spectrometerRange,
 } from "../../../physics/spectroscopy/spectral-resolution";
 
 const DEG = Math.PI / 180;
@@ -47,16 +46,9 @@ export default function SpectralRangePage() {
   const f = focalLength * 1e-3;
   const W = detectorWidth * 1e-3;
   const lc = centreNm * 1e-9;
-  const cov = detectorCoverage(lc, d, order, deviation * DEG, W, f);
+  const { cov, range, slitLimit, pixelLimit, diffLimit, resolution, limitedBy, recip } =
+    spectrometerRange(lc, d, order, deviation * DEG, W, f, pixels, slitWidth * 1e-6, gratingWidth * 1e-3);
   const reachable = Number.isFinite(cov.incidence);
-  const range = cov.lambdaHigh - cov.lambdaLow;
-  const recip = flatDetectorReciprocalDispersion(d, order, cov.beta0, cov.beta0, f); // m per m at the centre
-  const pixelPitch = W / pixels;
-  const slitLimit = gratingSlitBandpass(slitWidth * 1e-6, d, order, cov.incidence, f);
-  const pixelLimit = 2 * pixelPitch * recip; // two pixels per resolution element (Nyquist)
-  const diffLimit = gratingDiffractionLimit(lc, order, gratingWidth * 1e-3, d);
-  const resolution = Math.max(slitLimit, pixelLimit, diffLimit);
-  const limitedBy = resolution === slitLimit ? "slit-limited" : resolution === pixelLimit ? "pixel-limited (2 px)" : "diffraction-limited";
   const overlapFree = overlapFreeLimit(cov.lambdaLow, order);
   const overlaps = Number.isFinite(cov.lambdaHigh) && cov.lambdaHigh > overlapFree;
 

@@ -7,45 +7,40 @@ import { useURLState } from "../../../hooks/use-url-state";
 import { hc_eV_nm } from "../../../physics/constants";
 import {
   PROFILES,
-  bandStats,
   bandSum,
   dipDepth,
-  fitHeights,
-  franckCondonWeights,
-  gaussianNoise,
   peakArea,
   peakShape,
-  vibronicSpectrum,
   vibronicSpectrumNm,
   type Peak,
   type Profile,
 } from "../../../physics/spectroscopy/peak-model";
+import {
+  DEFAULT_PEAKS,
+  LINE_MIN,
+  MAX_PEAKS,
+  N_SAMPLES,
+  W_MIN,
+  X_LIM,
+  bandModel,
+  clamp,
+  parsePeaks,
+  vibronicModel,
+} from "../../../physics/spectroscopy/spectral-deconvolution";
 
 // Band mode: positions and widths in one unit of the user's choice; vibronic mode: λ in nm, wavenumbers in cm⁻¹.
 const MODES = ["bands", "vibronic"] as const;
 type Mode = (typeof MODES)[number];
 const modeLabel: Record<Mode, string> = { bands: "Overlapping bands", vibronic: "Vibronic emission band" };
 const profileLabel: Record<Profile, string> = { gaussian: "Gaussian", lorentzian: "Lorentzian", "pseudo-voigt": "Pseudo-Voigt" };
-const DEFAULT_PEAKS = "480:25:0.7,520:35:1,570:30:0.5";
-const MAX_PEAKS = 5, X_LIM = 1e6, W_MIN = 1e-6, N_SAMPLES = 600, LINE_MIN = 100;
 const colors = ["#60a5fa", "#34d399", "#fbbf24", "#f87171", "#a78bfa"];
 const vibronicColors = ["#34d399", "#fbbf24", "#a78bfa", "#22d3ee"]; // 0–0 … 0–3, none blue or red like the two bands
 
-const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 4) =>
   !Number.isFinite(x) ? "—" : x === 0 ? "0" : Math.abs(x) >= 1e-3 && Math.abs(x) < 1e5 ? x.toPrecision(digits) : x.toExponential(3);
 const round6 = (y: number) => Math.round(y * 1e6) / 1e6;
 const fmtCm = (x: number) => (Number.isFinite(x) ? x.toFixed(0) : "—");
 
-function parsePeaks(s: string): Peak[] {
-  const peaks = s
-    .split(",")
-    .map((t) => t.split(":").map(Number))
-    .filter((v) => v.length === 3 && v.every(Number.isFinite))
-    .slice(0, MAX_PEAKS)
-    .map(([c, w, h]) => ({ center: clamp(c, -X_LIM, X_LIM, 0), fwhm: clamp(w, W_MIN, X_LIM, 1), height: clamp(h, 0, X_LIM, 1) }));
-  return peaks.length > 0 ? peaks : parsePeaks(DEFAULT_PEAKS);
-}
 const serialise = (peaks: Peak[]) => peaks.map((p) => `${p.center}:${p.fwhm}:${p.height}`).join(",");
 
 export default function SpectralDeconvolutionPage() {
@@ -102,19 +97,7 @@ function BandModel(props: {
   const setPeaks = (p: Peak[]) => setPeaksRaw(serialise(p));
   const updatePeak = (i: number, key: keyof Peak, v: number) => setPeaks(peaks.map((p, j) => (j === i ? { ...p, [key]: v } : p)));
 
-  const validWindow = xMax > xMin;
-  const step = (xMax - xMin) / N_SAMPLES;
-  const xs = validWindow ? Array.from({ length: N_SAMPLES + 1 }, (_, i) => xMin + i * step) : [];
-  const total = (x: number) => bandSum(x, peaks, profile, eta);
-  const sigma = noise * Math.max(...peaks.map((p) => p.height));
-  const draw = gaussianNoise(xs.length, seed);
-  const data = xs.map((x, i) => total(x) + sigma * draw[i]);
-  const fit = validWindow ? fitHeights(xs, data, peaks, profile, eta) : null;
-  const areas = peaks.map((p) => peakArea(p.height, p.fwhm, profile, eta));
-  const sumArea = areas.reduce((s, a) => s + a, 0);
-  const stats = validWindow ? bandStats(total, xMin, xMax) : null;
-  const narrow = peaks.some((p) => p.fwhm < 3 * step);
-  const outside = peaks.some((p) => p.center < xMin || p.center > xMax);
+  const { validWindow, step, xs, data, total, fit, areas, sumArea, stats, narrow, outside } = bandModel({ peaks, profile, eta, noise, seed, xMin, xMax });
   const order = peaks.map((_, i) => i).sort((a, b) => peaks[a].center - peaks[b].center);
   const pairs = order.slice(1).map((j, k) => {
     const i = order[k];
@@ -274,22 +257,7 @@ function VibronicModel(props: {
   const nuVib = clamp(nuVibRaw, 10, 5000, 1400);
   const S = clamp(hrRaw, 0, 10, 1);
   const lineFwhm = clamp(lineFwhmRaw, LINE_MIN, 10000, 1000);
-  const nu00 = 1e7 / lambda00;
-  const band = { nu00, nuVib, S, fwhm: lineFwhm };
-  const weights = franckCondonWeights(S);
-
-  // Window: the progression out to S + 4√S + 2 quanta on either side, plus two line widths; red end kept above ν̃₀₀/10.
-  // Sample counts give ≥ 10 samples per line width (fewer only past the 40000 cap). In wavelength a line is
-  // λ²·Δν̃/10⁷ wide, narrowest at the blue end; the emission lies to the red of 1e7/(ν̃₀₀ + 3Δν̃).
-  const span = (S + 4 * Math.sqrt(S) + 2) * nuVib + 2 * lineFwhm;
-  const nuLo = Math.max(nu00 - span, nu00 / 10), nuHi = nu00 + span;
-  const lamLo = 1e7 / nuHi, lamHi = 1e7 / nuLo, lamEmLo = 1e7 / (nu00 + 3 * lineFwhm);
-  const samplesFor = (range: number, width: number) => Math.min(40000, Math.max(2000, Math.ceil((10 * range) / width)));
-  const nuSamples = samplesFor(nuHi - nuLo, lineFwhm);
-  const abs = bandStats((n) => vibronicSpectrum(n, band, "absorption", weights), nuLo, nuHi, nuSamples);
-  const emNu = bandStats((n) => vibronicSpectrum(n, band, "emission", weights), nuLo, nuHi, nuSamples);
-  const emNm = bandStats((l) => vibronicSpectrumNm(l, band, "emission", weights), lamEmLo, lamHi, samplesFor(lamHi - lamEmLo, (lamEmLo ** 2 * lineFwhm) / 1e7));
-  const reorg = S * nuVib;
+  const { nu00, band, weights, lamLo, lamHi, abs, emNu, emNm, reorg } = vibronicModel(lambda00, nuVib, S, lineFwhm);
 
   const n = Math.min(3000, Math.max(500, Math.ceil((4 * (lamHi - lamLo)) / ((lamLo ** 2 * lineFwhm) / 1e7))));
   // Plot only where either band is above 0.1 % of its peak.
