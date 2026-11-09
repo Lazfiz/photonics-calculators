@@ -182,6 +182,17 @@ import braggReflector from "./thin-film/bragg-reflector";
 import coatingStress from "./thin-film/coating-stress";
 import coldMirror from "./thin-film/cold-mirror";
 import dichroic from "./thin-film/dichroic";
+import dielectricHighReflector from "./thin-film/dielectric-high-reflector";
+import dielectricStack from "./thin-film/dielectric-stack";
+import doubleLayerAr from "./thin-film/double-layer-ar";
+import dualBandAr from "./thin-film/dual-band-ar";
+import edgeFilter from "./thin-film/edge-filter";
+import ellipsometryMeasurement from "./thin-film/ellipsometry-measurement";
+import emissivityControl from "./thin-film/emissivity-control";
+import enhancedAluminum from "./thin-film/enhanced-aluminum";
+import environmentalStability from "./thin-film/environmental-stability";
+import fabryPerotFilter from "./thin-film/fabry-perot-filter";
+import gradientIndex from "./thin-film/gradient-index";
 import singleAr from "./thin-film/single-ar";
 import type { CalculatorSchema } from "./types";
 import abcdMatrix from "./wave-optics/abcd-matrix";
@@ -258,7 +269,8 @@ export const schemas: readonly CalculatorSchema[] = [
   spectralDeconvolution, spectralRange, spectralResolution, stokesShift, strayLight, surfaceEnhancedRaman,
   terahertzSpectroscopy, timeResolved, twoDimensional, wavenumberConverter,
   adhesionTesting, amplitudeSplitting, angleShift, angleTuning, antiFog, bandpassFilter, beamsplitter, braggReflector,
-  coatingStress, coldMirror, dichroic,
+  coatingStress, coldMirror, dichroic, dielectricHighReflector, dielectricStack, doubleLayerAr, dualBandAr, edgeFilter,
+  ellipsometryMeasurement, emissivityControl, enhancedAluminum, environmentalStability, fabryPerotFilter, gradientIndex,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));
