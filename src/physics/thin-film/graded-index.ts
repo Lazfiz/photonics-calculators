@@ -12,7 +12,7 @@
  * smooth profiles (zero slope at both ends) reflect little once thicker than about λ. H. A. Macleod,
  * Thin-Film Optical Filters, 4th ed. (CRC Press, 2010), ch. 2 (characteristic matrix of each sublayer).
  */
-import type { Layer } from "./transfer-matrix";
+import type { Layer, Stack } from "./transfer-matrix";
 
 export type GradedProfile = "linear" | "cosine" | "exponential";
 
@@ -68,4 +68,23 @@ export function gradedIndexLayers(
     layers.push({ n: gradedIndexAt(profile, nSubstrate, nSurface, (j + 0.5) / count), thickness: thickness / count });
   }
   return layers;
+}
+
+/**
+ * Stack for a graded layer evaluated over the window 0.5 λ … 1.5 λ around the design wavelength: the staircase is
+ * sized for the shortest wavelength of the window (0.5 λ). Lengths in m. `layers` is [] for invalid input.
+ */
+export function gradedStack(
+  profile: GradedProfile,
+  nIncident: number,
+  nSubstrate: number,
+  nSurface: number,
+  thickness: number,
+  designWavelength: number,
+): Stack {
+  return {
+    incident: nIncident,
+    layers: gradedIndexLayers(profile, nSubstrate, nSurface, thickness, 0.5 * designWavelength),
+    substrate: { n: nSubstrate },
+  };
 }

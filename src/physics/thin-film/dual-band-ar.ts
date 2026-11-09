@@ -13,6 +13,7 @@
  * References: H. A. Macleod, Thin-Film Optical Filters, 4th ed., ch. 4 (two- and three-layer AR coatings);
  * J. A. Nelder, R. Mead, Comput. J. 7, 308 (1965).
  */
+import { firstCrossing } from "../math";
 import { stackResponse } from "./transfer-matrix";
 
 export interface DualBandArProblem {
@@ -124,5 +125,35 @@ export function fitDualBandAr(p: DualBandArProblem, grid = 16, starts = 4): Dual
     thicknesses: best.x,
     R1: dualBandReflectance(p, best.x, p.lambda1),
     R2: dualBandReflectance(p, best.x, p.lambda2),
+  };
+}
+
+/** Band around a design wavelength where R stays below a level; `open[i]` marks an edge that hit the scan limit. */
+export interface DualBandWidth {
+  /** Short and long edge, m. */
+  lo: number;
+  hi: number;
+  open: [boolean, boolean];
+}
+
+/**
+ * Width of the band around `wavelength` where R < `level`, scanned from λ out to 0.5 λ and 1.5 λ (400 intervals
+ * each, edges bisected). null unless R(λ) < level. An edge with no crossing inside the scan reports the scan
+ * limit and is flagged open.
+ */
+export function dualBandWidth(
+  p: DualBandArProblem,
+  thicknesses: readonly number[],
+  wavelength: number,
+  level = 0.01,
+): DualBandWidth | null {
+  const R = (lam: number) => dualBandReflectance(p, thicknesses, lam);
+  if (!(R(wavelength) < level)) return null;
+  const lo = firstCrossing(R, wavelength, wavelength * 0.5, level, 400);
+  const hi = firstCrossing(R, wavelength, wavelength * 1.5, level, 400);
+  return {
+    lo: Number.isFinite(lo) ? lo : wavelength * 0.5,
+    hi: Number.isFinite(hi) ? hi : wavelength * 1.5,
+    open: [!Number.isFinite(lo), !Number.isFinite(hi)],
   };
 }

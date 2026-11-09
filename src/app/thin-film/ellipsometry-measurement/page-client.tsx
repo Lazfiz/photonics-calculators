@@ -5,8 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { filmPsiDelta, pseudoOpticalConstants, transparentFilmThickness } from "../../../physics/thin-film/ellipsometry";
-import { stackResponse } from "../../../physics/thin-film/transfer-matrix";
+import { filmPsiDelta, pseudoOpticalConstants, pseudoSubstrateReflectance, transparentFilmThickness } from "../../../physics/thin-film/ellipsometry";
 
 export default function EllipsometryMeasurementPage() {
   const [psiDeg, setPsiDeg] = useURLState("psiDeg", 10.573, { min: 0, max: 90 });
@@ -34,11 +33,7 @@ export default function EllipsometryMeasurementPage() {
   const results = useMemo(() => {
     const theta = aoiDeg * Math.PI / 180;
     const pseudo = pseudoOpticalConstants(psiDeg * Math.PI / 180, deltaDeg * Math.PI / 180, theta);
-    // Reflectances of the bare pseudo-substrate (no layers, so the wavelength only has to be valid, not shown) at the measurement angle (NaN if ⟨k⟩ < 0).
-    const bare = { incident: 1, layers: [], substrate: { n: pseudo.n, k: pseudo.k } };
-    const Rs = stackResponse(bare, 633e-9, theta, "s").R;
-    const Rp = stackResponse(bare, 633e-9, theta, "p").R;
-    return { ...pseudo, Rs, Rp, Ravg: (Rs + Rp) / 2 };
+    return { ...pseudo, ...pseudoSubstrateReflectance(pseudo, theta) };
   }, [psiDeg, deltaDeg, aoiDeg]);
 
   // Ψ-Δ trajectory of the film model over one thickness period; a null breaks the line where Δ wraps past 360°.

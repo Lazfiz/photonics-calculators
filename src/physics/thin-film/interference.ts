@@ -12,6 +12,8 @@
  * on reflection) and §9.6 (Fabry-Perot).
  */
 
+import { c } from "../constants";
+
 /**
  * Coefficient of finesse F = 4ρ/(1 − ρ)², ρ = √(R₁R₂), of a cavity between two mirrors (or film
  * faces) of reflectance R₁ and R₂: T ∝ 1/(1 + F sin²(δ/2)). NaN unless 0 ≤ R₁, R₂ < 1.
@@ -114,4 +116,34 @@ export function filmFaceSummary(n1: number, nFilm: number, n2: number): { r01: n
   const r12 = (nFilm - n2) / (nFilm + n2);
   const F = coefficientOfFinesse(r01 ** 2, r12 ** 2);
   return { r01, r12, F, finesse: (2 * Math.PI) / airyPeakWidth(F) };
+}
+
+export interface FabryPerotSummary {
+  F: number;
+  /** Reflecting finesse π√F/2. */
+  finesse: number;
+  peak: AiryPeak;
+  /** Neighbouring peaks 2nd/(m + 1) and 2nd/(m − 1) (NaN for m = 1), m. */
+  upper: number;
+  lower: number;
+  /** Exact frequency spacing c/(2nd), Hz. */
+  fsrHz: number;
+}
+
+/**
+ * The Fabry-Perot filter page's numbers: an etalon of cavity index n and spacing d (m) between mirrors of power
+ * reflectance R, and the transmission peak nearest `wavelength` (m).
+ */
+export function fabryPerotSummary(nCavity: number, spacing: number, reflectance: number, wavelength: number): FabryPerotSummary {
+  const F = coefficientOfFinesse(reflectance);
+  const nd = nCavity * spacing;
+  const peak = airyPeakNear(nd, wavelength, F);
+  return {
+    F,
+    finesse: reflectingFinesse(F),
+    peak,
+    upper: (2 * nd) / (peak.order + 1),
+    lower: peak.order - 1 >= 1 ? (2 * nd) / (peak.order - 1) : NaN,
+    fsrHz: c / (2 * nd),
+  };
 }

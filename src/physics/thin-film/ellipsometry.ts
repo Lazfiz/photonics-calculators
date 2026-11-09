@@ -19,6 +19,7 @@
  */
 
 import { add, div, mul, sqrt as csqrt, sub, type Complex } from "../complex";
+import { stackResponse } from "./transfer-matrix";
 
 export interface PseudoOpticalConstants {
   /** ⟨ε₁⟩. */
@@ -196,4 +197,15 @@ export function transparentFilmThickness(
   let thickness = (phase / (2 * Math.PI)) * period;
   if (thickness >= 0.99 * period) thickness -= period;
   return { thickness, period, absX };
+}
+
+/**
+ * Reflectances R_s, R_p and their mean of the bare pseudo-substrate N = ⟨n⟩ − i⟨k⟩ at the measurement angle
+ * (ambient index 1; NaN if ⟨k⟩ < 0 or the pseudo constants are invalid). No layers, so the wavelength only has to be valid.
+ */
+export function pseudoSubstrateReflectance(pseudo: PseudoOpticalConstants, angle: number): { Rs: number; Rp: number; Ravg: number } {
+  const bare = { incident: 1, layers: [], substrate: { n: pseudo.n, k: pseudo.k } };
+  const Rs = stackResponse(bare, 633e-9, angle, "s").R;
+  const Rp = stackResponse(bare, 633e-9, angle, "p").R;
+  return { Rs, Rp, Ravg: (Rs + Rp) / 2 };
 }
