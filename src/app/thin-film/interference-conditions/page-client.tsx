@@ -5,7 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { firstReflectionExtrema, netReflectionPhase } from "../../../physics/thin-film/interference";
+import { filmPathDifference, firstReflectionExtrema, netReflectionPhase } from "../../../physics/thin-film/interference";
 import { reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
 
 export default function InterferenceConditionsPage() {
@@ -24,7 +24,7 @@ export default function InterferenceConditionsPage() {
     ];
   }, [nFilm, thickness, nIncident, nSubstrate]);
 
-  const opd = 2 * nFilm * thickness;
+  const opd = filmPathDifference(nFilm, thickness * 1e-9) * 1e9; // nm
   const phase = netReflectionPhase(nIncident, nFilm, nSubstrate);
   const extrema = firstReflectionExtrema(nIncident, nFilm, nSubstrate, thickness * 1e-9);
   const formatNm = (m: number) => (Number.isFinite(m) ? `${(m * 1e9).toFixed(1)} nm` : "—");

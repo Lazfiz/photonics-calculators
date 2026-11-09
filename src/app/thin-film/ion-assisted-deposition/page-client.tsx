@@ -5,7 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { IAD_MATERIALS, iadParameters, type IadMaterialId } from "../../../physics/thin-film/ion-assisted-deposition";
+import { IAD_MATERIALS, atMonitorDensity, iadParameters, type IadMaterialId } from "../../../physics/thin-film/ion-assisted-deposition";
 
 const IDS = Object.keys(IAD_MATERIALS) as IadMaterialId[];
 const isId = (s: string): s is IadMaterialId => Object.hasOwn(IAD_MATERIALS, s);
@@ -24,7 +24,7 @@ export default function IonAssistedDepositionPage() {
   const bulk = IAD_MATERIALS[id];
   // A quartz-crystal monitor reports r = mass rate / ρ_set, so ρ_set fixes the molecule arrival rate.
   const useBulk = densityParam === 0;
-  const mat = useMemo(() => ({ ...bulk, rho: useBulk ? bulk.rho : densityParam * 1e3 }), [bulk, useBulk, densityParam]);
+  const mat = useMemo(() => atMonitorDensity(bulk, densityParam), [bulk, densityParam]);
   const errors = [
     !(ionEnergy >= 0) && "the ion energy can't be negative",
     !(currentDensity >= 0) && "the ion current density can't be negative",

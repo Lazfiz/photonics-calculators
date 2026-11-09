@@ -5,13 +5,8 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { clampToRange } from "../../../lib/number-input";
-import {
-  quarterWavePairsForReflectance,
-  reflectionBandEdges,
-  stopBandEdges,
-  stopBandHalfWidth,
-} from "../../../physics/thin-film/quarter-wave-stack";
-import { quarterWaveLayers, quarterWaveStackReflectance, stackResponse } from "../../../physics/thin-film/transfer-matrix";
+import { notchFilterSummary, notchPairsForOD } from "../../../physics/thin-film/notch-filter";
+import { stackResponse } from "../../../physics/thin-film/transfer-matrix";
 
 const NM = 1e-9;
 const nm = (x: number, digits = 1) => (Number.isFinite(x) ? `${(x / NM).toFixed(digits)} nm` : "—");
@@ -27,20 +22,12 @@ export default function NotchFilterPage() {
 
   // The URL isn't range-checked: an integer number of pairs in 1–200.
   const pairs = Math.round(clampToRange(pairsRaw, 1, 200));
-  const valid = nH > nL && nL > 0 && nSub > 0 && nInc > 0 && notchWl >= 100 && notchWl <= 20000;
   const lambda0 = notchWl * NM;
-  const dg = stopBandHalfWidth(nH, nL);
-
-  // (HL)^N: H faces the incident medium, L sits on the substrate.
-  const indices = useMemo(() => Array.from({ length: 2 * pairs }, (_, j) => (j % 2 === 0 ? nH : nL)), [pairs, nH, nL]);
-  const stack = useMemo(() => ({ incident: nInc, layers: quarterWaveLayers(indices, lambda0), substrate: { n: nSub } }), [nInc, indices, lambda0, nSub]);
-
-  const R0 = valid ? quarterWaveStackReflectance(nInc, indices, nSub) : NaN;
-  // OD from T itself: 1 − R loses its digits as R → 1.
-  const od = valid ? -Math.log10(stackResponse(stack, lambda0).T) : NaN;
-  const notch = useMemo(() => (valid ? reflectionBandEdges(stack, lambda0, R0 / 2, 3 * dg) : { short: NaN, long: NaN }), [valid, stack, lambda0, R0, dg]);
-  const zone = stopBandEdges(lambda0, nH, nL);
-  const pairsFor = (target: number) => (valid ? quarterWavePairsForReflectance(1 - 10 ** -target, nH, nL, nInc, nSub) : NaN);
+  const { valid, indices, stack, R0, od, notch, zone, halfWidth: dg } = useMemo(
+    () => notchFilterSummary({ nH, nL, nSub, nInc, lambda0, pairs }),
+    [nH, nL, nSub, nInc, lambda0, pairs],
+  );
+  const pairsFor = (target: number) => notchPairsForOD(target, { nH, nL, nSub, nInc, lambda0 });
 
   const spectrum = useMemo(() => {
     if (!valid) return null;

@@ -5,6 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { unwrapPhase } from "../../../physics/math";
+import { filmThicknessFromQuarterWaves, phaseShiftAtDesign } from "../../../physics/thin-film/phase-shift-coating";
 import { stackResponse } from "../../../physics/thin-film/transfer-matrix";
 
 const NM = 1e-9;
@@ -28,14 +29,14 @@ export default function PhaseShiftCoatingPage() {
   const valid = n1 > 0 && nFilm > 0 && nSubstrate > 0 && designWl >= 100 && designWl <= 20000 && fractionalThickness >= 0;
   const lambda0 = designWl * NM;
   // A film of f quarter waves at λ₀: d = f λ₀/(4n), round-trip phase 2β = 4πnd/λ₀ = πf.
-  const thickness = (fractionalThickness * lambda0) / (4 * nFilm);
+  const thickness = filmThicknessFromQuarterWaves(fractionalThickness, lambda0, nFilm);
   const stack = useMemo(
     () => ({ incident: n1, layers: [{ n: nFilm, thickness }], substrate: { n: nSubstrate } }),
     [n1, nFilm, thickness, nSubstrate],
   );
-  const at0 = valid ? stackResponse(stack, lambda0) : null;
-  const argR0 = at0 ? Math.atan2(at0.r.im, at0.r.re) : NaN;
-  const argT0 = at0 ? Math.atan2(at0.t.im, at0.t.re) : NaN;
+  const at0 = valid ? phaseShiftAtDesign(n1, nFilm, nSubstrate, lambda0, fractionalThickness) : null;
+  const argR0 = at0 ? at0.argR : NaN;
+  const argT0 = at0 ? at0.argT : NaN;
   const r01 = (n1 - nFilm) / (n1 + nFilm);
   const r12 = (nFilm - nSubstrate) / (nFilm + nSubstrate);
 

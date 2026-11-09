@@ -170,3 +170,12 @@ export function emissivityControl(
   const inBand = fraction * blackbody;
   return { eps, epsBare, fraction, emitted: eps * inBand, emittedBare: epsBare * inBand, blackbody };
 }
+
+/** Heat-mirror coating: dielectric | Ag | dielectric (same index nD in both), outer layer first; thicknesses in m. */
+export function heatMirrorCoating(nD: number, dOuter: number, dAg: number, dInner: number): CoatingLayer[] {
+  return [
+    { material: "dielectric", n: nD, thickness: dOuter },
+    { material: "Ag", thickness: dAg },
+    { material: "dielectric", n: nD, thickness: dInner },
+  ];
+}

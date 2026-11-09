@@ -5,7 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { absorptionCoefficient, absorptionDepth } from "../../../physics/spectroscopy/depth";
+import { metalDielectricStack, metalDielectricSummary } from "../../../physics/thin-film/metal-dielectric";
 import { stackResponse, type Stack } from "../../../physics/thin-film/transfer-matrix";
 
 export default function MetalDielectricPage() {
@@ -17,14 +17,7 @@ export default function MetalDielectricPage() {
   const [nSub, setNSub] = useURLState("nSub", 1.52, { min: 0.1 });
 
   // Air | dielectric overcoat | metal (n + ik) | substrate
-  const stack = useMemo<Stack>(() => ({
-    incident: 1,
-    layers: [
-      { n: nDielectric, thickness: dDielectric * 1e-9 },
-      { n: nMetal, k: kMetal, thickness: dMetal * 1e-9 },
-    ],
-    substrate: { n: nSub },
-  }), [nMetal, kMetal, nDielectric, dDielectric, dMetal, nSub]);
+  const stack = useMemo<Stack>(() => metalDielectricStack(nMetal, kMetal, nDielectric, dDielectric * 1e-9, dMetal * 1e-9, nSub), [nMetal, kMetal, nDielectric, dDielectric, dMetal, nSub]);
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 300 }, (_, i) => 300 + i * 2);
@@ -40,12 +33,12 @@ export default function MetalDielectricPage() {
   }, [stack]);
 
   const wavelength_nm = 550;
-  const absorptance550 = stackResponse(stack, wavelength_nm * 1e-9).A;
-  const nEff = nMetal * nMetal - kMetal * kMetal;
-  // 1/α = λ/(4πk) is the depth at which the INTENSITY falls to 1/e; the field amplitude falls to 1/e at λ/(2πk).
-  // Intensity falls 1/e in 1/α = λ/(4πk); the field (∝ √I) in twice that.
-  const intensityDepth_nm = absorptionDepth(absorptionCoefficient(kMetal, wavelength_nm * 1e-9)) * 1e9;
-  const fieldDepth_nm = 2 * intensityDepth_nm;
+  const summary = metalDielectricSummary(stack, nMetal, kMetal, wavelength_nm * 1e-9);
+  const absorptance550 = summary.absorptance;
+  const nEff = summary.epsilonReal;
+  // 1/α = λ/(4πk) is the depth at which the INTENSITY falls to 1/e; the field (∝ √I) falls to 1/e in twice that.
+  const intensityDepth_nm = summary.intensityDepth * 1e9;
+  const fieldDepth_nm = summary.fieldDepth * 1e9;
   const fixed = (x: number, digits: number) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
 
   return (

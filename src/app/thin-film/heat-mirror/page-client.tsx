@@ -5,7 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { planckExitance } from "../../../physics/blackbody";
-import { coatingResponse, glazingPerformance, paneResponse, type CoatingLayer } from "../../../physics/thin-film/low-emissivity";
+import { coatingResponse, glazingPerformance, heatMirrorCoating, paneResponse, type CoatingLayer } from "../../../physics/thin-film/low-emissivity";
 
 const NM = 1e-9;
 const UM = 1e-6;
@@ -22,11 +22,7 @@ export default function HeatMirrorPage() {
 
   const valid = nD > 0 && nSub > 0 && dOuter >= 0 && dAg >= 0 && dInner >= 0 && temp >= 200 && temp <= 600;
 
-  const coating = useMemo<CoatingLayer[]>(() => [
-    { material: "dielectric", n: nD, thickness: dOuter * NM },
-    { material: "Ag", thickness: dAg * NM },
-    { material: "dielectric", n: nD, thickness: dInner * NM },
-  ], [nD, dOuter, dAg, dInner]);
+  const coating = useMemo<CoatingLayer[]>(() => heatMirrorCoating(nD, dOuter * NM, dAg * NM, dInner * NM), [nD, dOuter, dAg, dInner]);
 
   const perf = useMemo(() => (valid ? glazingPerformance(coating, nSub, temp) : null), [valid, coating, nSub, temp]);
   const bare = useMemo(() => (valid ? glazingPerformance([], nSub, temp) : null), [valid, nSub, temp]);
