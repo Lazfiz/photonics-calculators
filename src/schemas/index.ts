@@ -171,6 +171,17 @@ import terahertzSpectroscopy from "./spectroscopy/terahertz-spectroscopy";
 import timeResolved from "./spectroscopy/time-resolved";
 import twoDimensional from "./spectroscopy/two-dimensional";
 import wavenumberConverter from "./spectroscopy/wavenumber-converter";
+import adhesionTesting from "./thin-film/adhesion-testing";
+import amplitudeSplitting from "./thin-film/amplitude-splitting";
+import angleShift from "./thin-film/angle-shift";
+import angleTuning from "./thin-film/angle-tuning";
+import antiFog from "./thin-film/anti-fog";
+import bandpassFilter from "./thin-film/bandpass-filter";
+import beamsplitter from "./thin-film/beamsplitter";
+import braggReflector from "./thin-film/bragg-reflector";
+import coatingStress from "./thin-film/coating-stress";
+import coldMirror from "./thin-film/cold-mirror";
+import dichroic from "./thin-film/dichroic";
 import singleAr from "./thin-film/single-ar";
 import type { CalculatorSchema } from "./types";
 import abcdMatrix from "./wave-optics/abcd-matrix";
@@ -246,6 +257,8 @@ export const schemas: readonly CalculatorSchema[] = [
   penetrationDepth, phaseCorrection, pumpProbe, ramanShift, spectralCalibration,
   spectralDeconvolution, spectralRange, spectralResolution, stokesShift, strayLight, surfaceEnhancedRaman,
   terahertzSpectroscopy, timeResolved, twoDimensional, wavenumberConverter,
+  adhesionTesting, amplitudeSplitting, angleShift, angleTuning, antiFog, bandpassFilter, beamsplitter, braggReflector,
+  coatingStress, coldMirror, dichroic,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));
