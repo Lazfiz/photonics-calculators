@@ -5,7 +5,8 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { quarterWaveStackReflectance, quarterWaveThickness, reflectanceSpectrum, stackResponse } from "../../../physics/thin-film/transfer-matrix";
+import { partialReflectorAtDesign } from "../../../physics/thin-film/partial-reflector";
+import { quarterWaveStackReflectance, quarterWaveThickness, reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
 
 export default function PartialReflectorPage() {
   const [nFilm, setNFilm] = useURLState("nFilm", 1.7, { min: 0.1 });
@@ -52,15 +53,9 @@ export default function PartialReflectorPage() {
   }, [nFilm, nSub, nInc, thicknessRatio, designWl]);
 
   // R of a quarter-wave film (closed form), and R at λ₀ for the film of the entered thickness
-  const Rdesign = quarterWaveStackReflectance(nInc, [nFilm], nSub);
-  const Rthis = stackResponse(
-    {
-      incident: nInc,
-      layers: [{ n: nFilm, thickness: thicknessRatio * quarterWaveThickness(nFilm, designWl * 1e-9) }],
-      substrate: { n: nSub },
-    },
-    designWl * 1e-9,
-  ).R;
+  const design = partialReflectorAtDesign(nFilm, nSub, nInc, thicknessRatio, designWl * 1e-9);
+  const Rdesign = design.quarterWave;
+  const Rthis = design.thisFilm;
   const pct = (x: number) => (Number.isFinite(x) ? `${(x * 100).toFixed(2)}%` : "—");
   const thickness_nm = (thicknessRatio * designWl) / (4 * nFilm);
 

@@ -147,3 +147,8 @@ export function fabryPerotSummary(nCavity: number, spacing: number, reflectance:
     fsrHz: c / (2 * nd),
   };
 }
+
+/** Optical path difference 2nd (m) between the two face reflections of a film at normal incidence; NaN unless n and d are > 0. */
+export function filmPathDifference(nFilm: number, thickness: number): number {
+  return nFilm > 0 && thickness > 0 ? 2 * nFilm * thickness : NaN;
+}

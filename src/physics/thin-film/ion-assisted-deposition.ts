@@ -37,6 +37,14 @@ export const IAD_MATERIALS = {
 
 export type IadMaterialId = keyof typeof IAD_MATERIALS;
 
+/**
+ * The material as the rate monitor sees it: a quartz-crystal monitor reports r = mass rate / ρ_set, so the density
+ * set in it (g/cm³) fixes the molecule arrival rate. 0 keeps the bulk density.
+ */
+export function atMonitorDensity(bulk: Compound, rhoSet_gcm3: number): Compound {
+  return rhoSet_gcm3 === 0 ? bulk : { ...bulk, rho: rhoSet_gcm3 * 1e3 };
+}
+
 /** Flux of singly charged ions (m⁻² s⁻¹) for a current density J (A/m²). NaN unless J ≥ 0. */
 export function ionFlux(J: number): number {
   if (!(J >= 0)) return NaN;

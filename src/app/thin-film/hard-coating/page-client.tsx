@@ -4,10 +4,8 @@ import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { intervalStats } from "../../../physics/math";
-import { normalIncidenceReflectance } from "../../../physics/polarization/fresnel";
+import { coatedReflectance, hardCoatingOptics } from "../../../physics/thin-film/hard-coating";
 import { biaxialStrainEnergy, deflectionFromCurvature, delaminationThickness, stoneyCurvature } from "../../../physics/thin-film/stoney";
-import { quarterWaveStackReflectance, stackResponse } from "../../../physics/thin-film/transfer-matrix";
 
 const NM = 1e-9;
 const pct = (x: number, digits = 2) => (Number.isFinite(x) ? `${(x * 100).toFixed(digits)} %` : "—");
@@ -34,25 +32,20 @@ export default function HardCoatingPage() {
 
   const optics = useMemo(() => {
     if (!opticsValid) return null;
-    const coated = (lam: number) => stackResponse({ incident: 1, layers: [{ n: nCoat, thickness: d }], substrate: { n: nSub } }, lam).R;
-    const bare = normalIncidenceReflectance(1, nSub);
-    const halfWave = designWl / (2 * nCoat);
-    const order = Math.max(1, Math.round(thickness / halfWave));
-    // Mean band: the visible for visible designs, else 0.8–1.2 λ₀
-    const bandLo = designWl >= 400 && designWl <= 700 ? 400 : 0.8 * designWl;
-    const bandHi = designWl >= 400 && designWl <= 700 ? 700 : 1.2 * designWl;
+    const o = hardCoatingOptics(nCoat, nSub, d, lambda0);
+    const coated = (lam: number) => coatedReflectance(nCoat, nSub, d, lam);
     // Plot window [min(300, 0.55 λ₀), max(900, 1.65 λ₀)]; step ≤ λ²/(20 n d) at the short end (fringe period), ≤ 4000 points
     const lo = Math.min(300, 0.55 * designWl), hi = Math.max(900, 1.65 * designWl);
     const step = thickness > 0 ? Math.min(1, (lo * lo) / (20 * nCoat * thickness)) : 1;
     const count = Math.min(4000, Math.max(601, Math.ceil((hi - lo) / step) + 1));
     return {
-      R0: coated(lambda0),
-      bandLo, bandHi, lo, hi,
-      bare,
-      vis: intervalStats(coated, bandLo * NM, bandHi * NM, 300),
-      qw: quarterWaveStackReflectance(1, [nCoat], nSub),
-      halfWave,
-      nearestAbsentee: order * halfWave,
+      R0: o.R0,
+      bandLo: o.bandLo / NM, bandHi: o.bandHi / NM, lo, hi,
+      bare: o.bare,
+      vis: { mean: o.mean, min: o.min, max: o.max },
+      qw: o.quarterWave,
+      halfWave: o.halfWave / NM,
+      nearestAbsentee: o.nearestAbsentee / NM,
       x: Array.from({ length: count }, (_, i) => lo + ((hi - lo) * i) / (count - 1)),
       coated,
     };
