@@ -4,8 +4,8 @@ import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { intervalStats } from "../../../physics/math";
-import { coatingResponse, type CoatingLayer, type Substrate } from "../../../physics/thin-film/low-emissivity";
+import { coatingResponse } from "../../../physics/thin-film/low-emissivity";
+import { protectedSilverStacks, protectedSilverSubstrate, protectedSilverSummary, protectedSilverValid } from "../../../physics/thin-film/protected-silver";
 
 const NM = 1e-9;
 const pct = (x: number, digits = 2) => (Number.isFinite(x) ? `${(x * 100).toFixed(digits)} %` : "—");
@@ -18,35 +18,25 @@ export default function ProtectedSilverPage() {
   const [nAdhesion, setNAdhesion] = useURLState("nAdhesion", 2.35, { min: 1, max: 5 });
   const [adhesionThick, setAdhesionThick] = useURLState("adhesionThick", 10, { min: 0, max: 500 });
 
-  const valid = nSub > 0 && nProtect > 0 && nAdhesion > 0 && agThickness >= 0 && protectThick >= 0 && adhesionThick >= 0;
-  const substrate = useMemo<Substrate>(() => ({ material: "dielectric", n: nSub }), [nSub]);
+  const params = useMemo(() => ({
+    nSub, agThickness: agThickness * NM, nProtect, protectThickness: protectThick * NM, nAdhesion, adhesionThickness: adhesionThick * NM,
+  }), [nSub, agThickness, nProtect, protectThick, nAdhesion, adhesionThick]);
+  const valid = protectedSilverValid(params);
+  const substrate = useMemo(() => protectedSilverSubstrate(nSub), [nSub]);
 
   // Air | overcoat | Ag | adhesion layer | substrate, and the same Ag film with nothing on it for comparison.
-  const stacks = useMemo(() => {
-    const ag: CoatingLayer = { material: "Ag", thickness: agThickness * NM };
-    const adhesion: CoatingLayer = { material: "dielectric", n: nAdhesion, thickness: adhesionThick * NM };
-    return {
-      protectedAg: [{ material: "dielectric", n: nProtect, thickness: protectThick * NM }, ag, adhesion] as CoatingLayer[],
-      bare: [ag, adhesion],
-    };
-  }, [agThickness, nProtect, protectThick, nAdhesion, adhesionThick]);
+  const stacks = useMemo(() => protectedSilverStacks(params), [params]);
 
   const results = useMemo(() => {
     if (!valid) return null;
-    const R = (layers: CoatingLayer[]) => (lam: number) => coatingResponse(layers, substrate, lam).R;
-    // Minimum of R over 300–1200 nm on a 1 nm grid (the Ag dip near 310 nm is a few nm wide).
-    let min = { R: Infinity, wl: NaN };
-    for (let w = 300; w <= 1200; w++) {
-      const r = R(stacks.protectedAg)(w * NM);
-      if (r < min.R) min = { R: r, wl: w };
-    }
+    const sum = protectedSilverSummary(params);
     return {
-      vis: intervalStats(R(stacks.protectedAg), 400 * NM, 700 * NM, 300),
-      nir: intervalStats(R(stacks.protectedAg), 700 * NM, 1200 * NM, 250),
-      bareVis: intervalStats(R(stacks.bare), 400 * NM, 700 * NM, 300),
-      min,
+      vis: { mean: sum.visMean, min: sum.visMin },
+      nir: { mean: sum.nirMean },
+      bareVis: { mean: sum.bareVisMean },
+      min: { R: sum.minR, wl: Math.round(sum.minWavelength / NM) },
     };
-  }, [valid, stacks, substrate]);
+  }, [valid, params]);
 
   const spectrum = useMemo(() => {
     if (!valid) return null;

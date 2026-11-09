@@ -19,6 +19,7 @@
  * J. Vac. Sci. Technol. 15, 1 (1978), doi:10.1116/1.569429 (sputtered-atom mean free path and thermalisation).
  */
 import { N_A, k_B, q } from "../constants";
+import { structureZone } from "./thermal-evaporation";
 import { M_AR } from "./plasma-global-model";
 
 export interface SputterTarget {
@@ -195,4 +196,53 @@ export function thompsonFractionBelow(E: number, Us: number): number {
   if (!(E >= 0 && Us > 0)) return NaN;
   if (E === Infinity) return 1;
   return (E / (E + Us)) ** 2;
+}
+
+/** Argon gas temperature (K) the sputtering page assumes for the thermalisation. */
+export const SPUTTER_GAS_T = 300;
+
+/** Sputter yield (atoms/ion) the sputtering page uses: the entered value, or the 500 eV table value when it is 0. */
+export function sputterYield(target: SputterTarget, yieldParam: number): number {
+  return yieldParam === 0 ? target.Y500 : yieldParam;
+}
+
+export interface SputteringDepositionInput {
+  /** Discharge power (W). */
+  power: number;
+  /** Discharge voltage (V). */
+  voltage: number;
+  /** Ion-induced secondary-electron yield γ. */
+  gamma: number;
+  /** Sputter yield Y (atoms/ion), already resolved with `sputterYield`. */
+  Y: number;
+  /** Erosion-zone radius of the target (m). */
+  targetRadius: number;
+  /** Target–substrate distance (m). */
+  distance: number;
+  /** Argon pressure (Pa). */
+  pressure: number;
+  /** Substrate temperature (K). */
+  substrateTemp: number;
+}
+
+/**
+ * The sputtering page's whole chain, SI in and out: discharge current I = P/V, target ion current, sputtered atom
+ * rate, on-axis flux and growth rate (m/s), Thompson peak energy, Westwood thermalisation at the peak energy,
+ * thermalisation energy E* at the substrate distance, the thermalised share of the Thompson distribution and the
+ * Movchan–Demchishin zone of the substrate (NaN at or above T_m).
+ */
+export function sputteringDeposition(t: SputterTarget, inp: SputteringDepositionInput) {
+  const { power, voltage, gamma, Y, targetRadius: a, distance: d, pressure: p, substrateTemp: Ts } = inp;
+  const I = power / voltage;
+  const Ii = targetIonCurrent(power, voltage, gamma);
+  const Phi = sputteredAtomRate(Ii, Y);
+  const F = diskOnAxisFlux(Phi, a, d);
+  const rate = growthRate(F, t.M, t.rho);
+  const ms = t.M / N_A;
+  const sigma = sputteredAtomDiameter(t.M * 1e3);
+  const peak = thompsonPeakEnergy(t.Us);
+  const th = thermalisationDistance(peak, p, SPUTTER_GAS_T, ms, sigma);
+  const Es = thermalisationEnergy(d, p, SPUTTER_GAS_T, ms, sigma);
+  const thermalised = thompsonFractionBelow(Es, t.Us);
+  return { I, Ii, Phi, F, rate, th, Es, thermalised, d, Ts, zone: structureZone(Ts, t.Tm), peak };
 }

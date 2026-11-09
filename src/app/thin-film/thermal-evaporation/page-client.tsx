@@ -7,8 +7,8 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { TORR } from "../../../physics/constants";
 import {
-  EVAPORANTS, FIT_T_MAX, airMeanFreePath, evaporationMassFlux, inFitRange, meanSpeed, structureZone,
-  surfaceSourceProfile, surfaceSourceRate, vapourPressure, type EvaporantId,
+  EVAPORANTS, FIT_T_MAX, evaporationMassFlux,
+  surfaceSourceRate, thermalEvaporation, vapourPressure, type EvaporantId,
 } from "../../../physics/thin-film/thermal-evaporation";
 
 const IDS = Object.keys(EVAPORANTS) as EvaporantId[];
@@ -51,24 +51,11 @@ export default function ThermalEvaporationPage() {
 
   const r = useMemo(() => {
     if (!valid) return null;
-    const h = sourceSubstrateDist * 1e-2;
-    const rs = (sourceDiameter / 2) * 1e-2;
-    const p = vapourPressure(ev, T);
-    const flux = evaporationMassFlux(p, ev.M, T, alpha);
-    const mfp = airMeanFreePath(chamberPressure * TORR);
-    return {
-      p,
-      fitOk: inFitRange(T, p),
-      flux,
-      rate: surfaceSourceRate(flux, Math.PI * rs * rs, ev.rho, h) * 1e9, // nm/s
-      edge: surfaceSourceProfile(substrateRadius * 1e-2, h),
-      mfp,
-      Kn: mfp / h,
-      speed: meanSpeed(ev.M, T),
-      homologous: (substrateTemp + 273.15) / ev.Tm,
-      zone: structureZone(substrateTemp + 273.15, ev.Tm),
-      bigSource: rs / h > 0.1,
-    };
+    const res = thermalEvaporation(ev, {
+      T, h: sourceSubstrateDist * 1e-2, sourceRadius: (sourceDiameter / 2) * 1e-2, substrateRadius: substrateRadius * 1e-2,
+      alpha, chamberPressure: chamberPressure * TORR, substrateTemp: substrateTemp + 273.15,
+    });
+    return { ...res, rate: res.rate * 1e9 }; // nm/s
   }, [valid, ev, T, sourceSubstrateDist, sourceDiameter, substrateRadius, alpha, chamberPressure, substrateTemp]);
 
   const sweepData = useMemo(() => {

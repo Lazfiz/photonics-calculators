@@ -5,19 +5,13 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { N_A, TORR } from "../../../physics/constants";
-import { structureZone } from "../../../physics/thin-film/thermal-evaporation";
+import { TORR } from "../../../physics/constants";
 import {
   SPUTTER_TARGETS,
   diskOnAxisFlux,
   growthRate,
-  sputteredAtomDiameter,
-  sputteredAtomRate,
-  targetIonCurrent,
-  thermalisationDistance,
-  thermalisationEnergy,
-  thompsonFractionBelow,
-  thompsonPeakEnergy,
+  sputterYield,
+  sputteringDeposition,
   type SputterTargetId,
 } from "../../../physics/thin-film/sputtering";
 
@@ -42,8 +36,7 @@ export default function SputteringDepositionPage() {
   const id: SputterTargetId = isId(targetParam) ? targetParam : "Al";
   const t = SPUTTER_TARGETS[id];
   const useTable = yieldParam === 0;
-  const Y = useTable ? t.Y500 : yieldParam;
-  const gasT = 300; // K
+  const Y = sputterYield(t, yieldParam);
 
   const errors = [
     !(power >= 0) && "the power can't be negative",
@@ -59,22 +52,10 @@ export default function SputteringDepositionPage() {
 
   const r = useMemo(() => {
     if (!valid) return null;
-    const a = targetRadius * 1e-2;
-    const d = distance * 1e-2;
-    const I = power / voltage;
-    const Ii = targetIonCurrent(power, voltage, gamma);
-    const Phi = sputteredAtomRate(Ii, Y);
-    const F = diskOnAxisFlux(Phi, a, d);
-    const rate = growthRate(F, t.M, t.rho); // m/s
-    const p = pressure * 1e-3 * TORR;
-    const ms = t.M / N_A;
-    const sigma = sputteredAtomDiameter(t.M * 1e3);
-    const peak = thompsonPeakEnergy(t.Us);
-    const th = thermalisationDistance(peak, p, gasT, ms, sigma);
-    const Es = thermalisationEnergy(d, p, gasT, ms, sigma);
-    const thermalised = thompsonFractionBelow(Es, t.Us);
-    const Ts = substrateTemp + 273.15;
-    return { I, Ii, Phi, F, rate, th, Es, thermalised, d, Ts, zone: structureZone(Ts, t.Tm), peak };
+    return sputteringDeposition(t, {
+      power, voltage, gamma, Y, targetRadius: targetRadius * 1e-2, distance: distance * 1e-2,
+      pressure: pressure * 1e-3 * TORR, substrateTemp: substrateTemp + 273.15,
+    });
   }, [valid, targetRadius, distance, power, voltage, gamma, Y, t, pressure, substrateTemp]);
 
   const sweepData = useMemo(() => {

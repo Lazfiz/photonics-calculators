@@ -5,10 +5,10 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { clampToRange } from "../../../lib/number-input";
-import { firstCrossing, intervalStats } from "../../../physics/math";
-import { edgeDesignWavelength, edgeFilterLayers, incoherentLosslessFaces } from "../../../physics/thin-film/edge-filter";
+import { incoherentLosslessFaces } from "../../../physics/thin-film/edge-filter";
 import { stopBandEdges } from "../../../physics/thin-film/quarter-wave-stack";
-import { stackResponse, type Stack } from "../../../physics/thin-film/transfer-matrix";
+import { stackResponse } from "../../../physics/thin-film/transfer-matrix";
+import { wideBandpassDesign, wideBandpassPassBand } from "../../../physics/thin-film/wide-bandpass";
 
 const NM = 1e-9;
 const nmText = (x: number) => (Number.isFinite(x) ? x.toFixed(1) : "—");
@@ -23,33 +23,19 @@ export default function WideBandpassPage() {
 
   // The URL isn't range-checked: an integer number of periods per stack in 1–40.
   const periods = Math.round(clampToRange(pairsRaw, 1, 40));
-  const valid = nH > nL && nL > 0 && nSub > 0 && cutOn > 0 && cutOff > cutOn;
-
   // Front face: long-pass edge at the cut-on. Back face: short-pass edge at the cut-off. Both stacks are
   // symmetric and lossless, so the back face reflects the same from the glass as from the air.
-  const lpLambda0 = valid ? edgeDesignWavelength("long-pass", cutOn * NM, nH, nL) : NaN;
-  const spLambda0 = valid ? edgeDesignWavelength("short-pass", cutOff * NM, nH, nL) : NaN;
-  const { front, back } = useMemo(() => {
-    const face = (layers: Stack["layers"]): Stack => ({ incident: 1, layers, substrate: { n: nSub } });
-    return {
-      front: face(edgeFilterLayers("long-pass", lpLambda0, nH, nL, periods)),
-      back: face(edgeFilterLayers("short-pass", spLambda0, nH, nL, periods)),
-    };
-  }, [lpLambda0, spLambda0, nH, nL, periods, nSub]);
+  const design = useMemo(
+    () => wideBandpassDesign({ nH, nL, nSub, cutOn: cutOn * NM, cutOff: cutOff * NM, periods }),
+    [nH, nL, nSub, cutOn, cutOff, periods],
+  );
+  const { valid, lpLambda0, spLambda0, front, back } = design;
 
   const results = useMemo(() => {
     if (!valid) return null;
-    const Tc = (wl: number) =>
-      incoherentLosslessFaces(stackResponse(front, wl * NM).R, stackResponse(back, wl * NM).R).T;
-    const lo = lpLambda0 / NM;
-    const hi = spLambda0 / NM;
-    // Scan from inside each reflection zone toward the pass band.
-    const zonesBlock = Tc(lo) < 0.5 && Tc(hi) < 0.5;
-    const on = zonesBlock ? firstCrossing(Tc, lo, hi, 0.5, 800) : NaN;
-    const off = zonesBlock ? firstCrossing(Tc, hi, lo, 0.5, 800) : NaN;
-    const pass = intervalStats(Tc, on, off, 1000);
-    return { on, off, pass };
-  }, [valid, front, back, lpLambda0, spLambda0]);
+    const { on, off, pass } = wideBandpassPassBand(design);
+    return { on: on / NM, off: off / NM, pass };
+  }, [valid, design]);
 
   const lpZone = stopBandEdges(lpLambda0, nH, nL);
   const spZone = stopBandEdges(spLambda0, nH, nL);

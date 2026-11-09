@@ -95,3 +95,48 @@ export function stoneyLayeredCurvature(
   const n = Math.max(1, Math.round(layers));
   return n * stoneyCurvature(sigmaF, tFperLayer, Es, nuS, tS);
 }
+
+export interface StressMeasurementInput {
+  /** Radius over which the deflection is measured (m). */
+  a: number;
+  /** Substrate thickness (m) and film thickness (m). */
+  tS: number;
+  tF: number;
+  /** Substrate Young's modulus (Pa) and Poisson ratio. */
+  Es: number;
+  nuS: number;
+  /** Film Young's modulus (Pa) and Poisson ratio. */
+  Ef: number;
+  nuF: number;
+  /** Expansion coefficients (1/K). */
+  alphaS: number;
+  alphaF: number;
+  /** Centre deflections before and after deposition (m), positive = film side concave. */
+  hBefore: number;
+  hAfter: number;
+  /** Deposition and measurement temperatures (same unit, only the difference is used). */
+  Tdep: number;
+  T: number;
+}
+
+/**
+ * The stress-measurement page's whole chain, SI in and out: Δκ from the two deflections, Stoney film stress,
+ * thermal-mismatch stress at T, intrinsic stress (their difference), force per width σ t_f, equibiaxial strain,
+ * stored energy per area and t_f/t_s.
+ */
+export function stressMeasurement(inp: StressMeasurementInput) {
+  const { a, tS, tF, Es, nuS, Ef, nuF, alphaS, alphaF, hBefore, hAfter, Tdep, T } = inp;
+  const deltaKappa = curvatureFromDeflection(hAfter, a) - curvatureFromDeflection(hBefore, a);
+  const stress = stoneyStress(deltaKappa, tF, Es, nuS, tS);
+  const thermal = thermalMismatchStress(Ef, nuF, alphaS, alphaF, T, Tdep);
+  return {
+    deltaKappa,
+    stress,
+    thermal,
+    intrinsic: stress - thermal,
+    forcePerWidth: stress * tF,
+    strain: biaxialStrain(stress, Ef, nuF),
+    energy: biaxialStrainEnergy(stress, tF, Ef, nuF),
+    thicknessRatio: tF / tS,
+  };
+}

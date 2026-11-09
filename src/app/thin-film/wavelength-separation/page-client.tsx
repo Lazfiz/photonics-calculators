@@ -6,8 +6,8 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { clampToRange } from "../../../lib/number-input";
-import { nonOverlappingRatio } from "../../../physics/thin-film/quarter-wave-stack";
-import { quarterWaveLayers, reflectanceSpectrum, stackResponse, type Layer } from "../../../physics/thin-film/transfer-matrix";
+import { reflectanceSpectrum, type Layer } from "../../../physics/thin-film/transfer-matrix";
+import { separationStackLayers, wavelengthSeparationSummary } from "../../../physics/thin-film/wavelength-separation";
 
 export default function WavelengthSeparationPage() {
   const [nH, setNH] = useURLState("nH", 2.35, { min: 1, max: 5 });
@@ -32,9 +32,8 @@ export default function WavelengthSeparationPage() {
     const lambdas = wls.map((wl) => wl * 1e-9);
 
     // (HL)^N quarter-wave stacks: A reflects λ₁, B reflects λ₂
-    const indices = Array.from({ length: numPairs * 2 }, (_, j) => (j % 2 === 0 ? nH : nL));
-    const layersA = quarterWaveLayers(indices, lambda1 * 1e-9);
-    const layersB = quarterWaveLayers(indices, lambda2 * 1e-9);
+    const layersA = separationStackLayers(nH, nL, numPairs, lambda1 * 1e-9);
+    const layersB = separationStackLayers(nH, nL, numPairs, lambda2 * 1e-9);
 
     // Combined: A on top of B
     const layersAB = [...layersA, ...layersB];
@@ -55,12 +54,9 @@ export default function WavelengthSeparationPage() {
   }, [nH, nL, nSub, nInc, numPairs, lambda1, lambda2]);
 
   // Stack A alone: R at λ₁ (reflected) and T = 1 − R at λ₂ (transmitted)
-  const indicesA = Array.from({ length: numPairs * 2 }, (_, j) => (j % 2 === 0 ? nH : nL));
-  const stackA = { incident: nInc, layers: quarterWaveLayers(indicesA, lambda1 * 1e-9), substrate: { n: nSub } };
-  const RA1 = stackResponse(stackA, lambda1 * 1e-9).R;
-  const TA2 = 1 - stackResponse(stackA, lambda2 * 1e-9).R;
-  const minRatio = nonOverlappingRatio(nH, nL);
-  const overlap = Number.isFinite(minRatio) && sepRatio < minRatio;
+  const { RA1, TA2, minRatio, overlap, layerCount } = wavelengthSeparationSummary({
+    nH, nL, nSub, nInc, pairs: numPairs, lambda1: lambda1 * 1e-9, lambda2: lambda2 * 1e-9,
+  });
   const pct = (x: number) => (Number.isFinite(x) ? `${(x * 100).toFixed(2)}%` : "—");
 
   return (
@@ -86,7 +82,7 @@ export default function WavelengthSeparationPage() {
             λ₂/λ₁ = {sepRatio.toFixed(3)} is below {minRatio.toFixed(3)}: the stop bands overlap.
           </p>
         )}
-        <p className="text-gray-300">Total layers (combined) = <span className="text-blue-400 font-mono">{numPairs * 4}</span></p>
+        <p className="text-gray-300">Total layers (combined) = <span className="text-blue-400 font-mono">{layerCount}</span></p>
         <p className="text-gray-300 text-xs mt-2">Each stack: (HL)<sup>N</sup>. Combined: Stack₁ | Stack₂ on substrate.</p>
       </div>
 
