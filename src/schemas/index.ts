@@ -204,7 +204,18 @@ import notchFilter from "./thin-film/notch-filter";
 import partialReflector from "./thin-film/partial-reflector";
 import phaseShiftCoating from "./thin-film/phase-shift-coating";
 import plasmaDeposition from "./thin-film/plasma-deposition";
+import protectedSilver from "./thin-film/protected-silver";
+import quarterWave from "./thin-film/quarter-wave";
 import singleAr from "./thin-film/single-ar";
+import solarProtection from "./thin-film/solar-protection";
+import spectrophotometry from "./thin-film/spectrophotometry";
+import sputteringDeposition from "./thin-film/sputtering-deposition";
+import stressMeasurement from "./thin-film/stress-measurement";
+import thermalEvaporation from "./thin-film/thermal-evaporation";
+import uvBlocking from "./thin-film/uv-blocking";
+import wavelengthSeparation from "./thin-film/wavelength-separation";
+import wedgeFilm from "./thin-film/wedge-film";
+import wideBandpass from "./thin-film/wide-bandpass";
 import type { CalculatorSchema } from "./types";
 import abcdMatrix from "./wave-optics/abcd-matrix";
 import attosecondPulse from "./wave-optics/attosecond-pulse";
@@ -283,7 +294,9 @@ export const schemas: readonly CalculatorSchema[] = [
   coatingStress, coldMirror, dichroic, dielectricHighReflector, dielectricStack, doubleLayerAr, dualBandAr, edgeFilter,
   ellipsometryMeasurement, emissivityControl, enhancedAluminum, environmentalStability, fabryPerotFilter, gradientIndex,
   hardCoating, heatMirror, interferenceConditions, ionAssistedDeposition, irBlocking, metalDielectric, narrowBandpass,
-  notchFilter, partialReflector, phaseShiftCoating, plasmaDeposition,
+  notchFilter, partialReflector, phaseShiftCoating, plasmaDeposition, protectedSilver, quarterWave, solarProtection,
+  spectrophotometry, sputteringDeposition, stressMeasurement, thermalEvaporation, uvBlocking, wavelengthSeparation,
+  wedgeFilm, wideBandpass,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));
