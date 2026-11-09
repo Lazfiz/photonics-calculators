@@ -5,7 +5,7 @@ import ChartPanel from "./chart-panel";
 import ValidatedNumberInput from "./validated-number-input";
 import { useURLState } from "../hooks/use-url-state";
 import { clampToRange } from "../lib/number-input";
-import { cavityFilterLayers, cavityPassband } from "../physics/thin-film/cavity-filter";
+import { cavityFilterSummary } from "../physics/thin-film/cavity-filter";
 import { stopBandHalfWidth } from "../physics/thin-film/quarter-wave-stack";
 import { stackResponse } from "../physics/thin-film/transfer-matrix";
 
@@ -60,10 +60,8 @@ export default function CavityBandpassCalculator({ defaults, pairsKey, maxPairs 
   const dg = stopBandHalfWidth(nH, nL);
   const result = useMemo(() => {
     if (!valid) return null;
-    const layers = cavityFilterLayers({ nH, nL, nSpacer: spacerN, mirrorPairs: pairs, cavities, spacerQuarterWaves: 2, lambda0 });
-    const stack = { incident: 1, layers, substrate: { n: nSub } };
-    return { stack, layerCount: layers.length, band: cavityPassband(stack, lambda0, dg), T0: stackResponse(stack, lambda0).T };
-  }, [valid, nH, nL, spacerN, pairs, cavities, lambda0, nSub, dg]);
+    return cavityFilterSummary({ nH, nL, nSpacer: spacerN, mirrorPairs: pairs, cavities, lambda0, nSub });
+  }, [valid, nH, nL, spacerN, pairs, cavities, lambda0, nSub]);
 
   const band = result?.band;
   const fwhm = band ? band.long - band.short : NaN;

@@ -43,6 +43,16 @@ export function nonOverlappingRatio(nH: number, nL: number): number {
 }
 
 /**
+ * Cosine of the propagation angle in a layer of index n (Snell): cos θₙ = √(1 − (n₀ sin θ₀/n)²), for incidence
+ * angle θ₀ (rad) from a medium of index n₀. NaN unless n₀, n > 0, 0 ≤ θ₀ < π/2 and n₀ sin θ₀ < n (light propagates).
+ */
+export function cosAngleInLayer(incident: number, n: number, angle: number): number {
+  if (!(incident > 0 && n > 0 && angle >= 0 && angle < Math.PI / 2)) return NaN;
+  const s = incident * Math.sin(angle);
+  return s < n ? Math.sqrt(1 - (s / n) ** 2) : NaN;
+}
+
+/**
  * Zone centre (m) at angle of incidence θ₀ (rad) from an incident medium of index n₀, for layers that
  * are quarter waves at λ₀ at normal incidence. A layer's phase thickness is (π/2)(λ₀/λ) cos θᵢ with
  * cos θᵢ = √(1 − (n₀ sin θ₀/nᵢ)²) (Snell); the period's phase is π at λ_c = λ₀ (cos θ_H + cos θ_L)/2.

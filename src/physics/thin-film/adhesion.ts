@@ -112,3 +112,13 @@ export function bendTest(hs: number, R: number, Ef: number, nuf: number, h: numb
   const w = stress >= 0 ? (stress * stress * h) / Ebar : NaN;
   return { strain, stress, channelG: 1.976 * w, delaminationG: 0.5 * w };
 }
+
+/**
+ * Share of the Kendall peel energy that is elastic stretching of the peel arm, (F/b)² / (2 E h) / G (0–1).
+ * NaN when G is not positive or an input is invalid (same domain as `kendallPeelEnergy`).
+ */
+export function kendallStretchShare(forcePerWidth: number, theta: number, E: number, h: number): number {
+  const G = kendallPeelEnergy(forcePerWidth, theta, E, h);
+  if (!(G > 0)) return NaN;
+  return (forcePerWidth * forcePerWidth) / (2 * E * h) / G;
+}

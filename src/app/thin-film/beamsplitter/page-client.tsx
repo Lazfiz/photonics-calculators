@@ -7,11 +7,12 @@ import { useURLState } from "../../../hooks/use-url-state";
 import { clampToRange } from "../../../lib/number-input";
 import {
   middleIndexForReflectance,
+  quarterWaveLadderReflectance,
   singleLayerIndexForReflectance,
   tunedSplitter,
   tunedSplitterLayers,
 } from "../../../physics/thin-film/beamsplitter";
-import { quarterWaveLayers, quarterWaveStackReflectance, reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
+import { quarterWaveLayers, reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
 import { normalIncidenceReflectance } from "../../../physics/polarization/fresnel";
 
 const NM = 1e-9;
@@ -38,7 +39,7 @@ export default function BeamsplitterPage() {
   // Quarter-wave stacks H(LH)^m, m = 0…3.
   const ladder = STACK_NAMES.map((name, m) => ({
     name,
-    R: valid ? quarterWaveStackReflectance(nInc, Array.from({ length: 2 * m + 1 }, (_, j) => (j % 2 === 0 ? nH : nL)), nSub) : NaN,
+    R: valid ? quarterWaveLadderReflectance(m, nH, nL, nInc, nSub) : NaN,
   }));
   const design = useMemo(() => (valid ? tunedSplitter(target, nH, nL, nInc, nSub, lambda0) : null), [valid, target, nH, nL, nInc, nSub, lambda0]);
 

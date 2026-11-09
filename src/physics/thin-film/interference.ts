@@ -102,3 +102,16 @@ export function firstReflectionExtrema(
   const opd = 2 * nFilm * thickness;
   return phase === 0 ? { constructive: opd, destructive: 2 * opd } : { constructive: 2 * opd, destructive: opd };
 }
+
+/**
+ * Face amplitude reflection coefficients at normal incidence (Fresnel, r = (n_a − n_b)/(n_a + n_b)), the Airy
+ * coefficient of finesse of a film between media n₁ and n₂ and its finesse ℱ = FSR/FWHM = 2π / (4 asin(1/√F)).
+ * The finesse is NaN for F < 1 (T never falls to half its peak); all NaN unless the indices are > 0.
+ */
+export function filmFaceSummary(n1: number, nFilm: number, n2: number): { r01: number; r12: number; F: number; finesse: number } {
+  if (!(n1 > 0 && nFilm > 0 && n2 > 0)) return { r01: NaN, r12: NaN, F: NaN, finesse: NaN };
+  const r01 = (n1 - nFilm) / (n1 + nFilm);
+  const r12 = (nFilm - n2) / (nFilm + n2);
+  const F = coefficientOfFinesse(r01 ** 2, r12 ** 2);
+  return { r01, r12, F, finesse: (2 * Math.PI) / airyPeakWidth(F) };
+}

@@ -84,3 +84,14 @@ export function delaminationThickness(toughness: number, sigma: number, Ef: numb
   if (sigma === 0) return Infinity;
   return (toughness * Ef) / ((1 - nuF) * sigma * sigma);
 }
+
+/**
+ * Curvature of a substrate carrying N identical layers (stress σ_f, thickness t_f each): the forces σ_f t_f add,
+ * so κ = N × the one-layer Stoney curvature. N is rounded to a whole number of at least 1.
+ */
+export function stoneyLayeredCurvature(
+  sigmaF: number, tFperLayer: number, layers: number, Es: number, nuS: number, tS: number,
+): number {
+  const n = Math.max(1, Math.round(layers));
+  return n * stoneyCurvature(sigmaF, tFperLayer, Es, nuS, tS);
+}

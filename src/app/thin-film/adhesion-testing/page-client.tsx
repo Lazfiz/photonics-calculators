@@ -12,6 +12,7 @@ import {
   benjaminWeaverMaxLoad,
   bendTest,
   kendallPeelEnergy,
+  kendallStretchShare,
   tapeClass,
 } from "../../../physics/thin-film/adhesion";
 
@@ -81,7 +82,7 @@ export default function AdhesionTestingPage() {
   const scratch = useMemo(() => benjaminWeaver(criticalLoad, R_tip, H), [criticalLoad, R_tip, H]);
   const maxLoad = benjaminWeaverMaxLoad(R_tip, H);
   const peelG = kendallPeelEnergy(peelForce, (peelAngle * Math.PI) / 180, armModulus * 1e9, armThickness * 1e-6);
-  const peelStretch = (peelForce * peelForce) / (2 * armModulus * 1e9 * armThickness * 1e-6);
+  const peelShare = kendallStretchShare(peelForce, (peelAngle * Math.PI) / 180, armModulus * 1e9, armThickness * 1e-6);
   const cls = tapeClass(removed);
   const bend = useMemo(
     () => bendTest(substrateThickness * 1e-3, bendRadius * 1e-3, filmModulus * 1e9, filmPoisson, filmThickness * 1e-9, residualStress * 1e6),
@@ -204,7 +205,7 @@ export default function AdhesionTestingPage() {
       {valid && method === "peel" && (
         <div className="grid gap-4 sm:grid-cols-2 mb-6">
           <ResultCard label="Interfacial fracture energy G" value={fmt(peelG, 2, " J/m²")} tone="yellow" subtext="Kendall: F/b (1 − cos θ) + (F/b)² / (2Eh)" />
-          <ResultCard label="Peel-arm stretching share" value={fmt(peelG > 0 ? (100 * peelStretch) / peelG : NaN, 2, " %")} tone="cyan" subtext="(F/b)² / (2Eh) as a share of G" />
+          <ResultCard label="Peel-arm stretching share" value={fmt(100 * peelShare, 2, " %")} tone="cyan" subtext="(F/b)² / (2Eh) as a share of G" />
         </div>
       )}
 

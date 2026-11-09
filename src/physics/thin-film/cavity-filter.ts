@@ -16,6 +16,7 @@
  * bandpass filters ch. 8.
  */
 import { firstCrossing, goldenSectionMax } from "../math";
+import { stopBandHalfWidth } from "./quarter-wave-stack";
 import { quarterWaveThickness, stackResponse, type Layer, type Stack } from "./transfer-matrix";
 
 export interface CavityFilterDesign {
@@ -114,4 +115,41 @@ export function cavityPassband(stack: Stack, lambda0: number, span: number): Pas
     }
   }
   return none;
+}
+
+export interface CavityFilterSummary {
+  /** The stack (incident air, substrate nSub). */
+  stack: Stack;
+  /** Layers in the stack. */
+  layerCount: number;
+  /** Transmittance at λ₀. */
+  T0: number;
+  /** Pass band from `cavityPassband` (NaN fields if T never falls to half within the mirrors' zone). */
+  band: Passband;
+}
+
+/**
+ * The page's whole calculation: half-wave-spacer cavities (`cavityFilterLayers`, q = 2) on a substrate of index
+ * nSub in air, T at λ₀ and the pass band searched within the mirrors' zone half-width Δg = `stopBandHalfWidth`.
+ * null unless n_H > n_L > 0, nSub > 0, nSpacer > 0 and λ₀ > 0 (m); NaN fields for a non-integer mirrorPairs or cavities.
+ */
+export function cavityFilterSummary(p: {
+  nH: number;
+  nL: number;
+  nSub: number;
+  nSpacer: number;
+  mirrorPairs: number;
+  cavities: number;
+  lambda0: number;
+}): CavityFilterSummary | null {
+  const { nH, nL, nSub, nSpacer, mirrorPairs, cavities, lambda0 } = p;
+  if (!(nH > nL && nL > 0 && nSub > 0 && nSpacer > 0 && lambda0 > 0)) return null;
+  const layers = cavityFilterLayers({ nH, nL, nSpacer, mirrorPairs, cavities, spacerQuarterWaves: 2, lambda0 });
+  const stack = { incident: 1, layers, substrate: { n: nSub } };
+  return {
+    stack,
+    layerCount: layers.length,
+    T0: stackResponse(stack, lambda0).T,
+    band: cavityPassband(stack, lambda0, stopBandHalfWidth(nH, nL)),
+  };
 }

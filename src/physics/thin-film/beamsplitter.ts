@@ -10,7 +10,7 @@
  * layer maps the admittance Y → n²/Y; admittance loci of a layer are circles) and ch. 5 (beam splitters).
  */
 import { firstCrossing } from "../math";
-import { quarterWaveThickness, stackResponse, type Layer } from "./transfer-matrix";
+import { quarterWaveStackReflectance, quarterWaveThickness, stackResponse, type Layer } from "./transfer-matrix";
 
 /**
  * Index of a single quarter-wave layer with reflectance R at λ₀ (normal incidence):
@@ -47,6 +47,15 @@ export function tunedSplitterLayers(nH: number, nL: number, m: number, x: number
   if (m === 0) return [{ ...H, thickness: x * H.thickness }];
   const rest = Array.from({ length: m - 1 }, () => [L, H]).flat();
   return [H, { ...L, thickness: x * L.thickness }, H, ...rest];
+}
+
+/**
+ * R at λ₀ of the quarter-wave stack H(LH)^m (2m + 1 layers, normal incidence), from
+ * `quarterWaveStackReflectance`. NaN unless m is an integer ≥ 0.
+ */
+export function quarterWaveLadderReflectance(m: number, nH: number, nL: number, incident: number, substrate: number): number {
+  if (!(Number.isInteger(m) && m >= 0)) return NaN;
+  return quarterWaveStackReflectance(incident, Array.from({ length: 2 * m + 1 }, (_, j) => (j % 2 === 0 ? nH : nL)), substrate);
 }
 
 export interface TunedSplitter {
