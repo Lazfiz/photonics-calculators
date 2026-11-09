@@ -5,7 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  DOPANT_PRESETS, absorptionDbPerM, amplifier, fullInversionGainDb, intrinsicSaturationPower, twoLevelAt,
+  DOPANT_PRESETS, amplifierSummary, twoLevelAt,
   type Beam, type DopedFiber,
 } from "../../../physics/fiber-optics/doped-fiber-gain";
 
@@ -98,21 +98,24 @@ export default function FiberAmplifierCalculator() {
   ], [lp_nm, ls_nm, sap, sep, sas, ses, gp, gs, signal_dBm]);
 
   const calc = useMemo(() => {
-    const beams = beamsAt(pump_mW * 1e-3);
-    const amp = amplifier(fiber, beams, L, 1);
+    const r = amplifierSummary({
+      length: L, pumpPower: pump_mW * 1e-3, signalDbm: signal_dBm, N, coreRadius: r_um * 1e-6, overlapPump: gp, overlapSignal: gs,
+      pumpLambda: lp_nm * 1e-9, signalLambda: ls_nm * 1e-9, sigmaAPump: sap, sigmaEPump: sep, sigmaASignal: sas, sigmaESignal: ses,
+      tau: tau_ms * 1e-3,
+    });
     return {
-      gain: dB(amp.gain),
-      outDbm: dB(amp.powers[1] * 1e3),
-      pumpOut: amp.powers[0] * 1e3,
-      nf: dB(amp.noiseFigure),
-      fullInv: fullInversionGainDb(gs, ses, N, L),
-      alphaP: absorptionDbPerM(gp, sap, N),
-      alphaS: absorptionDbPerM(gs, sas, N),
-      pSat: intrinsicSaturationPower(ls_nm * 1e-9, fiber.area, gs, sas, ses, fiber.tau) * 1e3,
-      n2In: twoLevelAt(fiber, beams, 0).inversion,
-      n2Out: twoLevelAt(fiber, beams, L).inversion,
+      gain: r.gainDb,
+      outDbm: r.outputDbm,
+      pumpOut: r.pumpOut * 1e3,
+      nf: r.noiseFigureDb,
+      fullInv: r.fullInversionDb,
+      alphaP: r.alphaPumpDbPerM,
+      alphaS: r.alphaSignalDbPerM,
+      pSat: r.signalSaturationPower * 1e3,
+      n2In: r.n2In,
+      n2Out: r.n2Out,
     };
-  }, [beamsAt, fiber, pump_mW, L, gs, ses, N, gp, sap, sas, ls_nm]);
+  }, [L, pump_mW, signal_dBm, N, r_um, gp, gs, lp_nm, ls_nm, sap, sep, sas, ses, tau_ms]);
 
   const charts = useMemo(() => {
     const gainOf = (pumpW: number, z: number) => {

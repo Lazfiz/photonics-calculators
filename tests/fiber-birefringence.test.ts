@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   BEND_C_SILICA, beatLength, bendBirefringence, crossPolarizedRatio, dgdPerLength, fibreCrosstalkDb, geometricBirefringence,
-  geometricG, geometricGroupG, lengthToRatio, loopDiameterFor, loopRetardance, paddleStates, ratioFromDb, ratioToDb,
+  fiberBirefringence, geometricG, geometricGroupG, lengthToRatio, loopDiameterFor, loopRetardance, paddleStates, ratioFromDb, ratioToDb,
 } from "../src/physics/fiber-optics/fiber-birefringence";
 import { lp01Mode } from "../src/physics/fiber-optics/macro-bending-loss";
 import { besselJ as J, besselK as K } from "../src/physics/math";
@@ -157,4 +157,17 @@ test("paddle chain uses mueller.ts signs", () => {
   const s = paddleStates([1, 0.6, 0, 0.8], [Math.PI / 2, Math.PI, Math.PI / 2].map((retardance) => ({ retardance, fastAxis: 0 })));
   assert.equal(s.length, 4);
   for (let i = 0; i < 4; i++) assert.ok(Math.abs(s[3][i] - [1, 0.6, 0, 0.8][i]) < 1e-12, "full wave");
+});
+
+test("fiberBirefringence: a round core leaves only the stress term (B = B_g = 5e-4, L_B = λ/B, DGD = B/c)", () => {
+  const r = fiberBirefringence({ a: 4.5e-6, n1: 1.468, n2: 1.463, ellipticity: 0 }, 1550e-9, 5e-4);
+  assert.equal(r.geo.B, 0);
+  assertRel(r.B, 5e-4, 1e-12, "B");
+  assertRel(r.groupB, 5e-4, 1e-12, "group B");
+  assertRel(r.beatLength, 3.1e-3, 1e-12, "beat length"); // 1550e-9 / 5e-4
+  assertRel(r.dgd, 5e-4 / 299792458, 1e-12, "DGD");
+  assertRel(r.NA, Math.sqrt(1.468 ** 2 - 1.463 ** 2), 1e-12, "NA");
+  // Edge: no birefringence at all gives an infinite beat length; n1 <= n2 gives NaN.
+  assert.equal(fiberBirefringence({ a: 4.5e-6, n1: 1.468, n2: 1.463, ellipticity: 0 }, 1550e-9).beatLength, Infinity);
+  assert.ok(Number.isNaN(fiberBirefringence({ a: 4.5e-6, n1: 1.46, n2: 1.463, ellipticity: 0.02 }, 1550e-9).B));
 });

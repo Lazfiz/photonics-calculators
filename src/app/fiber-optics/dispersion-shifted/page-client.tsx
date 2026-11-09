@@ -5,8 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import {
-  FIBER_PRESETS, G652_LAMBDA0, G652_S0, type FiberPresetKey, channelAt, dispersionLimitedLength, linearZeroDispersionWavelength,
-  presetDispersion, sellmeierSlope,
+  FIBER_PRESETS, type FiberPresetKey, presetDispersion, presetLinkSummary,
 } from "../../../physics/fiber-optics/chromatic-dispersion";
 
 const nm = 1e-9, km = 1e3;
@@ -30,13 +29,7 @@ export default function DispersionShiftedCalculator() {
   const valid = wavelength >= BAND_MIN && wavelength <= BAND_MAX && fiberLength > 0 && bitRate > 0 && sigmaLambda >= 0;
 
   const calc = useMemo(() => {
-    const preset = FIBER_PRESETS[key];
-    const lam = wavelength * nm;
-    const D = presetDispersion(key, lam);
-    const S = key === "G652" ? sellmeierSlope(lam, G652_LAMBDA0, G652_S0) : preset.S;
-    const lambda0 = key === "G652" ? G652_LAMBDA0 : linearZeroDispersionWavelength(preset);
-    const Lmax = dispersionLimitedLength(channelAt({ D, S }, lam, sigmaLambda * nm), bitRate * 1e9);
-    return { D, S, lambda0, Lmax, total: D * fiberLength * km, loss: preset.alphaDbPerKm * fiberLength };
+    return presetLinkSummary(key, wavelength * nm, fiberLength * km, sigmaLambda * nm, bitRate * 1e9);
   }, [key, wavelength, fiberLength, bitRate, sigmaLambda]);
 
   const plotData = useMemo(() => {

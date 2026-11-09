@@ -277,3 +277,64 @@ export function optimumOutputCoupler(g0L: number, R1: number): { R2: number; out
   const R2 = 0.5 * (lo + hi);
   return { R2, output: rigrodOutput(g0L, R1, R2) };
 }
+
+/** Inputs of a co-propagating pump + signal amplifier, all SI (signal power in dBm). */
+export interface AmplifierSpec {
+  /** Doped length, m. */
+  readonly length: number;
+  /** Launched pump power, W. */
+  readonly pumpPower: number;
+  /** Input signal power, dBm. */
+  readonly signalDbm: number;
+  /** Ion density N, m⁻³. */
+  readonly N: number;
+  /** Doped-core radius, m (area πr²). */
+  readonly coreRadius: number;
+  readonly overlapPump: number;
+  readonly overlapSignal: number;
+  readonly pumpLambda: number;
+  readonly signalLambda: number;
+  readonly sigmaAPump: number;
+  readonly sigmaEPump: number;
+  readonly sigmaASignal: number;
+  readonly sigmaESignal: number;
+  /** Upper-state lifetime, s. */
+  readonly tau: number;
+}
+
+/** Results of {@link amplifierSummary}; gains and the noise figure in dB, powers in W, absorption in dB/m. */
+export interface AmplifierSummary {
+  readonly gainDb: number;
+  readonly outputDbm: number;
+  readonly pumpOut: number;
+  readonly noiseFigureDb: number;
+  readonly fullInversionDb: number;
+  readonly alphaPumpDbPerM: number;
+  readonly alphaSignalDbPerM: number;
+  readonly signalSaturationPower: number;
+  readonly n2In: number;
+  readonly n2Out: number;
+}
+
+/** The amplifier page's headline numbers: gain, output, noise figure, absorption, saturation power and inversion. */
+export function amplifierSummary(s: AmplifierSpec): AmplifierSummary {
+  const fiber: DopedFiber = { N: s.N, area: Math.PI * s.coreRadius ** 2, tau: s.tau };
+  const beams: Beam[] = [
+    { lambda: s.pumpLambda, sigmaA: s.sigmaAPump, sigmaE: s.sigmaEPump, overlap: s.overlapPump, power: s.pumpPower },
+    { lambda: s.signalLambda, sigmaA: s.sigmaASignal, sigmaE: s.sigmaESignal, overlap: s.overlapSignal, power: 1e-3 * 10 ** (s.signalDbm / 10) },
+  ];
+  const amp = amplifier(fiber, beams, s.length, 1);
+  const dB = (x: number) => 10 * Math.log10(x);
+  return {
+    gainDb: dB(amp.gain),
+    outputDbm: dB(amp.powers[1] * 1e3),
+    pumpOut: amp.powers[0],
+    noiseFigureDb: dB(amp.noiseFigure),
+    fullInversionDb: fullInversionGainDb(s.overlapSignal, s.sigmaESignal, s.N, s.length),
+    alphaPumpDbPerM: absorptionDbPerM(s.overlapPump, s.sigmaAPump, s.N),
+    alphaSignalDbPerM: absorptionDbPerM(s.overlapSignal, s.sigmaASignal, s.N),
+    signalSaturationPower: intrinsicSaturationPower(s.signalLambda, fiber.area, s.overlapSignal, s.sigmaASignal, s.sigmaESignal, s.tau),
+    n2In: twoLevelAt(fiber, beams, 0).inversion,
+    n2Out: twoLevelAt(fiber, beams, s.length).inversion,
+  };
+}

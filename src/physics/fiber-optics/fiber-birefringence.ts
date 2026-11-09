@@ -31,6 +31,7 @@ import { besselJ } from "../math";
 import { applyMueller, muellerRetarder } from "../polarization/mueller";
 import type { Stokes } from "../polarization/stokes";
 import { LP11_CUTOFF_V, MIN_V, lp01Mode } from "./macro-bending-loss";
+import { numericalAperture } from "./step-index-modes";
 
 /** Ulrich's bend-birefringence coefficient of silica fibre, B = C (r/R)². */
 export const BEND_C_SILICA = 0.133;
@@ -166,4 +167,36 @@ export function lengthToRatio(eps0: number, epsTarget: number, h: number): numbe
   if (h === 0) return Infinity;
   const lnR = (e: number) => Math.log1p((-2 * e) / (1 + e));
   return (lnR(eps0) - lnR(epsTarget)) / (2 * h);
+}
+
+export interface FiberBirefringenceSummary {
+  geo: GeometricBirefringence;
+  /** Numerical aperture √(n₁² − n₂²); NaN unless n₁ > n₂. */
+  NA: number;
+  /** Total phase birefringence: geometric plus stress, same axes. */
+  B: number;
+  /** Total group birefringence; stress birefringence is nearly independent of λ, so its group value equals its phase value. */
+  groupB: number;
+  /** Beat length λ/|B|, m (Infinity for B = 0). */
+  beatLength: number;
+  /** Differential group delay per length, s/m. */
+  dgd: number;
+}
+
+/**
+ * Elliptical-core fibre with an added stress birefringence `stressB` (dimensionless, same axes as the geometric
+ * term): totals, beat length and uncoupled DGD per length.
+ */
+export function fiberBirefringence(f: EllipticalCoreFiber, lambda: number, stressB = 0): FiberBirefringenceSummary {
+  const geo = geometricBirefringence(f, lambda);
+  const B = geo.B + stressB;
+  const groupB = geo.groupB + stressB;
+  return {
+    geo,
+    NA: f.n1 > f.n2 ? numericalAperture(f.n1, f.n2) : NaN,
+    B,
+    groupB,
+    beatLength: beatLength(B, lambda),
+    dgd: dgdPerLength(groupB),
+  };
 }

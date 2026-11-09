@@ -6,8 +6,8 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  FWHM_TO_RMS, beta2FromD, beta3FromDS, dispersionLength, gaussianPulseRmsWidth, sellmeierDispersion, sellmeierSlope,
-  optimumOutputRmsWidth, sigmaOmegaFromLambda, transformLimitedBitRate,
+  FWHM_TO_RMS, beta2FromD, beta3FromDS, gaussianPulseRmsWidth, sellmeierDispersion, sellmeierPulseSummary, sellmeierSlope,
+  sigmaOmegaFromLambda,
 } from "../../../physics/fiber-optics/chromatic-dispersion";
 import { addedRmsBroadening, dispersionPenaltyDb } from "../../../physics/fiber-optics/dispersion-comp";
 
@@ -30,24 +30,10 @@ export default function ChromaticDispersionPage() {
 
   const calc = useMemo(() => {
     if (!valid) return null;
-    const lam = wavelength * nm, L = length * km, sl = sigmaLambda * nm;
-    const D = sellmeierDispersion(lam, lambda0 * nm, S0 * PS_NM2_KM);
-    const S = sellmeierSlope(lam, lambda0 * nm, S0 * PS_NM2_KM);
-    const beta2 = beta2FromD(D, lam);
-    const beta3 = beta3FromDS(D, S, lam);
-    const sigma0 = pulseFwhm * ps * FWHM_TO_RMS;
-    const sigmaOmega = sigmaOmegaFromLambda(sl, lam);
-    const sigmaOut = gaussianPulseRmsWidth({ sigma0, beta2, beta3, L, sigmaOmega });
-    const sigmaAdded = addedRmsBroadening(sigmaOut, sigma0);
-    return {
-      D, S, beta2, beta3, sigma0, sigmaOut, sigmaAdded,
-      V: 2 * sigmaOmega * sigma0,
-      atZero: Math.abs(D) < 1e-12,
-      LD: dispersionLength(Math.SQRT2 * sigma0, beta2),
-      bOptimum: 1 / (4 * optimumOutputRmsWidth(beta2, beta3, L, sigmaOmega)),
-      bCoherent: transformLimitedBitRate(beta2, L),
-      penalty: dispersionPenaltyDb(bitRate * 1e9, sigmaAdded),
-    };
+    return sellmeierPulseSummary({
+      lambda: wavelength * nm, lambda0: lambda0 * nm, S0: S0 * PS_NM2_KM, L: length * km, sigmaLambda: sigmaLambda * nm,
+      pulseFwhm: pulseFwhm * ps, bitRate: bitRate * 1e9,
+    });
   }, [valid, S0, lambda0, length, wavelength, sigmaLambda, pulseFwhm, bitRate]);
 
   const spectralData = useMemo(() => {

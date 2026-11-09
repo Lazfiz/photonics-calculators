@@ -1,6 +1,17 @@
 // Every calculator the API can run, by registry href. tests/api-schemas.test.ts checks each against its page.
+import attenuation from "./fiber-optics/attenuation";
+import bendInsensitive from "./fiber-optics/bend-insensitive";
+import birefringenceFiber from "./fiber-optics/birefringence-fiber";
+import fiberChromaticDispersion from "./fiber-optics/chromatic-dispersion";
+import connectorInsertionLoss from "./fiber-optics/connector-insertion-loss";
+import connectorReturnLoss from "./fiber-optics/connector-return-loss";
 import couplingEfficiency from "./fiber-optics/coupling-efficiency";
+import dShapedFiber from "./fiber-optics/d-shaped-fiber";
+import dispersionComp from "./fiber-optics/dispersion-comp";
 import dispersionMap from "./fiber-optics/dispersion-map";
+import dispersionShifted from "./fiber-optics/dispersion-shifted";
+import fiberAmplifier from "./fiber-optics/fiber-amplifier";
+import fiberBandwidth from "./fiber-optics/fiber-bandwidth";
 import acquisitionTracking from "./free-space-comms/acquisition-tracking";
 import adaptiveOptics from "./free-space-comms/adaptive-optics";
 import apertureAveraging from "./free-space-comms/aperture-averaging";
@@ -297,6 +308,8 @@ export const schemas: readonly CalculatorSchema[] = [
   notchFilter, partialReflector, phaseShiftCoating, plasmaDeposition, protectedSilver, quarterWave, solarProtection,
   spectrophotometry, sputteringDeposition, stressMeasurement, thermalEvaporation, uvBlocking, wavelengthSeparation,
   wedgeFilm, wideBandpass,
+  attenuation, bendInsensitive, birefringenceFiber, fiberChromaticDispersion, connectorInsertionLoss, connectorReturnLoss,
+  dShapedFiber, dispersionComp, dispersionShifted, fiberAmplifier, fiberBandwidth,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));

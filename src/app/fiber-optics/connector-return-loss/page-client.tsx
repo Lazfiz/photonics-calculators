@@ -5,22 +5,13 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { angledFaceReflectance, returnLossDb } from "../../../physics/fiber-optics/gaussian-coupling";
+import { IEC_RL_GRADES, angledFaceReflectance, returnLossDb } from "../../../physics/fiber-optics/gaussian-coupling";
 
 const DEG = Math.PI / 180;
 const ANGLE_PRESETS = [
   { label: "Flat / PC (0°)", angle: 0 },
   { label: "APC (8°)", angle: 8 },
 ];
-// IEC 61753-1 single-mode return-loss grades for a mated connection, random mate (grade 1: 55 dB unmated).
-// Source: P. Kolesar, IEEE 802.3bm SMF ad hoc, 30 Apr 2013, slide 6.
-const RL_GRADES = [
-  { grade: "1", rl: 60, note: "APC" },
-  { grade: "2", rl: 45, note: "" },
-  { grade: "3", rl: 35, note: "" },
-  { grade: "4", rl: 26, note: "" },
-];
-
 export default function ConnectorReturnLossPage() {
   const [n1, setN1] = useURLState("n1", 1.447, { min: 1.0, max: 2.0 }); // phase index of SMF-28 at 1550 nm (1.4682 is its group index)
   const [n2, setN2] = useURLState("n2", 1.0, { min: 1.0, max: 2.0 });
@@ -103,7 +94,7 @@ export default function ConnectorReturnLossPage() {
           here for 8°.</p>
         <p>This is the open (unmated) end face against a medium of index n₂. A mated physical-contact connector has no gap;
           its return loss is set by polish quality and is specified by grade (IEC 61753-1, random mate):{" "}
-          {RL_GRADES.map((g) => `grade ${g.grade} ≥ ${g.rl} dB${g.note ? ` (${g.note})` : ""}`).join(", ")}.</p>
+          {Object.entries(IEC_RL_GRADES).map(([grade, g]) => `grade ${grade} ≥ ${g.rl} dB${g.note ? ` (${g.note})` : ""}`).join(", ")}.</p>
       </div>
     </>
   );

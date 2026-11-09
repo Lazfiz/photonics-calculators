@@ -5,19 +5,14 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { evanescentIntensityRatio, lp01PowerBeyondPlane } from "../../../physics/fiber-optics/coupled-mode";
-import { LP11_CUTOFF_V, MIN_V, lp01Mode, vNumber } from "../../../physics/fiber-optics/macro-bending-loss";
-import { effectiveIndex, numericalAperture, petermannIIRadius } from "../../../physics/fiber-optics/step-index-modes";
+import {
+  NEAR_LEAK_FRACTION, PERTURBATION_FRACTION, dShapedFiberResponse, lp01PowerBeyondPlane,
+} from "../../../physics/fiber-optics/coupled-mode";
+import { LP11_CUTOFF_V, MIN_V } from "../../../physics/fiber-optics/macro-bending-loss";
 
 const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
 const fmtPct = (x: number) =>
   !Number.isFinite(x) ? "—" : x >= 1e-3 ? `${(100 * x).toPrecision(3)} %` : `${(100 * x).toExponential(2)} %`;
-/**
- * First-order perturbation needs the shift to be small against the guidance margin n_eff − n₂, and the outer index
- * to stay well below n_eff (as it approaches n_eff the real tail spreads out and first order underestimates).
- */
-const PERTURBATION_FRACTION = 0.1;
-const NEAR_LEAK_FRACTION = 0.5;
 
 export default function DShapedFiberPage() {
   const [cladDia, setCladDia] = useURLState("cladDia", 125, { min: 10, max: 1000 }); // µm
@@ -29,27 +24,10 @@ export default function DShapedFiberPage() {
   const [n_ext, setN_ext] = useURLState("n_ext", 1.333, { min: 1, max: 2 }); // medium on the flat (water)
 
   const a_um = coreDia / 2;
-  const fiber = useMemo(
-    () => ({ a: a_um * 1e-6, n1: n_core, NA: numericalAperture(n_core, n_clad) }),
-    [a_um, n_core, n_clad],
-  );
-
   const calc = useMemo(() => {
-    const lambda = wavelength * 1e-9;
-    const V = vNumber(fiber, lambda);
-    const mode = lp01Mode(V);
-    const nEff = effectiveIndex(fiber, lambda, mode);
-    const rho0 = flatDepth / a_um;
-    const eta = lp01PowerBeyondPlane(mode, rho0);
-    return {
-      V, mode, nEff, eta,
-      surface: evanescentIntensityRatio(mode, rho0),
-      mfd_um: 2 * petermannIIRadius(fiber, lambda, mode) * 1e6,
-      // First-order perturbation (Snyder & Love 1983): Δ(n_eff²) = η(n_ext² − n₂²); its slope gives the sensitivity.
-      dNeff: (eta * (n_ext ** 2 - n_clad ** 2)) / (2 * nEff),
-      sensitivity: (eta * n_ext) / nEff,
-    };
-  }, [fiber, wavelength, flatDepth, a_um, n_ext, n_clad]);
+    const r = dShapedFiberResponse(a_um * 1e-6, n_core, n_clad, flatDepth * 1e-6, n_ext, wavelength * 1e-9);
+    return { ...r, mfd_um: 2 * r.mfdRadius * 1e6 };
+  }, [wavelength, flatDepth, a_um, n_core, n_clad, n_ext]);
 
   const chartData = useMemo(() => {
     const depths: number[] = [];

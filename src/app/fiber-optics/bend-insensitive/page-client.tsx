@@ -6,12 +6,10 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  LP11_CUTOFF_V, MIN_V, bendLossPerTurnDb, lp01Mode, lp11CutoffWavelength, modeFieldRadius, vNumber, type StepIndexFiber,
+  LP11_CUTOFF_V, MIN_V, SMF28_EQUIVALENT, bendLossPerTurnDb, lp01Mode, lp11CutoffWavelength, modeFieldRadius, vNumber, type StepIndexFiber,
 } from "../../../physics/fiber-optics/macro-bending-loss";
 import { G657_MIN_MFD_UM, G657_CATEGORIES, G657_LIMITS, g657Category, type G657Category } from "../../../physics/fiber-optics/g657";
 
-// SMF-28-like G.652 step equivalent (same as the macrobending-loss and mode-field-diameter pages).
-const SMF = { a: 4.1e-6, NA: 0.1246 };
 const MIN_PLOTTED_DB = 1e-6;
 
 const fmtDb = (x: number) =>
@@ -40,7 +38,7 @@ export default function BendInsensitivePage() {
   const [elastoOptic, setElastoOptic] = useURLState("elastoOptic", 1, { min: 0, max: 1 });
   const eo = elastoOptic === 1;
 
-  const smf = useMemo(() => ({ ...SMF, n1: coreIndex }), [coreIndex]);
+  const smf = useMemo(() => ({ ...SMF28_EQUIVALENT, n1: coreIndex }), [coreIndex]);
   const design = useMemo(() => ({ a: designRadius * 1e-6, NA: designNA, n1: coreIndex }), [designRadius, designNA, coreIndex]);
 
   const calc = useMemo(() => {

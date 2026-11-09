@@ -6,11 +6,10 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  beta2FromD, beta3FromDS, optimumOutputRmsWidth, sigmaOmegaFromLambda,
+  dispersionCompLinkSummary,
 } from "../../../physics/fiber-optics/chromatic-dispersion";
 import {
-  TOLERANCE_PENALTY_DB, accumulatedDispersion, dcfLength, dispersionPenaltyDb, optimumPulseBroadening,
-  residualSlope, toleratedAccumulatedDispersion, toleratedBroadening, usableHalfBandwidth,
+  TOLERANCE_PENALTY_DB,
 } from "../../../physics/fiber-optics/dispersion-comp";
 
 // UI units → SI.
@@ -39,37 +38,26 @@ export default function DispersionCompPage() {
   const [channelWavelength, setChannelWavelength] = useURLState("channelWavelength", 1550, { min: 800, max: 2000 }); // nm
 
   const calc = useMemo(() => {
-    const span = { D: dispersion * PS_NM_KM, S: slope * PS_NM2_KM };
-    const dcf = { D: compDispersion * PS_NM_KM, S: compSlope * PS_NM2_KM };
-    const L = fiberLength * 1e3;
-    const sigmaLambda = bwNm * 1e-9;
-    const B = bitRate * 1e9;
-    const lambdaCh = channelWavelength * 1e-9, lambdaRef = refWavelength * 1e-9;
-    const detuning = lambdaCh - lambdaRef;
-
-    const Dacc = accumulatedDispersion(span, L, detuning);
-    const sigmaUnc = optimumPulseBroadening(Dacc, span.S * L, sigmaLambda, lambdaCh);
-    const Lc = dcfLength(span, L, dcf);
-    const Sres = residualSlope(span, L, dcf, Lc);
-    const DresAtChannel = Sres * detuning;
-    const sigmaComp = optimumPulseBroadening(DresAtChannel, Sres, sigmaLambda, lambdaCh);
-    const sigmaTol = toleratedBroadening(B);
+    const r = dispersionCompLinkSummary({
+      span: { D: dispersion * PS_NM_KM, S: slope * PS_NM2_KM },
+      dcf: { D: compDispersion * PS_NM_KM, S: compSlope * PS_NM2_KM },
+      L: fiberLength * 1e3, sigmaLambda: bwNm * 1e-9, bitRate: bitRate * 1e9,
+      lambdaRef: refWavelength * 1e-9, lambdaChannel: channelWavelength * 1e-9,
+    });
     return {
-      Dacc_psnm: Dacc * TO_PS_NM,
-      sigmaUnc_ps: sigmaUnc * 1e12,
-      Bmax_Gbps: 1 / (4 * optimumOutputRmsWidth(
-        beta2FromD(Dacc, lambdaCh), beta3FromDS(Dacc, span.S * L, lambdaCh), 1, sigmaOmegaFromLambda(sigmaLambda, lambdaCh),
-      )) / 1e9,
-      penaltyUnc: dispersionPenaltyDb(B, sigmaUnc),
-      Lc_km: Lc / 1e3,
-      Sres_psnm2: Sres * TO_PS_NM2,
-      slopeCompensation: span.S * L !== 0 ? (-dcf.S * Lc) / (span.S * L) : NaN,
-      Dres_psnm: DresAtChannel * TO_PS_NM,
-      sigmaComp_ps: sigmaComp * 1e12,
-      penaltyComp: dispersionPenaltyDb(B, sigmaComp),
-      halfBand_nm: usableHalfBandwidth(Sres, sigmaLambda, sigmaTol, lambdaRef) * 1e9,
+      Dacc_psnm: r.Dacc * TO_PS_NM,
+      sigmaUnc_ps: r.sigmaUnc * 1e12,
+      Bmax_Gbps: r.Bmax / 1e9,
+      penaltyUnc: r.penaltyUnc,
+      Lc_km: r.Lc / 1e3,
+      Sres_psnm2: r.Sres * TO_PS_NM2,
+      slopeCompensation: r.slopeCompensation,
+      Dres_psnm: r.Dres * TO_PS_NM,
+      sigmaComp_ps: r.sigmaComp * 1e12,
+      penaltyComp: r.penaltyComp,
+      halfBand_nm: r.halfBand * 1e9,
       // |D_acc| of the compensated link at which the penalty reaches the tolerance (S_acc = S_res everywhere).
-      tolerance_psnm: toleratedAccumulatedDispersion(Sres, sigmaLambda, sigmaTol, lambdaRef) * TO_PS_NM,
+      tolerance_psnm: r.tolerance * TO_PS_NM,
     };
   }, [dispersion, slope, fiberLength, bwNm, bitRate, compDispersion, compSlope, refWavelength, channelWavelength]);
 

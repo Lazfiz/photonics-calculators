@@ -169,3 +169,9 @@ export function bendLossPerTurnDb(
   const Ralpha = elastoOptic ? elastoOpticBendRadius(R, f.n1) : R;
   return DB_PER_E_FOLD * bendLossCoefficient(f, lambda, Ralpha, mode) * 2 * Math.PI * R;
 }
+
+/**
+ * Step-index equivalent of a standard G.652 fibre (SMF-28-like): a = 4.1 µm, NA 0.1246 (LP11 cutoff ≈ 1335 nm,
+ * MFD ≈ 10.1 µm at 1550 nm by Marcuse's fit). Used by the bend-insensitive-fibre page and its API schema.
+ */
+export const SMF28_EQUIVALENT = { a: 4.1e-6, NA: 0.1246 } as const;

@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  averagePowerCoupling, codirectionalPeak, codirectionalTransfer, couplingCoefficient, criticalBendRadius, evanescentIntensityRatio, hayashiPowerCoupling,
+  averagePowerCoupling, codirectionalPeak, codirectionalTransfer, couplingCoefficient, criticalBendRadius, dShapedFiberResponse, evanescentIntensityRatio, hayashiPowerCoupling,
   lp01PowerBeyondPlane, pairCrosstalk, polishedCouplerPhase,
 } from "../src/physics/fiber-optics/coupled-mode";
 import { lp01Mode, vNumber } from "../src/physics/fiber-optics/macro-bending-loss";
@@ -148,4 +148,18 @@ test("co-directional transfer (Yariv 1973): κ²/ψ² sin²(ψz)", () => {
   assert.equal(codirectionalTransfer(0, 0, 5), 0);
   assert.equal(codirectionalPeak(0, 0).length, Infinity);
   assert.ok(Number.isNaN(codirectionalTransfer(0.5, 0, -1)));
+});
+
+test("dShapedFiberResponse: independent integration at a = 4.5 µm, n1 = 1.4494, n2 = 1.444, flat 8 µm, 1550 nm, water", () => {
+  // Reference values from an independent evaluation (series Bessel J, integral-representation K, bisection for U, Simpson in s)
+  // of Gloge's eigenvalue equation and Snyder & Love's η = ∫ψ² 2 arccos(ρ₀/ρ) ρ dρ / (π J₁²(U) V²/W²).
+  const r = dShapedFiberResponse(4.5e-6, 1.4494, 1.444, 8e-6, 1.333, 1550e-9);
+  assertRel(r.V, 2.2801415175823267, 1e-8, "V");
+  assertRel(r.nEff, 1.4466977395609701, 1e-8, "n_eff");
+  assertRel(r.eta, 0.0025097142218362912, 1e-8, "eta");
+  assertRel(r.surface, 0.04817302987063971, 1e-8, "surface");
+  assertRel(r.dNeff, -0.0002673716349253229, 1e-8, "dNeff");
+  assertRel(2 * r.mfdRadius, 10.084149421848629e-6, 1e-8, "MFD");
+  // Edge: a flat inside the core has no result.
+  assert.ok(Number.isNaN(dShapedFiberResponse(4.5e-6, 1.4494, 1.444, 3e-6, 1.333, 1550e-9).eta));
 });

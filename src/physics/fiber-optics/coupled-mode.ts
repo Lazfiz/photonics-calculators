@@ -27,7 +27,7 @@
 import { abs as cabs, complex, realPart, sqrt as csqrt, div as cdiv } from "../complex";
 import { besselJ, besselKScaled, integrateSimpson as simpson } from "../math";
 import { lp01Mode, vNumber, type Lp01Mode, type StepIndexFiber } from "./macro-bending-loss";
-import { lp01Field } from "./step-index-modes";
+import { effectiveIndex, lp01Field, numericalAperture, petermannIIRadius } from "./step-index-modes";
 
 /**
  * Snyder's coupling coefficient κ (1/m) between two identical step-index cores whose centres are D apart.
@@ -161,4 +161,52 @@ export function polishedCouplerPhase(f: StepIndexFiber, lambda: number, D0: numb
     return couplingCoefficient(f, lambda, D0 + (t * t) / R, m);
   };
   return 2 * simpson(g, 0, zMax, TAIL_PANELS);
+}
+
+export interface DShapedFiberResponse {
+  V: number;
+  mode: Lp01Mode;
+  /** LP01 effective index. */
+  nEff: number;
+  /** Fraction of LP01 power beyond the flat. */
+  eta: number;
+  /** LP01 intensity at the flat relative to the core boundary. */
+  surface: number;
+  /** Petermann II mode-field radius, m. */
+  mfdRadius: number;
+  /** First-order shift of n_eff when the medium on the flat has index nExt. */
+  dNeff: number;
+  /** d n_eff/d n_ext = η n_ext/n_eff. */
+  sensitivity: number;
+}
+
+/**
+ * First-order perturbation needs the shift to be small against the guidance margin n_eff − n₂, and the outer index
+ * to stay well below n_eff (as it approaches n_eff the real tail spreads out and first order underestimates).
+ */
+export const PERTURBATION_FRACTION = 0.1;
+export const NEAR_LEAK_FRACTION = 0.5;
+
+/**
+ * Side-polished (D-shaped) fibre with a flat at distance `flatDepth` from the core centre, in a medium of index nExt
+ * (core radius a, core and cladding indices n1 and n2, all SI). First-order perturbation (Snyder & Love 1983):
+ * Δ(n_eff²) = η (nExt² − n₂²), η the LP01 power beyond the flat. NaN where the flat cuts the core (flatDepth < a)
+ * or the guide is outside the model's domain.
+ */
+export function dShapedFiberResponse(a: number, n1: number, n2: number, flatDepth: number, nExt: number, lambda: number): DShapedFiberResponse {
+  const fiber: StepIndexFiber = { a, n1, NA: numericalAperture(n1, n2) };
+  const V = vNumber(fiber, lambda);
+  const mode = lp01Mode(V);
+  const nEff = effectiveIndex(fiber, lambda, mode);
+  const eta = lp01PowerBeyondPlane(mode, flatDepth / a);
+  return {
+    V,
+    mode,
+    nEff,
+    eta,
+    surface: evanescentIntensityRatio(mode, flatDepth / a),
+    mfdRadius: petermannIIRadius(fiber, lambda, mode),
+    dNeff: (eta * (nExt ** 2 - n2 ** 2)) / (2 * nEff),
+    sensitivity: (eta * nExt) / nEff,
+  };
 }
