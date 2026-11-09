@@ -5,8 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { c } from "../../../physics/constants";
-import { airyPeakNear, coefficientOfFinesse, reflectingFinesse } from "../../../physics/thin-film/interference";
+import { airyPeakNear, coefficientOfFinesse, fabryPerotSummary } from "../../../physics/thin-film/interference";
 
 export default function FabryPerotFilterPage() {
   const [nCavity, setNCavity] = useURLState("nCavity", 1.5, { min: 1 });
@@ -14,7 +13,7 @@ export default function FabryPerotFilterPage() {
   const [reflectance, setReflectance] = useURLState("reflectance", 0.8, { min: 0, max: 0.999 });
   const [wlCenter, setWlCenter] = useURLState("wlCenter", 550, { min: 1 });
 
-  const { chartData, peak, finesse } = useMemo(() => {
+  const { chartData, peak } = useMemo(() => {
     const F = coefficientOfFinesse(reflectance);
     const opticalThickness = nCavity * spacing * 1e-9; // nd, m
     // The transmission peak nearest the wavelength of interest, with its own FSR and FWHM.
@@ -61,17 +60,16 @@ export default function FabryPerotFilterPage() {
       { x: wls, y: T, type: "scatter" as const, mode: "lines" as const, name: "Transmittance", line: { color: "#60a5fa" } },
       { x: wls, y: Rcurve, type: "scatter" as const, mode: "lines" as const, name: "Reflectance", line: { color: "#f87171" } },
     ];
-    return { chartData, peak, finesse: reflectingFinesse(F) };
+    return { chartData, peak };
   }, [nCavity, spacing, reflectance, wlCenter]);
 
   const peak_nm = peak.wavelength * 1e9;
   const fsr_nm = peak.fsr * 1e9;
   const fwhm_nm = peak.fwhm * 1e9;
   // Exact neighbours λ = 2nd/m and the exact frequency spacing c/(2nd)
-  const opticalThickness = nCavity * spacing * 1e-9;
-  const upper_nm = (2 * opticalThickness * 1e9) / (peak.order + 1);
-  const lower_nm = peak.order - 1 >= 1 ? (2 * opticalThickness * 1e9) / (peak.order - 1) : NaN;
-  const fsrHz = c / (2 * opticalThickness);
+  const { finesse, upper, lower, fsrHz } = fabryPerotSummary(nCavity, spacing * 1e-9, reflectance, wlCenter * 1e-9);
+  const upper_nm = upper * 1e9;
+  const lower_nm = lower * 1e9;
 
   return (
     <>

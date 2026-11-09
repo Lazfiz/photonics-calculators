@@ -7,6 +7,7 @@ import { useURLState } from "../../../hooks/use-url-state";
 import { clampToRange } from "../../../lib/number-input";
 import {
   quarterWaveMirrorDelay,
+  quarterWaveMirrorIndices,
   reflectionBandEdges,
   stopBandEdges,
   stopBandHalfWidth,
@@ -40,7 +41,7 @@ export default function DielectricHRPage() {
 
   // (HL)^N H: high index on both faces (2N + 1 layers). (LH)^N: low index facing the incident medium.
   const indices = useMemo(
-    () => (outer === "high" ? Array.from({ length: 2 * pairs + 1 }, (_, j) => (j % 2 === 0 ? nH : nL)) : Array.from({ length: 2 * pairs }, (_, j) => (j % 2 === 0 ? nL : nH))),
+    () => quarterWaveMirrorIndices(outer, pairs, nH, nL),
     [outer, pairs, nH, nL],
   );
   const stack = useMemo(() => ({ incident: nInc, layers: quarterWaveLayers(indices, lambda0), substrate: { n: nSub } }), [nInc, indices, lambda0, nSub]);

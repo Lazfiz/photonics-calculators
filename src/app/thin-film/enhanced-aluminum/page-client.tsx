@@ -5,10 +5,8 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { clampToRange } from "../../../lib/number-input";
-import { intervalStats } from "../../../physics/math";
-import { rakicIndex } from "../../../physics/materials/lorentz-drude";
 import { coatingResponse, type Substrate } from "../../../physics/thin-film/low-emissivity";
-import { enhancedMetalReflectance, enhancedMirrorLayers } from "../../../physics/thin-film/metal-mirror";
+import { enhancedAluminumResults, enhancedMirrorLayers } from "../../../physics/thin-film/metal-mirror";
 
 const NM = 1e-9;
 const pct = (x: number, digits = 2) => (Number.isFinite(x) ? `${(x * 100).toFixed(digits)} %` : "—");
@@ -35,19 +33,10 @@ export default function EnhancedAluminumPage() {
     return { enhanced, bare };
   }, [alThick, adhesionThick, nL, nH, pairs, lambda0]);
 
-  const results = useMemo(() => {
-    if (!valid) return null;
-    const R = (layers: typeof design.enhanced) => (lam: number) => coatingResponse(layers, substrate, lam).R;
-    const at0 = coatingResponse(design.enhanced, substrate, lambda0);
-    return {
-      R0: at0.R,
-      T0: at0.T,
-      bareR0: R(design.bare)(lambda0),
-      vis: intervalStats(R(design.enhanced), 400 * NM, 700 * NM, 300),
-      bareVis: intervalStats(R(design.bare), 400 * NM, 700 * NM, 300),
-      qw: enhancedMetalReflectance(rakicIndex("Al", lambda0), nL, nH, pairs),
-    };
-  }, [valid, design, substrate, lambda0, nL, nH, pairs]);
+  const results = useMemo(
+    () => (valid ? enhancedAluminumResults({ lambda0, pairs, nL, nH, alThickness: alThick * NM, adhesionThickness: adhesionThick * NM, nSub }) : null),
+    [valid, lambda0, pairs, nL, nH, alThick, adhesionThick, nSub],
+  );
 
   const spectrum = useMemo(() => {
     if (!valid) return null;

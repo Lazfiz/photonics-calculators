@@ -4,9 +4,8 @@ import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { firstCrossing } from "../../../physics/math";
 import { normalIncidenceReflectance } from "../../../physics/polarization/fresnel";
-import { dualBandReflectance, fitDualBandAr } from "../../../physics/thin-film/dual-band-ar";
+import { dualBandReflectance, dualBandWidth, fitDualBandAr } from "../../../physics/thin-film/dual-band-ar";
 
 const NM = 1e-9;
 const pct = (x: number, digits = 3) => (Number.isFinite(x) ? `${(x * 100).toFixed(digits)} %` : "—");
@@ -30,15 +29,7 @@ export default function DualBandARPage() {
   // Width of the band around each design wavelength where R stays below 1 %.
   const bands = useMemo(() => {
     if (!fit) return null;
-    const R = (lam: number) => dualBandReflectance(problem, fit.thicknesses, lam);
-    const width = (lam: number) => {
-      if (!(R(lam) < LEVEL)) return null;
-      const lo = firstCrossing(R, lam, lam * 0.5, LEVEL, 400);
-      const hi = firstCrossing(R, lam, lam * 1.5, LEVEL, 400);
-      // No crossing within λ/2 … 1.5λ: report the scan limit.
-      return { lo: Number.isFinite(lo) ? lo : lam * 0.5, hi: Number.isFinite(hi) ? hi : lam * 1.5, open: [!Number.isFinite(lo), !Number.isFinite(hi)] };
-    };
-    return [width(problem.lambda1), width(problem.lambda2)];
+    return [dualBandWidth(problem, fit.thicknesses, problem.lambda1, LEVEL), dualBandWidth(problem, fit.thicknesses, problem.lambda2, LEVEL)];
   }, [fit, problem]);
 
   const spectrum = useMemo(() => {

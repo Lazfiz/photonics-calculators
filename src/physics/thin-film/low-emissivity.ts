@@ -25,7 +25,7 @@
  * films).
  */
 import { solarWeightedMean } from "../astm-g173";
-import { planckWeightedMean } from "../blackbody";
+import { blackbodyBandFraction, planckWeightedMean, totalExitance } from "../blackbody";
 import { luminousWeightedMean } from "../cie-photometry";
 import { rakicIndex } from "../materials/lorentz-drude";
 import { silverIndex } from "../materials/silver";
@@ -120,4 +120,53 @@ export function glazingPerformance(
     Rsol: solarWeightedMean((lam) => pane(lam).R),
     emittance: totalNormalEmittance(coating, { material: "dielectric", n: nGlass }, temperature, band[0], band[1]),
   };
+}
+
+const METALS: readonly Metal[] = ["Ag", "Al", "Cr"];
+/** True for the metals this module knows ("Ag", "Al", "Cr"). */
+export const isMetal = (s: string): s is Metal => (METALS as readonly string[]).includes(s);
+
+/** The opaque substrate of the emissivity-control page: a named metal, or anything else = dielectric n + iκ. */
+export function controlSubstrate(sub: string, nSub: number, kSub: number): Substrate {
+  return isMetal(sub) ? { material: sub } : { material: "dielectric", n: nSub, k: kSub };
+}
+
+/**
+ * The page's coating, air side first: a lossless dielectric overcoat (n, thickness in m; omitted at 0) over a metal
+ * film (omitted if `film` isn't a metal or its thickness is 0).
+ */
+export function controlCoating(film: string, filmThickness: number, nCoat: number, coatThickness: number): CoatingLayer[] {
+  const layers: CoatingLayer[] = [];
+  if (coatThickness > 0) layers.push({ material: "dielectric", n: nCoat, thickness: coatThickness });
+  if (isMetal(film) && filmThickness > 0) layers.push({ material: film, thickness: filmThickness });
+  return layers;
+}
+
+export interface EmissivityControlResult {
+  /** Total normal emittance of the coated and of the bare substrate over the band. */
+  eps: number;
+  epsBare: number;
+  /** Fraction of σT⁴ inside the band. */
+  fraction: number;
+  /** ε_n · F · σT⁴ for the coated and the bare substrate, W/m². */
+  emitted: number;
+  emittedBare: number;
+  /** σT⁴, W/m². */
+  blackbody: number;
+}
+
+/** Emittances and in-band emitted power of a coated opaque substrate at temperature T (K), band in m. */
+export function emissivityControl(
+  coating: readonly CoatingLayer[],
+  substrate: Substrate,
+  temperature: number,
+  lambda1: number,
+  lambda2: number,
+): EmissivityControlResult {
+  const eps = totalNormalEmittance(coating, substrate, temperature, lambda1, lambda2);
+  const epsBare = totalNormalEmittance([], substrate, temperature, lambda1, lambda2);
+  const fraction = blackbodyBandFraction(lambda1, lambda2, temperature);
+  const blackbody = totalExitance(temperature);
+  const inBand = fraction * blackbody;
+  return { eps, epsBare, fraction, emitted: eps * inBand, emittedBare: epsBare * inBand, blackbody };
 }

@@ -126,3 +126,13 @@ export function quarterWavePairsForReflectance(R: number, nH: number, nL: number
   const n = (Math.atanh(Math.sqrt(R)) - 0.5 * Math.log(substrate / incident)) / Math.log(nH / nL);
   return Math.max(0, Math.ceil(n));
 }
+
+/**
+ * Layer indices of a quarter-wave mirror from the incident side: "high" is (HL)^N H (2N + 1 layers, high
+ * index on both faces), "low" is (LH)^N (2N layers, low index facing the incident medium).
+ */
+export function quarterWaveMirrorIndices(outer: "high" | "low", pairs: number, nH: number, nL: number): number[] {
+  return outer === "high"
+    ? Array.from({ length: 2 * pairs + 1 }, (_, j) => (j % 2 === 0 ? nH : nL))
+    : Array.from({ length: 2 * pairs }, (_, j) => (j % 2 === 0 ? nL : nH));
+}

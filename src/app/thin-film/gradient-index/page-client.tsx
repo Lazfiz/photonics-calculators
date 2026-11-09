@@ -5,7 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { GRADED_MAX_SUBLAYERS, gradedIndexAt, gradedIndexLayers, gradedSublayersResolved, type GradedProfile } from "../../../physics/thin-film/graded-index";
+import { GRADED_MAX_SUBLAYERS, gradedIndexAt, gradedStack, gradedSublayersResolved, type GradedProfile } from "../../../physics/thin-film/graded-index";
 import { stackResponse } from "../../../physics/thin-film/transfer-matrix";
 
 export default function GradientIndexPage() {
@@ -19,8 +19,8 @@ export default function GradientIndexPage() {
 
   const tmm = useMemo(() => {
     // Staircase of homogeneous sublayers, sized for the shortest plotted wavelength (0.5 λ).
-    const layers = gradedIndexLayers(profile, nSub, nSurface, thickness * 1e-9, 0.5 * designWl * 1e-9);
-    const stack = { incident: nInc, layers, substrate: { n: nSub } };
+    const stack = gradedStack(profile, nInc, nSub, nSurface, thickness * 1e-9, designWl * 1e-9);
+    const layers = stack.layers;
 
     // Plot window 0.5–1.5 λ (401 points). Keep only finite points (invalid inputs give none).
     const wls: number[] = [];

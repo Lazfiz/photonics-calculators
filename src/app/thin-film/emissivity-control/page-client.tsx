@@ -4,14 +4,13 @@ import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { blackbodyBandFraction, planckExitance, totalExitance } from "../../../physics/blackbody";
-import { opaqueEmittance, totalNormalEmittance, type CoatingLayer, type Substrate } from "../../../physics/thin-film/low-emissivity";
+import { planckExitance, totalExitance } from "../../../physics/blackbody";
+import {
+  controlCoating, controlSubstrate, emissivityControl, isMetal, opaqueEmittance,
+} from "../../../physics/thin-film/low-emissivity";
 
 const NM = 1e-9;
 const UM = 1e-6;
-const METALS = ["Ag", "Al", "Cr"] as const;
-type Metal = (typeof METALS)[number];
-const isMetal = (s: string): s is Metal => (METALS as readonly string[]).includes(s);
 
 const selectClass = "mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white";
 
@@ -27,13 +26,8 @@ export default function EmissivityControlPage() {
   const [bandLo, setBandLo] = useURLState("bandLo", 2.5, { min: 0.3, max: 1000 });
   const [bandHi, setBandHi] = useURLState("bandHi", 50, { min: 0.3, max: 1000 });
 
-  const substrate = useMemo<Substrate>(() => (isMetal(sub) ? { material: sub } : { material: "dielectric", n: nSub, k: kSub }), [sub, nSub, kSub]);
-  const coating = useMemo<CoatingLayer[]>(() => {
-    const layers: CoatingLayer[] = [];
-    if (coatThick > 0) layers.push({ material: "dielectric", n: nCoat, thickness: coatThick * NM });
-    if (isMetal(film) && filmThick > 0) layers.push({ material: film, thickness: filmThick * NM });
-    return layers;
-  }, [film, filmThick, nCoat, coatThick]);
+  const substrate = useMemo(() => controlSubstrate(sub, nSub, kSub), [sub, nSub, kSub]);
+  const coating = useMemo(() => controlCoating(film, filmThick * NM, nCoat, coatThick * NM), [film, filmThick, nCoat, coatThick]);
 
   const valid =
     (isMetal(sub) || (nSub > 0 && kSub >= 0)) && nCoat > 0 && filmThick >= 0 && coatThick >= 0 &&
@@ -41,11 +35,7 @@ export default function EmissivityControlPage() {
 
   const results = useMemo(() => {
     if (!valid) return null;
-    const eps = totalNormalEmittance(coating, substrate, temp, bandLo * UM, bandHi * UM);
-    const epsBare = totalNormalEmittance([], substrate, temp, bandLo * UM, bandHi * UM);
-    const fraction = blackbodyBandFraction(bandLo * UM, bandHi * UM, temp);
-    const blackInBand = fraction * totalExitance(temp);
-    return { eps, epsBare, fraction, emitted: eps * blackInBand, emittedBare: epsBare * blackInBand };
+    return emissivityControl(coating, substrate, temp, bandLo * UM, bandHi * UM);
   }, [valid, coating, substrate, temp, bandLo, bandHi]);
 
   const spectrum = useMemo(() => {
