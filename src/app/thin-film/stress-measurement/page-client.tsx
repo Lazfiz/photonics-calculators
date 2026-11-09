@@ -6,7 +6,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  biaxialStrain, biaxialStrainEnergy, curvatureFromDeflection, stoneyStress, thermalMismatchStress,
+  stressMeasurement, thermalMismatchStress,
 } from "../../../physics/thin-film/stoney";
 
 // Stoney's thin-film assumption, as a rule of thumb for the warning.
@@ -42,21 +42,12 @@ export default function StressMeasurementPage() {
     const Ef = filmModulus * 1e9;
     const thermalAt = (T: number) => thermalMismatchStress(Ef, filmPoisson, alphaSub * 1e-6, alphaFilm * 1e-6, T, depositionTemp);
 
-    const kappaBefore = curvatureFromDeflection(deflectionBefore * 1e-6, a);
-    const kappaAfter = curvatureFromDeflection(deflection * 1e-6, a);
-    const deltaKappa = kappaAfter - kappaBefore;
-    const stress = stoneyStress(deltaKappa, tf, Es, poissonRatio, ts);
-    const thermal = thermalAt(temperature);
     return {
-      deltaKappa,
-      stress,
-      thermal,
-      intrinsic: stress - thermal,
+      ...stressMeasurement({
+        a, tS: ts, tF: tf, Es, nuS: poissonRatio, Ef, nuF: filmPoisson, alphaS: alphaSub * 1e-6, alphaF: alphaFilm * 1e-6,
+        hBefore: deflectionBefore * 1e-6, hAfter: deflection * 1e-6, Tdep: depositionTemp, T: temperature,
+      }),
       thermalAt,
-      forcePerWidth: stress * tf,
-      strain: biaxialStrain(stress, Ef, filmPoisson),
-      energy: biaxialStrainEnergy(stress, tf, Ef, filmPoisson),
-      thicknessRatio: tf / ts,
     };
   }, [radius, thickness, substrateThickness, youngsModulus, poissonRatio, filmModulus, filmPoisson, alphaSub, alphaFilm,
     deflectionBefore, deflection, depositionTemp, temperature]);

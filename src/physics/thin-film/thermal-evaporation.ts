@@ -130,3 +130,45 @@ export function structureZone(Ts: number, Tm: number): number {
   if (x >= 1) return NaN;
   return x < 0.3 ? 1 : x < 0.45 ? 2 : 3;
 }
+
+export interface ThermalEvaporationInput {
+  /** Source temperature (K). */
+  T: number;
+  /** Source–substrate distance h (m). */
+  h: number;
+  /** Source (melt surface) radius (m). */
+  sourceRadius: number;
+  /** Radial offset of the substrate edge (m). */
+  substrateRadius: number;
+  /** Evaporation coefficient α, 0 < α ≤ 1. */
+  alpha: number;
+  /** Residual-gas pressure (Pa). */
+  chamberPressure: number;
+  /** Substrate temperature (K). */
+  substrateTemp: number;
+}
+
+/**
+ * The thermal-evaporation page's whole chain, SI in and out: vapour pressure, whether the fit covers it,
+ * Hertz–Knudsen flux, centre growth rate (m/s), edge thickness ratio, residual-gas mean free path and Knudsen number
+ * λ/h, mean vapour speed, homologous temperature T_s/T_m and structure zone, and the point-source warning r_s/h > 0.1.
+ */
+export function thermalEvaporation(ev: Evaporant, inp: ThermalEvaporationInput) {
+  const { T, h, sourceRadius: rs, substrateRadius, alpha, chamberPressure, substrateTemp } = inp;
+  const p = vapourPressure(ev, T);
+  const flux = evaporationMassFlux(p, ev.M, T, alpha);
+  const mfp = airMeanFreePath(chamberPressure);
+  return {
+    p,
+    fitOk: inFitRange(T, p),
+    flux,
+    rate: surfaceSourceRate(flux, Math.PI * rs * rs, ev.rho, h),
+    edge: surfaceSourceProfile(substrateRadius, h),
+    mfp,
+    Kn: mfp / h,
+    speed: meanSpeed(ev.M, T),
+    homologous: substrateTemp / ev.Tm,
+    zone: structureZone(substrateTemp, ev.Tm),
+    bigSource: rs / h > 0.1,
+  };
+}

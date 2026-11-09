@@ -6,12 +6,11 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { clampToRange } from "../../../lib/number-input";
 import {
-  edgeFilterLayers,
-  incoherentLosslessFaces,
-  staggeredDesignWavelengths,
-} from "../../../physics/thin-film/edge-filter";
-import { stopBandHalfWidth } from "../../../physics/thin-film/quarter-wave-stack";
-import { stackResponse, type Stack } from "../../../physics/thin-film/transfer-matrix";
+  bareGlassTransmittance,
+  solarProtectionDesign,
+  solarProtectionMeans,
+  thirdOrderZones,
+} from "../../../physics/thin-film/solar-protection";
 
 const NM = 1e-9;
 type G173 = typeof import("../../../physics/astm-g173");
@@ -43,42 +42,24 @@ export default function SolarProtectionPage() {
   // The URL isn't range-checked: integer periods per stack in 1–40.
   const uvPairs = Math.round(clampToRange(uvPairsRaw, 1, 40));
   const irPairs = Math.round(clampToRange(irPairsRaw, 1, 40));
-  const valid = nH > nL && nL > 0 && nSub > 0 && uvFrom > 0 && uvTo > uvFrom && irFrom > 0 && irTo > irFrom;
-
   // Outer face: long-pass stacks reflecting the UV band. Inner face: short-pass stacks reflecting the near IR.
-  const uvCentres = useMemo(() => (valid ? staggeredDesignWavelengths("long-pass", uvFrom * NM, uvTo * NM, nH, nL) : []), [valid, uvFrom, uvTo, nH, nL]);
-  const irCentres = useMemo(() => (valid ? staggeredDesignWavelengths("short-pass", irFrom * NM, irTo * NM, nH, nL) : []), [valid, irFrom, irTo, nH, nL]);
-  const tooBig = uvCentres.length * uvPairs + irCentres.length * irPairs > 400;
-  const ready = valid && uvCentres.length > 0 && irCentres.length > 0 && !tooBig;
-
-  // T(λ) of the coated pane (λ in m), cached because every result reuses the same G173 wavelengths.
-  const transmittance = useMemo(() => {
-    const face = (layers: Stack["layers"]): Stack => ({ incident: 1, layers, substrate: { n: nSub } });
-    const outer = face(edgeFilterLayers("long-pass", uvCentres, nH, nL, uvPairs));
-    const inner = face(edgeFilterLayers("short-pass", irCentres, nH, nL, irPairs));
-    const cache = new Map<number, number>();
-    return (wl: number) => {
-      let t = cache.get(wl);
-      if (t === undefined) {
-        t = incoherentLosslessFaces(stackResponse(outer, wl).R, stackResponse(inner, wl).R).T;
-        cache.set(wl, t);
-      }
-      return t;
-    };
-  }, [nSub, uvCentres, irCentres, nH, nL, uvPairs, irPairs]);
+  // T(λ) of the coated pane (λ in m) is cached because every result reuses the same G173 wavelengths.
+  const design = useMemo(
+    () => solarProtectionDesign({ nH, nL, nSub, uvFrom: uvFrom * NM, uvTo: uvTo * NM, irFrom: irFrom * NM, irTo: irTo * NM, uvPairs, irPairs }),
+    [nH, nL, nSub, uvFrom, uvTo, irFrom, irTo, uvPairs, irPairs],
+  );
+  const { valid, uvCentres, irCentres, tooBig, ready, transmittance } = design;
 
   const solar = useMemo(() => {
     if (!ready || !g173) return null;
-    const m = (from?: number, to?: number) => g173.solarWeightedMean(transmittance, from, to);
-    return { total: m(), uv: m(280, 400), vis: m(400, 700), nir: m(700, 4000) };
+    return solarProtectionMeans(transmittance, g173.solarWeightedMean);
   }, [ready, g173, transmittance]);
 
-  const bareGlass = (2 * nSub) / (nSub * nSub + 1); // two uncoated faces, incoherent: 2n/(n² + 1)
+  const bareGlass = bareGlassTransmittance(nSub); // two uncoated faces, incoherent: 2n/(n² + 1)
 
   // Third-order zones of the IR stacks, g = λ₀/λ in 3 ± Δg, that reach the visible.
-  const dg = stopBandHalfWidth(nH, nL);
-  const thirdOrder = irCentres
-    .map((c) => ({ from: c / (3 + dg) / NM, to: c / (3 - dg) / NM }))
+  const thirdOrder = thirdOrderZones(irCentres, nH, nL)
+    .map((z) => ({ from: z.from / NM, to: z.to / NM }))
     .filter((z) => z.to > 400 && z.from < 700);
 
   const chartData = useMemo(() => {

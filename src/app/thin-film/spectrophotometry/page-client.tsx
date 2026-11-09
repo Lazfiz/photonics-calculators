@@ -6,7 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { clampToRange } from "../../../lib/number-input";
-import { absorptionCoefficient } from "../../../physics/spectroscopy/depth";
+import { filmOpticalSummary, SUMMARY_WAVELENGTH } from "../../../physics/thin-film/spectrophotometry";
 import { stackResponse } from "../../../physics/thin-film/transfer-matrix";
 export default function SpectrophotometryPage() {
   const [nFilm, setNFilm] = useURLState("nFilm", 1.46, { min: 1, max: 5 });
@@ -44,12 +44,12 @@ export default function SpectrophotometryPage() {
   }, [nFilm, kFilm, nSub, thickness, angleDeg, nInc]);
 
   // Optical thickness info
-  const wavelength_nm = 550;
-  const opticalThickness = nFilm * thickness;
-  const halfWaves = (2 * nFilm * thickness) / wavelength_nm;
-  const qwoThickness = wavelength_nm / (4 * nFilm);
+  const summary = filmOpticalSummary(nFilm, kFilm, thickness * 1e-9, SUMMARY_WAVELENGTH);
+  const opticalThickness = summary.opticalThickness * 1e9; // nm
+  const halfWaves = summary.halfWaves;
+  const qwoThickness = summary.quarterWaveThickness * 1e9; // nm
   // α = 4πk/λ in m⁻¹, shown in cm⁻¹
-  const alpha_cm = absorptionCoefficient(kFilm, wavelength_nm * 1e-9) / 100;
+  const alpha_cm = summary.alpha / 100;
   const fixed = (x: number, digits: number) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
 
   return (
