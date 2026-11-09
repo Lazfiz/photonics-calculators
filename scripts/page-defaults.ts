@@ -32,5 +32,26 @@ export async function pageDefaults(href: string): Promise<Map<string, number | s
     else if (!members) defaults.set(key, constant(name) ?? (await imported(name, [])));
     else defaults.set(key, await imported(name, [...members.matchAll(/\.(\w+)|\[(\d+)\]/g)].map((p) => p[1] ?? p[2])));
   }
+  return defaults.size > 0 ? defaults : wrapperDefaults(file, source);
+}
+
+// A page that only renders a shared component (`<BlockingFilterCalculator defaults={{ nH: 2.35, … }} pairsKey="…" />`):
+// read the component's `useURLState(key, default)` calls, where the key is a literal or a string prop and the default
+// a literal or `defaults.NAME` from the page's object literal.
+function wrapperDefaults(file: string, source: string): Map<string, number | string | undefined> {
+  const defaults = new Map<string, number | string | undefined>();
+  const component = source.match(/import\s+(\w+)\s+from\s+"(\.[^"]*\/components\/[^"]+)"/);
+  if (!component) return defaults;
+  const jsx = source.match(new RegExp(`<${component[1]}\\b([\\s\\S]*?)/>`))?.[1] ?? "";
+  const props = new Map([...jsx.matchAll(/(\w+)="([^"]*)"/g)].map((m) => [m[1], m[2]]));
+  const literal = (s: string) => (s.startsWith('"') ? s.slice(1, -1) : Number(s));
+  const objectLiteral = jsx.match(/defaults=\{\{([^}]*)\}\}/)?.[1] ?? "";
+  const values = new Map([...objectLiteral.matchAll(/(\w+):\s*("[^"]*"|[-+.\d][-+.\deE]*)/g)].map((m) => [m[1], literal(m[2])]));
+  const componentSource = readFileSync(resolve(dirname(file), `${component[2]}.tsx`), "utf8");
+  for (const m of componentSource.matchAll(/useURLState\(\s*(?:"([^"]+)"|(\w+)),\s*(?:("[^"]*"|[-+.\d][-+.\deE]*)|defaults\.(\w+))/g)) {
+    const [, key, keyProp, lit, member] = m;
+    const k = key ?? props.get(keyProp);
+    if (k !== undefined) defaults.set(k, lit !== undefined ? literal(lit) : values.get(member));
+  }
   return defaults;
 }
