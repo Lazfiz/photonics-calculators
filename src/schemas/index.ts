@@ -193,6 +193,17 @@ import enhancedAluminum from "./thin-film/enhanced-aluminum";
 import environmentalStability from "./thin-film/environmental-stability";
 import fabryPerotFilter from "./thin-film/fabry-perot-filter";
 import gradientIndex from "./thin-film/gradient-index";
+import hardCoating from "./thin-film/hard-coating";
+import heatMirror from "./thin-film/heat-mirror";
+import interferenceConditions from "./thin-film/interference-conditions";
+import ionAssistedDeposition from "./thin-film/ion-assisted-deposition";
+import irBlocking from "./thin-film/ir-blocking";
+import metalDielectric from "./thin-film/metal-dielectric";
+import narrowBandpass from "./thin-film/narrow-bandpass";
+import notchFilter from "./thin-film/notch-filter";
+import partialReflector from "./thin-film/partial-reflector";
+import phaseShiftCoating from "./thin-film/phase-shift-coating";
+import plasmaDeposition from "./thin-film/plasma-deposition";
 import singleAr from "./thin-film/single-ar";
 import type { CalculatorSchema } from "./types";
 import abcdMatrix from "./wave-optics/abcd-matrix";
@@ -271,6 +282,8 @@ export const schemas: readonly CalculatorSchema[] = [
   adhesionTesting, amplitudeSplitting, angleShift, angleTuning, antiFog, bandpassFilter, beamsplitter, braggReflector,
   coatingStress, coldMirror, dichroic, dielectricHighReflector, dielectricStack, doubleLayerAr, dualBandAr, edgeFilter,
   ellipsometryMeasurement, emissivityControl, enhancedAluminum, environmentalStability, fabryPerotFilter, gradientIndex,
+  hardCoating, heatMirror, interferenceConditions, ionAssistedDeposition, irBlocking, metalDielectric, narrowBandpass,
+  notchFilter, partialReflector, phaseShiftCoating, plasmaDeposition,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));
