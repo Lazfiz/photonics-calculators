@@ -5,7 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  birefringentPhase, loopCombPeriod, loopMirrorReflectance, loopMirrorTransmittance,
+  COMB_MAX_PERIOD, birefringentPhase, loopMirrorReflectance, loopMirrorSummary, loopMirrorTransmittance,
 } from "../../../physics/fiber-optics/sagnac";
 
 const clamp = (x: number, lo: number, hi: number) => Math.min(Math.max(x, lo), hi);
@@ -34,13 +34,7 @@ export default function FiberLoopMirrorPage() {
   const B = clamp(birefRaw, 0, 0.01);
 
   const calc = useMemo(() => {
-    const tau = 10 ** (-loss_dB / 10);
-    const R = loopMirrorReflectance(k, tau);
-    const T = loopMirrorTransmittance(k, 0, tau);
-    const period = loopCombPeriod(B, L, lambda_nm * 1e-9); // m
-    const tMin = loopMirrorTransmittance(k, 0, tau), tMax = loopMirrorTransmittance(k, Math.PI, tau);
-    const extinction = tMin > 0 ? 10 * Math.log10(tMax / tMin) : Infinity;
-    return { tau, R, T, period, tMax, tMin, extinction };
+    return loopMirrorSummary(k, loss_dB, B, L, lambda_nm * 1e-9);
   }, [k, loss_dB, B, L, lambda_nm]);
 
   const couplingChart = useMemo(() => {
@@ -52,7 +46,7 @@ export default function FiberLoopMirrorPage() {
   }, [calc.tau]);
 
   const spectrumData = useMemo(() => {
-    if (!(calc.period <= 200e-9)) return [];
+    if (!(calc.period <= COMB_MAX_PERIOD)) return [];
     const span = clamp(3 * calc.period * 1e9, 0.01, 200); // nm, about three comb periods
     const wls = Array.from({ length: 801 }, (_, i) => lambda_nm - span / 2 + (i * span) / 800);
     return [{
@@ -62,7 +56,7 @@ export default function FiberLoopMirrorPage() {
     }];
   }, [calc.period, calc.tau, lambda_nm, k, B, L]);
 
-  const pm = Number.isFinite(calc.period) && calc.period <= 200e-9; // longer periods: the comb is flat over the band
+  const pm = Number.isFinite(calc.period) && calc.period <= COMB_MAX_PERIOD; // longer periods: the comb is flat over the band
 
   return (
     <>

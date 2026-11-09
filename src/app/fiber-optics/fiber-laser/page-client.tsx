@@ -1,14 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import {
-  efficiencyBeyondStokes, optimumOutputCoupler, rigrodOutput, stokesEfficiency,
-} from "../../../physics/fiber-optics/doped-fiber-gain";
-import { DB_PER_E_FOLD, lp11CutoffWavelength, vNumber } from "../../../physics/fiber-optics/macro-bending-loss";
-import { guidedModeCount, MAX_EXACT_MODE_V, petermannIIRadius } from "../../../physics/fiber-optics/step-index-modes";
+import { rigrodOutput } from "../../../physics/fiber-optics/doped-fiber-gain";
+import { LASER_MAX_DELTA, fiberLaserSummary } from "../../../physics/fiber-optics/fiber-laser";
 
 const clamp = (x: number, lo: number, hi: number) => Math.min(Math.max(x, lo), hi);
 
@@ -42,43 +38,29 @@ export default function FiberLaserCalculator() {
   const gain_dB = clamp(gainRaw, 0.01, 60);
   const T = clamp(couplingRaw, 0.01, 99.99) / 100;
   const loss_dB = clamp(lossRaw, 0, 30);
-  // Silica core index: V, the mode count and the LP01 field depend only on a, NA and λ in the weak-guidance limit.
-  const fiber = { a: (clamp(coreRaw, 1, 1000) * 1e-6) / 2, n1: 1.45, NA: clamp(naRaw, 0.01, 1) };
-  const V = vNumber(fiber, ll_nm * 1e-9);
-  const modes = V <= MAX_EXACT_MODE_V ? guidedModeCount(V) : NaN;
-  const mfd = 2 * petermannIIRadius(fiber, ll_nm * 1e-9);
-  const cutoff = lp11CutoffWavelength(fiber);
-  // Core-cladding index step Δ = (n1² − n2²)/(2n1²) with n2² = n1² − NA².
-  const delta = fiber.NA ** 2 / (2 * fiber.n1 ** 2);
+  const coreDiameter_um = clamp(coreRaw, 1, 1000);
+  const NA = clamp(naRaw, 0.01, 1);
+  const { V, modes, mfd, cutoffWavelength: cutoff, delta, out, g0L, R1, optical, stokes, beyond, Topt, optOut, atT } = fiberLaserSummary({
+    pumpPower: pump, pumpLambda: lp_nm * 1e-9, laserLambda: ll_nm * 1e-9, slopeEfficiency: slope, thresholdPower: threshold,
+    gainDb: gain_dB, transmission: T, lossDb: loss_dB, coreDiameter: coreDiameter_um * 1e-6, NA,
+  });
 
-  const calc = useMemo(() => {
-    const out = pump > threshold ? slope * (pump - threshold) : 0;
-    const g0L = gain_dB / DB_PER_E_FOLD;
-    // Internal round-trip loss lumped into the rear mirror: R₁ = 10^(−loss/10).
-    const R1 = 10 ** (-loss_dB / 10);
-    const opt = optimumOutputCoupler(g0L, R1);
-    const atT = rigrodOutput(g0L, R1, 1 - T);
+  const calc = (() => {
     // Log-spaced from 0.01 % to 99.99 %.
     const Ts = Array.from({ length: 121 }, (_, i) => 10 ** (-4 + (4 * i) / 120)).map((t) => Math.min(t, 0.9999));
-    const rel = Ts.map((t) => (opt.output > 0 ? (100 * rigrodOutput(g0L, R1, 1 - t)) / opt.output : NaN));
+    const rel = Ts.map((t) => (optOut > 0 ? (100 * rigrodOutput(g0L, R1, 1 - t)) / optOut : NaN));
     const pumps = Array.from({ length: 101 }, (_, i) => (i * Math.max(2 * pump, 2 * threshold, 1)) / 100);
     const pOut = pumps.map((p) => (p > threshold ? slope * (p - threshold) : 0));
     const ok = rel.map((y) => Number.isFinite(y));
     return {
-      out,
-      optical: pump > 0 ? out / pump : 0,
-      stokes: stokesEfficiency(lp_nm, ll_nm),
-      beyond: efficiencyBeyondStokes(slope, lp_nm, ll_nm),
-      Topt: 1 - opt.R2,
-      optOut: opt.output,
-      atT,
+      out, optical, stokes, beyond, Topt, optOut, atT,
       data: [
         { x: pumps, y: pOut, type: "scatter" as const, mode: "lines" as const, name: "Output (W)", line: { color: "#10b981" }, xaxis: "x", yaxis: "y" },
         { x: Ts.filter((_, i) => ok[i]).map((t) => 100 * t), y: rel.filter((_, i) => ok[i]), type: "scatter" as const, mode: "lines" as const, name: "Rigrod output (% of optimum)", line: { color: "#3b82f6" }, xaxis: "x2", yaxis: "y2" },
-        { x: [100 * T], y: [opt.output > 0 ? (100 * atT) / opt.output : NaN], type: "scatter" as const, mode: "markers" as const, name: "Your coupler", marker: { color: "#facc15", size: 11, symbol: "diamond" as const, line: { color: "#ffffff", width: 1 } }, xaxis: "x2", yaxis: "y2" },
+        { x: [100 * T], y: [optOut > 0 ? (100 * atT) / optOut : NaN], type: "scatter" as const, mode: "markers" as const, name: "Your coupler", marker: { color: "#facc15", size: 11, symbol: "diamond" as const, line: { color: "#ffffff", width: 1 } }, xaxis: "x2", yaxis: "y2" },
       ],
     };
-  }, [pump, threshold, slope, gain_dB, loss_dB, T, lp_nm, ll_nm]);
+  })();
 
   const belowThreshold = !(calc.optOut > 0);
 
@@ -120,7 +102,7 @@ export default function FiberLaserCalculator() {
         <Card label="Single-Mode Cutoff Wavelength" value={`${(cutoff * 1e9).toFixed(0)} nm`} sub="LP11 cutoff 2πa·NA/2.405" tone="text-blue-400" />
       </div>
 
-      {delta > 0.02 && (
+      {delta > LASER_MAX_DELTA && (
         <div role="alert" className="bg-yellow-900/30 border border-yellow-700 text-yellow-200 rounded-lg p-3 mb-8 text-sm">
           Core–cladding Δ = {(delta * 100).toFixed(1)} % exceeds 2 %: weak-guidance formulas lose accuracy.
         </div>

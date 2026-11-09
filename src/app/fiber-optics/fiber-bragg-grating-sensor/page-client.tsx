@@ -4,11 +4,8 @@ import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import {
-  SMF28_FIT_T_MAX_C, SMF28_FIT_T_MIN_C, SMF28_REFERENCE_T_C, SMF28_THERMAL_COEFFICIENT, SMF28_THERMAL_COEFFICIENT_SLOPE,
-  braggShift, braggWavelength, couplingCoefficient, effectivePhotoelastic,
-  firstZeroBandwidth, peakReflectance, strainGaugeFactor, uniformFwhm, uniformGratingReflectance,
-} from "../../../physics/fiber-optics/fiber-bragg-grating";
+import { SMF28_REFERENCE_T_C, uniformGratingReflectance } from "../../../physics/fiber-optics/fiber-bragg-grating";
+import { braggSensorSummary } from "../../../physics/fiber-optics/fiber-bragg-grating-summary";
 
 const clamp = (x: number, lo: number, hi: number) => Math.min(Math.max(x, lo), hi);
 
@@ -19,31 +16,22 @@ export default function FiberBraggGratingSensorPage() {
   const [indexModulation, setIndexModulation] = useURLState("indexModulation", 1e-4);
   const [strain, setStrain] = useURLState("strain", 500); // µε
   const [tempChange, setTempChange] = useURLState("tempChange", 20); // K
-  const [thermalCoeff, setThermalCoeff] = useURLState("thermalCoeff", SMF28_THERMAL_COEFFICIENT * 1e6); // 1e-6/K
-  const [thermalSlope, setThermalSlope] = useURLState("thermalSlope", SMF28_THERMAL_COEFFICIENT_SLOPE * 1e8); // 1e-8/K²
+  const [thermalCoeff, setThermalCoeff] = useURLState("thermalCoeff", 6.165); // 1e-6/K, SMF-28 K_T at 20 °C (SMF28_THERMAL_COEFFICIENT)
+  const [thermalSlope, setThermalSlope] = useURLState("thermalSlope", 1.431); // 1e-8/K², SMF-28 dK_T/dT (SMF28_THERMAL_COEFFICIENT_SLOPE)
 
   const calc = useMemo(() => {
     const nEff = clamp(effectiveIndex, 1, 3);
-    const lambdaB = braggWavelength(nEff, clamp(gratingPeriod, 100, 1500) * 1e-9);
-    const g = { lambdaB, nEff, length: clamp(gratingLength, 0.1, 1000) * 1e-3, deltaN: clamp(indexModulation, 1e-8, 1e-2) };
-    const pe = effectivePhotoelastic(nEff);
-    const gauge = strainGaugeFactor(nEff);
-    const KT = clamp(thermalCoeff, 0, 100) * 1e-6;
     const eps = clamp(strain, -1e4, 1e4) * 1e-6;
-    const KT1 = clamp(thermalSlope, -100, 100) * 1e-8;
     const dT = clamp(tempChange, -100, 100); // from 20 °C; Cosme's K_T(T) fit covers −20…100 °C
-    const tempShiftAt = (t: number) => braggShift(lambdaB, 0, t, gauge, KT, KT1);
-    const strainShift = braggShift(lambdaB, eps, 0, gauge, KT);
-    const tempShift = tempShiftAt(dT);
-    const totalShift = strainShift + tempShift;
+    const KT = clamp(thermalCoeff, 0, 100) * 1e-6;
+    const r = braggSensorSummary(
+      clamp(gratingPeriod, 100, 1500) * 1e-9, nEff, clamp(gratingLength, 0.1, 1000) * 1e-3, clamp(indexModulation, 1e-8, 1e-2),
+      eps, dT, KT, clamp(thermalSlope, -100, 100) * 1e-8,
+    );
     return {
-      strainUe: eps * 1e6, dT, tempShiftAt,
-      outsideFit: SMF28_REFERENCE_T_C + dT < SMF28_FIT_T_MIN_C || SMF28_REFERENCE_T_C + dT > SMF28_FIT_T_MAX_C,
-      g, lambdaB, pe, gauge, KT, strainShift, tempShift, totalShift, shiftedLambdaB: lambdaB + totalShift,
-      reflectivity: peakReflectance(couplingCoefficient(g.deltaN, lambdaB) * g.length),
-      fwhm: uniformFwhm(g), zeroWidth: firstZeroBandwidth(g),
-      strainPm: braggShift(lambdaB, 1e-6, 0, gauge, KT) * 1e12, // pm/µε
-      tempPm: braggShift(lambdaB, 0, 1, gauge, KT) * 1e12, // pm/K at 20 °C (the K_T term alone)
+      ...r, strainUe: eps * 1e6, dT, KT,
+      strainPm: r.strainPerMicrostrain * 1e12, // pm/µε
+      tempPm: r.tempPerKelvin * 1e12, // pm/K at 20 °C (the K_T term alone)
     };
   }, [gratingPeriod, effectiveIndex, gratingLength, indexModulation, strain, tempChange, thermalCoeff, thermalSlope]);
 
