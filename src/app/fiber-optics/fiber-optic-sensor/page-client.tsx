@@ -1,18 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import {
-  SMF28_THERMAL_COEFFICIENT, braggShift, phaseStrainSensitivity, phaseTemperatureSensitivity, strainGaugeFactor,
-} from "../../../physics/fiber-optics/fiber-bragg-grating";
-import {
-  WATER_DN_DT, WATER_INDEX_1550, cavityReflectance, freeSpectralRange, penetrationDepth, penetrationDepthSensitivity,
-} from "../../../physics/fiber-optics/fiber-sensors";
-import { coefficientOfFinesse } from "../../../physics/thin-film/interference";
+import { strainGaugeFactor } from "../../../physics/fiber-optics/fiber-bragg-grating";
+import { WATER_DN_DT, WATER_INDEX_1550, cavityReflectance, penetrationDepth } from "../../../physics/fiber-optics/fiber-sensors";
+import { EVANESCENT_DT_MAX, SENSOR_DT_MAX, sensorResponse, type SensorType } from "../../../physics/fiber-optics/fiber-optic-sensor";
 
-type SensorType = "fbg" | "mach_zehnder" | "fabry_perot" | "evanescent";
 const SENSOR_TYPES: SensorType[] = ["fbg", "mach_zehnder", "fabry_perot", "evanescent"];
 const clamp = (x: number, lo: number, hi: number) => Math.min(Math.max(x, lo), hi);
 
@@ -41,49 +35,20 @@ export default function FiberOpticSensorPage() {
   const lambda = clamp(wavelength, 400, 2000) * 1e-9;
   // Water dn/dT is only roughly constant within ±30 K of room temperature; the fibre K_T is linear in T over −20…100 °C
   // (Cosme 2026 Table 3), so a constant K_T reads ≈ 0.12 % low per kelvin of ΔT; the FBG sensor page adds the slope.
-  const dTMax = sensorType === "evanescent" ? 30 : 100;
+  const dTMax = sensorType === "evanescent" ? EVANESCENT_DT_MAX : SENSOR_DT_MAX;
   const dT = clamp(tempChange, -dTMax, dTMax);
   const eps = clamp(strain, -1e4, 1e4) * 1e-6;
   const nEff = clamp(nEffRaw, 1, 3);
   const gauge = strainGaugeFactor(nEff);
-  const KT = SMF28_THERMAL_COEFFICIENT;
 
-  const calc = useMemo(() => {
-    switch (sensorType) {
-      case "fbg": {
-        const strainShift = braggShift(lambda, eps, 0, gauge, KT);
-        const tempShift = braggShift(lambda, 0, dT, gauge, KT);
-        return {
-          kind: "fbg" as const, strainShift, tempShift, total: strainShift + tempShift,
-          strainPm: braggShift(lambda, 1e-6, 0, gauge, KT) * 1e12, tempPm: braggShift(lambda, 0, 1, gauge, KT) * 1e12,
-        };
-      }
-      case "mach_zehnder": {
-        const L = clamp(gaugeLength, 0.1, 1e5) * 1e-3;
-        const perStrain = phaseStrainSensitivity(lambda, nEff, L, gauge); // rad per unit strain
-        const perK = phaseTemperatureSensitivity(lambda, nEff, L, KT);
-        return { kind: "mzi" as const, perMicrostrain: perStrain * 1e-6, perK, phase: perStrain * eps + perK * dT, perStrain };
-      }
-      case "fabry_perot": {
-        // Plane-wave Airy model: beyond ≈ 20 µm the second reflection diffracts and recouples poorly into SMF (input allowed to 50 µm, contrast overstated there).
-        const d = clamp(cavityLength, 1, 50) * 1e-6;
-        const R = clamp(mirrorR, 0, 0.9);
-        const F = coefficientOfFinesse(R);
-        return { kind: "efpi" as const, d, R, F, fsr: freeSpectralRange(lambda, 1, d), peak: F / (1 + F), fringeShift: lambda * eps };
-      }
-      case "evanescent": {
-        const nExt0 = clamp(nExtRaw, 1, 3);
-        const nExt = nExt0 + WATER_DN_DT * dT;
-        return {
-          kind: "evanescent" as const, nExt0, nExt,
-          dp: penetrationDepth(lambda, nEff, nExt), dp0: penetrationDepth(lambda, nEff, nExt0),
-          sens: penetrationDepthSensitivity(lambda, nEff, nExt),
-        };
-      }
-    }
-  }, [sensorType, lambda, eps, dT, gauge, KT, nEff, gaugeLength, cavityLength, mirrorR, nExtRaw]);
+  const armLength = clamp(gaugeLength, 0.1, 1e5) * 1e-3;
+  const gap = clamp(cavityLength, 1, 50) * 1e-6; // plane-wave Airy model: input allowed to 50 µm, contrast overstated beyond ≈ 20 µm
+  const mirror = clamp(mirrorR, 0, 0.9);
+  const nExt = clamp(nExtRaw, 1, 3);
 
-  const chart = useMemo(() => {
+  const calc = sensorResponse(sensorType, { lambda, strain: eps, deltaT: dT, nEff, gaugeLength: armLength, cavityLength: gap, mirrorR: mirror, nExt });
+
+  const chart = (() => {
     const line = (x: number[], y: number[], name: string, color: string) =>
       [{ x, y: y.map((v) => (Number.isFinite(v) ? v : null)), type: "scatter" as const, mode: "lines" as const, name, line: { color } }];
     // Strain axis: 0…max(2000, 1.2·|ε|) µε, extended to negative ε when the input is negative.
@@ -124,7 +89,7 @@ export default function FiberOpticSensorPage() {
         };
       }
     }
-  }, [calc, lambda, nEff, eps]);
+  })();
 
   const pm = (v: number) => `${(v * 1e12).toFixed(1)} pm`;
   const nmOrDash = (v: number, digits = 1) => (Number.isFinite(v) ? `${(v * 1e9).toFixed(digits)} nm` : "not guided");

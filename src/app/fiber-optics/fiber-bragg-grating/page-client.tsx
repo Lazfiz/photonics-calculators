@@ -4,12 +4,7 @@ import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import {
-  chirpedBandwidth, chirpedGratingDispersion, couplingCoefficient, firstZeroBandwidth, gratingSections,
-  maxChirp, peakReflectance, spectrumFwhm, transferMatrixReflectance, uniformFwhm, uniformGratingReflectance,
-} from "../../../physics/fiber-optics/fiber-bragg-grating";
-
-type GratingType = "uniform" | "apodized" | "chirped";
+import { braggGratingSummary, type GratingType } from "../../../physics/fiber-optics/fiber-bragg-grating-summary";
 const clamp = (x: number, lo: number, hi: number) => Math.min(Math.max(x, lo), hi);
 
 export default function FiberBraggGratingCalculator() {
@@ -26,38 +21,11 @@ export default function FiberBraggGratingCalculator() {
     const nEff = clamp(effectiveIndex, 1, 3);
     const length = clamp(gratingLength, 0.1, 1000) * 1e-3;
     const deltaN = clamp(indexModulation, 1e-8, 1e-2);
-    // nm/mm → m/m, limited so that λ_B(z) stays within ±5 % of λ_B.
-    const chirpLimit = maxChirp(lambdaB, length);
-    const chirp = type === "chirped" ? clamp(chirpRate * 1e-6, -chirpLimit, chirpLimit) : 0;
-    const g = { lambdaB, nEff, length, deltaN };
-    const period = lambdaB / (2 * nEff);
-    const kappaL = couplingCoefficient(deltaN, lambdaB) * length;
-    const zeroWidth = firstZeroBandwidth(g);
-
-    // Piecewise-uniform model for apodized and chirped gratings (200–5000 sections, each ≥ 20 periods).
-    const sections = gratingSections({ ...g, apodization: type === "apodized" ? "gaussian" : "uniform", chirp });
-    const reflect = (lam: number) =>
-      type === "uniform" ? uniformGratingReflectance(g, lam) : transferMatrixReflectance(sections, nEff, lam);
-
-    const halfSpan = 1.5 * zeroWidth + chirpedBandwidth(chirp, length) / 2;
-    const n = 600;
-    const x: number[] = [], y: (number | null)[] = [];
-    for (let i = 0; i <= n; i++) {
-      const lam = lambdaB - halfSpan + (2 * halfSpan * i) / n;
-      const R = reflect(lam);
-      x.push(lam * 1e9);
-      y.push(Number.isFinite(R) ? R : null);
-    }
-    const sampledPeak = Math.max(...y.map((v) => v ?? 0));
-
+    const s = braggGratingSummary({ lambdaB, nEff, length, deltaN }, type, chirpRate * 1e-6); // nm/mm → m/m
     return {
-      period, numPeriods: length / period, kappaL, zeroWidth,
-      peak: type === "uniform" ? peakReflectance(kappaL) : sampledPeak,
-      fwhm: type === "uniform" ? uniformFwhm(g) : spectrumFwhm(reflect, lambdaB - halfSpan, lambdaB + halfSpan, n),
-      chirpWidth: chirpedBandwidth(chirp, length),
-      chirpClamped: type === "chirped" && Math.abs(chirpRate * 1e-6) > chirpLimit, chirpLimit,
-      dispersion: chirpedGratingDispersion(nEff, chirp) * 1e3, // s/m → ps/nm
-      spectrum: { x, y },
+      ...s,
+      dispersion: s.dispersion * 1e3, // s/m → ps/nm
+      spectrum: { x: s.spectrum.x.map((lam) => lam * 1e9), y: s.spectrum.y },
     };
   }, [braggWavelength, effectiveIndex, gratingLength, indexModulation, type, chirpRate]);
 

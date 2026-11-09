@@ -12,6 +12,17 @@ import dispersionMap from "./fiber-optics/dispersion-map";
 import dispersionShifted from "./fiber-optics/dispersion-shifted";
 import fiberAmplifier from "./fiber-optics/fiber-amplifier";
 import fiberBandwidth from "./fiber-optics/fiber-bandwidth";
+import fiberBraggGrating from "./fiber-optics/fiber-bragg-grating";
+import fiberBraggGratingSensor from "./fiber-optics/fiber-bragg-grating-sensor";
+import fiberBundle from "./fiber-optics/fiber-bundle";
+import fiberCharacterization from "./fiber-optics/fiber-characterization";
+import fiberCoupler from "./fiber-optics/fiber-coupler";
+import fiberDelayLine from "./fiber-optics/fiber-delay-line";
+import fiberGyroscope from "./fiber-optics/fiber-gyroscope";
+import fiberLaser from "./fiber-optics/fiber-laser";
+import fiberLoopMirror from "./fiber-optics/fiber-loop-mirror";
+import fiberOpticSensor from "./fiber-optics/fiber-optic-sensor";
+import fiberTaper from "./fiber-optics/fiber-taper";
 import acquisitionTracking from "./free-space-comms/acquisition-tracking";
 import adaptiveOptics from "./free-space-comms/adaptive-optics";
 import apertureAveraging from "./free-space-comms/aperture-averaging";
@@ -310,6 +321,8 @@ export const schemas: readonly CalculatorSchema[] = [
   wedgeFilm, wideBandpass,
   attenuation, bendInsensitive, birefringenceFiber, fiberChromaticDispersion, connectorInsertionLoss, connectorReturnLoss,
   dShapedFiber, dispersionComp, dispersionShifted, fiberAmplifier, fiberBandwidth,
+  fiberBraggGrating, fiberBraggGratingSensor, fiberBundle, fiberCharacterization, fiberCoupler, fiberDelayLine,
+  fiberGyroscope, fiberLaser, fiberLoopMirror, fiberOpticSensor, fiberTaper,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));

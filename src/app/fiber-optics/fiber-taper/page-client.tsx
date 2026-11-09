@@ -6,17 +6,12 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  adiabaticityScan, coreCladdingTransitionRatio, lp0Modes, taperRadiusAt, taperShape, transitionVEstimate,
+  SCALAR_LIMIT_V_CLAD, SINGLE_MODE_V, taperRadiusAt, taperSummary,
 } from "../../../physics/fiber-optics/fiber-taper";
-import { coreIndexFromNA, numericalAperture } from "../../../physics/fiber-optics/step-index-modes";
 
 const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
-/** TE01/TM01 cut off at V = 2.405 for any index contrast, so below it the cladding–surround guide carries only HE11. */
-const SINGLE_MODE_V = 2.405;
 /** Diameter in µm with 1 decimal, or 3 significant figures below 1 µm (strong pulls). */
 const fmtDia = (d_um: number) => (Number.isFinite(d_um) && d_um < 1 ? `${d_um.toPrecision(3)} µm` : fmt(d_um, 1, " µm"));
-/** Below this V_clad the scalar treatment of the cladding–surround boundary is no longer a fair approximation. */
-const SCALAR_LIMIT_V_CLAD = 10;
 
 export default function FiberTaperPage() {
   const [initialDia, setInitialDia] = useURLState("initialDia", 125, { min: 10, max: 1000 }); // µm, cladding
@@ -30,40 +25,16 @@ export default function FiberTaperPage() {
   const [alpha, setAlpha] = useURLState("alpha", 0, { min: -0.9, max: 0.9 });
 
   const calc = useMemo(() => {
-    const lambda = wavelength * 1e-9;
-    const pull = { r0: (initialDia / 2) * 1e-6, L0: hotZone * 1e-3, x: elongation * 1e-3, alpha };
-    const fibre0 = {
-      a: (coreDia / 2) * 1e-6, rho: pull.r0, n1: coreIndexFromNA(nClad, na), n2: nClad, n3: nExt,
-    };
-    const shape = taperShape(pull);
-    const ratio = shape.waistRadius / pull.r0;
-    const k = (2 * Math.PI) / lambda;
-    const V0 = k * fibre0.a * na;
-    const tcc = coreCladdingTransitionRatio(fibre0, lambda);
-    const waist = { ...fibre0, a: fibre0.a * ratio, rho: shape.waistRadius };
-    const [nEffWaist] = lp0Modes(waist, lambda, 1);
-    const cladNA = numericalAperture(nClad, nExt);
-    const scan = adiabaticityScan(pull, fibre0, lambda, 40);
-    // Ω_d is NaN where no LP01 is found (waists far below the wavelength); count those points instead of hiding them.
-    let worst: (typeof scan)[number] | undefined;
-    let undefinedPoints = 0;
-    for (const s of scan) {
-      const r = s.angle / s.delineation;
-      if (!Number.isFinite(r)) undefinedPoints++;
-      else if (!worst || r > worst.angle / worst.delineation) worst = s;
-    }
+    const s = taperSummary({
+      initialDia: initialDia * 1e-6, coreDia: coreDia * 1e-6, na, nClad, nExt, lambda: wavelength * 1e-9,
+      hotZone: hotZone * 1e-3, elongation: elongation * 1e-3, alpha,
+    });
     return {
-      pull, shape, ratio, V0, tcc, nEffWaist, scan, worst, undefinedPoints,
-      valid: Number.isFinite(shape.waistRadius) && Number.isFinite(tcc),
-      coreWaist_um: coreDia * ratio,
-      VcoreWaist: V0 * ratio,
-      VcladWaist: k * shape.waistRadius * cladNA,
-      singleModeDia_um: ((2 * SINGLE_MODE_V) / (k * cladNA)) * 1e6,
-      transitionDia_um: initialDia * tcc,
-      Vcc: V0 * tcc,
-      VccEstimate: transitionVEstimate(initialDia / coreDia),
-      decay_um: nEffWaist !== undefined ? (1 / (k * Math.sqrt(nEffWaist ** 2 - nExt ** 2))) * 1e6 : NaN,
-      worstRatio: worst ? worst.angle / worst.delineation : NaN,
+      ...s,
+      coreWaist_um: s.coreWaist * 1e6,
+      singleModeDia_um: s.singleModeDia * 1e6,
+      transitionDia_um: s.transitionDia * 1e6,
+      decay_um: s.decay * 1e6,
     };
   }, [initialDia, coreDia, na, nClad, nExt, wavelength, hotZone, elongation, alpha]);
 

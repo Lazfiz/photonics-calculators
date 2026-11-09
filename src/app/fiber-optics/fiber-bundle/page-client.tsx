@@ -5,7 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  HEX_PACKING_LIMIT, bundleFill, fiberEtendue, hexBundleDiameter, hexFiberCount, hexRingCount, squareBundleDiameter,
+  bundleFill, bundleSummary, hexBundleDiameter, hexFiberCount, squareBundleDiameter,
 } from "../../../physics/fiber-optics/fiber-bundle";
 
 type Packing = "hexagonal" | "square";
@@ -35,19 +35,8 @@ export default function FiberBundlePage() {
   const na = clamp(naRaw, 0.01, 1);
 
   const calc = useMemo(() => {
-    const dClad = dClad_um * 1e-6, dCore = dCore_um * 1e-6;
-    const D = packing === "hexagonal" ? hexBundleDiameter(N, dClad) : squareBundleDiameter(N, dClad);
-    const coreFill = bundleFill(N, dCore, D);
-    return {
-      D,
-      rings: hexRingCount(N),
-      fullCount: hexFiberCount(hexRingCount(N)),
-      cladFill: bundleFill(N, dClad, D),
-      coreFill,
-      packingLoss: -10 * Math.log10(coreFill),
-      etendue: N * fiberEtendue(dCore, na) * 1e6, // mm²·sr
-      arrayLimit: HEX_PACKING_LIMIT * (dCore / dClad) ** 2,
-    };
+    const r = bundleSummary(N, dCore_um * 1e-6, dClad_um * 1e-6, na, packing);
+    return { ...r, etendue: r.etendue * 1e6 }; // mm²·sr
   }, [N, dCore_um, dClad_um, na, packing]);
 
   const chartData = useMemo(() => {

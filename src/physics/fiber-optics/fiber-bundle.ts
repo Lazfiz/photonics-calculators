@@ -59,3 +59,27 @@ export function combinerEtendueRatio(
 export function taperedPumpNA(pumpNA: number, bundleDiameter: number, outputDiameter: number): number {
   return bundleDiameter > 0 && outputDiameter > 0 ? pumpNA * Math.max(1, bundleDiameter / outputDiameter) : NaN;
 }
+
+export type BundlePacking = "hexagonal" | "square";
+
+/**
+ * Bundle summary used by the fibre-bundle page and its API schema. Fibre count (rounded up to a whole number), core and
+ * cladding diameters in m, NA dimensionless; packing "hexagonal" or "square".
+ * Returns the circumscribing diameter D (m), ring count, full-ring fibre count, cladding fill, core fill, packing loss
+ * -10 log10(core fill) in dB, total étendue N·π·A_core·NA² (m²·sr) and the infinite-array core fill.
+ */
+export function bundleSummary(fiberCount: number, coreDiameter: number, claddingDiameter: number, na: number, packing: BundlePacking) {
+  const D = packing === "hexagonal" ? hexBundleDiameter(fiberCount, claddingDiameter) : squareBundleDiameter(fiberCount, claddingDiameter);
+  const rings = hexRingCount(fiberCount);
+  const coreFill = bundleFill(fiberCount, coreDiameter, D);
+  return {
+    D,
+    rings,
+    fullCount: hexFiberCount(rings),
+    cladFill: bundleFill(fiberCount, claddingDiameter, D),
+    coreFill,
+    packingLoss: -10 * Math.log10(coreFill),
+    etendue: fiberCount * fiberEtendue(coreDiameter, na),
+    arrayLimit: HEX_PACKING_LIMIT * (coreDiameter / claddingDiameter) ** 2,
+  };
+}
