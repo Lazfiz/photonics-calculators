@@ -90,3 +90,39 @@ export function maxAbsorption(dynamicRange: number, n: number, d: number): numbe
   if (!(dynamicRange >= 1 && n > 0 && d > 0)) return NaN;
   return Math.max(0, (2 / d) * Math.log((dynamicRange * 4 * n) / (n + 1) ** 2));
 }
+
+/** The page's sample choice: liquid water, a solid with one Lorentz phonon mode, or a constant n and α. */
+export type TerahertzModel = "water" | "lorentz" | "constant";
+
+/** Sample parameters in SI: temperature in K, f₀ and γ in Hz, α in m⁻¹; each model reads only its own. */
+export interface TerahertzSample {
+  model: TerahertzModel;
+  temperature: number;
+  epsInf: number;
+  deltaEps: number;
+  f0: number;
+  gamma: number;
+  n: number;
+  alpha: number;
+}
+
+/** Relative permittivity of the chosen sample model at frequency f (Hz). */
+export function samplePermittivity(sample: TerahertzSample, f: number): Complex {
+  if (sample.model === "water") return waterPermittivity(f, sample.temperature);
+  if (sample.model === "lorentz") return lorentzPermittivity(f, sample.epsInf, sample.deltaEps, sample.f0, sample.gamma);
+  return constantPermittivity(f, sample.n, sample.alpha);
+}
+
+/**
+ * Index ñ, absorption coefficient α (m⁻¹), slab transmission (|T| and unwrapped phase) and the dynamic-range limit
+ * α_max (m⁻¹) of the sample at frequency f (Hz), thickness d (m), for a field dynamic range DR (amplitude ratio).
+ */
+export function terahertzPoint(sample: TerahertzSample, f: number, d: number, dynamicRange: number) {
+  const nk = complexIndex(samplePermittivity(sample, f));
+  return {
+    nk,
+    alpha: absorptionCoefficient(nk, f),
+    t: slabTransmissionPolar(nk, f, d),
+    aMax: maxAbsorption(dynamicRange, nk.re, d),
+  };
+}

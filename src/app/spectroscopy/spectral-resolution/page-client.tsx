@@ -5,10 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import {
-  airyTransmission, diffractionLimit, fabryPerotResolution, gratingAngularDispersion, gratingDiffractionAngle,
-  gratingDiffractionLimit, gratingMaxOrder, gratingSlitBandpass, slitBandpass,
-} from "../../../physics/spectroscopy/spectral-resolution";
+import { airyTransmission, spectralResolutionByMode } from "../../../physics/spectroscopy/spectral-resolution";
 
 const DEG = Math.PI / 180;
 const fmt = (x: number, digits = 3) =>
@@ -42,27 +39,10 @@ export default function SpectralResolutionPage() {
   const w = slitWidth * 1e-6;
   const f = focalLength * 1e-3;
 
-  const calc = useMemo(() => {
-    if (mode === "fabry-perot") {
-      const res = fabryPerotResolution(fsrNm * 1e-9, finesse);
-      return { kind: "fp" as const, res, slit: NaN, diff: NaN, beta: NaN, recipLinear: NaN, maxOrder: NaN };
-    }
-    if (mode === "prism") {
-      const dThetaDl = dispersion * 1e9; // rad/nm → rad/m
-      const slit = slitBandpass(w, f, dThetaDl);
-      const diff = diffractionLimit(lambda, beamWidth * 1e-3, dThetaDl);
-      return { kind: "dispersive" as const, res: Math.max(slit, diff), slit, diff, beta: NaN, recipLinear: 1 / (f * dThetaDl), maxOrder: NaN };
-    }
-    const d = 1e-3 / grooveDensity;
-    const incidence = centralAngle * DEG;
-    const beta = gratingDiffractionAngle(lambda, d, order, incidence);
-    const maxOrder = gratingMaxOrder(lambda, d, incidence);
-    if (!Number.isFinite(beta)) return { kind: "unreachable" as const, res: NaN, slit: NaN, diff: NaN, beta, recipLinear: NaN, maxOrder };
-    const slit = gratingSlitBandpass(w, d, order, incidence, f);
-    const diff = gratingDiffractionLimit(lambda, order, gratingWidth * 1e-3, d);
-    const recipLinear = 1 / (f * gratingAngularDispersion(d, order, beta)); // m of wavelength per m at the focal plane
-    return { kind: "dispersive" as const, res: Math.max(slit, diff), slit, diff, beta, recipLinear, maxOrder };
-  }, [mode, lambda, w, f, grooveDensity, centralAngle, order, gratingWidth, dispersion, beamWidth, finesse, fsrNm]);
+  const calc = useMemo(() => spectralResolutionByMode({
+    mode, lambda, slitWidth: w, focalLength: f, grooveSpacing: 1e-3 / grooveDensity, order, incidence: centralAngle * DEG,
+    gratingWidth: gratingWidth * 1e-3, angularDispersion: dispersion * 1e9, beamWidth: beamWidth * 1e-3, fsr: fsrNm * 1e-9, finesse,
+  }), [mode, lambda, w, f, grooveDensity, centralAngle, order, gratingWidth, dispersion, beamWidth, finesse, fsrNm]);
 
   const chartData = useMemo(() => {
     if (calc.kind === "fp") {

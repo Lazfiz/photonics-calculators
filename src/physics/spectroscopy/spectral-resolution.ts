@@ -226,3 +226,75 @@ export function airyTransmission(detuning: number, fsr: number, finesse: number)
   const s = Math.sin((Math.PI * detuning) / fsr);
   return 1 / (1 + ((2 * finesse) / Math.PI) ** 2 * s * s);
 }
+
+/**
+ * Spectral range and resolution of a fixed-deviation grating spectrometer with a flat array detector of width W and
+ * `pixels` pixels (the spectral-range page, one row of results). The resolution is the largest of the slit limit, two
+ * pixels per resolution element (Nyquist, 2 · pitch · reciprocal dispersion at the centre) and the diffraction limit.
+ * Everything is NaN when the centre wavelength cannot be reached (see `detectorCoverage`).
+ */
+export function spectrometerRange(
+  lambdaCentre: number, grooveSpacing: number, order: number, deviation: number, detectorWidth: number, focalLength: number,
+  pixels: number, slitWidth: number, gratingWidth: number,
+) {
+  const cov = detectorCoverage(lambdaCentre, grooveSpacing, order, deviation, detectorWidth, focalLength);
+  const recip = flatDetectorReciprocalDispersion(grooveSpacing, order, cov.beta0, cov.beta0, focalLength); // m per m at the centre
+  const slitLimit = gratingSlitBandpass(slitWidth, grooveSpacing, order, cov.incidence, focalLength);
+  const pixelLimit = 2 * (detectorWidth / pixels) * recip;
+  const diffLimit = gratingDiffractionLimit(lambdaCentre, order, gratingWidth, grooveSpacing);
+  const resolution = Math.max(slitLimit, pixelLimit, diffLimit);
+  const limitedBy = resolution === slitLimit ? "slit-limited" : resolution === pixelLimit ? "pixel-limited (2 px)" : "diffraction-limited";
+  return { cov, range: cov.lambdaHigh - cov.lambdaLow, recip, slitLimit, pixelLimit, diffLimit, resolution, limitedBy };
+}
+
+export interface ResolutionResult {
+  kind: "fp" | "dispersive" | "unreachable";
+  /** Resolution δλ, m. */
+  res: number;
+  slit: number;
+  diff: number;
+  /** Grating diffraction angle β, rad (NaN for other modes). */
+  beta: number;
+  /** Reciprocal linear dispersion, m/m. */
+  recipLinear: number;
+  maxOrder: number;
+}
+
+/** Inputs of `spectralResolutionByMode` in SI (m, rad, rad/m). */
+export interface ResolutionInputs {
+  mode: string;
+  lambda: number;
+  slitWidth: number;
+  focalLength: number;
+  grooveSpacing: number;
+  order: number;
+  incidence: number;
+  gratingWidth: number;
+  /** Prism angular dispersion dθ/dλ, rad/m. */
+  angularDispersion: number;
+  beamWidth: number;
+  fsr: number;
+  finesse: number;
+}
+
+/** Resolution of a grating ("grating"), prism ("prism") or Fabry-Pérot ("fabry-perot") spectrometer (the page's dispatch). */
+export function spectralResolutionByMode(p: ResolutionInputs): ResolutionResult {
+  if (p.mode === "fabry-perot") {
+    return { kind: "fp", res: fabryPerotResolution(p.fsr, p.finesse), slit: NaN, diff: NaN, beta: NaN, recipLinear: NaN, maxOrder: NaN };
+  }
+  if (p.mode === "prism") {
+    const slit = slitBandpass(p.slitWidth, p.focalLength, p.angularDispersion);
+    const diff = diffractionLimit(p.lambda, p.beamWidth, p.angularDispersion);
+    return {
+      kind: "dispersive", res: Math.max(slit, diff), slit, diff, beta: NaN,
+      recipLinear: 1 / (p.focalLength * p.angularDispersion), maxOrder: NaN,
+    };
+  }
+  const beta = gratingDiffractionAngle(p.lambda, p.grooveSpacing, p.order, p.incidence);
+  const maxOrder = gratingMaxOrder(p.lambda, p.grooveSpacing, p.incidence);
+  if (!Number.isFinite(beta)) return { kind: "unreachable", res: NaN, slit: NaN, diff: NaN, beta, recipLinear: NaN, maxOrder };
+  const slit = gratingSlitBandpass(p.slitWidth, p.grooveSpacing, p.order, p.incidence, p.focalLength);
+  const diff = gratingDiffractionLimit(p.lambda, p.order, p.gratingWidth, p.grooveSpacing);
+  const recipLinear = 1 / (p.focalLength * gratingAngularDispersion(p.grooveSpacing, p.order, beta));
+  return { kind: "dispersive", res: Math.max(slit, diff), slit, diff, beta, recipLinear, maxOrder };
+}

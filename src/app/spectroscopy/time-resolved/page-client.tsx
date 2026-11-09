@@ -5,7 +5,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  amplitudeWeightedLifetime, convolvedDecay, decayIntensity, gaussianPulseBandwidth, intensityWeightedLifetime, periodicDecay,
+  amplitudeWeightedLifetime, convolvedDecay, decayIntensity, gaussianPulseBandwidth, intensityWeightedLifetime, lateFraction, periodicDecay, twoComponentDecay,
   type DecayComponent,
 } from "../../../physics/spectroscopy/fluorescence-lifetime";
 import { GAUSSIAN_FWHM_PER_SIGMA } from "../../../physics/math";
@@ -40,14 +40,13 @@ export default function TimeResolvedPage() {
   const a2 = clamp(a2Raw, 0, 1, 0);
   const range = clamp(rangeRaw, 0.01, 1e5, 10) * ns;
 
-  const components: DecayComponent[] = a2 > 0 ? [{ amplitude: 1 - a2, lifetime: tau1 }, { amplitude: a2, lifetime: tau2 }] : [{ amplitude: 1, lifetime: tau1 }];
+  const components: DecayComponent[] = twoComponentDecay(tau1, tau2, a2);
   const tauInt = intensityWeightedLifetime(components);
   const tauAmp = amplitudeWeightedLifetime(components);
   const tauLong = Math.max(...components.map((c) => c.lifetime));
   const leftover = Math.exp(-period / tauLong);
   // photons of one pulse emitted after the next pulse: Σ αᵢτᵢ e^(−T/τᵢ) / Σ αᵢτᵢ
-  const lateFraction = components.reduce((s, c) => s + c.amplitude * c.lifetime * Math.exp(-period / c.lifetime), 0)
-    / components.reduce((s, c) => s + c.amplitude * c.lifetime, 0);
+  const late = lateFraction(components, period);
   const bw = gaussianPulseBandwidth(pulse, laserNm * 1e-9);
 
   // uniform grid plus a dense window around the IRF, so a narrow IRF is drawn
@@ -86,7 +85,7 @@ export default function TimeResolvedPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="Pulse Period 1/f" value={`${fmt(period / ns, 4)} ns`} tone={leftover > 0.01 ? "orange" : "green"}
-          subtext={`decay left at the next pulse e^(−T/τ) = ${fmt(leftover, 3)}; ${fmt(lateFraction * 100, 3)} % of the photons arrive after it`} />
+          subtext={`decay left at the next pulse e^(−T/τ) = ${fmt(leftover, 3)}; ${fmt(late * 100, 3)} % of the photons arrive after it`} />
         <ResultCard label="Centroid Shift ⟨t⟩ − t₀" value={`${fmt(tauInt / ns, 4)} ns`} tone="blue"
           subtext={`= intensity-weighted ⟨τ⟩ (one pulse, full decay); amplitude-weighted ${fmt(tauAmp / ns, 4)} ns`} />
         <ResultCard label="Measured Peak After t₀" value={t0 < range ? `${fmt((times[peakIdx] - t0) / ns * 1e3, 3)} ps` : "—"} tone="purple"

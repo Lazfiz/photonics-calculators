@@ -159,8 +159,18 @@ import phaseCorrection from "./spectroscopy/phase-correction";
 import pumpProbe from "./spectroscopy/pump-probe";
 import ramanShift from "./spectroscopy/raman-shift";
 import spectralCalibration from "./spectroscopy/spectral-calibration";
+import spectralDeconvolution from "./spectroscopy/spectral-deconvolution";
 import spectralLineBroadening from "./spectroscopy/spectral-line-broadening";
+import spectralRange from "./spectroscopy/spectral-range";
+import spectralResolution from "./spectroscopy/spectral-resolution";
+import stokesShift from "./spectroscopy/stokes-shift";
+import strayLight from "./spectroscopy/stray-light";
 import sumFrequencyGen from "./spectroscopy/sum-frequency-gen";
+import surfaceEnhancedRaman from "./spectroscopy/surface-enhanced-raman";
+import terahertzSpectroscopy from "./spectroscopy/terahertz-spectroscopy";
+import timeResolved from "./spectroscopy/time-resolved";
+import twoDimensional from "./spectroscopy/two-dimensional";
+import wavenumberConverter from "./spectroscopy/wavenumber-converter";
 import singleAr from "./thin-film/single-ar";
 import type { CalculatorSchema } from "./types";
 import abcdMatrix from "./wave-optics/abcd-matrix";
@@ -232,9 +242,10 @@ export const schemas: readonly CalculatorSchema[] = [
   industrialLaserSafety, lidarSafety, medicalLaserSafety, researchLabSafety, scanningMpe, ultrafastLaserSafety,
   absorptionCrossSection, absorptionDepth, apodizationComparison, concMirror, dispersiveElement, dualCombSpectroscopy,
   electronSpectroscopy, etalonFsr, fluorescenceQuantumYield, fourierTransform, gratingEfficiency, jacquinot,
-
   libsAnalysis, michelsonInterferometer, microwaveSpectroscopy, nearInfrared, opticalDensity, opticalPathLength,
   penetrationDepth, phaseCorrection, pumpProbe, ramanShift, spectralCalibration,
+  spectralDeconvolution, spectralRange, spectralResolution, stokesShift, strayLight, surfaceEnhancedRaman,
+  terahertzSpectroscopy, timeResolved, twoDimensional, wavenumberConverter,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));
