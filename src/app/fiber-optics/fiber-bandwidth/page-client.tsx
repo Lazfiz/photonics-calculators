@@ -6,10 +6,9 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  SELLMEIER_FIBERS, type ChannelDispersion, type SellmeierFiberKey, channelAt, channelRmsWidth, dispersionLimitedLength,
-  gaussianBandwidth, gaussianRmsFromBandwidth, optimumOutputRmsWidth, sellmeierDispersion, sellmeierSlope,
+  SELLMEIER_FIBERS, type SellmeierFiberKey, fiberLinkSummary, linkBitRateLimit, linkReach, optimumOutputRmsWidth,
 } from "../../../physics/fiber-optics/chromatic-dispersion";
-import { MEAN_DGD_BIT_FRACTION, meanDgd, pmdLimitedLength } from "../../../physics/fiber-optics/polarization-mode-dispersion";
+import { MEAN_DGD_BIT_FRACTION, meanDgd } from "../../../physics/fiber-optics/polarization-mode-dispersion";
 
 const nm = 1e-9, km = 1e3, ps = 1e-12;
 const PS_NM_KM = 1e-6;
@@ -20,16 +19,6 @@ const RATES = [1, 2.5, 10, 25, 40, 50, 100, 200, 400]; // Gb/s
 // Default source rms widths when a fibre is picked: a directly modulated laser (chirped, ≈ 6 GHz rms) for SMF; a VCSEL for MMF at 850 nm.
 const SMF_SOURCE_RMS_NM = 0.05;
 const VCSEL_RMS_NM = 0.45;
-
-/** Bit-rate limit 4Bσ ≤ 1 (chromatic with the optimum pulse, plus modal) and ⟨Δτ⟩ ≤ 0.1/B (PMD), 1/s. */
-function bitRateLimit(ch: ChannelDispersion, pmd: number, L: number): number {
-  return Math.min(1 / (4 * channelRmsWidth(ch, L)), pmd > 0 ? MEAN_DGD_BIT_FRACTION / meanDgd(pmd, L) : Infinity);
-}
-
-/** Longest link meeting both limits at bit rate B, m. */
-function reach(ch: ChannelDispersion, pmd: number, bitRate: number): number {
-  return Math.min(dispersionLimitedLength(ch, bitRate), pmd > 0 ? pmdLimitedLength(pmd, bitRate) : Infinity);
-}
 
 const fmt = (v: number, digits: number, unit: string) =>
   v === Infinity ? "∞" : Number.isFinite(v) ? `${v.toFixed(digits)} ${unit}` : "—";
@@ -70,25 +59,11 @@ export default function FiberBandwidthPage() {
 
   const calc = useMemo(() => {
     if (!valid) return null;
-    const f = SELLMEIER_FIBERS[key];
-    const lam = wavelength * nm, L = length * km;
-    const D = sellmeierDispersion(lam, f.lambda0, f.S0);
-    const S = sellmeierSlope(lam, f.lambda0, f.S0);
-    const mod1 = isMmf ? gaussianRmsFromBandwidth(modalBW * MHZ_KM) : 0;
-    const ch = channelAt({ D, S }, lam, sigmaLambda * nm, mod1);
-    const pmd = isMmf ? 0 : pmdCoeff * PS_SQRT_KM;
-    const sCd = optimumOutputRmsWidth(ch.beta2, ch.beta3, L, ch.sigmaOmega);
-    const sMod = mod1 * L;
-    const sTot = channelRmsWidth(ch, L);
-    const dgd = meanDgd(pmd, L);
-    return {
-      D, ch, pmd, sCd, sMod, sTot, dgd,
-      fMod: gaussianBandwidth(sMod),
-      bPmd: MEAN_DGD_BIT_FRACTION / dgd,
-      bMax: bitRateLimit(ch, pmd, L),
-      reachAtB: reach(ch, pmd, bitRate * 1e9),
-    };
-  }, [valid, key, isMmf, length, wavelength, sigmaLambda, modalBW, pmdCoeff, bitRate]);
+    return fiberLinkSummary({
+      fiber: SELLMEIER_FIBERS[key], lambda: wavelength * nm, L: length * km, sigmaLambda: sigmaLambda * nm,
+      modalBandwidthLength: modalBW * MHZ_KM, pmdCoefficient: pmdCoeff * PS_SQRT_KM, bitRate: bitRate * 1e9,
+    });
+  }, [valid, key, length, wavelength, sigmaLambda, modalBW, pmdCoeff, bitRate]);
 
   const limitVsLength = useMemo(() => {
     if (!calc) return [];
@@ -100,14 +75,14 @@ export default function FiberBandwidthPage() {
       { x: lengths, y: lengths.map(l => finite(1 / (4 * optimumOutputRmsWidth(ch.beta2, ch.beta3, l * km, ch.sigmaOmega)))), type: "scatter" as const, mode: "lines" as const, name: "Chromatic", line: { color: "#f87171" } },
       ...(isMmf ? [{ x: lengths, y: lengths.map(l => finite(1 / (4 * (ch.extraRmsPerM ?? 0) * l * km))), type: "scatter" as const, mode: "lines" as const, name: "Modal", line: { color: "#34d399" } }] : []),
       ...(pmd > 0 ? [{ x: lengths, y: lengths.map(l => finite(MEAN_DGD_BIT_FRACTION / meanDgd(pmd, l * km))), type: "scatter" as const, mode: "lines" as const, name: "PMD", line: { color: "#a78bfa" } }] : []),
-      { x: lengths, y: lengths.map(l => finite(bitRateLimit(ch, pmd, l * km))), type: "scatter" as const, mode: "lines" as const, name: "Combined", line: { color: "#f3f4f6", width: 3 } },
+      { x: lengths, y: lengths.map(l => finite(linkBitRateLimit(ch, pmd, l * km))), type: "scatter" as const, mode: "lines" as const, name: "Combined", line: { color: "#f3f4f6", width: 3 } },
       { x: [length], y: [finite(calc.bMax)], type: "scatter" as const, mode: "markers" as const, name: "This link", marker: { color: "#fbbf24", size: 10 } },
     ];
   }, [calc, isMmf, length]);
 
   const reachData = useMemo(() => {
     if (!calc) return [];
-    const reaches = RATES.map(r => reach(calc.ch, calc.pmd, r * 1e9) / km);
+    const reaches = RATES.map(r => linkReach(calc.ch, calc.pmd, r * 1e9) / km);
     return [{
       x: RATES.map(String),
       y: reaches.map(v => (Number.isFinite(v) ? v : null)),

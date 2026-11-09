@@ -43,6 +43,11 @@
 
 import { c } from "../constants";
 import { GAUSSIAN_FWHM_PER_SIGMA } from "../math";
+import {
+  accumulatedDispersion, addedRmsBroadening, dcfLength, dispersionPenaltyDb, optimumPulseBroadening, residualSlope,
+  toleratedAccumulatedDispersion, toleratedBroadening, usableHalfBandwidth,
+} from "./dispersion-comp";
+import { MEAN_DGD_BIT_FRACTION, meanDgd, pmdLimitedLength } from "./polarization-mode-dispersion";
 
 /** 1550 nm, the reference wavelength of the linear presets, m. */
 export const LAMBDA_REF = 1550e-9;
@@ -295,3 +300,137 @@ export const SELLMEIER_FIBERS = {
 } satisfies Record<string, SellmeierFiber>;
 
 export type SellmeierFiberKey = keyof typeof SELLMEIER_FIBERS;
+
+export interface SellmeierPulseInput {
+  /** Operating wavelength, m. */
+  lambda: number;
+  /** Zero-dispersion wavelength λ₀, m. */
+  lambda0: number;
+  /** Zero-dispersion slope S₀, s/m³. */
+  S0: number;
+  /** Fibre length, m. */
+  L: number;
+  /** Source rms spectral width σ_λ, m. */
+  sigmaLambda: number;
+  /** Input pulse FWHM, s. */
+  pulseFwhm: number;
+  /** Bit rate, 1/s. */
+  bitRate: number;
+}
+
+/**
+ * Pulse propagation in a Sellmeier-form (G.652) fibre for a Gaussian input pulse (`gaussianPulseRmsWidth`):
+ * D, S, β₂, β₃, output rms width σ, added broadening, V_ω, L_D (T₀ = √2 σ₀), the optimum-pulse and coherent
+ * bit-rate limits, and the dispersion penalty at `bitRate`. SI out (D s/m², S s/m³, widths s, rates 1/s, L_D m,
+ * penalty dB, ∞ when the eye is closed).
+ */
+export function sellmeierPulseSummary({ lambda, lambda0, S0, L, sigmaLambda, pulseFwhm, bitRate }: SellmeierPulseInput) {
+  const D = sellmeierDispersion(lambda, lambda0, S0);
+  const S = sellmeierSlope(lambda, lambda0, S0);
+  const beta2 = beta2FromD(D, lambda);
+  const beta3 = beta3FromDS(D, S, lambda);
+  const sigma0 = pulseFwhm * FWHM_TO_RMS;
+  const sigmaOmega = sigmaOmegaFromLambda(sigmaLambda, lambda);
+  const sigmaOut = gaussianPulseRmsWidth({ sigma0, beta2, beta3, L, sigmaOmega });
+  const sigmaAdded = addedRmsBroadening(sigmaOut, sigma0);
+  return {
+    D, S, beta2, beta3, sigma0, sigmaOut, sigmaAdded,
+    V: 2 * sigmaOmega * sigma0,
+    atZero: Math.abs(D) < 1e-12,
+    LD: dispersionLength(Math.SQRT2 * sigma0, beta2),
+    bOptimum: 1 / (4 * optimumOutputRmsWidth(beta2, beta3, L, sigmaOmega)),
+    bCoherent: transformLimitedBitRate(beta2, L),
+    penalty: dispersionPenaltyDb(bitRate, sigmaAdded),
+  };
+}
+
+/** Everything the dispersion-shifted page shows for one preset fibre at λ: D, S, λ₀, L_max (4Bσ = 1), D·L and loss. */
+export function presetLinkSummary(key: FiberPresetKey, lambda: number, L: number, sigmaLambda: number, bitRate: number) {
+  const preset = FIBER_PRESETS[key];
+  const D = presetDispersion(key, lambda);
+  const S = key === "G652" ? sellmeierSlope(lambda, G652_LAMBDA0, G652_S0) : preset.S;
+  const lambda0 = key === "G652" ? G652_LAMBDA0 : linearZeroDispersionWavelength(preset);
+  const Lmax = dispersionLimitedLength(channelAt({ D, S }, lambda, sigmaLambda), bitRate);
+  return { D, S, lambda0, Lmax, total: D * L, loss: (preset.alphaDbPerKm * L) / 1e3 };
+}
+
+/** Bit-rate limit 4Bσ ≤ 1 (chromatic with the optimum pulse, plus modal) and ⟨Δτ⟩ ≤ 0.1/B (PMD), 1/s. */
+export function linkBitRateLimit(ch: ChannelDispersion, pmd: number, L: number): number {
+  return Math.min(1 / (4 * channelRmsWidth(ch, L)), pmd > 0 ? MEAN_DGD_BIT_FRACTION / meanDgd(pmd, L) : Infinity);
+}
+
+/** Longest link meeting both the dispersion and the PMD limit at bit rate B, m. */
+export function linkReach(ch: ChannelDispersion, pmd: number, bitRate: number): number {
+  return Math.min(dispersionLimitedLength(ch, bitRate), pmd > 0 ? pmdLimitedLength(pmd, bitRate) : Infinity);
+}
+
+export interface FiberLinkInput {
+  fiber: SellmeierFiber;
+  lambda: number;
+  L: number;
+  sigmaLambda: number;
+  /** Modal bandwidth × length of a multimode fibre, Hz·m (used when `fiber.modalBandwidthLength` > 0). */
+  modalBandwidthLength: number;
+  /** PMD coefficient of a single-mode fibre, s/√m. */
+  pmdCoefficient: number;
+  bitRate: number;
+}
+
+/** Chromatic, modal and PMD limits of a link (fibre-bandwidth page). SI in and out; ∞ and NaN as in the helpers. */
+export function fiberLinkSummary({ fiber, lambda, L, sigmaLambda, modalBandwidthLength, pmdCoefficient, bitRate }: FiberLinkInput) {
+  const isMmf = fiber.modalBandwidthLength > 0;
+  const D = sellmeierDispersion(lambda, fiber.lambda0, fiber.S0);
+  const S = sellmeierSlope(lambda, fiber.lambda0, fiber.S0);
+  const mod1 = isMmf ? gaussianRmsFromBandwidth(modalBandwidthLength) : 0;
+  const ch = channelAt({ D, S }, lambda, sigmaLambda, mod1);
+  const pmd = isMmf ? 0 : pmdCoefficient;
+  const sCd = optimumOutputRmsWidth(ch.beta2, ch.beta3, L, ch.sigmaOmega);
+  const sMod = mod1 * L;
+  const dgd = meanDgd(pmd, L);
+  return {
+    D, ch, pmd, sCd, sMod, dgd,
+    sTot: channelRmsWidth(ch, L),
+    fMod: gaussianBandwidth(sMod),
+    bPmd: MEAN_DGD_BIT_FRACTION / dgd,
+    bMax: linkBitRateLimit(ch, pmd, L),
+    reachAtB: linkReach(ch, pmd, bitRate),
+  };
+}
+
+export interface DispersionCompInput {
+  /** Span D (s/m²) and S (s/m³) at the reference wavelength. */
+  span: LinearDispersion;
+  dcf: LinearDispersion;
+  /** Span length, m. */
+  L: number;
+  sigmaLambda: number;
+  bitRate: number;
+  lambdaRef: number;
+  lambdaChannel: number;
+}
+
+/**
+ * Uncompensated and DCF-compensated span of the dispersion-compensation page (model in dispersion-comp.ts). SI in and
+ * out: Dacc s/m, Sres s/m², σ s, Bmax 1/s, DCF length m, penalties dB (∞ = eye closed, NaN = no DCF length).
+ */
+export function dispersionCompLinkSummary({ span, dcf, L, sigmaLambda, bitRate, lambdaRef, lambdaChannel }: DispersionCompInput) {
+  const detuning = lambdaChannel - lambdaRef;
+  const Dacc = accumulatedDispersion(span, L, detuning);
+  const sigmaUnc = optimumPulseBroadening(Dacc, span.S * L, sigmaLambda, lambdaChannel);
+  const Lc = dcfLength(span, L, dcf);
+  const Sres = residualSlope(span, L, dcf, Lc);
+  const Dres = Sres * detuning;
+  const sigmaComp = optimumPulseBroadening(Dres, Sres, sigmaLambda, lambdaChannel);
+  const sigmaTol = toleratedBroadening(bitRate);
+  return {
+    Dacc, sigmaUnc, Lc, Sres, Dres, sigmaComp,
+    Bmax: 1 / (4 * optimumOutputRmsWidth(
+      beta2FromD(Dacc, lambdaChannel), beta3FromDS(Dacc, span.S * L, lambdaChannel), 1, sigmaOmegaFromLambda(sigmaLambda, lambdaChannel),
+    )),
+    penaltyUnc: dispersionPenaltyDb(bitRate, sigmaUnc),
+    slopeCompensation: span.S * L !== 0 ? (-dcf.S * Lc) / (span.S * L) : NaN,
+    penaltyComp: dispersionPenaltyDb(bitRate, sigmaComp),
+    halfBand: usableHalfBandwidth(Sres, sigmaLambda, sigmaTol, lambdaRef),
+    tolerance: toleratedAccumulatedDispersion(Sres, sigmaLambda, sigmaTol, lambdaRef),
+  };
+}

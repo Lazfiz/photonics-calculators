@@ -161,3 +161,71 @@ export function waistFromNA(NA: number, lambda: number): number {
   if (!(NA > 0 && lambda > 0)) return NaN;
   return lambda / (Math.PI * NA);
 }
+
+/** Longest end-face gap, m, for which gapEtalonTransmission × gaussianCoupling stays within 0.02 dB of the multi-pass beam sum. */
+export const MAX_CONNECTOR_GAP = 5e-6;
+
+/**
+ * IEC 61753-1 single-mode attenuation grades, random mate: mean and the limit met by > 97 % of connections (dB).
+ * Grade A is not yet defined. Source: P. Kolesar, IEEE 802.3bm SMF ad hoc, 30 Apr 2013, slide 6.
+ */
+export const IEC_IL_GRADES: Readonly<Record<string, { mean: number; max: number; note: string }>> = {
+  B: { mean: 0.12, max: 0.25, note: "" },
+  C: { mean: 0.25, max: 0.5, note: "un-tuned LC" },
+  D: { mean: 0.5, max: 1.0, note: "MPO" },
+};
+
+/** IEC 61753-1 single-mode return-loss grades, random mate (dB); grade 1 is 55 dB unmated. Same source. */
+export const IEC_RL_GRADES: Readonly<Record<string, { rl: number; note: string }>> = {
+  "1": { rl: 60, note: "APC" },
+  "2": { rl: 45, note: "" },
+  "3": { rl: 35, note: "" },
+  "4": { rl: 26, note: "" },
+};
+
+export interface ConnectorJoint {
+  /** Mode-field radius of both fibres (MFD/2), m. */
+  w: number;
+  lambda: number;
+  /** Fibre phase index, ≥ 1. */
+  nFiber: number;
+  /** Gap medium index, ≥ 1. */
+  nGap: number;
+  /** Lateral offset, m, ≥ 0. */
+  offset: number;
+  /** Tilt, rad, 0 ≤ θ < 30°. */
+  tilt: number;
+  /** End-face gap, m, 0 ≤ z ≤ MAX_CONNECTOR_GAP. */
+  gap: number;
+}
+
+export interface ConnectorLoss {
+  /** Each effect alone, then the combined joint, dB; NaN for invalid input. */
+  lateral: number;
+  angular: number;
+  gap: number;
+  total: number;
+  /** Return loss of the gap alone, −10 log₁₀(1 − T_Airy), dB; Infinity at physical contact. */
+  jointReturnLoss: number;
+}
+
+/**
+ * Loss of one connector joint of two identical fibres: offset, tilt and gap alone, and all together with the Airy
+ * reflections of the gap (gapEtalonTransmission) and the unfavourable tilt sense. At physical contact (z = 0) the tilt
+ * happens in glass, across a gap in the gap medium.
+ */
+export function connectorLoss(p: ConnectorJoint): ConnectorLoss {
+  const { w, lambda, nFiber, nGap, offset, tilt, gap } = p;
+  const valid = w > 0 && lambda > 0 && offset >= 0 && tilt >= 0 && tilt < (30 * Math.PI) / 180 &&
+    gap >= 0 && gap <= MAX_CONNECTOR_GAP * (1 + 1e-12) && nFiber >= 1 && nGap >= 1;
+  if (!valid) return { lateral: NaN, angular: NaN, gap: NaN, total: NaN, jointReturnLoss: NaN };
+  const joint = { w1: w, w2: w, lambda, n: gap === 0 ? nFiber : nGap };
+  const etalon = gapEtalonTransmission(nFiber, nGap, gap, lambda);
+  return {
+    lateral: lossDb(gaussianCoupling({ ...joint, offset })),
+    angular: lossDb(gaussianCoupling({ ...joint, tilt })),
+    gap: lossDb(gaussianCoupling({ ...joint, gap }) * etalon),
+    total: lossDb(gaussianCouplingWorstTilt({ ...joint, offset, tilt, gap }) * etalon),
+    jointReturnLoss: -10 * Math.log10(1 - etalon),
+  };
+}

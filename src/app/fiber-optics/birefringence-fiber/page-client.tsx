@@ -4,8 +4,7 @@ import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { beatLength, dgdPerLength, geometricBirefringence } from "../../../physics/fiber-optics/fiber-birefringence";
-import { numericalAperture } from "../../../physics/fiber-optics/step-index-modes";
+import { fiberBirefringence, geometricBirefringence } from "../../../physics/fiber-optics/fiber-birefringence";
 
 const clamp = (x: number, lo: number, hi: number) => Math.min(Math.max(x, lo), hi);
 // Text for a result, or a dash when the model has no finite value.
@@ -39,11 +38,7 @@ export default function BirefringenceCalculator() {
 
   const calc = useMemo(() => {
     const fiber = { a: a_um * 1e-6, n1, n2, ellipticity: 1 - ratio };
-    const geo = geometricBirefringence(fiber, lambda_nm * 1e-9);
-    const B = geo.B + Bs;
-    // Stress birefringence is nearly independent of λ, so its group value equals the phase value.
-    const groupB = geo.groupB + Bs;
-    const NA = n1 > n2 ? numericalAperture(n1, n2) : NaN;
+    const { geo, B, groupB, NA, beatLength: L_B, dgd } = fiberBirefringence(fiber, lambda_nm * 1e-9, Bs);
 
     // Sweep V from 0.8 to 3 by wavelength at fixed geometry.
     const lambdas: number[] = [], phase: (number | null)[] = [], group: (number | null)[] = [];
@@ -57,7 +52,7 @@ export default function BirefringenceCalculator() {
         group.push(Number.isFinite(g.groupB) ? g.groupB : null);
       }
     }
-    return { geo, B, groupB, NA, L_B: beatLength(B, lambda_nm * 1e-9), dgd: dgdPerLength(groupB), lambdas, phase, group };
+    return { geo, B, groupB, NA, L_B, dgd, lambdas, phase, group };
   }, [a_um, n1, n2, ratio, lambda_nm, Bs]);
 
   const { geo } = calc;

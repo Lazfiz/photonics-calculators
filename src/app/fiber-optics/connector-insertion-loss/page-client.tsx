@@ -5,27 +5,12 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { gapEtalonTransmission, gaussianCoupling, gaussianCouplingWorstTilt, lossDb } from "../../../physics/fiber-optics/gaussian-coupling";
+import { IEC_IL_GRADES as IL_GRADES, IEC_RL_GRADES as RL_GRADES, connectorLoss, gaussianCoupling, lossDb } from "../../../physics/fiber-optics/gaussian-coupling";
 
 const UM = 1e-6;
 const DEG = Math.PI / 180;
 // Airy × Gaussian-diffraction gap model is within 0.02 dB of a multi-pass beam sum up to here (see the module).
 const MAX_GAP_UM = 5;
-
-// IEC 61753-1 single-mode attenuation grades, random mate: mean and the limit met by > 97 % of connections (dB).
-// Grade A is not yet defined. Source: P. Kolesar, IEEE 802.3bm SMF ad hoc, 30 Apr 2013, slide 6.
-const IL_GRADES: Record<string, { mean: number; max: number; note: string }> = {
-  B: { mean: 0.12, max: 0.25, note: "" },
-  C: { mean: 0.25, max: 0.5, note: "un-tuned LC" },
-  D: { mean: 0.5, max: 1.0, note: "MPO" },
-};
-// IEC 61753-1 single-mode return-loss grades, random mate (dB); grade 1 is 55 dB unmated. Same source.
-const RL_GRADES: Record<string, { rl: number; note: string }> = {
-  "1": { rl: 60, note: "APC" },
-  "2": { rl: 45, note: "" },
-  "3": { rl: 35, note: "" },
-  "4": { rl: 26, note: "" },
-};
 
 export default function ConnectorInsertionLossPage() {
   const [ilGradeRaw, setIlGrade] = useURLState("ilGrade", "C");
@@ -44,25 +29,11 @@ export default function ConnectorInsertionLossPage() {
   const n = Math.max(1, Math.round(numConnectors));
 
   const calc = useMemo(() => {
-    const valid = fiberCoreDiam > 0 && lateralOffset >= 0 && angularMisalign >= 0 && angularMisalign < 30 &&
-      gapDistance >= 0 && gapDistance <= MAX_GAP_UM && refractiveIndex >= 1 && gapIndex >= 1 && wavelength > 0;
-    if (!valid) return { latLoss: NaN, angLoss: NaN, gapLoss: NaN, totalLoss: NaN, jointRl: NaN };
-    const w = (fiberCoreDiam / 2) * UM;
-    const lambda = wavelength * 1e-9;
-    const d = lateralOffset * UM, tilt = angularMisalign * DEG, z = gapDistance * UM;
-    // At physical contact (z = 0) the tilt happens in glass; across a gap, in the gap medium.
-    const joint = { w1: w, w2: w, lambda, n: z === 0 ? refractiveIndex : gapIndex };
-    // Reflections in the gap (Airy) times the Gaussian overlap; at physical contact (z = 0) the gap terms vanish.
-    const etalon = gapEtalonTransmission(refractiveIndex, gapIndex, z, lambda);
-    // Power reflected by the gap (lossless Airy): 1 − T. Infinite return loss at physical contact.
-    const jointRl = -10 * Math.log10(1 - etalon);
-    return {
-      jointRl,
-      latLoss: lossDb(gaussianCoupling({ ...joint, offset: d })),
-      angLoss: lossDb(gaussianCoupling({ ...joint, tilt })),
-      gapLoss: lossDb(gaussianCoupling({ ...joint, gap: z }) * etalon),
-      totalLoss: lossDb(gaussianCouplingWorstTilt({ ...joint, offset: d, tilt, gap: z }) * etalon),
-    };
+    const r = connectorLoss({
+      w: (fiberCoreDiam / 2) * UM, lambda: wavelength * 1e-9, nFiber: refractiveIndex, nGap: gapIndex,
+      offset: lateralOffset * UM, tilt: angularMisalign * DEG, gap: gapDistance * UM,
+    });
+    return { latLoss: r.lateral, angLoss: r.angular, gapLoss: r.gap, totalLoss: r.total, jointRl: r.jointReturnLoss };
   }, [fiberCoreDiam, lateralOffset, angularMisalign, gapDistance, refractiveIndex, gapIndex, wavelength]);
 
   const grade = IL_GRADES[ilGrade];
