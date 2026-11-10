@@ -4,8 +4,9 @@ import assert from "node:assert/strict";
 import { roundBeam } from "../src/physics/laser-safety/hazard-distance";
 import { ICAO_LEVELS, peakIrradiance, rangeToIrradiance } from "../src/physics/laser-safety/visual-interference";
 
-// Levels: ICAO Annex 11 and Doc 9815 (2003): 100 µW/cm², 5 µW/cm², 50 nW/cm². Range: the standards' NOHD form
-// r = (√(4P/(πE)) − a)/φ with 1/e values (ANSI Z136.1, IEC TR 60825-14), here with 1/e² values: √(8P/(πE)).
+// Levels: ICAO Annex 11 and Doc 9815 (2003): 100 µW/cm², 5 µW/cm², 50 nW/cm². Range: ANSI Z136.1's NOHD form
+// r = √(4P/(πE) − a²)/φ with 1/e values (App. B; Eq. B51 of the 2007 edition, quoted in Sandia report SAND2007-5052,
+// p. 31), here with 1/e² values: √(8P/(πE) − a²)/φ, the Gaussian growth √(a² + (rφ)²).
 
 function assertRel(actual: number, expected: number, tol: number, label: string) {
   assert.ok(Math.abs(actual / expected - 1) < tol, `${label}: ${actual} vs ${expected}`);
@@ -20,11 +21,11 @@ test("ICAO levels in W/m²", () => {
 test("5 mW green pointer, 1 mm, 1 mrad", () => {
   const P = 5e-3;
   const beam = roundBeam(1e-3, 1e-3);
-  // Glare (5 µW/cm² = 0.05 W/m²): √(8 · 0.005 / (π · 0.05)) = 0.5046 m, less 1 mm, over 1 mrad: 503.6 m.
-  assertRel(rangeToIrradiance(P, beam, ICAO_LEVELS.critical), (Math.sqrt(0.04 / (Math.PI * 0.05)) - 1e-3) / 1e-3, 1e-9, "glare");
-  assertRel(rangeToIrradiance(P, beam, ICAO_LEVELS.critical), 503.6, 1e-3, "glare, value");
+  // Glare (5 µW/cm² = 0.05 W/m²): √(8 · 0.005 / (π · 0.05) − (1 mm)²) = 0.5046 m over 1 mrad: 504.6 m.
+  assertRel(rangeToIrradiance(P, beam, ICAO_LEVELS.critical), Math.sqrt(0.04 / (Math.PI * 0.05) - 1e-6) / 1e-3, 1e-9, "glare");
+  assertRel(rangeToIrradiance(P, beam, ICAO_LEVELS.critical), 504.6, 1e-3, "glare, value");
   // Distraction (50 nW/cm²): 10× farther in diameter, 5045 m.
-  assertRel(rangeToIrradiance(P, beam, ICAO_LEVELS.laserFree), (Math.sqrt(0.04 / (Math.PI * 5e-4)) - 1e-3) / 1e-3, 1e-9, "distraction");
+  assertRel(rangeToIrradiance(P, beam, ICAO_LEVELS.laserFree), Math.sqrt(0.04 / (Math.PI * 5e-4) - 1e-6) / 1e-3, 1e-9, "distraction");
   // Peak irradiance at the output: 8P/(πd²) = 1.27×10⁴ W/m².
   assertRel(peakIrradiance(P, 1e-3), 0.04 / (Math.PI * 1e-6), 1e-12, "peak");
 });

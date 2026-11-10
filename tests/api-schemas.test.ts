@@ -180,6 +180,6 @@ test("/openapi.json describes every schema's parameters and outputs", () => {
   const nohd = doc.paths[apiPath("/laser-safety/nohd")].get.parameters;
   assert.deepEqual(nohd.slice(0, 2).map((p) => p.schema), [
     { type: "string", enum: ["1/e2", "1/e"], default: "1/e2" },
-    { type: "string", enum: ["linear", "gaussian"], default: "linear" },
+    { type: "string", enum: ["gaussian", "linear"], default: "gaussian" },
   ]);
 });

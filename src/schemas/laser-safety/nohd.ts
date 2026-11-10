@@ -6,7 +6,7 @@ import { defineSchema } from "../types";
 import { BEAM_DEFINITION, EXPOSURE, ICNIRP_2013, SAFETY_FACTOR, toOneOverESquared, WAVELENGTH } from "./common";
 
 const ANSI_NOHD = "ANSI Z136.1-2014, American National Standard for Safe Use of Lasers, Appendix B: " +
-  "NOHD = (√(4P/(π MPE)) − a)/φ with 1/e diameter a and divergence φ; " + `limits from ${ICNIRP_2013}, Table 5.`;
+  "NOHD = (1/φ)√(4P/(π MPE) − a²) with 1/e diameter a and divergence φ (Eq. B51 of the 2007 edition, quoted in A. L. Augustoni, Sandia report SAND2007-5052, p. 31); " + `limits from ${ICNIRP_2013}, Table 5.`;
 
 export default defineSchema({
   href: "/laser-safety/nohd",
@@ -16,10 +16,10 @@ export default defineSchema({
       key: "beamGrowth",
       label: "Beam growth with range r",
       options: [
-        { value: "linear", label: "Linear a + rφ (ANSI Z136.1 / IEC TR 60825-14)" },
-        { value: "gaussian", label: "Gaussian √(a² + (rφ)²), waist at the aperture" },
+        { value: "gaussian", label: "Gaussian √(a² + (rφ)²), waist at the aperture (ANSI Z136.1 NOHD)" },
+        { value: "linear", label: "Linear a + rφ (shorter NOHD, less conservative)" },
       ],
-      default: "linear",
+      default: "gaussian",
     },
   ],
   inputs: [
@@ -61,8 +61,16 @@ export default defineSchema({
   checks: [
     {
       // 532 nm, 1 W, 1 mm and 1 mrad (1/e²), 0.25 s: MPE 18 t^0.75/t = 25.46 W/m²; with the 1/e values a/√2 and
-      // φ/√2 the standard formula gives 315.28 m. The page averages the Gaussian over 7 mm: 315.21 m.
+      // φ/√2 ANSI's (1/φ)√(4P/(π MPE) − a²) gives 316.28 m. The page averages the Gaussian over 7 mm: 316.20 m.
       source: ANSI_NOHD,
+      basis: "computed",
+      inputs: { power: 1000, wavelength: 532, exposure: 0.25, beamDia: 1, divergence: 1, beamDefinition: "1/e2" },
+      expect: { nohd: 316.28 },
+      tolerance: 5e-4,
+    },
+    {
+      // The same with linear growth a + rφ: (√(4P/(π MPE)) − a)/φ = 315.28 m, 1 m shorter; the page gives 315.21 m.
+      source: `${ICNIRP_2013}, Tables 5 and 8; linear growth a + rφ, NOHD = (√(4P/(π MPE)) − a)/φ with 1/e values.`,
       basis: "computed",
       inputs: { power: 1000, wavelength: 532, exposure: 0.25, beamDia: 1, divergence: 1, beamDefinition: "1/e2", beamGrowth: "linear" },
       expect: { nohd: 315.28 },
@@ -70,11 +78,11 @@ export default defineSchema({
     },
     {
       // 10.6 µm, 10 W, 5 mm, 2 mrad, 10 s: the corneal 5.6×10³ t^0.25 J/m² at 10 s over 1.5 × 10^0.375 mm binds;
-      // d = 0.15988 m, NOHD = (d − 5 mm)/2 mrad = 77.435 m (worked in tests/laser-safety-hazard-distance.test.ts).
-      source: `${ICNIRP_2013}, Tables 5 and 8; linear spread a + rφ as in ANSI Z136.1-2014 Appendix B.`,
+      // d = 0.15988 m (worked in tests/laser-safety-hazard-distance.test.ts), NOHD = √(d² − (5 mm)²)/2 mrad = 79.90 m.
+      source: `${ICNIRP_2013}, Tables 5 and 8; Gaussian growth √(a² + (rφ)²), ANSI Z136.1 Appendix B's NOHD (Eq. B51 of the 2007 edition, quoted in A. L. Augustoni, Sandia report SAND2007-5052, p. 31).`,
       basis: "computed",
       inputs: { power: 1e4, wavelength: 10600, exposure: 10, beamDia: 5, divergence: 2 },
-      expect: { nohd: 77.435, diameterAtNohd: 159.87 },
+      expect: { nohd: 79.896, diameterAtNohd: 159.87 },
       tolerance: 2e-4,
     },
   ],

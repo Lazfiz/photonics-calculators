@@ -34,12 +34,13 @@ test("focusing handpiece: divergence, diffraction limit and the lens-on-laser ha
   assertRel(phi, 0.08, 1e-12, "b₀/f");
   assertRel(diffractionLimitedSpot(10.6e-6, 8e-3, 0.1), 0.1687e-3, 1e-3, "diffraction-limited spot");
   // 10 W, 10 s: the least irradiance limit is 5.6×10³·10^0.25 / 10 = 995.85 W/m² (Table 5, at the end of the t^0.25
-  // piece). ANSI with 1/e values: (f/b₀,e)(√(4P/(πE)) − a_e) = (√(8P/(πE)) − a)/φ with the 1/e² ones = 1.9956 m.
+  // piece). ANSI lens on laser with 1/e values: (f/b₀,e)√(4P/(πE)) = 1.9988 m; with the 0.2 mm spot at the focus as a,
+  // √(8P/(πE) − a²)/φ with the 1/e² ones (Gaussian growth) = 1.9984 m.
   const limit = eyeLimits(10.6e-6)[0];
   const E = limitMaxIrradiance(limit, 10);
   assertRel(E, 995.85, 1e-4, "E");
   const nohd = nominalOcularHazardDistance(10.6e-6, 10, roundBeam(0.2e-3, phi), 10).distance;
-  assertRel(nohd, (Math.sqrt((8 * 10) / (Math.PI * E)) - 0.2e-3) / phi, 1e-3, "ANSI lens on laser");
-  assertRel(nohd, 1.9956, 1e-3, "value");
+  assertRel(nohd, Math.sqrt((8 * 10) / (Math.PI * E) - 0.04e-6) / phi, 1e-3, "ANSI lens on laser");
+  assertRel(nohd, 1.9984, 1e-4, "value");
   assert.ok(Number.isNaN(focusedDivergence(8e-3, 0)));
 });
