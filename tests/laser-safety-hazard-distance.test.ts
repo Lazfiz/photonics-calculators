@@ -8,8 +8,8 @@ import {
 } from "../src/physics/laser-safety/hazard-distance";
 
 // Limits: ICNIRP, Health Phys. 105(3), 271–295 (2013), doi:10.1097/HP.0b013e3182983fd4, Table 5 (eye), Table 2 (C_E,
-// eqn 5 for an open field of view), Table 8 (apertures). NOHD formula: ANSI Z136.1-2014 App. B and IEC TR 60825-14,
-// NOHD = (1/φ)(√(4P/(πE)) − a) with 1/e values; OD = log10(H/EL) (ANSI Z136.1, EN 207). Diffuse: Lambertian
+// eqn 5 for an open field of view), Table 8 (apertures). NOHD formula: ANSI Z136.1 App. B, NOHD = (1/φ)√(4P/(πE) − a²)
+// with 1/e values (Eq. B51 of the 2007 edition, quoted in A. L. Augustoni, Sandia report SAND2007-5052, p. 31); OD = log10(H/EL) (ANSI Z136.1, EN 207). Diffuse: Lambertian
 // ρP/(πr²); α from the 63 % (1/e) diameter (IEC 60825-1:2014 3.10); retinal limits from the 10 cm near point (ICNIRP p. 275).
 
 function assertRel(actual: number, expected: number, tol: number, label: string) {
@@ -38,16 +38,22 @@ test("safe diameter inverts limitMaxPower and tends to the standards' √(8P/(π
 });
 
 test("NOHD of a round beam: linear and Gaussian spread", () => {
-  // 532 nm, 1 W, 1 mm, 1 mrad (1/e²), 0.25 s. Standards (1/e values a/√2, φ/√2): (√(4P/(πE)) − a)/φ = 315.28 m.
-  const standard = (Math.sqrt(4 / (Math.PI * E_VIS_025)) - 1e-3 / Math.SQRT2) / (1e-3 / Math.SQRT2);
+  // 532 nm, 1 W, 1 mm, 1 mrad (1/e²), 0.25 s. ANSI (1/e values a/√2, φ/√2): √(4P/(πE) − a²)/φ = 316.28 m; the default
+  // Gaussian growth √(a² + (rφ)²) is that formula, lowered ≈ q/4 by the aperture average.
+  const ansi = Math.sqrt(4 / (Math.PI * E_VIS_025) - 0.5e-6) / (1e-3 / Math.SQRT2);
   const n = nominalOcularHazardDistance(532e-9, 1, roundBeam(1e-3, 1e-3), 0.25);
-  assertRel(standard, 315.28, 1e-4, "standard formula");
-  assertRel(n.distance, standard, 5e-4, "NOHD vs the standard formula");
-  assertRel(n.distance, 315.206, 1e-5, "pinned");
+  assertRel(ansi, 316.28, 1e-4, "ANSI formula");
+  assertRel(n.distance, ansi, 5e-4, "NOHD vs the ANSI formula");
+  assertRel(n.distance, 316.204, 1e-5, "pinned");
   assert.equal(n.limiting, "retinalThermal");
+  // Linear growth: (√(4P/(πE)) − a)/φ = 315.28 m, shorter.
+  const linear1 = (Math.sqrt(4 / (Math.PI * E_VIS_025)) - 1e-3 / Math.SQRT2) / (1e-3 / Math.SQRT2);
+  const nLinear = nominalOcularHazardDistance(532e-9, 1, roundBeam(1e-3, 1e-3, "linear"), 0.25);
+  assertRel(linear1, 315.28, 1e-4, "linear formula");
+  assertRel(nLinear.distance, 315.206, 1e-5, "linear pinned");
   // The nohd page's defaults (100 mW, 2 mm, 1 mrad): 97.77 m (98.02 m with the peak irradiance).
   const d = limitSafeDiameter(eyeLimits(532e-9)[0], 0.1, 0.25);
-  const linear = nominalOcularHazardDistance(532e-9, 0.1, roundBeam(2e-3, 1e-3), 0.25).distance;
+  const linear = nominalOcularHazardDistance(532e-9, 0.1, roundBeam(2e-3, 1e-3, "linear"), 0.25).distance;
   assertRel(linear, (d - 2e-3) / 1e-3, 1e-12, "linear: (d − a)/φ");
   assertRel(linear, 97.772, 1e-5, "pinned");
   // A Gaussian beam with its waist at the aperture: √(a² + (rφ)²) = d gives r = √(d² − a²)/φ, a little farther.
@@ -55,6 +61,22 @@ test("NOHD of a round beam: linear and Gaussian spread", () => {
   assertRel(gaussian, Math.sqrt(d * d - 4e-6) / 1e-3, 1e-12, "Gaussian");
   assertRel(gaussian, 99.752, 1e-5, "pinned");
   assertRel(effectiveDiameterAt(roundBeam(2e-3, 1e-3, "gaussian"), gaussian), d, 1e-12, "√(a² + (rφ)²) = d there");
+});
+
+test("roundBeam defaults to Gaussian growth, the longer NOHD (audit U1)", () => {
+  // 2.2 mW, 532 nm, 5 mm, 1 mrad, 0.25 s (docs/audit/fable-2026-11-laser-safety.md U1). E = 18·0.25^−0.25 =
+  // 25.456 W/m²; q = E·π(7 mm)²/(4P) = 0.44530; safe diameter 7 mm·√(2/−ln(1 − q)) = 12.8954 mm.
+  // Linear (12.8954 − 5)/1 = 7.895 m; Gaussian √(12.8954² − 5²)/1 = 11.887 m.
+  const q = (E_VIS_025 * Math.PI * 49e-6) / (4 * 2.2e-3);
+  const dSafe = 7e-3 * Math.sqrt(2 / -Math.log(1 - q));
+  assertRel(dSafe, 12.8954e-3, 1e-5, "safe diameter");
+  assert.equal(roundBeam(5e-3, 1e-3).growth, "gaussian");
+  const def = nominalOcularHazardDistance(532e-9, 2.2e-3, roundBeam(5e-3, 1e-3), 0.25).distance;
+  const lin = nominalOcularHazardDistance(532e-9, 2.2e-3, roundBeam(5e-3, 1e-3, "linear"), 0.25).distance;
+  assertRel(def, Math.sqrt(dSafe * dSafe - 25e-6) / 1e-3, 1e-9, "Gaussian (default)");
+  assertRel(def, 11.8866, 1e-5, "pinned");
+  assertRel(lin, (dSafe - 5e-3) / 1e-3, 1e-9, "linear");
+  assertRel(lin, 7.8954, 1e-5, "pinned");
 });
 
 test("NOHD of an elliptical diode beam and of a CO₂ beam on the cornea", () => {
@@ -69,7 +91,7 @@ test("NOHD of an elliptical diode beam and of a CO₂ beam on the cornea", () =>
   assertRel(n.distance, 9.9946, 1e-4, "pinned");
   // 10.6 µm, 10 W, 5 mm, 2 mrad, 10 s. Binding: the end of the 5.6×10³ t^0.25 piece at 10 s (995.8 W/m², aperture
   // 1.5 × 10^0.375 = 3.557 mm), just below the 1 kW/m² that follows: d = 0.15988 m, NOHD = (d − 5 mm)/2 mrad = 77.44 m.
-  const co2 = nominalOcularHazardDistance(10.6e-6, 10, roundBeam(5e-3, 2e-3), 10);
+  const co2 = nominalOcularHazardDistance(10.6e-6, 10, roundBeam(5e-3, 2e-3, "linear"), 10);
   const D = 1.5e-3 * Math.pow(10, 0.375);
   const qq = (5.6e3 * Math.pow(10, 0.25) * Math.PI * D * D) / (4 * 10 * 10);
   assertRel(co2.distance, (D * Math.sqrt(2 / -Math.log(1 - qq)) - 5e-3) / 2e-3, 1e-12, "corneal hand calculation");

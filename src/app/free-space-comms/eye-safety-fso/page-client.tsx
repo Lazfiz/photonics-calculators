@@ -99,7 +99,7 @@ export default function EyeSafetyFsoPage() {
               <ResultCard label={`Margin at ${fmtNum(distance)} m`} value={Number.isFinite(atRange.margin) ? `${fmtNum(atRange.margin)}×` : "∞"}
                 tone={safe ? "green" : "red"}
                 subtext={atRange.worst ? `${safe ? "within" : "exceeds"} the ${LIMIT_LABELS[atRange.worst.kind]} limit; P_max ${fmtPower(atRange.worst.pMax)}` : undefined} />
-              <ResultCard label={`Beam Ø at ${fmtNum(distance)} m`} value={`${fmtNum(atRange.dr * 1e3)} mm`} tone="gray" subtext="1/e², a + rφ" />
+              <ResultCard label={`Beam Ø at ${fmtNum(distance)} m`} value={`${fmtNum(atRange.dr * 1e3)} mm`} tone="gray" subtext="1/e², √(a² + (rφ)²)" />
             </div>
           ) : (
             <p className="text-sm text-red-400">The eye limits are defined from 180 nm to 1 mm.</p>
@@ -107,7 +107,7 @@ export default function EyeSafetyFsoPage() {
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 text-xs text-gray-400 space-y-1">
             <p>Limits: ICNIRP 2013 eye exposure limits, the irradiance averaged over each limit&apos;s aperture (7 mm retinal, 3.5 mm or larger corneal).</p>
             <p>Margin = largest power within every limit at that distance ÷ TX power; below 1 the exposure exceeds a limit.</p>
-            <p>NOHD: the distance where the Gaussian beam, growing as a + rφ, falls within every limit for exposures up to t.</p>
+            <p>NOHD: the distance where the Gaussian beam, growing as √(a² + (rφ)²) from its waist at the aperture (the beam of ANSI Z136.1&apos;s NOHD formula), falls within every limit for exposures up to t.</p>
             <p>Not modelled: atmospheric attenuation (which only shortens the NOHD), binoculars or telescopes, scintillation hot spots, pulsed modulation.</p>
           </div>
           {valid && (

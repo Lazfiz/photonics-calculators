@@ -115,7 +115,7 @@ export default function ResearchLabSafetyPage() {
         <p>
           Class: IEC 60825-1:2014 for a CW beam (naked eye and binoculars). NOHD: the distance beyond which the direct
           beam stays within the ICNIRP 2013 eye limits for the exposure time, averaged over each limit&apos;s aperture,
-          with the beam spreading as d + rφ (ANSI Z136.1, IEC TR 60825-14). If it exceeds the room diagonal, the
+          with the beam spreading as √(d² + (rφ)²) (a Gaussian beam with its waist at the output, the beam of ANSI Z136.1&apos;s NOHD formula). If it exceeds the room diagonal, the
           nominal hazard zone is the whole room wherever the beam can go, including after a specular reflection
           (mirrors, windows, optics), which keeps the beam&apos;s hazard.
         </p>

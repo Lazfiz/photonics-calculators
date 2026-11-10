@@ -33,7 +33,7 @@ export default function DiodeLaserSafetyPage() {
   const phiFast = Math.max(divergenceV, 0) * 1e-3 * toFullE2;
   const t = Math.min(Math.max(exposureTime, T_MIN), T_MAX);
 
-  const beam = useMemo<BeamGeometry>(() => ({ d: [a, a], phi: [phiSlow, phiFast], growth: "linear" }), [a, phiSlow, phiFast]);
+  const beam = useMemo<BeamGeometry>(() => ({ d: [a, a], phi: [phiSlow, phiFast], growth: "gaussian" }), [a, phiSlow, phiFast]);
   const limits = useMemo(() => eyeLimits(lambda), [lambda]);
   const nohd = useMemo(() => nominalOcularHazardDistance(lambda, P, beam, t), [lambda, P, beam, t]);
   const od = useMemo(() => requiredOpticalDensity(lambda, P, a, t), [lambda, P, a, t]);
@@ -52,7 +52,7 @@ export default function DiodeLaserSafetyPage() {
 
   const nohdText = nohd.distance === 0 ? "0 — within the limits at the aperture" : fmtDistance(nohd.distance);
   const sizeAtNohd = Number.isFinite(nohd.distance)
-    ? `${fmtNum(axisDiameterAt(a, phiSlow, nohd.distance, "linear") * 100)} × ${fmtNum(axisDiameterAt(a, phiFast, nohd.distance, "linear") * 100)} cm`
+    ? `${fmtNum(axisDiameterAt(a, phiSlow, nohd.distance, "gaussian") * 100)} × ${fmtNum(axisDiameterAt(a, phiFast, nohd.distance, "gaussian") * 100)} cm`
     : "—";
   const peakIrradiance = tem00PeakIrradiance(P, a) / 1e4; // W/cm² at the aperture
 
@@ -141,7 +141,8 @@ export default function DiodeLaserSafetyPage() {
 
       <p className="text-sm text-gray-400 mb-8">
         An elliptical beam counts as the round beam with the same peak irradiance, of diameter √(d<sub>slow</sub>{" "}
-        d<sub>fast</sub>), each axis growing as a + rφ (ANSI Z136.1, IEC TR 60825-14). The limits are ICNIRP 2013
+        d<sub>fast</sub>), each axis growing as √(a² + (rφ)²), a Gaussian beam with its waist at the aperture (the beam of ANSI Z136.1&apos;s NOHD
+        formula; the linear a + rφ would give a shorter NOHD). The limits are ICNIRP 2013
         (Health Phys. 105:271) at any wavelength, for one exposure of up to t, averaged over each limit&apos;s aperture.
         A bare bar or stack seen up close is an extended source whose larger retinal image raises the limit; that is not
         modelled, so these are the conservative point-source values. Collimating optics change a and φ: enter the
