@@ -11,7 +11,7 @@ export default defineSchema({
   href: "/fiber-optics/connector-insertion-loss",
   inputs: [
     { key: "numConnectors", label: "Number of connections", unit: "", toSI: 1, siUnit: "", default: 4, min: 1, max: 1000 },
-    { key: "fiberCoreDiam", label: "Mode field diameter", unit: "µm", toSI: 1e-6, siUnit: "m", default: 9, min: 1, max: 30 },
+    { key: "fiberCoreDiam", label: "Mode field diameter", unit: "µm", toSI: 1e-6, siUnit: "m", default: 10.4, min: 1, max: 30 },
     { key: "lateralOffset", label: "Lateral offset", unit: "µm", toSI: 1e-6, siUnit: "m", default: 0.3, min: 0, max: 20 },
     { key: "angularMisalign", label: "Angular misalignment", unit: "°", toSI: DEG, siUnit: "rad", default: 0.3, min: 0, max: 29 },
     { key: "gapDistance", label: "End-face gap (≤ 5 µm)", unit: "µm", toSI: 1e-6, siUnit: "m", default: 0.05, min: 0, max: 5 },
@@ -82,7 +82,7 @@ export default defineSchema({
       // 1.55e-6 · 5e-6/(2π · 1.447 · 2.025e-11) = 0.0420948; loss = 10 log10(1 + u²) = 0.0076888 dB.
       source: MARCUSE,
       basis: "computed",
-      inputs: { gapDistance: 5, lateralOffset: 0, angularMisalign: 0, gapIndex: 1.447, refractiveIndex: 1.447 },
+      inputs: { gapDistance: 5, lateralOffset: 0, angularMisalign: 0, gapIndex: 1.447, refractiveIndex: 1.447, fiberCoreDiam: 9 },
       expect: { gapLoss: 0.007688761108432429, totalLoss: 0.007688761108432429 },
       tolerance: 1e-8,
     },
