@@ -63,7 +63,7 @@ export default defineSchema({
   compute({ scanDirection, exposureBasis, wavelength, power, beamDiam, divergence, workingDistance, scanAngle, scanRate, exposureTime, alpha }) {
     const standardTime = unintendedExposureTime(wavelength);
     const T = exposureBasis === "custom" ? exposureTime : Number.isFinite(standardTime) ? standardTime : AVERSION_TIME;
-    const d = axisDiameterAt(beamDiam, divergence, workingDistance, "linear");
+    const d = axisDiameterAt(beamDiam, divergence, workingDistance, "gaussian");
     const scan = angularScan(scanAngle, scanRate, workingDistance, scanDirection !== "one", T);
     const result = scannedBeamLimits(wavelength, d, scan, alpha);
     const stationary = stationaryMaxPower(wavelength, d, T, alpha);
@@ -104,10 +104,10 @@ export default defineSchema({
   },
   checks: [
     {
-      // Defaults (532 nm, 1 mm + 100 cm × 1 mrad = 2 mm beam, α = 1.5 mrad, 0.25 s), beam held still: 400–1050 nm, 0.25 s,
+      // Defaults (532 nm, √(1² + (100 cm × 1 mrad)²) = 1.41 mm beam, α = 1.5 mrad, 0.25 s), beam held still: 400–1050 nm, 0.25 s,
       // thermal 18 C_A t^0.75 J/m² with C_A = 1 (α = α_min): 18·0.25^0.75 = 6.363961 J/m² → 25.45584 W/m² over the 7 mm
-      // aperture (A = π(3.5 mm)² = 3.848451e-5 m²): 25.45584·3.848451e-5 = 9.79656e-4 W = 0.979656 mW (the 2 mm beam puts
-      // 1 − e^(−2(7/2)²) = 1 − 2e-11 of its power in the aperture). Stopped scan with 5 mW: A·18/P = 0.138544, the limit
+      // aperture (A = π(3.5 mm)² = 3.848451e-5 m²): 25.45584·3.848451e-5 = 9.79656e-4 W = 0.979656 mW (the 1.41 mm beam
+      // puts 1 − e^(−2(7/√2)²) = 1 − e^−49 = 1 − 5e-22 of its power in the aperture). Stopped scan with 5 mW: A·18/P = 0.138544, the limit
       // H = E t reached after (18A/P)^4 = 3.68429e-4 s (E = P/A, the beam inside the aperture).
       source: SCANNED,
       basis: "computed",

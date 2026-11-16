@@ -53,7 +53,7 @@ export default function ScanningMPEPage() {
   const standardT = unintendedExposureTime(lambda);
   const T = custom ? customT : Number.isFinite(standardT) ? standardT : AVERSION_TIME;
   const alpha = Math.max(alphaRaw, 0) * 1e-3;
-  const d = axisDiameterAt(d0, phi, r, "linear");
+  const d = axisDiameterAt(d0, phi, r, "gaussian");
 
   const scan = useMemo(() => angularScan(theta, f, r, both, T), [theta, f, r, both, T]);
   const result = useMemo(() => scannedBeamLimits(lambda, d, scan, alpha), [lambda, d, scan, alpha]);
@@ -68,7 +68,7 @@ export default function ScanningMPEPage() {
     const lo = Math.min(0.01, r / 2);
     const hi = Math.max(100, 2 * r);
     const rs = Array.from({ length: 61 }, (_, i) => lo * Math.pow(hi / lo, i / 60));
-    const dAt = (x: number) => axisDiameterAt(d0, phi, x, "linear");
+    const dAt = (x: number) => axisDiameterAt(d0, phi, x, "gaussian");
     const scanned = rs.map((x) => scannedBeamLimits(lambda, dAt(x), angularScan(theta, f, x, both, T), alpha).pMax);
     const still = rs.map((x) => stationaryMaxPower(lambda, dAt(x), T, alpha));
     const cm = rs.map((x) => x * 100);
