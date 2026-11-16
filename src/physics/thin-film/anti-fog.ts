@@ -66,7 +66,8 @@ export function tirOnsetAngle(nDrop = N_WATER, nOut = 1): number {
  */
 export function waterSurfaceTension(temperature: number): number {
   const Tc = 647.096;
-  if (!(temperature >= 248.15 && temperature < Tc)) return NaN;
+  // 1e-9 K of slack: −25 °C + 273.15 is 248.14999999999998 in floating point.
+  if (!(temperature >= 248.15 - 1e-9 && temperature < Tc)) return NaN;
   const tau = 1 - temperature / Tc;
   return 235.8e-3 * tau ** 1.256 * (1 - 0.625 * tau);
 }

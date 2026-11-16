@@ -118,12 +118,17 @@ export function halfTransmissionEdge(stack: Stack, type: EdgeType, start: number
 /**
  * Two lossless coated faces of a thick, non-absorbing substrate, their multiple reflections added in
  * intensity (incoherently): T = T₁T₂/(1 − R₁R₂), R = 1 − T, with T = 1 − R for each face. A lossless
- * face has the same R from either side, so R₂ may be computed from the outside. NaN unless
- * 0 ≤ R₁, R₂ ≤ 1 and not both are 1.
+ * face has the same R from either side, so R₂ may be computed from the outside. A deep stop band can round R
+ * to 1 ± 1e-15, so R within 1e-12 of [0, 1] is clamped; when a face then reflects fully, T = 0 (T ≤ min(T₁, T₂)
+ * since T₁ + T₂ − T₁T₂ ≥ max(T₁, T₂)). NaN for R further outside [0, 1].
  */
 export function incoherentLosslessFaces(R1: number, R2: number): { R: number; T: number } {
-  if (!(R1 >= 0 && R1 <= 1 && R2 >= 0 && R2 <= 1) || R1 * R2 === 1) return { R: NaN, T: NaN };
-  const T = ((1 - R1) * (1 - R2)) / (1 - R1 * R2);
+  const slack = 1e-12;
+  if (!(R1 >= -slack && R1 <= 1 + slack && R2 >= -slack && R2 <= 1 + slack)) return { R: NaN, T: NaN };
+  const r1 = Math.min(1, Math.max(0, R1));
+  const r2 = Math.min(1, Math.max(0, R2));
+  if (r1 === 1 || r2 === 1) return { R: 1, T: 0 };
+  const T = ((1 - r1) * (1 - r2)) / (1 - r1 * r2);
   return { R: 1 - T, T };
 }
 
