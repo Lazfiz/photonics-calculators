@@ -116,7 +116,7 @@ export function dispersiveWaveWavelength(lambdaPump: number, beta2: number, omeg
 }
 
 export interface SolitonContent {
-  /** Number of solitons the input contains, ⌊N + 1/2⌋. */
+  /** Number of solitons the input contains, ⌈N + 1/2⌉ − 1 (⌊N + 1/2⌋ except at half-integer N). */
   count: number;
   /** Amplitude of the strongest one, 2N − 1, in units of √P₁: its peak power is (2N − 1)²P₁ and its half-width T₀/(2N − 1). */
   amplitude: number;
@@ -124,12 +124,13 @@ export interface SolitonContent {
 
 /**
  * Solitons inside an input N sech τ with anomalous dispersion (Satsuma & Yajima 1974, Prog. Theor. Phys. Suppl. 55, 284):
- * the Zakharov–Shabat eigenvalues are η_k = N − k + 1/2 > 0, so the input holds ⌊N + 1/2⌋ solitons and the strongest has
- * amplitude 2η₁ = 2N − 1. The rest of the energy leaves as dispersive radiation. N < 1/2 holds none.
+ * the Zakharov–Shabat eigenvalues are η_k = N − k + 1/2 > 0, so the input holds ⌈N + 1/2⌉ − 1 solitons and the strongest has
+ * amplitude 2η₁ = 2N − 1. The rest of the energy leaves as dispersive radiation. N ≤ 1/2 holds none: at half-integer N the
+ * last eigenvalue is exactly 0, which is radiation, not a soliton.
  */
 export function solitonContent(order: number): SolitonContent {
   if (!(Number.isFinite(order) && order >= 0)) return { count: NaN, amplitude: NaN };
-  const count = Math.floor(order + 0.5);
+  const count = Math.ceil(order + 0.5) - 1;
   return { count, amplitude: count > 0 ? 2 * order - 1 : 0 };
 }
 
