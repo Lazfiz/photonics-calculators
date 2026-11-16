@@ -49,9 +49,11 @@ test("U4: the scanning page uses the standard time unless a time is entered, and
   const entered = run(scan, { wavelength: 1550, exposureBasis: "custom", exposureTime: 10 });
   assert.equal(standard.outputs.exposureUsed, 10);
   assert.equal(standard.outputs.maxPowerScanned, entered.outputs.maxPowerScanned);
-  // The audit's figure for 1550 nm at 10 s: 1.53 W (rule 2).
-  assertRel(standard.outputs.maxPowerScanned as number, 1530, 5e-3, "1550 nm, 10 s");
   assert.equal(standard.outputs.bindingRule, 2);
+  // The audit's figure for 1550 nm at 10 s, 1.53 W (rule 2), is for a 2 mm beam at the eye (linear growth, 1 + 1 mm);
+  // with Gaussian growth a √3 mm beam is 2 mm at 1 m: √(3 + 1).
+  const twoMm = run(scan, { wavelength: 1550, beamDiam: Math.sqrt(3) });
+  assertRel(twoMm.outputs.maxPowerScanned as number, 1530, 5e-3, "1550 nm, 10 s, 2 mm at the eye");
   // 355 nm: 30 000 s.
   assert.equal(run(scan, { wavelength: 355 }).outputs.exposureUsed, 30000);
   // A shorter time entered for an invisible beam is used, with a warning; none when it is as long.
@@ -60,6 +62,33 @@ test("U4: the scanning page uses the standard time unless a time is entered, and
   assert.ok(short.warnings.some((w) => w.includes("10 s") && w.includes("no aversion response")), short.warnings.join(" | "));
   const long = run(scan, { wavelength: 905, exposureBasis: "custom", exposureTime: 100 });
   assert.ok(!long.warnings.some((w) => w.includes("less conservative")));
+});
+
+test("U1 on the scanning page: the beam grows as √(d² + (rφ)²)", () => {
+  // 1 mm at the scanner, 1 mrad, 1 m: √(1 + 1) mm, the same beam as √2 mm with no divergence.
+  const scan = schema("/laser-safety/scanning-mpe");
+  const grown = run(scan, {});
+  const fixed = run(scan, { beamDiam: Math.SQRT2, divergence: 0 });
+  assertRel(grown.outputs.maxPowerScanned as number, fixed.outputs.maxPowerScanned as number, 1e-12, "scanned");
+  assertRel(grown.outputs.passDuration as number, fixed.outputs.passDuration as number, 1e-12, "pass");
+});
+
+test("U2 on the AEL page: the EU A11 values are outputs of their own, with no toggle", () => {
+  const ael = schema("/laser-safety/ael-limits");
+  assert.ok(!ael.inputs.some((i) => i.key === "euA11"));
+  // 1310 nm, CW: A11's skin AEL through 1 mm at 0.35 s, 1.1×10⁴·5·0.35^0.25/0.35 J/(m²·s) × π(1 mm)²/4 = 94.93 mW,
+  // caps Classes 1 and 3R (IEC alone: the 3B cap, 0.5 W).
+  const cap = (5.5e4 * Math.pow(0.35, -0.75) * Math.PI * 1e-6) / 4;
+  const r = run(ael, { wavelength: 1310 });
+  assertRel(r.outputs.cw1A11 as number, cap * 1e3, 1e-9, "Class 1, EU");
+  assertRel(r.outputs.cw3RA11 as number, cap * 1e3, 1e-9, "Class 3R, EU");
+  assertRel(r.outputs.cw3R as number, 500, 1e-9, "Class 3R, IEC");
+  assert.ok(r.warnings.some((w) => w.includes("In the EU") && w.includes("Class 3R")), r.warnings.join(" | "));
+  // Outside 1250–1400 nm the two agree and nothing is said.
+  const d = run(ael, {});
+  assert.equal(d.outputs.cw1A11, d.outputs.cw1);
+  assert.equal(d.outputs.energy3RA11, d.outputs.energy3R);
+  assert.ok(!d.warnings.some((w) => w.includes("In the EU")));
 });
 
 test("U3: the scanning API carries the page's scan-centre and turning-point caveats", () => {
