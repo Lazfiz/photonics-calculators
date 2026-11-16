@@ -283,7 +283,7 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "lasercom-link",
     title: "Lasercom Link Budget",
-    description: "Lasercom link budget with Gaussian-beam transmit and receive gains, free-space path loss, spot size at the receiver, and pointing and atmospheric losses.",
+    description: "Lasercom link budget with uniform-aperture transmit and receive gains (πD/λ)²η, free-space path loss, spot size at the receiver, and pointing and atmospheric losses.",
     tier: "textbook",
     modelNote: "Friis P_r = P_t G_t G_r (λ/4πR)² with G = (πD/λ)² η at each end; FSPL and gains count the spreading once. Capped at P_t η_t η_r; flags R < 2D_t²/λ. Pointing and atmosphere as fixed dB.",
     references: [
