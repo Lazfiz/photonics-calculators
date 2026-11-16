@@ -110,6 +110,13 @@ test("MCP run_calculator: the API's numbers for the inputs given; errors say why
   // A page URL and a bare slug name the same calculator; a choice takes its option value.
   const byUrl = await call("run_calculator", { slug: "https://photonicscalculators.com/wave-optics/gaussian-beam?x=1", inputs });
   assert.deepEqual(byUrl.structuredContent?.outputs, run.structuredContent?.outputs);
+  // A shared page link carries its inputs (upgrades review 2026-11, quick win 1); `inputs` overrides them.
+  const shared = "https://photonicscalculators.com/wave-optics/gaussian-beam?" + new URLSearchParams(
+    Object.entries(inputs).map(([key, value]) => [key, String(value)])) + "&utm_source=x#results";
+  const fromLink = await call("run_calculator", { slug: shared });
+  assert.deepEqual(fromLink.structuredContent?.outputs, run.structuredContent?.outputs);
+  const overridden = await call("run_calculator", { slug: shared, inputs: { wavelength: 532 } });
+  assert.match(overridden.structuredContent?.pageUrl as string, /wavelength=532/);
   const solved = await call("run_calculator", { slug: "lambert-beer-law", inputs: { solve: "c", absorbance: 1 } });
   assert.equal(solved.isError, undefined, solved.content[0].text);
 

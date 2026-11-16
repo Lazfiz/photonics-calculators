@@ -169,7 +169,12 @@ const runCalculator: Tool = {
     if (typeof inputs !== "object" || inputs === null || Array.isArray(inputs)) {
       return fail("inputs must be an object of input key → value.");
     }
-    const params = new URLSearchParams();
+    // A page or API URL given as the slug carries its inputs in its query (other keys, such as utm_*, are dropped);
+    // `inputs` overrides them.
+    const slug = String(args.slug);
+    const fromUrl = new URLSearchParams(slug.includes("?") ? slug.slice(slug.indexOf("?") + 1).replace(/#.*$/, "") : "");
+    const keys = new Set(found.schema.inputs.map((input) => input.key));
+    const params = new URLSearchParams([...fromUrl].filter(([key]) => keys.has(key)));
     for (const [key, value] of Object.entries(inputs)) {
       if (typeof value !== "number" && typeof value !== "string") return fail(`Input "${key}" must be a number or a string.`);
       params.set(key, String(value));
