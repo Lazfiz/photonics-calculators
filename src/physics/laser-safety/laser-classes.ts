@@ -36,6 +36,16 @@
  * (the 2001 edition used a 25 mm stop there), sources larger than α_max = 100 mrad. The 2001 edition measured the UV and
  * IR power AELs through a 7 mm stop, more restrictive than each AEL's own stop for beams wider than it.
  *
+ * TODO, needs IEC 60825-1:2014 Table 10 (not available here; review 2026-11, laser-safety audit E1, M6–M8):
+ * - E1: Condition 1 at 302.5–400 nm and 1400–4000 nm. There it gets only the `condition1MayRaiseClass` warning; take
+ *   the stop sizes and distances from Table 10 and apply them as at 400–1400 nm.
+ * - M6: Class 3B is measured through 7 mm at every wavelength; Table 10 gives 1 mm in the UV and up to 3.5 mm above
+ *   1400 nm. 7 mm collects more of a wide beam, so this errs safe.
+ * - M7: a beam within Class 1 for the naked eye but above Class 3B through a telescope falls through to Class 4 (the
+ *   safe direction); check 5.3 for the intended class.
+ * - M8: Condition 2 (the eye loupe, a 7 mm stop close to the source; the distance is unverified) is not modelled;
+ *   check whether the 2014 edition still has it for strongly diverging sources.
+ *
  * Sources: IEC 60825-1:2014 (4.3 e, Tables 3–8 and 10); IEC 60825-1:1993+A1:1997+A2:2001, Tables 1–4 and 10 (the
  * values checked here); ICNIRP, Health Phys. 105(3), 271–295 (2013); K. Schulmeister, "The new edition of the
  * international laser product safety standard IEC 60825-1" (white paper, Seibersdorf Laboratories, 2017) and "The
