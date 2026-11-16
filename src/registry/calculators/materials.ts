@@ -496,11 +496,15 @@ export const materials: CalculatorEntry[] = [
         url: "https://doi.org/10.1364/OPTICA.1.000436",
       },
       {
+        citation: "Reichert M. et al. (2016). Temporal, spectral, and polarization dependence of the nonlinear optical response of carbon disulfide: erratum. Optica 3, 657. Corrected Table 1: electronic n₂ 1.5 ± 0.4 × 10⁻¹⁹ m²/W (the original gave 2.0).",
+        url: "https://doi.org/10.1364/OPTICA.3.000657",
+      },
+      {
         citation: "Kedenburg S., Vieweg M., Gissibl T., Giessen H. (2012). Linear refractive index and absorption measurements of nonlinear optical liquids in the visible and near-infrared spectral region. Opt. Mater. Express 2, 1588. n₀ of CS₂.",
         url: "https://doi.org/10.1364/OME.2.001588",
       },
       {
-        citation: "Wahlstrand J. K., Cruz C. D. (2026). Precise measurement of the Kerr coefficient using phase-sensitive pump–probe hyperspectral imaging. Rev. Sci. Instrum. 97(8). Fused silica n₂ = 2.18 ± 0.14 × 10⁻¹⁶ cm²/W at 1024 nm (Z-scan).",
+        citation: "Wahlstrand J. K., Cruz C. D. (2026). Precise measurement of the Kerr coefficient using phase-sensitive pump–probe hyperspectral imaging. Rev. Sci. Instrum. 97(8). Fused silica n₂ = 2.18 ± 0.14 × 10⁻¹⁶ cm²/W at 1024 nm (Sec. III, Z-scan benchmark of their pump–probe method).",
         url: "https://doi.org/10.1063/5.0331814",
       },
       {

@@ -25,16 +25,18 @@
  *   Table 1 (arXiv:1509.02232): electronic n₂ at 800 nm (40 fs pump–probe) N₂ 7.9 ± 0.8, O₂ 8.1 ± 0.7, Ar 10.1 ± 1.0 in
  *   10⁻²⁰ cm²/W; long pulses add the rotational n₂,rot (N₂ 24, O₂ 54). Air is Σ xᵢ n₂,ᵢ over the dry-air mole fractions
  *   of the U.S. Standard Atmosphere 1976 (N₂ 0.78084, O₂ 0.209476, Ar 0.00934); n₀ of standard air (Peck & Reeder 1972).
- * - CS₂: M. Reichert et al., Optica 1, 436 (2014), doi 10.1364/OPTICA.1.000436, Table 1 (beam deflection, 800 nm): bound
- *   electronic n₂ = 2.0 ± 0.4 × 10⁻¹⁹ m²/W, plus collision 1.0, libration 7.6 and diffusive 18 × 10⁻¹⁹ m²/W whose sum is
- *   n₂,eff for pulses > 10 ps (Eq. 18). n₀ from S. Kedenburg et al., Opt. Mater. Express 2, 1588 (2012),
+ * - CS₂: M. Reichert et al., Optica 1, 436 (2014), doi 10.1364/OPTICA.1.000436 (beam deflection, 800 nm), with the
+ *   erratum Optica 3, 657 (2016), doi 10.1364/OPTICA.3.000657, corrected Table 1 (the fused-silica cuvette contribution
+ *   was subtracted; the original gave electronic 2.0): bound electronic n₂ = 1.5 ± 0.4 × 10⁻¹⁹ m²/W, plus collision 1.0 ± 0.2,
+ *   libration 7.6 ± 1.5 and diffusive 18 ± 3 × 10⁻¹⁹ m²/W whose sum is n₂,eff for pulses > 10 ps (Eq. 18). n₀ from S. Kedenburg et al., Opt. Mater. Express 2, 1588 (2012),
  *   doi 10.1364/OME.2.001588: n² = 1 + 1.50387 λ²/(λ² − 0.03049), λ in µm, 20 °C.
  * - Sapphire, E ∥ c: A. Major, F. Yoshino, I. Nikolakakos, J. S. Aitchison, P. W. E. Smith, Opt. Lett. 29, 602 (2004),
  *   doi 10.1364/OL.29.000602, Eq. 2: n₂ = [2.5 + 2.3 exp(−(λ − 266)/46.6) + 1.0 exp(−(λ − 266)/1086.3)] × 10⁻¹⁶ cm²/W, λ in nm,
  *   an empirical fit (no underlying theory, their words) to their 1 ps Z-scans over 550–1550 nm (±25–30 %) and DeSalvo et
  *   al.'s 266, 355, 532 and 1064 nm points; it is stated for 270–1550 nm. n₀ = n_e of Malitson & Dodge (uniaxial-data.ts).
  * - Fused silica at 1024 nm: J. K. Wahlstrand, C. D. Cruz, Rev. Sci. Instrum. 97(8) (2026), doi 10.1063/5.0331814
- *   (arXiv:2604.10340), Sec. III: Z-scan with 250 fs pulses, n₂ = 2.18 ± 0.14 × 10⁻¹⁶ cm²/W.
+ *   (arXiv:2604.10340). Their main method is phase-sensitive pump–probe hyperspectral imaging; Sec. III is the Z-scan
+ *   benchmark of that method at 1024 nm with 247 fs pulses, n₂ = 2.18 ± 0.14 × 10⁻¹⁶ cm²/W.
  */
 
 import { c } from "../constants";
@@ -102,7 +104,7 @@ const sapphireN0 = (lambda: number) => crystalIndices("sapphire", lambda).ne;
 
 /** n₀ of CS₂ at 800 nm from Kedenburg et al. 2012 (λ in µm). */
 const CS2_N0_800 = Math.sqrt(1 + (1.50387 * 0.8 ** 2) / (0.8 ** 2 - 0.03049));
-const REICHERT = "Reichert et al. 2014, Table 1 (800 nm); n₀ Kedenburg et al. 2012";
+const REICHERT = "Reichert et al. 2014 with the 2016 erratum (Optica 3, 657), Table 1 (800 nm); n₀ Kedenburg et al. 2012";
 
 export const KERR_MEDIA: Record<KerrMediumId, KerrMedium> = {
   "silica-fiber": {
@@ -136,7 +138,7 @@ export const KERR_MEDIA: Record<KerrMediumId, KerrMedium> = {
   },
   "fused-silica-1024": {
     name: "Fused silica (1024 nm)", n2: 2.18e-20, n0: refractiveIndex(MATERIALS.fusedSilica.model, 1024e-9), lambda: 1024e-9,
-    source: "n₂ Wahlstrand & Cruz 2026 (Z-scan, 250 fs); n₀ Malitson 1965",
+    source: "n₂ Wahlstrand & Cruz 2026 (Sec. III, Z-scan benchmark of their pump–probe method, 247 fs); n₀ Malitson 1965",
   },
   nitrogen: gasAt800("N₂ (gas, 1 atm)", N2_GAS),
   oxygen: gasAt800("O₂ (gas, 1 atm)", O2_GAS),
@@ -146,9 +148,9 @@ export const KERR_MEDIA: Record<KerrMediumId, KerrMedium> = {
     AIR_FRACTIONS.n2 * N2_GAS + AIR_FRACTIONS.o2 * O2_GAS + AIR_FRACTIONS.ar * AR_GAS,
     "Zahedpour et al. 2015 N₂, O₂, Ar weighted by mole fraction",
   ),
-  cs2: { name: "CS₂ (electronic only)", n2: 2.0e-19, n0: CS2_N0_800, lambda: 800e-9, source: `${REICHERT}, electronic` },
+  cs2: { name: "CS₂ (electronic only)", n2: 1.5e-19, n0: CS2_N0_800, lambda: 800e-9, source: `${REICHERT}, electronic` },
   "cs2-long": {
-    name: "CS₂ (pulses > 10 ps)", n2: (2.0 + 1.0 + 7.6 + 18) * 1e-19, n0: CS2_N0_800, lambda: 800e-9,
+    name: "CS₂ (pulses > 10 ps)", n2: (1.5 + 1.0 + 7.6 + 18) * 1e-19, n0: CS2_N0_800, lambda: 800e-9,
     source: `${REICHERT}, electronic + nuclear (Eq. 18)`,
   },
 };
