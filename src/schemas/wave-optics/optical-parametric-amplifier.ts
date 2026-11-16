@@ -38,7 +38,8 @@ export default defineSchema({
     const fraction = peakPower > 0 ? r.pumpDrawn / peakPower : NaN;
     const warnings: string[] = [];
     if (!valid) warnings.push("The signal wavelength must be longer than the pump wavelength: the idler is at 1/λ_i = 1/λ_p − 1/λ_s.");
-    if (valid && r.pumpDrawn > 0.1 * peakPower) {
+    if (valid && !(peakPower > 0)) warnings.push("With no pump power the fraction of the pump drawn is undefined.");
+    if (valid && Number.isFinite(fraction) && r.pumpDrawn > 0.1 * peakPower) {
       warnings.push(`The amplified signal and idler take ${(100 * fraction).toPrecision(3)} % of the pump power (more than 10 %): the pump depletes and the gain saturates below this value.`);
     }
     if (valid && !Number.isFinite(r.gain)) warnings.push("The gain overflows: the pump would be depleted long before this.");

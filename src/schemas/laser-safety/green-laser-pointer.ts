@@ -44,6 +44,9 @@ export default defineSchema({
     if (cls.laserClass === null || Number.isNaN(nohd)) warnings.push("The limits cover 180 nm to 1 mm.");
     if (outsideRule) warnings.push("Outside 400–1400 nm ICNIRP 2013 uses the longest exposure expected; 10 s is assumed.");
     if (!visible) warnings.push("Dazzle levels apply to visible beams only.");
+    const dazzle = visible ? [rangeToIrradiance(power, beam, ICAO_LEVELS.sensitive), rangeToIrradiance(power, beam, ICAO_LEVELS.critical), rangeToIrradiance(power, beam, ICAO_LEVELS.laserFree)] : [];
+    if (nohd === Infinity) warnings.push("The beam doesn't spread (φ = 0): the eye hazard extends to any range.");
+    if (dazzle.includes(Infinity)) warnings.push("The beam doesn't spread (φ = 0): each dazzle level it exceeds extends to any range.");
     return {
       values: {
         classRank: cls.laserClass === null ? NaN : RANK[cls.laserClass],
@@ -51,9 +54,9 @@ export default defineSchema({
         beamAtDistance: dAtR,
         pupilIrradiance: apertureIrradiance(power, dAtR, PUPIL),
         peakIrradiance: peakIrradiance(power, dAtR),
-        flashBlindRange: visible ? rangeToIrradiance(power, beam, ICAO_LEVELS.sensitive) : NaN,
-        glareRange: visible ? rangeToIrradiance(power, beam, ICAO_LEVELS.critical) : NaN,
-        distractionRange: visible ? rangeToIrradiance(power, beam, ICAO_LEVELS.laserFree) : NaN,
+        flashBlindRange: visible ? dazzle[0] : NaN,
+        glareRange: visible ? dazzle[1] : NaN,
+        distractionRange: visible ? dazzle[2] : NaN,
       },
       warnings,
     };
