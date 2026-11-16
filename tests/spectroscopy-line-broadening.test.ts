@@ -65,6 +65,13 @@ test("Voigt FWHM, Δ_G 0.5 and Δ_L 0.3: exact 0.67941, Olivero 0.67951, TCH 0.6
   close(pseudoVoigtTch(0.5, 0.3).fwhm, 0.67679, 2e-5);
   // Olivero & Longbothum quote 0.02 % accuracy.
   assert.ok(Math.abs(voigtFwhmOlivero(0.5, 0.3) / voigtFwhm(0.5, 0.3) - 1) < 2e-4);
+  // Limits of the formula: pure Gaussian gives Δ_G; pure Lorentzian 0.5346 + √0.2166 = 1.0000066. Negative or
+  // non-finite widths are outside its domain (review 2026-11 P2-M5).
+  close(voigtFwhmOlivero(0.5, 0), 0.5, 1e-15);
+  close(voigtFwhmOlivero(0, 1), 0.5346 + Math.sqrt(0.2166), 1e-15);
+  assert.ok(Number.isNaN(voigtFwhmOlivero(-0.1, 0.3)));
+  assert.ok(Number.isNaN(voigtFwhmOlivero(0.5, -0.3)));
+  assert.ok(Number.isNaN(voigtFwhmOlivero(0.5, Infinity)));
 });
 
 test("Voigt FWHM limits: pure Gaussian, pure Lorentzian, and no width", () => {
