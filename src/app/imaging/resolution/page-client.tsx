@@ -103,7 +103,7 @@ export default function ResolutionPage() {
             <span className="font-mono text-yellow-400">{fmtNm(results.fwhm)}</span>
           </div>
           <div className="flex justify-between items-center border-b border-gray-800 pb-2">
-            <span className="text-gray-400">Axial FWHM 0.88λ/(n − √(n² − NA²))</span>
+            <span className="text-gray-400">Axial FWHM 0.886λ/(n − √(n² − NA²))</span>
             <span className="font-mono text-purple-400">{fmtNm(results.axial)}</span>
           </div>
           <div className="text-xs text-gray-500 mt-2 space-y-1">

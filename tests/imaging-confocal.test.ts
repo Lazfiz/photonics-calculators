@@ -61,8 +61,9 @@ test("confocal FWHM in SI units at the confocal-resolution and 3d-reconstruction
   assertRel(confocalLateralFwhm(550 * nm, 1.4, 1), 197.23 * nm, 1e-4, "lateral");
   assertRel(confocalAxialFwhm(550 * nm, 1.518, 1.4, 1), 417.92 * nm, 1e-4, "axial");
   assertRel(confocalOpticalSectionFwhm(550 * nm, 1.518, 1.4, 1), 518.27 * nm, 1e-4, "section");
-  // Wilhelm's geometric formula gives 900.2 nm here (ROADMAP golden), 1.74 × the wave-optical section.
-  assertRel(confocalSectionFwhm(550 * nm, 1.518, 1.4, 1), 900.2 * nm, 1e-4, "Wilhelm 1 AU");
+  // Wilhelm's geometric formula with the diffraction term 0.886 λ/0.931206 = 523.30 nm and the pinhole term
+  // √2 · 1.518 · 1.22 · 550/1.4² = 734.92 nm: √(523.30² + 734.92²) = 902.21 nm, 1.74 × the wave-optical section.
+  assertRel(confocalSectionFwhm(550 * nm, 1.518, 1.4, 1), 902.209 * nm, 1e-5, "Wilhelm 1 AU");
   // 3d-reconstruction: 550 nm, NA 1.0, n 1.33, point pinhole → 0.63784 · 550/0.453133 = 774.2 nm
   // (Wilhelm's rounded 0.64 gives the 777 nm of the ROADMAP).
   assertRel(confocalAxialFwhm(550 * nm, 1.33, 1.0, 0), 774.19 * nm, 1e-4, "3D point pinhole");
@@ -93,20 +94,20 @@ test("Gaussian light sheet and effective axial resolution (Engelbrecht & Stelzer
   // 488 nm, NA 0.1: w₀ = 488/(π · 0.1) nm = 1553.35 nm, thickness 2w₀ = 3.10670 µm; z_R = π · 1.33 · w₀²/λ = 20.660 µm.
   assertRel(2 * gaussianSheetWaist(488 * nm, 0.1), 3.10670 * um, 1e-5, "thickness");
   assertRel(gaussianSheetRayleighRange(488 * nm, 0.1, 1.33), 20.660 * um, 1e-4, "z_R");
-  // FWHM_sheet = 1.17741 w₀ = 1828.9 nm; detection 0.88 · 488/(1.33 − √(1.33² − 0.64)) = 1605.3 nm →
-  // (1/1828.9² + 1/1605.3²)^(−1/2) = 1206.5 nm (ROADMAP golden 1.2065 µm).
+  // FWHM_sheet = 1.17741 w₀ = 1828.9 nm; detection 0.886 · 488/(1.33 − √(1.33² − 0.64)) = 1616.3 nm →
+  // (1/1828.9² + 1/1616.3²)^(−1/2) = 1211.1 nm.
   assertRel(gaussianSheetFwhm(488 * nm, 0.1), 1828.93 * nm, 1e-5, "sheet FWHM");
   const det = axialPsfFwhm(488 * nm, 1.33, 0.8);
-  assertRel(effectiveAxialFwhm(gaussianSheetFwhm(488 * nm, 0.1), det), 1206.5 * nm, 2e-4, "effective");
+  assertRel(effectiveAxialFwhm(gaussianSheetFwhm(488 * nm, 0.1), det), 1211.13 * nm, 1e-5, "effective");
   // A very thick sheet leaves the detection PSF.
   assertRel(effectiveAxialFwhm(1, det), det, 1e-9, "thick-sheet limit");
   assert.ok(Number.isNaN(gaussianSheetWaist(488 * nm, 0)) && Number.isNaN(effectiveAxialFwhm(0, det)));
 });
 
 test("Light sheet 3D-reconstruction defaults: λ 550 nm, sheet NA 0.1, detection NA 1.0 in water", () => {
-  // Sheet 1.17741 · 550 nm/(π · 0.1) = 2061.3 nm; detection 0.88602 · 550/(1.33 − √(1.33² − 1)) = 1.33 − 0.87669 = 0.45331
-  // → 1075.1 nm; (1/2061.3² + 1/1075.1²)^(−1/2) = 948.4 nm (hand calculation).
-  assertRel(effectiveAxialFwhm(gaussianSheetFwhm(550 * nm, 0.1), axialPsfFwhm(550 * nm, 1.33, 1.0)), 948.36 * nm, 2e-4, "effective axial");
+  // Sheet 1.17741 · 550 nm/(π · 0.1) = 2061.3 nm; detection 0.886 · 550 nm/(1.33 − √(1.33² − 1) = 0.453133)
+  // = 1075.4 nm; (1/2061.3² + 1/1075.4²)^(−1/2) = 953.45 nm (hand calculation).
+  assertRel(effectiveAxialFwhm(gaussianSheetFwhm(550 * nm, 0.1), axialPsfFwhm(550 * nm, 1.33, 1.0)), 953.450 * nm, 1e-5, "effective axial");
 });
 
 test("spinning-disk pinhole crosstalk: lattice sum of the defocused OTF", () => {

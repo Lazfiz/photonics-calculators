@@ -751,7 +751,7 @@ export const imaging: CalculatorEntry[] = [
         url: "https://doi.org/10.1017/9781108769914",
       },
       {
-        citation: "Wilhelm R., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Axial FWHM 0.88 λ/(n − √(n² − NA²)).",
+        citation: "Wilhelm R., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Axial FWHM 0.88 λ/(n − √(n² − NA²)), used here with the unrounded sinc² value 0.886.",
       },
       {
         citation: "Richards B., Wolf E. (1959). Electromagnetic diffraction in optical systems, II. Structure of the image field in an aplanatic system. Proc. R. Soc. Lond. A 253, 358–379. Vector focus behind the polarization note.",
@@ -810,7 +810,7 @@ export const imaging: CalculatorEntry[] = [
         url: "https://doi.org/10.1017/9781108769914",
       },
       {
-        citation: "Wilhelm R., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Axial FWHM 0.88 λ/(n − √(n² − NA²)).",
+        citation: "Wilhelm R., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Axial FWHM 0.88 λ/(n − √(n² − NA²)), used here with the unrounded sinc² value 0.886.",
       },
     ],
   },
