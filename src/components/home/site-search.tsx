@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-import { searchItems, type SearchItem } from "../../lib/site-search";
+import { search, type SearchItem } from "../../lib/site-search";
 
 export default function SiteSearch({ total }: { total: number }) {
   const [query, setQuery] = useState("");
@@ -32,8 +32,9 @@ export default function SiteSearch({ total }: { total: number }) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  const results = items ? searchItems(items, query) : [];
+  const { results, closest } = items ? search(items, query) : { results: [], closest: false };
   const noMatch = items !== null && query.trim() !== "" && results.length === 0;
+  const categories = items ? items.filter((item) => item.kind === "category") : [];
 
   const categoryColor: Record<string, string> = {
     "wave-optics": "text-blue-400",
@@ -68,6 +69,9 @@ export default function SiteSearch({ total }: { total: number }) {
       {results.length > 0 && (
         <div className="absolute z-50 mt-2 w-full rounded-xl border border-white/8 bg-white/[0.02] backdrop-blur-xl shadow-2xl shadow-black/50 overflow-hidden">
           <div className="max-h-96 overflow-y-auto py-2">
+            {closest && (
+              <p className="px-4 pt-1 pb-2 text-xs text-gray-400">No exact match. Closest matches:</p>
+            )}
             {results.map((item, idx) => (
               <Link
                 key={item.href + idx}
@@ -94,7 +98,14 @@ export default function SiteSearch({ total }: { total: number }) {
       )}
       {noMatch && (
         <div className="absolute z-50 mt-2 w-full rounded-xl border border-white/8 bg-white/[0.02] backdrop-blur-xl shadow-2xl shadow-black/50 px-4 py-3 text-sm text-gray-400">
-          No calculator matches every word of &ldquo;{query.trim()}&rdquo;.
+          <p>No calculator matches &ldquo;{query.trim()}&rdquo;. Browse a category:</p>
+          <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+            {categories.map((category) => (
+              <Link key={category.href} href={category.href} onClick={() => setQuery("")} className="text-blue-400 hover:text-blue-300">
+                {category.title}
+              </Link>
+            ))}
+          </div>
         </div>
       )}
     </div>
