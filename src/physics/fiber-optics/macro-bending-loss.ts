@@ -25,7 +25,7 @@
  * Mode-field radius: Marcuse's Gaussian fit w/a = 0.65 + 1.619 V^(−3/2) + 2.879 V^(−6)
  * (D. Marcuse, Bell Syst. Tech. J. 56, 703 (1977); within ~1 % for 1.2 < V < 2.4).
  */
-import { besselJ, besselKScaled } from "../math";
+import { DB_PER_E_FOLD, besselJ, besselKScaled } from "../math";
 import { effectivePhotoelastic } from "./fiber-bragg-grating";
 
 export interface StepIndexFiber {
@@ -147,8 +147,7 @@ export function bendLossCoefficient(
   return (SQRT_PI * kappa ** 2 * decay) / (2 * gamma ** 1.5 * V ** 2 * Math.sqrt(R) * K1s * K1s);
 }
 
-/** dB per e-fold of power, 10 log₁₀ e ≈ 4.343 (not a neper: ISO 80000-3 has 1 Np = 8.686 dB, a field ratio). */
-export const DB_PER_E_FOLD = 10 / Math.LN10;
+export { DB_PER_E_FOLD }; // defined once in math.ts; re-exported for the fibre pages that import it from here
 
 /** Equivalent bend radius R/(1 − p_e) with the elasto-optic correction (see the header), m. */
 export function elastoOpticBendRadius(R: number, n1: number): number {

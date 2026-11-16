@@ -12,6 +12,9 @@ const SQRT_PI = Math.sqrt(Math.PI);
 
 /** FWHM of a Gaussian in units of its standard deviation, 2√(2 ln 2) ≈ 2.3548. */
 export const GAUSSIAN_FWHM_PER_SIGMA = 2 * Math.sqrt(2 * Math.LN2);
+
+/** dB per e-fold of power, 10 log₁₀ e ≈ 4.343 (not a neper: ISO 80000-3 has 1 Np = 8.686 dB, a field ratio). */
+export const DB_PER_E_FOLD = 10 / Math.LN10;
 const SERIES_LIMIT = 2;
 const CF_TERMS = 120; // backward CF depth; converged to < 1e-16 for x ≥ 2
 
