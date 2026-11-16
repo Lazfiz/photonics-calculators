@@ -46,10 +46,15 @@ function ordinary(id: "sapphire" | "quartz"): DispersionMaterial {
 }
 
 // Crystran values; "∥"/"⊥" are relative to the c axis, and n and dn/dT of uniaxial crystals are the ordinary ones.
+// Exception: fused silica dn/dT is the absolute value of Leviton & Frey 2006 (Crystran's 12.9e-6 is high). The other dn/dT
+// are as Crystran gives them, without saying whether absolute or relative to air (they differ by about n·0.9e-6 /K).
 const DATA = {
   fusedSilica: {
     name: "Fused silica", dispersion: MATERIALS.fusedSilica, bands: um([0.18, 2.2]),
-    dnDT: 12.9e-6, conductivity: 1.38, knoop: 500, note: "IR grades transmit to 3 µm.",
+    // D. B. Leviton, B. J. Frey, Proc. SPIE 6273, 62732K (2006), doi 10.1117/12.672853, Table 6: absolute dn/dT of Corning 7980
+    // at 295 K, 8.86e-6 /K at 0.6 µm (8.48e-6 at 1.0 µm). Values near 10e-6 are relative to air; a heated window sees the absolute one.
+    dnDT: 8.86e-6, conductivity: 1.38, knoop: 500,
+    note: "IR grades transmit to 3 µm. dn/dT absolute, 0.6 µm, 295 K (Leviton & Frey 2006; 8.48 ×10⁻⁶ at 1 µm).",
   },
   bk7: {
     name: "N-BK7", dispersion: SCHOTT_GLASSES["N-BK7"], bands: um([0.35, 2.5]),
@@ -68,7 +73,9 @@ const DATA = {
   },
   quartz: {
     name: "Crystal quartz", dispersion: ordinary("quartz"), bands: um([0.18, 3.5], [40, 100]),
-    dnDT: -6.5e-6, conductivity: 6.2, knoop: 741, note: "Conductivity ⊥ c (10.7 W/(m·K) ∥ c).",
+    // dn_o/dT: Crystran's ∥ c value (light along c sees n_o); −6.5e-6 is dn_e/dT. Equals CRYSTAL_SHEETS.quartz.dnDT.para
+    // (crystal-properties.ts, which imports this file, so the literal is repeated here; tests/materials-windows.test.ts pins both).
+    dnDT: -5.5e-6, conductivity: 6.2, knoop: 741, note: "Conductivity ⊥ c (10.7 W/(m·K) ∥ c).",
   },
   diamond: {
     name: "Diamond", dispersion: MATERIALS.diamond, bands: um([0.3, 2.5], [7, 100]),

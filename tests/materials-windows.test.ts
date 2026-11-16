@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import { LAMBDA_D, abbeNumber, fromResonanceWavelengths, inRange, refractiveIndex } from "../src/physics/materials/sellmeier";
+import { CRYSTAL_SHEETS } from "../src/physics/materials/crystal-properties";
 import { MATERIALS } from "../src/physics/materials/sellmeier-data";
 import {
   WINDOW_MATERIALS, fresnelLimitTransmission, surfaceReflectance, transmits, windowIndex,
@@ -110,4 +111,13 @@ test("domain: n = 1 transmits all, bad n is NaN, bands and fit ranges", () => {
   assert.equal(transmits(WINDOW_MATERIALS.si, 50 * um), true);
   assert.equal(transmits(WINDOW_MATERIALS.si, 20 * um), false);
   assert.equal(inRange(MATERIALS.zblan.model, 4 * um), false);
+});
+
+test("dn/dT presets: fused silica absolute (Leviton & Frey 2006) and quartz n_o (Crystran ∥ c)", () => {
+  // Leviton & Frey, Proc. SPIE 6273, 62732K (2006), doi 10.1117/12.672853, Table 6: Corning 7980 absolute dn/dT at 295 K,
+  // 8.86e-6 /K at 0.6 µm (Crystran's 12.9e-6 is high; values near 10e-6 are relative to air).
+  assertAbs(WINDOW_MATERIALS.fusedSilica.dnDT ?? NaN, 8.86e-6, 1e-12, "fused silica dn/dT");
+  // Crystran quartz: ∥ c (light along c, n_o) −5.5e-6, ⊥ c (n_e) −6.5e-6; the window uses the ordinary ray.
+  assertAbs(WINDOW_MATERIALS.quartz.dnDT ?? NaN, CRYSTAL_SHEETS.quartz.dnDT.para, 1e-12, "quartz window = dn_o/dT");
+  assertAbs(WINDOW_MATERIALS.quartz.dnDT ?? NaN, -5.5e-6, 1e-12, "quartz dn_o/dT");
 });
