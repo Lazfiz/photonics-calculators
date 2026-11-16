@@ -35,7 +35,7 @@ export const materials: CalculatorEntry[] = [
     lede: "nₒ(λ) and nₑ(λ) from each crystal's published Sellmeier formula; Δn = nₑ − nₒ, and a plate of thickness d with the optic axis in its face retards by |Δn|·d/λ waves.",
     keywords: ["Ordinary and Extraordinary Index", "Birefringence Δn", "BBO and KDP Refractive Index", "Crystal Birefringence Data"],
     tier: "exact",
-    modelNote: "Exact for each published Sellmeier fit inside its wavelength range (outside it the page shows no value); the fits match measurements to about 1e-4 in n. Retardance assumes normal incidence with the optic axis in the plate face, at the fit's temperature.",
+    modelNote: "Exact for each published Sellmeier fit inside its wavelength range (outside it the page shows no value); how closely the fit matches measurements differs by crystal: about 1e-4 in n for quartz, calcite, MgF₂ and sapphire, 1e-3 to 1e-2 for YVO₄ and rutile (rutile's Δn runs about 2.5 % high against Bond 1965). Retardance assumes normal incidence with the optic axis in the plate face, at the fit's temperature.",
     references: [
       {
         citation: "refractiveindex.info database (CC0). Sellmeier data sets, each with its original reference shown on the page.",
@@ -842,6 +842,10 @@ export const materials: CalculatorEntry[] = [
       {
         citation: "Bristow A. D., Rotenberg N., van Driel H. M. (2007). Two-photon absorption and Kerr coefficients of silicon for 850–2200 nm. Appl. Phys. Lett. 90, 191104. β = 2.1 cm/GW at 1220 nm; indirect-gap fit C = 43 cm/GW.",
         url: "https://doi.org/10.1063/1.2737359",
+      },
+      {
+        citation: "Dinu M., Quochi F., Garcia H. (2003). Third-order nonlinearities in silicon at telecom wavelengths. Appl. Phys. Lett. 82, 2954. β ≈ 0.79 cm/GW near 1550 nm.",
+        url: "https://doi.org/10.1063/1.1571665",
       },
     ],
   },
