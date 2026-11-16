@@ -1,5 +1,5 @@
 import {
-  pseudoOpticalConstants, pseudoSubstrateReflectance, transparentFilmThickness,
+  FIT_TOLERANCE, pseudoOpticalConstants, pseudoSubstrateReflectance, transparentFilmThickness,
 } from "../../physics/thin-film/ellipsometry";
 import { defineSchema } from "../types";
 
@@ -54,8 +54,11 @@ export default defineSchema({
     } else if (Number.isFinite(film.period) && !Number.isFinite(film.thickness)) {
       warnings.push("No thickness: with this film index the film doesn't change Ψ and Δ (it matches the ambient or the substrate).");
     }
-    if (Number.isFinite(absX) && Math.abs(absX - 1) > 0.02) {
+    if (Number.isFinite(absX) && Math.abs(absX - 1) > FIT_TOLERANCE) {
       warnings.push(`|X| = ${absX.toFixed(4)} is not 1: no transparent film of index ${filmN} on this substrate gives this Ψ, Δ; the thickness is only the phase of X.`);
+    }
+    if (errors.length === 0 && Number.isFinite(film.alternative)) {
+      warnings.push(`Two thicknesses fit equally well, ${(film.thickness * 1e9).toFixed(2)} nm and ${(film.alternative * 1e9).toFixed(2)} nm (plus whole periods): on a lossless substrate with n_s < sin θ the substrate reflects totally, and Ψ, Δ alone can't tell them apart. A second angle or wavelength decides.`);
     }
     if (Number.isFinite(thickness) && thickness <= -0.005e-9) {
       warnings.push("A slightly negative thickness: a bare substrate within the measurement error.");
