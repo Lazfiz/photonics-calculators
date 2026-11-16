@@ -196,10 +196,14 @@ export interface FigureSettings {
   dispersion?: (lambda: number) => number;
 }
 
+/** Points on the rim |ν| = NA sampled for the largest retardance. */
+const RIM_SAMPLES = 720;
+
 /**
  * Figure as N×N RGBA bytes (row 0 at +y, the top of the field), transparent outside the NA circle and where a wave is
- * evanescent; also returns the largest retardance in the field, m. Each pixel's visibility is reduced by the change of
- * retardance across it (central difference to its neighbours, one-sided at the rim).
+ * evanescent; also returns the largest retardance in the field, m, over the pixel centres and RIM_SAMPLES points on the
+ * rim |ν| = NA (pixel centres stop short of the rim, where the retardance usually peaks). Each pixel's visibility is
+ * reduced by the change of retardance across it (central difference to its neighbours, one-sided at the rim).
  */
 export function conoscopicFigure(s: FigureSettings, N: number): { rgba: Uint8ClampedArray; maxR: number } {
   const T = impermeability(s.indices, s.orientation);
@@ -219,6 +223,11 @@ export function conoscopicFigure(s: FigureSettings, N: number): { rgba: Uint8Cla
       gamma[k] = p.gamma;
       maxR = Math.max(maxR, Math.abs(p.R));
     }
+  }
+  for (let m = 0; m < RIM_SAMPLES; m++) {
+    const phi = (2 * Math.PI * m) / RIM_SAMPLES;
+    const r = conoscopicPoint(T, s.NA * Math.cos(phi), s.NA * Math.sin(phi), s.d, s.lambda).R;
+    if (Number.isFinite(r)) maxR = Math.max(maxR, Math.abs(r));
   }
   /** Retardance change across one pixel along a row (step 1) or a column (step N). */
   const delta = (k: number, step: number, before: boolean, after: boolean) => {
