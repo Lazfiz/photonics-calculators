@@ -201,7 +201,7 @@ export const freeSpaceComms: CalculatorEntry[] = [
     description: "NOHD, IEC 60825-1 laser class and exposure margin at a chosen distance for a free-space optical transmitter, on the ICNIRP 2013 eye limits with a diverging Gaussian beam.",
     lede: "How far from a free-space optical transmitter the beam is within every eye exposure limit, its laser class, and the margin at a distance you choose.",
     tier: "exact",
-    modelNote: "ICNIRP 2013 eye limits for one CW exposure up to t; Gaussian beam averaged over each limit's aperture (its peak if under 1 mm (1/e) on the cornea below 0.35 s, ICNIRP Table 5 note c), growing as a + rφ; IEC 60825-1 class. Not modelled: atmosphere, optical aids, scintillation, pulsed modulation.",
+    modelNote: "ICNIRP 2013 eye limits for one CW exposure up to t; Gaussian beam averaged over each limit's aperture (its peak if under 1 mm (1/e) on the cornea below 0.35 s, ICNIRP Table 5 note c), growing as √(a² + (rφ)²); IEC 60825-1 class. Not modelled: atmosphere, optical aids, scintillation, pulsed modulation.",
     references: [
       {
         citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 2, 5 and 8.",

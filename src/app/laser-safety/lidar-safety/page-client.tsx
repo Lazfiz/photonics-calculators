@@ -166,7 +166,7 @@ export default function LidarSafetyPage() {
                 label="NOHD (stationary beam)"
                 value={nohdText(nohd)}
                 tone={nohd === 0 ? "green" : "red"}
-                subtext={`Exposures up to ${fmtNum(T)} s, beam a + rφ`}
+                subtext={`Exposures up to ${fmtNum(T)} s, beam √(a² + (rφ)²)`}
               />
             )}
             <ResultCard
@@ -267,7 +267,7 @@ export default function LidarSafetyPage() {
           power (ICNIRP: scanning beams are repetitive-pulse exposures), and on the retina C_P counting the pulses within
           T₂ whose beam overlaps the pupil. It takes the eye on the centre of the scan line, focused on the scanner (a still retinal image, the most
           restrictive case), and the scan speed at the viewing distance. Checked against a sum over every window of the actual
-          pulse energies, it is conservative by 1.0–1.6× (up to 2×; more for a narrow beam on the cornea). NOHD is the farthest distance where the beam (1/e² diameter a + rφ) still
+          pulse energies, it is conservative by 1.0–1.6× (up to 2×; more for a narrow beam on the cornea). NOHD is the farthest distance where the beam (1/e² diameter √(a² + (rφ)²)) still
           exceeds a rule, on the averaging apertures (7 mm on the retina). A beam under 1 mm (1/e diameter, d/√2 for the
           1/e² d) is held to its peak on the cornea below 0.35 s (ICNIRP 2013 Table 5 note c). Not modelled: several
           beams (multi-channel lidars) or raster lines crossing the eye, the scan&apos;s turning points, optical aids

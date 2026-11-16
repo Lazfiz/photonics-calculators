@@ -8,12 +8,23 @@ import PulseTrainTable from "../../../components/pulse-train-table";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { AVERSION_TIME, unintendedExposureTime } from "../../../physics/laser-safety/aversion-response";
 import { exposureDuration, T_MAX } from "../../../physics/laser-safety/eye-exposure-limits";
 import { axisDiameterAt } from "../../../physics/laser-safety/hazard-distance";
 import { angularScan, scannedBeamLimits, stationaryMaxPower } from "../../../physics/laser-safety/scanned-beam";
 
 const RULE_NAMES = { 1: "single pass", 2: "groups of passes (average)", 3: "C_P × single pass" } as const;
 const selectClass = "mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white";
+
+/** Why ICNIRP 2013 (p. 286) gives that unintended-viewing time at this wavelength (nm). */
+const standardTimeNote = (nm: number) =>
+  nm < 400
+    ? "UV: the longest time of ICNIRP's table, standing in for the longest anticipated exposure"
+    : nm <= 700
+      ? "visible: the aversion response ends the exposure"
+      : nm <= 1400
+        ? "near infrared: no aversion response; ICNIRP's 10 s"
+        : "infrared: no aversion response; every limit is constant from 10 s";
 
 export default function ScanningMPEPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 532, { min: 180, max: 1000000 }); // nm
@@ -24,6 +35,7 @@ export default function ScanningMPEPage() {
   const [scanAngleRaw, setScanAngle] = useURLState("scanAngle", 30, { min: 0.01, max: 360 }); // °, full angle
   const [scanRateRaw, setScanRate] = useURLState("scanRate", 100, { min: 0.001 }); // Hz
   const [direction, setDirection] = useURLState("scanDirection", "both");
+  const [exposureBasis, setExposureBasis] = useURLState("exposureBasis", "standard"); // "custom": the time entered
   const [exposureRaw, setExposure] = useURLState("exposureTime", 0.25, { min: 1e-9, max: 30000 }); // s
   const [alphaRaw, setAlpha] = useURLState("alpha", 1.5, { min: 0 }); // mrad
 
@@ -36,7 +48,10 @@ export default function ScanningMPEPage() {
   const theta = (Math.min(Math.max(scanAngleRaw, 0.01), 360) * Math.PI) / 180;
   const f = Math.max(scanRateRaw, 1e-3);
   const both = direction !== "one";
-  const T = Math.min(Math.max(exposureRaw, 1e-9), T_MAX);
+  const custom = exposureBasis === "custom";
+  const customT = Math.min(Math.max(exposureRaw, 1e-9), T_MAX);
+  const standardT = unintendedExposureTime(lambda);
+  const T = custom ? customT : Number.isFinite(standardT) ? standardT : AVERSION_TIME;
   const alpha = Math.max(alphaRaw, 0) * 1e-3;
   const d = axisDiameterAt(d0, phi, r, "linear");
 
@@ -87,13 +102,35 @@ export default function ScanningMPEPage() {
             <option value="one">One direction</option>
           </select>
         </label>
-        <ValidatedNumberInput label="Exposure time (s)" value={exposureRaw} onChange={setExposure} min={1e-9} max={30000} step="any" />
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Exposure time</span>
+          <select value={custom ? "custom" : "standard"} onChange={(e) => setExposureBasis(e.target.value)} className={selectClass}>
+            <option value="standard">Unintended viewing (ICNIRP 2013)</option>
+            <option value="custom">Enter a time</option>
+          </select>
+          {!custom && Number.isFinite(standardT) ? (
+            <span className="mt-2 block text-xs text-gray-400">
+              {fmtNum(standardT)} s: {standardTimeNote(wavelength)}
+            </span>
+          ) : null}
+        </label>
+        {custom ? (
+          <ValidatedNumberInput label="Exposure time (s)" value={exposureRaw} onChange={setExposure} min={1e-9} max={30000} step="any" />
+        ) : null}
         <ValidatedNumberInput label="Apparent source α (mrad)" value={alphaRaw} onChange={setAlpha} min={0} step="any" />
       </div>
 
+      {custom && customT < standardT ? (
+        <p className="text-amber-300 mb-4">
+          ICNIRP 2013 (p. 286) assesses unintended viewing at {fmtNum(wavelength)} nm over {fmtNum(standardT)} s
+          {wavelength < 400 || wavelength > 700 ? " (an invisible beam triggers no aversion response)" : ""}; the{" "}
+          {fmtNum(customT)} s entered is shorter, so these limits are less conservative.
+        </p>
+      ) : null}
+
       {result.status === "noClearance" ? (
         <p className="text-amber-300 mb-4">
-          At {fmtDistance(r)} the sweep is {fmtDistance(scan.sweep)} long, less than the 7 mm pupil plus the{" "}
+          At {fmtDistance(r)} the sweep is {fmtDistance(scan.sweep)} long, less than a limit&apos;s averaging aperture plus the{" "}
           {fmtNum(d * 1e3)} mm beam: the beam never leaves the eye. Treat it as a stationary beam (below).
         </p>
       ) : !ok ? (
@@ -172,9 +209,17 @@ export default function ScanningMPEPage() {
           The beam is taken to sweep through the centre of the pupil, with the eye on the centre of the scan line and
           focused on the scanner, so the retinal image stays put and every pass lands on the same spot (IEC 60825-1:2014&apos;s
           default evaluation of scanned emission; Schulmeister 2025). Speed ω·r at distance r from the pivot: ω = Θ·f for
-          one direction, 2Θ·f for both. Use 0.25 s for an accidental glance at a visible beam and 10 s or more for
-          invisible ones. Not modelled: the turning points of a scan (slower, with passes in pairs), sinusoidal and raster
-          scans, pulsed lasers (each pass a group of pulses), and a moving retinal image, which is less restrictive.
+          one direction, 2Θ·f for both. Not modelled: the turning points of a scan (slower, with passes in pairs), where the
+          exposure can exceed the one at the centre; sinusoidal and raster scans; pulsed lasers (each pass a group of
+          pulses); and a moving retinal image, which is less restrictive.
+        </p>
+        <p>
+          Exposure time: &quot;Unintended viewing&quot; follows ICNIRP 2013 (p. 286). At 400–700 nm, where purposeful staring
+          isn&apos;t intended, the aversion response ends the exposure within 0.25 s; an invisible beam triggers none, and
+          ICNIRP gives 10 s at 700–1400 nm. Beyond that it asks for the longest anticipated exposure: here 10 s above
+          1400 nm (every limit there is 1 kW/m² from 10 s on, so a longer time gives the same limit) and 30 000 s below
+          400 nm (the longest time in its table; the UV limits are doses). Enter a time for intended viewing or a known
+          exposure.
         </p>
         <p>
           If the scanner stops, the beam is stationary: &quot;If the scan stops&quot; above gives the time a stopped beam takes

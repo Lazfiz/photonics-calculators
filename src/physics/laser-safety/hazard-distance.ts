@@ -4,15 +4,19 @@
  * Model tier: exact for the limits and the Gaussian aperture average; the beam geometry is the standards' model.
  *
  * Direct beam (intrabeam viewing): a TEM₀₀ beam of power P leaves the output aperture with 1/e² diameters a_x, a_y and
- * 1/e² full-angle divergences φ_x, φ_y. At range r each axis is a + rφ (linear, as in the NOHD formula of ANSI Z136.1
- * and IEC TR 60825-14) or √(a² + (rφ)²) (a Gaussian beam with its waist at the aperture). An elliptical beam counts as
+ * 1/e² full-angle divergences φ_x, φ_y. At range r each axis is √(a² + (rφ)²) (a Gaussian beam with its waist at the
+ * aperture; the default) or a + rφ (linear). The linear form is never narrower, so it always gives the shorter NOHD,
+ * by much near threshold (2.2 mW, 532 nm, 5 mm, 1 mrad, 0.25 s: 7.9 m against 11.9 m). An elliptical beam counts as
  * the round beam of the same peak irradiance, diameter √(d_x d_y), also for the 1 mm test of Table 5 note c (ICNIRP
  * doesn't say which diameter of an elliptical beam counts; a 1.2 × 2 mm beam is averaged though its narrow axis is
  * under 1 mm at 1/e). The beam is safe once the irradiance averaged over
  * each limit's aperture D, P(1 − exp(−2D²/d²))/(πD²/4), stays within the limit for every exposure up to t (as in
  * `limitMaxPower`); a beam of 1/e diameter below 1 mm is held to its peak on the cornea below 0.35 s (ICNIRP 2013
- * Table 5 note c). NOHD is the range where the diameter reaches the smallest safe one. For d ≫ D this is the
- * standards' NOHD = (1/φ)(√(4P/(πE)) − a) with 1/e values (E the limit as an irradiance).
+ * Table 5 note c). NOHD is the range where the diameter reaches the smallest safe one. For d ≫ D and Gaussian growth
+ * this is ANSI Z136.1's NOHD = (1/φ)√(4P/(πE) − a²) with 1/e values, E the limit as an irradiance (Appendix B; Eq. B51
+ * of the 2007 edition, quoted in A. L. Augustoni, Sandia report SAND2007-5052, p. 31). Linear growth gives
+ * (1/φ)(√(4P/(πE)) − a), which ANSI Z136.1 does not use for the NOHD (its Eq. B40, D_L = d₀ + φR, is the beam
+ * diameter at range).
  *
  * Diffuse reflection: a Lambertian spot reflecting ρP gives the irradiance ρP/(πr²) at range r on its normal (r ≫ the
  * spot; nearer, the Gaussian spot's exact on-axis form, which tends to its peak exitance). The retinal limits are assessed
@@ -31,7 +35,7 @@ import {
 import { expE1Scaled } from "../math";
 import { divergenceHalfAngle } from "../wave-optics/gaussian-beam";
 
-/** How a beam widens with range: a + rφ (the standards' formula) or √(a² + (rφ)²) (Gaussian, waist at the aperture). */
+/** How a beam widens with range: √(a² + (rφ)²) (Gaussian, waist at the aperture) or a + rφ (linear: shorter NOHD). */
 export type BeamGrowth = "linear" | "gaussian";
 
 /** A beam leaving its output aperture: 1/e² diameters (m) and 1/e² full-angle divergences (rad) along its two axes. */
@@ -41,7 +45,7 @@ export interface BeamGeometry {
   readonly growth: BeamGrowth;
 }
 
-export const roundBeam = (d: number, phi: number, growth: BeamGrowth = "linear"): BeamGeometry => ({ d: [d, d], phi: [phi, phi], growth });
+export const roundBeam = (d: number, phi: number, growth: BeamGrowth = "gaussian"): BeamGeometry => ({ d: [d, d], phi: [phi, phi], growth });
 
 /** 1/e² diameter, m, of one axis at range r (m). */
 export function axisDiameterAt(a: number, phi: number, r: number, growth: BeamGrowth): number {

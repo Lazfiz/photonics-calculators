@@ -261,6 +261,19 @@ export function condition1Modelled(lambda: number): boolean {
   return nm >= 400 && nm <= 1400;
 }
 
+/**
+ * Stopgap for Condition 1 outside 400–1400 nm, where it isn't modelled (IEC 60825-1:2014 Table 10 not yet checked): true
+ * when the beam, of 1/e² diameter d3 (m) at the Condition 3 stop, is wider than a stop that sets a class limit, i.e. the
+ * stop lets through less of it than the whole beam, raising some class's Condition 3 limit by more than 1 % (a Gaussian
+ * beam wider than about 2/3 of the stop). A telescope's larger stop then collects more, so the class may be higher.
+ */
+export function condition1MayRaiseClass(lambda: number, d3: number, opts: ClassOptions = {}): boolean {
+  if (condition1Modelled(lambda)) return false;
+  return (["1", "2", "3R", "3B"] as const).some(
+    (cls) => cwClassLimit(cls, lambda, d3, opts).power > cwClassLimit(cls, lambda, 0, opts).power * 1.01,
+  );
+}
+
 export interface ClassCheck {
   readonly cls: AelClass;
   /** Largest CW power within the class under Condition 3 (naked eye). */

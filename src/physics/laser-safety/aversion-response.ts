@@ -18,7 +18,7 @@
  * and the Class 2 conditions of use (beam divergence, exposure times above 0.25 s).
  */
 
-import { eyeLimits, exposureLimit, limitingAperture } from "./eye-exposure-limits";
+import { eyeLimits, exposureLimit, limitingAperture, T_MAX } from "./eye-exposure-limits";
 
 /** Exposure time, s, assumed for visible light: the blink reflex. */
 export const AVERSION_TIME = 0.25;
@@ -61,4 +61,23 @@ export function aversionLimit(lambda: number, t: number = AVERSION_TIME): Aversi
     aperture: best.aperture,
     maxPower: irradiance * Math.PI * (best.aperture / 2) ** 2,
   };
+}
+
+/** Exposure time, s, that ICNIRP 2013 gives for unintended viewing of a near-infrared (700–1400 nm) beam. */
+export const NEAR_IR_UNINTENDED_TIME = 10;
+
+/**
+ * Exposure duration, s, to assess a CW beam at λ (m) for unintended viewing, from ICNIRP 2013 p. 286: 0.25 s at
+ * 400–700 nm (where purposeful staring isn't intended or anticipated) and 10 s at 700–1400 nm. Elsewhere ICNIRP asks
+ * for T_max, the longest anticipated exposure, which it doesn't give as a number: above 1400 nm 10 s (every limit there
+ * is 1 kW/m² from 10 s to 30 000 s, so a longer T_max gives the same irradiance limit), and below 400 nm 30 000 s, the
+ * longest time of Table 5 (the UV limits are doses, so the time matters; a conservative stand-in for T_max).
+ * NaN outside 180 nm – 1 mm.
+ */
+export function unintendedExposureTime(lambda: number): number {
+  // The same 1e-9 relative edges as aversionLimit.
+  if (!(lambda >= 180e-9 * (1 - 1e-9) && lambda <= 1e-3 * (1 + 1e-9))) return NaN;
+  if (lambda < AVERSION_LAMBDA_MIN * (1 - 1e-9)) return T_MAX;
+  if (lambda <= AVERSION_LAMBDA_MAX * (1 + 1e-9)) return AVERSION_TIME;
+  return NEAR_IR_UNINTENDED_TIME;
 }

@@ -1,11 +1,20 @@
+import { AVERSION_TIME, unintendedExposureTime } from "../../physics/laser-safety/aversion-response";
 import { exposureDuration, T_MAX } from "../../physics/laser-safety/eye-exposure-limits";
 import { axisDiameterAt } from "../../physics/laser-safety/hazard-distance";
 import { angularScan, scannedBeamLimits, stationaryMaxPower } from "../../physics/laser-safety/scanned-beam";
 import { defineSchema } from "../types";
 import { ICNIRP_2013, WAVELENGTH } from "./common";
 
-const SCANNED = `${ICNIRP_2013}. Table 5 (single-pulse limits) and Table 6 / p. 287 (the three rules for repetitive pulses, ` +
-  "applied to each pass of the beam over the 7 mm pupil). https://doi.org/10.1097/HP.0b013e3182983fd4";
+const SCANNED = `${ICNIRP_2013}. Table 5 (single-pulse limits), p. 287 (the three rules for repetitive pulses, ` +
+  "applied to each pass of the beam over each limit's aperture, Table 8: 7 mm on the retina, 1–3.5 mm on the cornea) and " +
+  "p. 286 (exposure for unintended viewing). https://doi.org/10.1097/HP.0b013e3182983fd4";
+
+/** The scan-geometry caveats of the page. */
+const SCAN_CAVEATS = [
+  "The eye is taken on the centre of the scan line, focused on the scanner (a still retinal image, every pass on the same spot).",
+  "Not modelled: the turning points at the ends of the scan line, where the beam slows and, in a scan in both directions, " +
+    "the passes come in pairs. The exposure there can exceed the one at the centre.",
+];
 
 export default defineSchema({
   href: "/laser-safety/scanning-mpe",
@@ -19,6 +28,15 @@ export default defineSchema({
       ],
       default: "both",
     },
+    {
+      key: "exposureBasis",
+      label: "Exposure time",
+      options: [
+        { value: "standard", label: "Unintended viewing (ICNIRP 2013 p. 286): 0.25 s at 400–700 nm, 10 s above 700 nm, 30 000 s below 400 nm" },
+        { value: "custom", label: "The exposure time entered" },
+      ],
+      default: "standard",
+    },
   ],
   inputs: [
     WAVELENGTH,
@@ -28,7 +46,7 @@ export default defineSchema({
     { key: "workingDistance", label: "Eye distance from the scanner", unit: "cm", toSI: 1e-2, siUnit: "m", default: 100, min: 0.1, max: 1e7 },
     { key: "scanAngle", label: "Scan angle, full", unit: "°", toSI: Math.PI / 180, siUnit: "rad", default: 30, min: 0.01, max: 360 },
     { key: "scanRate", label: "Scan rate (sweeps or periods per s)", unit: "Hz", toSI: 1, siUnit: "Hz", default: 100, min: 0.001, max: 1e9 },
-    { key: "exposureTime", label: "Exposure time", unit: "s", toSI: 1, siUnit: "s", default: 0.25, min: 1e-9, max: T_MAX },
+    { key: "exposureTime", label: "Exposure time (used when exposureBasis = custom)", unit: "s", toSI: 1, siUnit: "s", default: 0.25, min: 1e-9, max: T_MAX },
     { key: "alpha", label: "Apparent source α", unit: "mrad", toSI: 1e-3, siUnit: "rad", default: 1.5, min: 0, max: 1000 },
   ],
   outputs: [
@@ -40,23 +58,34 @@ export default defineSchema({
     { key: "maxPowerStationary", label: "Max beam power, held still", unit: "mW", toSI: 1e-3, siUnit: "W" },
     { key: "scanningGain", label: "Scanning allows (scanned / held still)", unit: "", toSI: 1, siUnit: "" },
     { key: "stopTime", label: "If the scan stops: limit reached after", unit: "s", toSI: 1, siUnit: "s" },
+    { key: "exposureUsed", label: "Exposure time used", unit: "s", toSI: 1, siUnit: "s" },
   ],
-  compute({ scanDirection, wavelength, power, beamDiam, divergence, workingDistance, scanAngle, scanRate, exposureTime, alpha }) {
+  compute({ scanDirection, exposureBasis, wavelength, power, beamDiam, divergence, workingDistance, scanAngle, scanRate, exposureTime, alpha }) {
+    const standardTime = unintendedExposureTime(wavelength);
+    const T = exposureBasis === "custom" ? exposureTime : Number.isFinite(standardTime) ? standardTime : AVERSION_TIME;
     const d = axisDiameterAt(beamDiam, divergence, workingDistance, "linear");
-    const scan = angularScan(scanAngle, scanRate, workingDistance, scanDirection !== "one", exposureTime);
+    const scan = angularScan(scanAngle, scanRate, workingDistance, scanDirection !== "one", T);
     const result = scannedBeamLimits(wavelength, d, scan, alpha);
-    const stationary = stationaryMaxPower(wavelength, d, exposureTime, alpha);
+    const stationary = stationaryMaxPower(wavelength, d, T, alpha);
     const stopped = exposureDuration(wavelength, power, d, alpha);
     const covered = Number.isFinite(stationary);
     const ok = result.status === "ok" && Number.isFinite(result.pMax);
     const binding = result.limits.find((l) => l.kind === result.limiting) ?? result.limits[0];
     const warnings: string[] = [];
     if (result.status === "noClearance") {
-      warnings.push("The sweep is shorter than the 7 mm pupil plus the beam: the beam never leaves the eye. Treat it as a stationary beam.");
+      warnings.push("The sweep is shorter than a limit's averaging aperture (7 mm on the retina, 1–3.5 mm on the cornea) plus the beam: " +
+        "the beam never leaves the eye. Treat it as a stationary beam.");
     } else if (!ok) {
       warnings.push(covered
         ? "The passes overlap or the exposure is shorter than one pass: treat the beam as stationary."
         : "The eye limits cover 180 nm to 1 mm.");
+    } else {
+      warnings.push(...SCAN_CAVEATS);
+    }
+    if (exposureBasis === "custom" && exposureTime < standardTime) {
+      warnings.push(`ICNIRP 2013 (p. 286) assesses unintended viewing at this wavelength over ${standardTime} s` +
+        (wavelength < 400e-9 || wavelength > 700e-9 ? " (an invisible beam triggers no aversion response)" : "") +
+        `; the ${exposureTime} s entered is shorter, so these limits are less conservative.`);
     }
     return {
       values: {
@@ -68,6 +97,7 @@ export default defineSchema({
         maxPowerStationary: stationary,
         scanningGain: ok ? result.pMax / stationary : NaN,
         stopTime: covered ? stopped.tMax : NaN,
+        exposureUsed: T,
       },
       warnings,
     };
@@ -84,6 +114,16 @@ export default defineSchema({
       inputs: {},
       expect: { maxPowerStationary: 0.97965568786, stopTime: 3.68429035066e-4 },
       tolerance: 1e-8,
+    },
+    {
+      // Unintended viewing of an invisible beam: ICNIRP 2013 p. 286 gives 10 s at 700–1400 nm (no aversion response), and
+      // above 1400 nm, where every limit is 1 kW/m² from 10 s, 10 s gives the same limit as any longer T_max; 30 000 s
+      // (the longest time of Table 5) below 400 nm.
+      source: SCANNED,
+      basis: "computed",
+      inputs: { wavelength: 905 },
+      expect: { exposureUsed: 10 },
+      tolerance: 1e-12,
     },
   ],
 });

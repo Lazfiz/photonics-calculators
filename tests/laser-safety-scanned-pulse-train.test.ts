@@ -27,7 +27,7 @@ const pulses = { duration: 5e-9, prf: 2e5 };
 // Default page: 905 nm, 3 mm + 3 mrad, a rotating lidar (360°, 10 Hz, one direction), eye at 10 m, 10 s.
 const rotating = (r: number, T = 10) => angularScan(2 * Math.PI, 10, r, false, T);
 const beam = roundBeam(3e-3, 3e-3);
-const d10 = 0.033;
+const d10 = 0.033; // a 33 mm beam at the eye (3 mm + 10 m × 3 mrad, linear growth)
 const limitOf = (r: ReturnType<typeof scannedPulseLimits>, kind: string) => {
   const l = r.limits.find((x) => x.kind === kind);
   assert.ok(l, kind);
@@ -166,11 +166,11 @@ test("the eye at the window, or a sweep that doesn't clear it, is a stationary b
 test("hazard distance: where the ratio crosses 1, inside the stationary NOHD", () => {
   const Q = 10e-6;
   const stationary = rangeToDiameter(beam, pulseTrainSafeDiameter(905e-9, Q, { ...pulses, exposure: 10 }));
-  assertRel(stationary, 146.46, 1e-4, "stationary NOHD");
+  assertRel(stationary, 147.456, 1e-4, "stationary NOHD (Gaussian growth)");
   const r = lidarHazardDistance(905e-9, Q, beam, pulses, rotating, 4 * stationary);
   assert.ok(Q > lidarMaxEnergyAt(905e-9, beam, pulses, rotating, r * (1 - 1e-5)), "over just inside");
   assert.ok(Q <= lidarMaxEnergyAt(905e-9, beam, pulses, rotating, r * (1 + 1e-5)), "within just outside");
-  assertRel(r, 32.918, 1e-4, "scanned NOHD (regression)");
+  assertRel(r, 33.903, 1e-4, "scanned NOHD (regression)");
   // 1 nJ is within everywhere; NaN for a negative energy.
   assert.equal(lidarHazardDistance(905e-9, 1e-9, beam, pulses, rotating, 600), 0);
   assert.ok(Number.isNaN(lidarHazardDistance(905e-9, -1, beam, pulses, rotating, 600)));

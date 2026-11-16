@@ -8,7 +8,7 @@ import { ICNIRP_2013, WAVELENGTH } from "./common";
 
 const ANDERSON_PARRISH = "Anderson & Parrish (1983). Selective photothermolysis: precise microsurgery by selective absorption of " +
   "pulsed radiation. Science 220(4596), 524–527. https://doi.org/10.1126/science.6836297 (τ = d²/(16κ) for a vessel)";
-const HANDPIECE = `ANSI Z136.1-2014, Appendix B (lens-on-laser: divergence b₀/f beyond the focus, NOHD from a + rφ); limits from ` +
+const HANDPIECE = `ANSI Z136.1-2014, Appendix B (lens-on-laser: divergence b₀/f beyond the focus, NOHD (f/b₀)√(4P/(π MPE)); here the beam grows from the focal spot a as √(a² + (rφ)²)); limits from ` +
   `${ICNIRP_2013}, Table 5.`;
 
 export default defineSchema({
@@ -84,11 +84,11 @@ export default defineSchema({
     {
       // Defaults, eye side: 10.6 µm, 10 s, the corneal 5.6×10³ t^0.25 J/m² over its 1.5·t^0.375 mm aperture binds; the
       // beam must have spread to 159.87 mm (the worked case of nohd, tests/laser-safety-hazard-distance.test.ts), so
-      // NOHD = (0.15987 m − 0.2 mm)/(80 mrad) = 1.9959 m.
+      // NOHD = √(0.15987² − 0.0002²) m/(80 mrad) = 1.9984 m.
       source: HANDPIECE,
       basis: "computed",
       inputs: {},
-      expect: { nohd: 1.9959 },
+      expect: { nohd: 1.9984 },
       tolerance: 2e-4,
     },
   ],
