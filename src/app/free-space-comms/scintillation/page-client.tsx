@@ -6,7 +6,8 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  fresnelZone, friedParameter, lognormalFadeProbability, rytovVariance, scintillationIndex,
+  apertureParameter, fresnelZone, friedParameter, gammaGammaCdf, gammaGammaParameters, lognormalFadeProbability, rytovVariance,
+  scintillationIndex,
 } from "../../../physics/free-space-comms/turbulence";
 
 const presets = [
@@ -35,7 +36,12 @@ export default function ScintillationPage() {
     const sigmaR2 = rytovVariance(cz, lambda, L);
     const sigmaI2Point = scintillationIndex(sigmaR2, lambda, L);
     const sigmaI2 = scintillationIndex(sigmaR2, lambda, L, apertureDiameter);
+    const D = Math.max(0, apertureDiameter);
+    const { alpha, beta } = gammaGammaParameters(sigmaR2, apertureParameter(lambda, L, D));
     return {
+      alpha, beta,
+      fadeGg3: gammaGammaCdf(10 ** -0.3, alpha, beta),
+      fadeGg10: gammaGammaCdf(0.1, alpha, beta),
       sigmaR2, sigmaI2Point, sigmaI2,
       apertureFactor: sigmaI2 / sigmaI2Point,
       r0: friedParameter(cz, lambda, L),
@@ -52,11 +58,17 @@ export default function ScintillationPage() {
       const pts = thresholds.map((t) => ({ x: t, y: lognormalFadeProbability(10 ** (t / 10), s2) })).filter((p) => p.y > 1e-15);
       return { x: pts.map((p) => p.x), y: pts.map((p) => p.y) };
     };
+    const gg = () => {
+      const pts = thresholds.map((t) => ({ x: t, y: gammaGammaCdf(10 ** (t / 10), results.alpha, results.beta) }))
+        .filter((p) => Number.isFinite(p.y) && p.y > 1e-15);
+      return { x: pts.map((p) => p.x), y: pts.map((p) => p.y) };
+    };
     return [
-      { type: "scatter", mode: "lines", ...curve(results.sigmaI2Point), name: "Point receiver", line: { color: "#3b82f6", dash: "dash" } },
-      { type: "scatter", mode: "lines", ...curve(results.sigmaI2), name: `D = ${apertureDiameter} m`, line: { color: "#ef4444", width: 2 } },
+      { type: "scatter", mode: "lines", ...curve(results.sigmaI2Point), name: "Log-normal, point receiver", line: { color: "#3b82f6", dash: "dash" } },
+      { type: "scatter", mode: "lines", ...curve(results.sigmaI2), name: `Log-normal, D = ${apertureDiameter} m`, line: { color: "#ef4444", width: 2 } },
+      { type: "scatter", mode: "lines", ...gg(), name: `Gamma-gamma, D = ${apertureDiameter} m`, line: { color: "#22c55e", width: 2 } },
     ];
-  }, [results.sigmaI2Point, results.sigmaI2, apertureDiameter]);
+  }, [results.sigmaI2Point, results.sigmaI2, results.alpha, results.beta, apertureDiameter]);
 
   const distanceData = useMemo(() => {
     const lambda = wavelength * 1e-9;
@@ -70,7 +82,8 @@ export default function ScintillationPage() {
     ];
   }, [wavelength, distance, cz, apertureDiameter]);
 
-  const regime = results.sigmaR2 < 0.3 ? "Weak" : results.sigmaR2 < 5 ? "Moderate" : "Strong";
+  // Andrews & Phillips 2005: weak fluctuations are σ_R² < 1.
+  const regime = results.sigmaR2 < 1 ? "Weak" : "Moderate to strong";
 
   return (
     <>
@@ -96,13 +109,22 @@ export default function ScintillationPage() {
           subtext={`aperture averaging factor ${fmt(results.apertureFactor)}`} />
         <ResultCard label="Fresnel zone √(L/k)" value={`${fmt(results.fresnel * 100)} cm`} tone="cyan" subtext="sets the aperture-averaging scale" />
         <ResultCard label="Fried parameter r₀" value={`${fmt(results.r0 * 100)} cm`} tone="gray" subtext="plane wave" />
-        <ResultCard label="Fade probability" value={`${fmt(results.fade3)} / ${fmt(results.fade10)}`} tone="orange"
-          subtext="P(I < ⟨I⟩ − 3 dB) / P(I < ⟨I⟩ − 10 dB), log-normal" />
+        <ResultCard label="Fade probability, gamma-gamma" value={`${fmt(results.fadeGg3)} / ${fmt(results.fadeGg10)}`} tone="orange"
+          subtext="P(I < ⟨I⟩ − 3 dB) / P(I < ⟨I⟩ − 10 dB); Al-Habash, Andrews & Phillips 2001; with the aperture" />
+        <ResultCard label="Fade probability, log-normal" value={`${fmt(results.fade3)} / ${fmt(results.fade10)}`} tone="orange"
+          subtext={results.sigmaR2 >= 1
+            ? "σ_R² ≥ 1: log-normal underestimates deep fades for a small receiver; see gamma-gamma"
+            : "P(I < ⟨I⟩ − 3 dB) / P(I < ⟨I⟩ − 10 dB), log-normal"} />
       </div>
+      {results.sigmaR2 >= 1 && (
+        <p role="status" className="mb-8 -mt-4 text-sm text-amber-400">
+          σ_R² ≥ 1: log-normal underestimates deep fades. Use gamma-gamma for a point or small receiver; for an aperture much larger than the Fresnel zone the true value lies between the two.
+        </p>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
-          <h2 className="text-lg font-semibold mb-4">Fade probability (log-normal)</h2>
+          <h2 className="text-lg font-semibold mb-4">Fade probability</h2>
           <ChartPanel bare data={fadeData} layout={chartLayout("Fade threshold below the mean (dB)", "P(I < threshold)", true)} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
@@ -124,9 +146,12 @@ export default function ScintillationPage() {
           averages the scintillation down.
         </p>
         <p>
-          The fade probabilities assume log-normal irradiance with σ_ln² = ln(1 + σ_I²), P(I &lt; F⟨I⟩) =
-          Φ((ln F + σ_ln²/2)/σ_ln). That holds in weak fluctuations; in moderate to strong turbulence the gamma-gamma
-          distribution has heavier tails, so these values are optimistic there.
+          Both fade models are shown. The log-normal one assumes σ_ln² = ln(1 + σ_I²), P(I &lt; F⟨I⟩) =
+          Φ((ln F + σ_ln²/2)/σ_ln), and is adequate for weak fluctuations (σ_R² &lt; 1). The gamma-gamma distribution
+          (Al-Habash, Andrews &amp; Phillips, Opt. Eng. 40, 1554, 2001) has heavier tails and is the accepted model for a point or small receiver once
+          σ_R² ≥ 1, where the log-normal values underestimate deep fades; its α and β include the aperture through d². For an
+          aperture much larger than the Fresnel zone, simulations put the irradiance distribution between the two and closer to
+          log-normal as the aperture grows (Vetelino, Young, Andrews &amp; Recolons, Appl. Opt. 46, 2099, 2007).
         </p>
       </div>
     </>
