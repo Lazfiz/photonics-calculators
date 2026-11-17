@@ -178,7 +178,8 @@ export default function EnvironmentalStabilityPage() {
         10⁻⁶/K, Crystran; ν 0.17); the H defaults (ν 0.27 included) are placeholders, so enter your film&apos;s values. The
         substrate holds each film to its own in-plane expansion α<sub>s</sub> (default 7.1 × 10⁻⁶/K, N-BK7, Schott), so a
         layer thickens by [(1 + ν)α − 2να<sub>s</sub>]ΔT/(1 − ν), not αΔT: on heating, a substrate that expands more than the film thins it compared with a free film (and thickens it on
-        cooling). Enter α<sub>s</sub> = α of a layer and that layer expands freely. The stress this puts in the film also changes
+        cooling). Enter α<sub>s</sub> = α of a layer and that layer expands freely; set ν<sub>H</sub> = ν<sub>L</sub> = 0 and every
+        layer expands freely, which gives the free-film numbers this page showed before the substrate was modelled. The stress this puts in the film also changes
         its index, which is not modelled; for SiO₂ on N-BK7 at ΔT = 50 K that is about −0.03 nm on the band centre, as large as
         the Poisson term, unless your dn/dT was measured on a film on its substrate. How much of the pore volume fills
         depends on the humidity, the pore sizes and the time since venting.

@@ -131,6 +131,15 @@ test("MCP run_calculator: the API's numbers for the inputs given; errors say why
   const solved = await call("run_calculator", { slug: "lambert-beer-law", inputs: { solve: "c", absorbance: 1 } });
   assert.equal(solved.isError, undefined, solved.content[0].text);
 
+  // A null output carries its `reason` here too (verification 2026-11 W6).
+  const tirf = await call("run_calculator", { slug: "imaging/tirf", inputs: { theta: 0 } });
+  const tirfOut = tirf.structuredContent?.outputs as Record<string, { value: number | null; reason?: string }>;
+  assert.equal(tirfOut.depth.value, null);
+  assert.match(tirfOut.depth.reason ?? "", /critical angle/);
+  assert.ok((tirf.structuredContent?.warnings as string[]).includes(tirfOut.depth.reason!));
+  assert.equal(tirfOut.criticalAngle.reason, undefined);
+  assert.match(tirf.content[0].text, /critical angle/);
+
   const range = await call("run_calculator", { slug: "wave-optics/gaussian-beam", inputs: { wavelength: -5 } });
   assert.equal(range.isError, true);
   assert.match(range.content[0].text, /wavelength/);

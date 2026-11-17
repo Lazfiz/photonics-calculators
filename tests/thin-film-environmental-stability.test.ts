@@ -70,6 +70,10 @@ test("Film held in-plane by its substrate: ε_z = [α_f − 2ν/(1 − ν)(α_s 
   assertRel(centreShift(H, L, 550e-9, 50, 0, 7.1e-6), 550e-9 * hand, 1e-12, "held stack");
   assertRel(centreShift(H, L, 550e-9, 50, 0, 7.1e-6) * 1e9, 0.2909038, 1e-6, "held stack, nm");
   assertRel(centreShift(H, L, 550e-9, 50, 0) * 1e9, 0.3186501, 1e-6, "free films, nm");
+  // ν_H = ν_L = 0 on the substrate gives the free films again (the page says so; verification 2026-11 M11):
+  // ½[(1 + 10⁻³/2.35)(1 + 50·8e-6) + (1 + 4.43e-4/1.45)(1 + 50·0.55e-6)] − 1, × 550 nm = 0.3186501 nm.
+  const free = ((1 + 1e-3 / 2.35) * (1 + 50 * 8e-6) + (1 + 4.43e-4 / 1.45) * (1 + 50 * 0.55e-6)) / 2 - 1;
+  assertRel(centreShift({ ...H, nu: 0 }, { ...L, nu: 0 }, 550e-9, 50, 0, 7.1e-6), 550e-9 * free, 1e-12, "ν = 0, held");
   assert.equal(centreShift(H, L, 550e-9, 0, 0, 7.1e-6), 0);
 });
 
