@@ -99,6 +99,12 @@ test("MCP find_calculator: the site search first, then pages matching most words
   assert.equal(results[0].runnable, true);
   assert.ok(results[0].inputs?.some((input) => input.key === "wavelength"));
   assert.equal(JSON.parse(beam.content[0].text).results[0].slug, "wave-optics/gaussian-beam");
+  // Exact against closest: "gaussian xyzzy" matches one of its two terms.
+  assert.equal(beam.structuredContent?.queryTerms, 2);
+  assert.equal((results[0] as unknown as { matchedTerms: number }).matchedTerms, 2);
+  const partial = await call("find_calculator", { query: "gaussian xyzzy", limit: 3 });
+  assert.equal(partial.structuredContent?.exactMatches, 0);
+  assert.equal((partial.structuredContent?.results as { matchedTerms: number }[])[0].matchedTerms, 1);
   const question = await call("find_calculator", { query: "how do I calculate the maximum permissible exposure for my laser" });
   const slugs = (question.structuredContent?.results as { slug: string }[]).map((r) => r.slug);
   assert.ok(slugs.includes("laser-safety/mpe"), slugs.join(", "));

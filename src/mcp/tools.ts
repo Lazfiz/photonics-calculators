@@ -4,7 +4,7 @@
 import { parseReport, RateLimiter } from "../lib/report";
 import { sendReport } from "../lib/report-send";
 import type { SearchItem } from "../lib/search-index-types";
-import { rankItems } from "../lib/site-search";
+import { rankItems, type Ranked } from "../lib/site-search";
 import { REPO_URL, SITE_URL } from "../lib/site";
 import { findSchema, schemas } from "../schemas";
 import { parseInputs, runSchema } from "../schemas/run";
@@ -92,9 +92,15 @@ let pages: SearchItem[] | undefined;
  * Calculators for a free-text query, ranked as the site search ranks them: pages matching every word first, then the
  * pages matching most words.
  */
-export function findCalculators(query: string, limit: number): SearchItem[] {
+/** The best `limit` calculators with how many of the query's `terms` each matched. */
+export function rankCalculators(query: string, limit: number): { results: Ranked[]; terms: number } {
   pages ??= buildSearchIndex().filter((item) => item.kind === "page" && item.href !== "/about");
-  return rankItems(pages, query).ranked.slice(0, limit).map((r) => r.item);
+  const { ranked, terms } = rankItems(pages, query);
+  return { results: ranked.slice(0, limit), terms };
+}
+
+export function findCalculators(query: string, limit: number): SearchItem[] {
+  return rankCalculators(query, limit).results.map((r) => r.item);
 }
 
 const findCalculator_: Tool = {
@@ -103,7 +109,8 @@ const findCalculator_: Tool = {
   description: "Searches the site's optics and photonics calculators (laser safety, fiber optics, thin films, imaging, " +
     "spectroscopy, detectors, materials, wave optics, polarization, free-space comms) by topic or quantity. Each result " +
     "has its slug, page URL and model tier; results marked runnable list the inputs (page units, ranges, defaults) and " +
-    "outputs that run_calculator takes and returns.",
+    "outputs that run_calculator takes and returns. matchedTerms against queryTerms tells an exact match (all terms) from " +
+    "the closest one; exactMatches counts the exact ones. Misspelt words are matched to the nearest word in the index.",
   inputSchema: {
     type: "object",
     properties: {
@@ -117,7 +124,8 @@ const findCalculator_: Tool = {
     if (typeof args.query !== "string" || args.query.trim() === "") return fail("query must be a non-empty string.");
     const limit = args.limit === undefined ? 8 : Number(args.limit);
     if (!Number.isInteger(limit) || limit < 1 || limit > 25) return fail("limit must be an integer from 1 to 25.");
-    const results = findCalculators(args.query, limit).map((item) => {
+    const ranked = rankCalculators(args.query, limit);
+    const results = ranked.results.map(({ item, matched }) => {
       const calculator = findCalculator(item.href);
       const schema = findSchema(item.href);
       return {
@@ -126,6 +134,7 @@ const findCalculator_: Tool = {
         description: item.description,
         url: `${SITE_URL}${item.href}`,
         tier: tierInfo(calculator?.tier).label,
+        matchedTerms: matched,
         runnable: schema !== undefined,
         ...(schema ? describeSchema(schema) : {}),
       };
@@ -133,6 +142,8 @@ const findCalculator_: Tool = {
     return {
       ok: true,
       data: {
+        queryTerms: ranked.terms,
+        exactMatches: ranked.results.filter((r) => r.matched === ranked.terms).length,
         results,
         ...(results.length === 0 ? { note: "Nothing matched; try fewer or other words (a quantity or an effect)." } : {}),
       },

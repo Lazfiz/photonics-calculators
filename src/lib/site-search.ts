@@ -65,14 +65,37 @@ export function searchTerms(query: string): Term[] {
   for (let i = 0; i < kept.length; ) {
     const group = longestPhrase(kept, i);
     if (group) {
-      terms.push([group.phrase, ...group.synonyms]);
+      terms.push([group.phrase, ...group.synonyms, ...singulars(group.phrase)]);
       i += group.length;
     } else {
-      terms.push([kept[i]]);
+      terms.push([kept[i], ...singulars(kept[i])]);
       i++;
     }
   }
-  return terms;
+  // A synonym phrase that borrows another term's word and adds words nobody typed would count that word twice and
+  // drift: "optical glasses" must not read as "optical" + "optical density". Synonyms made only of typed words
+  // ("focused spot size" → "spot size"; "fabry perot etalon") are kept.
+  const typed = new Set(terms.flatMap((term) => term[0].split(" ")));
+  return terms.map((term) => {
+    const own = new Set(term[0].split(" "));
+    return term.filter((alt, k) => {
+      if (k === 0) return true;
+      const words = alt.split(" ");
+      return !(words.some((word) => typed.has(word) && !own.has(word)) && words.some((word) => !typed.has(word)));
+    });
+  });
+}
+
+/**
+ * The singular of a plural one-word term, as an extra alternative: "glasses" → "glass", "lenses" → "lens", "fibers" →
+ * "fiber". Only where it is safe as a substring: "-es" after s, x, z, ch or sh, and "-s" leaving at least 4 letters
+ * that don't end in s, u or i ("lens", "focus", "gauss" stay as they are).
+ */
+function singulars(word: string): string[] {
+  if (word.includes(" ")) return [];
+  if (/(s|x|z|ch|sh)es$/.test(word) && word.length > 4) return [word.slice(0, -2)];
+  if (/[^sui]s$/.test(word) && word.length > 4) return [word.slice(0, -1)];
+  return [];
 }
 
 /** The longest synonym phrase starting at word i, if any. */
@@ -175,9 +198,69 @@ export interface Ranked {
   score: number;
 }
 
+const vocabularies = new WeakMap<readonly SearchItem[], string[]>();
+
+/** The distinct title, keyword and description words of the items, 4 letters or more: what a misspelt word is corrected to. */
+function vocabulary(items: readonly SearchItem[]): string[] {
+  let words = vocabularies.get(items);
+  if (!words) {
+    const all = new Set<string>();
+    for (const item of items) {
+      const p = prepare(item);
+      for (const word of [...p.titleWords, ...p.tagWords, ...p.descriptionWords]) if (word.length >= 4 && !/\d/.test(word)) all.add(word);
+    }
+    words = [...all];
+    vocabularies.set(items, words);
+  }
+  return words;
+}
+
+/** Optimal string alignment distance (Damerau–Levenshtein without repeated edits), stopping early past `max`. */
+export function editDistance(a: string, b: string, max: number): number {
+  if (Math.abs(a.length - b.length) > max) return max + 1;
+  let prev2: number[] = [];
+  let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const row = [i];
+    let best = i;
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      let d = Math.min(prev[j] + 1, row[j - 1] + 1, prev[j - 1] + cost);
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d = Math.min(d, prev2[j - 2] + 1);
+      row.push(d);
+      best = Math.min(best, d);
+    }
+    if (best > max) return max + 1;
+    prev2 = prev;
+    prev = row;
+  }
+  return prev[b.length];
+}
+
+/**
+ * Typo tolerance: a one-word term that matches no item at all ("gausian", "brewstr") takes the nearest words of the
+ * items as alternatives, within 1 edit (2 from 8 letters). Words that match something are left alone.
+ */
+function correctTypos(items: readonly SearchItem[], terms: Term[]): Term[] {
+  return terms.map((term) => {
+    const word = term[0];
+    if (term.length > 1 || word.includes(" ") || word.length < 4 || /\d/.test(word)) return term;
+    if (items.some((item) => termScore(prepare(item), term) > 0)) return term;
+    const max = word.length >= 8 ? 2 : 1;
+    let best = max + 1;
+    let nearest: string[] = [];
+    for (const candidate of vocabulary(items)) {
+      const d = editDistance(word, candidate, max);
+      if (d < best) [best, nearest] = [d, [candidate]];
+      else if (d === best) nearest.push(candidate);
+    }
+    return best <= max ? [word, ...nearest] : term;
+  });
+}
+
 /** Every item that matches at least one term: most terms matched first, then by score. */
 export function rankItems(items: readonly SearchItem[], query: string): { ranked: Ranked[]; terms: number } {
-  const terms = searchTerms(query);
+  const terms = correctTypos(items, searchTerms(query));
   if (terms.length === 0) return { ranked: [], terms: 0 };
   const ranked = items
     .map((item) => {

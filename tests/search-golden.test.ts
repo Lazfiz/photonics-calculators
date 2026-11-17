@@ -2,8 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { buildSearchIndex } from "../src/registry/search";
-import { search } from "../src/lib/site-search";
-import { findCalculators } from "../src/mcp/tools";
+import { editDistance, search } from "../src/lib/site-search";
+import { findCalculators, rankCalculators } from "../src/mcp/tools";
 
 // Questions as visitors and agents type them, each with the page(s) that answer it. The upgrades review (2026-11,
 // item 1) asks for every case in the top 3 and at least 30 at the top. Several seed cases come from its evidence:
@@ -54,6 +54,14 @@ const CASES: [query: string, expected: string[]][] = [
   ["thin lens", ["imaging/image-distance"]],
   ["optical isolator", ["materials/magneto-optic"]],
   ["rytov variance", ["free-space-comms/scintillation"]],
+  // Plurals, and a synonym that must not count a typed word twice ("glasses" ~ "optical density" + "optical").
+  ["optical glasses", ["materials/optical-glass-catalog"]],
+  // Typos (one or two edits), corrected only when the word matches nothing as typed.
+  ["gausian beam", ["wave-optics/gaussian-beam"]],
+  ["brewstr angle", ["polarization/brewster-polarizer"]],
+  ["fiber atenuation", ["fiber-optics/attenuation"]],
+  ["depht of field", ["imaging/dof"]],
+  ["rayliegh range", ["wave-optics/gaussian-beam"]],
 ];
 
 const index = buildSearchIndex();
@@ -82,6 +90,18 @@ test("spelling, stop words, numbers and units", () => {
   assert.deepEqual(slugs("fibre link budget 80 km", 3), slugs("fiber link budget", 3));
   assert.deepEqual(slugs("what is the airy disk", 3), slugs("airy disk", 3));
   assert.deepEqual(slugs("splice loss at 1550nm", 3), slugs("splice loss", 3));
+});
+
+test("typo correction: an edit or two, only for words that match nothing as typed", () => {
+  assert.equal(editDistance("gausian", "gaussian", 1), 1);
+  assert.equal(editDistance("rayliegh", "rayleigh", 2), 1); // one transposition
+  assert.equal(editDistance("brewster", "lobster", 1), 2); // past the cap: max + 1
+  // A real word is never "corrected": "lens" stays lens, not "less" or "lena".
+  assert.ok(search(index, "thermal lens").results.every((item) => /lens/i.test(`${item.title} ${item.description} ${item.tags.join(" ")}`)));
+  // Exact and closest stay apart for an agent: matched terms against query terms.
+  const { results, terms } = rankCalculators("gausian beam", 3);
+  assert.equal(terms, 2);
+  assert.equal(results[0].matched, 2);
 });
 
 test("no exact match: the closest pages, labelled; nothing only when no word matches", () => {
