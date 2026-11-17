@@ -98,6 +98,13 @@ export function reportEmail(report: Report, origin: string, sha: string | undefi
   };
 }
 
+export interface RateLimitStatus {
+  allowed: boolean;
+  limit: number;
+  remaining: number;
+  resetSeconds: number;
+}
+
 /**
  * A fixed-window limit per key (the client IP). It lives in one server instance's memory, so it is
  * best-effort: it stops a script hammering the form, not a distributed flood.
@@ -112,18 +119,39 @@ export class RateLimiter {
 
   /** Counts one request; false once `key` has used up its window. */
   allow(key: string, now = Date.now()): boolean {
-    const entry = this.hits.get(key);
+    return this.check(key, now).allowed;
+  }
+
+  /** Counts one request and reports the window: how many hits are left and the seconds until it resets. */
+  check(key: string, now = Date.now()): RateLimitStatus {
+    let entry = this.hits.get(key);
     if (!entry || now - entry.start >= this.windowMs) {
       // Drop expired keys now and then, so the map can't grow without bound.
       if (this.hits.size > 1000) {
         for (const [k, e] of this.hits) if (now - e.start >= this.windowMs) this.hits.delete(k);
       }
-      this.hits.set(key, { start: now, count: 1 });
-      return true;
+      entry = { start: now, count: 0 };
+      this.hits.set(key, entry);
     }
     entry.count += 1;
-    return entry.count <= this.limit;
+    return {
+      allowed: entry.count <= this.limit,
+      limit: this.limit,
+      remaining: Math.max(0, this.limit - entry.count),
+      resetSeconds: Math.max(1, Math.ceil((entry.start + this.windowMs - now) / 1000)),
+    };
   }
+}
+
+/** The IETF RateLimit header fields (draft-ietf-httpapi-ratelimit-headers) for a checked request; Retry-After on a refusal. */
+export function rateLimitHeaders(status: RateLimitStatus): Record<string, string> {
+  const headers: Record<string, string> = {
+    "RateLimit-Limit": String(status.limit),
+    "RateLimit-Remaining": String(status.remaining),
+    "RateLimit-Reset": String(status.resetSeconds),
+  };
+  if (!status.allowed) headers["Retry-After"] = String(status.resetSeconds);
+  return headers;
 }
 
 /** The rate-limit key: the first x-forwarded-for address (Vercel sets it), else x-real-ip. */
