@@ -63,6 +63,11 @@ export default defineSchema({
     if (!reachable) {
       warnings.push(`Order ${m} cannot reach ${centerWl * 1e9} nm at this deviation (needs mλ < d(1 + cos D_v) = ${d * (1 + Math.cos(deviation)) * 1e9} nm).`);
     }
+    const lambdaLow = reachable ? pixelToWavelength(0, sp) : NaN;
+    const lambdaHigh = reachable ? pixelToWavelength(pixels - 1, sp) : NaN;
+    if (reachable && !(Number.isFinite(lambdaLow) && Number.isFinite(lambdaHigh))) {
+      warnings.push("The detector reaches past grazing diffraction or the zero order at one edge, so that end of the wavelength range is undefined and the fit errors cover the defined pixels only.");
+    }
     const rng = createRng(Math.round(seed));
     const onDetector = lineList
       .map((nm) => ({ nm, truePx: reachable ? wavelengthToPixel(nm * 1e-9, sp) : NaN }))
@@ -78,8 +83,8 @@ export default defineSchema({
     const linear = fits[0];
     return {
       values: {
-        lambdaLow: reachable ? pixelToWavelength(0, sp) : NaN,
-        lambdaHigh: reachable ? pixelToWavelength(pixels - 1, sp) : NaN,
+        lambdaLow,
+        lambdaHigh,
         incidence: sp.incidence,
         beta0: sp.beta0,
         theorySlope: reachable ? gratingReciprocalLinearDispersion(d, m, sp.beta0, focalLength) * pixelPitch : NaN,

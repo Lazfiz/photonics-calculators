@@ -1,0 +1,11 @@
+import { rakicIndex } from "../../../../src/physics/materials/lorentz-drude";
+import { stack, qw } from "./tmm";
+const nm = 1e-9;
+const al: any = (rakicIndex as any)("Al", 550e-9) ?? (rakicIndex as any)("al", 550e-9);
+console.log("Rakic Al 550:", JSON.stringify(al));
+const n = al.n ?? al.re, k = al.k ?? al.im;
+console.log("bare R", (100 * (((n - 1) ** 2 + k * k) / ((n + 1) ** 2 + k * k))).toFixed(4), "(91.5235)");
+const Y = { r: 2.35 ** 2 / 1.46 ** 2 * n, i: 2.35 ** 2 / 1.46 ** 2 * k };
+console.log("enhanced QW formula R", (100 * (((1 - Y.r) ** 2 + Y.i ** 2) / ((1 + Y.r) ** 2 + Y.i ** 2))).toFixed(4));
+const s = stack(1, [qw(2.35, 550 * nm), qw(1.46, 550 * nm), { n, k: Math.abs(k), d: 80 * nm }], 1.52, 0, 550 * nm);
+console.log("own TMM H L Al80 | glass: R", (100 * s.R).toFixed(4), "T", (100 * s.T).toExponential(4), "(96.5751, 1.43478e-4)");

@@ -44,6 +44,9 @@ export default defineSchema({
     if (!(Number.isFinite(tan.w) && Number.isFinite(sag.w))) {
       warnings.push("No Gaussian mode: each plane needs 0 < d/R_eff < 2. The tangential plane fails first, at d = 2R cos α.");
     }
+    if (!Number.isFinite(fwhm)) {
+      warnings.push("The round-trip factor is too low for a resonance peak: the Airy peak never falls to half its maximum, so there is no linewidth.");
+    }
     return {
       values: {
         fsr,

@@ -8,6 +8,8 @@ import {
   isoplanaticAngle, logIrradianceCorrelation, logIrradianceVariances, lognormalFadeProbability, rytovVariance,
   scintillationIndex, servoLagVariance, sphericalRytovVariance, strehlRatio, uncorrectedPhaseVariance, weakApertureFactor,
 } from "../src/physics/free-space-comms/turbulence";
+import scintillation from "../src/schemas/free-space-comms/scintillation";
+import { runSchema } from "../src/schemas/run";
 import { beamRadius } from "../src/physics/free-space-comms/pointing-loss";
 import { besselJ, besselK, integrateTanhSinh, lnGamma } from "../src/physics/math";
 import { covarianceIntegral } from "../scripts/gen-irradiance-covariance";
@@ -373,4 +375,30 @@ test("field stop: Rayleigh's encircled energy without turbulence, Fried's r₀ n
   assert.equal(fieldStopFraction(0, D, lambda, 0.05), 0);
   assert.ok(Number.isNaN(fieldStopFraction(-1e-3, D, lambda, 0.05)) && Number.isNaN(fieldStopFraction(1e-3, 0, lambda, 0.05)));
   assert.ok(Number.isNaN(fieldStopHalfAngle(1, D, lambda, 0.05)));
+});
+
+test("scintillation page: gamma-gamma and log-normal fades at σ_R² ≥ 1 (review 2026-11, independent double quadrature)", () => {
+  // 1550 nm, Cn² 1.7e-13, L 1 km, point receiver: σ_R² 3.385, A&P α = 4.200, β = 1.377. The review's independent double integral
+  // (docs/audit/fable-p1-probes/lead/probe-scint.ts) printed gamma-gamma 0.399 / 7.18e-2 and log-normal 0.361 / 1.37e-2
+  // (three digits, so 3e-3 relative here).
+  const run = (cz: number, D: number) => runSchema(scintillation, { wavelength: 1550, distance: 1, cz, apertureDiameter: D });
+  const strong = run(1.7e-13, 0);
+  close(strong.si.rytovVariance as number, 3.3846, 1e-3);
+  close(strong.si.fade3dBGammaGamma as number, 0.399, 3e-3);
+  close(strong.si.fade10dBGammaGamma as number, 7.18e-2, 3e-3);
+  close(strong.si.fade3dB as number, 0.361, 3e-3);
+  close(strong.si.fade10dB as number, 1.37e-2, 3e-3);
+  assert.ok(strong.warnings.some((w) => w.includes("σ_R² ≥ 1") && w.includes("gamma-gamma")));
+  // with D = 10 cm the probe printed gamma-gamma 3.48e-2 / 7.19e-8
+  const ap = run(1.7e-13, 0.1);
+  close(ap.si.fade3dBGammaGamma as number, 3.48e-2, 3e-3);
+  close(ap.si.fade10dBGammaGamma as number, 7.19e-8, 3e-3);
+  // defaults: σ_R² = 0.338 < 1, no warning
+  const weak = run(1.7e-14, 0.1);
+  assert.equal(weak.warnings.length, 0);
+  close(weak.si.fade3dBGammaGamma as number, 5.94e-5, 1e-3);
+  // edge: the warning follows σ_R² = 1 (σ_R² is proportional to Cn²)
+  const cnAt1 = 1.7e-14 / (weak.si.rytovVariance as number);
+  assert.equal(run(cnAt1 * 0.999, 0.1).warnings.length, 0);
+  assert.equal(run(cnAt1 * 1.001, 0.1).warnings.length, 1);
 });

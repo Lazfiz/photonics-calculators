@@ -1,5 +1,6 @@
 import {
-  fresnelZone, friedParameter, lognormalFadeProbability, rytovVariance, scintillationIndex,
+  apertureParameter, fresnelZone, friedParameter, gammaGammaCdf, gammaGammaParameters, lognormalFadeProbability, rytovVariance,
+  scintillationIndex,
 } from "../../physics/free-space-comms/turbulence";
 import { defineSchema } from "../types";
 
@@ -8,6 +9,9 @@ const ANDREWS_PHILLIPS = "Andrews L. C., Phillips R. L. (2005). Laser Beam Propa
   "index σ_I²(D) = exp[0.49σ_R²/(1 + 0.65d² + 1.11σ_R^(12/5))^(7/6) + 0.51σ_R²(1 + 0.69σ_R^(12/5))^(−5/6)/(1 + 0.90d² + 0.62d²σ_R^(12/5))] − 1 (ch. 9–10).";
 const LOGNORMAL = "Log-normal irradiance with σ_ln² = ln(1 + σ_I²) (Andrews L. C., Phillips R. L. (2005). Laser Beam Propagation through " +
   "Random Media, 2nd ed. SPIE Press, ch. 8): P(I < F⟨I⟩) = Φ((ln F + σ_ln²/2)/σ_ln).";
+const GAMMA_GAMMA = "Gamma-gamma irradiance with α, β from the aperture-averaged scintillation index (Al-Habash M. A., Andrews L. C., " +
+  "Phillips R. L. (2001). Mathematical model for the irradiance probability density function of a laser beam propagating through " +
+  "turbulent media. Opt. Eng. 40, 1554, doi:10.1117/1.1386641; Andrews & Phillips 2005, ch. 9): P(I < F⟨I⟩) from the gamma-gamma CDF.";
 
 export default defineSchema({
   href: "/free-space-comms/scintillation",
@@ -26,14 +30,17 @@ export default defineSchema({
     { key: "friedParameter", label: "Fried parameter r₀ (plane wave)", unit: "cm", toSI: 1e-2, siUnit: "m" },
     { key: "fade3dB", label: "Fade probability P(I < ⟨I⟩ − 3 dB)", unit: "", toSI: 1, siUnit: "" },
     { key: "fade10dB", label: "Fade probability P(I < ⟨I⟩ − 10 dB)", unit: "", toSI: 1, siUnit: "" },
+    { key: "fade3dBGammaGamma", label: "Fade probability P(I < ⟨I⟩ − 3 dB), gamma-gamma", unit: "", toSI: 1, siUnit: "" },
+    { key: "fade10dBGammaGamma", label: "Fade probability P(I < ⟨I⟩ − 10 dB), gamma-gamma", unit: "", toSI: 1, siUnit: "" },
   ],
   compute({ wavelength, distance, cz, apertureDiameter }) {
     const sigmaR2 = rytovVariance(cz, wavelength, distance);
     const point = scintillationIndex(sigmaR2, wavelength, distance);
     const sigmaI2 = scintillationIndex(sigmaR2, wavelength, distance, apertureDiameter);
+    const { alpha, beta } = gammaGammaParameters(sigmaR2, apertureParameter(wavelength, distance, Math.max(0, apertureDiameter)));
     const warnings: string[] = [];
-    if (sigmaR2 >= 0.3) {
-      warnings.push("Moderate to strong fluctuations (σ_R² ≥ 0.3): the log-normal fade probabilities are optimistic, the gamma-gamma tails are heavier.");
+    if (sigmaR2 >= 1) {
+      warnings.push("Moderate to strong fluctuations (σ_R² ≥ 1): the log-normal fade probabilities underestimate deep fades. Use the gamma-gamma values for a point or small receiver; for an aperture much larger than the Fresnel zone the true value lies between the two (Vetelino et al., Appl. Opt. 46, 2099 (2007)).");
     }
     return {
       values: {
@@ -45,6 +52,8 @@ export default defineSchema({
         friedParameter: friedParameter(cz, wavelength, distance),
         fade3dB: lognormalFadeProbability(10 ** -0.3, sigmaI2),
         fade10dB: lognormalFadeProbability(0.1, sigmaI2),
+        fade3dBGammaGamma: gammaGammaCdf(10 ** -0.3, alpha, beta),
+        fade10dBGammaGamma: gammaGammaCdf(0.1, alpha, beta),
       },
       warnings,
     };
@@ -75,10 +84,12 @@ export default defineSchema({
     {
       // Defaults, σ_I² = 0.02791714: σ_ln² = ln(1.02791714) = 0.0275346; F = 10^(−0.3): (ln F + σ_ln²/2)/σ_ln = −4.07995,
       // P = Φ(−4.07995) = 2.252268e-5 (Φ from the erf Taylor series).
-      source: LOGNORMAL,
+      // Gamma-gamma at the defaults: α = 66.6233, β = 78.6379 (A&P ch. 9) gives P(−3 dB) = 5.94e-5 (an independent double
+      // integral in the 2026-11 review gave 5.94e-5; the module value is 5.936210e-5), 2.6 times the log-normal value.
+      source: `${LOGNORMAL} ${GAMMA_GAMMA}`,
       basis: "computed",
       inputs: {},
-      expect: { fade3dB: 0.000022522677722291995 },
+      expect: { fade3dB: 0.000022522677722291995, fade3dBGammaGamma: 0.000059362095226832366 },
       tolerance: 1e-7,
     },
   ],

@@ -8,7 +8,7 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { refractiveIndex } from "../../../physics/materials/sellmeier";
 import {
-  WINDOW_MATERIALS, fresnelLimitTransmission, hasFormula, transmits, windowIndex, type WindowMaterialId,
+  WINDOW_MATERIALS, dnDTConvention, fresnelLimitTransmission, hasFormula, transmits, windowIndex, type WindowMaterialId,
 } from "../../../physics/materials/window-materials";
 
 const IR_IDS: WindowMaterialId[] = [
@@ -74,7 +74,7 @@ export default function InfraredGlassPage() {
   } else if (mat.dnDT === null) {
     nSubtext = `${d.reference}; at the formula's temperature (no sourced dn/dT)`;
   } else {
-    nSubtext = `${d.reference}; dn/dT from ${tRef} °C`;
+    nSubtext = `${d.reference}; dn/dT from ${tRef} °C, one value at all wavelengths`;
   }
 
   const chartMax = Math.max(CHART_MAX_UM, 1.1 * wavelength);
@@ -115,7 +115,8 @@ export default function InfraredGlassPage() {
         <ResultCard label="Transmission band" value={bandText(mat.bands)} tone="gray" subtext={mat.note} />
       </div>
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <ResultCard label="dn/dT" value={mat.dnDT === null ? "—" : `${mat.dnDT > 0 ? "+" : ""}${+(mat.dnDT * 1e6).toPrecision(4)} ×10⁻⁶/K`} tone="orange" />
+        <ResultCard label="dn/dT" value={mat.dnDT === null ? "—" : `${mat.dnDT > 0 ? "+" : ""}${+(mat.dnDT * 1e6).toPrecision(4)} ×10⁻⁶/K`} tone="orange"
+          subtext={dnDTConvention(mat)} />
         <ResultCard label="Thermal conductivity" value={mat.conductivity === null ? "—" : `${mat.conductivity} W/(m·K)`} tone="purple" />
         <ResultCard label="Knoop hardness" value={mat.knoop === null ? "—" : `${mat.knoop} kg/mm²`} tone="gray" />
       </div>
@@ -142,10 +143,15 @@ export default function InfraredGlassPage() {
           <p>
             n(λ, T₀) comes from each material&apos;s published Sellmeier formula at the temperature T₀ of its measurements,
             within the formula&apos;s wavelength range (the same data sets as the Material Dispersion calculator; the ordinary
-            index for MgF₂). dn/dT is one room-temperature value per material, so treat n(T) far from T₀ as an estimate.
+            index for MgF₂). dn/dT is one room-temperature value per material, taken at one wavelength and used at all of them,
+            so treat n(T) far from T₀, or far from that wavelength, as an estimate (CHARMS: Ge 5.1 ×10⁻⁴/K at 2 µm against
+            4.16 at 5.5 µm). Where it is absolute (in vacuum), the formulas&apos; index, mostly relative to air, is shifted
+            by it as if the window alone heats in room-temperature air.
             T_max is the transmission of an uncoated, non-absorbing window with both surfaces&apos; multiple reflections added
-            in intensity: an upper bound that absorption near the band edges lowers. Bands, dn/dT, conductivity and Knoop
-            hardness are Crystran data-sheet values, and Amorphous Materials&apos; for AMTIR-1 and As₂S₃. ZBLAN&apos;s Knoop hardness and dn/dT
+            in intensity: an upper bound that absorption near the band edges lowers. dn/dT is the absolute NASA CHARMS value
+            (Leviton, Frey and co-workers) for Si, Ge, ZnSe, CaF₂, BaF₂ and LiF, at the wavelength under the dn/dT card. Bands,
+            the other dn/dT, conductivity and Knoop hardness are Crystran data-sheet values, and Amorphous Materials&apos; for
+            AMTIR-1 and As₂S₃. ZBLAN&apos;s Knoop hardness and dn/dT
             are from Poulain&apos;s 2024 review: dn/dT is the midpoint of the −8 to −15 ×10⁻⁶/K reported for fluoride glasses, so
             its n(T) is good to about ±3.5 ×10⁻⁶ per kelvin. ZBLAN has no sourced band or conductivity.
           </p>

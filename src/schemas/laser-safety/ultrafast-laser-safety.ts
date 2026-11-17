@@ -50,7 +50,9 @@ export default defineSchema({
     // The single-pulse rule on its own, as an ultrafast safety check often stops there.
     const singleOnly = Math.min(...result.limits.map((l) => l.singlePulse));
     const dSafe = pulseTrainSafeDiameter(wavelength, pulseEnergy, train);
+    const nohd = rangeToDiameter(roundBeam(beamDia, divergence), dSafe);
     return {
+      warnings: nohd === Infinity ? ["The beam doesn't spread (φ = 0): the hazard extends to any range."] : [],
       values: {
         averagePower: pulseEnergy * repRate,
         peakPower: pulseEnergy / pulseWidth,
@@ -59,7 +61,7 @@ export default defineSchema({
         pulseOverMax: ratio,
         od: ratio > 1 ? Math.log10(ratio) : 0,
         odSingleRule: pulseEnergy > singleOnly ? Math.log10(pulseEnergy / singleOnly) : 0,
-        nohd: rangeToDiameter(roundBeam(beamDia, divergence), dSafe),
+        nohd,
       },
     };
   },

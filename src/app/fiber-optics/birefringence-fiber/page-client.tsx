@@ -93,10 +93,10 @@ export default function BirefringenceCalculator() {
           V &gt; 2.405: the fibre also guides LP11. The values are for the fundamental mode only.
         </p>
       )}
-      {ratio < 0.8 && (
+      {ratio < 0.9 && (
         <p role="alert" className="mb-8 rounded-lg border border-yellow-700 bg-yellow-950 p-3 text-sm text-yellow-200">
-          ε = {(1 - ratio).toFixed(2)}: the model is first order in the ellipticity ε, so it loses accuracy for strongly
-          elliptical cores.
+          ε = {(1 - ratio).toFixed(2)}: the model is first order in the ellipticity ε, so it loses accuracy above
+          ε ≈ 0.1.
         </p>
       )}
       {valid && geo.delta > 0.03 && (

@@ -62,6 +62,23 @@ test("API schemas: every output is a number at the page's defaults, or null with
   }
 });
 
+test("API schemas: each input at its min and max gives numbers, or null with a warning that says why (review 2026-11 P3-W1)", () => {
+  for (const schema of schemas) {
+    for (const input of schema.inputs) {
+      for (const value of [input.min, input.max]) {
+        // An input alone at a bound may break a rule between inputs; that is a 400 with a reason, tested elsewhere.
+        const parsed = parseInputs(schema, query({ [input.key]: value }));
+        if (!parsed.ok) continue;
+        const result = runSchema(schema, parsed.values);
+        for (const [key, out] of Object.entries(result.outputs)) {
+          assert.ok(Number.isFinite(out) || (out === null && result.warnings.length > 0),
+            `${schema.href} ${input.key}=${value} ${key}`);
+        }
+      }
+    }
+  }
+});
+
 test("API schemas: the reference checks hold", () => {
   for (const schema of schemas) {
     for (const check of schema.checks) {
@@ -87,6 +104,13 @@ test("API inputs: unknown, repeated, non-numeric and out-of-range values are rej
   assert.match(error("z=1&z=2"), /given 2 times/);
   assert.match(error("waist=abc"), /finite number/);
   assert.match(error("waist="), /finite number/);
+  // Decimal notation only (review 2026-11 P3-M7): Number() alone takes hex, binary, octal and "Infinity".
+  for (const q of ["waist=0x10", "waist=0b1", "waist=0o7", "waist=Infinity", "waist=1e", "waist=1_000", "waist=."]) {
+    assert.match(error(q), /finite number in decimal notation/, q);
+  }
+  for (const q of ["waist=16", "waist=+16", "waist=16.", "waist=.5e2", "waist=1.6e1", "waist=1E%2B1", "waist=%2016%20"]) {
+    assert.equal(error(q), "", q);
+  }
   assert.match(error("wavelength=150"), /= 150 nm is outside 200 to 11000 nm/);
   // The range is inclusive, and unset inputs take the page's defaults.
   assert.equal(error("wavelength=200&waist=10000"), "");
@@ -175,6 +199,8 @@ test("/openapi.json describes every schema's parameters and outputs", () => {
   assert.equal(op.operationId, "spectroscopy_blackbody");
   assert.deepEqual(op.parameters.find((p) => p.name === "temperature")?.schema,
     { type: "number", minimum: 100, maximum: 40000, default: 5778 });
+  // The handler's 404 for an unknown calculator is documented (review 2026-11 P3-M9).
+  assert.deepEqual(Object.keys(op.responses).sort(), ["200", "400", "404", "429"]);
   const outputs = op.responses[200].content["application/json"].schema.allOf[1].properties?.outputs.required;
   assert.deepEqual(outputs, ["peakWavelength", "peakSpectralRadiance", "exitance", "radiance", "bandFraction"]);
   const nohd = doc.paths[apiPath("/laser-safety/nohd")].get.parameters;

@@ -744,7 +744,7 @@ export const imaging: CalculatorEntry[] = [
     title: "Point Spread Function Calculator",
     description: "Visualize the 2D and 1D point spread function (PSF) for a diffraction-limited system.",
     tier: "textbook",
-    modelNote: "Scalar PSF of an aberration-free, uniformly filled pupil: the Airy pattern laterally, the on-axis Debye sinc² axially (FWHM 0.886 λ/(n − √(n² − NA²)), the paraxial sinc²(u/4) at low NA). No polarization, coverslip or index-mismatch effects.",
+    modelNote: "Scalar PSF of an aberration-free, uniformly filled pupil: the Airy pattern laterally, the on-axis Debye sinc² axially (FWHM 0.886 λ/(n − √(n² − NA²)), the paraxial sinc²(u/4) at low NA). The two profiles take different pupils: the axial sinc² is exact for a pupil uniform in cos θ, the Airy pattern (and the mtf page's high-NA defocus) for one uniform in the pupil radius ρ. Below NA/n ≈ 0.7 they differ by under 1 %; at NA/n = 0.95 the uniform-ρ axial FWHM coefficient is 0.936 rather than 0.886. No polarization, coverslip or index-mismatch effects.",
     references: [
       {
         citation: "Born M., Wolf E. (2019). Principles of Optics, 7th ed., §8.5.2 and §8.8. Cambridge University Press. Airy pattern and the paraxial intensity near focus.",

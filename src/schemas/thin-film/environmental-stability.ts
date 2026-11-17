@@ -33,7 +33,7 @@ export default defineSchema({
     { key: "pH", label: "Packing density p_H", unit: "", toSI: 1, siUnit: "", default: 0.85, min: 0.5, max: 1 },
     { key: "pL", label: "Packing density p_L", unit: "", toSI: 1, siUnit: "", default: 0.85, min: 0.5, max: 1 },
     { key: "dndtH", label: "dn_H/dT", unit: "1e-6/K", toSI: 1e-6, siUnit: "1/K", default: 20, min: -1000, max: 1000 },
-    { key: "dndtL", label: "dn_L/dT", unit: "1e-6/K", toSI: 1e-6, siUnit: "1/K", default: 12.9, min: -1000, max: 1000 },
+    { key: "dndtL", label: "dn_L/dT", unit: "1e-6/K", toSI: 1e-6, siUnit: "1/K", default: 8.86, min: -1000, max: 1000 },
     { key: "cteH", label: "Expansion α_H", unit: "1e-6/K", toSI: 1e-6, siUnit: "1/K", default: 8, min: -100, max: 100 },
     { key: "cteL", label: "Expansion α_L", unit: "1e-6/K", toSI: 1e-6, siUnit: "1/K", default: 0.55, min: -100, max: 100 },
     { key: "level", label: "CC1246 cleanliness level", unit: "µm", toSI: 1e-6, siUnit: "m", default: 300, min: 1, max: 2000 },
@@ -107,11 +107,12 @@ export default defineSchema({
     },
     {
       // Dry, 75 °C (ΔT = 50 K), no water: each layer's optical thickness scales by (1 + (dn/dT)ΔT/n)(1 + αΔT):
-      // Δλ = λ₀ [½ Σ_{H,L} (n + dn/dT ΔT)(1 + αΔT)/n − 1] = 550 · 6.4902e-4 = 0.356962 nm.
+      // Δλ = λ₀ [½ Σ_{H,L} (n + dn/dT ΔT)(1 + αΔT)/n − 1] = 550 · 5.7936e-4 = 0.318650 nm (L: dn/dT 8.86e-6, fused silica absolute,
+      // Leviton & Frey 2006; was 0.356962 nm with Crystran's 12.9e-6).
       source: MACLEOD,
       basis: "computed",
       inputs: { fill: 0 },
-      expect: { shiftHot: 0.356961535321898, shiftBoth: 0.356961535321898 },
+      expect: { shiftHot: 0.31865013695981936, shiftBoth: 0.31865013695981936 },
       tolerance: 1e-8,
     },
     {
