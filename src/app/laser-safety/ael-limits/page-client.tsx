@@ -16,8 +16,8 @@ const CLASSES: { cls: AelClass; name: string; color: string }[] = [
   { cls: "3B", name: "Class 3B", color: "#f87171" },
 ];
 
-// The A11 rows: Class 1 / 1M only; 3R under A11 waits for the A11 text (see the schema's A11_CLASSES).
-const a11Row = (cls: AelClass) => cls === "1";
+// The A11 rows: Class 1 / 1M and Class 3R (3R at 1×, the cautious reading; see the schema's A11_CLASSES).
+const a11Row = (cls: AelClass) => cls === "1" || cls === "3R";
 const A11_UNVERIFIED = "EU (A11; unverified: A11 text not read)";
 
 /** True when two AELs differ by more than rounding (or one is defined and the other isn't). */
@@ -144,9 +144,9 @@ export default function AELLimitsPage() {
           AEL, 0.5 W through 7 mm; the EU amendment A11 adds the skin limit through 1 → 3.5 mm (0.1 W from 0.35 s), as
           Schulmeister&apos;s 2022 white paper describes it; we have not read the A11 text, so these rows are unverified.
           They are the unrounded skin limit times the stop area, within 4 % of the white paper&apos;s rounded values
-          (stricter from 0.35 s). Where A11 changes the Class 1 value, its row (and a dashed curve) appears under the IEC
-          one. Class 3R under A11 is not shown until the A11 text is read: the white paper puts the same limit, 1×, into the
-          3R table (the Classification page uses that), but 5 × Class 1 would be about 475 mW at 1310 nm.
+          (stricter from 0.35 s). Where A11 changes the Class 1 or 3R value, its row (and a dashed curve) appears under the
+          IEC one. The white paper puts the same skin limit, 1×, into the 3R table, and so do this page and the
+          Classification page; it is also the cautious reading, since 5 × Class 1 would allow about 475 mW at 1310 nm.
         </p>
         <p>
           For a CW laser the product has to meet each AEL for every emission duration up to its time base: 0.25 s for

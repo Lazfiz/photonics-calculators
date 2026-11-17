@@ -61,7 +61,7 @@ export default defineSchema({
     if (eu.laserClass !== r.laserClass) {
       warnings.push(`In the EU (EN 60825-1:2014/A11:2021) this laser is Class ${eu.laserClass}, not ${r.laserClass}: the skin AEL ` +
         "caps Classes 1 and 3R at about 0.1 W at 1250–1400 nm, as Schulmeister's 2022 white paper describes A11 (unverified: " +
-        "A11 text not read; the paper applies the same cap to 3R).");
+        "A11 text not read; the paper applies the same cap, 1×, to 3R, which is also the cautious reading).");
     }
     return {
       values: {

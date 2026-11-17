@@ -65,10 +65,10 @@ test("U4: the scanning page uses the standard time unless a time is entered, and
 });
 
 test("U1 on the scanning page: the beam grows as √(d² + (rφ)²)", () => {
-  // 1 mm at the scanner, 1 mrad, 1 m: √(1 + 1) mm, the same beam as √2 mm with no divergence.
+  // 2 mm at the scanner (the default), 1 mrad, 1 m: √(4 + 1) mm, the same beam as √5 mm with no divergence.
   const scan = schema("/laser-safety/scanning-mpe");
   const grown = run(scan, {});
-  const fixed = run(scan, { beamDiam: Math.SQRT2, divergence: 0 });
+  const fixed = run(scan, { beamDiam: Math.sqrt(5), divergence: 0 });
   assertRel(grown.outputs.maxPowerScanned as number, fixed.outputs.maxPowerScanned as number, 1e-12, "scanned");
   assertRel(grown.outputs.passDuration as number, fixed.outputs.passDuration as number, 1e-12, "pass");
 });
@@ -83,16 +83,97 @@ test("U2 on the AEL page: the EU A11 values are outputs of their own, with no to
   assertRel(r.outputs.cw1A11 as number, cap * 1e3, 1e-9, "Class 1, EU");
   assertRel(r.outputs.cw3R as number, 500, 1e-9, "Class 3R, IEC");
   assert.ok(r.warnings.some((w) => w.includes("In the EU") && w.includes("unverified")), r.warnings.join(" | "));
-  // Recheck 2026-11-16: no 3R A11 output (A11's 3R factor is unsettled), and every A11 output says it is unverified.
-  assert.ok(!ael.outputs.some((o) => o.key.startsWith("energy3RA11") || o.key.startsWith("cw3RA11")));
+  // Verification W2 (2026-11-17): the AEL page, its API warning and the classification agree on Class 3R under A11.
+  // The white paper adds one skin-AEL table to Classes 1, 1M and 3R with no factor; we take 3R at 1×, the cautious
+  // reading (5 × Class 1 would allow ≈ 475 mW). So 3R is capped at the same 94.93 mW, and the warning names both.
+  assertRel(r.outputs.cw3RA11 as number, cap * 1e3, 1e-9, "Class 3R, EU");
+  // One 1 s emission: through 1.5 mm, 5.5×10⁴ J/m² × π(0.75 mm)² = 0.09719 J for both classes (IEC alone: 0.5 J).
+  const one = run(ael, { wavelength: 1310, emissionDuration: 1 });
+  assertRel(one.outputs.energy3RA11 as number, 5.5e4 * Math.PI * 0.75e-3 ** 2, 1e-9, "Class 3R, EU, 1 s");
+  assertRel(one.outputs.energy3R as number, 0.5, 1e-9, "Class 3R, IEC, 1 s");
+  // 10 ns (the default duration): the skin limit is 200 C_A = 1000 J/m² below 100 ns (ICNIRP 2013 Table 7), through
+  // 1 mm 1000 × π(0.5 mm)² = 0.7854 mJ (white paper: 7.9×10⁻⁴ J). That caps 3R (IEC 5 × 0.1995 = 0.9975 mJ) but not
+  // Class 1 (0.1995 mJ): for one 10 ns emission only the 3R value changes (both CW values do).
+  assertRel(r.outputs.energy3RA11 as number, 1000 * Math.PI * 0.5e-3 ** 2, 1e-9, "Class 3R, EU, 10 ns");
+  assertRel(r.outputs.energy3R as number, 5 * (r.outputs.energy1 as number), 1e-12, "Class 3R, IEC, 10 ns");
+  assert.equal(r.outputs.energy1A11, r.outputs.energy1);
+  assert.ok(r.warnings.some((w) => w.includes("In the EU") && w.includes("Class 1 / 1M and Class 3R")), r.warnings.join(" | "));
+  const cls = run(schema("/laser-safety/classification"), { power: 200, wavelength: 1310 });
+  assert.equal(cls.outputs.classRank, 1, "200 mW at 1310 nm: IEC Class 1");
+  assert.equal(cls.outputs.classRankA11, 6, "200 mW at 1310 nm: above the 1× 3R cap in the EU, so 3B");
+  assert.ok(200 > (r.outputs.cw3RA11 as number), "the AEL page's 3R A11 value agrees with that class");
+  // Every A11 output says it is unverified.
   const a11 = ael.outputs.filter((o) => o.key.endsWith("A11"));
-  assert.equal(a11.length, 3);
+  assert.equal(a11.length, 6);
   assert.ok(a11.every((o) => o.label.includes("unverified: A11 text not read")));
   // Outside 1250–1400 nm the two agree and nothing is said.
   const d = run(ael, {});
   assert.equal(d.outputs.cw1A11, d.outputs.cw1);
   assert.equal(d.outputs.energy1A11, d.outputs.energy1);
+  assert.equal(d.outputs.cw3RA11, d.outputs.cw3R);
   assert.ok(!d.warnings.some((w) => w.includes("In the EU")));
+});
+
+// Verification 2026-11 W4: the scanning page's absolute values, against a brute-force reference that does not call
+// src/physics: docs/audit/fable-verify-probes/pr289/probe-scan.ts on review/fable-verify-2026-11 (2-D midpoint quadrature
+// of a round Gaussian beam crossing the aperture, pass duration = FWHM of the power through it, pass energy P·L/v; ICNIRP
+// 2013 Table 5 limits and Table 8 apertures typed in by hand; rules 1 and 2 of p. 287 by enumeration). The quadrature is
+// good to about 1e-4, hence the tolerances. Scan: 30°, 100 Hz both ways, eye at 1 m.
+test("W4: scanning P_max against the brute-force pass model", () => {
+  const scan = schema("/laser-safety/scanning-mpe");
+  // Beam √2 mm at the eye (1 mm, 1 mrad, 1 m, Gaussian growth). 532 nm, 0.25 s: rule 1, 7.6722 mW (linear growth, a
+  // 2 mm beam, gave 7.682). 1550 nm, 10 s: rule 2 over all 2000 passes, 1492.98 mW (linear: 1527.6).
+  const r532 = run(scan, { beamDiam: 1, divergence: 1 });
+  assertRel(r532.outputs.maxPowerScanned as number, 7.6722, 3e-4, "532 nm, √2 mm");
+  assert.equal(r532.outputs.bindingRule, 1);
+  const r1550 = run(scan, { wavelength: 1550, beamDiam: 1, divergence: 1 });
+  assertRel(r1550.outputs.maxPowerScanned as number, 1492.98, 1e-4, "1550 nm, √2 mm");
+  assert.equal(r1550.outputs.bindingRule, 2);
+  assert.equal(r1550.outputs.passes, 2000);
+  // The defaults since M9 (2 mm at the scanner, √5 mm at the eye): 7.6878 mW and 1547.13 mW by the same quadrature.
+  assertRel(run(scan, {}).outputs.maxPowerScanned as number, 7.6878, 3e-4, "532 nm, √5 mm");
+  assertRel(run(scan, { wavelength: 1550 }).outputs.maxPowerScanned as number, 1547.13, 1e-4, "1550 nm, √5 mm");
+});
+
+test("W4: scanning P_max never falls as the beam at the eye grows", () => {
+  // A wider beam spreads the same power over a larger area and a longer pass, so the allowed power can only rise. Five
+  // wavelengths (UV, visible, near-IR, the 1250–1400 nm band, far-IR) × five variants × 61 sizes from 0.3 to 20 mm.
+  const scan = schema("/laser-safety/scanning-mpe");
+  const variants: Record<string, number | string>[] = [
+    {}, { alpha: 100 }, { exposureBasis: "custom", exposureTime: 10 }, { scanDirection: "one" }, { workingDistance: 10 },
+  ];
+  for (const wavelength of [355, 532, 905, 1310, 1550]) {
+    for (const v of variants) {
+      let prev = 0;
+      for (let i = 0; i <= 60; i++) {
+        const d = 0.3 * Math.pow(20 / 0.3, i / 60);
+        const p = run(scan, { wavelength, beamDiam: d, divergence: 0, ...v }).outputs.maxPowerScanned as number;
+        assert.ok(Number.isFinite(p), `${wavelength} nm ${JSON.stringify(v)} ${d} mm: ${p}`);
+        assert.ok(p >= prev * (1 - 1e-9), `${wavelength} nm ${JSON.stringify(v)}: ${prev} → ${p} mW at ${d.toFixed(3)} mm`);
+        prev = p;
+      }
+    }
+  }
+});
+
+test("W4 / M3 at the API: below 1 ns the anterior-segment limit binds at 1399 nm", () => {
+  // One 500 ps pulse, 2 mm beam. Anterior segment (ICNIRP 2013 Table 5 note d, twice the skin limit; C_A = 5 above
+  // 1050 nm): 2 · 200 · 5 = 2000 J/m² at 1 ns, 10 % below 1 ns (p. 287) = 200 J/m², through the 3.5 mm aperture, of
+  // which the 2 mm beam puts 1 − e^(−2(3.5/2)²) inside: 200·π(1.75 mm)²/(1 − e^−6.125) = 1928.44 µJ. Retinal (Table 5,
+  // 10 ps–13 µs at 1050–1400 nm): 20 C_C mJ/m², C_C = 8 + 10^(0.04(1399 − 1250)) = 912.0, through 7 mm: 0.70197 J,
+  // 364× more, so the anterior limit binds. Before M3 the held irradiance gave 1000 J/m², 9642 µJ.
+  const pulsed = schema("/laser-safety/pulsed-mpe");
+  const r = run(pulsed, { wavelength: 1399, pulseDuration: 0.5, prf: 0, exposureTime: 5e-10, beamDiam: 2 });
+  const anterior = (200 * Math.PI * 1.75e-3 ** 2) / -Math.expm1(-2 * (3.5 / 2) ** 2);
+  assertRel(r.outputs.maxPulseEnergy as number, anterior * 1e6, 1e-9, "1399 nm, 500 ps, µJ");
+  const retinal = 0.02 * (8 + Math.pow(10, 0.04 * (1399 - 1250))) * Math.PI * 3.5e-3 ** 2;
+  assertRel(retinal, 0.70197, 1e-4, "retinal hand value");
+  assert.ok(retinal / anterior > 300);
+  // The same through the ultrafast page's API (one 500 ps pulse, 2 mm beam).
+  const fast = run(schema("/laser-safety/ultrafast-laser-safety"), {
+    wavelength: 1399, repRate: 0, pulseWidth: 5e5, beamDia: 2, divergence: 0, exposureTime: 5e-10,
+  });
+  assertRel(fast.outputs.maxPulseEnergy as number, anterior * 1e6, 1e-9, "ultrafast, 1399 nm, 500 ps, µJ");
 });
 
 test("U3: the scanning API carries the page's scan-centre and turning-point caveats", () => {

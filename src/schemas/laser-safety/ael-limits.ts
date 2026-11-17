@@ -10,11 +10,11 @@ const NAMES: Record<AelClass, string> = { "1": "Class 1 / 1M", "2": "Class 2 / 2
 
 /**
  * EN 60825-1:2014/A11:2021 (EU) adds the skin AEL at 1250–1400 nm to Classes 1, 1M and 3R (Schulmeister's 2022 white
- * paper, §4: "the respective requirement added to the AEL tables for Class 1, 1M and Class 3R", which reads as 1× for
- * 3R; the classification schema applies that). Only Class 1 / 1M is output here: the 3R value is held back until the A11
- * text is read (5 × Class 1 would be ≈ 475 mW at 1310 nm).
+ * paper, §4: "the respective requirement added to the AEL tables for Class 1, 1M and Class 3R"). The paper gives one
+ * table and no factor for 3R, so 3R takes it 1×, as the classification schema does. The A11 text is unread; 1× is also
+ * the cautious reading (5 × Class 1 would allow ≈ 475 mW at 1310 nm against ≈ 95 mW).
  */
-const A11_CLASSES: readonly AelClass[] = ["1"];
+const A11_CLASSES: readonly AelClass[] = ["1", "3R"];
 const A11 = "EN 60825-1:2014/A11:2021";
 const UNVERIFIED = "unverified: A11 text not read";
 
@@ -70,7 +70,8 @@ export default defineSchema({
     }
     if (capped.length > 0) {
       warnings.push(`In the EU (${A11}) the skin AEL also caps ${capped.join(" and ")} here, as Schulmeister's 2022 ` +
-        `white paper describes it (${UNVERIFIED}): see the A11 outputs.`);
+        `white paper describes it (${UNVERIFIED}): see the A11 outputs.` +
+        (capped.includes(NAMES["3R"]) ? " Class 3R takes the skin AEL 1× (no factor 5), the cautious reading." : ""));
     }
     return { values, warnings: warnings.length > 0 ? warnings : undefined };
   },
@@ -98,7 +99,11 @@ export default defineSchema({
         "Laboratories, v2c (2022), §4 (A11 text itself not read)",
       basis: "computed",
       inputs: { wavelength: 1310, emissionDuration: 1, alpha: 1.5 },
-      expect: { energy1A11: 0.09719302272, stop1A11: 1.5, cw1A11: 94.92957523, energy1: 0.5 },
+      // Class 3R under A11 takes the same skin AEL 1× (cautious reading; see A11_CLASSES); IEC alone: 0.5 J, 500 mW.
+      expect: {
+        energy1A11: 0.09719302272, stop1A11: 1.5, cw1A11: 94.92957523, energy1: 0.5,
+        energy3RA11: 0.09719302272, stop3RA11: 1.5, cw3RA11: 94.92957523, energy3R: 0.5, cw3R: 500,
+      },
       tolerance: 1e-8,
     },
     {

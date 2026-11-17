@@ -41,7 +41,9 @@ export default defineSchema({
   inputs: [
     WAVELENGTH,
     { key: "power", label: "Beam power", unit: "mW", toSI: 1e-3, siUnit: "W", default: 5, min: 0, max: 1e9 },
-    { key: "beamDiam", label: "Beam diameter at the scanner, 1/e²", unit: "mm", toSI: 1e-3, siUnit: "m", default: 1, min: 0.01, max: 1e4 },
+    // Default 2 mm: with 1 mm and 1 mrad the beam at 1 m was √2 mm, a 1/e diameter of exactly 1 mm, the edge of Table 5
+    // note c, where the reported pass duration jumps (verification 2026-11 M9). 2 mm gives √5 = 2.24 mm at 1 m.
+    { key: "beamDiam", label: "Beam diameter at the scanner, 1/e²", unit: "mm", toSI: 1e-3, siUnit: "m", default: 2, min: 0.01, max: 1e4 },
     { key: "divergence", label: "Divergence, 1/e² full angle", unit: "mrad", toSI: 1e-3, siUnit: "rad", default: 1, min: 0, max: 1000 },
     { key: "workingDistance", label: "Eye distance from the scanner", unit: "cm", toSI: 1e-2, siUnit: "m", default: 100, min: 0.1, max: 1e7 },
     { key: "scanAngle", label: "Scan angle, full", unit: "°", toSI: Math.PI / 180, siUnit: "rad", default: 30, min: 0.01, max: 360 },
@@ -104,15 +106,16 @@ export default defineSchema({
   },
   checks: [
     {
-      // Defaults (532 nm, √(1² + (100 cm × 1 mrad)²) = 1.41 mm beam, α = 1.5 mrad, 0.25 s), beam held still: 400–1050 nm, 0.25 s,
-      // thermal 18 C_A t^0.75 J/m² with C_A = 1 (α = α_min): 18·0.25^0.75 = 6.363961 J/m² → 25.45584 W/m² over the 7 mm
-      // aperture (A = π(3.5 mm)² = 3.848451e-5 m²): 25.45584·3.848451e-5 = 9.79656e-4 W = 0.979656 mW (the 1.41 mm beam
-      // puts 1 − e^(−2(7/√2)²) = 1 − e^−49 = 1 − 5e-22 of its power in the aperture). Stopped scan with 5 mW: A·18/P = 0.138544, the limit
-      // H = E t reached after (18A/P)^4 = 3.68429e-4 s (E = P/A, the beam inside the aperture).
+      // Defaults (532 nm, √(2² + (100 cm × 1 mrad)²) = √5 = 2.236 mm beam, α = 1.5 mrad, 0.25 s), beam held still:
+      // 400–1050 nm, 0.25 s, thermal 18 C_A t^0.75 J/m² with C_A = 1 (α = α_min): 18·0.25^0.75 = 6.363961 J/m² →
+      // 25.45584 W/m² over the 7 mm aperture (A = π(3.5 mm)² = 3.848451e-5 m²): 25.45584·3.848451e-5 = 0.9796557 mW
+      // through the aperture, which holds 1 − e^(−2(7/√5)²) = 1 − e^−19.6 = 1 − 3.07488e-9 of the beam: 0.97965569088 mW.
+      // Stopped scan with 5 mW: E = 5 mW × (1 − 3.07e-9)/A, the limit H = E t reached after
+      // (18A/(5 mW·(1 − 3.07e-9)))^4 = 3.6842903960e-4 s.
       source: SCANNED,
       basis: "computed",
       inputs: {},
-      expect: { maxPowerStationary: 0.97965568786, stopTime: 3.68429035066e-4 },
+      expect: { maxPowerStationary: 0.97965569088, stopTime: 3.6842903960e-4 },
       tolerance: 1e-8,
     },
     {

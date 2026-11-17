@@ -29,7 +29,7 @@ const standardTimeNote = (nm: number) =>
 export default function ScanningMPEPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 532, { min: 180, max: 1000000 }); // nm
   const [powerRaw, setPower] = useURLState("power", 5, { min: 0 }); // mW
-  const [beamDiamRaw, setBeamDiam] = useURLState("beamDiam", 1, { min: 0.01 }); // mm, 1/e² at the scanner
+  const [beamDiamRaw, setBeamDiam] = useURLState("beamDiam", 2, { min: 0.01 }); // mm, 1/e² at the scanner (2 mm: off the 1 mm note-c edge at 1 m)
   const [divergenceRaw, setDivergence] = useURLState("divergence", 1, { min: 0 }); // mrad, 1/e² full angle
   const [distanceRaw, setDistance] = useURLState("workingDistance", 100, { min: 0.1 }); // cm from the scan's pivot
   const [scanAngleRaw, setScanAngle] = useURLState("scanAngle", 30, { min: 0.01, max: 360 }); // °, full angle
