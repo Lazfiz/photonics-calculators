@@ -4,7 +4,7 @@
 import { parseReport, RateLimiter } from "../lib/report";
 import { sendReport } from "../lib/report-send";
 import type { SearchItem } from "../lib/search-index-types";
-import { rankItems } from "../lib/site-search";
+import { onlyValues, selectResults, type Correction, type Ranked } from "../lib/site-search";
 import { REPO_URL, SITE_URL } from "../lib/site";
 import { findSchema, schemas } from "../schemas";
 import { parseInputs, runSchema } from "../schemas/run";
@@ -89,12 +89,27 @@ export function describeSchema(schema: CalculatorSchema) {
 let pages: SearchItem[] | undefined;
 
 /**
- * Calculators for a free-text query, ranked as the site search ranks them: pages matching every word first, then the
- * pages matching most words.
+ * The calculators for a free-text query, chosen and ranked as the site search does (`selectResults`): the pages matching
+ * every word, not padded with weaker partial ones; a page missing one word only when it outscores them; with no exact
+ * page, the pages matching most words. `closest` is set whenever a result misses a word or a word was
+ * corrected; `exactMatches` counts the exact pages in the whole index, before `limit`.
  */
-export function findCalculators(query: string, limit: number): SearchItem[] {
+export function rankCalculators(query: string, limit: number): {
+  results: Ranked[]; terms: number; closest: boolean; exactMatches: number; corrections: Correction[];
+} {
   pages ??= buildSearchIndex().filter((item) => item.kind === "page" && item.href !== "/about");
-  return rankItems(pages, query).ranked.slice(0, limit).map((r) => r.item);
+  const selection = selectResults(pages, query);
+  return {
+    results: selection.results.slice(0, limit),
+    terms: selection.terms,
+    closest: selection.closest,
+    exactMatches: selection.exactMatches,
+    corrections: selection.corrections,
+  };
+}
+
+export function findCalculators(query: string, limit: number): SearchItem[] {
+  return rankCalculators(query, limit).results.map((r) => r.item);
 }
 
 const findCalculator_: Tool = {
@@ -103,7 +118,14 @@ const findCalculator_: Tool = {
   description: "Searches the site's optics and photonics calculators (laser safety, fiber optics, thin films, imaging, " +
     "spectroscopy, detectors, materials, wave optics, polarization, free-space comms) by topic or quantity. Each result " +
     "has its slug, page URL and model tier; results marked runnable list the inputs (page units, ranges, defaults) and " +
-    "outputs that run_calculator takes and returns.",
+    "outputs that run_calculator takes and returns. Only pages matching every query term are returned, not padded with " +
+    "weaker partial matches: a page missing one term is listed only when it outscores them (after them, or among them " +
+    "when it clearly does); with no exact page, the pages matching most terms. closest is true whenever any result " +
+    "misses a term or a word was corrected. " +
+    "matchedTerms against queryTerms tells an exact result (all terms) from a closest one; exactMatches counts the exact " +
+    "pages in the whole index, which may exceed limit. A misspelt word that matches nothing is read as the nearest index " +
+    "word and listed in corrections (such results are never exact); common words such as laser or optical add to the " +
+    "score but are not required terms.",
   inputSchema: {
     type: "object",
     properties: {
@@ -117,7 +139,8 @@ const findCalculator_: Tool = {
     if (typeof args.query !== "string" || args.query.trim() === "") return fail("query must be a non-empty string.");
     const limit = args.limit === undefined ? 8 : Number(args.limit);
     if (!Number.isInteger(limit) || limit < 1 || limit > 25) return fail("limit must be an integer from 1 to 25.");
-    const results = findCalculators(args.query, limit).map((item) => {
+    const ranked = rankCalculators(args.query, limit);
+    const results = ranked.results.map(({ item, matched }) => {
       const calculator = findCalculator(item.href);
       const schema = findSchema(item.href);
       return {
@@ -126,6 +149,7 @@ const findCalculator_: Tool = {
         description: item.description,
         url: `${SITE_URL}${item.href}`,
         tier: tierInfo(calculator?.tier).label,
+        matchedTerms: matched,
         runnable: schema !== undefined,
         ...(schema ? describeSchema(schema) : {}),
       };
@@ -133,8 +157,18 @@ const findCalculator_: Tool = {
     return {
       ok: true,
       data: {
+        queryTerms: ranked.terms,
+        exactMatches: ranked.exactMatches,
+        closest: ranked.closest,
+        ...(ranked.corrections.length > 0 ? { corrections: ranked.corrections } : {}),
         results,
-        ...(results.length === 0 ? { note: "Nothing matched; try fewer or other words (a quantity or an effect)." } : {}),
+        ...(results.length === 0
+          ? {
+            note: onlyValues(args.query)
+              ? "The query holds only values (numbers and units); add what to compute, e.g. \"photon energy 532 nm\"."
+              : "Nothing matched; try fewer or other words (a quantity or an effect).",
+          }
+          : {}),
       },
     };
   },

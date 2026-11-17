@@ -65,6 +65,7 @@ function parameter(input: InputSpec) {
     in: "query",
     required: false,
     description: `${input.label}${unitText(input.unit)}.`,
+    example: input.default,
     schema: { type: "number", minimum: input.min, maximum: input.max, default: input.default },
   };
 }
@@ -75,6 +76,7 @@ function choiceParameter(choice: ChoiceSpec) {
     in: "query",
     required: false,
     description: `${choice.label}: ${choice.options.map((option) => `${option.value} = ${option.label}`).join("; ")}.`,
+    example: choice.default,
     schema: { type: "string", enum: choice.options.map((option) => option.value), default: choice.default },
   };
 }

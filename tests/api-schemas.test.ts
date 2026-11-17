@@ -268,3 +268,38 @@ test("/openapi.json describes every schema's parameters and outputs", () => {
     { type: "string", enum: ["gaussian", "linear"], default: "gaussian" },
   ]);
 });
+
+test("GET /api/v1: a cacheable answer carries only the shared RateLimit-Policy; the 429 the counters and Retry-After", async () => {
+  const get = (ip: string, query = "") =>
+    GET(new NextRequest(`${ORIGIN}/api/v1/imaging/airy-disk${query}`, { headers: { "x-forwarded-for": ip } }), {
+      params: Promise.resolve({ category: "imaging", slug: "airy-disk" }),
+    });
+  const first = await get("192.0.2.30");
+  assert.equal(first.status, 200);
+  assert.equal(first.headers.get("ratelimit-policy"), "60;w=60");
+  // One client's counters must not be cached by the CDN and served to others (200, 400 and 404 are all cacheable).
+  for (const name of ["ratelimit-limit", "ratelimit-remaining", "ratelimit-reset", "retry-after"]) {
+    assert.equal(first.headers.get(name), null, name);
+  }
+  const bad = await get("192.0.2.30", "?wavelength=abc");
+  assert.equal(bad.status, 400);
+  assert.equal(bad.headers.get("ratelimit-remaining"), null);
+  // A browser script on another origin may read them.
+  assert.match(first.headers.get("access-control-expose-headers") ?? "", /RateLimit-Policy.*Retry-After/);
+  let last = first;
+  for (let i = 0; i < 59; i++) last = await get("192.0.2.30");
+  assert.equal(last.status, 429);
+  assert.match(last.headers.get("cache-control") ?? "", /no-store/);
+  assert.equal(last.headers.get("ratelimit-limit"), "60");
+  assert.equal(last.headers.get("ratelimit-remaining"), "0");
+  const reset = Number(last.headers.get("ratelimit-reset"));
+  assert.ok(reset >= 1 && reset <= 60, String(reset));
+  assert.equal(last.headers.get("retry-after"), last.headers.get("ratelimit-reset"));
+
+  const doc = buildOpenApi();
+  const params = doc.paths[apiPath("/spectroscopy/blackbody")].get.parameters;
+  assert.equal(params.find((p) => p.name === "temperature")?.example, 5778);
+  for (const op of Object.values(doc.paths)) {
+    for (const p of op.get.parameters) assert.equal(p.example, p.schema.default, p.name);
+  }
+});

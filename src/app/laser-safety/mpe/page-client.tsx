@@ -64,17 +64,23 @@ export default function MPEPage() {
     <>
       <LaserSafetyDisclaimer />
 
-      <div className="mb-5 flex flex-wrap gap-2">
+      <div className="mb-5 space-y-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="w-24 shrink-0 text-xs text-gray-400">Wavelength</span>
         {wavelengthPresets.map((preset) => (
           <button key={preset} type="button" onClick={() => setWavelength(preset)} className={presetClass(wavelength === preset, "border-blue-400 bg-blue-500/15 text-blue-200")}>
             {preset} nm
           </button>
         ))}
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="w-24 shrink-0 text-xs text-gray-400">Exposure time</span>
         {exposurePresets.map((preset) => (
           <button key={preset} type="button" onClick={() => setExposure(preset)} className={presetClass(exposure === preset, "border-purple-400 bg-purple-500/15 text-purple-200")}>
             {fmtTime(preset)}
           </button>
         ))}
+      </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
