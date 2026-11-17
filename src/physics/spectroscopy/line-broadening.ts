@@ -84,7 +84,7 @@ export function voigtProfile(x: number, fwhmG: number, fwhmL: number): number {
 
 /** FWHM of the exact Voigt profile, by bisection on V(x) = V(0)/2 over [0, (Δ_G + Δ_L)/2] to 1e-13 relative. */
 export function voigtFwhm(fwhmG: number, fwhmL: number): number {
-  if (!(fwhmG >= 0 && fwhmL >= 0) || fwhmG + fwhmL === 0) return NaN;
+  if (!(fwhmG >= 0 && fwhmL >= 0 && Number.isFinite(fwhmG + fwhmL)) || fwhmG + fwhmL === 0) return NaN;
   if (fwhmG === 0) return fwhmL;
   if (fwhmL === 0) return fwhmG;
   const half = voigtProfile(0, fwhmG, fwhmL) / 2;

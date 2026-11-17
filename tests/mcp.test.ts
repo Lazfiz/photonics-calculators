@@ -71,14 +71,25 @@ test("MCP: notifications get 202; bad JSON, unknown methods and versions get JSO
   assert.equal(OPTIONS().headers.get("access-control-allow-origin"), "*");
 });
 
-test("MCP: a batch counts each message against the 120-per-minute limit (review 2026-11 P3-M8)", async () => {
+test("MCP: a batch counts each message against the 120-per-minute limit and answers those within it (review 2026-11 P3-M8, verification M7)", async () => {
   const ping = (id: number) => ({ jsonrpc: "2.0", id, method: "ping" });
   const ip = { "x-forwarded-for": "203.0.113.77" };
   const first = await post(Array.from({ length: 100 }, (_, i) => ping(i)), ip);
   assert.equal(first.status, 200);
   assert.equal(((await first.json()) as unknown[]).length, 100);
-  // 100 used; 21 more messages exceed 120.
-  assert.equal((await post(Array.from({ length: 21 }, (_, i) => ping(i)), ip)).status, 429);
+  // 100 used; of 21 more messages the first 20 are answered and the 21st gets its own error (verification 2026-11 M7:
+  // a batch that crosses the limit loses only its excess). A notification past the limit gets no answer.
+  const crossing = await post([...Array.from({ length: 21 }, (_, i) => ping(1000 + i)), { jsonrpc: "2.0", method: "notifications/initialized" }], ip);
+  assert.equal(crossing.status, 200);
+  const answers = (await crossing.json()) as { id: number; result?: unknown; error?: { code: number; message: string } }[];
+  assert.equal(answers.length, 21);
+  assert.deepEqual(answers.slice(0, 20).map((a) => [a.id, a.result]), Array.from({ length: 20 }, (_, i) => [1000 + i, {}]));
+  assert.equal(answers[20].id, 1020);
+  assert.equal(answers[20].error?.code, -32600);
+  assert.match(answers[20].error?.message ?? "", /past the limit of 120 messages per minute/);
+  // The budget is spent: the next request or batch from that address is refused outright with 429.
+  assert.equal((await post(Array.from({ length: 2 }, (_, i) => ping(i)), ip)).status, 429);
+  assert.equal((await post(ping(1), ip)).status, 429);
   assert.equal((await post(Array.from({ length: 21 }, (_, i) => ping(i)), { "x-forwarded-for": "203.0.113.78" })).status, 200);
 });
 

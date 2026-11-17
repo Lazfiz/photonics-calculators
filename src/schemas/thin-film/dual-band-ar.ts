@@ -35,8 +35,11 @@ export default defineSchema({
     const warnings: string[] = [];
     if (!b1) warnings.push("R ≥ 1 % at λ₁: no band is reported around it.");
     if (!b2) warnings.push("R ≥ 1 % at λ₂: no band is reported around it.");
-    for (const b of [b1, b2]) {
-      if (b?.open.some(Boolean)) warnings.push("A band edge lies beyond the scan (λ/2 … 1.5 λ); the scan limit is reported.");
+    // One warning per band, naming it (the two used to read the same; verification 2026-11 M12).
+    for (const [b, name] of [[b1, "λ₁"], [b2, "λ₂"]] as const) {
+      if (b?.open.some(Boolean)) {
+        warnings.push(`The band around ${name} has an edge beyond the scan (${name}/2 … 1.5 ${name}); the scan limit is reported.`);
+      }
     }
     return {
       values: {

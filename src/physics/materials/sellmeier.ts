@@ -68,8 +68,12 @@ export function fromSquaredForm(
   return { A, B, C, range: [range_um[0] * 1e-6, range_um[1] * 1e-6] };
 }
 
+/**
+ * Whether λ lies in the fit range, endpoints included. The range is stored as µm × 1e-6, which can land one ulp
+ * inside the stated endpoint (3.71 × 1e-6 < 3710 × 1e-9), so the ends get 1e-12 of relative slack.
+ */
 export function inRange(model: SellmeierModel, lambda: number): boolean {
-  return lambda >= model.range[0] && lambda <= model.range[1];
+  return lambda >= model.range[0] * (1 - 1e-12) && lambda <= model.range[1] * (1 + 1e-12);
 }
 
 /** n², f′ and f″ at λ in µm (derivatives per µm). */
