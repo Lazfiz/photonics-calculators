@@ -29,7 +29,7 @@ const standardTimeNote = (nm: number) =>
 export default function ScanningMPEPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 532, { min: 180, max: 1000000 }); // nm
   const [powerRaw, setPower] = useURLState("power", 5, { min: 0 }); // mW
-  const [beamDiamRaw, setBeamDiam] = useURLState("beamDiam", 1, { min: 0.01 }); // mm, 1/e² at the scanner
+  const [beamDiamRaw, setBeamDiam] = useURLState("beamDiam", 2, { min: 0.01 }); // mm, 1/e² at the scanner (2 mm: off the 1 mm note-c edge at 1 m)
   const [divergenceRaw, setDivergence] = useURLState("divergence", 1, { min: 0 }); // mrad, 1/e² full angle
   const [distanceRaw, setDistance] = useURLState("workingDistance", 100, { min: 0.1 }); // cm from the scan's pivot
   const [scanAngleRaw, setScanAngle] = useURLState("scanAngle", 30, { min: 0.01, max: 360 }); // °, full angle
@@ -53,7 +53,7 @@ export default function ScanningMPEPage() {
   const standardT = unintendedExposureTime(lambda);
   const T = custom ? customT : Number.isFinite(standardT) ? standardT : AVERSION_TIME;
   const alpha = Math.max(alphaRaw, 0) * 1e-3;
-  const d = axisDiameterAt(d0, phi, r, "linear");
+  const d = axisDiameterAt(d0, phi, r, "gaussian");
 
   const scan = useMemo(() => angularScan(theta, f, r, both, T), [theta, f, r, both, T]);
   const result = useMemo(() => scannedBeamLimits(lambda, d, scan, alpha), [lambda, d, scan, alpha]);
@@ -68,7 +68,7 @@ export default function ScanningMPEPage() {
     const lo = Math.min(0.01, r / 2);
     const hi = Math.max(100, 2 * r);
     const rs = Array.from({ length: 61 }, (_, i) => lo * Math.pow(hi / lo, i / 60));
-    const dAt = (x: number) => axisDiameterAt(d0, phi, x, "linear");
+    const dAt = (x: number) => axisDiameterAt(d0, phi, x, "gaussian");
     const scanned = rs.map((x) => scannedBeamLimits(lambda, dAt(x), angularScan(theta, f, x, both, T), alpha).pMax);
     const still = rs.map((x) => stationaryMaxPower(lambda, dAt(x), T, alpha));
     const cm = rs.map((x) => x * 100);

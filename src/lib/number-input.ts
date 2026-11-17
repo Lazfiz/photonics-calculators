@@ -16,3 +16,12 @@ export function clampToRange(n: number, min?: number, max?: number): number {
   if (max !== undefined && n > max) return max;
   return n;
 }
+
+/**
+ * The on-screen keypad for a number field. "decimal" has no minus key on iPhone, so it is only for fields that can't
+ * go negative (min ≥ 0); a field that may take a negative value gets the full keyboard ("text"), and the usual
+ * validation still rejects text that isn't a number.
+ */
+export function numberInputMode(min?: number): "decimal" | "text" {
+  return min !== undefined && min >= 0 ? "decimal" : "text";
+}

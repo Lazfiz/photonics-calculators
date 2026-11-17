@@ -110,6 +110,31 @@ test("MCP find_calculator: the site search first, then pages matching most words
   assert.equal(results[0].runnable, true);
   assert.ok(results[0].inputs?.some((input) => input.key === "wavelength"));
   assert.equal(JSON.parse(beam.content[0].text).results[0].slug, "wave-optics/gaussian-beam");
+  // Exact against closest: "gaussian xyzzy" matches one of its two terms.
+  assert.equal(beam.structuredContent?.queryTerms, 2);
+  assert.equal((results[0] as unknown as { matchedTerms: number }).matchedTerms, 2);
+  const partial = await call("find_calculator", { query: "gaussian xyzzy", limit: 3 });
+  assert.equal(partial.structuredContent?.exactMatches, 0);
+  assert.equal((partial.structuredContent?.results as { matchedTerms: number }[])[0].matchedTerms, 1);
+  assert.equal(partial.structuredContent?.closest, true);
+  // exactMatches counts the whole index, not only the `limit` returned (M15).
+  const one = await call("find_calculator", { query: "laser safety", limit: 1 });
+  assert.equal((one.structuredContent?.results as unknown[]).length, 1);
+  assert.ok((one.structuredContent?.exactMatches as number) > 1);
+  assert.equal(one.structuredContent?.closest, false);
+  // Exact matches are not padded with weaker partial ones (W8): two pages say "airy disk", so two results of 8.
+  const airy = await call("find_calculator", { query: "airy disk" });
+  const airyResults = airy.structuredContent?.results as { matchedTerms: number }[];
+  assert.equal(airy.structuredContent?.closest, false);
+  assert.ok(airyResults.length >= 1 && airyResults.every((r) => r.matchedTerms === airy.structuredContent?.queryTerms));
+  // A corrected word is reported, and its matches are not exact (W12).
+  const typo = await call("find_calculator", { query: "gausian beam", limit: 3 });
+  assert.equal(typo.structuredContent?.exactMatches, 0);
+  assert.equal(typo.structuredContent?.closest, true);
+  assert.deepEqual(typo.structuredContent?.corrections, [{ from: "gausian", to: ["gaussian"] }]);
+  // A query of values only gets a hint instead of nothing (M13).
+  const values = await call("find_calculator", { query: "1550 nm" });
+  assert.match(String(values.structuredContent?.note), /only values/);
   const question = await call("find_calculator", { query: "how do I calculate the maximum permissible exposure for my laser" });
   const slugs = (question.structuredContent?.results as { slug: string }[]).map((r) => r.slug);
   assert.ok(slugs.includes("laser-safety/mpe"), slugs.join(", "));
@@ -141,6 +166,15 @@ test("MCP run_calculator: the API's numbers for the inputs given; errors say why
   assert.match(overridden.structuredContent?.pageUrl as string, /wavelength=532/);
   const solved = await call("run_calculator", { slug: "lambert-beer-law", inputs: { solve: "c", absorbance: 1 } });
   assert.equal(solved.isError, undefined, solved.content[0].text);
+
+  // A null output carries its `reason` here too (verification 2026-11 W6).
+  const tirf = await call("run_calculator", { slug: "imaging/tirf", inputs: { theta: 0 } });
+  const tirfOut = tirf.structuredContent?.outputs as Record<string, { value: number | null; reason?: string }>;
+  assert.equal(tirfOut.depth.value, null);
+  assert.match(tirfOut.depth.reason ?? "", /critical angle/);
+  assert.ok((tirf.structuredContent?.warnings as string[]).includes(tirfOut.depth.reason!));
+  assert.equal(tirfOut.criticalAngle.reason, undefined);
+  assert.match(tirf.content[0].text, /critical angle/);
 
   const range = await call("run_calculator", { slug: "wave-optics/gaussian-beam", inputs: { wavelength: -5 } });
   assert.equal(range.isError, true);
