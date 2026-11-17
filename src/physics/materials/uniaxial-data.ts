@@ -58,7 +58,11 @@ export const UNIAXIAL_CRYSTALS = {
     name: "Yttrium orthovanadate (YVO₄)",
     o: fromSquaredForm(1, [2.7665], [0.026884], [0.488, 3.39]),
     e: fromSquaredForm(1, [3.593], [0.032103], [0.488, 3.39]),
-    reference: "T. S. Lomheim, L. G. DeShazer, J. Appl. Phys. 49, 5517 (1978), doi:10.1063/1.324471",
+    // One-term fit over Lomheim & DeShazer's 0.488–3.39 µm data; checked against Shi et al. 2001 only from 0.6 to
+    // 1.34 µm (review 2026-11 P2-M8). Toward 3.39 µm it departs from Shi's three-term fit (n_o 1.942 vs 1.913).
+    reference:
+      "T. S. Lomheim, L. G. DeShazer, J. Appl. Phys. 49, 5517 (1978), doi:10.1063/1.324471; a one-term fit, about " +
+      "0.03 above the three-term fit of Shi et al. (2001) near 3.4 µm",
     temperature_C: null,
   },
   linbo3: {
