@@ -43,16 +43,27 @@ export default defineSchema({
     });
     const valid = Number.isFinite(r.lambdaIdler);
     const lossy = i.fiberLoss > 0;
+    const pumped = i.pumpPower > 0;
+    // Power e-folds of loss; exp(αL) overflows past about 709.
+    const alphaL = alphaFromDbPerKm(i.fiberLoss) * i.fiberLength;
+    const overflow = !(Number.isFinite(r.gain) && Number.isFinite(r.idlerPower) && Number.isFinite(r.converted));
     const warnings: string[] = [];
     if (!valid) warnings.push("The signal frequency is above twice the pump frequency (λ_s < λ_p/2), so there is no idler: 1/λ_i = 2/λ_p − 1/λ_s.");
-    if (valid && lossy && !Number.isFinite(r.gain)) warnings.push("The fiber loss αL is in the thousands of nepers: nothing reaches the output.");
-    if (valid && r.converted > 0.1 * i.pumpPower) {
+    if (valid && !pumped) {
+      warnings.push("With no pump there is no four-wave mixing: the signal gain is 1, and the gain coefficient, the pump fraction converted and the gain peak are undefined.");
+    } else if (valid && overflow) {
+      warnings.push(alphaL > 700
+        ? `The fiber loss αL = ${alphaL.toPrecision(3)} nepers is beyond floating point: nothing measurable reaches the output.`
+        : "The gain overflows: the pump would be depleted long before this.");
+    }
+    if (valid && pumped && !overflow && r.peakGain === Infinity) warnings.push("The peak gain overflows: the pump would be depleted long before this.");
+    if (valid && Number.isFinite(r.converted) && r.converted > 0.1 * i.pumpPower) {
       warnings.push(`Signal and idler take more than 10 % of the pump (${((100 * r.converted) / i.pumpPower).toPrecision(3)} %): the pump is depleted and the undepleted-pump gain overstates the output.`);
     }
     if (!Number.isFinite(r.peakDetuning) && i.pumpPower > 0) {
       warnings.push("No detuning phase-matches (κ = 0 needs β₂ < 0 or β₄ < 0, i.e. anomalous dispersion): the gain band collapses to the pump and the idler grows only quadratically.");
     }
-    if (valid && !Number.isFinite(r.gainCoefficient) && !lossy) warnings.push("Outside the gain band: the gain coefficient g is undefined and G oscillates with L.");
+    if (valid && pumped && !Number.isFinite(r.gainCoefficient) && !lossy) warnings.push("Outside the gain band: the gain coefficient g is undefined and G oscillates with L.");
     return {
       values: {
         signalGain: r.gain,

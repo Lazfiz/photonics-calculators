@@ -12,6 +12,10 @@ test("water surface tension: IAPWS R1-76(2014) Table 1", () => {
     const g = waterSurfaceTension(tC + 273.15) * 1e3;
     assert.ok(Math.abs(g - mNm) < 0.005, `${tC} °C: ${g}`);
   }
+  // −25 °C, the release's lower limit, reaches 248.14999999999998 K in floating point (review 2026-11 P3-W1).
+  // τ = 1 − 248.15/647.096 = 0.616517487, γ = 235.8 τ^1.256 (1 − 0.625 τ) = 78.95177 mN/m.
+  assert.ok(Math.abs(waterSurfaceTension(-25 + 273.15) * 1e3 - 78.95177209) < 1e-6);
+  assert.ok(Number.isNaN(waterSurfaceTension(248.1)));
   assert.ok(Number.isNaN(waterSurfaceTension(240)));
   assert.ok(Number.isNaN(waterSurfaceTension(647.096)));
 });
