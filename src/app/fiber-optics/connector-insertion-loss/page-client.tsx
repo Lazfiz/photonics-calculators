@@ -16,7 +16,7 @@ export default function ConnectorInsertionLossPage() {
   const [ilGradeRaw, setIlGrade] = useURLState("ilGrade", "C");
   const [rlGradeRaw, setRlGrade] = useURLState("rlGrade", "2");
   const [numConnectors, setNumConnectors] = useURLState("numConnectors", 4, { min: 1 });
-  const [fiberCoreDiam, setFiberCoreDiam] = useURLState("fiberCoreDiam", 9, { min: 1 }); // µm MFD
+  const [fiberCoreDiam, setFiberCoreDiam] = useURLState("fiberCoreDiam", 10.4, { min: 1 }); // µm MFD (G.652 ≈ 10.4 at 1550 nm)
   const [lateralOffset, setLateralOffset] = useURLState("lateralOffset", 0.3, { min: 0 }); // µm
   const [angularMisalign, setAngularMisalign] = useURLState("angularMisalign", 0.3, { min: 0, max: 29 }); // degrees
   const [gapDistance, setGapDistance] = useURLState("gapDistance", 0.05, { min: 0, max: MAX_GAP_UM }); // µm

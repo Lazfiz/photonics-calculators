@@ -104,7 +104,7 @@ export function lognormalFadeProbability(fadeRatio: number, sigmaI2: number): nu
 
 // ── Aperture averaging in weak fluctuations ─────────────────────────────────────────────────────────────────
 
-/** Spherical-wave Rytov variance β₀² = 0.4 σ_R² = 0.496 C_n² k^(7/6) L^(11/6). */
+/** Spherical-wave Rytov variance β₀² = 0.496 C_n² k^(7/6) L^(11/6) = 0.4033 σ_R² (0.496/1.23; the unrounded Kolmogorov ratio is 0.4042). */
 export function sphericalRytovVariance(cn2: number, lambda: number, pathLength: number): number {
   return 0.496 * cn2 * waveNumber(lambda) ** (7 / 6) * pathLength ** (11 / 6);
 }

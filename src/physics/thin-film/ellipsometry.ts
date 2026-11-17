@@ -146,7 +146,15 @@ export interface FilmInversion {
   period: number;
   /** |X| of the chosen root: 1 when the data fit a transparent film of this index on this substrate. */
   absX: number;
+  /**
+   * Thickness from the other root when it fits as well (|X| within FIT_TOLERANCE of 1) and differs, m; NaN otherwise.
+   * Only a lossless substrate with n_s < sin θ (total reflection at the substrate) gives two such roots.
+   */
+  alternative: number;
 }
+
+/** |X| − 1 within which a root counts as a consistent fit (the pages warn beyond it). */
+export const FIT_TOLERANCE = 0.02;
 
 /**
  * Thickness of a transparent film of known index on a known substrate from one (Ψ, Δ) measurement, by Azzam &
@@ -160,7 +168,7 @@ export interface FilmInversion {
 export function transparentFilmThickness(
   psi: number, delta: number, angle: number, wavelength: number, filmIndex: number, substrate: OpticalConstants, ambient = 1,
 ): FilmInversion {
-  const invalid = { thickness: NaN, period: NaN, absX: NaN };
+  const invalid = { thickness: NaN, period: NaN, absX: NaN, alternative: NaN };
   if (!(psi >= 0 && psi < Math.PI / 2 && Number.isFinite(delta)) || !validFilmInputs(angle, wavelength, filmIndex, substrate, ambient)) {
     return invalid;
   }
@@ -190,13 +198,22 @@ export function transparentFilmThickness(
     if (Number.isFinite(m) && m > 1e-9 && (best === null || Math.abs(m - 1) < Math.abs(Math.hypot(best.re, best.im) - 1))) best = X;
   }
   if (best === null) return { ...invalid, period };
+  const toThickness = (X: Complex) => {
+    let phase = -Math.atan2(X.im, X.re);
+    if (phase < 0) phase += 2 * Math.PI;
+    // The last 1 % of the period reads as a slightly negative thickness: a bare substrate within measurement error.
+    const d = (phase / (2 * Math.PI)) * period;
+    return d >= 0.99 * period ? d - period : d;
+  };
   const absX = Math.hypot(best.re, best.im);
-  let phase = -Math.atan2(best.im, best.re);
-  if (phase < 0) phase += 2 * Math.PI;
-  // The last 1 % of the period reads as a slightly negative thickness: a bare substrate within measurement error.
-  let thickness = (phase / (2 * Math.PI)) * period;
-  if (thickness >= 0.99 * period) thickness -= period;
-  return { thickness, period, absX };
+  const thickness = toThickness(best);
+  let alternative = NaN;
+  for (const X of roots) {
+    if (X === best || !(Math.abs(Math.hypot(X.re, X.im) - 1) <= FIT_TOLERANCE)) continue;
+    const d = toThickness(X);
+    if (Math.abs(d - thickness) > 1e-6 * period) alternative = d;
+  }
+  return { thickness, period, absX, alternative };
 }
 
 /**

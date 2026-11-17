@@ -103,7 +103,7 @@ export default function ClearedTissuePage() {
         <h3 className="text-lg font-semibold mb-2">Model</h3>
         <div className="text-sm text-gray-300 space-y-1 font-mono">
           <p>Ballistic fraction = exp(−(µ_a + µ_s) z)</p>
-          <p>Axial FWHM = 0.88 λ/(n_s − √(n_s² − NA²)); lateral = λ/(2NA)</p>
+          <p>Axial FWHM = 0.886 λ/(n_s − √(n_s² − NA²)); lateral = λ/(2NA)</p>
           <p>Focal shift: n_s/n_imm (paraxial) to tan α_imm/tan α_s (marginal ray), sin α = NA/n</p>
         </div>
         <p className="text-xs text-gray-500 mt-2">

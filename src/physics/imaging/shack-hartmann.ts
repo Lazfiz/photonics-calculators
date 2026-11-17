@@ -33,7 +33,10 @@ export function spotFwhm(lambda: number, f: number, d: number, shape: LensletSha
   return positive(lambda, f, d) ? (FWHM[shape] * lambda * f) / d : NaN;
 }
 
-/** Fresnel number N_F = d²/(λf) of one lenslet. */
+/**
+ * Lenslet Fresnel number d²/(λf) with the full pitch d, the form the spot-fit thresholds use. The textbook a²/(λf)
+ * with the half-aperture a = d/2 is four times smaller.
+ */
 export function fresnelNumber(lambda: number, f: number, d: number): number {
   return positive(lambda, f, d) ? (d * d) / (lambda * f) : NaN;
 }

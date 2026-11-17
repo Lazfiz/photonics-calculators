@@ -5,7 +5,9 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { filmPsiDelta, pseudoOpticalConstants, pseudoSubstrateReflectance, transparentFilmThickness } from "../../../physics/thin-film/ellipsometry";
+import {
+  FIT_TOLERANCE, filmPsiDelta, pseudoOpticalConstants, pseudoSubstrateReflectance, transparentFilmThickness,
+} from "../../../physics/thin-film/ellipsometry";
 
 export default function EllipsometryMeasurementPage() {
   const [psiDeg, setPsiDeg] = useURLState("psiDeg", 10.573, { min: 0, max: 90 });
@@ -20,7 +22,7 @@ export default function EllipsometryMeasurementPage() {
     () => transparentFilmThickness(psiDeg * Math.PI / 180, deltaDeg * Math.PI / 180, aoiDeg * Math.PI / 180, lambdaNm * 1e-9, filmN, { n: subN, k: subK }),
     [psiDeg, deltaDeg, aoiDeg, lambdaNm, filmN, subN, subK],
   );
-  const filmMismatch = Number.isFinite(film.absX) && Math.abs(film.absX - 1) > 0.02;
+  const filmMismatch = Number.isFinite(film.absX) && Math.abs(film.absX - 1) > FIT_TOLERANCE;
   const sinTheta = Math.sin(aoiDeg * Math.PI / 180);
   const filmErrors = [
     !(aoiDeg > 0 && aoiDeg < 90) && "the angle of incidence must lie between 0° and 90°",
@@ -115,6 +117,13 @@ export default function EllipsometryMeasurementPage() {
         <p className="mb-4 text-sm text-yellow-300" role="status">
           |X| = {fmt(film.absX)} is not 1: no transparent film of index {filmN} on this substrate gives this Ψ, Δ. The
           index, the substrate or the angle is off, or the film absorbs or is rough; the thickness shown is only the phase of X.
+        </p>
+      )}
+      {filmErrors.length === 0 && Number.isFinite(film.alternative) && (
+        <p className="mb-4 text-sm text-yellow-300" role="status">
+          Two thicknesses fit equally well, {fmt(film.thickness * 1e9)} nm and {fmt(film.alternative * 1e9)} nm (plus whole
+          periods): on a lossless substrate with n_s &lt; sin θ the substrate reflects totally, and Ψ, Δ alone can&apos;t tell
+          them apart. A second angle or wavelength decides.
         </p>
       )}
       {Number.isFinite(film.thickness) && film.thickness <= -0.005e-9 && (

@@ -1,8 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
+import { DB_PER_E_FOLD as FIBRE_DB } from "../src/physics/fiber-optics/macro-bending-loss";
+import { DB_PER_E_FOLD as FSO_DB } from "../src/physics/free-space-comms/atmospheric-attenuation";
 import {
   BESSEL_Y_MAX_X,
+  DB_PER_E_FOLD,
   besselI0,
   besselIScaled,
   besselIScaled01,
@@ -34,6 +37,14 @@ function assertRel(actual: number, expected: number, tol: number, label: string)
 }
 
 // Reference values: CPython 3 math.erf / math.erfc (accurate to ~1 ulp).
+test("DB_PER_E_FOLD = 10 log₁₀ e = 4.342944819 dB, one definition shared by fibre and free-space modules", () => {
+  // 10/ln 10 = 4.3429448190325182 (a power e-fold; 1 Np = 20 log₁₀ e = 8.686 dB for a field ratio, ISO 80000-3).
+  assert.ok(Math.abs(DB_PER_E_FOLD - 4.3429448190325182) < 1e-15);
+  assert.ok(Math.abs(10 * Math.log10(Math.E) - DB_PER_E_FOLD) < 1e-15);
+  assert.equal(FIBRE_DB, DB_PER_E_FOLD);
+  assert.equal(FSO_DB, DB_PER_E_FOLD);
+});
+
 test("erfc matches reference values from the centre to the far tail", () => {
   const cases: Array<[number, number]> = [
     [0.5, 0.4795001221869534],

@@ -98,6 +98,22 @@ test("ambient|film|substrate: SiO₂ on Si at 70°, 632.8 nm (Azzam & Bashara ch
   assert.ok(Math.abs(bare.thickness) < 0.01e-9, `bare: ${bare.thickness}`);
   // A wrong film index leaves |X| off 1: n₁ = 1.50 assumed for the 100 nm SiO₂ data gives |X| = 1.073.
   close(transparentFilmThickness(f100.psi, f100.delta, th, lam, 1.5, si).absX, 1.07346, 1e-5, "|X| for a wrong index");
+  // An absorbing substrate has one consistent root only.
+  assert.ok(Number.isNaN(transparentFilmThickness(f100.psi, f100.delta, th, lam, 1.457, si).alternative));
+});
+
+test("film inversion on a totally reflecting substrate reports both roots (review 2026-11 P3-M1)", () => {
+  // θ 55.8°, n_f 2.578, lossless n_s 0.671 < sin θ = 0.827: both roots of the quadratic have |X| = 1, so Ψ, Δ of a 46.0 nm
+  // film also fit 20.73 nm (the review's probe lead/probe-ellips-roots.ts). The forward model gives the same Ψ, Δ for both.
+  const th = 55.8 * DEG, lam = 632.8e-9, nf = 2.578, sub = { n: 0.671, k: 0 };
+  const f = filmPsiDelta(46.0e-9, th, lam, nf, sub);
+  const inv = transparentFilmThickness(f.psi, f.delta, th, lam, nf, sub);
+  const pair = [inv.thickness, inv.alternative].sort((a, b) => a - b);
+  close(pair[1] * 1e9, 46.0, 1e-6, "the true thickness is one of the two");
+  close(pair[0] * 1e9, 20.7315, 1e-4, "the other root (the review rounds it to 20.7)");
+  const g = filmPsiDelta(pair[0], th, lam, nf, sub);
+  close(g.psi, f.psi, 1e-9, "Ψ of the other root");
+  close(g.delta, f.delta, 1e-9, "Δ of the other root");
 });
 
 test("film inversion guards", () => {

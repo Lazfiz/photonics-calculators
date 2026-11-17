@@ -81,7 +81,7 @@ export default function ConfocalPinholePage() {
             <p className="text-xs text-gray-500 mt-2">
               Scalar paraxial theory of a confocal fluorescence microscope with equal excitation and emission
               wavelengths; a Stokes shift widens both FWHMs slightly. The optical section is the response to a thin
-              fluorescent plane. Wilhelm&apos;s geometric formula √[(0.88 λ/(n − √(n² − NA²)))² + (√2 n PH/NA)²]{" "}
+              fluorescent plane. Wilhelm&apos;s geometric formula √[(0.886 λ/(n − √(n² − NA²)))² + (√2 n PH/NA)²]{" "}
               {pinholeAU >= 1 && Number.isFinite(wilhelmPct) ? `lies ${wilhelmPct.toFixed(0)} % above it here` : "lies above it from 1 AU upward (set the pinhole to 1 AU or more to see by how much)"}.
               From 1 to 0.5 AU the lateral FWHM narrows from 0.50 to 0.40 λ/NA (20 %) while the throughput falls from 84 % to 59 %.
             </p>
