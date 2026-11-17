@@ -448,11 +448,19 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "scintillation",
     title: "Scintillation Index",
-    description: "Rytov variance, aperture averaging, and fade probability for atmospheric turbulence.",
+    description: "Rytov variance, aperture averaging, and fade probability (gamma-gamma and log-normal) for atmospheric turbulence.",
     keywords: ["Scintillation and Coherence Length"],
     tier: "textbook",
-    modelNote: "Plane wave on a horizontal path with constant Cn² and a Kolmogorov spectrum without inner scale. Fade probabilities assume log-normal irradiance, which is optimistic in moderate to strong turbulence.",
+    modelNote: "Plane wave on a horizontal path with constant Cn² and a Kolmogorov spectrum without inner scale. Fade probabilities are shown for gamma-gamma (Al-Habash et al. 2001, with the aperture) and log-normal irradiance; log-normal underestimates deep fades once σ_R² ≥ 1, where gamma-gamma is the accepted model for a point or small receiver; for apertures much larger than the Fresnel zone the distribution lies between the two (Vetelino et al. 2007).",
     references: [
+      {
+        citation: "Al-Habash M. A., Andrews L. C., Phillips R. L. (2001). Mathematical model for the irradiance probability density function of a laser beam propagating through turbulent media. Opt. Eng. 40, 1554. Gamma-gamma distribution.",
+        url: "https://doi.org/10.1117/1.1386641",
+      },
+      {
+        citation: "Vetelino F. S., Young C., Andrews L., Recolons J. (2007). Aperture averaging effects on the probability density of irradiance fluctuations in moderate-to-strong turbulence. Appl. Opt. 46(11), 2099.",
+        url: "https://doi.org/10.1364/AO.46.002099",
+      },
       {
         citation: "Andrews L. C., Phillips R. L. (2005). Laser Beam Propagation through Random Media, 2nd ed. SPIE. Plane-wave Rytov variance, Fried parameter and aperture-averaged scintillation index.",
       },

@@ -305,7 +305,8 @@ export const thinFilm: CalculatorEntry[] = [
         url: "https://doi.org/10.1016/0040-6090(76)90179-6",
       },
       macleod("ch. 12 (factors affecting layer and coating properties)"),
-      { citation: "Crystran, fused silica (SiO₂) data sheet: dn/dT 12.9 × 10⁻⁶/K, expansion 0.55 × 10⁻⁶/K.", url: "https://www.crystran.com/optical-materials/fused-silica-glass-sio2" },
+      { citation: "Leviton D. B., Frey B. J. (2006). Temperature-dependent absolute refractive index measurements of synthetic fused silica. Proc. SPIE 6273, 62732K, Table 6: absolute dn/dT of Corning 7980, 8.86 × 10⁻⁶/K at 0.6 µm, 295 K.", url: "https://doi.org/10.1117/12.672853" },
+      { citation: "Crystran, fused silica (SiO₂) data sheet: expansion 0.55 × 10⁻⁶/K.", url: "https://www.crystran.com/optical-materials/fused-silica-glass-sio2" },
       { citation: "IEST-STD-CC1246E (2013). Product Cleanliness Levels – Applications, Requirements, and Determination. Institute of Environmental Sciences and Technology." },
       {
         citation: "Ma P. T., Fong M. C., Lee A. L. (1990). Surface particle obscuration and BRDF predictions. Proc. SPIE 1165, 381.",
