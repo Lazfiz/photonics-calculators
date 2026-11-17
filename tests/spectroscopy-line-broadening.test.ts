@@ -72,6 +72,11 @@ test("Voigt FWHM, Δ_G 0.5 and Δ_L 0.3: exact 0.67941, Olivero 0.67951, TCH 0.6
   assert.ok(Number.isNaN(voigtFwhmOlivero(-0.1, 0.3)));
   assert.ok(Number.isNaN(voigtFwhmOlivero(0.5, -0.3)));
   assert.ok(Number.isNaN(voigtFwhmOlivero(0.5, Infinity)));
+  // verification 2026-11 M5: NaN and −∞ too, and the exact profile and width share the guard on negative or NaN widths.
+  assert.ok(Number.isNaN(voigtFwhmOlivero(NaN, 0.3)));
+  assert.ok(Number.isNaN(voigtFwhmOlivero(0.5, -Infinity)));
+  assert.ok(Number.isNaN(voigtFwhm(-0.1, 0.3)) && Number.isNaN(voigtFwhm(0.5, NaN)));
+  assert.ok(Number.isNaN(voigtProfile(0, -0.5, 0.3)) && Number.isNaN(voigtProfile(0, 0.5, NaN)));
 });
 
 test("Voigt FWHM limits: pure Gaussian, pure Lorentzian, and no width", () => {

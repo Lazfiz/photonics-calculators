@@ -6,6 +6,8 @@ import {
   inRange, refractiveIndex, schottDeltaN, schottDnDt, zeroDispersionWavelengths, type SellmeierModel,
 } from "../src/physics/materials/sellmeier";
 import { MATERIALS, SCHOTT_GLASSES } from "../src/physics/materials/sellmeier-data";
+import chromaticDispersion from "../src/schemas/materials/chromatic-dispersion";
+import { runSchema } from "../src/schemas/run";
 
 const um = 1e-6;
 
@@ -170,4 +172,19 @@ test("domain: outside the fit range and inside an absorption band", () => {
   // MgF₂'s third resonance sits at 23.79 µm: the formula gives n² < 0 below it (20 µm), a NaN rather than a number.
   assert.ok(Number.isNaN(refractiveIndex(MATERIALS.mgf2.model, 20 * um)));
   assert.ok(Number.isNaN(refractiveIndex(MATERIALS.mgf2.model, 0)));
+});
+
+test("fused silica: Malitson's measured range 0.21–3.71 µm is the fit range (verification 2026-11 M5, review P2-M7)", () => {
+  // Malitson (JOSA 55, 1205, 1965) measured from 0.2139 to 3.7067 µm; the formula is not validated beyond.
+  const fs = MATERIALS.fusedSilica.model;
+  assert.deepEqual(fs.range.map((l) => +(l / um).toFixed(4)), [0.21, 3.71]);
+  assert.equal(inRange(fs, 3.71 * um), true);
+  assert.equal(inRange(fs, 3.711 * um), false);
+  assert.equal(inRange(fs, 0.21 * um), true);
+  assert.equal(inRange(fs, 0.209 * um), false);
+  // The page and API flag a wavelength just past the limit and not one at it.
+  const at = runSchema(chromaticDispersion, { material: "fusedSilica", wavelength: 3710 });
+  assert.ok(!at.warnings.some((w) => w.includes("outside")), at.warnings.join(" | "));
+  const past = runSchema(chromaticDispersion, { material: "fusedSilica", wavelength: 3720 });
+  assert.ok(past.warnings.some((w) => w.includes("outside the 210–3710 nm range")), past.warnings.join(" | "));
 });

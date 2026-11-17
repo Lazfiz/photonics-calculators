@@ -74,6 +74,8 @@ test("API schemas: each input at its min and max gives numbers, or null with a w
           assert.ok(Number.isFinite(out) || (out === null && result.warnings.length > 0),
             `${schema.href} ${input.key}=${value} ${key}`);
         }
+        // No warning twice (verification 2026-11 M12: dual-band-ar at nSub = 1 gave the band-edge warning twice).
+        assert.equal(new Set(result.warnings).size, result.warnings.length, `${schema.href} ${input.key}=${value}: ${result.warnings.join(" | ")}`);
       }
     }
   }
