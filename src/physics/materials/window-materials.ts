@@ -27,13 +27,50 @@ export interface WindowMaterial {
   dispersion: DispersionMaterial | DataSheetIndex;
   /** Transmission bands, m, as the data sheet gives them; empty where no sourced range is included. */
   bands: readonly (readonly [number, number])[];
-  /** dn/dT near room temperature, 1/K (null: not sourced). */
+  /** dn/dT near room temperature, 1/K (null: not sourced). Its convention: `dnDTAbsolute`, or `dnDTConvention`. */
   dnDT: number | null;
+  /**
+   * Where dnDT is absolute (in vacuum) at 295 K, measured with NASA GSFC's CHARMS: its wavelength and source. Absent: a
+   * data-sheet value (Crystran) that doesn't say whether it is absolute or relative to air.
+   */
+  dnDTAbsolute?: DnDTSource;
+  /** Who gives a non-CHARMS dn/dT when it isn't Crystran. */
+  dnDTSource?: string;
   /** Thermal conductivity, W/(m·K), Crystran's room-temperature table value (silicon's 163 is at 273 K, Crystran). */
   conductivity: number | null;
   /** Knoop hardness, kg/mm². */
   knoop: number | null;
   note?: string;
+}
+
+/** An absolute dn/dT: the wavelength it is given at (m), a short label and the full citation. */
+export interface DnDTSource {
+  lambda: number;
+  short: string;
+  citation: string;
+}
+
+// The CHARMS papers (cryogenic, high-accuracy refraction measuring system, NASA GSFC): the refractometer sits in vacuum,
+// so index and dn/dT are absolute. Each table is the 295 K derivative of per-wavelength quadratic fits of n(T).
+const CHARMS = {
+  silica: "D. B. Leviton, B. J. Frey, \"Temperature-dependent absolute refractive index measurements of synthetic fused " +
+    "silica\", Proc. SPIE 6273, 62732K (2006), doi 10.1117/12.672853, Table 6",
+  caf2: "D. B. Leviton, B. J. Frey, T. J. Madison, \"Temperature-dependent refractive index of CaF2 and Infrasil 301\", " +
+    "Proc. SPIE 6692, 669204 (2007), doi 10.1117/12.735594, Table 3",
+  nircam: "D. B. Leviton, B. J. Frey, T. Kvamme, \"High accuracy, absolute, cryogenic refractive index measurements of " +
+    "infrared lens materials for JWST NIRCam using CHARMS\", Proc. SPIE 5904, 59040O (2005), doi 10.1117/12.619306",
+  siGe: "B. J. Frey, D. B. Leviton, T. J. Madison, \"Temperature-dependent refractive index of silicon and germanium\", " +
+    "Proc. SPIE 6273, 62732J (2006), doi 10.1117/12.672850",
+};
+const charms = (lambda_um: number, short: string, citation: string): DnDTSource => ({ lambda: lambda_um * 1e-6, short, citation });
+
+/** How a material's dn/dT is defined, as the page and the API state it. */
+export function dnDTConvention(m: WindowMaterial): string {
+  if (m.dnDT === null) return "no sourced dn/dT";
+  const a = m.dnDTAbsolute;
+  return a
+    ? `absolute (in vacuum) at ${+(a.lambda * 1e6).toPrecision(3)} µm, 295 K (${a.short})`
+    : `${m.dnDTSource ?? "data-sheet value (Crystran)"}: whether absolute or relative to air is not stated`;
 }
 
 export const CRYSTRAN_REFERENCE = "Crystran, Handbook of Infrared and Ultraviolet Optical Materials, data sheets (crystran.com)";
@@ -46,27 +83,42 @@ function ordinary(id: "sapphire" | "quartz"): DispersionMaterial {
 }
 
 // Crystran values; "∥"/"⊥" are relative to the c axis, and n and dn/dT of uniaxial crystals are the ordinary ones.
-// Exception: fused silica dn/dT is the absolute value of Leviton & Frey 2006 (Crystran's 12.9e-6 is high). The other dn/dT
-// are as Crystran gives them, without saying whether absolute or relative to air (they differ by about n·0.9e-6 /K).
+// dn/dT: absolute CHARMS values at 295 K wherever CHARMS measured the material (fused silica, CaF₂, BaF₂, LiF, ZnSe, Si,
+// Ge; review 2026-11 P2-M9 and its recheck), each at a stated wavelength; the rest as Crystran gives them, without saying
+// whether absolute or relative to air (they differ by −n·dn_air/dT ≈ n·0.92e-6 /K, Edlén 1966 at 295 K: Crystran's CaF₂ −10.6,
+// BaF₂ −15.2 and LiF −16 ×10⁻⁶ are the CHARMS values below plus that, consistent with relative to air). No CHARMS data for sapphire; ZnS (Cleartran)
+// only as a fit on conference slides (NTRS 20160000783), so Crystran's value stays.
 const DATA = {
   fusedSilica: {
     name: "Fused silica", dispersion: MATERIALS.fusedSilica, bands: um([0.18, 2.2]),
     // D. B. Leviton, B. J. Frey, Proc. SPIE 6273, 62732K (2006), doi 10.1117/12.672853, Table 6: absolute dn/dT of Corning 7980
     // at 295 K, 8.86e-6 /K at 0.6 µm (8.48e-6 at 1.0 µm). Values near 10e-6 are relative to air; a heated window sees the absolute one.
-    dnDT: 8.86e-6, conductivity: 1.38, knoop: 500,
-    note: "IR grades transmit to 3 µm. dn/dT absolute, 0.6 µm, 295 K (Leviton & Frey 2006; 8.48 ×10⁻⁶ at 1 µm).",
+    dnDT: 8.86e-6, dnDTAbsolute: charms(0.6, "Leviton & Frey 2006, Table 6; 8.48 ×10⁻⁶ at 1 µm", CHARMS.silica),
+    conductivity: 1.38, knoop: 500, note: "IR grades transmit to 3 µm.",
   },
   bk7: {
     name: "N-BK7", dispersion: SCHOTT_GLASSES["N-BK7"], bands: um([0.35, 2.5]),
     dnDT: null, conductivity: 1.114, knoop: 610, note: "dn/dT: see the Optical Glass Catalog (SCHOTT TIE-19).",
   },
-  caf2: { name: "CaF₂", dispersion: MATERIALS.caf2, bands: um([0.13, 10]), dnDT: -10.6e-6, conductivity: 9.71, knoop: 158.3 },
-  baf2: { name: "BaF₂", dispersion: MATERIALS.baf2, bands: um([0.15, 12]), dnDT: -15.2e-6, conductivity: 11.72, knoop: 82 },
+  caf2: {
+    name: "CaF₂", dispersion: MATERIALS.caf2, bands: um([0.13, 10]), conductivity: 9.71, knoop: 158.3,
+    // Table 3 gives two figures: −1.2e-5 from 0.6 to 1.0 µm (−1.1e-5 at 3 µm, −1.0e-5 at 5.5 µm).
+    dnDT: -1.2e-5, dnDTAbsolute: charms(0.6, "Leviton, Frey & Madison 2007, Table 3", CHARMS.caf2),
+  },
+  baf2: {
+    name: "BaF₂", dispersion: MATERIALS.baf2, bands: um([0.15, 12]), conductivity: 11.72, knoop: 82,
+    // Table 4, 295 K: −1.64e-5 (0.6 µm), −1.66e-5 (1 µm), −1.65e-5 (3 µm), −1.59e-5 (5 µm).
+    dnDT: -1.64e-5, dnDTAbsolute: charms(0.6, "Leviton, Frey & Kvamme 2005, Table 4", CHARMS.nircam),
+  },
   mgf2: {
     name: "MgF₂", dispersion: MATERIALS.mgf2, bands: um([0.12, 7]), dnDT: 1.7e-6, conductivity: 21, knoop: 415,
     note: "Conductivity ∥ c (33.6 W/(m·K) ⊥ c).",
   },
-  lif: { name: "LiF", dispersion: MATERIALS.lif, bands: um([0.12, 6]), dnDT: -16e-6, conductivity: 11.3, knoop: 102 },
+  lif: {
+    name: "LiF", dispersion: MATERIALS.lif, bands: um([0.12, 6]), conductivity: 11.3, knoop: 102,
+    // Table 8, 295 K: −1.73e-5 (0.6 µm), −1.75e-5 (1 µm), −1.55e-5 (3 µm), −1.14e-5 (5 µm).
+    dnDT: -1.73e-5, dnDTAbsolute: charms(0.6, "Leviton, Frey & Kvamme 2005, Table 8", CHARMS.nircam),
+  },
   sapphire: {
     name: "Sapphire (Al₂O₃)", dispersion: ordinary("sapphire"), bands: um([0.17, 5.5]),
     dnDT: 13.1e-6, conductivity: 27.21, knoop: 1800, note: "Knoop ∥ c (2200 ⊥ c).",
@@ -88,13 +140,26 @@ const DATA = {
     name: "KRS-5 (TlBr–TlI)", dispersion: MATERIALS.krs5, bands: um([0.6, 40]),
     dnDT: -235e-6, conductivity: 0.544, knoop: 40.2, note: "dn/dT at 10 µm; −254 ×10⁻⁶/K at 0.58 µm (Rodney & Malitson 1956).",
   },
-  znse: { name: "ZnSe", dispersion: MATERIALS.znse, bands: um([0.6, 21]), dnDT: 61e-6, conductivity: 18, knoop: 120 },
+  znse: {
+    name: "ZnSe", dispersion: MATERIALS.znse, bands: um([0.6, 21]), conductivity: 18, knoop: 120,
+    // Table 12, 295 K: 1.18e-4 (0.6 µm, near the band edge), 7.52e-5 (1 µm), 6.38e-5 (3 µm), 6.17e-5 (5.5 µm, the longest
+    // measured; Crystran's 61e-6 is at 10.6 µm).
+    dnDT: 6.17e-5, dnDTAbsolute: charms(5.5, "Leviton, Frey & Kvamme 2005, Table 12; measured to 5.6 µm", CHARMS.nircam),
+  },
   zns: {
     name: "ZnS (multispectral)", dispersion: MATERIALS.zns, bands: um([0.37, 13.5]),
     dnDT: 38.7e-6, conductivity: 27.2, knoop: 240,
   },
-  si: { name: "Silicon", dispersion: MATERIALS.si, bands: um([1.2, 15], [30, 100]), dnDT: 160e-6, conductivity: 163, knoop: 1150 },
-  ge: { name: "Germanium", dispersion: MATERIALS.ge, bands: um([1.8, 23]), dnDT: 396e-6, conductivity: 58.62, knoop: 780 },
+  si: {
+    name: "Silicon", dispersion: MATERIALS.si, bands: um([1.2, 15], [30, 100]), conductivity: 163, knoop: 1150,
+    // Table 4, 295 K: 2.15e-4 (1.1 µm), 1.87e-4 (1.5 µm), 1.71e-4 (3 µm), 1.69e-4 (5.5 µm, the longest measured).
+    dnDT: 1.69e-4, dnDTAbsolute: charms(5.5, "Frey, Leviton & Madison 2006, Table 4; 1.87 ×10⁻⁴ at 1.5 µm", CHARMS.siGe),
+  },
+  ge: {
+    name: "Germanium", dispersion: MATERIALS.ge, bands: um([1.8, 23]), conductivity: 58.62, knoop: 780,
+    // Table 9, 295 K: 5.10e-4 (2 µm), 4.47e-4 (3 µm), 4.25e-4 (4 µm), 4.16e-4 (5.5 µm, the longest measured).
+    dnDT: 4.16e-4, dnDTAbsolute: charms(5.5, "Frey, Leviton & Madison 2006, Table 9", CHARMS.siGe),
+  },
   as2s3: {
     name: "As₂S₃ glass", dispersion: MATERIALS.as2s3, bands: um([0.6, 8]), dnDT: null, conductivity: null, knoop: 109,
     note: "Band and Knoop of Amorphous Materials' AMTIR-6 (As₂S₃), whose index is ≈ 0.004 above Rodney's glass from 0.9 to 8 µm; " +
@@ -103,6 +168,7 @@ const DATA = {
   },
   amtir1: {
     name: "AMTIR-1 (Ge₃₃As₁₂Se₅₅)", dispersion: MATERIALS.amtir1, bands: um([0.7, 12]), dnDT: 71e-6, conductivity: 0.25, knoop: 170,
+    dnDTSource: "Amorphous Materials data sheet, at 10 µm",
     note: "dn/dT at 10 µm; 76 ×10⁻⁶/K at 3 µm, 166 at 1 µm (Amorphous Materials).",
   },
   zblan: {
@@ -110,6 +176,7 @@ const DATA = {
     // Table IV, fluorozirconates 190–250); dn/dT "between −8 and −15 × 10⁻⁶ K⁻¹" for heavy-metal fluoride
     // glasses in general (his ref. 32, Izumitani 1987), so −11.5 is that range's midpoint, not a ZBLAN measurement.
     name: "ZBLAN glass", dispersion: MATERIALS.zblan, bands: [], dnDT: -11.5e-6, conductivity: null, knoop: 250,
+    dnDTSource: "midpoint of Poulain 2024's −8 to −15 ×10⁻⁶/K for fluoride glasses",
     note: "dn/dT is the midpoint of −8 to −15 ×10⁻⁶/K for fluoride glasses; Knoop 250 kg/mm² (fluorozirconates 190–250) (Poulain 2024). No sourced transmission range; Gan's formula covers 0.365–3.5 µm.",
   },
 } as const satisfies Record<string, WindowMaterial>;

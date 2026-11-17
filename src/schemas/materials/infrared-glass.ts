@@ -1,5 +1,5 @@
 import {
-  WINDOW_MATERIALS, fresnelLimitTransmission, hasFormula, windowIndex, type WindowMaterialId,
+  WINDOW_MATERIALS, dnDTConvention, fresnelLimitTransmission, hasFormula, windowIndex, type WindowMaterialId,
 } from "../../physics/materials/window-materials";
 import { defineSchema } from "../types";
 
@@ -9,8 +9,10 @@ const IR_IDS: WindowMaterialId[] = [
 ];
 
 const CRYSTRAN = "Crystran Ltd, Handbook of Infrared and Ultraviolet Optical Materials, germanium data sheet " +
-  "(https://www.crystran.com/optical-materials/germanium-ge): n = 4.0026 at 11 µm, dn/dT +396 × 10⁻⁶ K⁻¹, " +
+  "(https://www.crystran.com/optical-materials/germanium-ge): n = 4.0026 at 11 µm, " +
   "thermal conductivity 58.62 W m⁻¹ K⁻¹, Knoop 780, transmission 1.8 to 23 µm.";
+const FREY_GE = "Frey B. J., Leviton D. B., Madison T. J. (2006). Temperature-dependent refractive index of silicon and germanium. " +
+  "Proc. SPIE 6273, 62732J, doi:10.1117/12.672850, Table 9: absolute dn/dT of Ge at 295 K, 4.16 × 10⁻⁴ K⁻¹ at 5.5 µm (CHARMS, in vacuum).";
 const BURNETT = "Burnett J. H., Kaplan S. G., Stover E., Phenis A. (2016). Refractive index measurements of Ge. Proc. SPIE 9974, 99740X " +
   "(Sellmeier fit at 22 °C, 2–14 µm; coefficients as in the refractiveindex.info database).";
 const GAN = "Gan F. (1995). Optical properties of fluoride glasses: a review. J. Non-Cryst. Solids 184, 9–20 (ZBLAN Sellmeier formula, " +
@@ -34,7 +36,12 @@ export default defineSchema({
   outputs: [
     { key: "n", label: "Refractive index n(λ, T)", unit: "", toSI: 1, siUnit: "" },
     { key: "transmission", label: "Fresnel-limited transmission 2n/(n² + 1)", unit: "%", toSI: 0.01, siUnit: "" },
-    { key: "dnDT", label: "dn/dT", unit: "×10⁻⁶/K", toSI: 1e-6, siUnit: "1/K" },
+    { key: "dnDT", label: "dn/dT (convention: dnDTAbsolute)", unit: "×10⁻⁶/K", toSI: 1e-6, siUnit: "1/K" },
+    {
+      key: "dnDTAbsolute", label: "dn/dT convention: 1 = absolute (in vacuum, CHARMS, 295 K), 0 = data sheet, absolute or relative to air not stated",
+      unit: "", toSI: 1, siUnit: "",
+    },
+    { key: "dnDTWavelength", label: "Wavelength of an absolute dn/dT", unit: "µm", toSI: 1e-6, siUnit: "m" },
     { key: "conductivity", label: "Thermal conductivity", unit: "W/(m·K)", toSI: 1, siUnit: "W/(m·K)" },
     { key: "knoop", label: "Knoop hardness", unit: "kg/mm²", toSI: 9.80665e6, siUnit: "Pa" },
   ],
@@ -49,12 +56,18 @@ export default defineSchema({
     else if (!Number.isFinite(nRef)) warnings.push("The wavelength is outside the material's Sellmeier formula range: no index.");
     else if (mat.dnDT === null) warnings.push("No sourced dn/dT: n is at the formula's temperature.");
     if (mat.dnDT === null) warnings.push("No sourced dn/dT for this material.");
+    else {
+      warnings.push(`dn/dT: ${dnDTConvention(mat)}${mat.dnDTAbsolute ? "" : " (the two differ by about n · 0.92 × 10⁻⁶/K)"}. ` +
+        "It is one value, applied at every wavelength and temperature, so n(T) is an estimate away from that wavelength.");
+    }
     if (mat.conductivity === null) warnings.push("No sourced thermal conductivity for this material.");
     return {
       values: {
         n,
         transmission: fresnelLimitTransmission(n),
         dnDT: mat.dnDT ?? NaN,
+        dnDTAbsolute: mat.dnDT === null ? NaN : mat.dnDTAbsolute ? 1 : 0,
+        dnDTWavelength: mat.dnDTAbsolute?.lambda ?? NaN,
         conductivity: mat.conductivity ?? NaN,
         knoop: mat.knoop === null ? NaN : mat.knoop * 9.80665e6,
       },
@@ -66,17 +79,18 @@ export default defineSchema({
       // Crystran prints n = 4.0026 for Ge at 11 µm; the Burnett formula (22 °C, the temperature the page shifts from) gives 4.00329.
       source: CRYSTRAN + " " + BURNETT,
       basis: "printed",
+      // The same sheet prints "58.62 W m⁻¹ K⁻¹" and "Knoop 780" (exact here).
       inputs: { material: "ge", wavelength: 11, temperature: 22 },
-      expect: { n: 4.0026 },
+      expect: { n: 4.0026, conductivity: 58.62, knoop: 780 },
       tolerance: 5e-4,
     },
     {
-      // Data-sheet entries printed as "+396 × 10⁻⁶ K⁻¹", "58.62 W m⁻¹ K⁻¹" and "Knoop 780".
-      source: CRYSTRAN,
+      // dn/dT is the absolute CHARMS value, printed as 4.16E-04 at 5.5 µm, 295 K (Crystran's +396 × 10⁻⁶ doesn't say which).
+      source: FREY_GE,
       basis: "printed",
       inputs: { material: "ge" },
-      expect: { dnDT: 396, conductivity: 58.62, knoop: 780 },
-      tolerance: 1e-6,
+      expect: { dnDT: 416, dnDTAbsolute: 1, dnDTWavelength: 5.5 },
+      tolerance: 1e-9,
     },
     {
       // n² − 1 = 1.22514 λ²/(λ² − 0.08969²) + 1.52898 λ²/(λ² − 21.3825²) at 2 µm gives n = 1.487990; at 100 °C from the formula's
