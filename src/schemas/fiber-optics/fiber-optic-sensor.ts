@@ -37,12 +37,12 @@ export default defineSchema({
   outputs: [
     { key: "gauge", label: "Strain gauge factor 1 − p_e", unit: "", toSI: 1, siUnit: "" },
     { key: "fbgTotal", label: "FBG: total Bragg shift", unit: "pm", toSI: 1e-12, siUnit: "m" },
-    { key: "fbgStrainSens", label: "FBG: strain sensitivity", unit: "pm/µε", toSI: 1e-12, siUnit: "m" },
-    { key: "fbgTempSens", label: "FBG: temperature sensitivity", unit: "pm/K", toSI: 1e-12, siUnit: "m" },
+    { key: "fbgStrainSens", label: "FBG: strain sensitivity (SI: per unit strain)", unit: "pm/µε", toSI: 1e-6, siUnit: "m" },
+    { key: "fbgTempSens", label: "FBG: temperature sensitivity", unit: "pm/K", toSI: 1e-12, siUnit: "m/K" },
     { key: "fbgShifted", label: "FBG: shifted Bragg wavelength", unit: "nm", toSI: 1e-9, siUnit: "m" },
     { key: "mziPhase", label: "MZI: phase shift", unit: "rad", toSI: 1, siUnit: "rad" },
-    { key: "mziStrainSens", label: "MZI: strain sensitivity", unit: "rad/µε", toSI: 1, siUnit: "rad" },
-    { key: "mziTempSens", label: "MZI: temperature sensitivity", unit: "rad/K", toSI: 1, siUnit: "rad" },
+    { key: "mziStrainSens", label: "MZI: strain sensitivity (SI: per unit strain)", unit: "rad/µε", toSI: 1e6, siUnit: "rad" },
+    { key: "mziTempSens", label: "MZI: temperature sensitivity", unit: "rad/K", toSI: 1, siUnit: "rad/K" },
     { key: "mziFringeStrain", label: "MZI: strain for one fringe", unit: "µε", toSI: 1e-6, siUnit: "" },
     { key: "efpiFsr", label: "EFPI: free spectral range", unit: "nm", toSI: 1e-9, siUnit: "m" },
     { key: "efpiFinesse", label: "EFPI: coefficient of finesse F", unit: "", toSI: 1, siUnit: "" },
@@ -73,12 +73,12 @@ export default defineSchema({
     switch (r.kind) {
       case "fbg":
         Object.assign(values, {
-          fbgTotal: r.total, fbgStrainSens: r.strainPm * 1e-12, fbgTempSens: r.tempPm * 1e-12, fbgShifted: wavelength + r.total,
+          fbgTotal: r.total, fbgStrainSens: r.strainPm * 1e-6, fbgTempSens: r.tempPm * 1e-12, fbgShifted: wavelength + r.total,
         });
         break;
       case "mzi":
         Object.assign(values, {
-          mziPhase: r.phase, mziStrainSens: r.perMicrostrain, mziTempSens: r.perK, mziFringeStrain: (2 * Math.PI) / r.perStrain,
+          mziPhase: r.phase, mziStrainSens: r.perMicrostrain * 1e6, mziTempSens: r.perK, mziFringeStrain: (2 * Math.PI) / r.perStrain,
         });
         break;
       case "efpi":
@@ -87,6 +87,9 @@ export default defineSchema({
       case "evanescent":
         Object.assign(values, { evNExt: r.nExt, evDp: r.dp, evDpChange: r.dp - r.dp0, evDpSens: r.sens });
         if (!Number.isFinite(r.dp)) warnings.push("The external index is at or above n_eff: the evanescent field is not guided.");
+        else if (!Number.isFinite(r.dp0)) {
+          warnings.push("At ΔT = 0 the external index is at or above n_eff, so there is no starting penetration depth and no d_p change.");
+        }
         break;
     }
     return { values, warnings };

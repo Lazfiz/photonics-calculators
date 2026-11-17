@@ -35,7 +35,7 @@ export default defineSchema({
     { key: "couplerOutput", label: "Rigrod output at your coupler, in units of P_sat", unit: "", toSI: 1, siUnit: "" },
     { key: "fractionOfOptimum", label: "Output at your coupler as a fraction of the optimum", unit: "%", toSI: 0.01, siUnit: "" },
     { key: "V", label: "V number at the laser wavelength", unit: "", toSI: 1, siUnit: "" },
-    { key: "guidedModes", label: "Guided LP modes (counting polarizations)", unit: "", toSI: 1, siUnit: "" },
+    { key: "guidedModes", label: "Guided LP modes (counting polarizations and orientations)", unit: "", toSI: 1, siUnit: "" },
     { key: "modeFieldDiameter", label: "LP01 mode-field diameter (Petermann II)", unit: "µm", toSI: 1e-6, siUnit: "m" },
     { key: "cutoffWavelength", label: "Single-mode (LP11) cutoff wavelength", unit: "nm", toSI: 1e-9, siUnit: "m" },
     { key: "delta", label: "Core–cladding index step Δ", unit: "%", toSI: 0.01, siUnit: "" },

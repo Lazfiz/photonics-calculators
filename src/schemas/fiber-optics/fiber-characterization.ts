@@ -36,6 +36,7 @@ export default defineSchema({
   compute({ wavelength, coreIndex, claddingIndex, coreRadius, zeroDispersion, dispersionSlope }) {
     const r = fiberCharacterization(coreRadius, coreIndex, claddingIndex, wavelength, zeroDispersion, dispersionSlope);
     const warnings: string[] = [];
+    if (r.NA > 1) warnings.push("NA > 1: every ray from air is accepted, so there is no acceptance half-angle.");
     if (!(Number.isFinite(r.mfd) && Number.isFinite(r.b))) {
       warnings.push(`No mode result: the model needs n₂ < n₁ and V ≥ ${MIN_V}.`);
     } else {

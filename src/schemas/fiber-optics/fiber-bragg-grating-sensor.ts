@@ -32,8 +32,8 @@ export default defineSchema({
     { key: "tempShift", label: "Temperature shift", unit: "pm", toSI: 1e-12, siUnit: "m" },
     { key: "totalShift", label: "Total shift", unit: "pm", toSI: 1e-12, siUnit: "m" },
     { key: "shiftedLambdaB", label: "Shifted Bragg wavelength", unit: "nm", toSI: 1e-9, siUnit: "m" },
-    { key: "strainPm", label: "Strain sensitivity", unit: "pm/µε", toSI: 1e-12, siUnit: "m" },
-    { key: "tempPm", label: "Temperature sensitivity at 20 °C", unit: "pm/K", toSI: 1e-12, siUnit: "m" },
+    { key: "strainPm", label: "Strain sensitivity (SI: per unit strain)", unit: "pm/µε", toSI: 1e-6, siUnit: "m" },
+    { key: "tempPm", label: "Temperature sensitivity at 20 °C", unit: "pm/K", toSI: 1e-12, siUnit: "m/K" },
   ],
   compute({ gratingPeriod, effectiveIndex, gratingLength, indexModulation, strain, tempChange, thermalCoeff, thermalSlope }) {
     const r = braggSensorSummary(gratingPeriod, effectiveIndex, gratingLength, indexModulation, strain, tempChange, thermalCoeff, thermalSlope);
@@ -45,7 +45,7 @@ export default defineSchema({
       values: {
         lambdaB: r.lambdaB, reflectivity: r.reflectivity, fwhm: r.fwhm, zeroWidth: r.zeroWidth, pe: r.pe, gauge: r.gauge,
         strainShift: r.strainShift, tempShift: r.tempShift, totalShift: r.totalShift, shiftedLambdaB: r.shiftedLambdaB,
-        strainPm: r.strainPerMicrostrain, tempPm: r.tempPerKelvin,
+        strainPm: r.strainPerMicrostrain * 1e6, tempPm: r.tempPerKelvin, // per µε → per unit strain
       },
       warnings,
     };

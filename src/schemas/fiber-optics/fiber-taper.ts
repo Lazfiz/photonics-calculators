@@ -58,7 +58,10 @@ export default defineSchema({
         warnings.push(`No guided LP01 was found at ${r.undefinedPoints} of ${r.scan.length} points near the waist, so the delineation and the worst ratio there are undefined and left out.`);
       }
       if (r.VcladWaist < SCALAR_LIMIT_V_CLAD) {
-        warnings.push(`V_clad = ${r.VcladWaist.toFixed(2)} at the waist: close to the wavelength, where the scalar mode model is inaccurate; waist results are rough.`);
+        warnings.push(`V_clad = ${r.VcladWaist.toPrecision(3)} at the waist: close to the wavelength, where the scalar mode model is inaccurate; waist results are rough.`);
+      }
+      if (!Number.isFinite(r.nEffWaist ?? NaN) || !Number.isFinite(r.decay)) {
+        warnings.push("No guided LP01 was found at the waist: no waist effective index or evanescent decay length.");
       }
       if (r.VcladWaist >= SINGLE_MODE_V) warnings.push("The waist guide is multimode (V_clad above 2.405); an adiabatic taper still keeps the light in the fundamental mode.");
     }
