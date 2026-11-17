@@ -69,6 +69,8 @@ export default defineSchema({
       efpiFsr: NaN, efpiFinesse: NaN, efpiPeak: NaN, efpiFringeShift: NaN,
       evNExt: NaN, evDp: NaN, evDpChange: NaN, evDpSens: NaN,
     };
+    const notGuided = "The external index is at or above n_eff: the evanescent field is not guided.";
+    const noStart = "At ΔT = 0 the external index is at or above n_eff, so there is no starting penetration depth and no d_p change.";
     const warnings = ["Only the outputs of the chosen sensor type are computed; the others are null."];
     switch (r.kind) {
       case "fbg":
@@ -86,13 +88,28 @@ export default defineSchema({
         break;
       case "evanescent":
         Object.assign(values, { evNExt: r.nExt, evDp: r.dp, evDpChange: r.dp - r.dp0, evDpSens: r.sens });
-        if (!Number.isFinite(r.dp)) warnings.push("The external index is at or above n_eff: the evanescent field is not guided.");
+        if (!Number.isFinite(r.dp)) warnings.push(notGuided);
         else if (!Number.isFinite(r.dp0)) {
-          warnings.push("At ΔT = 0 the external index is at or above n_eff, so there is no starting penetration depth and no d_p change.");
+          warnings.push(noStart);
         }
         break;
     }
-    return { values, warnings };
+    const notFbg = "FBG outputs apply only to sensor = FBG.";
+    const notMzi = "Mach-Zehnder outputs apply only to sensor = Mach-Zehnder.";
+    const notEfpi = "EFPI outputs apply only to sensor = Extrinsic Fabry-Perot.";
+    const notEv = "Evanescent outputs apply only to sensor = Evanescent-field.";
+    const evNull = r.kind === "evanescent" && !Number.isFinite(r.dp) ? notGuided : noStart;
+    return {
+      values,
+      warnings,
+      reasons: {
+        fbgTotal: notFbg, fbgStrainSens: notFbg, fbgTempSens: notFbg, fbgShifted: notFbg,
+        mziPhase: notMzi, mziStrainSens: notMzi, mziTempSens: notMzi, mziFringeStrain: notMzi,
+        efpiFsr: notEfpi, efpiFinesse: notEfpi, efpiPeak: notEfpi, efpiFringeShift: notEfpi,
+        evNExt: notEv, evDp: notEv, evDpChange: notEv, evDpSens: notEv,
+        ...(r.kind === "evanescent" ? { evDp: notGuided, evDpSens: notGuided, evDpChange: evNull } : {}),
+      },
+    };
   },
   checks: [
     {

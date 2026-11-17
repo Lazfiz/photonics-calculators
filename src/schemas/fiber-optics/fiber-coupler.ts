@@ -36,10 +36,10 @@ export default defineSchema({
     const fiber = { a: si.coreRadius, n1: si.coreIndex, NA: si.na };
     const r = couplerSummary(fiber, si.wavelength, si.coreSpacing, si.couplingLength, si.excessLoss, si.inputPower);
     const warnings: string[] = [];
+    const noResult = `No result: the model needs a core spacing D ≥ 2a = ${(2 * si.coreRadius * 1e6).toFixed(1)} µm (separate cores), 0 < NA < n₁ and V ≥ ${MIN_V} (here V = ${r.V.toFixed(3)}).`;
+    const darkPort = "One port is dark, so its power in dBm is not finite.";
     if (!Number.isFinite(r.kappa)) {
-      warnings.push(
-        `No result: the model needs a core spacing D ≥ 2a = ${(2 * si.coreRadius * 1e6).toFixed(1)} µm (separate cores), 0 < NA < n₁ and V ≥ ${MIN_V} (here V = ${r.V.toFixed(3)}).`,
-      );
+      warnings.push(noResult);
     } else {
       if (r.kappa === 0) warnings.push("κ is zero at this spacing (the evanescent overlap underflows): no coupling.");
       if (r.V > LP11_CUTOFF_V) warnings.push(`V = ${r.V.toFixed(2)} > ${LP11_CUTOFF_V.toFixed(3)}: the cores are not single-mode; only LP01 coupling is computed.`);
@@ -49,7 +49,7 @@ export default defineSchema({
       if (Math.abs(r.cutoffWavelength - si.wavelength) <= SPECTRAL_WINDOW_HALF_WIDTH) {
         warnings.push("The ±100 nm window around the wavelength crosses the LP11 cutoff wavelength: below it the fibre is two-moded and the model is LP01 only.");
       }
-      if (!Number.isFinite(r.coupledDbm) || !Number.isFinite(r.throughDbm)) warnings.push("One port is dark, so its power in dBm is not finite.");
+      if (!Number.isFinite(r.coupledDbm) || !Number.isFinite(r.throughDbm)) warnings.push(darkPort);
     }
     return {
       values: {
@@ -63,6 +63,11 @@ export default defineSchema({
         kappaSlope: r.slopePerNm / NM,
       },
       warnings,
+      reasons: {
+        couplingRatio: noResult, kappa: noResult, length5050: noResult, lengthFull: noResult, kappaSlope: noResult,
+        coupledPower: Number.isFinite(r.kappa) ? darkPort : noResult,
+        throughPower: Number.isFinite(r.kappa) ? darkPort : noResult,
+      },
     };
   },
   checks: [

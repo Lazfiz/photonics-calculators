@@ -26,13 +26,15 @@ export default defineSchema({
   compute({ couplingRatio, loss, wavelength, fiberLength, birefringence }) {
     const r = loopMirrorSummary(couplingRatio, loss, birefringence, fiberLength, wavelength);
     const warnings: string[] = [];
+    const noComb = "The PM section has zero length or zero birefringence: the loop is isotropic and there is no comb.";
+    const infiniteExtinction = "k = 1/2: the comb minimum is zero, so its extinction is infinite.";
     if (!Number.isFinite(r.period)) {
-      warnings.push("The PM section has zero length or zero birefringence: the loop is isotropic and there is no comb.");
+      warnings.push(noComb);
     } else if (r.period > COMB_MAX_PERIOD) {
       warnings.push(`The comb period exceeds ${COMB_MAX_PERIOD * 1e9} nm, so the transmission is nearly flat across the band at this wavelength.`);
     }
     if (Number.isFinite(r.period) && !Number.isFinite(r.extinction)) {
-      warnings.push("k = 1/2: the comb minimum is zero, so its extinction is infinite.");
+      warnings.push(infiniteExtinction);
     }
     return {
       values: {
@@ -40,6 +42,7 @@ export default defineSchema({
         combTmax: r.tMax, combTmin: r.tMin,
       },
       warnings,
+      reasons: { combPeriod: noComb, combExtinction: Number.isFinite(r.period) ? infiniteExtinction : noComb },
     };
   },
   checks: [

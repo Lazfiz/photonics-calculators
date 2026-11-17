@@ -39,18 +39,24 @@ export default defineSchema({
     { key: "worstAdiabaticity", label: "Worst taper angle over Love delineation, Ω/Ω_d", unit: "", toSI: 1, siUnit: "" },
   ],
   compute(si) {
+    const outputKeys = ["waistDiameter", "taperRatio", "coreWaistDiameter", "totalLength", "waistLength", "transitionLength", "transitionDiameter", "transitionV", "transitionVEstimate", "waistNeff", "coreVWaist", "claddingVWaist", "singleModeDiameter", "decayLength", "worstAdiabaticity"];
     const r = taperSummary({
       initialDia: si.initialDia, coreDia: si.coreDia, na: si.na, nClad: si.nClad, nExt: si.nExt, lambda: si.wavelength,
       hotZone: si.heaterWidth, elongation: si.elongation, alpha: si.alpha,
     });
     const warnings: string[] = [];
-    if (!(si.coreDia < si.initialDia)) warnings.push("No result: the core must be thinner than the cladding.");
-    else if (!(si.nExt < si.nClad)) warnings.push("No result: the surround index must be below the cladding index, or the cladding guides nothing.");
+    const noTransition = "LP01 is already below n₂ in the untapered fibre: there is no core–cladding transition along the taper.";
+    const noWaistMode = "No guided LP01 was found at the waist: no waist effective index or evanescent decay length.";
+    const noWorst = "No guided LP01 was found at any scanned point of the taper, so the Love delineation and the worst taper-angle ratio are undefined.";
+    let invalid: string | null = null;
+    if (!(si.coreDia < si.initialDia)) invalid = "No result: the core must be thinner than the cladding.";
+    else if (!(si.nExt < si.nClad)) invalid = "No result: the surround index must be below the cladding index, or the cladding guides nothing.";
     else if (!(si.heaterWidth + si.alpha * si.elongation > 0)) {
-      warnings.push("No result: with α < 0 the hot zone shrinks to zero length (L₀ + αx ≤ 0) before the pull ends.");
-    } else if (!r.valid) warnings.push("No result: the inputs are outside the model's domain.");
+      invalid = "No result: with α < 0 the hot zone shrinks to zero length (L₀ + αx ≤ 0) before the pull ends.";
+    } else if (!r.valid) invalid = "No result: the inputs are outside the model's domain.";
+    if (invalid) warnings.push(invalid);
     if (r.valid) {
-      if (r.tcc >= 1) warnings.push("LP01 is already below n₂ in the untapered fibre: there is no core–cladding transition along the taper.");
+      if (r.tcc >= 1) warnings.push(noTransition);
       if (Number.isFinite(r.worstRatio) && r.worstRatio >= 1) {
         warnings.push("The taper angle exceeds Love's delineation curve: LP01 couples to LP02 there and the taper is lossy.");
       }
@@ -61,7 +67,7 @@ export default defineSchema({
         warnings.push(`V_clad = ${r.VcladWaist.toPrecision(3)} at the waist: close to the wavelength, where the scalar mode model is inaccurate; waist results are rough.`);
       }
       if (!Number.isFinite(r.nEffWaist ?? NaN) || !Number.isFinite(r.decay)) {
-        warnings.push("No guided LP01 was found at the waist: no waist effective index or evanescent decay length.");
+        warnings.push(noWaistMode);
       }
       if (r.VcladWaist >= SINGLE_MODE_V) warnings.push("The waist guide is multimode (V_clad above 2.405); an adiabatic taper still keeps the light in the fundamental mode.");
     }
@@ -84,6 +90,14 @@ export default defineSchema({
         worstAdiabaticity: r.worstRatio,
       },
       warnings,
+      reasons: invalid
+        ? Object.fromEntries(outputKeys.map((key) => [key, invalid]))
+        : {
+            transitionDiameter: noTransition,
+            waistNeff: noWaistMode,
+            decayLength: noWaistMode,
+            worstAdiabaticity: noWorst,
+          },
     };
   },
   checks: [

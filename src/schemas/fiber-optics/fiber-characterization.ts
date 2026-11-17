@@ -36,9 +36,13 @@ export default defineSchema({
   compute({ wavelength, coreIndex, claddingIndex, coreRadius, zeroDispersion, dispersionSlope }) {
     const r = fiberCharacterization(coreRadius, coreIndex, claddingIndex, wavelength, zeroDispersion, dispersionSlope);
     const warnings: string[] = [];
-    if (r.NA > 1) warnings.push("NA > 1: every ray from air is accepted, so there is no acceptance half-angle.");
+    const noGuide = "n₂ ≥ n₁: the core does not guide light, so there is no V-number, cutoff, NA or Δ.";
+    const naAbove1 = "NA > 1: every ray from air is accepted, so there is no acceptance half-angle.";
+    const noMode = `No mode result: the model needs n₂ < n₁ and V ≥ ${MIN_V}.`;
+    const guides = claddingIndex < coreIndex;
+    if (r.NA > 1) warnings.push(naAbove1);
     if (!(Number.isFinite(r.mfd) && Number.isFinite(r.b))) {
-      warnings.push(`No mode result: the model needs n₂ < n₁ and V ≥ ${MIN_V}.`);
+      warnings.push(noMode);
     } else {
       if (r.V > LP11_CUTOFF_V) warnings.push("V > 2.405: LP11 is also guided at this wavelength. Mode values are for LP01.");
       if (r.V < MFD_FIT_V_RANGE[0] || r.V > MFD_FIT_V_RANGE[1]) {
@@ -55,6 +59,11 @@ export default defineSchema({
         confinement: r.confinement, dispersion: r.D,
       },
       warnings,
+      reasons: {
+        V: noGuide, cutoff: noGuide, NA: noGuide, delta: noGuide,
+        acceptanceAngle: guides ? naAbove1 : noGuide,
+        mfd: noMode, mfdPetermannII: noMode, aeff: noMode, gamma: noMode, nEff: noMode, b: noMode, confinement: noMode,
+      },
     };
   },
   checks: [

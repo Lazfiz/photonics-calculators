@@ -48,17 +48,16 @@ export default defineSchema({
     });
     const belowThreshold = !(r.optOut > 0);
     const warnings: string[] = [];
-    if (belowThreshold) warnings.push("The gain does not overcome the internal loss: below threshold, so no optimum coupler or Rigrod output exists.");
+    const noOptimum = "The gain does not overcome the internal loss: below threshold, so no optimum coupler or Rigrod output exists.";
+    if (belowThreshold) warnings.push(noOptimum);
     if (r.stokes > 1) warnings.push("Stokes efficiency above 100 %: the pump wavelength is longer than the laser wavelength.");
     if (r.beyond > 1) warnings.push("Efficiency beyond Stokes above 100 %: the slope exceeds the quantum limit.");
     if (r.delta > LASER_MAX_DELTA) warnings.push("Core–cladding Δ exceeds 2 %: weak-guidance formulas lose accuracy.");
-    if (r.V < MIN_V) {
-      warnings.push(`V = ${r.V.toPrecision(3)} is below ${MIN_V}: the LP01 mode spreads far into the cladding, so no mode-field diameter is given.`);
-    }
-    if (r.V > MAX_EXACT_MODE_V) {
-      warnings.push(`V = ${r.V.toPrecision(3)} is above ${MAX_EXACT_MODE_V}: the modes aren't counted one by one; ` +
-        `there are about V²/2 ≈ ${Math.round((r.V * r.V) / 2)} (Gloge 1971).`);
-    }
+    const noMfd = `V = ${r.V.toPrecision(3)} is below ${MIN_V}: the LP01 mode spreads far into the cladding, so no mode-field diameter is given.`;
+    const noCount = `V = ${r.V.toPrecision(3)} is above ${MAX_EXACT_MODE_V}: the modes aren't counted one by one; ` +
+      `there are about V²/2 ≈ ${Math.round((r.V * r.V) / 2)} (Gloge 1971).`;
+    if (r.V < MIN_V) warnings.push(noMfd);
+    if (r.V > MAX_EXACT_MODE_V) warnings.push(noCount);
     return {
       values: {
         outputPower: r.out,
@@ -76,6 +75,10 @@ export default defineSchema({
         delta: r.delta,
       },
       warnings,
+      reasons: {
+        optimumCoupling: noOptimum, optimumOutput: noOptimum, fractionOfOptimum: noOptimum,
+        modeFieldDiameter: noMfd, guidedModes: noCount,
+      },
     };
   },
   checks: [
