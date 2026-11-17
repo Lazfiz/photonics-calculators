@@ -47,7 +47,7 @@ export default function InputSlider({ label, value, onChange, min, max, step = 1
     <div className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
       <div className="flex items-center justify-between gap-3">
         <label htmlFor={sliderId} className="text-sm text-gray-300">{label}</label>
-        <span className="text-sm font-medium text-blue-300">
+        <span className="whitespace-nowrap text-sm font-medium text-blue-300">
           {value}
           {unit ? ` ${unit}` : ""}
         </span>
@@ -69,6 +69,7 @@ export default function InputSlider({ label, value, onChange, min, max, step = 1
         <input
           aria-label={`${label} exact value`}
           type="number"
+          inputMode="decimal"
           value={text ?? value}
           min={min}
           max={max}
