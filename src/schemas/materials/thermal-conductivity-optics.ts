@@ -32,6 +32,11 @@ export default defineSchema({
     { key: "heatFlux", label: "Heat flux P/A", unit: "W/cm²", toSI: 1e4, siUnit: "W/m²" },
     { key: "centreRise", label: "Beam centre-to-edge ΔT = P/(4πkd)", unit: "K", toSI: 1, siUnit: "K" },
     { key: "focalLength", label: "Thermal lens f = 2kA/(P·dn/dT), dn/dT term only", unit: "m", toSI: 1, siUnit: "m" },
+    {
+      key: "dndTAbsolute",
+      label: "Preset dn/dT convention: 1 = absolute (in vacuum, CHARMS, 295 K), 0 = data sheet, absolute or relative to air not stated; null when dndT is entered",
+      unit: "", toSI: 1, siUnit: "",
+    },
   ],
   validate({ k, dndT }) {
     if (k > 0 && k < 0.01) return "k must be 0 (the preset) or at least 0.01 W/(m·K).";
@@ -41,17 +46,21 @@ export default defineSchema({
   },
   compute({ material, k: kIn, dndT: dndtIn, thickness, area, power }) {
     const preset = windowThermalPreset(material as WindowMaterialId);
+    const mat = WINDOW_MATERIALS[material as WindowMaterialId];
     const k = kIn > 0 ? kIn : preset.k;
-    const dndT = dndtIn / PPM > DNDT_PRESET - 0.5 ? preset.dndtPpm * PPM : dndtIn;
+    const usePreset = dndtIn / PPM > DNDT_PRESET - 0.5;
+    const dndT = usePreset ? preset.dndtPpm * PPM : dndtIn;
     const faceRise = slabConductionRise(power, thickness, k, area);
     const f = rodThermalLens(power, k, area, dndT);
     const warnings: string[] = [];
     if (!Number.isFinite(dndT)) warnings.push("No dn/dT on the data sheet for this material: enter dndT to get a thermal lens.");
+    if (!usePreset) warnings.push("dndT entered, not the material's preset: its convention (dndTAbsolute) is yours.");
     else if (f === Infinity) warnings.push("No thermal lens: zero absorbed power or dn/dT = 0.");
     else if (f < 0) warnings.push("Negative focal length: a diverging lens (dn/dT < 0).");
     return {
       values: {
         resistance: thickness / (k * area), faceRise, heatFlux: power / area, centreRise: cylinderCentreRise(power, k, thickness), focalLength: f,
+        dndTAbsolute: !usePreset || mat.dnDT === null ? NaN : mat.dnDTAbsolute ? 1 : 0,
       },
       warnings,
     };
