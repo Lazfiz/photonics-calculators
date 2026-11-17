@@ -63,6 +63,8 @@ test("API schemas: every output is a number at the page's defaults, or null with
 });
 
 test("API schemas: each input at its min and max gives numbers, or null with a warning that says why (review 2026-11 P3-W1)", () => {
+  // Every failure is listed, not just the first (recheck 2026-11-16).
+  const failures: string[] = [];
   for (const schema of schemas) {
     for (const input of schema.inputs) {
       for (const value of [input.min, input.max]) {
@@ -71,12 +73,14 @@ test("API schemas: each input at its min and max gives numbers, or null with a w
         if (!parsed.ok) continue;
         const result = runSchema(schema, parsed.values);
         for (const [key, out] of Object.entries(result.outputs)) {
-          assert.ok(Number.isFinite(out) || (out === null && result.warnings.length > 0),
-            `${schema.href} ${input.key}=${value} ${key}`);
+          if (!(Number.isFinite(out) || (out === null && result.warnings.length > 0))) {
+            failures.push(`${schema.href} ${input.key}=${value} ${key}`);
+          }
         }
       }
     }
   }
+  assert.deepEqual(failures, []);
 });
 
 test("API schemas: the reference checks hold", () => {

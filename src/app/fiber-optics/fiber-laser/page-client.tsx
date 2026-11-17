@@ -98,7 +98,8 @@ export default function FiberLaserCalculator() {
         <Card label="V Number at the Laser Wavelength" value={V.toFixed(3)} sub="2πa·NA/λ_l" tone={V < 2.405 ? "text-green-400" : "text-red-400"} />
         <Card label="Guided Modes" value={Number.isFinite(modes) ? (V < 2.405 ? "single mode" : `${modes} modes`) : `≈ ${Math.round((V * V) / 2)} modes`}
           sub={V < 2.405 ? "only LP01 (2 polarizations)" : "LP11 and higher are guided: the beam quality depends on bend and launch"} tone={V < 2.405 ? "text-green-400" : "text-red-400"} />
-        <Card label="LP01 Mode-Field Diameter" value={Number.isFinite(mfd) ? `${(mfd * 1e6).toFixed(2)} µm` : "—"} sub="Petermann II, exact step-index LP01" tone="text-blue-400" />
+        <Card label="LP01 Mode-Field Diameter" value={Number.isFinite(mfd) ? `${(mfd * 1e6).toFixed(2)} µm` : "—"}
+          sub={Number.isFinite(mfd) ? "Petermann II, exact step-index LP01" : "V < 0.5: the mode spreads far into the cladding"} tone="text-blue-400" />
         <Card label="Single-Mode Cutoff Wavelength" value={`${(cutoff * 1e9).toFixed(0)} nm`} sub="LP11 cutoff 2πa·NA/2.405" tone="text-blue-400" />
       </div>
 

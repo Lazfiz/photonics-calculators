@@ -1,4 +1,6 @@
 import { LASER_MAX_DELTA, fiberLaserSummary } from "../../physics/fiber-optics/fiber-laser";
+import { MIN_V } from "../../physics/fiber-optics/macro-bending-loss";
+import { MAX_EXACT_MODE_V } from "../../physics/fiber-optics/step-index-modes";
 import { defineSchema } from "../types";
 
 const RIGROD =
@@ -50,6 +52,13 @@ export default defineSchema({
     if (r.stokes > 1) warnings.push("Stokes efficiency above 100 %: the pump wavelength is longer than the laser wavelength.");
     if (r.beyond > 1) warnings.push("Efficiency beyond Stokes above 100 %: the slope exceeds the quantum limit.");
     if (r.delta > LASER_MAX_DELTA) warnings.push("Core–cladding Δ exceeds 2 %: weak-guidance formulas lose accuracy.");
+    if (r.V < MIN_V) {
+      warnings.push(`V = ${r.V.toPrecision(3)} is below ${MIN_V}: the LP01 mode spreads far into the cladding, so no mode-field diameter is given.`);
+    }
+    if (r.V > MAX_EXACT_MODE_V) {
+      warnings.push(`V = ${r.V.toPrecision(3)} is above ${MAX_EXACT_MODE_V}: the modes aren't counted one by one; ` +
+        `there are about V²/2 ≈ ${Math.round((r.V * r.V) / 2)} (Gloge 1971).`);
+    }
     return {
       values: {
         outputPower: r.out,
