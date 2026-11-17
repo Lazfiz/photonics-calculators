@@ -148,21 +148,26 @@ test("extended source: C_P = 0.2 binds", () => {
 
 test("cornea at 1550 nm: the aperture grows with the group", () => {
   // A 1.5 mm beam (1/e 1.06 mm: averaged, Table 5 note c doesn't apply) at 1 m/s across 1 mm: τ = W/v. 10 passes/s
-  // for 10 s: N = 100 over T_N = 9.9 s + τ, where the aperture is 1.5 T^0.375 mm = 3.544 mm, so each pass puts L/v
-  // per watt through it. Rule 2, full train: 10⁴ J/m² · (π/4)·D(T_N)² / (100 · L(D(T_N))/v) = 0.29 W. (With the 1 mm
+  // for 9.5 s: N = 95 over T_N = 9.4 s + τ, where the aperture is 1.5 T^0.375 mm = 3.462 mm, so each pass puts L/v
+  // per watt through it. Rule 2, full train: 10⁴ J/m² · (π/4)·D(T_N)² / (95 · L(D(T_N))/v) = 0.30 W. (With the 1 mm
   // pass energy it would be 3× too high.)
   const d = 1.5e-3;
-  const r = scannedBeamLimits(nm(1550), d, scan(1, 10, 10));
+  const r = scannedBeamLimits(nm(1550), d, scan(1, 10, 9.5));
   const l = limit(r, "cornealIr");
   assert.equal(l.actual, false);
   const tau = passWidth(d, 1e-3);
   assertRel(l.passDuration, tau, 1e-12, "τ");
   assert.equal(l.aperture, 1e-3);
-  assert.equal(l.passes, 100);
-  const TN = tau + 9.9;
+  assert.equal(l.passes, 95);
+  const TN = tau + 9.4;
   const D = 1.5e-3 * Math.pow(TN, 0.375);
-  assertRel(l.group, (1e4 * (Math.PI / 4) * D * D) / (100 * passLength(d, D)), 1e-9, "rule 2");
+  assertRel(l.group, (1e4 * (Math.PI / 4) * D * D) / (95 * passLength(d, D)), 1e-9, "rule 2");
   assert.equal(r.rule, 2);
+  // For 10 s, 100 passes end at 9.9 s + τ (1.5 T_N^0.375 = 3.544 mm), but the exposure is held to the 3.5 mm
+  // aperture of 10 s (Table 8; verification 2026-11 M1), as limitMaxPower holds a CW beam.
+  const ten = limit(scannedBeamLimits(nm(1550), d, scan(1, 10, 10)), "cornealIr");
+  assert.equal(ten.passes, 100);
+  assertRel(ten.group, (1e4 * (Math.PI / 4) * 3.5e-3 * 3.5e-3) / (100 * passLength(d, 3.5e-3)), 1e-9, "rule 2, 10 s");
   // Rule 1: 10⁴ J/m² over 1 mm, L(1 mm)/v per watt.
   assertRel(l.singlePulse, (1e4 * Math.PI * 0.25e-6) / passLength(d, 1e-3), 1e-9, "rule 1");
 });

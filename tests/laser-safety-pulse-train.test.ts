@@ -42,8 +42,18 @@ const retina = (lambda: number, d: number, train: PulseTrain, alpha = 0) => {
 test("T_i and the pulse count", () => {
   assert.equal(timeTi(nm(532)), 5e-6);
   assert.equal(timeTi(nm(1049)), 5e-6);
-  assert.equal(timeTi(nm(1050)), 13e-6);
+  // ICNIRP 2013 Table 4: 5 µs for 400–1,050 nm, 13 µs for 1,051–1,400 nm (verification 2026-11 follow-up).
+  assert.equal(timeTi(nm(1050)), 5e-6);
+  assert.equal(timeTi(nm(1050.999)), 5e-6);
+  assert.equal(timeTi(nm(1051)), 13e-6);
+  assert.equal(timeTi(nm(1399.999)), 13e-6);
+  assert.ok(Number.isNaN(timeTi(nm(1400))));
+  assert.ok(Number.isNaN(timeTi(nm(399.999))));
   assert.ok(Number.isNaN(timeTi(nm(1550))));
+  // An 8 µs pulse from a 10 mrad source, 25 pulses in 0.25 s: longer than T_i at 1050 nm (rule 3b, n^−0.25 = 0.447),
+  // within it at 1051 nm (rule 3c, 1 up to 0.25 s).
+  assertRel(correctionCP(nm(1050), 0.01, 25, 8e-6, 0.25), Math.pow(25, -0.25), 1e-12, "1050 nm, 8 µs");
+  assert.equal(correctionCP(nm(1051), 0.01, 25, 8e-6, 0.25), 1);
   // 10 ns pulses at 1 kHz from t = 0: the 10 000th starts at 9.999 s and ends within 10 s; the next would not.
   assert.equal(pulseCount({ duration: 1e-8, prf: 1e3, exposure: 10 }), 10000);
   assert.equal(pulseCount({ duration: 1e-8, prf: 1e3, exposure: 10 + 1e-8 }), 10001);
@@ -80,13 +90,14 @@ test("Single pulse: Table 5's energies through 7 mm", () => {
 });
 
 test("Rule 3c: ns pulses beyond 0.25 s, C_P = 5 n^−0.25", () => {
-  // 1064 nm, 10 ns, 1 kHz, 10 s: n = 10⁴ within T₂ = 10 s, C_P = 5/10 = 0.5, so 10 mJ/m². The full train allows
-  // 90·(9.999 s)^0.75 / 10⁴ = 50.6 mJ/m² per pulse.
+  // 1064 nm, 10 ns, 1 kHz, 10 s: n = 10⁴ within T₂ = 10 s, C_P = 5/10 = 0.5, so 10 mJ/m². The full 10 s exposure
+  // allows 50 W/m² · 10 s / 10⁴ = 50 mJ/m² per pulse (Table 5 from T₂ = 10 s; at the last pulse, 9.999 s, the
+  // 90 t^0.75 row would give 50.6: verification 2026-11 M1).
   const r = retina(nm(1064), 0, { duration: 1e-8, prf: 1e3, exposure: 10 });
   assertRel(r.cp, 0.5, 1e-12, "C_P");
   assert.equal(r.cpCount, 10000);
   assertRel(r.reduced, 1e-2 * A7, 1e-12, "rule 3");
-  assertRel(r.group, (90 * Math.pow(9.999 + 1e-8, 0.75) * A7) / 1e4, 1e-9, "rule 2");
+  assertRel(r.group, (500 * A7) / 1e4, 1e-9, "rule 2");
   assert.equal(r.groupPulses, 10000);
   assert.equal(r.rule, 3);
   // Up to 0.25 s, C_P = 1 at any n; beyond, 1 up to 625 pulses (5 n^−0.25 ≥ 1).
@@ -173,11 +184,17 @@ test("Rule 2 on the cornea: UV doses add; groups found as by enumeration", () =>
     // A narrow beam (note c) whose groups run past 0.35 s.
     [10600, 0.5e-3, { duration: 1e-2, prf: 50, exposure: 12 }],
   ];
+  // Every window holding n pulses: from T_n = τ + (n − 1)/f, and from each table joint up to T, where a limit can step
+  // down (verification 2026-11 M1), with the pulses it holds.
   for (const [lam, d, train] of cases) {
     const N = pulseCount(train);
     for (const [i, limit] of pulseLimits(nm(lam)).entries()) {
       let brute = Infinity;
       for (let n = 2; n <= N; n++) brute = Math.min(brute, limitMaxEnergy(limit, d, train.duration + (n - 1) / train.prf) / n);
+      for (const t of [...limit.pieces, ...limit.apertures].map((x) => x.t0).concat(train.exposure)) {
+        const n = pulseCount({ ...train, exposure: t });
+        if (n >= 2 && t <= train.exposure) brute = Math.min(brute, limitMaxEnergy(limit, d, t) / n);
+      }
       assertRel(pulseTrainLimits(nm(lam), d, train).limits[i].group, brute, 1e-12, `${lam} nm, ${limit.kind}`);
     }
   }

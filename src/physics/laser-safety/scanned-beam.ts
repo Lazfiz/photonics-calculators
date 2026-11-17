@@ -231,6 +231,8 @@ export function scannedBeamLimits(lambda: number, d: number, scan: Scan, alpha =
       const Dt = limitingAperture(limit, t);
       return (H * (Math.PI * Dt * Dt) / 4) * (v / lengthAt(Dt));
     };
+    // Rule 2 also takes G at T for the whole train (pulse-train.ts): above 1400 nm a 10 s scan whose last pass ends
+    // just before 10 s is held to the 3.5 mm aperture of 10 s, not 1.5 t^0.375 mm (Table 8; verification 2026-11 M1).
     const rules = trainLimit(lambda, limit, train, G, alpha);
     const passDuration = actual ? tauPeak : tau;
     limits.push({ ...rules, aperture: D, actual, passDuration, passEnergy: lengthAt(D) / v, passes });
