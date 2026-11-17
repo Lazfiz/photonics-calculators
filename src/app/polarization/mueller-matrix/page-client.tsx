@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { numberInputMode } from "../../../lib/number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import ChartPanel from "../../../components/chart-panel";
 import { CONVENTION_NOTE, fix, stokesProblem } from "../../../components/polarization-format";
@@ -85,7 +86,7 @@ export default function MuellerMatrixPage() {
         {STOKES_LABELS.map((label, i) => (
           <label key={i} className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
             <span className="text-sm text-gray-300">{label}</span>
-            <input type="number" value={inputStokes[i]} onChange={e => {
+            <input type="number" inputMode={numberInputMode()} value={inputStokes[i]} onChange={e => {
               const v = +e.target.value;
               if (!Number.isFinite(v)) return;
               const copy: Stokes = [...inputStokes]; copy[i] = v; setInputStokes(copy);

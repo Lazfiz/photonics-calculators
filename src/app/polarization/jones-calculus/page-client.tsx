@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { numberInputMode } from "../../../lib/number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import type { Complex } from "../../../physics/complex";
 import {
@@ -146,7 +147,7 @@ export default function JonesCalculusPage() {
                     <span className="text-gray-500 text-sm">{idx + 1}.</span>
                     <span className="text-sm flex-1">{opt?.label}</span>
                     {opt?.hasAngle && (
-                      <input type="number" value={el.angle ?? 0} step="1" aria-label={`Rotation angle of element ${idx + 1} (°)`}
+                      <input type="number" inputMode={numberInputMode()} value={el.angle ?? 0} step="1" aria-label={`Rotation angle of element ${idx + 1} (°)`}
                         onChange={(e) => {
                           const v = parseFloat(e.target.value);
                           if (Number.isFinite(v)) updateAngle(slot, v);

@@ -2,7 +2,7 @@
 
 import { useId, useState } from "react";
 
-import { clampToRange, isInRange, parseNumberInput } from "@/lib/number-input";
+import { clampToRange, isInRange, numberInputMode, parseNumberInput } from "@/lib/number-input";
 
 interface InputSliderProps {
   label: string;
@@ -69,7 +69,7 @@ export default function InputSlider({ label, value, onChange, min, max, step = 1
         <input
           aria-label={`${label} exact value`}
           type="number"
-          inputMode="decimal"
+          inputMode={numberInputMode(min)}
           value={text ?? value}
           min={min}
           max={max}

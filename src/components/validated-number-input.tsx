@@ -2,7 +2,7 @@
 
 import { useId, useState, type ReactNode } from "react";
 
-import { clampToRange, isInRange, parseNumberInput } from "@/lib/number-input";
+import { clampToRange, isInRange, numberInputMode, parseNumberInput } from "@/lib/number-input";
 
 interface ValidatedNumberInputProps {
   label: ReactNode;
@@ -67,7 +67,7 @@ export default function ValidatedNumberInput({
       <span className="text-sm text-gray-300">{label}</span>
       <input
         type="number"
-        inputMode="decimal"
+        inputMode={numberInputMode(min)}
         value={text ?? value}
         min={min}
         max={max}
