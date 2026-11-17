@@ -98,7 +98,7 @@ export default function CornealVsRetinalPage() {
         focuses a TEM₀₀ beam to 4λf/(πd), but never below 25.5 µm (α_min = 1.5 mrad), so the gain is (7 mm / image)²,
         at most 7.5×10⁴. In the UV and from 1400 nm the cornea and lens absorb the beam and only the corneal limits apply.
         From 700 nm twice the skin limit also protects the cornea and lens (Table 5 note d; in the visible only for a large
-        source); ICNIRP 2013 (p. 281) checks both limits from 1150 nm. Averaged, the anterior-segment limit binds only from
+        source); ICNIRP 2013 (p. 282) checks both limits from 1150 nm. Averaged, the anterior-segment limit binds only from
         about 1300 nm (for t ≥ 10 s; about 1360 nm for ns pulses) to 1400 nm, where C_C raises the retinal limit as water
         absorbs more. Each limit is a corneal exposure averaged over its aperture (7 mm retinal, 3.5 mm anterior, 1 → 3.5 mm
         corneal), except that a beam under 1 mm (1/e diameter) is held to its peak on the anterior segment and, below
