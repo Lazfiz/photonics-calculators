@@ -202,6 +202,45 @@ case (code 5.9585); the 1550 nm case differs by 1.4 % (new finding M1).
 
 Line numbers are on main unless a PR is named.
 
+**Fixed in** (added 2026-11-17, after the fixes; none merged yet). Branch commits: #289 `8b3efe4`, #292 `6b29a89`,
+#293 `53dbd12`, #294 `dc1f1d9` (new PR, branch `fix/fable-verify-2026-11`).
+
+| Finding | Fixed in | How |
+|---|---|---|
+| E1 search plurals | #293 | Plural rules; misspelt plurals corrected through the singular. Probe: plural misses 16 on main, 1 on #293's old head, 0 now ("blackbodies" included). |
+| E2 three-letter abbreviations | #293 | Whole words only; "PER" only in capitals. "EOM" no longer returns geometric-loss. |
+| E3 hyphenated / joined words | #293 | Split before a letter, joined forms matched: "AR-coating", "antireflection", "fabryperot". |
+| W1 laser-safety items on main | #289 | Already in #289; closed when it merges. |
+| W2 Class 3R under A11 | #289 | AEL page, API and classification all cap 3R at 1× the skin AEL (the white paper's reading and the cautious one; A11 text still unread); the warning names 3R. |
+| W3 sub-ns wording | #289 | pulsed-mpe, ultrafast pages and registry note cover the 700–1400 nm anterior segment. |
+| W4 #289 values not pinned | #289 | Tests: 7.6722 / 1492.98 mW (√2 mm) and 7.6878 / 1547.13 mW (√5 mm, `pr289/probe-scan-sqrt5.ts`) against the brute force; monotonicity (5 λ × 5 variants × 61 sizes); 1399 nm, 500 ps binding at 1928.44 µJ through pulsed-mpe and ultrafast. |
+| W5 ratchet per output | #292 | The backlog holds a run count per output (447 outputs, 128 schemas, 1863 runs); all-null runs stay exempt, stated. |
+| W6 `reason` untested | #292 | REST, MCP and OpenAPI tests (tirf at θ = 0). |
+| W7 missing synonyms | #293 | The listed ones and about 15 more; gvd and goggles groups narrowed. |
+| W8 MCP padding, no `closest` | #293 | Same selection as the site, no padding, `closest` and `corrections` returned. |
+| W9 unicode / punctuation | #293 | En dash, μ/µ, ², "1/e2", "f/#", "λ/4" folded. |
+| W10 one extra word | #293 | A page missing one word is listed (and `closest` set) when it outscores the exact pages. |
+| W11 decimal keypad | #293 | `inputMode="decimal"` only where min ≥ 0, else `"text"`; a test checks every schema input and every number field. Not tried on an iPhone. |
+| W12 typo "corrections" of real words | #293 | Words in the index or a site word list are never corrected; a correction sets `closest`, is shown, and gives `exactMatches: 0` in MCP. |
+| W13 "ar coating" dropped; "lazers" | #293 | Both fixed. |
+| M1 scanning at T = 10 s | open | Left alone (needs the standard's reading); listed in #289. |
+| M2 plate formula citation | #294 | §7.5.1 (two-beam plate path difference) in the registry too. |
+| M3 circular gamma-gamma reference | #294 | Series closed form with its own Γ in the test; the weak case from 120-digit arithmetic (rechecked by direct mpmath quadrature: 5.93620952268e-5). |
+| M4 YVO₄ range | — | Kept: no source found for a shorter valid range; the comment stays. |
+| M5 Voigt guard, 3.71 µm | #294 | Tests added; the 3.71 µm test found an endpoint rounding bug in `inRange`, fixed (1e-12 slack, no range changed). |
+| M6 CS₂ erratum | open | Left alone (paper not reachable). |
+| M7 refused MCP batch | #294 | Messages within the limit are answered; each request past it gets its own error. |
+| M8 #289 PR body | #289 | Body rewritten. |
+| M9 scanning default on the note-c edge | #289 | Default beam 2 mm at the scanner (√5 mm at 1 m). |
+| M10 #292 body numbers | #292 | 111 of 1553 (label 14, key 97), counting rule stated; 447 are outputs. |
+| M11 free-film sentence | #292 | Page sentence and a test (0.3186501 nm). |
+| M12 duplicate warning | #294 | One warning per band, naming it; the min/max sweep now fails on any repeated warning. |
+| M13 query length; values only | #293 | Cut at 200 characters; "1550 nm" gets a hint. |
+| M14 unverified standards | open | Left alone; listed in #289 and #292. |
+| M15 `exactMatches` cap; headers | #293 | Counts the whole index (documented); counters off cacheable responses; `Access-Control-Expose-Headers`. |
+| M16 #293 untested parts | #293 | Tests for plurals, `/og`, og tags (title as rendered, `og:locale` restored). |
+| M17 gray-400 = gray-500 | #293 | gray-500 is #8a919e (5.6:1), below gray-400 (6.8:1). |
+
 ### Errors
 
 - **E1. Search: no plural handling on main.** `src/lib/site-search.ts:136-147` matches the literal word and
