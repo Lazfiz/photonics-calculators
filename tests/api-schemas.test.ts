@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { NextRequest } from "next/server";
 
 import { GET } from "../src/app/api/v1/[category]/[slug]/route";
@@ -77,6 +78,38 @@ test("API schemas: each input at its min and max gives numbers, or null with a w
       }
     }
   }
+});
+
+/** "<href> <output>" for each null output without its own reason, at the defaults, each input at its min and max, and each choice. */
+function nullsWithoutReason() {
+  const missing = new Set<string>();
+  for (const schema of schemas) {
+    const cases: Record<string, number | string>[] = [{}];
+    for (const input of schema.inputs) cases.push({ [input.key]: input.min }, { [input.key]: input.max });
+    for (const choice of schema.choices ?? []) for (const option of choice.options) cases.push({ [choice.key]: option.value });
+    for (const inputs of cases) {
+      const parsed = parseInputs(schema, query(inputs));
+      if (!parsed.ok) continue;
+      const result = runSchema(schema, parsed.values);
+      const nulls = schema.outputs.filter((o) => result.outputs[o.key] === null);
+      // When every output is null the run failed as a whole, and its warnings say why.
+      if (nulls.length === schema.outputs.length) continue;
+      for (const output of nulls) if (!result.reasons[output.key]) missing.add(`${schema.href} ${output.key}`);
+    }
+  }
+  return missing;
+}
+
+test("API schemas: a null output names its own warning (reasons); the backlog file may only shrink (recheck 2026-11-16)", () => {
+  const pending = new Set<string>(JSON.parse(readFileSync("tests/null-reasons-pending.json", "utf8")));
+  const missing = nullsWithoutReason();
+  assert.deepEqual([...missing].filter((k) => !pending.has(k)).sort(), [], "null without a reason: add it to `reasons` in compute");
+  assert.deepEqual([...pending].filter((k) => !missing.has(k)).sort(), [], "now has a reason: remove it from tests/null-reasons-pending.json");
+  const tirf = run(schemas.find((s) => s.href === "/imaging/tirf")!, { theta: 0 });
+  assert.equal(tirf.outputs.depth, null);
+  assert.match(tirf.reasons.depth, /critical angle/);
+  assert.ok(tirf.warnings.includes(tirf.reasons.depth));
+  assert.equal(tirf.reasons.criticalAngle, undefined);
 });
 
 test("API schemas: the reference checks hold", () => {
