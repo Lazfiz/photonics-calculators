@@ -5,13 +5,47 @@ import { displayName, getCalculator, getCategory, type Calculator } from "./inde
 
 export { SITE_URL };
 
+/** The social-preview image route (src/app/og/[...path]/route.tsx): /og/<category> or /og/<category>/<slug>. */
+export function ogImageUrl(...path: string[]): string {
+  return `${SITE_URL}/og/${path.join("/")}`;
+}
+
+/** Open Graph and Twitter cards for a page: its own title, description, canonical URL and generated image. */
+export function socialMetadata(fields: {
+  title: string;
+  description: string;
+  canonical: string;
+  imagePath: string[];
+}): Pick<Metadata, "openGraph" | "twitter"> {
+  const { title, description, canonical } = fields;
+  const image = ogImageUrl(...fields.imagePath);
+  return {
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      type: "website",
+      siteName: "Photonics Calculators",
+      images: [{ url: image, width: 1200, height: 630, alt: `${title} | Photonics Calculators` }],
+    },
+    twitter: { card: "summary_large_image", title, description, images: [image] },
+  };
+}
+
 /** `export const metadata = calculatorMetadata(href)` in each calculator's page.tsx. */
 export function calculatorMetadata(href: string): Metadata {
   const calculator = getCalculator(href);
+  const canonical = `${SITE_URL}${href}`;
   return {
-    alternates: { canonical: `${SITE_URL}${href}` },
+    alternates: { canonical },
     title: calculator.title,
     description: calculator.description,
+    ...socialMetadata({
+      title: calculator.title,
+      description: calculator.description,
+      canonical,
+      imagePath: [calculator.category, calculator.slug],
+    }),
   };
 }
 

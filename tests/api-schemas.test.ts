@@ -209,3 +209,28 @@ test("/openapi.json describes every schema's parameters and outputs", () => {
     { type: "string", enum: ["gaussian", "linear"], default: "gaussian" },
   ]);
 });
+
+test("GET /api/v1: RateLimit-* headers count down and a 429 adds Retry-After; OpenAPI parameters carry examples", async () => {
+  const get = (ip: string) =>
+    GET(new NextRequest(`${ORIGIN}/api/v1/imaging/airy-disk`, { headers: { "x-forwarded-for": ip } }), {
+      params: Promise.resolve({ category: "imaging", slug: "airy-disk" }),
+    });
+  const first = await get("192.0.2.30");
+  assert.equal(first.headers.get("ratelimit-limit"), "60");
+  assert.equal(first.headers.get("ratelimit-remaining"), "59");
+  assert.ok(Number(first.headers.get("ratelimit-reset")) >= 1 && Number(first.headers.get("ratelimit-reset")) <= 60);
+  assert.equal(first.headers.get("retry-after"), null);
+  assert.equal((await get("192.0.2.30")).headers.get("ratelimit-remaining"), "58");
+  let last = first;
+  for (let i = 0; i < 59; i++) last = await get("192.0.2.30");
+  assert.equal(last.status, 429);
+  assert.equal(last.headers.get("ratelimit-remaining"), "0");
+  assert.equal(last.headers.get("retry-after"), last.headers.get("ratelimit-reset"));
+
+  const doc = buildOpenApi();
+  const params = doc.paths[apiPath("/spectroscopy/blackbody")].get.parameters;
+  assert.equal(params.find((p) => p.name === "temperature")?.example, 5778);
+  for (const op of Object.values(doc.paths)) {
+    for (const p of op.get.parameters) assert.equal(p.example, p.schema.default, p.name);
+  }
+});

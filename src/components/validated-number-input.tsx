@@ -67,6 +67,7 @@ export default function ValidatedNumberInput({
       <span className="text-sm text-gray-300">{label}</span>
       <input
         type="number"
+        inputMode="decimal"
         value={text ?? value}
         min={min}
         max={max}

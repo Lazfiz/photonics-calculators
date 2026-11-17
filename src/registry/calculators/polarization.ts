@@ -289,7 +289,7 @@ export const polarization: CalculatorEntry[] = [
   {
     slug: "jones-calculus",
     title: "Jones Calculus",
-    description: "Chain Jones matrices for polarizers, waveplates, and rotators. Up to 5 elements.",
+    description: "Chain Jones matrices for polarizers, waveplates, and rotators. Up to 6 elements.",
     tier: "exact",
     modelNote: "Ideal Jones matrices applied in turn, Goldstein convention: RCP = [1, i]/√2 with S₃ > 0, a retarder is diag(1, e^(−iΓ)) with its fast axis at 0°, a rotator by +θ turns counter-clockwise. Not modelled: losses.",
     references: [jones1941, goldsteinJones],
