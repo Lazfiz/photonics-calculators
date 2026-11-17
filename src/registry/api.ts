@@ -51,6 +51,7 @@ export function apiResponse(calculator: Calculator, schema: CalculatorSchema, ru
       unit: output.unit,
       siValue: run.si[output.key],
       siUnit: output.siUnit,
+      ...(run.reasons[output.key] ? { reason: run.reasons[output.key] } : {}),
     }])),
     warnings: run.warnings,
   };
@@ -93,6 +94,7 @@ const quantity = {
     unit: { type: "string", description: '"" for a pure number.' },
     siValue: { type: ["number", "null"] },
     siUnit: { type: "string" },
+    reason: { type: "string", description: "Outputs only, when value is null: the warning that says why, where the calculator names it." },
   },
 };
 

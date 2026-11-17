@@ -29,6 +29,8 @@
   golden-value tests against published values or hand calculations (`tests/`).
 - A [blind audit](docs/audit/9b-blind-audit.md) of 30 randomly drawn pages (seeded, reproducible) found 0 wrong
   results and 7 minor issues.
+- [Unverified sources](docs/unverified-sources.md) lists the sources we know a page cites without having
+  checked their text against the code.
 - Found a mistake? Use "Report a problem" on the page, or open a
   [physics error issue](https://github.com/Lazfiz/photonics-calculators/issues/new?template=physics-error.yml).
 

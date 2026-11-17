@@ -13,6 +13,8 @@ export interface RunResult {
   outputs: Record<string, number | null>;
   si: Record<string, number | null>;
   warnings: string[];
+  /** For each null output that the schema explains, the warning that says why. */
+  reasons: Record<string, string>;
 }
 
 const withUnit = (value: number, unit: string) => (unit ? `${value} ${unit}` : `${value}`);
@@ -74,11 +76,18 @@ export function runSchema(schema: CalculatorSchema, values: InputValues): RunRes
   const result = schema.compute(toSI(schema, values));
   const outputs: Record<string, number | null> = {};
   const si: Record<string, number | null> = {};
+  const warnings = [...(result.warnings ?? [])];
+  const reasons: Record<string, string> = {};
   for (const output of schema.outputs) {
     const value = result.values[output.key];
     const finite = Number.isFinite(value);
     si[output.key] = finite ? value : null;
     outputs[output.key] = finite ? value / output.toSI : null;
+    const reason = result.reasons?.[output.key];
+    if (!finite && reason) {
+      reasons[output.key] = reason;
+      if (!warnings.includes(reason)) warnings.push(reason);
+    }
   }
-  return { inputs: { ...values }, outputs, si, warnings: result.warnings ?? [] };
+  return { inputs: { ...values }, outputs, si, warnings, reasons };
 }

@@ -65,15 +65,23 @@ export default defineSchema({
       if (differs(pulse.energy, values[`energy${c}`]) || differs(cw.power, values[`cw${c}`])) capped.push(NAMES[c]);
     }
     const warnings: string[] = [];
+    const reasons: Record<string, string> = {};
     if (missing.length > 0) {
-      warnings.push(`Not defined at this wavelength: ${missing.join(", ")} (Class 2 exists only at 400–700 nm, Class 3R from 302.5 nm).`);
+      const undefinedHere = `Not defined at this wavelength: ${missing.join(", ")} (Class 2 exists only at 400–700 nm, Class 3R from 302.5 nm).`;
+      warnings.push(undefinedHere);
+      // Each output of a class that does not exist here, and its A11 twin, names that warning (null reasons, #292).
+      for (const c of CLASSES) {
+        if (!missing.includes(NAMES[c])) continue;
+        const suffixes = A11_CLASSES.includes(c) ? ["", "A11"] : [""];
+        for (const s of suffixes) for (const k of ["energy", "stop", "cw"]) reasons[`${k}${c}${s}`] = undefinedHere;
+      }
     }
     if (capped.length > 0) {
       warnings.push(`In the EU (${A11}) the skin AEL also caps ${capped.join(" and ")} here, as Schulmeister's 2022 ` +
         `white paper describes it (${UNVERIFIED}): see the A11 outputs.` +
         (capped.includes(NAMES["3R"]) ? " Class 3R takes the skin AEL 1× (no factor 5), the cautious reading." : ""));
     }
-    return { values, warnings: warnings.length > 0 ? warnings : undefined };
+    return { values, warnings: warnings.length > 0 ? warnings : undefined, reasons };
   },
   checks: [
     {

@@ -44,14 +44,12 @@ export default defineSchema({
     });
     const photonRate = power / photonEnergy(wavelength);
     const electronRate = qe * photonRate;
-    const warnings: string[] = [];
-    if (!(power > 0)) warnings.push("The collected background power is zero, so it has no dBm value.");
     return {
       values: {
         radiance, solidAngle, power, powerDbm: power > 0 ? 10 * Math.log10(power * 1e3) : NaN, photonRate, electronRate,
         photoelectronsPerBit: electronRate / bitRate,
       },
-      warnings,
+      reasons: { powerDbm: "The collected background power is zero, so it has no dBm value." },
     };
   },
   checks: [
