@@ -45,7 +45,10 @@ function LawSelect({ id, label, value, onChange }: { id: string; label: string; 
   );
 }
 
-function spectrumTraces(h: CoatingMaterial, l: CoatingMaterial, pairs: number, nInc: number, nSub: number, lambda0: number, tempC: number, fillPct: number) {
+function spectrumTraces(
+  h: CoatingMaterial, l: CoatingMaterial, pairs: number, nInc: number, nSub: number, lambda0: number, tempC: number, fillPct: number,
+  alphaS: number,
+) {
   const dT = tempC - T0_C, fill = fillPct / 100;
   const conditions = [
     { name: `Dry pores, ${T0_C} °C`, dT: 0, fill: 0, color: "#60a5fa" },
@@ -57,7 +60,7 @@ function spectrumTraces(h: CoatingMaterial, l: CoatingMaterial, pairs: number, n
   const WLS_NM = Array.from({ length: 501 }, (_, i) => (lambda0 * 1e9) * (0.6 + i * 0.002));
   const lambdas = WLS_NM.map((w) => w * 1e-9);
   return conditions.map((c) => {
-    const layers = environmentStack(h, l, pairs, lambda0, c.dT, c.fill);
+    const layers = environmentStack(h, l, pairs, lambda0, c.dT, c.fill, alphaS);
     const R = reflectanceSpectrum({ incident: nInc, layers, substrate: { n: nSub } }, lambdas);
     return { x: WLS_NM, y: R.map(round6), type: "scatter" as const, mode: "lines" as const, name: c.name, line: { color: c.color, width: 2 } };
   });
@@ -80,6 +83,9 @@ export default function EnvironmentalStabilityPage() {
   const [dndtLRaw, setDndtL] = useURLState("dndtL", 8.86);
   const [cteHRaw, setCteH] = useURLState("cteH", 8); // 1e-6/K
   const [cteLRaw, setCteL] = useURLState("cteL", 0.55);
+  const [nuHRaw, setNuH] = useURLState("nuH", 0.27);
+  const [nuLRaw, setNuL] = useURLState("nuL", 0.17);
+  const [cteSubRaw, setCteSub] = useURLState("cteSub", 7.1); // 1e-6/K
   const [levelRaw, setLevel] = useURLState("level", 300); // µm
   const [surfRaw, setSurf] = useURLState("surfaces", 2);
   const [tUseRaw, setTUse] = useURLState("tUse", 25); // °C
@@ -93,12 +99,13 @@ export default function EnvironmentalStabilityPage() {
   const lawOf = (x: string): MixingLaw => (x === "bragg-pippard" ? "bragg-pippard" : "linear");
   const H: CoatingMaterial = {
     n: clamp(nHRaw, 1, 5, 2.35), p: clamp(pHRaw, 0.5, 1, 0.85), law: lawOf(lawHRaw),
-    dnDT: clamp(dndtHRaw, -1000, 1000, 20) * PPM, cte: clamp(cteHRaw, -100, 100, 8) * PPM,
+    dnDT: clamp(dndtHRaw, -1000, 1000, 20) * PPM, cte: clamp(cteHRaw, -100, 100, 8) * PPM, nu: clamp(nuHRaw, 0, 0.5, 0.27),
   };
   const L: CoatingMaterial = {
     n: clamp(nLRaw, 1, 5, 1.45), p: clamp(pLRaw, 0.5, 1, 0.85), law: lawOf(lawLRaw),
-    dnDT: clamp(dndtLRaw, -1000, 1000, 8.86) * PPM, cte: clamp(cteLRaw, -100, 100, 0.55) * PPM,
+    dnDT: clamp(dndtLRaw, -1000, 1000, 8.86) * PPM, cte: clamp(cteLRaw, -100, 100, 0.55) * PPM, nu: clamp(nuLRaw, 0, 0.5, 0.17),
   };
+  const alphaS = clamp(cteSubRaw, -100, 100, 7.1) * PPM;
   const nSub = clamp(nSubRaw, 1, 5, 1.52);
   const nInc = clamp(nIncRaw, 1, 5, 1);
   const pairs = Math.round(clamp(pairsRaw, 1, 50, 5));
@@ -108,10 +115,10 @@ export default function EnvironmentalStabilityPage() {
   const fillPct = clamp(fillRaw, 0, 100, 100);
   const dT = tempC - T0_C;
 
-  const traces = spectrumTraces(H, L, pairs, nInc, nSub, lambda0, tempC, fillPct);
-  const shiftWet = centreShift(H, L, lambda0, 0, fillPct / 100) * 1e9;
-  const shiftHot = centreShift(H, L, lambda0, dT, 0) * 1e9;
-  const shiftBoth = centreShift(H, L, lambda0, dT, fillPct / 100) * 1e9;
+  const traces = spectrumTraces(H, L, pairs, nInc, nSub, lambda0, tempC, fillPct, alphaS);
+  const shiftWet = centreShift(H, L, lambda0, 0, fillPct / 100, alphaS) * 1e9;
+  const shiftHot = centreShift(H, L, lambda0, dT, 0, alphaS) * 1e9;
+  const shiftBoth = centreShift(H, L, lambda0, dT, fillPct / 100, alphaS) * 1e9;
   const wetH = wetIndex(H.n, H.p, fillPct / 100, H.law);
   const wetL = wetIndex(L.n, L.p, fillPct / 100, L.law);
   const solH = solidIndex(H.n, H.p, H.law);
@@ -121,7 +128,7 @@ export default function EnvironmentalStabilityPage() {
     { name: "L", mat: L, sol: solL },
   ].filter((x) => x.mat.law === "bragg-pippard" && !Number.isFinite(x.sol));
   const shiftVsT = [0, fillPct / 100].map((f, i) => ({
-    x: TEMPS_C, y: TEMPS_C.map((t) => round6(centreShift(H, L, lambda0, t - T0_C, f) * 1e9)),
+    x: TEMPS_C, y: TEMPS_C.map((t) => round6(centreShift(H, L, lambda0, t - T0_C, f, alphaS) * 1e9)),
     type: "scatter" as const, mode: "lines" as const, name: i === 0 ? "Dry pores" : `Pores ${fillPct} % filled`,
     line: { color: i === 0 ? "#fb923c" : "#34d399", width: 2 },
   }));
@@ -160,12 +167,20 @@ export default function EnvironmentalStabilityPage() {
         <ValidatedNumberInput label={<>dn<sub>L</sub>/dT (10⁻⁶/K)</>} value={dndtLRaw} onChange={setDndtL} min={-1000} max={1000} step="0.1" />
         <ValidatedNumberInput label={<>Expansion α<sub>H</sub> (10⁻⁶/K)</>} value={cteHRaw} onChange={setCteH} min={-100} max={100} step="0.1" />
         <ValidatedNumberInput label={<>Expansion α<sub>L</sub> (10⁻⁶/K)</>} value={cteLRaw} onChange={setCteL} min={-100} max={100} step="0.01" />
+        <ValidatedNumberInput label={<>Poisson&apos;s ratio ν<sub>H</sub></>} value={nuHRaw} onChange={setNuH} min={0} max={0.5} step="0.01" />
+        <ValidatedNumberInput label={<>Poisson&apos;s ratio ν<sub>L</sub></>} value={nuLRaw} onChange={setNuL} min={0} max={0.5} step="0.01" />
+        <ValidatedNumberInput label={<>Substrate expansion α<sub>s</sub> (10⁻⁶/K)</>} value={cteSubRaw} onChange={setCteSub} min={-100} max={100} step="0.1" />
       </div>
       <p className="text-xs text-gray-400 mb-6">
         The indices are those of the dry film (empty pores, as in vacuum) at {T0_C} °C, where each layer is a quarter
         wave at λ₀. Packing densities are most often 0.8–0.9 for evaporated films and near 1 for ion-assisted and
         sputtered ones (Macleod 1988). The L defaults are bulk fused silica (dn/dT 8.86 × 10⁻⁶/K absolute at 0.6 µm, Leviton &amp; Frey 2006; α 0.55 ×
-        10⁻⁶/K, Crystran); the H defaults are placeholders, so enter your film&apos;s values. How much of the pore volume fills
+        10⁻⁶/K, Crystran; ν 0.17); the H defaults (ν 0.27 included) are placeholders, so enter your film&apos;s values. The
+        substrate holds each film to its own in-plane expansion α<sub>s</sub> (default 7.1 × 10⁻⁶/K, N-BK7, Schott), so a
+        layer thickens by [(1 + ν)α − 2να<sub>s</sub>]ΔT/(1 − ν), not αΔT: on heating, a substrate that expands more than the film thins it compared with a free film (and thickens it on
+        cooling). Enter α<sub>s</sub> = α of a layer and that layer expands freely. The stress this puts in the film also changes
+        its index, which is not modelled; for SiO₂ on N-BK7 at ΔT = 50 K that is about −0.03 nm on the band centre, as large as
+        the Poisson term, unless your dn/dT was measured on a film on its substrate. How much of the pore volume fills
         depends on the humidity, the pore sizes and the time since venting.
       </p>
 

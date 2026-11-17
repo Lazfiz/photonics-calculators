@@ -7,6 +7,7 @@ import {
   cc1246Count,
   cc1246Obscuration,
   centreShift,
+  clampedThicknessStrain,
   filmIndex,
   poreIndex,
   solidIndex,
@@ -50,6 +51,26 @@ test("Quarter-wave stack band centre: λ₀(Σn′d′/Σnd − 1) for moisture 
   assertRel(centreShift(H, L, lambda0, 50, 0), lambda0 * hand, 1e-9, "temperature");
   assertRel(centreShift(H, L, lambda0, 50, 0) * 1e9, 0.35697, 1e-4, "temperature, nm");
   assert.equal(centreShift(H, L, lambda0, 0, 0), 0);
+});
+
+test("Film held in-plane by its substrate: ε_z = [α_f − 2ν/(1 − ν)(α_s − α_f)]ΔT (isotropic Hooke's law, σ_z = 0; hand calculation)", () => {
+  // Limits: a substrate matching the film, or ν = 0, leaves the free film α_f ΔT; ν = ½ conserves volume, 3α_f − 2α_s.
+  assertRel(clampedThicknessStrain(8e-6, 8e-6, 0.27, 50), 4e-4, 1e-12, "matched substrate");
+  assertRel(clampedThicknessStrain(8e-6, 7.1e-6, 0, 50), 4e-4, 1e-12, "ν = 0");
+  assertRel(clampedThicknessStrain(1e-6, 7e-6, 0.5, 10), (3e-6 - 14e-6) * 10, 1e-12, "ν = ½");
+  // Fused silica (α 0.55e-6, ν 0.17) on N-BK7 (7.1e-6), ΔT = 50 K: 50 (0.55e-6 − (0.34/0.83) 6.55e-6) = −1.066566e-4: it thins.
+  assertRel(clampedThicknessStrain(0.55e-6, 7.1e-6, 0.17, 50), -1.0665662650602409e-4, 1e-12, "SiO₂ on N-BK7");
+  assert.ok(Number.isNaN(clampedThicknessStrain(8e-6, 7.1e-6, 0.6, 50)));
+  assert.ok(Number.isNaN(clampedThicknessStrain(8e-6, 7.1e-6, -1, 50)));
+  // Page defaults (H: α 8e-6, ν 0.27; L as above), dry, ΔT = 50 K: 0.2909038 nm against 0.3186501 nm for free films.
+  const H: CoatingMaterial = { n: 2.35, p: 0.85, law: "linear", dnDT: 20e-6, cte: 8e-6, nu: 0.27 };
+  const L: CoatingMaterial = { n: 1.45, p: 0.85, law: "linear", dnDT: 8.86e-6, cte: 0.55e-6, nu: 0.17 };
+  const eH = 50 * (8e-6 + (0.54 / 0.73) * 0.9e-6), eL = 50 * (0.55e-6 - (0.34 / 0.83) * 6.55e-6);
+  const hand = ((1 + 1e-3 / 2.35) * (1 + eH) + (1 + 4.43e-4 / 1.45) * (1 + eL)) / 2 - 1;
+  assertRel(centreShift(H, L, 550e-9, 50, 0, 7.1e-6), 550e-9 * hand, 1e-12, "held stack");
+  assertRel(centreShift(H, L, 550e-9, 50, 0, 7.1e-6) * 1e9, 0.2909038, 1e-6, "held stack, nm");
+  assertRel(centreShift(H, L, 550e-9, 50, 0) * 1e9, 0.3186501, 1e-6, "free films, nm");
+  assert.equal(centreShift(H, L, 550e-9, 0, 0, 7.1e-6), 0);
 });
 
 test("CC1246 particles: counts from log N = 0.926(log²L − log²x), obscuration vs Ma, Fong & Lee 1990 eq. 17a", () => {

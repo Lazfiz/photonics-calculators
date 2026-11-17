@@ -13,9 +13,19 @@
  *    distribution and on time (water enters as spreading patches: Macleod & Richmond, Thin Solid Films 37, 163
  *    (1976)), so it is an input here. Model tier: textbook approximation.
  *
- * 2. Temperature: each layer's index moves by dn/dT·ΔT and its thickness by α·ΔT (free-film expansion; the
- *    substrate's lateral constraint and the Poisson term are left out). A quarter-wave stack's band centre
- *    scales with the stack's optical thickness Σ n d. Model tier: textbook approximation.
+ * 2. Temperature: each layer's index moves by dn/dT·ΔT and its thickness by the strain ε_z. A free film expands
+ *    by ε_z = α_f ΔT. A film bonded to a substrate much thicker than itself is held to the substrate's in-plane
+ *    strain α_s ΔT. With σ_z = 0 and the isotropic thermoelastic Hooke's law ε_i = [(1 + ν)σ_i − ν Σσ]/E + α ΔT
+ *    (S. P. Timoshenko, J. N. Goodier, Theory of Elasticity, 3rd ed., McGraw-Hill 1970, ch. 13), the biaxial
+ *    mismatch stress is σ = [E/(1 − ν)](α_s − α_f) ΔT (L. B. Freund, S. Suresh, Thin Film Materials, Cambridge
+ *    2004, ch. 2, doi:10.1017/CBO9780511754715), so
+ *        ε_z = α_f ΔT − [2ν/(1 − ν)](α_s − α_f) ΔT = {[(1 + ν)/(1 − ν)] α_f − [2ν/(1 − ν)] α_s} ΔT.
+ *    On heating, a substrate that expands more than the film thins it compared with a free film (H. Takahashi, Appl. Opt. 34, 667 (1995),
+ *    doi:10.1364/AO.34.000667, uses high-expansion substrates to cancel dn/dT). The stress-optic change of n is
+ *    not modelled: dn/dT is taken as entered. It is about as large as the Poisson term: SiO₂ on N-BK7 at ΔT = 50 K
+ *    carries σ ≈ 29 MPa, Δn ≈ −1.4e-4 (p11 0.121, p12 0.270), about −0.03 nm on the band centre, unless dn/dT was
+ *    measured on a film on its substrate. A quarter-wave stack's band centre scales with the stack's optical
+ *    thickness Σ n d. Model tier: textbook approximation.
  *
  * 3. Particles (IEST-STD-CC1246E; slope from MIL-STD-1246): the number of particles of size ≥ x on 0.1 m² of
  *    a level-L surface is log₁₀ N = 0.926 (log₁₀² L − log₁₀² x), N(L) = 1. The obscured area fraction is
@@ -75,22 +85,39 @@ export interface CoatingMaterial {
   dnDT: number;
   /** Linear thermal expansion, 1/K. */
   cte: number;
+  /** Poisson's ratio of the film; used only on a substrate. */
+  nu?: number;
 }
 
-/** A layer that is a quarter wave at lambda0 when dry at the reference temperature, after ΔT and pore fill. */
-export function environmentLayer(m: CoatingMaterial, lambda0: number, dT: number, fill: number): Layer {
-  return { n: wetIndex(m.n, m.p, fill, m.law) + m.dnDT * dT, thickness: (lambda0 / (4 * m.n)) * (1 + m.cte * dT) };
+/**
+ * Thickness strain ε_z of an isotropic film held in-plane by a thick substrate (expansion alphaS, 1/K) over ΔT:
+ * {[(1 + ν)/(1 − ν)] α_f − [2ν/(1 − ν)] α_s} ΔT. NaN unless −1 < ν ≤ 0.5.
+ */
+export function clampedThicknessStrain(alphaF: number, alphaS: number, nu: number, dT: number): number {
+  if (!(nu > -1 && nu <= 0.5)) return NaN;
+  return (alphaF - ((2 * nu) / (1 - nu)) * (alphaS - alphaF)) * dT;
+}
+
+/**
+ * A layer that is a quarter wave at lambda0 when dry at the reference temperature, after ΔT and pore fill. With
+ * alphaS (the substrate's expansion, 1/K) the film is held by the substrate; without it the film expands freely.
+ */
+export function environmentLayer(m: CoatingMaterial, lambda0: number, dT: number, fill: number, alphaS?: number): Layer {
+  const strain = alphaS === undefined ? m.cte * dT : clampedThicknessStrain(m.cte, alphaS, m.nu ?? NaN, dT);
+  return { n: wetIndex(m.n, m.p, fill, m.law) + m.dnDT * dT, thickness: (lambda0 / (4 * m.n)) * (1 + strain) };
 }
 
 /** (HL)^N quarter-wave stack at lambda0 (dry, reference temperature) after ΔT and pore fill. */
-export function environmentStack(h: CoatingMaterial, l: CoatingMaterial, pairs: number, lambda0: number, dT: number, fill: number): Layer[] {
-  const H = environmentLayer(h, lambda0, dT, fill), L = environmentLayer(l, lambda0, dT, fill);
+export function environmentStack(
+  h: CoatingMaterial, l: CoatingMaterial, pairs: number, lambda0: number, dT: number, fill: number, alphaS?: number,
+): Layer[] {
+  const H = environmentLayer(h, lambda0, dT, fill, alphaS), L = environmentLayer(l, lambda0, dT, fill, alphaS);
   return Array.from({ length: 2 * pairs }, (_, j) => (j % 2 === 0 ? H : L));
 }
 
 /** Band-centre shift Δλ of the quarter-wave stack: λ0 (Σ n′d′ / Σ n d − 1), one H and one L layer per pair. */
-export function centreShift(h: CoatingMaterial, l: CoatingMaterial, lambda0: number, dT: number, fill: number): number {
-  const H = environmentLayer(h, lambda0, dT, fill), L = environmentLayer(l, lambda0, dT, fill);
+export function centreShift(h: CoatingMaterial, l: CoatingMaterial, lambda0: number, dT: number, fill: number, alphaS?: number): number {
+  const H = environmentLayer(h, lambda0, dT, fill, alphaS), L = environmentLayer(l, lambda0, dT, fill, alphaS);
   return lambda0 * ((H.n * H.thickness + L.n * L.thickness) / (lambda0 / 2) - 1);
 }
 

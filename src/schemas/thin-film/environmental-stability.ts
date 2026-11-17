@@ -7,6 +7,10 @@ import { defineSchema } from "../types";
 const MACLEOD = "Macleod H. A. (1988). Moisture adsorption in optical coatings, NASA Conference Publication, NTRS 19890003956, " +
   "eq. 3 (linear mixing), eq. 4 (Bragg–Pippard columns) and eq. 5 (n_v = 1 + f (n_w − 1)); a quarter-wave stack's band " +
   "centre scales with its optical thickness Σ n d.";
+const THERMAL = "Thickness strain of a film held in-plane by its substrate, from the isotropic thermoelastic Hooke's law with σ_z = 0 " +
+  "(Timoshenko S. P., Goodier J. N. (1970), Theory of Elasticity, 3rd ed., ch. 13) and the biaxial mismatch stress " +
+  "σ = E/(1 − ν) (α_s − α_f) ΔT (Freund L. B., Suresh S. (2004), Thin Film Materials, ch. 2, doi:10.1017/CBO9780511754715): ε_z = [α_f − 2ν/(1 − ν) (α_s − α_f)] ΔT; " +
+  "band centre ∝ Σ n d (Macleod 1988).";
 const PECK = "Peck D. S. (1986). Comprehensive model for humidity testing correlation, Proc. 24th IEEE Int. Reliability Physics Symp., " +
   "44–50, doi:10.1109/IRPS.1986.362110: AF = (RH_test/RH_use)^n exp[(E_a/k_B)(1/T_use − 1/T_test)] (n = 0: Arrhenius). Equation number not quoted.";
 
@@ -36,6 +40,9 @@ export default defineSchema({
     { key: "dndtL", label: "dn_L/dT", unit: "1e-6/K", toSI: 1e-6, siUnit: "1/K", default: 8.86, min: -1000, max: 1000 },
     { key: "cteH", label: "Expansion α_H", unit: "1e-6/K", toSI: 1e-6, siUnit: "1/K", default: 8, min: -100, max: 100 },
     { key: "cteL", label: "Expansion α_L", unit: "1e-6/K", toSI: 1e-6, siUnit: "1/K", default: 0.55, min: -100, max: 100 },
+    { key: "nuH", label: "Poisson's ratio ν_H", unit: "", toSI: 1, siUnit: "", default: 0.27, min: 0, max: 0.5 },
+    { key: "nuL", label: "Poisson's ratio ν_L", unit: "", toSI: 1, siUnit: "", default: 0.17, min: 0, max: 0.5 },
+    { key: "cteSub", label: "Substrate expansion α_s (holds the film in-plane)", unit: "1e-6/K", toSI: 1e-6, siUnit: "1/K", default: 7.1, min: -100, max: 100 },
     { key: "level", label: "CC1246 cleanliness level", unit: "µm", toSI: 1e-6, siUnit: "m", default: 300, min: 1, max: 2000 },
     { key: "surfaces", label: "Contaminated surfaces in the path (rounded to a whole number)", unit: "", toSI: 1, siUnit: "", default: 2, min: 1, max: 100 },
     { key: "tUse", label: "Use temperature", unit: "°C", toSI: 1, siUnit: "°C", default: 25, min: -60, max: 300 },
@@ -67,12 +74,12 @@ export default defineSchema({
   ],
   compute(si) {
     // Same glue as the page: °C → ΔT from 25 °C and K, the input ranges are the page's clamps.
-    const H: CoatingMaterial = { n: si.nH, p: si.pH, law: lawOf(si.lawH), dnDT: si.dndtH, cte: si.cteH };
-    const L: CoatingMaterial = { n: si.nL, p: si.pL, law: lawOf(si.lawL), dnDT: si.dndtL, cte: si.cteL };
-    const lambda0 = si.designWl, fill = si.fill, dT = si.tempC - T0_C;
-    const shiftWet = centreShift(H, L, lambda0, 0, fill);
-    const shiftHot = centreShift(H, L, lambda0, dT, 0);
-    const shiftBoth = centreShift(H, L, lambda0, dT, fill);
+    const H: CoatingMaterial = { n: si.nH, p: si.pH, law: lawOf(si.lawH), dnDT: si.dndtH, cte: si.cteH, nu: si.nuH };
+    const L: CoatingMaterial = { n: si.nL, p: si.pL, law: lawOf(si.lawL), dnDT: si.dndtL, cte: si.cteL, nu: si.nuL };
+    const lambda0 = si.designWl, fill = si.fill, dT = si.tempC - T0_C, alphaS = si.cteSub;
+    const shiftWet = centreShift(H, L, lambda0, 0, fill, alphaS);
+    const shiftHot = centreShift(H, L, lambda0, dT, 0, alphaS);
+    const shiftBoth = centreShift(H, L, lambda0, dT, fill, alphaS);
     const solidH = solidIndex(H.n, H.p, H.law), solidL = solidIndex(L.n, L.p, L.law);
     const surfaces = Math.round(si.surfaces);
     const obscuration = cc1246Obscuration(si.level * 1e6);
@@ -106,13 +113,15 @@ export default defineSchema({
       tolerance: 1e-8,
     },
     {
-      // Dry, 75 °C (ΔT = 50 K), no water: each layer's optical thickness scales by (1 + (dn/dT)ΔT/n)(1 + αΔT):
-      // Δλ = λ₀ [½ Σ_{H,L} (n + dn/dT ΔT)(1 + αΔT)/n − 1] = 550 · 5.7936e-4 = 0.318650 nm (L: dn/dT 8.86e-6, fused silica absolute,
-      // Leviton & Frey 2006; was 0.356962 nm with Crystran's 12.9e-6).
-      source: MACLEOD,
+      // Dry, 75 °C (ΔT = 50 K), no water, on the 7.1e-6/K substrate: each layer's optical thickness scales by
+      // (1 + (dn/dT)ΔT/n)(1 + ε_z), ε_z = [α_f − 2ν/(1 − ν) (α_s − α_f)] ΔT:
+      // ε_H = 50 [8e-6 + (0.54/0.73) 0.9e-6] = 4.332877e-4, ε_L = 50 [0.55e-6 − (0.34/0.83) 6.55e-6] = −1.066566e-4;
+      // Δλ = λ₀ [½ ((1 + 1e-3/2.35)(1 + ε_H) + (1 + 4.43e-4/1.45)(1 + ε_L)) − 1] = 550 · 5.289160e-4 = 0.2909038 nm
+      // (free film: 0.318650 nm).
+      source: THERMAL,
       basis: "computed",
       inputs: { fill: 0 },
-      expect: { shiftHot: 0.31865013695981936, shiftBoth: 0.31865013695981936 },
+      expect: { shiftHot: 0.2909037981557617, shiftBoth: 0.2909037981557617 },
       tolerance: 1e-8,
     },
     {
