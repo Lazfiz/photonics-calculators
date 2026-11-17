@@ -33,9 +33,9 @@ export default defineSchema({
   ],
   outputs: [
     { key: "classRank", label: "Class (IEC 60825-1:2014): 1 = Class 1, 2 = 1M, 3 = Class 2, 4 = 2M, 5 = 3R, 6 = 3B, 7 = Class 4", unit: "", toSI: 1, siUnit: "" },
-    { key: "classRankA11", label: "Class in the EU (EN 60825-1:2014/A11:2021), same ranks; differs only at 1250–1400 nm", unit: "", toSI: 1, siUnit: "" },
+    { key: "classRankA11", label: "Class in the EU (EN 60825-1:2014/A11:2021; unverified: A11 text not read), same ranks; differs only at 1250–1400 nm", unit: "", toSI: 1, siUnit: "" },
     { key: "class1Max", label: "Largest CW power of this beam within Class 1", unit: "mW", toSI: 1e-3, siUnit: "W" },
-    { key: "class1MaxA11", label: "Largest CW power of this beam within Class 1 in the EU (A11)", unit: "mW", toSI: 1e-3, siUnit: "W" },
+    { key: "class1MaxA11", label: "Largest CW power of this beam within Class 1 in the EU (A11; unverified: A11 text not read)", unit: "mW", toSI: 1e-3, siUnit: "W" },
     { key: "class3RMax", label: "Largest CW power of this beam within Class 3R", unit: "mW", toSI: 1e-3, siUnit: "W" },
     { key: "class3BMax", label: "Largest CW power of this beam within Class 3B", unit: "mW", toSI: 1e-3, siUnit: "W" },
     { key: "diameter3", label: "Beam diameter at the naked-eye stop (Condition 3)", unit: "mm", toSI: 1e-3, siUnit: "m" },
@@ -60,7 +60,8 @@ export default defineSchema({
     if (opts.condition1 && condition1MayRaiseClass(wavelength, r.diameter3, opts)) warnings.push(CONDITION1_WARNING);
     if (eu.laserClass !== r.laserClass) {
       warnings.push(`In the EU (EN 60825-1:2014/A11:2021) this laser is Class ${eu.laserClass}, not ${r.laserClass}: the skin AEL ` +
-        "caps Classes 1 and 3R at about 0.1 W at 1250–1400 nm.");
+        "caps Classes 1 and 3R at about 0.1 W at 1250–1400 nm, as Schulmeister's 2022 white paper describes A11 (unverified: " +
+        "A11 text not read; the paper applies the same cap to 3R).");
     }
     return {
       values: {

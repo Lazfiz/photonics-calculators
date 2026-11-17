@@ -77,17 +77,21 @@ test("U2 on the AEL page: the EU A11 values are outputs of their own, with no to
   const ael = schema("/laser-safety/ael-limits");
   assert.ok(!ael.inputs.some((i) => i.key === "euA11"));
   // 1310 nm, CW: A11's skin AEL through 1 mm at 0.35 s, 1.1×10⁴·5·0.35^0.25/0.35 J/(m²·s) × π(1 mm)²/4 = 94.93 mW,
-  // caps Classes 1 and 3R (IEC alone: the 3B cap, 0.5 W).
+  // caps Class 1 (IEC alone: the 3B cap, 0.5 W).
   const cap = (5.5e4 * Math.pow(0.35, -0.75) * Math.PI * 1e-6) / 4;
   const r = run(ael, { wavelength: 1310 });
   assertRel(r.outputs.cw1A11 as number, cap * 1e3, 1e-9, "Class 1, EU");
-  assertRel(r.outputs.cw3RA11 as number, cap * 1e3, 1e-9, "Class 3R, EU");
   assertRel(r.outputs.cw3R as number, 500, 1e-9, "Class 3R, IEC");
-  assert.ok(r.warnings.some((w) => w.includes("In the EU") && w.includes("Class 3R")), r.warnings.join(" | "));
+  assert.ok(r.warnings.some((w) => w.includes("In the EU") && w.includes("unverified")), r.warnings.join(" | "));
+  // Recheck 2026-11-16: no 3R A11 output (A11's 3R factor is unsettled), and every A11 output says it is unverified.
+  assert.ok(!ael.outputs.some((o) => o.key.startsWith("energy3RA11") || o.key.startsWith("cw3RA11")));
+  const a11 = ael.outputs.filter((o) => o.key.endsWith("A11"));
+  assert.equal(a11.length, 3);
+  assert.ok(a11.every((o) => o.label.includes("unverified: A11 text not read")));
   // Outside 1250–1400 nm the two agree and nothing is said.
   const d = run(ael, {});
   assert.equal(d.outputs.cw1A11, d.outputs.cw1);
-  assert.equal(d.outputs.energy3RA11, d.outputs.energy3R);
+  assert.equal(d.outputs.energy1A11, d.outputs.energy1);
   assert.ok(!d.warnings.some((w) => w.includes("In the EU")));
 });
 

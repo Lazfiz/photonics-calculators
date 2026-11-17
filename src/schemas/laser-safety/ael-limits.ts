@@ -8,9 +8,15 @@ const IEC = "IEC 60825-1:2014, Safety of laser products, Tables 3–9 (AELs), re
 const CLASSES: readonly AelClass[] = ["1", "2", "3R", "3B"];
 const NAMES: Record<AelClass, string> = { "1": "Class 1 / 1M", "2": "Class 2 / 2M", "3R": "Class 3R", "3B": "Class 3B" };
 
-/** EN 60825-1:2014/A11:2021 (EU) adds the skin AEL to these classes at 1250–1400 nm. */
-const A11_CLASSES: readonly AelClass[] = ["1", "3R"];
+/**
+ * EN 60825-1:2014/A11:2021 (EU) adds the skin AEL at 1250–1400 nm to Classes 1, 1M and 3R (Schulmeister's 2022 white
+ * paper, §4: "the respective requirement added to the AEL tables for Class 1, 1M and Class 3R", which reads as 1× for
+ * 3R; the classification schema applies that). Only Class 1 / 1M is output here: the 3R value is held back until the A11
+ * text is read (5 × Class 1 would be ≈ 475 mW at 1310 nm).
+ */
+const A11_CLASSES: readonly AelClass[] = ["1"];
 const A11 = "EN 60825-1:2014/A11:2021";
+const UNVERIFIED = "unverified: A11 text not read";
 
 const classOutputs = (c: AelClass, suffix: string, prefix: string) => [
   { key: `energy${c}${suffix}`, label: `${prefix}${NAMES[c]}: AEL of one emission, energy through the stop`, unit: "J", toSI: 1, siUnit: "J" },
@@ -19,7 +25,7 @@ const classOutputs = (c: AelClass, suffix: string, prefix: string) => [
 ];
 const outputs = [
   ...CLASSES.flatMap((c) => classOutputs(c, "", "")),
-  ...A11_CLASSES.flatMap((c) => classOutputs(c, "A11", `EU, ${A11}: `)),
+  ...A11_CLASSES.flatMap((c) => classOutputs(c, "A11", `EU, ${A11} (${UNVERIFIED}): `)),
 ];
 
 /** True when two AELs differ by more than rounding (or one is defined and the other isn't). */
@@ -63,7 +69,8 @@ export default defineSchema({
       warnings.push(`Not defined at this wavelength: ${missing.join(", ")} (Class 2 exists only at 400–700 nm, Class 3R from 302.5 nm).`);
     }
     if (capped.length > 0) {
-      warnings.push(`In the EU (${A11}) the skin AEL also caps ${capped.join(" and ")} here: see the A11 outputs.`);
+      warnings.push(`In the EU (${A11}) the skin AEL also caps ${capped.join(" and ")} here, as Schulmeister's 2022 ` +
+        `white paper describes it (${UNVERIFIED}): see the A11 outputs.`);
     }
     return { values, warnings: warnings.length > 0 ? warnings : undefined };
   },
@@ -83,13 +90,15 @@ export default defineSchema({
     },
     {
       // EU A11 at 1310 nm (C_A = 5): the skin limit 1.1×10⁴ C_A t^0.25 J/m² (ICNIRP 2013 Table 7) over the corneal stop, 1 mm
-      // below 0.35 s and 1.5 t^0.375 mm to 10 s (Table 8). One 1 s emission: 5.5×10⁴ J/m² × π(0.75 mm)² = 0.09719302272 J
-      // through 1.5 mm. CW: least at 0.35 s through 1 mm, 5.5×10⁴·0.35^−0.75 W/m² × π(0.5 mm)² = 94.92957523 mW, which caps
-      // Classes 1 and 3R (IEC alone: 498.7 and 500 mW, the 3B cap).
-      source: `${IEC}; K. Schulmeister, "The European Amendment A11:2021 to EN 60825-1", white paper (2022)`,
+      // below 0.35 s and 1.5 t^0.375 mm to 10 s (white paper §4: "the aperture diameter equals 1 mm for emission durations
+      // up to 0,35 seconds and then increases to 3,5 mm at emission durations of 10 seconds and above"; its table: 4.3×10⁻²
+      // t^0.25 J to 0.35 s, then 0.1 W). One 1 s emission: 5.5×10⁴ J/m² × π(0.75 mm)² = 0.09719302272 J through 1.5 mm.
+      // CW: least at 0.35 s through 1 mm, 5.5×10⁴·0.35^−0.75 W/m² × π(0.5 mm)² = 94.92957523 mW (IEC alone: 498.7 mW).
+      source: `${IEC}; K. Schulmeister, "White Paper: The European Amendment A11:2021 to EN 60825-1", Seibersdorf ` +
+        "Laboratories, v2c (2022), §4 (A11 text itself not read)",
       basis: "computed",
       inputs: { wavelength: 1310, emissionDuration: 1, alpha: 1.5 },
-      expect: { energy1A11: 0.09719302272, stop1A11: 1.5, cw1A11: 94.92957523, cw3RA11: 94.92957523, energy1: 0.5 },
+      expect: { energy1A11: 0.09719302272, stop1A11: 1.5, cw1A11: 94.92957523, energy1: 0.5 },
       tolerance: 1e-8,
     },
     {

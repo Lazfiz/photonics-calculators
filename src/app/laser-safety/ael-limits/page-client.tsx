@@ -16,6 +16,10 @@ const CLASSES: { cls: AelClass; name: string; color: string }[] = [
   { cls: "3B", name: "Class 3B", color: "#f87171" },
 ];
 
+// The A11 rows: Class 1 / 1M only; 3R under A11 waits for the A11 text (see the schema's A11_CLASSES).
+const a11Row = (cls: AelClass) => cls === "1";
+const A11_UNVERIFIED = "EU (A11; unverified: A11 text not read)";
+
 /** True when two AELs differ by more than rounding (or one is defined and the other isn't). */
 const differs = (a: number, b: number) => Number.isFinite(a) !== Number.isFinite(b) || Math.abs(a - b) > 1e-9 * Math.abs(b);
 
@@ -32,14 +36,15 @@ export default function AELLimitsPage() {
     () => ({ alpha: Math.min(Math.max(alphaMrad, 0), 100) * 1e-3, longTermViewing: longTerm === 1 }),
     [alphaMrad, longTerm],
   );
-  // EU: EN 60825-1:2014/A11:2021 adds the skin AEL to Classes 1 and 3R at 1250–1400 nm; shown where it differs.
+  // EU: EN 60825-1:2014/A11:2021 adds the skin AEL at 1250–1400 nm; shown where it differs (`a11Row`).
   const euOpts: ClassOptions = useMemo(() => ({ ...opts, euA11: true }), [opts]);
   const inRange = wavelength >= 180 && wavelength <= 1e6;
 
   const rows = useMemo(
     () => CLASSES.flatMap((c) => {
       const iec = { ...c, pulse: aelEnergy(c.cls, lambda, t, opts), cw: cwClassLimit(c.cls, lambda, 0, opts) };
-      const eu = { ...c, name: `${c.name}, EU (A11)`, pulse: aelEnergy(c.cls, lambda, t, euOpts), cw: cwClassLimit(c.cls, lambda, 0, euOpts) };
+      if (!a11Row(c.cls)) return [iec];
+      const eu = { ...c, name: `${c.name}, ${A11_UNVERIFIED}`, pulse: aelEnergy(c.cls, lambda, t, euOpts), cw: cwClassLimit(c.cls, lambda, 0, euOpts) };
       return differs(eu.pulse.energy, iec.pulse.energy) || differs(eu.cw.power, iec.cw.power) ? [iec, eu] : [iec];
     }),
     [lambda, t, opts, euOpts],
@@ -49,10 +54,10 @@ export default function AELLimitsPage() {
     const ts = Array.from({ length: 241 }, (_, i) => T_MIN * Math.pow(T_MAX / T_MIN, i / 240));
     const traces: Record<string, unknown>[] = CLASSES.flatMap((c) => {
       const iec = ts.map((x) => aelEnergy(c.cls, lambda, x, opts).energy);
-      const eu = ts.map((x) => aelEnergy(c.cls, lambda, x, euOpts).energy);
+      const eu = a11Row(c.cls) ? ts.map((x) => aelEnergy(c.cls, lambda, x, euOpts).energy) : iec;
       return [
         ...segmentedLine(ts, iec, c.name, { color: c.color }),
-        ...(eu.some((y, i) => differs(y, iec[i])) ? segmentedLine(ts, eu, `${c.name}, EU (A11)`, { color: c.color, dash: "dash" }) : []),
+        ...(eu.some((y, i) => differs(y, iec[i])) ? segmentedLine(ts, eu, `${c.name}, ${A11_UNVERIFIED}`, { color: c.color, dash: "dash" }) : []),
       ];
     });
     const marks = rows.filter((r) => Number.isFinite(r.pulse.energy));
@@ -136,8 +141,12 @@ export default function AELLimitsPage() {
           differ from IEC 60825-1:2014&apos;s tables by its rounding to two figures: Class 1 at 633 nm is 0.385 mW here,
           3.9×10⁻⁴ W in the table. Class 2 is the Class 1 AEL below 0.25 s and C₆ × 1 mW from 0.25 s; Class 3R is five
           times Class 1 (Class 2 at 400–700 nm). From 1250 to 1400 nm Classes 1 and 3R are also capped at the Class 3B
-          AEL, 0.5 W through 7 mm; the EU amendment A11 adds the skin limit through 1 → 3.5 mm (0.1 W from 0.35 s). Where
-          A11 changes a value, its row (and a dashed curve) appears under the IEC one.
+          AEL, 0.5 W through 7 mm; the EU amendment A11 adds the skin limit through 1 → 3.5 mm (0.1 W from 0.35 s), as
+          Schulmeister&apos;s 2022 white paper describes it; we have not read the A11 text, so these rows are unverified.
+          They are the unrounded skin limit times the stop area, within 4 % of the white paper&apos;s rounded values
+          (stricter from 0.35 s). Where A11 changes the Class 1 value, its row (and a dashed curve) appears under the IEC
+          one. Class 3R under A11 is not shown until the A11 text is read: the white paper puts the same limit, 1×, into the
+          3R table (the Classification page uses that), but 5 × Class 1 would be about 475 mW at 1310 nm.
         </p>
         <p>
           For a CW laser the product has to meet each AEL for every emission duration up to its time base: 0.25 s for
