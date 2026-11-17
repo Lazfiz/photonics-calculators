@@ -3,7 +3,7 @@
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { DNDT_PRESET, cylinderCentreRise, rodThermalLens, slabConductionRise, windowThermalPreset } from "../../../physics/materials/thermal-conduction";
-import { WINDOW_MATERIALS, type WindowMaterialId } from "../../../physics/materials/window-materials";
+import { WINDOW_MATERIALS, dnDTConvention, type WindowMaterialId } from "../../../physics/materials/window-materials";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const show = (x: number, text: () => string) => (Number.isFinite(x) ? text() : "—");
@@ -83,12 +83,12 @@ export default function ThermalConductivityPage() {
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8 overflow-x-auto">
-        <h2 className="text-lg font-semibold mb-3">Room-Temperature Data (Crystran)</h2>
+        <h2 className="text-lg font-semibold mb-3">Room-Temperature Data</h2>
         <table className="w-full text-sm">
           <thead>
             <tr className="text-gray-400 border-b border-gray-800">
               <th className="text-left py-1">Material</th><th className="text-right py-1">k (W/(m·K))</th>
-              <th className="text-right py-1">dn/dT (×10⁻⁶ /K)</th>
+              <th className="text-right py-1">dn/dT (×10⁻⁶ /K)</th><th className="text-left py-1 pl-3">dn/dT convention</th>
             </tr>
           </thead>
           <tbody>
@@ -99,11 +99,21 @@ export default function ThermalConductivityPage() {
                   <td className="py-1">{m.name}</td>
                   <td className="text-right py-1">{m.conductivity}</td>
                   <td className="text-right py-1">{m.dnDT === null ? "—" : Number((m.dnDT / PPM).toPrecision(4))}</td>
+                  <td className="py-1 pl-3 text-xs text-gray-400">
+                    {m.dnDT === null ? "" : m.dnDTAbsolute ? `absolute, ${+(m.dnDTAbsolute.lambda * 1e6).toPrecision(3)} µm` : "not stated"}
+                  </td>
                 </tr>
               );
             })}
           </tbody>
         </table>
+        <p className="text-xs text-gray-400 mt-3">
+          k and the &ldquo;not stated&rdquo; dn/dT are Crystran&apos;s data-sheet values (AMTIR-1: Amorphous
+          Materials&apos;), which don&apos;t say whether dn/dT is absolute or relative to air (they differ by about
+          n × 0.92 ×10⁻⁶ /K). &ldquo;Absolute&rdquo; values are
+          in vacuum at 295 K and the wavelength shown, measured with NASA&apos;s CHARMS (Leviton, Frey and co-workers,
+          Proc. SPIE 5904, 6273 and 6692). Selected: {dnDTConvention(WINDOW_MATERIALS[id])}.
+        </p>
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
