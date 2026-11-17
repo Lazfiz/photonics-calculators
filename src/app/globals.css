@@ -89,3 +89,9 @@ input[type="range"]::-moz-range-track {
     transition: none;
   }
 }
+
+/* The site is dark-only (<html class="dark">, bg-gray-950). gray-500 notes on gray-900 are about 3.6:1; use gray-400
+   (about 6:1) site-wide without rewriting ~440 class names. Border, placeholder and disabled variants keep gray-500. */
+.text-gray-500 {
+  color: var(--color-gray-400, #9ca3af);
+}
