@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { NextRequest } from "next/server";
 
 import { GET } from "../src/app/api/v1/[category]/[slug]/route";
@@ -77,6 +78,50 @@ test("API schemas: each input at its min and max gives numbers, or null with a w
       }
     }
   }
+});
+
+/**
+ * The runs swept for null reasons: the defaults, each input alone at its min and at its max, and each choice option.
+ * For each "<href> <output>", the number of these runs in which that output is null with no reason of its own
+ * (verification 2026-11 W5: counted per run, so an output already in the backlog cannot gain a new unexplained null
+ * unnoticed). A run in which every output is null is not counted: it failed as a whole, and the min/max test above
+ * requires a warning for it.
+ */
+function nullsWithoutReason() {
+  const missing = new Map<string, number>();
+  for (const schema of schemas) {
+    const cases: Record<string, number | string>[] = [{}];
+    for (const input of schema.inputs) cases.push({ [input.key]: input.min }, { [input.key]: input.max });
+    for (const choice of schema.choices ?? []) for (const option of choice.options) cases.push({ [choice.key]: option.value });
+    for (const inputs of cases) {
+      const parsed = parseInputs(schema, query(inputs));
+      if (!parsed.ok) continue;
+      const result = runSchema(schema, parsed.values);
+      const nulls = schema.outputs.filter((o) => result.outputs[o.key] === null);
+      if (nulls.length === schema.outputs.length) continue;
+      for (const output of nulls) {
+        if (result.reasons[output.key]) continue;
+        const key = `${schema.href} ${output.key}`;
+        missing.set(key, (missing.get(key) ?? 0) + 1);
+      }
+    }
+  }
+  return missing;
+}
+
+test("API schemas: a null output names its own warning (reasons); the per-run backlog may only shrink (recheck 2026-11-16)", () => {
+  // tests/null-reasons-pending.json: "<href> <output>" → runs (of those swept above) where it is null with no reason.
+  const pending = new Map(Object.entries(JSON.parse(readFileSync("tests/null-reasons-pending.json", "utf8")) as Record<string, number>));
+  const missing = nullsWithoutReason();
+  const grown = [...missing].filter(([k, n]) => n > (pending.get(k) ?? 0)).map(([k, n]) => `${k}: ${pending.get(k) ?? 0} → ${n}`);
+  assert.deepEqual(grown.sort(), [], "null without a reason in more runs than the backlog allows: add it to `reasons` in compute");
+  const shrunk = [...pending].filter(([k, n]) => (missing.get(k) ?? 0) < n).map(([k, n]) => `${k}: ${n} → ${missing.get(k) ?? 0}`);
+  assert.deepEqual(shrunk.sort(), [], "fewer runs without a reason: lower (or remove) the count in tests/null-reasons-pending.json");
+  const tirf = run(schemas.find((s) => s.href === "/imaging/tirf")!, { theta: 0 });
+  assert.equal(tirf.outputs.depth, null);
+  assert.match(tirf.reasons.depth, /critical angle/);
+  assert.ok(tirf.warnings.includes(tirf.reasons.depth));
+  assert.equal(tirf.reasons.criticalAngle, undefined);
 });
 
 test("API schemas: the reference checks hold", () => {
@@ -185,6 +230,15 @@ test("GET /api/v1/<category>/<slug>: 200 with units, tier and page URL; 400 and 
   assert.match((await bad.json()).error, /outside 1 to 10000 µm/);
   assert.equal((await get("/api/v1/wave-optics/no-such-page", "192.0.2.10")).status, 404);
 
+  // A null output carries its own `reason`, the warning that says why (verification 2026-11 W6); a finite one has none.
+  const tirf = await (await get("/api/v1/imaging/tirf?theta=0", "192.0.2.10")).json();
+  assert.equal(tirf.outputs.depth.value, null);
+  assert.match(tirf.outputs.depth.reason, /critical angle/);
+  assert.ok(tirf.warnings.includes(tirf.outputs.depth.reason));
+  assert.ok(Number.isFinite(tirf.outputs.criticalAngle.value));
+  assert.ok(!("reason" in tirf.outputs.criticalAngle));
+  assert.ok(!("reason" in body.outputs.beamRadius));
+
   const statuses: number[] = [];
   for (let i = 0; i < 61; i++) statuses.push((await get("/api/v1/imaging/airy-disk", "192.0.2.11")).status);
   assert.equal(statuses.filter((s) => s === 200).length, 60);
@@ -203,6 +257,11 @@ test("/openapi.json describes every schema's parameters and outputs", () => {
   assert.deepEqual(Object.keys(op.responses).sort(), ["200", "400", "404", "429"]);
   const outputs = op.responses[200].content["application/json"].schema.allOf[1].properties?.outputs.required;
   assert.deepEqual(outputs, ["peakWavelength", "peakSpectralRadiance", "exitance", "radiance", "bandFraction"]);
+  // `reason` is documented on Quantity as an optional string (verification 2026-11 W6).
+  const quantity = doc.components.schemas.Quantity;
+  assert.equal(quantity.properties.reason.type, "string");
+  assert.match(quantity.properties.reason.description, /null/);
+  assert.ok(!quantity.required.includes("reason"));
   const nohd = doc.paths[apiPath("/laser-safety/nohd")].get.parameters;
   assert.deepEqual(nohd.slice(0, 2).map((p) => p.schema), [
     { type: "string", enum: ["1/e2", "1/e"], default: "1/e2" },

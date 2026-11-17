@@ -103,9 +103,9 @@ export default function ClassificationPage() {
             />
             {resultA11.laserClass ? (
               <ResultCard
-                label="Class in the EU (EN 60825-1 + A11:2021)"
+                label="Class in the EU (EN 60825-1 + A11:2021; unverified: A11 text not read)"
                 value={`Class ${resultA11.laserClass}`}
-                subtext={resultA11.laserClass === result.laserClass ? "the same: A11 changes only 1250–1400 nm" : "skin AEL caps Classes 1 and 3R at about 0.1 W"}
+                subtext={resultA11.laserClass === result.laserClass ? "the same: A11 changes only 1250–1400 nm" : "skin AEL caps Classes 1 and 3R at about 0.1 W (Schulmeister 2022)"}
                 tone={CLASS_TONES[resultA11.laserClass]}
               />
             ) : null}
@@ -189,7 +189,8 @@ export default function ClassificationPage() {
           only), Class 3R five times Class 1 or 2, Class 3B 0.5 W (less in the UV). Each beam is measured as the power
           inside the stop: naked eye 100 mm from the beam waist (Condition 3), telescope with a 50 mm stop at 2 m
           (Condition 1). From 1250 to 1400 nm IEC caps Classes 1 and 3R at 0.5 W instead of ICNIRP&apos;s anterior-eye
-          limit; in the EU the amendment A11 also caps them at the skin limit, about 0.1 W. Both classes are shown; the
+          limit; in the EU the amendment A11 also caps them at the skin limit, about 0.1 W, Class 3R too at 1× (as
+          Schulmeister&apos;s 2022 white paper reads A11; unverified: A11 text not read). Both classes are shown; the
           table and chart are IEC&apos;s.
         </p>
         <p>

@@ -16,7 +16,10 @@
  * - 1250–1400 nm: instead of ICNIRP's anterior-segment limit, Classes 1, 1M and 3R are capped at the Class 3B AEL through
  *   the same 7 mm stop (Schulmeister 2017); for a point source the cap binds from 1310 nm. EN 60825-1:2014/A11:2021 (EU
  *   only) adds the skin limit through the corneal stop (1 mm to 0.35 s, 1.5 t^0.375 mm to 10 s, then 3.5 mm): 0.1 W from
- *   0.35 s (Schulmeister 2022). Optional here.
+ *   0.35 s (Schulmeister 2022, §4: "the aperture diameter equals 1 mm for emission durations up to 0,35 seconds and then
+ *   increases to 3,5 mm at emission durations of 10 seconds and above"; its table: 4.3×10⁻² t^0.25 J to 0.35 s, then
+ *   0.1 W; not ICNIRP's 3.5 mm skin aperture at every duration). It is "added to the AEL tables for Class 1, 1M and
+ *   Class 3R", one table and no factor for 3R, so 3R takes it 1× here. The A11 text itself is unread. Optional here.
  * - Class 2, 400–700 nm: the Class 1 AEL below 0.25 s, then C₆ × 1 mW (C₆ = C_E at 0.25 s), through 7 mm.
  * - Class 3R: 5 × Class 1 (5 × Class 2 at 400–700 nm); none below 302.5 nm. The 1250–1400 nm caps stay 1×.
  * - Class 3B, through 7 mm (IEC 60825-1:2014 Table 8; the same as the 2001 edition's Table 4, as Schulmeister 2017 notes
@@ -35,6 +38,16 @@
  * Not modelled: repetitive pulses (C₅), Class 1C, the photochemical field of view γ_ph, Condition 1 outside 400–1400 nm
  * (the 2001 edition used a 25 mm stop there), sources larger than α_max = 100 mrad. The 2001 edition measured the UV and
  * IR power AELs through a 7 mm stop, more restrictive than each AEL's own stop for beams wider than it.
+ *
+ * TODO, needs IEC 60825-1:2014 Table 10 (not available here; review 2026-11, laser-safety audit E1, M6–M8):
+ * - E1: Condition 1 at 302.5–400 nm and 1400–4000 nm. There it gets only the `condition1MayRaiseClass` warning; take
+ *   the stop sizes and distances from Table 10 and apply them as at 400–1400 nm.
+ * - M6: Class 3B is measured through 7 mm at every wavelength; Table 10 gives 1 mm in the UV and up to 3.5 mm above
+ *   1400 nm. 7 mm collects more of a wide beam, so this errs safe.
+ * - M7: a beam within Class 1 for the naked eye but above Class 3B through a telescope falls through to Class 4 (the
+ *   safe direction); check 5.3 for the intended class.
+ * - M8: Condition 2 (the eye loupe, a 7 mm stop close to the source; the distance is unverified) is not modelled;
+ *   check whether the 2014 edition still has it for strongly diverging sources.
  *
  * Sources: IEC 60825-1:2014 (4.3 e, Tables 3–8 and 10); IEC 60825-1:1993+A1:1997+A2:2001, Tables 1–4 and 10 (the
  * values checked here); ICNIRP, Health Phys. 105(3), 271–295 (2013); K. Schulmeister, "The new edition of the

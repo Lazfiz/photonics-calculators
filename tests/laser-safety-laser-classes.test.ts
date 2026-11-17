@@ -178,3 +178,32 @@ test("Escaping beam: a beam clipped by the opening is classed no wider than it",
   assert.equal(escapingBeam(5, 50e-3, 0, 0).power, 0);
   assert.ok(Number.isNaN(escapingBeam(5, 0, 3e-3, 0).power));
 });
+
+test("A11 skin AEL through the corneal stop: within 4 % of the white paper's rounded table (recheck 2026-11-16)", () => {
+  // K. Schulmeister, "White Paper: The European Amendment A11:2021 to EN 60825-1", Seibersdorf Laboratories, v2c (2022),
+  // §4: "the aperture diameter equals 1 mm for emission durations up to 0,35 seconds and then increases to 3,5 mm at
+  // emission durations of 10 seconds and above"; table: 7.9×10⁻⁴ J at 1 ns–100 ns, 4.3×10⁻² t^0.25 J to 0.35 s, then
+  // 0.1 W (0.096 W rounded up). Closed forms: 1.1×10⁴·C_A·t^0.25 J/m² (ICNIRP 2013 Table 7, C_A = 5) × the stop area.
+  const eu = { euA11: true, alpha: 1.5e-3 };
+  // Sub-0.35 s, 0.1 s at 1350 nm: 5.5×10⁴·0.1^0.25 × π(0.5 mm)² = 2.4291e-2 J through 1 mm (table: 2.42e-2 J).
+  const short = aelEnergy("1", nm(1350), 0.1, eu);
+  assert.equal(short.kind, "skinA11");
+  assert.equal(short.stop, 1e-3);
+  assertRel(short.energy, 5.5e4 * Math.pow(0.1, 0.25) * A1, 1e-12, "0.1 s");
+  assertRel(short.energy, 4.3e-2 * Math.pow(0.1, 0.25), 0.01, "0.1 s, table");
+  assertRel(aelEnergy("1", nm(1350), 1e-8, eu).energy, 7.9e-4, 0.01, "10 ns, table");
+  // One 1 s emission: through 1.5·1^0.375 = 1.5 mm, 5.5×10⁴ × π(0.75 mm)² = 0.097193 J (table: 0.1 W × 1 s). Through
+  // ICNIRP's 3.5 mm skin aperture it would be 0.529 J, 5.4× more, and would not cap IEC's 0.5 J.
+  const one = aelEnergy("1", nm(1310), 1, eu);
+  assert.equal(one.kind, "skinA11");
+  assertRel(one.stop, 1.5e-3, 1e-12, "1 s stop");
+  assertRel(one.energy, 5.5e4 * Math.PI * 0.75e-3 * 0.75e-3, 1e-12, "1 s");
+  assertRel(one.energy, 0.1, 0.03, "1 s, table");
+  assert.ok(5.5e4 * A35 / one.energy > 5.4);
+  // C_A = 5 across 1250–1400 nm, so the CW cap (least at 0.35 s through 1 mm, 5.5×10⁴·0.35^−0.75 W/m² × π(0.5 mm)²
+  // = 94.93 mW) is the same at 1310 and 1390 nm; below 1250 nm A11 adds nothing.
+  const cw = (λnm: number, euA11: boolean) => cwClassLimit("1", nm(λnm), 0, { euA11, alpha: 1.5e-3 }).power;
+  assertRel(cw(1310, true), 5.5e4 * Math.pow(0.35, -0.75) * A1, 1e-9, "1310 nm");
+  assertRel(cw(1390, true), cw(1310, true), 1e-12, "1390 nm");
+  assert.equal(cw(1200, true), cw(1200, false));
+});

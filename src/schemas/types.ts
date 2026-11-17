@@ -64,6 +64,11 @@ export interface ComputeResult<O extends string = string> {
   /** SI values. A non-finite value means "no result" and goes out as null; add a warning that says why. */
   values: Record<O, number>;
   warnings?: string[];
+  /**
+   * For an output that comes out null, the warning that says why (added to `warnings` if it isn't there). It is used for
+   * any null of that output, so it must cover every way the output can be NaN; otherwise build `reasons` conditionally.
+   */
+  reasons?: Partial<Record<O, string>>;
 }
 
 export interface CalculatorSchema<I extends string = string, O extends string = string, C extends string = string> {

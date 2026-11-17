@@ -110,7 +110,12 @@ const CORNEAL_APERTURE_NOTE_C: AperturePiece[] = CORNEAL_APERTURE.map((ap) =>
 export const averagedOnly = (apertures: readonly AperturePiece[]): AperturePiece[] =>
   apertures.map(({ t0, t1, d, q }) => ({ t0, t1, d, q }));
 
-/** ICNIRP 2013 Table 5, 302–315 nm: [lower edge (nm), J/m²]; each step runs to the next edge, the last to 315 nm. */
+/**
+ * ICNIRP 2013 Table 5, 302–315 nm: [lower edge (nm), J/m²]; each step runs to the next edge, the last to 315 nm. These
+ * are ICNIRP's steps exactly. IEC 60825-1 (C₂ = 10^(0.2(λ − 295))) and the EU Directive 2006/25/EC use the continuous
+ * form, which at a whole nanometre is one step stricter: 308 nm (XeCl) is 630 J/m² here, 10^(0.2·13) = 398 J/m² there.
+ * The class AELs (laser-classes.ts) use IEC's form (review 2026-11, laser-safety audit M5).
+ */
 const UVB_STEPS: readonly (readonly [number, number])[] = [
   [302, 40], [303, 60], [304, 100], [305, 160], [306, 250], [307, 400], [308, 630], [309, 1.0e3], [310, 1.6e3],
   [311, 2.5e3], [312, 4.0e3], [313, 6.3e3],
