@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-import { search, type SearchItem } from "../../lib/site-search";
+import { onlyValues, search, type SearchItem } from "../../lib/site-search";
 
 export default function SiteSearch({ total }: { total: number }) {
   const [query, setQuery] = useState("");
@@ -32,7 +32,9 @@ export default function SiteSearch({ total }: { total: number }) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  const { results, closest } = items ? search(items, query) : { results: [], closest: false };
+  const { results, closest, exact, corrected } = items
+    ? search(items, query)
+    : { results: [], closest: false, exact: 0, corrected: [] };
   const noMatch = items !== null && query.trim() !== "" && results.length === 0;
   const categories = items ? items.filter((item) => item.kind === "category") : [];
 
@@ -69,26 +71,39 @@ export default function SiteSearch({ total }: { total: number }) {
       {results.length > 0 && (
         <div className="absolute z-50 mt-2 w-full rounded-xl border border-white/8 bg-white/[0.02] backdrop-blur-xl shadow-2xl shadow-black/50 overflow-hidden">
           <div className="max-h-96 overflow-y-auto py-2">
-            {closest && (
-              <p className="px-4 pt-1 pb-2 text-xs text-gray-400">No exact match. Closest matches:</p>
+            {corrected.length > 0 && (
+              <p className="px-4 pt-1 pb-2 text-xs text-gray-400">
+                Showing matches for {corrected.map((c, i) => (
+                  <span key={c.from}>{i > 0 ? ", " : ""}&ldquo;{c.to.join("” or “")}&rdquo; (not &ldquo;{c.from}&rdquo;)</span>
+                ))}
+              </p>
+            )}
+            {closest && exact === 0 && (
+              <p className="px-4 pt-1 pb-2 text-xs text-gray-400">
+                {corrected.length > 0 ? "Closest matches:" : "Not every word matched. Closest matches:"}
+              </p>
             )}
             {results.map((item, idx) => (
-              <Link
-                key={item.href + idx}
-                href={item.href}
-                onClick={() => { setQuery(""); }}
-                className="flex items-start gap-3 px-4 py-2.5 hover:bg-white/5 transition-colors"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-white truncate">{item.title}</span>
-                    <span className={`text-xs ${categoryColor[item.category] ?? "text-gray-500"}`}>
-                      {item.category.replace(/-/g, " ")}
-                    </span>
+              <div key={item.href + idx}>
+                {closest && exact > 0 && idx === exact && (
+                  <p className="px-4 pt-2 pb-1 text-xs text-gray-400 border-t border-white/5">Closest matches (not every word):</p>
+                )}
+                <Link
+                  href={item.href}
+                  onClick={() => { setQuery(""); }}
+                  className="flex items-start gap-3 px-4 py-2.5 hover:bg-white/5 transition-colors"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-white truncate">{item.title}</span>
+                      <span className={`text-xs ${categoryColor[item.category] ?? "text-gray-500"}`}>
+                        {item.category.replace(/-/g, " ")}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{item.description}</p>
                   </div>
-                  <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{item.description}</p>
-                </div>
-              </Link>
+                </Link>
+              </div>
             ))}
           </div>
           <div className="border-t border-white/5 px-4 py-2 text-xs text-gray-600">
@@ -98,7 +113,11 @@ export default function SiteSearch({ total }: { total: number }) {
       )}
       {noMatch && (
         <div className="absolute z-50 mt-2 w-full rounded-xl border border-white/8 bg-white/[0.02] backdrop-blur-xl shadow-2xl shadow-black/50 px-4 py-3 text-sm text-gray-400">
-          <p>No calculator matches &ldquo;{query.trim()}&rdquo;. Browse a category:</p>
+          <p>
+            {onlyValues(query)
+              ? <>Search by topic or quantity, not by a value alone (try &ldquo;photon energy&rdquo; or &ldquo;fiber attenuation&rdquo;). Browse a category:</>
+              : <>No calculator matches &ldquo;{query.trim()}&rdquo;. Browse a category:</>}
+          </p>
           <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
             {categories.map((category) => (
               <Link key={category.href} href={category.href} onClick={() => setQuery("")} className="text-blue-400 hover:text-blue-300">
