@@ -83,7 +83,7 @@ export default function GiresTournoisPage() {
         <p><span className="text-blue-400">τ</span> = dφ/dω = (2nL/c)·(1−R) / (1+R+2√R·cos δ)</p>
         <p><span className="text-blue-400">GDD</span> = dτ/dω = 8n²L²√R(1−R)·sin δ / [c²·(1+R+2√R·cos δ)²]</p>
         <p className="text-yellow-400">Key: a lossless GTI reflects all the power (|r|² = 1) at every δ; R₁ sets how sharply the phase varies</p>
-        <p className="text-gray-400 text-xs">Model: lossless GTI with a front reflector of reflectance R₁ and a 100 % back mirror; the thickness is an effective optical thickness (a different mirror phase shifts the whole pattern).</p>
+        <p className="text-gray-400 text-xs">Model: lossless GTI with a front reflector of reflectance R₁ and a 100 % back mirror; the thickness is an effective optical thickness (a different mirror phase shifts the whole pattern). The front and back reflections have the same sign here, as for a dielectric layer on a metal mirror, so the delay peaks at δ = π; with opposite signs (the form in Kuhl &amp; Heppner 1986) it peaks at δ = 2πm instead.</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">

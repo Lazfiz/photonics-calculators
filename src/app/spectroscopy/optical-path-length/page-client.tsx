@@ -86,11 +86,12 @@ export default function OpticalPathLengthPage() {
         <ResultCard label="Optical Path Length nL" value={`${fmt(p.opl * 100)} cm`} tone="blue" subtext={`${fmt(waves, 6)} waves at λ; geometric path L = ${fmt(p.geometric * 100)} cm`} />
         <ResultCard label="Phase Delay OPL/c" value={fmtTime(p.phaseDelay)} tone="green" subtext={`n = ${fmt(n, 6)}; internal angle θ_t = ${fmt(p.thetaT / DEG)}°`} />
         <ResultCard label="Group Delay n_g L/c" value={fmtTime(p.groupDelay)} tone="purple" subtext={`n_g = ${fmt(ng, 6)}: the transit time of a pulse`} />
-        <ResultCard label="Extra Delay vs Vacuum" value={fmtTime(p.extraGroupDelay)} tone="yellow" subtext={`(n_g − 1)L/c; OPD vs vacuum (n − 1)L = ${fmt(p.opdVacuum * 100)} cm`} />
+        <ResultCard label="Extra Delay from Inserting the Slab" value={fmtTime(p.insertionGroupDelay)} tone="yellow" subtext={`OPD on insertion N·d(n cos θ_t − cos θ) = ${fmt(p.opdInsertion * 100)} cm; same path in vacuum: (n_g − 1)L/c = ${fmt(p.extraGroupDelay * 1e9)} ns`} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p>sin θ = n sin θ_t,  L = N d / cos θ_t,  OPL = nL,  τ_φ = OPL/c,  τ_g = n_g L/c,  n_g = n − λ dn/dλ</p>
+        <p>Insertion: OPD = N d (n cos θ_t − cos θ),  Δτ = N d/(c cos θ_t) · (n_g − cos(θ − θ_t))</p>
         <p className="text-gray-400">The ray path inside a plane-parallel slab entered from air; reflections between the faces are ignored. The phase index sets fringe counts and interference; the group index sets when a pulse arrives.</p>
       </div>
 

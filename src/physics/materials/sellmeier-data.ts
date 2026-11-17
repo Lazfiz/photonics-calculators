@@ -30,7 +30,8 @@ export interface CatalogGlass extends DispersionMaterial {
 export const MATERIALS = {
   fusedSilica: {
     name: "Fused silica (SiO₂)",
-    model: fromResonanceWavelengths(1, [0.6961663, 0.4079426, 0.8974794], [0.0684043, 0.1162414, 9.896161], [0.21, 6.7]),
+    // Malitson measured 0.21–3.71 µm; the fit is not validated beyond (review 2026-11 P2-M7).
+    model: fromResonanceWavelengths(1, [0.6961663, 0.4079426, 0.8974794], [0.0684043, 0.1162414, 9.896161], [0.21, 3.71]),
     reference: "I. H. Malitson, J. Opt. Soc. Am. 55, 1205 (1965)",
     temperature_C: 20,
   },

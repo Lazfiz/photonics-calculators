@@ -4,7 +4,7 @@
 import { parseReport, RateLimiter } from "../lib/report";
 import { sendReport } from "../lib/report-send";
 import type { SearchItem } from "../lib/search-index-types";
-import { scoreItem, searchItems, searchTerms } from "../lib/site-search";
+import { rankItems } from "../lib/site-search";
 import { REPO_URL, SITE_URL } from "../lib/site";
 import { findSchema, schemas } from "../schemas";
 import { parseInputs, runSchema } from "../schemas/run";
@@ -86,30 +86,15 @@ export function describeSchema(schema: CalculatorSchema) {
   };
 }
 
-// Words a question carries that say nothing about which calculator it wants.
-const FILLER = new Set([
-  "a", "an", "and", "at", "by", "calculate", "calculation", "calculator", "compute", "find", "for", "from", "how",
-  "i", "in", "is", "of", "on", "or", "the", "to", "what", "with",
-]);
-
 let pages: SearchItem[] | undefined;
 
-/** Calculators for a free-text query: the site search first (every word matches), then pages that match most words. */
+/**
+ * Calculators for a free-text query, ranked as the site search ranks them: pages matching every word first, then the
+ * pages matching most words.
+ */
 export function findCalculators(query: string, limit: number): SearchItem[] {
   pages ??= buildSearchIndex().filter((item) => item.kind === "page" && item.href !== "/about");
-  const strict = searchItems(pages, query, limit);
-  if (strict.length >= limit) return strict;
-  const terms = searchTerms(query).filter((term) => !FILLER.has(term));
-  const seen = new Set(strict.map((item) => item.href));
-  const loose = pages
-    .filter((item) => !seen.has(item.href))
-    .map((item) => {
-      const scores = terms.map((term) => scoreItem(item, [term]));
-      return { item, matched: scores.filter((s) => s > 0).length, score: scores.reduce((a, b) => a + b, 0) };
-    })
-    .filter((entry) => entry.matched > 0)
-    .sort((a, b) => b.matched - a.matched || b.score - a.score);
-  return [...strict, ...loose.slice(0, limit - strict.length).map((entry) => entry.item)];
+  return rankItems(pages, query).ranked.slice(0, limit).map((r) => r.item);
 }
 
 const findCalculator_: Tool = {
@@ -184,7 +169,12 @@ const runCalculator: Tool = {
     if (typeof inputs !== "object" || inputs === null || Array.isArray(inputs)) {
       return fail("inputs must be an object of input key → value.");
     }
-    const params = new URLSearchParams();
+    // A page or API URL given as the slug carries its inputs in its query (other keys, such as utm_*, are dropped);
+    // `inputs` overrides them.
+    const slug = String(args.slug);
+    const fromUrl = new URLSearchParams(slug.includes("?") ? slug.slice(slug.indexOf("?") + 1).replace(/#.*$/, "") : "");
+    const keys = new Set(found.schema.inputs.map((input) => input.key));
+    const params = new URLSearchParams([...fromUrl].filter(([key]) => keys.has(key)));
     for (const [key, value] of Object.entries(inputs)) {
       if (typeof value !== "number" && typeof value !== "string") return fail(`Input "${key}" must be a number or a string.`);
       params.set(key, String(value));

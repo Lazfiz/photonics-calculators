@@ -7,11 +7,13 @@
  *   PSF, I(u) ∝ [sin(u/4)/(u/4)]² with u = 2π NA² z/(nλ) (Born & Wolf, Principles of Optics, §8.8).
  *   A widefield microscope has no optical sectioning: defocused light is blurred, not rejected.
  * - Confocal, finite pinhole (geometric-optical regime, PH ≥ 1 AU), FWHM of the optical section:
- *     FWHM = √[(0.88 λ/(n − √(n² − NA²)))² + (√2 · n · PH/NA)²],
+ *     FWHM = √[(0.886 λ/(n − √(n² − NA²)))² + (√2 · n · PH/NA)²],
  *   PH = object-side pinhole diameter, 1 AU = 1.22 λ/NA. Point-like pinhole (PH < 0.25 AU), wave-optical:
  *     FWHM = 0.64 λ/(n − √(n² − NA²)).
  *   R. Wilhelm, B. Gröbler, M. Gluch, H. Heinz, "Confocal Laser Scanning Microscopy: Principles"
- *   (Carl Zeiss, 2003). λ is the emission wavelength (the geometric term) or the mean wavelength.
+ *   (Carl Zeiss, 2003). λ is the emission wavelength (the geometric term) or the mean wavelength. Wilhelm et al. write
+ *   0.88 for the diffraction term; it is the FWHM 2 · 1.391557/π = 0.8859 of the sinc² axial PSF (Born & Wolf §8.8),
+ *   so 0.886 is used here, as in confocal.ts and diffraction-psf.ts (review 2026-11 P2-M2).
  * - Two-photon excitation: the axial 1/e radius of the squared illumination intensity is
  *     ω_z = (0.532 λ/√2) / (n − √(n² − NA²)),
  *   W. R. Zipfel, R. M. Williams, W. W. Webb, Nat. Biotechnol. 21, 1369 (2003); FWHM = 2√(ln 2) ω_z.
@@ -49,9 +51,9 @@ export function widefieldAxialFirstZero(lambda: number, n: number, NA: number): 
   return valid(lambda, n, NA) ? lambda / axialDenominator(n, NA) : NaN;
 }
 
-/** Axial FWHM of the one-photon detection PSF, 0.88 λ/(n − √(n² − NA²)), m. */
+/** Axial FWHM of the one-photon detection PSF, 0.886 λ/(n − √(n² − NA²)) (the sinc² half width), m. */
 export function axialPsfFwhm(lambda: number, n: number, NA: number): number {
-  return valid(lambda, n, NA) ? (0.88 * lambda) / axialDenominator(n, NA) : NaN;
+  return valid(lambda, n, NA) ? (0.886 * lambda) / axialDenominator(n, NA) : NaN;
 }
 
 /** Confocal optical-section FWHM for a pinhole of `pinholeAU` Airy units (geometric regime, ≥ 1 AU), m. */

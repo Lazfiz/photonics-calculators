@@ -77,6 +77,17 @@ test("Conoscopy: the figure is transparent outside the NA, dark on the isogyres 
   assert.ok(maxR > 0 && Number.isFinite(maxR));
 });
 
+test("Conoscopy: the largest retardance is the rim value, not the outermost pixel's (review 2026-11 P3-M6)", () => {
+  // c-cut quartz, ν = NA = 0.5 on the rim: k_z(o) = √(n_o² − ν²), k_z(e) = n_o √(1 − ν²/n_e²) (k_x²/n_e² + k_z²/n_o² = 1),
+  // R = d [k_z(e) − k_z(o)] in units of the vacuum wavenumber.
+  const [no, , ne] = quartz, nu = 0.5;
+  const rim = d * (no * Math.sqrt(1 - (nu * nu) / (ne * ne)) - Math.sqrt(no * no - nu * nu));
+  const { maxR } = conoscopicFigure({
+    indices: quartz, orientation: { tilt: 0, rotation: 0 }, d, lambda, NA: nu, P: 0, A: Math.PI / 2, mode: "mono",
+  }, 41);
+  assert.ok(Math.abs(maxR / rim - 1) < 1e-9, `maxR ${maxR} vs rim ${rim}`);
+});
+
 test("Conoscopy: tilted uniaxial plate — the melatope sits at ν = n_o sin(tilt), on the side of the tilt", () => {
   // A wave along the optic axis travels at n_o, so its transverse wave vector is n_o sin 25° = 0.65261.
   const T = impermeability(quartz, { tilt: 25 * deg, rotation: 0 });

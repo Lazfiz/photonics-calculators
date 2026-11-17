@@ -87,6 +87,12 @@ export default defineSchema({
     if (aliased.length > 0) {
       warnings.push(`Undersampled: the Nyquist wavenumber ${sigmaNyquist} cm⁻¹ is below ${aliased.map((s) => `${s} (aliases to ${aliasedFrequency(s, 2 * sigmaNyquist)})`).join(", ")} cm⁻¹.`);
     }
+    if (halfVisibilityOpd(fwhm) === Infinity) {
+      warnings.push("A zero linewidth is a monochromatic line: the fringes never wash out, so the half-visibility path difference is infinite.");
+    }
+    if (!Number.isFinite(twoBeamVisibility(beams))) {
+      warnings.push("No light reaches the detector from either arm (splitter reflectances of 0 or 1, or dark mirrors): there are no fringes, so the visibility is undefined.");
+    }
     return {
       values: {
         resolution: nominalResolution(L) * 100,

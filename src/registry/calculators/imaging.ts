@@ -744,14 +744,14 @@ export const imaging: CalculatorEntry[] = [
     title: "Point Spread Function Calculator",
     description: "Visualize the 2D and 1D point spread function (PSF) for a diffraction-limited system.",
     tier: "textbook",
-    modelNote: "Scalar PSF of an aberration-free, uniformly filled pupil: the Airy pattern laterally, the on-axis Debye sinc² axially (FWHM 0.886 λ/(n − √(n² − NA²)), the paraxial sinc²(u/4) at low NA). No polarization, coverslip or index-mismatch effects.",
+    modelNote: "Scalar PSF of an aberration-free, uniformly filled pupil: the Airy pattern laterally, the on-axis Debye sinc² axially (FWHM 0.886 λ/(n − √(n² − NA²)), the paraxial sinc²(u/4) at low NA). The two profiles take different pupils: the axial sinc² is exact for a pupil uniform in cos θ, the Airy pattern (and the mtf page's high-NA defocus) for one uniform in the pupil radius ρ. Below NA/n ≈ 0.7 they differ by under 1 %; at NA/n = 0.95 the uniform-ρ axial FWHM coefficient is 0.936 rather than 0.886. No polarization, coverslip or index-mismatch effects.",
     references: [
       {
         citation: "Born M., Wolf E. (2019). Principles of Optics, 7th ed., §8.5.2 and §8.8. Cambridge University Press. Airy pattern and the paraxial intensity near focus.",
         url: "https://doi.org/10.1017/9781108769914",
       },
       {
-        citation: "Wilhelm R., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Axial FWHM 0.88 λ/(n − √(n² − NA²)).",
+        citation: "Wilhelm R., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Axial FWHM 0.88 λ/(n − √(n² − NA²)), used here with the unrounded sinc² value 0.886.",
       },
       {
         citation: "Richards B., Wolf E. (1959). Electromagnetic diffraction in optical systems, II. Structure of the image field in an aplanatic system. Proc. R. Soc. Lond. A 253, 358–379. Vector focus behind the polarization note.",
@@ -810,7 +810,7 @@ export const imaging: CalculatorEntry[] = [
         url: "https://doi.org/10.1017/9781108769914",
       },
       {
-        citation: "Wilhelm R., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Axial FWHM 0.88 λ/(n − √(n² − NA²)).",
+        citation: "Wilhelm R., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Axial FWHM 0.88 λ/(n − √(n² − NA²)), used here with the unrounded sinc² value 0.886.",
       },
     ],
   },

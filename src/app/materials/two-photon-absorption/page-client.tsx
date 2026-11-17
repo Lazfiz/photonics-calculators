@@ -219,7 +219,8 @@ export default function TwoPhotonAbsorptionPage() {
             355 nm, measured 0.010). These rows are scaled only where 2ħω is at least 1.1 E′_g at both the measured and the
             chosen wavelength; five of the six were measured closer to the edge, so they give only the measured β. Indirect-gap silicon follows Bristow et al.&apos;s fit, β = Σₙ 2C F₂⁽ⁿ⁾(ħω/E_gi) over
             allowed and forbidden phonon-assisted transitions (n = 0, 1, 2), C = 43 cm/GW, E_gi = 1.12 eV, from 850 nm to
-            2214 nm (2ħω = E_gi).
+            2214 nm (2ħω = E_gi). The fit gives 1.3 cm/GW at 1550 nm, while most measurements there lie between 0.7 and
+            0.9 cm/GW (Dinu, Quochi &amp; Garcia 2003: 0.79), so treat silicon&apos;s β as uncertain by about a factor 1.5.
           </p>
         </div>
       </div>

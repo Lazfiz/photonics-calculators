@@ -33,6 +33,9 @@ export default defineSchema({
     if (!Number.isFinite(r.geo.B)) warnings.push("Needs n₁ > n₂ and V ≥ 0.5: below that the mode is barely guided and the perturbation result does not apply.");
     else if (r.geo.multimode) warnings.push("V > 2.405: the fibre also guides LP11. The values are for the fundamental mode only.");
     if (r.beatLength === Infinity) warnings.push("No birefringence (B = 0): the beat length is infinite.");
+    if (ellipticity < 0.9) {
+      warnings.push(`ε = ${(1 - ellipticity).toFixed(2)}: the model is first order in the ellipticity ε, so it loses accuracy above ε ≈ 0.1.`);
+    }
     return {
       values: {
         NA: r.NA,

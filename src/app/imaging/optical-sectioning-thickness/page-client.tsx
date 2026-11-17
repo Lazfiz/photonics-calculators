@@ -91,7 +91,7 @@ export default function OpticalSectioningPage() {
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold mb-2">Formulas (FWHM, textbook approximations)</h3>
         <div className="text-sm text-gray-300 space-y-2">
-          <p className="font-mono">Confocal: √[(0.88λ / (n − √(n² − NA²)))² + (√2·n·PH / NA)²], PH = AU × 1.22λ/NA</p>
+          <p className="font-mono">Confocal: √[(0.886λ / (n − √(n² − NA²)))² + (√2·n·PH / NA)²], PH = AU × 1.22λ/NA</p>
           <p className="font-mono">Point pinhole: 0.64λ / (n − √(n² − NA²))</p>
           <p className="font-mono">Wave-optical: FWHM of S(u) = ∫d²r |h(u, r)|² ∫<sub>pinhole</sub> |h(u, r − w)|² d²w, a thin fluorescent plane at defocus u</p>
           <p className="font-mono">Two-photon: 2√(ln 2) · 0.532λ / (√2 (n − √(n² − NA²)))</p>

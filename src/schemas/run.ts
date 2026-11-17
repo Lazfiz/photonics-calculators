@@ -17,6 +17,9 @@ export interface RunResult {
 
 const withUnit = (value: number, unit: string) => (unit ? `${value} ${unit}` : `${value}`);
 
+/** A decimal number with an optional sign and exponent: 12, -0.5, .5, 3., 2e-6, 1E+21. */
+const DECIMAL = /^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/;
+
 function toSI(schema: CalculatorSchema, values: InputValues): SchemaInputs {
   const si: InputValues = Object.fromEntries((schema.choices ?? []).map((choice) => [choice.key, values[choice.key]]));
   for (const input of schema.inputs) si[input.key] = (values[input.key] as number) * input.toSI;
@@ -45,8 +48,12 @@ export function parseInputs(schema: CalculatorSchema, params: URLSearchParams): 
       continue;
     }
     if (!input) continue;
-    const value = raw[0].trim() === "" ? NaN : Number(raw[0]);
-    if (!Number.isFinite(value)) return { ok: false, error: `Input "${key}" must be a finite number, not "${raw[0]}".` };
+    // Decimal notation only (an exponent is fine): Number() alone would also take 0x10, 0b1 and 0o7.
+    const text = raw[0].trim();
+    const value = DECIMAL.test(text) ? Number(text) : NaN;
+    if (!Number.isFinite(value)) {
+      return { ok: false, error: `Input "${key}" must be a finite number in decimal notation, such as 1.5 or 2e-6 (in a URL write + as %2B), not "${raw[0]}".` };
+    }
     if (value < input.min || value > input.max) {
       return {
         ok: false,

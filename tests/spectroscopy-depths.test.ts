@@ -78,6 +78,27 @@ test("optical path length: nL, phase and group delays through a slab", () => {
   assert.ok(Number.isNaN(slabPath(0.01, 1, 1, 1, 60 * DEG, 1.5).opl));
 });
 
+test("optical path length: insertion OPD and delay of a plane-parallel plate (Born & Wolf §7.5.1)", () => {
+  const d = 0.01;
+  // n = n_g = 1.5, 60°: OPD = d (√(n² − sin²θ) − cos θ) = 10 mm (√1.5 − 0.5) = 7.247449 mm; the delay is OPD/c = 24.1749 ps
+  const p = slabPath(d, 1.5, 1.5, 1, 60 * DEG);
+  close(p.opdInsertion, 7.247449e-3, 1e-6);
+  close(p.insertionGroupDelay, p.opdInsertion / C, 1e-12);
+  close(p.insertionGroupDelay, 24.1749e-12, 1e-5);
+  close(p.opdVacuum, 6.123724e-3, 1e-6); // the "same path in vacuum" field is unchanged: 0.5 · 10 mm / cos θ_t
+  // dispersive, n_g 1.52: (d/c)((n n_g − sin²θ)/(n cos θ_t) − cos θ) = (10 mm/c)((2.28 − 0.75)/(1.5 · 0.8164966) − 0.5) = 24.9917 ps
+  const q = slabPath(d, 1.5, 1.52, 1, 60 * DEG);
+  close(q.insertionGroupDelay, 24.9917e-12, 1e-5);
+  // independent form: N d/(c cos θ_t) (n_g − cos(θ − θ_t))
+  const tt = q.thetaT;
+  close(q.insertionGroupDelay, (d / (C * Math.cos(tt))) * (1.52 - Math.cos(60 * DEG - tt)), 1e-12);
+  // normal incidence: the plate replaces d of vacuum, so the delay is (n_g − 1)d/c = extraGroupDelay
+  const r = slabPath(d, 1.5, 1.52, 1, 0);
+  close(r.insertionGroupDelay, 0.52 * d / C, 1e-12);
+  close(r.insertionGroupDelay, r.extraGroupDelay, 1e-12);
+  assert.ok(Number.isNaN(slabPath(d, 1, 1, 1, 60 * DEG, 1.5).insertionGroupDelay));
+});
+
 test("near-infrared: Morse overtones, Scholkmann–Wolf DPF and the two-wavelength MBLL", () => {
   // H³⁵Cl ω_e 2990.946, ω_e x_e 52.8186 cm⁻¹: hand values of v ω_e − ω_e x_e v(v+1)
   close(morseTransition(2990.946, 52.8186, 1), 2885.3088, 1e-9);

@@ -94,13 +94,17 @@ test("supercontinuum defaults: dispersive wave of the first ejected soliton (Skr
   assertRel(lambdaOf(P0), 667.673e-9, 1e-5, "λ_DW, input P₀ (the page's old value)");
 });
 
-test("soliton content of N sech τ: ⌊N + ½⌋ solitons, strongest amplitude 2N − 1 (Satsuma & Yajima 1974)", () => {
+test("soliton content of N sech τ: ⌈N + ½⌉ − 1 solitons, strongest amplitude 2N − 1 (Satsuma & Yajima 1974)", () => {
   assert.deepEqual(solitonContent(1), { count: 1, amplitude: 1 });
   assert.deepEqual(solitonContent(2), { count: 2, amplitude: 3 });
   const s = solitonContent(1.33);
   assert.equal(s.count, 1);
   assertRel(s.amplitude, 1.66, 1e-12, "amplitude");
   assert.deepEqual(solitonContent(0.4), { count: 0, amplitude: 0 });
+  // Half-integer N: η_k = N − k + 1/2 is 0 for the last k, so that one is not a soliton (review 2026-11 P3-M2).
+  assert.deepEqual(solitonContent(1.5), { count: 1, amplitude: 2 });
+  assert.deepEqual(solitonContent(0.5), { count: 0, amplitude: 0 });
+  assert.equal(solitonContent(1.5000001).count, 2);
   assert.ok(Number.isNaN(solitonContent(-1).count));
 });
 

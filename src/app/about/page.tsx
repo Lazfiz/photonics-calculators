@@ -45,7 +45,7 @@ export default function AboutPage() {
 
         <section className="mt-8 space-y-4">
           <p>
-            Photonics Calculators is a free, open-source collection of {totalCalculatorCount}
+            Photonics Calculators is a free, open-source collection of {totalCalculatorCount}{" "}
             interactive tools covering the breadth of optics and photonics — from
             laser safety and fiber optics to thin-film coatings, wave optics, and
             free-space communications.
