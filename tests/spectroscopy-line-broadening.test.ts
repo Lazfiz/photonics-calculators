@@ -85,6 +85,9 @@ test("Voigt FWHM limits: pure Gaussian, pure Lorentzian, and no width", () => {
   close(voigtFwhm(1, 1e-9), 1, 1e-8);
   close(voigtFwhm(1e-9, 1), 1, 1e-8);
   assert.ok(Number.isNaN(voigtFwhm(0, 0)));
+  // An infinite width has no FWHM: NaN, as voigtFwhmOlivero gives (verification 2026-11 follow-up).
+  assert.ok(Number.isNaN(voigtFwhm(0.5, Infinity)) && Number.isNaN(voigtFwhm(Infinity, 0.3)));
+  assert.ok(Number.isNaN(voigtFwhm(0, Infinity)) && Number.isNaN(voigtFwhm(Infinity, 0)));
   assert.ok(Number.isNaN(voigtProfile(0, 0, 0)));
   // TCH mixing: η = 0 for a Gaussian, 1.36603 − 0.47719 + 0.11116 = 1 for a Lorentzian.
   assert.equal(pseudoVoigtTch(1, 0).eta, 0);
