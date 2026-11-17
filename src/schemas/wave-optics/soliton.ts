@@ -65,7 +65,7 @@ export default defineSchema({
     },
     {
       // N = 1.329763: one soliton, ceil(N + 1/2) - 1 = 1, amplitude 2N - 1 = 1.659526, so the strongest has (2N - 1)^2 P1 = 7787.35 W.
-      source: "Satsuma J., Yajima N. (1974). Initial value problems of one-dimensional self-modulation of nonlinear waves in dispersive media. Prog. Theor. Phys. Suppl. 55, 284–306 (the input N sech τ holds ⌊N + ½⌋ solitons of amplitude 2η_k).",
+      source: "Satsuma J., Yajima N. (1974). Initial value problems of one-dimensional self-modulation of nonlinear waves in dispersive media. Prog. Theor. Phys. Suppl. 55, 284–306 (the input N sech τ holds ⌈N + ½⌉ − 1 solitons of amplitude 2η_k).",
       basis: "computed",
       inputs: {},
       expect: { solitonCount: 1, strongestSolitonPower: 7787.349704212554 },

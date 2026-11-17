@@ -102,7 +102,7 @@ export default function SolitonPage() {
         <p>The nonlinear Schrödinger equation ∂A/∂z = −(iβ₂/2)∂²A/∂T² + iγ|A|²A balances dispersion against self-phase
           modulation. The ratio of their lengths gives the order N = √(L_D/L_NL) = √(γP₀T₀²/|β₂|). With anomalous
           dispersion a sech pulse with N = 1 keeps its shape. Integer N &gt; 1 compresses, splits and recovers every
-          soliton period z₀. A non-integer N reshapes into ⌊N + ½⌋ solitons (one fewer at exactly half-integer N) and sheds the rest as dispersive radiation.
+          soliton period z₀. A non-integer N reshapes into ⌈N + ½⌉ − 1 solitons (the eigenvalues N − k + ½ that stay positive) and sheds the rest as dispersive radiation.
           The plots solve the NLS by the split-step Fourier method for the sech input; fibre loss, β₃, self-steepening and
           the Raman response are left out.</p>
         {simNote && <p className="text-yellow-400">{simNote}</p>}
