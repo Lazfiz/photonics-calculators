@@ -90,8 +90,10 @@ input[type="range"]::-moz-range-track {
   }
 }
 
-/* The site is dark-only (<html class="dark">, bg-gray-950). gray-500 notes on gray-900 are about 3.6:1; use gray-400
-   (about 6:1) site-wide without rewriting ~440 class names. Border, placeholder and disabled variants keep gray-500. */
+/* The site is dark-only (<html class="dark">, bg-gray-950). Tailwind's gray-500 text on gray-900 is about 3.7:1, under
+   WCAG AA. Lighten it site-wide without rewriting ~440 class names, but keep it a step below gray-400 (#99a1af, 6.8:1) so
+   the two still read as two levels: #8a919e is 5.6:1 on gray-900 and 4.6:1 on gray-800. Border, placeholder and
+   disabled variants keep Tailwind's gray-500. */
 .text-gray-500 {
-  color: var(--color-gray-400, #9ca3af);
+  color: #8a919e;
 }

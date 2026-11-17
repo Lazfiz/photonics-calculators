@@ -194,14 +194,19 @@ test("every calculator's metadata carries page-specific Open Graph and Twitter c
   for (const calculator of calculators) {
     const meta = calculatorMetadata(calculator.href);
     const canonical = `${SITE_URL}${calculator.href}`;
-    const og = meta.openGraph as { url?: string; title?: string; description?: string; images?: { url: string }[] };
+    const og = meta.openGraph as {
+      url?: string; title?: unknown; description?: string; locale?: string; images?: { url: string }[];
+    };
     assert.equal(og.url, canonical, calculator.href);
-    assert.equal(og.title, calculator.title, calculator.href);
+    // As rendered: the title with the site suffix (not left to the layout's template), and the layout's locale kept.
+    assert.deepEqual(og.title, { absolute: `${calculator.title} | Photonics Calculators` }, calculator.href);
+    assert.equal(og.locale, "en_US", calculator.href);
     assert.equal(og.description, calculator.description, calculator.href);
     const image = `${SITE_URL}/og/${calculator.category}/${calculator.slug}`;
     assert.equal(og.images?.[0].url, image, calculator.href);
-    const tw = meta.twitter as { card?: string; images?: string[] };
+    const tw = meta.twitter as { card?: string; title?: unknown; images?: string[] };
     assert.equal(tw.card, "summary_large_image");
+    assert.deepEqual(tw.title, og.title);
     assert.deepEqual(tw.images, [image]);
   }
   for (const category of categories) {

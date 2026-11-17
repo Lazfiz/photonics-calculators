@@ -1,16 +1,21 @@
 import type { NextRequest } from "next/server";
 
-import { clientIp, RateLimiter, rateLimitHeaders, type RateLimitStatus } from "../../../../../lib/report";
+import { clientIp, RATE_LIMIT_EXPOSED, RateLimiter, rateLimitHeaders, type RateLimitStatus } from "../../../../../lib/report";
 import { apiCalculator, apiResponse } from "../../../../../registry/api";
 import { parseInputs, runSchema } from "../../../../../schemas/run";
 
 // Sixty runs per IP per minute, per server instance; the CDN answers repeated queries without reaching it.
-const limiter = new RateLimiter(60, 60 * 1000);
+const WINDOW_SECONDS = 60;
+const limiter = new RateLimiter(60, WINDOW_SECONDS * 1000);
 
-const CORS = { "Access-Control-Allow-Origin": "*" };
+const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Expose-Headers": RATE_LIMIT_EXPOSED };
 
 function json(body: unknown, status: number, cacheControl: string, limit: RateLimitStatus) {
-  return Response.json(body, { status, headers: { ...CORS, ...rateLimitHeaders(limit), "Cache-Control": cacheControl } });
+  const cacheable = !/no-store/.test(cacheControl);
+  return Response.json(body, {
+    status,
+    headers: { ...CORS, ...rateLimitHeaders(limit, WINDOW_SECONDS, cacheable), "Cache-Control": cacheControl },
+  });
 }
 
 /**

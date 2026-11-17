@@ -210,21 +210,31 @@ test("/openapi.json describes every schema's parameters and outputs", () => {
   ]);
 });
 
-test("GET /api/v1: RateLimit-* headers count down and a 429 adds Retry-After; OpenAPI parameters carry examples", async () => {
-  const get = (ip: string) =>
-    GET(new NextRequest(`${ORIGIN}/api/v1/imaging/airy-disk`, { headers: { "x-forwarded-for": ip } }), {
+test("GET /api/v1: a cacheable answer carries only the shared RateLimit-Policy; the 429 the counters and Retry-After", async () => {
+  const get = (ip: string, query = "") =>
+    GET(new NextRequest(`${ORIGIN}/api/v1/imaging/airy-disk${query}`, { headers: { "x-forwarded-for": ip } }), {
       params: Promise.resolve({ category: "imaging", slug: "airy-disk" }),
     });
   const first = await get("192.0.2.30");
-  assert.equal(first.headers.get("ratelimit-limit"), "60");
-  assert.equal(first.headers.get("ratelimit-remaining"), "59");
-  assert.ok(Number(first.headers.get("ratelimit-reset")) >= 1 && Number(first.headers.get("ratelimit-reset")) <= 60);
-  assert.equal(first.headers.get("retry-after"), null);
-  assert.equal((await get("192.0.2.30")).headers.get("ratelimit-remaining"), "58");
+  assert.equal(first.status, 200);
+  assert.equal(first.headers.get("ratelimit-policy"), "60;w=60");
+  // One client's counters must not be cached by the CDN and served to others (200, 400 and 404 are all cacheable).
+  for (const name of ["ratelimit-limit", "ratelimit-remaining", "ratelimit-reset", "retry-after"]) {
+    assert.equal(first.headers.get(name), null, name);
+  }
+  const bad = await get("192.0.2.30", "?wavelength=abc");
+  assert.equal(bad.status, 400);
+  assert.equal(bad.headers.get("ratelimit-remaining"), null);
+  // A browser script on another origin may read them.
+  assert.match(first.headers.get("access-control-expose-headers") ?? "", /RateLimit-Policy.*Retry-After/);
   let last = first;
   for (let i = 0; i < 59; i++) last = await get("192.0.2.30");
   assert.equal(last.status, 429);
+  assert.match(last.headers.get("cache-control") ?? "", /no-store/);
+  assert.equal(last.headers.get("ratelimit-limit"), "60");
   assert.equal(last.headers.get("ratelimit-remaining"), "0");
+  const reset = Number(last.headers.get("ratelimit-reset"));
+  assert.ok(reset >= 1 && reset <= 60, String(reset));
   assert.equal(last.headers.get("retry-after"), last.headers.get("ratelimit-reset"));
 
   const doc = buildOpenApi();

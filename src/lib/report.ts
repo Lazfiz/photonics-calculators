@@ -143,13 +143,21 @@ export class RateLimiter {
   }
 }
 
-/** The IETF RateLimit header fields (draft-ietf-httpapi-ratelimit-headers) for a checked request; Retry-After on a refusal. */
-export function rateLimitHeaders(status: RateLimitStatus): Record<string, string> {
-  const headers: Record<string, string> = {
-    "RateLimit-Limit": String(status.limit),
-    "RateLimit-Remaining": String(status.remaining),
-    "RateLimit-Reset": String(status.resetSeconds),
-  };
+/** Response headers a browser script on another origin may read: the rate-limit fields below. */
+export const RATE_LIMIT_EXPOSED = "RateLimit-Policy, RateLimit-Limit, RateLimit-Remaining, RateLimit-Reset, Retry-After";
+
+/**
+ * Rate-limit header fields (draft-ietf-httpapi-ratelimit-headers). `RateLimit-Policy` is the same for every client, so
+ * it may sit on a response the CDN caches. The per-client counters (`RateLimit-Limit/-Remaining/-Reset`) and
+ * `Retry-After` go only on responses that are not cached (`cacheable: false`, e.g. the 429): on a cached response they
+ * would be one client's numbers served to everyone, and requests the CDN answers never reach the limiter anyway.
+ */
+export function rateLimitHeaders(status: RateLimitStatus, windowSeconds: number, cacheable: boolean): Record<string, string> {
+  const headers: Record<string, string> = { "RateLimit-Policy": `${status.limit};w=${windowSeconds}` };
+  if (cacheable) return headers;
+  headers["RateLimit-Limit"] = String(status.limit);
+  headers["RateLimit-Remaining"] = String(status.remaining);
+  headers["RateLimit-Reset"] = String(status.resetSeconds);
   if (!status.allowed) headers["Retry-After"] = String(status.resetSeconds);
   return headers;
 }
