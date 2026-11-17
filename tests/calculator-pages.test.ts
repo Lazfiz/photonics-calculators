@@ -74,7 +74,9 @@ test("no page-client.tsx renders its own <h1>", () => {
 });
 
 test("calculatorMetadata: canonical, title and description from the entry", () => {
-  assert.deepEqual(calculatorMetadata("/fiber-optics/chromatic-dispersion"), {
+  const { openGraph, twitter, ...base } = calculatorMetadata("/fiber-optics/chromatic-dispersion");
+  assert.ok(openGraph && twitter);
+  assert.deepEqual(base, {
     alternates: { canonical: "https://photonicscalculators.com/fiber-optics/chromatic-dispersion" },
     title: "Chromatic Dispersion Calculator",
     description: "Calculate chromatic dispersion, pulse broadening, and system penalties for single-mode fiber.",
@@ -183,4 +185,29 @@ test("a known issue shows as a warning box above the calculator", () => {
   assert.match(html, /Don&#x27;t use this page&#x27;s numbers until it is fixed\./);
   const shell = readFileSync("src/components/calculator-shell.tsx", "utf8");
   assert.match(shell, /\{calculator\.knownIssue && <KnownIssueNotice text=\{calculator\.knownIssue\} \/>\}\s*<div data-url-state-target="">\s*<ErrorBoundary>/);
+});
+
+test("every calculator's metadata carries page-specific Open Graph and Twitter cards with an image", async () => {
+  const { calculators } = await import("../src/registry");
+  const { categoryMetadata } = await import("../src/components/category-index");
+  const { categories } = await import("../src/registry");
+  for (const calculator of calculators) {
+    const meta = calculatorMetadata(calculator.href);
+    const canonical = `${SITE_URL}${calculator.href}`;
+    const og = meta.openGraph as { url?: string; title?: string; description?: string; images?: { url: string }[] };
+    assert.equal(og.url, canonical, calculator.href);
+    assert.equal(og.title, calculator.title, calculator.href);
+    assert.equal(og.description, calculator.description, calculator.href);
+    const image = `${SITE_URL}/og/${calculator.category}/${calculator.slug}`;
+    assert.equal(og.images?.[0].url, image, calculator.href);
+    const tw = meta.twitter as { card?: string; images?: string[] };
+    assert.equal(tw.card, "summary_large_image");
+    assert.deepEqual(tw.images, [image]);
+  }
+  for (const category of categories) {
+    const meta = categoryMetadata(category.id);
+    const og = meta.openGraph as { url?: string; images?: { url: string }[] };
+    assert.equal(og.url, `${SITE_URL}/${category.id}`);
+    assert.equal(og.images?.[0].url, `${SITE_URL}/og/${category.id}`);
+  }
 });
