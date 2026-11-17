@@ -15,8 +15,10 @@
  * note c; `comparedIrradiance`). Per limit, the energy per
  * pulse is the least of:
  * 1. Single pulse: G(τ), the limit for one pulse of that duration.
- * 2. Pulse groups: G(T_n)/n for every n = 2 … N consecutive pulses, spanning T_n = τ + (n − 1)/f. The full train is
- *    the average-power rule; groups inside T_i add their energies as IEC 60825-1 and ANSI Z136.1 do.
+ * 2. Pulse groups: G(T_n)/n for every n = 2 … N consecutive pulses, spanning T_n = τ + (n − 1)/f, and G(t)/n for a
+ *    longer window t ≤ T holding the same n where a table steps down within it (so the whole train is held to the limit
+ *    at T, as `limitMaxPower` holds a CW beam). The full train is the average-power rule; groups inside T_i add their
+ *    energies as IEC 60825-1 and ANSI Z136.1 do.
  * 3. Retinal thermal limit only: C_P·G(τ), with n the number of pulses within min(T, T₂):
  *    a. α ≤ 5 mrad, pulses longer than T_i: C_P = 1.
  *    b. α > 5 mrad, pulses longer than T_i: n^−0.25, but 0.4 for n > 40 if α ≤ α_max(τ), 0.2 for n > 625 if
@@ -30,13 +32,16 @@
  *    (the T_i limit has C_A, the femtosecond one doesn't), so the lower of the two readings is used. For a regular
  *    point-source train rule 2 is lower whenever grouping applies; it binds for large sources, whose average limit C_E
  *    raises more than the single-pulse one.
- * T_i (Table 4) is 5 µs for 400–1050 nm and 13 µs for 1050–1400 nm, where Table 5's flat short-pulse piece ends.
+ * T_i (Table 4) is 5 µs for 400–1050 nm and 13 µs for 1051–1400 nm (Table 4's own rows; Table 5's flat short-pulse
+ * piece ends at T_i, the 13 µs one from 1050 nm in eye-exposure-limits.ts).
  *
  * Below 1 ns (Table 5): the retinal thermal limit is 1.0 C_E mJ/m² (× C_C from 1050 nm, no C_A) from 100 fs to 10 ps
  * and its 1 ns value from 10 ps. Below 100 fs, and below 1 ns for the cornea and anterior segment, ICNIRP holds the
  * irradiance at its value at the shortest tabulated duration ("For exposure durations shorter than those defined in
- * Table 5", p. 282), so H ∝ t. Below 400 nm and above 1400 nm (the cornea) ICNIRP's "conservative interim guideline"
- * (p. 287) also keeps the exposure below 10 % of the 1 ns limit, which is the lower of the two from 100 ps to 1 ns.
+ * Table 5", p. 282), so H ∝ t. For the cornea (below 400 nm and above 1400 nm) ICNIRP's "conservative interim
+ * guideline", and for the skin, hence the anterior segment of Table 5 note d, its "conservative interim approach"
+ * (p. 287), also keep the exposure below 10 % of the 1 ns limit, which is the lower of the two from 100 ps to 1 ns
+ * (review 2026-11, laser-safety audit M3).
  * Each aperture keeps its 1 ns size.
  *
  * Rule 1 uses the limit at τ alone, as written. (`limitMaxPower`·τ, the CW reading, also holds every shorter part of
@@ -59,10 +64,13 @@ const T_10PS = 1e-11;
 /** λ (m) → nm, rounded to 1 fm (as in eye-exposure-limits.ts). */
 const toNm = (lambda: number) => Math.round(lambda * 1e15) / 1e6;
 
-/** T_i, s: 5 µs for 400–1050 nm, 13 µs for 1050–1400 nm (ICNIRP 2013 Table 4); NaN outside 400–1400 nm. */
+/**
+ * T_i, s: 5 µs for 400 ≤ λ < 1051 nm, 13 µs for 1051 ≤ λ < 1400 nm (ICNIRP 2013 Table 4, whose rows are 400–1,050 and
+ * 1,051–1,400 nm); NaN outside 400–1400 nm.
+ */
 export function timeTi(lambda: number): number {
   const nm = toNm(lambda);
-  return nm >= 400 && nm < 1050 ? 5e-6 : nm >= 1050 && nm < 1400 ? 13e-6 : NaN;
+  return nm >= 400 && nm < 1051 ? 5e-6 : nm >= 1051 && nm < 1400 ? 13e-6 : NaN;
 }
 
 /**
@@ -82,7 +90,7 @@ export function pulseLimits(lambda: number, alpha = 0): EyeLimit[] {
         { t0: T_ULTRASHORT, t1: T_10PS, a: h, p: 0 },
         { t0: T_10PS, t1: T_MIN, a: h1, p: 0 },
       ];
-    } else if (limit.kind === "cornealUv" || limit.kind === "cornealIr") {
+    } else if (limit.kind === "cornealUv" || limit.kind === "cornealIr" || limit.kind === "anteriorSegment") {
       short = [
         { t0: 0, t1: 0.1 * T_MIN, a: h1 / T_MIN, p: 1 },
         { t0: 0.1 * T_MIN, t1: T_MIN, a: 0.1 * h1, p: 0 },
@@ -152,14 +160,18 @@ export function correctionCP(lambda: number, alpha: number, n: number, tau: numb
 }
 
 /**
- * Rule 2: the least G(T_n)/n over n = 2 … N, T_n = τ + (n − 1)/f, and the n that sets it (Infinity and 0 for N = 1).
+ * Rule 2: the least G(t)/n over every window t ≤ T that holds n = 2 … N whole pulses, and the n that sets it (Infinity
+ * and 0 for N = 1). G rises with t except where a table steps down (ICNIRP 2013 Table 8: the corneal aperture is
+ * 1.5 t^0.375 mm = 3.56 mm just below 10 s and 3.5 mm from 10 s), so the least is at T_n = τ + (n − 1)/f, at a joint
+ * t ≤ T with the pulses it holds, or at T itself with all N: a train that ends at T_N < 10 s inside an exposure of
+ * T ≥ 10 s is held to the 10 s aperture, as `limitMaxPower` holds a CW beam (verification 2026-11 M1).
  * On a piece with a fixed aperture G = c·t^p, and g(t) = G(t)/(f(t − τ) + 1) has d ln g / d ln t = p − ft/(ft + 1 − fτ),
  * which falls with t (fτ ≤ 1): g rises, then falls, so its least value over the T_n on the piece is at the first or the
  * last. Those n are taken around every joint, with 2 and N. While the corneal aperture grows (0.35–10 s), g can dip
  * inside a piece, so it is scanned there (64 points in log t, then golden-section search) and the n beside the dip
  * are added.
  */
-function groupRule(limit: TabulatedLimit, G: (t: number) => number, tau: number, f: number, N: number): { q: number; n: number } {
+function groupRule(limit: TabulatedLimit, G: (t: number) => number, tau: number, f: number, N: number, T: number): { q: number; n: number } {
   if (!(N >= 2)) return { q: Infinity, n: 0 };
   const tPair = tau + 1 / f;
   const TN = tau + (N - 1) / f;
@@ -192,10 +204,14 @@ function groupRule(limit: TabulatedLimit, G: (t: number) => number, tau: number,
   }
   let q = Infinity;
   let nBest = 0;
-  for (const n of candidates) {
-    const v = G(tau + (n - 1) / f) / n;
+  const consider = (t: number, n: number) => {
+    const v = G(t) / n;
     if (v < q) [q, nBest] = [v, n];
-  }
+  };
+  for (const n of candidates) consider(tau + (n - 1) / f, n);
+  // Windows longer than T_n that hold no more pulses: the joints up to T, and T.
+  for (const s of [...limit.pieces, ...limit.apertures]) if (s.t0 > tPair && s.t0 <= T) consider(s.t0, nAt(s.t0));
+  if (T > TN) consider(T, N);
   return { q, n: nBest };
 }
 
@@ -246,7 +262,7 @@ export function trainLimit(lambda: number, limit: EyeLimit, train: PulseTrain, G
   const N = pulseCount(train);
   const { duration: tau, prf: f, exposure: T } = train;
   const singlePulse = G(tau);
-  const { q: group, n: groupPulses } = groupRule(limit, G, tau, f, N);
+  const { q: group, n: groupPulses } = groupRule(limit, G, tau, f, N, T);
   let rule3 = { reduced: Infinity, cp: 1, cpCount: 0, perGroup: 1 };
   if (limit.kind === "retinalThermal" && N >= 2) {
     const Ti = timeTi(lambda);

@@ -2,6 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { dualBandReflectance, fitDualBandAr } from "../src/physics/thin-film/dual-band-ar";
+import dualBandAr from "../src/schemas/thin-film/dual-band-ar";
+import { parseInputs, runSchema } from "../src/schemas/run";
 
 // Two-layer V-coat: R = 0 at λ for an outer layer n₁ and inner layer n₂ on n_s in n₀ when
 //   tan²δ₁ = (n_s − n₀)(n₀n_s − n₂²) n₁² / ((n₁²n_s − n₀n₂²)(n₁² − n₀n_s)),
@@ -62,4 +64,17 @@ test("dual-band AR: 450 + 1064 nm on glass", () => {
   // Invalid input.
   assert.ok(Number.isNaN(fitDualBandAr({ ...p, indices: [1.38, 0, 1.65] }).R1));
   assert.ok(Number.isNaN(fitDualBandAr({ ...p, lambda2: -1 }).thicknesses[0]));
+});
+
+test("dual-band AR page: a band edge beyond the scan is warned once per band, naming it (verification 2026-11 M12)", () => {
+  // nSub = 1 needs no coating: R = 0 everywhere, so both bands reach the scan limits λ/2 and 1.5 λ.
+  const parsed = parseInputs(dualBandAr, new URLSearchParams("nSub=1"));
+  assert.ok(parsed.ok);
+  const result = runSchema(dualBandAr, parsed.values);
+  assert.equal(result.outputs.bareReflectance, 0);
+  assert.deepEqual([result.outputs.band1Low, result.outputs.band2High].map((v) => Math.round(v ?? NaN)), [225, 1596]);
+  assert.deepEqual(result.warnings, [
+    "The band around λ₁ has an edge beyond the scan (λ₁/2 … 1.5 λ₁); the scan limit is reported.",
+    "The band around λ₂ has an edge beyond the scan (λ₂/2 … 1.5 λ₂); the scan limit is reported.",
+  ]);
 });

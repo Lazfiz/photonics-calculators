@@ -44,9 +44,10 @@ export default defineSchema({
       : [{ amplitude, lifetime: tau }];
     const f = fractionalIntensities(components);
     const phi = quantumYield(components, tauRad);
-    const warnings: string[] = [];
-    if (bi) warnings.push("The decay rate 1/τ is shown for a single exponential only.");
-    if (!Number.isFinite(phi)) warnings.push("Quantum yield is undefined: τ_rad must be at least ⟨τ⟩_amp.");
+    const reasons = {
+      decayRate: "The decay rate 1/τ is shown for a single exponential only.",
+      quantumYield: "Quantum yield is undefined: τ_rad must be at least ⟨τ⟩_amp.",
+    };
     return {
       values: {
         tauIntensity: intensityWeightedLifetime(components),
@@ -56,7 +57,7 @@ export default defineSchema({
         decayRate: bi ? NaN : 1 / tau,
         quantumYield: phi,
       },
-      warnings,
+      reasons,
     };
   },
   checks: [

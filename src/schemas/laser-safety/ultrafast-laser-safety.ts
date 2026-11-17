@@ -4,7 +4,7 @@ import { pulseTrainLimits, pulseTrainSafeDiameter } from "../../physics/laser-sa
 import { defineSchema } from "../types";
 import { ICNIRP_2013, WAVELENGTH } from "./common";
 
-const RULES = `${ICNIRP_2013}. Table 5 (single-pulse limits) and Table 6 / p. 287 (the three rules for repetitive pulses, ` +
+const RULES = `${ICNIRP_2013}. Table 5 (single-pulse limits) and p. 287 (the three rules for repetitive pulses, ` +
   "C_P, T_i, T_2 of Table 4). https://doi.org/10.1097/HP.0b013e3182983fd4";
 
 export default defineSchema({
@@ -68,13 +68,15 @@ export default defineSchema({
   checks: [
     {
       // Defaults: 800 nm, 100 fs pulses at 80 MHz for 10 s, 2 mm beam, point source. N = 8e8 pulses; rule 2 shares the
-      // 18 C_A t^0.75 J/m² limit of the whole exposure (C_A = 10^(0.002(800 − 700)) = 1.584893, t = 10 s: 10^0.75 =
-      // 5.623413) over N: 18·1.584893·5.623413/8e8 = 2.005348e-7 J/m², × the 7 mm aperture (3.848451e-5 m²) =
-      // 7.717355e-12 J = 7.717355e-6 µJ. Average power 0.0125 µJ · 80 MHz = 1 W; peak power 0.0125 µJ / 100 fs = 125 kW.
+      // limit of the whole 10 s exposure over N. At 10 s Table 5 gives 10 C_A W/m² · 10 s = 100 C_A J/m² (the
+      // 18 C_A t^0.75 row ends there, at 101.2 C_A), C_A = 10^(0.002(800 − 700)) = 1.584893: 158.4893/8e8 =
+      // 1.981117e-7 J/m², × the 7 mm aperture (3.848451e-5 m²) = 7.624230e-12 J = 7.624230e-6 µJ (verification
+      // 2026-11 M1: the train is held to the limit at T, not at its last pulse 12.5 ns earlier, where it was 7.717355e-6).
+      // Average power 0.0125 µJ · 80 MHz = 1 W; peak power 0.0125 µJ / 100 fs = 125 kW.
       source: RULES,
       basis: "computed",
       inputs: {},
-      expect: { maxPulseEnergy: 7.7173550205e-6, bindingRule: 2, averagePower: 1000, peakPower: 125000 },
+      expect: { maxPulseEnergy: 7.6242297406e-6, bindingRule: 2, averagePower: 1000, peakPower: 125000 },
       tolerance: 1e-8,
     },
     {

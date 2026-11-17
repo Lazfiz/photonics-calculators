@@ -8,7 +8,7 @@ export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <CalculatorShell href={href} maxWidthClassName="max-w-5xl">
+    <CalculatorShell href={href}>
       <PageClient />
     </CalculatorShell>
   );

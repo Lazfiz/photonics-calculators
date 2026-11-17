@@ -96,7 +96,7 @@ export default function PulsedMPEPage() {
           number of pulses within T₂ (10 s for a small source).
         </p>
         <p>
-          C_P: pulses longer than T_i ({Number.isNaN(Ti) ? "5 µs below 1050 nm, 13 µs above" : `${fmtNum(Ti * 1e6)} µs here`}) from a source
+          C_P: pulses longer than T_i ({Number.isNaN(Ti) ? "5 µs to 1050 nm, 13 µs from 1051 nm" : `${fmtNum(Ti * 1e6)} µs here`}) from a source
           up to 5 mrad get no reduction (C_P = 1); larger sources get n^−0.25, but not below 0.4 (α ≤ α_max) or 0.2
           (α_max &lt; α &lt; 100 mrad), and none from 100 mrad. Pulses of T_i or shorter get C_P = 1 up to 0.25 s and
           5 n^−0.25 beyond (more than 600 pulses); in the visible ICNIRP applies that only to intentional viewing, so
@@ -106,8 +106,11 @@ export default function PulsedMPEPage() {
         </p>
         <p>
           Below 1 ns ICNIRP Table 5 gives retinal limits of 1 mJ/m² (× C_C above 1050 nm) from 100 fs to 10 ps; shorter
-          pulses, and the corneal limits below 1 ns, keep the irradiance of the shortest tabulated duration; the cornea is
-          also kept below 10 % of its 1 ns limit, ICNIRP&apos;s conservative interim guideline (p. 287). The beam is a
+          pulses, and the corneal and anterior-segment limits below 1 ns, keep the irradiance of the shortest tabulated
+          duration. The cornea (below 400 nm and above 1400 nm) is also kept below 10 % of its 1 ns limit, ICNIRP&apos;s
+          conservative interim guideline (p. 287), and so is the anterior segment at 700–1400 nm (Table 5 note d: twice
+          the skin limit), under p. 287&apos;s conservative interim approach for the skin; at 1350 nm and 500 ps that is
+          200 J/m², and near 1350–1400 nm it binds before the retinal limit. The beam is a
           round Gaussian centred on each aperture (7 mm for the retina, 1–3.5 mm for the cornea). A beam under 1 mm (1/e diameter, d/√2 for the 1/e² d) is held to its peak on the cornea below 0.35 s (ICNIRP 2013 Table 5 note c). Not modelled:
           irregular trains and bursts, scanned beams, skin.
         </p>

@@ -3,7 +3,7 @@
  * database (CC0; DOIs checked on Crossref). Both papers print n² = A + B₁/(λ² − C₁) [+ B₂/(λ² − C₂)] − Kλ², λ in µm,
  * 20 °C. `tests/materials-biaxial.test.ts` checks them against independent data-sheet indices and cut angles.
  */
-import { fromPoleForm, refractiveIndex, type SellmeierModel } from "./sellmeier";
+import { fromPoleForm, inRange, refractiveIndex, type SellmeierModel } from "./sellmeier";
 
 export interface BiaxialCrystal {
   name: string;
@@ -32,10 +32,10 @@ export const BIAXIAL_CRYSTALS = {
 
 export type BiaxialId = keyof typeof BIAXIAL_CRYSTALS;
 
-/** Principal indices at λ (m); NaN outside the fit range. */
+/** Principal indices at λ (m); NaN outside the fit range (its stated ends included, as in `inRange`). */
 export function biaxialIndices(id: BiaxialId, lambda: number): { nx: number; ny: number; nz: number } {
   const c = BIAXIAL_CRYSTALS[id];
-  const ok = lambda >= c.x.range[0] && lambda <= c.x.range[1];
+  const ok = inRange(c.x, lambda);
   const n = (m: SellmeierModel) => (ok ? refractiveIndex(m, lambda) : NaN);
   return { nx: n(c.x), ny: n(c.y), nz: n(c.z) };
 }

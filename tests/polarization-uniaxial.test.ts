@@ -119,7 +119,8 @@ test("uniaxial data: LiNbO₃ (Zelmon 1997) matches Smith et al. 1976 (n_o) and 
 });
 
 test("uniaxial data: YVO₄ (Lomheim & DeShazer 1978) matches Shi et al. 2001 at 20 °C within 0.004", () => {
-  // H. S. Shi, G. Zhang, H. Y. Shen, J. Synth. Cryst. 30, 85 (2001), as tabulated by refractiveindex.info.
+  // H. S. Shi, G. Zhang, H. Y. Shen, J. Synth. Cryst. 30, 85 (2001), as tabulated by refractiveindex.info, where the
+  // fit's range is 0.48–1.34 µm: no check beyond 1.34 µm (verification 2026-11 M4).
   const shiO = (l: number) => Math.sqrt(3.77879 + 0.070479 / (l * l - 0.045731) - 0.009701 * l * l);
   const shiE = (l: number) => Math.sqrt(4.6072 + 0.108087 / (l * l - 0.052495) - 0.014305 * l * l);
   assert.ok(worst((l) => n(X.yvo4.o, l), shiO, 0.6, 1.34) < 4e-3, "n_o");

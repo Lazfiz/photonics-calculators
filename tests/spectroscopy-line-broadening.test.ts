@@ -72,6 +72,11 @@ test("Voigt FWHM, Δ_G 0.5 and Δ_L 0.3: exact 0.67941, Olivero 0.67951, TCH 0.6
   assert.ok(Number.isNaN(voigtFwhmOlivero(-0.1, 0.3)));
   assert.ok(Number.isNaN(voigtFwhmOlivero(0.5, -0.3)));
   assert.ok(Number.isNaN(voigtFwhmOlivero(0.5, Infinity)));
+  // verification 2026-11 M5: NaN and −∞ too, and the exact profile and width share the guard on negative or NaN widths.
+  assert.ok(Number.isNaN(voigtFwhmOlivero(NaN, 0.3)));
+  assert.ok(Number.isNaN(voigtFwhmOlivero(0.5, -Infinity)));
+  assert.ok(Number.isNaN(voigtFwhm(-0.1, 0.3)) && Number.isNaN(voigtFwhm(0.5, NaN)));
+  assert.ok(Number.isNaN(voigtProfile(0, -0.5, 0.3)) && Number.isNaN(voigtProfile(0, 0.5, NaN)));
 });
 
 test("Voigt FWHM limits: pure Gaussian, pure Lorentzian, and no width", () => {
@@ -80,6 +85,9 @@ test("Voigt FWHM limits: pure Gaussian, pure Lorentzian, and no width", () => {
   close(voigtFwhm(1, 1e-9), 1, 1e-8);
   close(voigtFwhm(1e-9, 1), 1, 1e-8);
   assert.ok(Number.isNaN(voigtFwhm(0, 0)));
+  // An infinite width has no FWHM: NaN, as voigtFwhmOlivero gives (verification 2026-11 follow-up).
+  assert.ok(Number.isNaN(voigtFwhm(0.5, Infinity)) && Number.isNaN(voigtFwhm(Infinity, 0.3)));
+  assert.ok(Number.isNaN(voigtFwhm(0, Infinity)) && Number.isNaN(voigtFwhm(Infinity, 0)));
   assert.ok(Number.isNaN(voigtProfile(0, 0, 0)));
   // TCH mixing: η = 0 for a Gaussian, 1.36603 − 0.47719 + 0.11116 = 1 for a Lorentzian.
   assert.equal(pseudoVoigtTch(1, 0).eta, 0);

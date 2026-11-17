@@ -29,7 +29,7 @@ export default defineSchema({
       // Air | n = 1.38 film, 100 nm | n = 1.52 glass: the film index lies between the neighbours, so both reflections
       // are off a higher index and the net phase is 0. 2nd = 2 × 1.38 × 100 nm = 276 nm; constructive 2nd = mλ gives
       // λ = 276 nm (m = 1); destructive 2nd = (m + ½)λ gives λ = 552 nm (m = 0).
-      source: "Born M., Wolf E. (1999). Principles of Optics, 7th ed., Cambridge University Press, §7.6.1 (interference in a plane-parallel film; conditions 2nd cos θ = mλ and (m + ½)λ); Hecht E. (2017). Optics, 5th ed., Pearson, §9.4 (phase change on reflection).",
+      source: "Born M., Wolf E. (1999). Principles of Optics, 7th ed., Cambridge University Press, §7.5.1 (two-beam interference: fringes with a plane-parallel plate; conditions 2nd cos θ = mλ and (m + ½)λ); Hecht E. (2017). Optics, 5th ed., Pearson, §9.4 (phase change on reflection).",
       basis: "computed",
       inputs: { nFilm: 1.38, thickness: 100, nIncident: 1, nSubstrate: 1.52 },
       expect: { opd: 276, constructive: 276, destructive: 552 },
@@ -39,7 +39,7 @@ export default defineSchema({
       // Air | n = 2.0 film, 100 nm | n = 1.5 glass: reflection off the film face (higher index) adds π, the film/glass
       // face does not: net phase π (checked as a swap). 2nd = 400 nm; constructive 2nd = (m + ½)λ → λ = 800 nm
       // (m = 0); destructive 2nd = mλ → λ = 400 nm (m = 1).
-      source: "Born M., Wolf E. (1999). Principles of Optics, 7th ed., Cambridge University Press, §7.6.1; Hecht E. (2017). Optics, 5th ed., Pearson, §9.4.",
+      source: "Born M., Wolf E. (1999). Principles of Optics, 7th ed., Cambridge University Press, §7.5.1; Hecht E. (2017). Optics, 5th ed., Pearson, §9.4.",
       basis: "computed",
       inputs: { nFilm: 2, thickness: 100, nIncident: 1, nSubstrate: 1.5 },
       expect: { opd: 400, constructive: 800, destructive: 400, phase: Math.PI },

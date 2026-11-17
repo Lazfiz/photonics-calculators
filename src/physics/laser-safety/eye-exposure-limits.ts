@@ -21,7 +21,7 @@
  *   at 700–1400 nm twice it, for an eye-only exposure; below 700 nm once, "for large retinal spot sizes", so only for
  *   α > α_min (for a point source it never binds there). Skin 200 C_A J/m² to 100 ns, 1.1×10⁴ C_A t^0.25 J/m² to
  *   10 s, then 2×10³ C_A W/m², on the skin's 3.5 mm aperture with its note b (below). Both limits are checked from
- *   1150 nm ("both retinal damage and damage to the anterior segment has to be considered", p. 281). Averaged, it
+ *   1150 nm ("both retinal damage and damage to the anterior segment has to be considered", p. 282). Averaged, it
  *   binds from about 1300 nm (t ≥ 10 s), where C_C raises the retinal limit, and for a large source with an open
  *   field of view; under note b also for narrow infrared beams (1064 nm, 10 s: below d ≈ 0.5 mm).
  * - 1400 nm – 1 mm, cornea: 10³ J/m² to 1 ms, then 5.6×10³ t^0.25 J/m² (1400–1500 and 1800–2600 nm); 10⁴ J/m²
@@ -110,7 +110,12 @@ const CORNEAL_APERTURE_NOTE_C: AperturePiece[] = CORNEAL_APERTURE.map((ap) =>
 export const averagedOnly = (apertures: readonly AperturePiece[]): AperturePiece[] =>
   apertures.map(({ t0, t1, d, q }) => ({ t0, t1, d, q }));
 
-/** ICNIRP 2013 Table 5, 302–315 nm: [lower edge (nm), J/m²]; each step runs to the next edge, the last to 315 nm. */
+/**
+ * ICNIRP 2013 Table 5, 302–315 nm: [lower edge (nm), J/m²]; each step runs to the next edge, the last to 315 nm. These
+ * are ICNIRP's steps exactly. IEC 60825-1 (C₂ = 10^(0.2(λ − 295))) and the EU Directive 2006/25/EC use the continuous
+ * form, which at a whole nanometre is one step stricter: 308 nm (XeCl) is 630 J/m² here, 10^(0.2·13) = 398 J/m² there.
+ * The class AELs (laser-classes.ts) use IEC's form (review 2026-11, laser-safety audit M5).
+ */
 const UVB_STEPS: readonly (readonly [number, number])[] = [
   [302, 40], [303, 60], [304, 100], [305, 160], [306, 250], [307, 400], [308, 630], [309, 1.0e3], [310, 1.6e3],
   [311, 2.5e3], [312, 4.0e3], [313, 6.3e3],

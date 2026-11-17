@@ -377,26 +377,90 @@ test("field stop: Rayleigh's encircled energy without turbulence, Fried's r₀ n
   assert.ok(Number.isNaN(fieldStopHalfAngle(1, D, lambda, 0.05)));
 });
 
-test("scintillation page: gamma-gamma and log-normal fades at σ_R² ≥ 1 (review 2026-11, independent double quadrature)", () => {
-  // 1550 nm, Cn² 1.7e-13, L 1 km, point receiver: σ_R² 3.385, A&P α = 4.200, β = 1.377. The review's independent double integral
-  // (docs/audit/fable-p1-probes/lead/probe-scint.ts) printed gamma-gamma 0.399 / 7.18e-2 and log-normal 0.361 / 1.37e-2
-  // (three digits, so 3e-3 relative here).
-  const run = (cz: number, D: number) => runSchema(scintillation, { wavelength: 1550, distance: 1, cz, apertureDiameter: D });
+// Independent reference for the gamma-gamma CDF (verification 2026-11 M3: the earlier reference values came from a probe
+// that called gammaGammaCdf itself). Termwise integration of the gamma-gamma density
+// f(I) = 2(αβ)^((α+β)/2) I^((α+β)/2−1) K_{α−β}(2√(αβI)) / (Γ(α)Γ(β)) with K_ν = π(I_{−ν} − I_ν)/(2 sin νπ) and the
+// power series of I_{±ν} (DLMF 10.27.4, 10.25.2) gives, with z = αβt,
+//   P(I < t) = π/(sin((α−β)π) Γ(α)Γ(β)) · [S(β, α) − S(α, β)],  S(p, q) = Σ_k z^(p+k) / ((p+k) k! Γ(p−q+1+k)).
+// Own Lanczos Γ here, no module code. The series cancels badly when α and β are both large (σ_R² < 1, D > 0), so that
+// case uses the same closed form evaluated with 120-digit arithmetic (mpmath 1.4.1, hyp1f2): 5.93620952268256e-5.
+const LANCZOS = [0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059,
+  12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+function refGamma(x: number): number {
+  if (x < 0.5) return Math.PI / (Math.sin(Math.PI * x) * refGamma(1 - x));
+  const y = x - 1;
+  let s = LANCZOS[0];
+  for (let i = 1; i < 9; i++) s += LANCZOS[i] / (y + i);
+  const t = y + 7.5;
+  return Math.sqrt(2 * Math.PI) * t ** (y + 0.5) * Math.exp(-t) * s;
+}
+function refGammaGammaCdf(t: number, a: number, b: number): number {
+  const z = a * b * t;
+  const series = (p: number, q: number) => {
+    let c = z ** p / refGamma(p - q + 1);
+    let sum = c / p;
+    for (let k = 1; k < 500; k++) {
+      c *= z / (k * (p - q + k));
+      sum += c / (p + k);
+      if (Math.abs(c / (p + k)) < 1e-17 * Math.abs(sum)) break;
+    }
+    return sum;
+  };
+  return (Math.PI / (Math.sin(Math.PI * (a - b)) * refGamma(a) * refGamma(b))) * (series(b, a) - series(a, b));
+}
+/** α, β written out from Andrews & Phillips (2005), plane wave: σ_R² = 1.23 C_n² k^(7/6) L^(11/6), d² = kD²/(4L). */
+function refAlphaBeta(cn2: number, L: number, D: number) {
+  const k = (2 * Math.PI) / lambda;
+  const s = 1.23 * cn2 * k ** (7 / 6) * L ** (11 / 6), d2 = (k * D * D) / (4 * L), s125 = s ** 1.2;
+  const x = (0.49 * s) / (1 + 0.65 * d2 + 1.11 * s125) ** (7 / 6);
+  const y = (0.51 * s * (1 + 0.69 * s125) ** (-5 / 6)) / (1 + 0.9 * d2 + 0.62 * d2 * s125);
+  return { sigmaR2: s, alpha: 1 / Math.expm1(x), beta: 1 / Math.expm1(y) };
+}
+
+test("gamma-gamma CDF reference: the series closed form against 120-digit values (verification 2026-11 M3)", () => {
+  // mpmath at 120 digits of the same closed form (hyp1f2): the double-precision series reproduces them where it is
+  // well conditioned, so it can serve as the in-test reference below.
+  const p = refAlphaBeta(1.7e-13, 1000, 0);
+  close(p.alpha, 4.200212474, 1e-9);
+  close(p.beta, 1.37695401, 1e-8);
+  close(refGammaGammaCdf(10 ** -0.3, p.alpha, p.beta), 0.398917043094712, 1e-12);
+  close(refGammaGammaCdf(0.1, p.alpha, p.beta), 0.071756257306162, 1e-12);
+  const q = refAlphaBeta(1.7e-13, 1000, 0.1);
+  close(refGammaGammaCdf(0.1, q.alpha, q.beta), 7.19470248615838e-8, 1e-10);
+  // Γ: Γ(5) = 24, Γ(½) = √π
+  close(refGamma(5), 24, 1e-13);
+  close(refGamma(0.5), Math.sqrt(Math.PI), 1e-13);
+});
+
+test("scintillation page: gamma-gamma and log-normal fades at σ_R² ≥ 1 (independent closed-form reference)", () => {
+  // 1550 nm, Cn² 1.7e-13, L 1 km, point receiver: σ_R² 3.385, α = 4.200, β = 1.377. Gamma-gamma fades against the
+  // series reference above (no module code); log-normal fades from the review's double quadrature (three digits,
+  // docs/audit/fable-p1-probes/lead/probe-scint.ts).
+  const run = (cz: number, D: number, km = 1) => runSchema(scintillation, { wavelength: 1550, distance: km, cz, apertureDiameter: D });
+  const ref = (cz: number, D: number, km: number, t: number) => {
+    const { alpha, beta } = refAlphaBeta(cz, km * 1000, D);
+    return refGammaGammaCdf(t, alpha, beta);
+  };
   const strong = run(1.7e-13, 0);
+  close(strong.si.rytovVariance as number, refAlphaBeta(1.7e-13, 1000, 0).sigmaR2, 1e-9);
   close(strong.si.rytovVariance as number, 3.3846, 1e-3);
-  close(strong.si.fade3dBGammaGamma as number, 0.399, 3e-3);
-  close(strong.si.fade10dBGammaGamma as number, 7.18e-2, 3e-3);
+  close(strong.si.fade3dBGammaGamma as number, ref(1.7e-13, 0, 1, 10 ** -0.3), 1e-9); // 0.398917
+  close(strong.si.fade10dBGammaGamma as number, ref(1.7e-13, 0, 1, 0.1), 1e-9); // 0.0717563
   close(strong.si.fade3dB as number, 0.361, 3e-3);
   close(strong.si.fade10dB as number, 1.37e-2, 3e-3);
   assert.ok(strong.warnings.some((w) => w.includes("σ_R² ≥ 1") && w.includes("gamma-gamma")));
-  // with D = 10 cm the probe printed gamma-gamma 3.48e-2 / 7.19e-8
+  // D = 10 cm: 0.0348066 / 7.19470e-8
   const ap = run(1.7e-13, 0.1);
-  close(ap.si.fade3dBGammaGamma as number, 3.48e-2, 3e-3);
-  close(ap.si.fade10dBGammaGamma as number, 7.19e-8, 3e-3);
-  // defaults: σ_R² = 0.338 < 1, no warning
+  close(ap.si.fade3dBGammaGamma as number, ref(1.7e-13, 0.1, 1, 10 ** -0.3), 1e-9);
+  close(ap.si.fade10dBGammaGamma as number, ref(1.7e-13, 0.1, 1, 0.1), 1e-9);
+  // 5 km, point receiver, σ_R² 64.7 (α = 11.81, β = 1.008): 0.412031 / 0.101596
+  const deep = run(1.7e-13, 0, 5);
+  close(deep.si.fade3dBGammaGamma as number, ref(1.7e-13, 0, 5, 10 ** -0.3), 1e-9);
+  close(deep.si.fade10dBGammaGamma as number, ref(1.7e-13, 0, 5, 0.1), 1e-9);
+  // defaults: σ_R² = 0.338 < 1, no warning; the 120-digit value (the series cancels here)
   const weak = run(1.7e-14, 0.1);
   assert.equal(weak.warnings.length, 0);
-  close(weak.si.fade3dBGammaGamma as number, 5.94e-5, 1e-3);
+  close(weak.si.fade3dBGammaGamma as number, 5.93620952268256e-5, 1e-8);
   // edge: the warning follows σ_R² = 1 (σ_R² is proportional to Cn²)
   const cnAt1 = 1.7e-14 / (weak.si.rytovVariance as number);
   assert.equal(run(cnAt1 * 0.999, 0.1).warnings.length, 0);

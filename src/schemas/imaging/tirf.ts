@@ -36,8 +36,9 @@ export default defineSchema({
     const { s, p } = tirfInterfaceIntensity(n1, n2, theta);
     const tir = theta > thetaC;
     const warnings: string[] = [];
+    const noTir = "The angle is at or below the critical angle: the beam is transmitted into the sample (epi or HILO illumination), with no evanescent field.";
     if (!tir) {
-      warnings.push("The angle is at or below the critical angle: the beam is transmitted into the sample (epi or HILO illumination), with no evanescent field.");
+      warnings.push(noTir);
     } else if (!(na > n2)) {
       warnings.push("The objective's NA is not above n₂, so it cannot reach the critical angle; the values are for prism-type TIRF.");
     } else if (theta > thetaMax) {
@@ -54,6 +55,7 @@ export default defineSchema({
         interfaceP: tir ? p : NaN,
       },
       warnings,
+      reasons: { depth: noTir, fieldDecayLength: noTir, intensityAt100nm: noTir, interfaceS: noTir, interfaceP: noTir },
     };
   },
   checks: [

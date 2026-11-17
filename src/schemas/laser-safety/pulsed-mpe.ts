@@ -3,7 +3,7 @@ import { pulseTrainLimits, trainFromInputs } from "../../physics/laser-safety/pu
 import { defineSchema } from "../types";
 import { ICNIRP_2013, WAVELENGTH } from "./common";
 
-const RULES = `${ICNIRP_2013}. Table 5 (single-pulse limits) and Table 6 / p. 287 (the three rules for repetitive pulses, ` +
+const RULES = `${ICNIRP_2013}. Table 5 (single-pulse limits) and p. 287 (the three rules for repetitive pulses, ` +
   "C_P, T_i, T_2 of Table 4). https://doi.org/10.1097/HP.0b013e3182983fd4";
 
 export default defineSchema({

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { biaxialIndices } from "../src/physics/materials/biaxial-data";
+import { BIAXIAL_CRYSTALS, biaxialIndices, type BiaxialId } from "../src/physics/materials/biaxial-data";
 import { BIBO_THETA, uniaxialWalkOff, xyPlaneIndex, yzPlaneMatchingAngle } from "../src/physics/materials/nonlinear-crystals";
 
 const deg = Math.PI / 180;
@@ -37,4 +37,19 @@ test("BiBO (Umemura et al. 2007) type I YZ cut: θ 168.8° and walk-off 25.7 mra
   assert.ok(Math.abs(Math.abs(uniaxialWalkOff(b.ny, b.nz, BIBO_THETA)) - 0.0256) < 3e-4, "walk-off");
   // Edge: a target index outside [n_y, n_z] has no in-plane match.
   assert.ok(Number.isNaN(yzPlaneMatchingAngle(b.ny, b.nz, 2.0)), "no match above n_z");
+});
+
+test("Biaxial fit ranges include their stated ends (KTP 0.43–3.54 µm, BiBO 0.48–3.1 µm)", () => {
+  // The ends are stored as µm × 1e-6, which can land one ulp away from the same length in nm × 1e-9: 3540 × 1e-9 is
+  // above 3.54 × 1e-6, so KTP and BiBO gave NaN at their own upper ends (verification 2026-11 follow-up).
+  const ends: Record<BiaxialId, [number, number]> = { ktp: [430, 3540], bibo: [480, 3100] };
+  for (const id of Object.keys(BIAXIAL_CRYSTALS) as BiaxialId[]) {
+    const [lo, hi] = ends[id];
+    for (const nm of [lo, hi]) {
+      const n = biaxialIndices(id, nm * 1e-9);
+      assert.ok([n.nx, n.ny, n.nz].every(Number.isFinite), `${id} at ${nm} nm`);
+    }
+    assert.ok(Number.isNaN(biaxialIndices(id, (lo - 1) * 1e-9).nx), `${id} below ${lo} nm`);
+    assert.ok(Number.isNaN(biaxialIndices(id, (hi + 1) * 1e-9).nx), `${id} above ${hi} nm`);
+  }
 });

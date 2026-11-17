@@ -25,7 +25,7 @@ export default function GreenLaserPointerPage() {
   const d = Math.max(beamDia, 1e-3) * 1e-3;
   const phi = Math.max(divergence, 0) * 1e-3;
   const r = Math.max(distance, 0);
-  // Eye exposure time, ICNIRP 2013 p. 285 (visual-interference.ts).
+  // Eye exposure time, ICNIRP 2013 p. 286 (visual-interference.ts).
   const { visible, outsideRule, t: tEye } = pointerEyeExposure(lambda);
 
   const beam = useMemo(() => roundBeam(d, phi), [d, phi]);

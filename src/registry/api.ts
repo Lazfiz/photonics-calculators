@@ -51,6 +51,7 @@ export function apiResponse(calculator: Calculator, schema: CalculatorSchema, ru
       unit: output.unit,
       siValue: run.si[output.key],
       siUnit: output.siUnit,
+      ...(run.reasons[output.key] ? { reason: run.reasons[output.key] } : {}),
     }])),
     warnings: run.warnings,
   };
@@ -64,6 +65,7 @@ function parameter(input: InputSpec) {
     in: "query",
     required: false,
     description: `${input.label}${unitText(input.unit)}.`,
+    example: input.default,
     schema: { type: "number", minimum: input.min, maximum: input.max, default: input.default },
   };
 }
@@ -74,6 +76,7 @@ function choiceParameter(choice: ChoiceSpec) {
     in: "query",
     required: false,
     description: `${choice.label}: ${choice.options.map((option) => `${option.value} = ${option.label}`).join("; ")}.`,
+    example: choice.default,
     schema: { type: "string", enum: choice.options.map((option) => option.value), default: choice.default },
   };
 }
@@ -93,6 +96,7 @@ const quantity = {
     unit: { type: "string", description: '"" for a pure number.' },
     siValue: { type: ["number", "null"] },
     siUnit: { type: "string" },
+    reason: { type: "string", description: "Outputs only, when value is null: the warning that says why, where the calculator names it." },
   },
 };
 

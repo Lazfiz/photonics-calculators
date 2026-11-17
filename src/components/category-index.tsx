@@ -2,13 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SITE_URL } from "../lib/site";
 import { calculatorsIn, displayName, getCategory, type CategoryId } from "../registry";
+import { socialMetadata } from "../registry/metadata";
 
 export function categoryMetadata(id: CategoryId): Metadata {
   const category = getCategory(id);
+  const canonical = `${SITE_URL}/${id}`;
   return {
-    alternates: { canonical: `${SITE_URL}/${id}` },
+    alternates: { canonical },
     title: category.title,
     description: category.description,
+    ...socialMetadata({ title: category.title, description: category.description, canonical, imagePath: [id] }),
   };
 }
 

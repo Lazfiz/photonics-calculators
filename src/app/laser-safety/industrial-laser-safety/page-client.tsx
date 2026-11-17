@@ -157,7 +157,7 @@ export default function IndustrialLaserSafetyPage() {
         extended source of α = d<sub>63</sub>/r, which raises the retinal limit through ICNIRP&apos;s C<sub>E</sub> with an
         open field of view; the retinal limits are assessed no nearer than 10 cm, where the eye stops focusing. Both use the ICNIRP 2013 limits for one exposure of up to
         t (0.25 s for an unintended view of a visible beam, 10 s in the near infrared, 700–1400 nm; outside 400–1400 nm
-        ICNIRP 2013, p. 285, uses the longest exposure expected). Eyewear OD is log<sub>10</sub>(exposure /
+        ICNIRP 2013, p. 286, uses the longest exposure expected). Eyewear OD is log<sub>10</sub>(exposure /
         limit); the filter must also survive the beam (EN 207 damage threshold), which this page does not check. Plume,
         plasma radiation and fumes are separate hazards.
       </p>

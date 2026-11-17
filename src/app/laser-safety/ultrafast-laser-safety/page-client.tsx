@@ -94,12 +94,14 @@ export default function UltrafastLaserSafetyPage() {
         <p>
           A mode-locked oscillator puts tens of millions of pulses into the eye each second, so the average power, not the
           single pulse, sets the limit: ICNIRP 2013&apos;s rule 2 holds every group of pulses to the limit for the time it
-          spans, up to the whole exposure. Pulses closer together than T_i (5 µs below 1050 nm, 13 µs above) also count as
+          spans, up to the whole exposure. Pulses closer together than T_i (5 µs to 1050 nm, 13 µs from 1051 nm) also count as
           one pulse for the C_P rule. The single-pulse limits below 1 ns are ICNIRP 2013 Table 5&apos;s: 1 mJ/m² over the
           7 mm pupil from 100 fs to 10 ps (× C_C above 1050 nm; no C_A), 2 C_A mJ/m² from 10 ps (20 C_C mJ/m² at 1050–1400 nm); shorter than 100 fs, and
-          on the cornea below 1 ns, the irradiance is held at the shortest tabulated value. For the cornea (below 400 nm and
-          above 1400 nm) ICNIRP 2013 (p. 287) also advises, as a conservative interim guideline, keeping sub-ns exposures
-          below 10 % of the 1 ns limit; the page applies it. A beam under 1 mm (1/e diameter, d/√2 for the 1/e² d) is held to its peak on the cornea below 0.35 s (ICNIRP 2013 Table 5 note c).
+          on the cornea and anterior segment below 1 ns, the irradiance is held at the shortest tabulated value. For the
+          cornea (below 400 nm and above 1400 nm) ICNIRP 2013 (p. 287) also advises, as a conservative interim guideline,
+          keeping sub-ns exposures below 10 % of the 1 ns limit, and as a conservative interim approach the same for the
+          skin; the page applies it to the cornea and to the anterior segment at 700–1400 nm (twice the skin limit, Table 5
+          note d), where it binds before the retinal limit near 1350–1400 nm. A beam under 1 mm (1/e diameter, d/√2 for the 1/e² d) is held to its peak on the cornea below 0.35 s (ICNIRP 2013 Table 5 note c).
         </p>
         <p>
           Below 10 ps the retina is damaged by non-linear effects (laser-induced breakdown) rather than heat, which is why

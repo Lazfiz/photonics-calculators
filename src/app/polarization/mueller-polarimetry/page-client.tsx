@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { numberInputMode } from "../../../lib/number-input";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -114,7 +115,7 @@ export default function MuellerPolarimetryPage() {
         {["S₀", "S₁", "S₂", "S₃"].map((label, i) => (
           <label key={label} className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
             <span className="text-sm text-gray-300">{label}</span>
-            <input type="number" value={inputS[i]} onChange={e => {
+            <input type="number" inputMode={numberInputMode()} value={inputS[i]} onChange={e => {
               const v = +e.target.value;
               if (Number.isFinite(v)) stokesSetters[i](v);
             }} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />

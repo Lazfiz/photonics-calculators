@@ -28,7 +28,7 @@ export default function RetinalHazardPage() {
 
   const r = useMemo(() => {
     const s = retinalImageDiameter(lambda, d, D);
-    // Every eye limit: from 1150 nm the anterior segment must be checked too, and it binds from about 1.3 µm (ICNIRP 2013, p. 281).
+    // Every eye limit: from 1150 nm the anterior segment must be checked too, and it binds from about 1.3 µm (ICNIRP 2013, p. 282).
     const governing = governingMaxPower(lambda, d, t);
     return {
       s,

@@ -121,7 +121,7 @@ export default function MedicalLaserSafetyPage() {
           <ValidatedNumberInput label="Eye exposure time (s)" value={eyeExposure} onChange={setEyeExposure} min={1e-9} max={30000} step="any" />
           <p className="text-xs text-gray-500 mt-2">
             0.25 s for an unintended view of a visible beam and 10 s in the near infrared, 700–1400 nm; outside
-            400–1400 nm ICNIRP 2013 (p. 285) uses the longest exposure expected.
+            400–1400 nm ICNIRP 2013 (p. 286) uses the longest exposure expected.
           </p>
         </div>
       </div>

@@ -124,11 +124,11 @@ export default function NOHDPage() {
             onChange={(e) => setBeamGrowth(parseBeamGrowth(e.target.value))}
             className="mt-3 w-full rounded border border-gray-700 bg-gray-950 px-3 py-2 text-white"
           >
-            <option value="gaussian">Gaussian √(a² + (rφ)²), waist at the aperture (ANSI Z136.1 NOHD)</option>
-            <option value="linear">Linear a + rφ (shorter NOHD, less conservative)</option>
+            <option value="gaussian">Gaussian (ANSI Z136.1 NOHD)</option>
+            <option value="linear">Linear (shorter NOHD)</option>
           </select>
           <p className="mt-2 text-xs leading-5 text-gray-400">
-            The Gaussian form gives ANSI Z136.1&apos;s NOHD, (1/φ)√(4P/(π MPE) − a²). The linear form widens the beam faster, so
+            Beam radius at range r: Gaussian √(a² + (rφ)²) with the waist at the aperture, or linear a + rφ. The Gaussian form gives ANSI Z136.1&apos;s NOHD, (1/φ)√(4P/(π MPE) − a²). The linear form widens the beam faster, so
             its NOHD is always shorter: much shorter near threshold, where the beam must grow only a little.
           </p>
         </div>
