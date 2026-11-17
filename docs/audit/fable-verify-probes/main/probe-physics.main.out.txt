@@ -1,0 +1,79 @@
+
+# 1. CS2 n2
+ok   CS2 electronic n2 (m2/W)                                       ref=1.500000e-19 code=1.500000e-19 rel=0.0e+0
+ok   CS2 long-pulse n2 (m2/W) = 1.5+1.0+7.6+18                      ref=2.810000e-18 code=2.810000e-18 rel=0.0e+0
+
+# 2. optical-path-length, insertion
+ok   OPD closed form vs review table, 0 deg (m)                     ref=0.005000000 code=0.005000000 rel=0.0e+0
+ok   opdInsertion n=1.5, 0 deg (m)                                  ref=0.005000000 code=0.005000000 rel=0.0e+0
+ok   insertionGroupDelay n=ng=1.5, 0 deg (s)                        ref=1.667820e-11 code=1.667820e-11 rel=0.0e+0
+ok   insertionGroupDelay n=1.45 ng=1.47, 0 deg (s), d(phase)/dw     ref=1.567751e-11 code=1.567751e-11 rel=2.2e-10
+ok   OPD closed form vs review table, 30 deg (m)                    ref=0.005481880 code=0.005481882 rel=2.9e-7
+ok   opdInsertion n=1.5, 30 deg (m)                                 ref=0.005481882 code=0.005481882 rel=3.3e-16
+ok   insertionGroupDelay n=ng=1.5, 30 deg (s)                       ref=1.828559e-11 code=1.828559e-11 rel=2.2e-16
+ok   insertionGroupDelay n=1.45 ng=1.47, 30 deg (s), d(phase)/dw    ref=1.722349e-11 code=1.722349e-11 rel=7.3e-12
+ok   OPD closed form vs review table, 60 deg (m)                    ref=0.007247450 code=0.007247449 rel=1.8e-7
+ok   opdInsertion n=1.5, 60 deg (m)                                 ref=0.007247449 code=0.007247449 rel=0.0e+0
+ok   insertionGroupDelay n=ng=1.5, 60 deg (s)                       ref=2.417489e-11 code=2.417489e-11 rel=2.2e-16
+ok   insertionGroupDelay n=1.45 ng=1.47, 60 deg (s), d(phase)/dw    ref=2.294609e-11 code=2.294609e-11 rel=3.8e-11
+   API output keys: opl,geometric,waves,phaseDelay,groupDelay,extraGroupDelay,opdVacuum,opdInsertion,insertionGroupDelay,thetaT,n,ng
+
+# 3. scintillation, gamma-gamma fade probability
+ok   physics gammaGammaCdf -3 dB, Cn2=1.7e-14 L=1000 D=0.1 (sR2=0.338) ref=0.00005936210 code=0.00005936210 rel=1.2e-13
+ok   API fade3dBGammaGamma, Cn2=1.7e-14 L=1000 D=0.1 (sR2=0.338)    ref=0.00005936210 code=0.00005936210 rel=6.5e-14
+ok   API fade10dBGammaGamma, Cn2=1.7e-14 L=1000 D=0.1 (sR2=0.338)   ref=5.672251e-31 code=5.672251e-31 rel=2.8e-13
+   log-normal card: 2.252e-5 / 1.396e-43; warnings: (none)
+ok   physics gammaGammaCdf -3 dB, Cn2=1.7e-13 L=1000 D=0 (sR2=3.385) ref=0.3989170 code=0.3989170 rel=2.2e-16
+ok   API fade3dBGammaGamma, Cn2=1.7e-13 L=1000 D=0 (sR2=3.385)      ref=0.3989170 code=0.3989170 rel=2.2e-16
+ok   API fade10dBGammaGamma, Cn2=1.7e-13 L=1000 D=0 (sR2=3.385)     ref=0.07175626 code=0.07175626 rel=1.1e-15
+   log-normal card: 3.606e-1 / 1.368e-2; warnings: Moderate to strong fluctuations (σ_R² ≥ 1): the log-normal fade probab
+ok   physics gammaGammaCdf -3 dB, Cn2=1.7e-13 L=5000 D=0 (sR2=64.708) ref=0.4120307 code=0.4120307 rel=1.8e-11
+ok   API fade3dBGammaGamma, Cn2=1.7e-13 L=5000 D=0 (sR2=64.708)     ref=0.4120307 code=0.4120307 rel=1.8e-11
+ok   API fade10dBGammaGamma, Cn2=1.7e-13 L=5000 D=0 (sR2=64.708)    ref=0.1015964 code=0.1015964 rel=1.8e-11
+   log-normal card: 3.639e-1 / 1.447e-2; warnings: Moderate to strong fluctuations (σ_R² ≥ 1): the log-normal fade probab
+ok   physics gammaGammaCdf -3 dB, Cn2=1.7e-13 L=5000 D=0.1 (sR2=64.708) ref=0.02255572 code=0.02255572 rel=2.2e-14
+ok   API fade3dBGammaGamma, Cn2=1.7e-13 L=5000 D=0.1 (sR2=64.708)   ref=0.02255572 code=0.02255572 rel=2.2e-14
+ok   API fade10dBGammaGamma, Cn2=1.7e-13 L=5000 D=0.1 (sR2=64.708)  ref=8.664117e-9 code=8.664117e-9 rel=3.3e-14
+   log-normal card: 1.266e-2 / 3.275e-15; warnings: Moderate to strong fluctuations (σ_R² ≥ 1): the log-normal fade probab
+   scintillation inputs: wavelength[nm] distance[km] cz[m^(−2/3)] apertureDiameter[m]
+
+# 4. dn/dT presets
+ok   fused silica dn/dT absolute (1/K), Malitson relative 10.0e-6 - n dn_air/dT ref=0.000008656451 code=0.000008860000 rel=2.4e-2
+   quartz window dn/dT: -0.0000055 (Crystran: n_o -5.5e-6, n_e -6.5e-6)
+
+# 5. laser safety
+ok   AEL Class 1, 532 nm 10 ns: 2e-3 J/m2 x A7 (IEC prints 7.7e-8 J) ref=7.696902e-8 code=7.696902e-8 rel=2.2e-16
+ok   AEL Class 3B, 532 nm 10 ns: 0.03 J (IEC Table 8)               ref=0.03000000 code=0.03000000 rel=0.0e+0
+ok   AEL Class 1, 905 nm 100 ns: 2e-3 C_A J/m2 x A7, C_A = 10^0.41  ref=1.978408e-7 code=1.978408e-7 rel=0.0e+0
+ok   AEL Class 1, 1064 nm 10 ns: 2e-2 C_C J/m2 x A7 (IEC 7.7e-7 J)  ref=7.696902e-7 code=7.696902e-7 rel=1.1e-16
+ok   AEL Class 3B, 1064 nm 10 ns: 0.15 J                            ref=0.1500000 code=0.1500000 rel=0.0e+0
+ok   AEL Class 1 CW, 1550 nm: 1000 W/m2 x pi(1.75 mm)^2 (IEC prints 10 mW) ref=0.009621128 code=0.009621128 rel=2.2e-16
+ok   AEL Class 3B CW, 1550 nm: 0.5 W                                ref=0.5000000 code=0.5000000 rel=0.0e+0
+ok   AEL Class 2, 633 nm 0.25 s: 18 t^0.75 J/m2 x A7 (IEC: 1 mW x 0.25 s) ref=0.0002449139 code=0.0002500000 rel=2.1e-2
+   Class 2 energy at 0.25 s: code 0.00025; IEC form 1 mW x t = 2.5e-4 J; ICNIRP form 2.4491e-4 J
+   1310 nm, 1 s (main: euA11 toggle): energy1=0.5 cw1=0.49873739654538557 cw3R=0.5
+ok   anterior segment 1350 nm, 1 ns: 2 x 200 C_A (J/m2)             ref=2000.000 code=2000.000 rel=0.0e+0
+DIFF anterior segment 1350 nm, 500 ps: 10 % of the 1 ns limit (J/m2) ref=200.0000 code=1000.000 rel=4.0e+0
+ok   anterior segment 1350 nm, 50 ps: held irradiance 2e12 W/m2 x t (J/m2) ref=100.0000 code=100.0000 rel=1.1e-16
+ok   cornea 1550 nm, 500 ps: 10 % of 1e4 J/m2                       ref=1000.000 code=1000.000 rel=0.0e+0
+   ultrafast inputs: pulseEnergy[µJ]=0.0125 repRate[MHz]=80 pulseWidth[fs]=100 wavelength[nm]=800 beamDia[mm]=2 divergence[mrad]=1 exposureTime[s]=10
+ok   corneal aperture at t = 10 s exactly (m), Table 8: 3.5 mm      ref=0.003500000 code=0.003500000 rel=0.0e+0
+ok   corneal aperture at t = 9.999 s (m): 1.5 t^0.375 mm            ref=0.003556927 code=0.003556927 rel=0.0e+0
+ok   scanned P_max, 532 nm default (2 mm at eye, 0.25 s) (W)        ref=0.007681534 code=0.007681534 rel=7.6e-9
+   mine: rule 1, pass 66.2 us, 50 passes | code: rule 1, pass 66.2 us, 50 passes, T=0.25 s
+ok   held still P_max, 532 nm default (2 mm at eye, 0.25 s) (W)     ref=0.0009796557 code=0.0009796557 rel=0.0e+0
+   rule 2 at the train length 9.9950 s, aperture 3.556 mm: 1.5277 W; at T = 10 s, 3.5 mm: 1.5059 W
+DIFF scanned P_max, 1550 nm, 10 s (W)                               ref=1.505879 code=1.527696 rel=1.4e-2
+   mine: rule 2, pass 32.0 us, 2000 passes | code: rule 2, pass 12.8 us, 2000 passes, T=10 s
+ok   held still P_max, 1550 nm, 10 s (W)                            ref=0.009642220 code=0.009642220 rel=0.0e+0
+ok   scanned P_max, 905 nm, 10 deg, 10 Hz one way, 0.5 m, 10 s (W)  ref=0.005958459 code=0.005958459 rel=4.6e-9
+   mine: rule 1, pass 7975.1 us, 100 passes | code: rule 1, pass 7975.1 us, 100 passes, T=10 s
+DIFF held still P_max, 905 nm, 10 deg, 10 Hz one way, 0.5 m, 10 s (W) ref=0.001001287 code=0.0009892042 rel=1.2e-2
+ok   NOHD default growth = Gaussian (m)                             ref=11.88664 code=11.88664 rel=0.0e+0
+ok   NOHD linear option (m)                                         ref=7.895431 code=7.895431 rel=1.1e-16
+   nohd inputs: power[mW]=100 wavelength[nm]=532 exposure[s]=0.25 beamDia[mm]=2 divergence[mrad]=1 safetyFactor[]=1
+   classification 1550 nm 30 mm 100 mW: rank 1, class1Max 358.3 mW, warnings: Condition 1 (telescope viewing) not evaluated: outside 400–1
+   classification 1550 nm 30 mm 1000 mW: rank 5, class1Max 358.3 mW, warnings: Condition 1 (telescope viewing) not evaluated: outside 400–1
+   classification inputs: power[mW]=20 wavelength[nm]=1550 beamDia[mm]=1 divergence[mrad]=1 alpha[mrad]=1.5 longTerm[]=0 telescopes[]=1
+
+3 DIFF rows

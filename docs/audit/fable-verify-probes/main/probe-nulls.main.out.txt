@@ -1,0 +1,11 @@
+schemas 265, runs 4303, rejected with a 400 95
+null outputs 2344 (runs with every output null: 63); silent (no warning at all) 0; no warning names the output (rough) 948
+200 /api/v1/thin-film/anti-fog?waterTemp=-25 nulls=[] warnings: []
+200 /api/v1/thin-film/solar-protection?uvPairs=40 nulls=[] warnings: []
+200 /api/v1/wave-optics/ring-cavity?outputCouplerR=0.01 nulls=[linewidth] warnings: ["The round-trip factor is too low for a resonance peak: the Airy peak never falls to half its maximum, so there is no linewidth."]
+200 /api/v1/laser-safety/green-laser-pointer?divergence=0 nulls=[nohd,flashBlindRange,glareRange,distractionRange] warnings: ["The beam doesn't spread (φ = 0): the eye hazard extends to any range.","The beam doesn't spread (φ = 0): each dazzle level it exceeds extends to any range."]
+400 /api/v1/wave-optics/gaussian-beam?waist=0x10 nulls=[] error: Input "waist" must be a finite number in decimal notation, such as 1.5 or 2e-6 (in a URL w
+200 /api/v1/wave-optics/gaussian-beam?waist=1e1 nulls=[] warnings: []
+404 /api/v1/wave-optics/nope nulls=[] error: No API for /wave-optics/nope. The calculators it can run are listed in /openapi.json.
+anti-fog surfaceTension at -25 C: 78.95177209316196 (linear continuation of the review's -10/-5 C values: 79.0)
+MCP batch of 200: HTTP 429, {"jsonrpc":"2.0","id":null,"error":{"code":-32600,"message":"Too many requests from this address; please try again in a minute."}}
