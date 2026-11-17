@@ -83,7 +83,7 @@ export default function UltrafastLaserSafetyPage() {
               label="NOHD"
               value={nohd === Infinity ? "∞ (the beam doesn't spread)" : nohd === 0 ? "0 — within at the output" : fmtDistance(nohd)}
               tone={nohd === 0 ? "green" : "red"}
-              subtext="Direct beam, diameter a + rφ"
+              subtext="Direct beam, diameter √(a² + (rφ)²)"
             />
           </div>
           <PulseTrainTable result={result} value={Q} />

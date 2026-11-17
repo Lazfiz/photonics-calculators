@@ -175,7 +175,7 @@ export default function Reconstruction3DPage() {
         <h3 className="text-lg font-semibold mb-3">Key Formulas</h3>
         <div className="space-y-2 text-sm text-gray-300 font-mono">
           <p><span className="text-blue-400">Lateral (widefield, light sheet):</span> FWHM = 0.51 λ/NA</p>
-          <p><span className="text-blue-400">Axial (widefield):</span> FWHM = 0.88 λ/(n − √(n² − NA²))</p>
+          <p><span className="text-blue-400">Axial (widefield):</span> FWHM = 0.886 λ/(n − √(n² − NA²))</p>
           <p><span className="text-blue-400">Confocal:</span> PSF = illumination × (detection ⊗ pinhole); 0.37 λ/NA and 0.64 λ/(n − √(n² − NA²)) as the pinhole → 0</p>
           <p><span className="text-blue-400">Light sheet:</span> w₀ = λ/(π NA_sheet), FWHM_z = (1/FWHM_sheet² + 1/FWHM_det²)^(−1/2)</p>
           <p><span className="text-blue-400">Sampling rule of thumb:</span> step ≤ FWHM/2</p>

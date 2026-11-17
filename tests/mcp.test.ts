@@ -71,6 +71,17 @@ test("MCP: notifications get 202; bad JSON, unknown methods and versions get JSO
   assert.equal(OPTIONS().headers.get("access-control-allow-origin"), "*");
 });
 
+test("MCP: a batch counts each message against the 120-per-minute limit (review 2026-11 P3-M8)", async () => {
+  const ping = (id: number) => ({ jsonrpc: "2.0", id, method: "ping" });
+  const ip = { "x-forwarded-for": "203.0.113.77" };
+  const first = await post(Array.from({ length: 100 }, (_, i) => ping(i)), ip);
+  assert.equal(first.status, 200);
+  assert.equal(((await first.json()) as unknown[]).length, 100);
+  // 100 used; 21 more messages exceed 120.
+  assert.equal((await post(Array.from({ length: 21 }, (_, i) => ping(i)), ip)).status, 429);
+  assert.equal((await post(Array.from({ length: 21 }, (_, i) => ping(i)), { "x-forwarded-for": "203.0.113.78" })).status, 200);
+});
+
 test("MCP: tools/list names the four tools with object input schemas", async () => {
   const { result } = await rpc("tools/list");
   assert.deepEqual(result.tools.map((t: { name: string }) => t.name),
@@ -110,6 +121,13 @@ test("MCP run_calculator: the API's numbers for the inputs given; errors say why
   // A page URL and a bare slug name the same calculator; a choice takes its option value.
   const byUrl = await call("run_calculator", { slug: "https://photonicscalculators.com/wave-optics/gaussian-beam?x=1", inputs });
   assert.deepEqual(byUrl.structuredContent?.outputs, run.structuredContent?.outputs);
+  // A shared page link carries its inputs (upgrades review 2026-11, quick win 1); `inputs` overrides them.
+  const shared = "https://photonicscalculators.com/wave-optics/gaussian-beam?" + new URLSearchParams(
+    Object.entries(inputs).map(([key, value]) => [key, String(value)])) + "&utm_source=x#results";
+  const fromLink = await call("run_calculator", { slug: shared });
+  assert.deepEqual(fromLink.structuredContent?.outputs, run.structuredContent?.outputs);
+  const overridden = await call("run_calculator", { slug: shared, inputs: { wavelength: 532 } });
+  assert.match(overridden.structuredContent?.pageUrl as string, /wavelength=532/);
   const solved = await call("run_calculator", { slug: "lambert-beer-law", inputs: { solve: "c", absorbance: 1 } });
   assert.equal(solved.isError, undefined, solved.content[0].text);
 

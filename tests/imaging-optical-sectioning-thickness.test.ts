@@ -13,12 +13,12 @@ const um = 1e-6;
 
 test("confocal section at 550 nm, NA 0.75, n 1.518, 1 AU (Zeiss formula, hand calculation)", () => {
   // n − √(n² − NA²) = 1.518 − √1.741824 = 0.1982182.
-  // Diffraction term 0.88 · 0.55 µm / 0.1982182 = 2.44175 µm; 1 AU = 1.22 · 0.55 / 0.75 = 0.894667 µm;
-  // pinhole term √2 · 1.518 · 0.894667 / 0.75 = 2.560871 µm; FWHM = √(2.44175² + 2.560871²) = 3.53839 µm.
+  // Diffraction term 0.886 · 0.55 µm / 0.1982182 = 2.458402 µm; 1 AU = 1.22 · 0.55 / 0.75 = 0.894667 µm;
+  // pinhole term √2 · 1.518 · 0.894667 / 0.75 = 2.560871 µm; FWHM = √(2.458402² + 2.560871²) = 3.549897 µm.
   // (The page used to add the first term in nm to the second in µm and showed 2.44 µm.)
   assertRel(airyUnit(550e-9, 0.75), 0.894667 * um, 1e-6, "AU");
-  assertRel(axialPsfFwhm(550e-9, 1.518, 0.75), 2.44175 * um, 1e-5, "diffraction term");
-  assertRel(confocalSectionFwhm(550e-9, 1.518, 0.75, 1), 3.53839 * um, 1e-5, "1 AU");
+  assertRel(axialPsfFwhm(550e-9, 1.518, 0.75), 2.458402 * um, 1e-6, "diffraction term");
+  assertRel(confocalSectionFwhm(550e-9, 1.518, 0.75, 1), 3.549897 * um, 1e-6, "1 AU");
   assertRel(confocalSectionFwhmPointPinhole(550e-9, 1.518, 0.75), 1.775819 * um, 1e-5, "point pinhole");
   // A larger pinhole only adds to the section.
   assert.ok(confocalSectionFwhm(550e-9, 1.518, 0.75, 2) > confocalSectionFwhm(550e-9, 1.518, 0.75, 1));
@@ -31,10 +31,11 @@ test("low-NA limit matches the paraxial focal intensity (Born & Wolf §8.8)", ()
   const lambda = 500e-9;
   const n = 1;
   const NA = 0.05;
-  assertRel(axialPsfFwhm(lambda, n, NA), (1.77178 * n * lambda) / NA ** 2, 0.01, "0.88 rule vs paraxial");
+  assertRel(axialPsfFwhm(lambda, n, NA), (1.77178 * n * lambda) / NA ** 2, 1e-3, "0.886 vs the paraxial 2 · 0.88589");
+  // (0.886 vs 0.88589 is 1.2e-4; the high-NA denominator adds NA²/(4n²) = 6.3e-4 at NA 0.05.)
   assertRel(widefieldDepthOfField(lambda, n, NA), (2 * n * lambda) / NA ** 2, 1e-15, "DOF");
   // No cancellation in n − √(n² − NA²) at tiny NA: → NA²/(2n).
-  assertRel(axialPsfFwhm(lambda, 1.5, 1e-6), (0.88 * lambda * 2 * 1.5) / 1e-12, 1e-9, "NA → 0");
+  assertRel(axialPsfFwhm(lambda, 1.5, 1e-6), (0.886 * lambda * 2 * 1.5) / 1e-12, 1e-9, "NA → 0");
 });
 
 test("widefield first axial zero λ/(n − √(n² − NA²)) (Born & Wolf §8.8, hand calculation)", () => {

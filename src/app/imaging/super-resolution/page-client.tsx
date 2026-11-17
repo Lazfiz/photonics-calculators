@@ -87,7 +87,7 @@ export default function SuperResolutionPage() {
               2008, Eq. 7) with the confocal d_c = λ/(2NA) at the excitation and a doughnut steepness a = 2NA/λ_STED, chosen so
               that λ_STED = λ recovers Westphal &amp; Hell&apos;s λ/(2NA√(1 + I/I_sat)) (Phys. Rev. Lett. 94, 143903, 2005) and high
               depletion gives Harke&apos;s Eq. 1, λ_STED/(2NA√(I/I_sat)). Harke&apos;s computed vortex pattern is 6 % less steep, so real
-              spots at high depletion are about 6 % wider; the I_sat convention also shifts the ratio. 2D (vortex) STED narrows only the lateral spot; the axial FWHM stays 0.88λ/(n − √(n² − NA²)).</p>
+              spots at high depletion are about 6 % wider; the I_sat convention also shifts the ratio. 2D (vortex) STED narrows only the lateral spot; the axial FWHM stays 0.886λ/(n − √(n² − NA²)).</p>
             <p>PALM/STORM: σ = s/√N, s = 0.21λ/NA, the Gaussian width of the PSF (Zhang et al., Appl. Opt. 46, 1819, 2007). This is the shot-noise limit (Thompson et al., Biophys. J. 82, 2775, 2002): pixelation, background and EMCCD excess noise (×√2) make it worse (Mortensen et al., Nat. Methods 7, 377, 2010).</p>
             <p>2D localization gives no axial position. 3D methods (astigmatism, biplane) are typically about twice as coarse axially as laterally (Huang et al., Science 319, 810, 2008).</p>
           </div>

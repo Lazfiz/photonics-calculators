@@ -201,7 +201,7 @@ export const freeSpaceComms: CalculatorEntry[] = [
     description: "NOHD, IEC 60825-1 laser class and exposure margin at a chosen distance for a free-space optical transmitter, on the ICNIRP 2013 eye limits with a diverging Gaussian beam.",
     lede: "How far from a free-space optical transmitter the beam is within every eye exposure limit, its laser class, and the margin at a distance you choose.",
     tier: "exact",
-    modelNote: "ICNIRP 2013 eye limits for one CW exposure up to t; Gaussian beam averaged over each limit's aperture (its peak if under 1 mm (1/e) on the cornea below 0.35 s, ICNIRP Table 5 note c), growing as a + rφ; IEC 60825-1 class. Not modelled: atmosphere, optical aids, scintillation, pulsed modulation.",
+    modelNote: "ICNIRP 2013 eye limits for one CW exposure up to t; Gaussian beam averaged over each limit's aperture (its peak if under 1 mm (1/e) on the cornea below 0.35 s, ICNIRP Table 5 note c), growing as √(a² + (rφ)²); IEC 60825-1 class. Not modelled: atmosphere, optical aids, scintillation, pulsed modulation.",
     references: [
       {
         citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 2, 5 and 8.",
@@ -283,7 +283,7 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "lasercom-link",
     title: "Lasercom Link Budget",
-    description: "Lasercom link budget with Gaussian-beam transmit and receive gains, free-space path loss, spot size at the receiver, and pointing and atmospheric losses.",
+    description: "Lasercom link budget with uniform-aperture transmit and receive gains (πD/λ)²η, free-space path loss, spot size at the receiver, and pointing and atmospheric losses.",
     tier: "textbook",
     modelNote: "Friis P_r = P_t G_t G_r (λ/4πR)² with G = (πD/λ)² η at each end; FSPL and gains count the spreading once. Capped at P_t η_t η_r; flags R < 2D_t²/λ. Pointing and atmosphere as fixed dB.",
     references: [
@@ -448,11 +448,19 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "scintillation",
     title: "Scintillation Index",
-    description: "Rytov variance, aperture averaging, and fade probability for atmospheric turbulence.",
+    description: "Rytov variance, aperture averaging, and fade probability (gamma-gamma and log-normal) for atmospheric turbulence.",
     keywords: ["Scintillation and Coherence Length"],
     tier: "textbook",
-    modelNote: "Plane wave on a horizontal path with constant Cn² and a Kolmogorov spectrum without inner scale. Fade probabilities assume log-normal irradiance, which is optimistic in moderate to strong turbulence.",
+    modelNote: "Plane wave on a horizontal path with constant Cn² and a Kolmogorov spectrum without inner scale. Fade probabilities are shown for gamma-gamma (Al-Habash et al. 2001, with the aperture) and log-normal irradiance; log-normal underestimates deep fades once σ_R² ≥ 1, where gamma-gamma is the accepted model for a point or small receiver; for apertures much larger than the Fresnel zone the distribution lies between the two (Vetelino et al. 2007).",
     references: [
+      {
+        citation: "Al-Habash M. A., Andrews L. C., Phillips R. L. (2001). Mathematical model for the irradiance probability density function of a laser beam propagating through turbulent media. Opt. Eng. 40, 1554. Gamma-gamma distribution.",
+        url: "https://doi.org/10.1117/1.1386641",
+      },
+      {
+        citation: "Vetelino F. S., Young C., Andrews L., Recolons J. (2007). Aperture averaging effects on the probability density of irradiance fluctuations in moderate-to-strong turbulence. Appl. Opt. 46(11), 2099.",
+        url: "https://doi.org/10.1364/AO.46.002099",
+      },
       {
         citation: "Andrews L. C., Phillips R. L. (2005). Laser Beam Propagation through Random Media, 2nd ed. SPIE. Plane-wave Rytov variance, Fried parameter and aperture-averaged scintillation index.",
       },

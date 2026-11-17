@@ -15,7 +15,7 @@
  * The focal intensity is then I ≈ exp(−2r²/w² − 2z²/w_z²) with 1/e² radii w = 2ω_xy, w_z = 2ω_z, and the
  * k-photon profile I^k has FWHM 2√(2 ln 2/k) ω and volume ∫I^k dV/I₀^k = (π/(2k))^(3/2) w² w_z. For k = 2 this
  * is Zipfel's fit itself; for k = 1 and 3 it extends the Gaussian. Against the exact paraxial Airy pattern
- * [2J₁(v)/v]² (Born & Wolf §8.5) the lateral FWHM is 2.0 % wide for k = 2 and 1.5 % wide for k = 3, and the
+ * [2J₁(v)/v]² (Born & Wolf §8.5) the lateral FWHM is 3.6 % wide for k = 1, 2.0 % wide for k = 2 and 1.5 % wide for k = 3, and the
  * peak intensity P/(2π ω_xy²) is 1.1 % below the Airy peak π NA² P/λ².
  *
  * Pulses are taken as Gaussian in time: P_peak = 2√(ln 2/π) E/τ_FWHM (sech² pulses: 0.881 E/τ).

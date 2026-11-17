@@ -40,6 +40,12 @@ export async function POST(request: Request) {
   if (Array.isArray(body)) {
     // Batches (protocol 2025-03-26) still get an answer; newer clients send one message per request.
     if (body.length === 0) return json(rpcError(null, ERROR.invalidRequest, "An empty batch."), 400);
+    // The limit counts messages, not POSTs: the request above paid for the first one.
+    for (let i = 1; i < body.length; i++) {
+      if (!limiter.allow(ip)) {
+        return json(rpcError(null, ERROR.invalidRequest, "Too many requests from this address; please try again in a minute."), 429);
+      }
+    }
     const answers = (await Promise.all(body.map((message) => handleMessage(message, ctx)))).filter((a) => a !== null);
     return answers.length > 0 ? json(answers) : new Response(null, { status: 202, headers: HEADERS });
   }

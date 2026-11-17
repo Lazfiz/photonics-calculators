@@ -131,6 +131,11 @@ test("edge filter: incoherent sum of two faces", () => {
   close(glass.T, 3 / 3.25, 1e-15, "bare glass");
   close(glass.R + glass.T, 1, 1e-15, "R + T");
   assert.equal(incoherentLosslessFaces(1, 0.3).T, 0);
-  assert.ok(Number.isNaN(incoherentLosslessFaces(1, 1).T), "two perfect mirrors");
+  // T ≤ min(T₁, T₂), so a fully reflecting face passes nothing, even facing another one.
+  assert.equal(incoherentLosslessFaces(1, 1).T, 0, "two perfect mirrors");
+  // A deep stop band rounds R to 1 + 4e-16 (solar-protection at 40 pairs, review 2026-11 P3-W1).
+  assert.deepEqual(incoherentLosslessFaces(1 + 4.4e-16, 0.5), { R: 1, T: 0 });
+  assert.deepEqual(incoherentLosslessFaces(1 + 4.4e-16, 1 - 1e-16), { R: 1, T: 0 });
   assert.ok(Number.isNaN(incoherentLosslessFaces(-0.1, 0.2).T));
+  assert.ok(Number.isNaN(incoherentLosslessFaces(1 + 1e-9, 0.2).T));
 });

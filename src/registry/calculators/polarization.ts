@@ -417,6 +417,7 @@ export const polarization: CalculatorEntry[] = [
     slug: "retarder",
     title: "Waveplate / Retarder",
     description: "Polarization state transformation by a birefringent waveplate with variable retardance and fast-axis orientation.",
+    keywords: ["quarter-wave plate", "half-wave plate", "λ/4 plate", "λ/2 plate"],
     tier: "exact",
     modelNote: "Ideal lossless linear retarder R(−θ)·diag(1, e^(−iΓ))·R(θ) on linearly polarized light, Goldstein convention (S₃ > 0 is right-handed). Not modelled: dispersion of Γ, reflections, tilt.",
     references: [goldsteinJones, jones1941],

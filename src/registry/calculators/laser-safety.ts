@@ -207,7 +207,7 @@ export const laserSafety: CalculatorEntry[] = [
     title: "Diode Laser Safety Calculator",
     description: "NOHD and eyewear OD for a diode laser beam with different slow- and fast-axis divergence (1/e² or FWHM), on the ICNIRP 2013 eye limits.",
     tier: "textbook",
-    modelNote: "Elliptical beam as the round beam of equal peak irradiance (√(d_x d_y)), each axis a + rφ; ICNIRP 2013 point-source eye limits averaged over each aperture (its peak if under 1 mm (1/e) on the cornea below 0.35 s, ICNIRP Table 5 note c), one exposure up to t. Not modelled: extended-source bars, pulses.",
+    modelNote: "Elliptical beam as the round beam of equal peak irradiance (√(d_x d_y)), each axis √(a² + (rφ)²); ICNIRP 2013 point-source eye limits averaged over each aperture (its peak if under 1 mm (1/e) on the cornea below 0.35 s, ICNIRP Table 5 note c), one exposure up to t. Not modelled: extended-source bars, pulses.",
     references: [
       {
         citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 5 and 8.",
@@ -310,7 +310,7 @@ export const laserSafety: CalculatorEntry[] = [
     title: "Green Laser Pointer Safety",
     description: "Class, NOHD and dazzle distances of a laser pointer: its IEC 60825-1:2014 class, the nominal ocular hazard distance on the ICNIRP 2013 limits, and how far it causes flash-blindness, glare and distraction (ICAO levels).",
     tier: "textbook",
-    modelNote: "Class: IEC 60825-1:2014 CW AELs. NOHD: ICNIRP 2013, 0.25 s if visible (else 10 s), beam d + rφ. Dazzle: peak irradiance vs the ICAO levels, not weighted by eye sensitivity. Not modelled: IR leakage, atmosphere.",
+    modelNote: "Class: IEC 60825-1:2014 CW AELs. NOHD: ICNIRP 2013, 0.25 s if visible (else 10 s), beam √(d² + (rφ)²). Dazzle: peak irradiance vs the ICAO levels, not weighted by eye sensitivity. Not modelled: IR leakage, atmosphere.",
     references: [
       {
         citation: "IEC 60825-1:2014. Safety of laser products – Part 1: Equipment classification and requirements. Tables 3–8 (AELs), Table 10 (measurement conditions).",
@@ -330,7 +330,7 @@ export const laserSafety: CalculatorEntry[] = [
     title: "Industrial Laser Safety Calculator",
     description: "Direct-beam NOHD, diffuse-reflection hazard distance and eyewear OD for industrial cutting and welding lasers, on the ICNIRP 2013 eye limits.",
     tier: "textbook",
-    modelNote: "Direct-beam NOHD (a + rφ) and Lambertian diffuse reflection (extended source, ICNIRP C_E with an open field of view) on the ICNIRP 2013 eye limits, one exposure up to t. Not checked: filter damage, plume.",
+    modelNote: "Direct-beam NOHD (beam √(a² + (rφ)²)) and Lambertian diffuse reflection (extended source, ICNIRP C_E with an open field of view) on the ICNIRP 2013 eye limits, one exposure up to t. Not checked: filter damage, plume.",
     references: [
       {
         citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Table 2 and eqn 5 (C_E), Tables 5 and 8.",
@@ -381,7 +381,7 @@ export const laserSafety: CalculatorEntry[] = [
     title: "LiDAR Laser Safety Calculator",
     description: "Eye safety of a lidar beam (905 or 1550 nm), stationary or scanned across the eye, on the ICNIRP 2013 limits: the repetitive-pulse rule that binds, NOHD, exposure at a viewing distance and eyewear OD.",
     tier: "textbook",
-    modelNote: "ICNIRP 2013 repetitive-pulse rules on the eye limits; round Gaussian beam widening as a + rφ, averaged over each aperture (its peak if under 1 mm (1/e) on the cornea below 0.35 s, ICNIRP Table 5 note c). Stationary beam (the worst case, a scanner failure), or scanned: the pulses within a pass (centred), each pass as one pulse of the average power times a worst-phase bound, and C_P over the pulses within T₂ whose 1/e² beam overlaps the pupil; never below the stationary beam's limit; eye on the scan line's centre with a still retinal image. Conservative by 1.0–1.6× against a sum over every window of the pulse energies (up to 2×; more for a narrow beam on the cornea). Not modelled: several beams or raster lines, turning points.",
+    modelNote: "ICNIRP 2013 repetitive-pulse rules on the eye limits; round Gaussian beam widening as √(a² + (rφ)²), averaged over each aperture (its peak if under 1 mm (1/e) on the cornea below 0.35 s, ICNIRP Table 5 note c). Stationary beam (the worst case, a scanner failure), or scanned: the pulses within a pass (centred), each pass as one pulse of the average power times a worst-phase bound, and C_P over the pulses within T₂ whose 1/e² beam overlaps the pupil; never below the stationary beam's limit; eye on the scan line's centre with a still retinal image. Conservative by 1.0–1.6× against a sum over every window of the pulse energies (up to 2×; more for a narrow beam on the cornea). Not modelled: several beams or raster lines, turning points.",
     references: [
       {
         citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Repetitive pulse exposures (p. 287), Tables 4, 5 and 8.",
@@ -448,7 +448,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "nohd",
     title: "Nominal Ocular Hazard Distance (NOHD)",
-    description: "Nominal ocular hazard distance of a direct laser beam at any wavelength from 180 nm to 1 mm, on the ICNIRP 2013 eye limits, with linear or Gaussian beam spread.",
+    description: "Nominal ocular hazard distance of a direct laser beam at any wavelength from 180 nm to 1 mm, on the ICNIRP 2013 eye limits, with Gaussian (default) or linear beam spread.",
     lede: "Distance beyond which a direct beam is within every eye exposure limit for an exposure of up to t, from the beam's power, diameter and divergence.",
     keywords: ["nominal ocular hazard distance", "Beam Divergence Hazards", "Safe Viewing Distance"],
     priority: 90,
@@ -557,7 +557,7 @@ export const laserSafety: CalculatorEntry[] = [
     title: "Research Lab Laser Safety Calculator",
     description: "Class, NOHD, eyewear OD and diffuse-reflection hazard of a CW laser in a lab, and whether the direct beam is still hazardous at the walls (IEC 60825-1:2014 class, ICNIRP 2013 eye limits).",
     tier: "textbook",
-    modelNote: "Class: IEC 60825-1:2014 CW AELs. NOHD (d + rφ), eyewear OD and white-wall diffuse reflection on the ICNIRP 2013 eye limits for the exposure time. Not modelled: pulses, specular paths, skin, several beams.",
+    modelNote: "Class: IEC 60825-1:2014 CW AELs. NOHD (beam √(d² + (rφ)²)), eyewear OD and white-wall diffuse reflection on the ICNIRP 2013 eye limits for the exposure time. Not modelled: pulses, specular paths, skin, several beams.",
     references: [
       {
         citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 2–5 and 8.",
@@ -680,7 +680,7 @@ export const laserSafety: CalculatorEntry[] = [
     title: "Ultrafast Laser Safety Calculator",
     description: "Eye safety of femtosecond and picosecond lasers on the ICNIRP 2013 limits: sub-ns single-pulse limits, the average-power rule that governs MHz trains, eyewear OD and NOHD.",
     tier: "textbook",
-    modelNote: "ICNIRP 2013 repetitive-pulse rules with the sub-ns rows (1 mJ/m² from 100 fs to 10 ps; the cornea below 10 % of its 1 ns limit, p. 287); round Gaussian beam over each aperture, NOHD with a + rφ. Not modelled: bursts, harmonics, eyewear saturation.",
+    modelNote: "ICNIRP 2013 repetitive-pulse rules with the sub-ns rows (1 mJ/m² from 100 fs to 10 ps; the cornea below 10 % of its 1 ns limit, p. 287); round Gaussian beam over each aperture, NOHD with √(a² + (rφ)²). Not modelled: bursts, harmonics, eyewear saturation.",
     references: [
       {
         citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Repetitive pulse exposures (p. 287), Tables 4, 5 and 8.",

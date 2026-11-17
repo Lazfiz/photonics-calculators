@@ -150,7 +150,7 @@ export default function NonlinearIndexPage() {
             B-integral of a slab). In a fibre the same n₂ sets γ through the mode&apos;s effective area. n₂ falls slowly
             towards the infrared below the band gap, so a value measured at one wavelength holds only near it (fused silica:
             2.4 × 10⁻¹⁶ cm²/W at 800 nm in Dubietis et al.&apos;s table, 2.18 × 10⁻¹⁶ at 1024 nm in Wahlstrand &amp;
-            Cruz&apos;s Z-scan, ±6 %; DeSalvo et al.&apos;s picosecond Z-scans give 2.1 × 10⁻¹⁶ at 1064 nm and 2.2 × 10⁻¹⁶ at
+            Cruz&apos;s Z-scan benchmark of their pump–probe method, ±6 %; DeSalvo et al.&apos;s picosecond Z-scans give 2.1 × 10⁻¹⁶ at 1064 nm and 2.2 × 10⁻¹⁶ at
             532 nm, ±20 %).
           </p>
           <p>
@@ -167,7 +167,7 @@ export default function NonlinearIndexPage() {
           </p>
           <p>
             Values are for linear polarization; circular polarization gives ⅔ of the electronic n₂ in isotropic media
-            (CS₂&apos;s long-pulse n₂ falls 3.4-fold). Liquids and gases add a slower molecular (orientational) part.
+            (CS₂&apos;s long-pulse n₂ falls 3.5-fold: ⅔ of the electronic and collision parts, ¼ of the reorientational ones). Liquids and gases add a slower molecular (orientational) part.
           </p>
           <p>
             The gases are the electronic n₂ at 1 atm from 40 fs pump–probe measurements (±10 %); n₂ scales with pressure.
@@ -175,7 +175,7 @@ export default function NonlinearIndexPage() {
             and O₂ takes over, and for long pulses it adds 24 and 54 × 10⁻²⁰ cm²/W, three to seven times the electronic
             value, so P_cr in air drops several-fold. Air is the mole-fraction sum of N₂, O₂ and Ar. CS₂ has two rows: the
             bound-electronic n₂ (even at 32–165 fs the nuclear part can double the effective n₂), and the plateau above
-            10 ps, where its collision, libration and diffusive reorientation responses raise n₂ fourteenfold.
+            10 ps, where its collision, libration and diffusive reorientation responses raise n₂ nearly nineteenfold (Reichert et al. 2014, corrected in their 2016 erratum).
           </p>
         </div>
       </div>

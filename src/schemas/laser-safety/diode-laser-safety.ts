@@ -7,7 +7,7 @@ import { defineSchema } from "../types";
 import { EXPOSURE, ICNIRP_2013, WAVELENGTH } from "./common";
 
 const ANSI_NOHD = "ANSI Z136.1-2014, American National Standard for Safe Use of Lasers, Appendix B: " +
-  "NOHD = (√(4P/(π MPE)) − a)/φ, each axis growing as a + rφ (IEC TR 60825-14); " + `limits from ${ICNIRP_2013}, Table 5.`;
+  "NOHD = (1/φ)√(4P/(π MPE) − a²) (Eq. B51 of the 2007 edition, quoted in A. L. Augustoni, Sandia report SAND2007-5052, p. 31), each axis growing as √(a² + (rφ)²); " + `limits from ${ICNIRP_2013}, Table 5.`;
 
 export default defineSchema({
   href: "/laser-safety/diode-laser-safety",
@@ -42,7 +42,7 @@ export default defineSchema({
     const toFullE2 = angleDefinition === "fwhm" ? 1 / FWHM_PER_D1E2 : 1;
     const phiSlow = divergenceH * toFullE2;
     const phiFast = divergenceV * toFullE2;
-    const beam: BeamGeometry = { d: [beamDia, beamDia], phi: [phiSlow, phiFast], growth: "linear" };
+    const beam: BeamGeometry = { d: [beamDia, beamDia], phi: [phiSlow, phiFast], growth: "gaussian" };
     const nohd = nominalOcularHazardDistance(wavelength, power, beam, exposureTime);
     const od = requiredOpticalDensity(wavelength, power, beamDia, exposureTime);
     const warnings: string[] = [];
@@ -56,8 +56,8 @@ export default defineSchema({
     return {
       values: {
         nohd: nohd.distance,
-        slowSizeAtNohd: finite ? axisDiameterAt(beamDia, phiSlow, nohd.distance, "linear") : NaN,
-        fastSizeAtNohd: finite ? axisDiameterAt(beamDia, phiFast, nohd.distance, "linear") : NaN,
+        slowSizeAtNohd: finite ? axisDiameterAt(beamDia, phiSlow, nohd.distance, "gaussian") : NaN,
+        fastSizeAtNohd: finite ? axisDiameterAt(beamDia, phiFast, nohd.distance, "gaussian") : NaN,
         opticalDensity: od.od,
         peakIrradiance: peakIrradiance(power, beamDia),
       },
@@ -67,11 +67,11 @@ export default defineSchema({
   checks: [
     {
       // 532 nm, 1 W, round 1 mm and 1 mrad (1/e²), 0.25 s: MPE 18 t^0.75/t = 25.46 W/m²; with the 1/e values a/√2 and
-      // φ/√2 the standard formula gives 315.28 m (as the NOHD page's check).
+      // φ/√2 ANSI's (1/φ)√(4P/(π MPE) − a²) gives 316.28 m (as the NOHD page's check).
       source: ANSI_NOHD,
       basis: "computed",
       inputs: { power: 1000, wavelength: 532, exposureTime: 0.25, beamDia: 1, divergenceH: 1, divergenceV: 1 },
-      expect: { nohd: 315.28 },
+      expect: { nohd: 316.28 },
       tolerance: 5e-4,
     },
     {

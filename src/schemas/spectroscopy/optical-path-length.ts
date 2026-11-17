@@ -6,9 +6,10 @@ const DEG = Math.PI / 180;
 
 const SLAB = "Geometric ray through a plane-parallel slab entered from air: Snell's law n₀ sin θ = n sin θ_t, path L = N d/cos θ_t, " +
   "OPL = nL, phase delay OPL/c, group delay n_g L/c with n_g = n − λ dn/dλ (E. Hecht, Optics, 5th ed., Pearson 2017, " +
-  "ch. 4 and 7; B. E. A. Saleh, M. C. Teich, Fundamentals of Photonics, 2nd ed., Wiley 2007, ch. 5).";
+  "ch. 4 and 7; B. E. A. Saleh, M. C. Teich, Fundamentals of Photonics, 2nd ed., Wiley 2007, ch. 5); insertion OPD N d (n cos θ_t − cos θ) " +
+  "and delay of a plane-parallel plate (M. Born, E. Wolf, Principles of Optics, 7th ed., §7.5.1, fringes with a plane-parallel plate; the insertion delay follows from its path difference).";
 const MALITSON = "I. H. Malitson (1965). Interspecimen comparison of the refractive index of fused silica. J. Opt. Soc. Am. 55, 1205–1209, " +
-  "doi:10.1364/JOSA.55.001205 (Sellmeier fit, 0.21–6.7 µm, 20 °C): n² − 1 = Σ Bᵢλ²/(λ² − Cᵢ²) with B = 0.6961663, 0.4079426, 0.8974794 " +
+  "doi:10.1364/JOSA.55.001205 (Sellmeier fit to his 0.21–3.71 µm data, 20 °C): n² − 1 = Σ Bᵢλ²/(λ² − Cᵢ²) with B = 0.6961663, 0.4079426, 0.8974794 " +
   "and C = 0.0684043, 0.1162414, 9.896161 µm.";
 
 export default defineSchema({
@@ -38,6 +39,8 @@ export default defineSchema({
     { key: "groupDelay", label: "Group delay n_g L/c", unit: "ns", toSI: 1e-9, siUnit: "s" },
     { key: "extraGroupDelay", label: "Extra delay vs vacuum (n_g − 1)L/c", unit: "ns", toSI: 1e-9, siUnit: "s" },
     { key: "opdVacuum", label: "OPD vs vacuum (n − 1)L", unit: "cm", toSI: 0.01, siUnit: "m" },
+    { key: "opdInsertion", label: "OPD added by inserting the slab N d (n cos θ_t − cos θ)", unit: "cm", toSI: 0.01, siUnit: "m" },
+    { key: "insertionGroupDelay", label: "Group delay added by inserting the slab", unit: "ns", toSI: 1e-9, siUnit: "s" },
     { key: "thetaT", label: "Internal angle θ_t", unit: "°", toSI: DEG, siUnit: "rad" },
     { key: "n", label: "Phase index n used", unit: "", toSI: 1, siUnit: "" },
     { key: "ng", label: "Group index n_g used", unit: "", toSI: 1, siUnit: "" },
@@ -50,7 +53,8 @@ export default defineSchema({
     return {
       values: {
         opl: p.opl, geometric: p.geometric, waves: p.opl / wavelength, phaseDelay: p.phaseDelay, groupDelay: p.groupDelay,
-        extraGroupDelay: p.extraGroupDelay, opdVacuum: p.opdVacuum, thetaT: p.thetaT, n: idx.n, ng: idx.ng,
+        extraGroupDelay: p.extraGroupDelay, opdVacuum: p.opdVacuum,
+        opdInsertion: p.opdInsertion, insertionGroupDelay: p.insertionGroupDelay, thetaT: p.thetaT, n: idx.n, ng: idx.ng,
       },
       warnings,
     };
@@ -67,11 +71,12 @@ export default defineSchema({
     },
     {
       // n = 1.5 at 30°: sin θ_t = 0.5/1.5 = 1/3, cos θ_t = √8/3, θ_t = 19.4712206°, L = 3/√8 = 1.06066017 cm, OPL = 1.5 L = 1.59099026 cm,
-      // τ_g = n_g L/c = 1.6 · 0.0106066017 m / c = 0.0566077041 ns.
+      // τ_g = n_g L/c = 1.6 · 0.0106066017 m / c = 0.0566077041 ns. Insertion (Born & Wolf §7.5.1): OPD = d (n cos θ_t − cos θ) =
+      // 1 cm (√2 − √3/2) = 0.54818816 cm; delay = (d/c)((n n_g − sin²θ)/(n cos θ_t) − cos θ) = (0.01 m/c)(2.15/√2 − 0.8660254) = 0.0218235702 ns.
       source: SLAB,
       basis: "computed",
       inputs: { material: "custom", refractiveIndex: 1.5, groupIndex: 1.6, physicalLength: 1, numPasses: 1, angleDeg: 30, wavelength: 800 },
-      expect: { geometric: 1.0606601717798, opl: 1.5909902576697, thetaT: 19.47122063449, groupDelay: 0.05660770408 },
+      expect: { geometric: 1.0606601717798, opl: 1.5909902576697, thetaT: 19.47122063449, groupDelay: 0.05660770408, opdInsertion: 0.5481881585887, insertionGroupDelay: 0.02182357021692 },
       tolerance: 1e-8,
     },
     {

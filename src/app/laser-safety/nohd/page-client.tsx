@@ -19,7 +19,7 @@ import {
 
 const powerPresets = [5, 100, 1000]; // mW
 
-const parseBeamGrowth = (value: string): BeamGrowth => (value === "gaussian" ? "gaussian" : "linear");
+const parseBeamGrowth = (value: string): BeamGrowth => (value === "linear" ? "linear" : "gaussian");
 
 /** A beam diameter in m as mm / cm / m. */
 const fmtDiameter = (d: number) => (d < 0.01 ? `${fmtNum(d * 1e3)} mm` : d < 1 ? `${fmtNum(d * 100)} cm` : `${fmtNum(d)} m`);
@@ -32,7 +32,7 @@ export default function NOHDPage() {
   const [divergenceRaw, setDivergence] = useURLState("divergence", 1); // mrad, full angle
   const [safetyFactorRaw, setSafetyFactor] = useURLState("safetyFactor", 1);
   const [beamDefinitionRaw, setBeamDefinition] = useURLState("beamDefinition", "1/e2");
-  const [beamGrowthRaw, setBeamGrowth] = useURLState("beamGrowth", "linear");
+  const [beamGrowthRaw, setBeamGrowth] = useURLState("beamGrowth", "gaussian");
   const growthId = useId();
 
   // URL values aren't range-checked: clamp them here, as the physics is only defined inside these ranges.
@@ -124,11 +124,12 @@ export default function NOHDPage() {
             onChange={(e) => setBeamGrowth(parseBeamGrowth(e.target.value))}
             className="mt-3 w-full rounded border border-gray-700 bg-gray-950 px-3 py-2 text-white"
           >
-            <option value="linear">Linear a + rφ (ANSI Z136.1 / IEC TR 60825-14)</option>
-            <option value="gaussian">Gaussian √(a² + (rφ)²), waist at the aperture</option>
+            <option value="gaussian">Gaussian √(a² + (rφ)²), waist at the aperture (ANSI Z136.1 NOHD)</option>
+            <option value="linear">Linear a + rφ (shorter NOHD, less conservative)</option>
           </select>
           <p className="mt-2 text-xs leading-5 text-gray-400">
-            The linear form is the standards&apos;. A beam with its waist at the aperture widens more slowly, so the Gaussian NOHD is a little longer.
+            The Gaussian form gives ANSI Z136.1&apos;s NOHD, (1/φ)√(4P/(π MPE) − a²). The linear form widens the beam faster, so
+            its NOHD is always shorter: much shorter near threshold, where the beam must grow only a little.
           </p>
         </div>
       </div>

@@ -9,7 +9,7 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { axisDiameterAt } from "../../../physics/laser-safety/hazard-distance";
 import {
-  classifyCw, condition1Modelled, condition3Distance, cwClassLimit, type AelClass, type ClassOptions,
+  classifyCw, condition1MayRaiseClass, condition1Modelled, condition3Distance, cwClassLimit, type AelClass, type ClassOptions,
 } from "../../../physics/laser-safety/laser-classes";
 
 const NAMES: Record<AelClass, string> = { "1": "Class 1 (1M)", "2": "Class 2 (2M)", "3R": "Class 3R", "3B": "Class 3B" };
@@ -23,7 +23,6 @@ export default function ClassificationPage() {
   const [alphaMrad, setAlphaMrad] = useURLState("alpha", 1.5, { min: 0, max: 100 }); // mrad
   const [longTerm, setLongTerm] = useURLState("longTerm", 0);
   const [telescopes, setTelescopes] = useURLState("telescopes", 1); // 1: Condition 1 applies
-  const [euA11, setEuA11] = useURLState("euA11", 0);
 
   // SI inside; classes from src/physics/laser-safety/laser-classes.ts.
   const lambda = wavelength * 1e-9;
@@ -33,12 +32,18 @@ export default function ClassificationPage() {
     () => ({
       alpha: Math.min(Math.max(alphaMrad, 0), 100) * 1e-3,
       longTermViewing: longTerm === 1,
-      euA11: euA11 === 1,
       condition1: telescopes === 1,
     }),
-    [alphaMrad, longTerm, euA11, telescopes],
+    [alphaMrad, longTerm, telescopes],
   );
   const result = useMemo(() => classifyCw(lambda, P, beam, opts), [lambda, P, beam, opts]);
+  // EU: EN 60825-1:2014/A11:2021 adds the skin AEL at 1250–1400 nm.
+  const resultA11 = useMemo(() => classifyCw(lambda, P, beam, { ...opts, euA11: true }), [lambda, P, beam, opts]);
+  // Condition 1 isn't modelled outside 400–1400 nm: warn when a telescope could collect more than the Condition 3 stop.
+  const c1Unassessed = useMemo(
+    () => opts.condition1 && condition1MayRaiseClass(lambda, result.diameter3, opts),
+    [lambda, opts, result.diameter3],
+  );
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 401 }, (_, i) => 180 * Math.pow(20000 / 180, i / 400));
@@ -85,21 +90,25 @@ export default function ClassificationPage() {
             Telescopes or binoculars foreseeable (apply Condition 1). Untick only for indoor-only products.
           </span>
         </label>
-        <label className="flex items-start gap-3 rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <input type="checkbox" className="mt-1" checked={euA11 === 1} onChange={(e) => setEuA11(e.target.checked ? 1 : 0)} />
-          <span className="text-sm text-gray-300">EU: EN 60825-1:2014/A11:2021 skin AEL at 1250–1400 nm</span>
-        </label>
       </div>
 
       {result.laserClass ? (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-4">
             <ResultCard
               label="Class (IEC 60825-1:2014)"
               value={`Class ${result.laserClass}`}
               subtext={!c1Applies && (result.laserClass === "1" || result.laserClass === "2") ? `Condition 1 not assessed: may be ${result.laserClass}M` : undefined}
               tone={CLASS_TONES[result.laserClass]}
             />
+            {resultA11.laserClass ? (
+              <ResultCard
+                label="Class in the EU (EN 60825-1 + A11:2021)"
+                value={`Class ${resultA11.laserClass}`}
+                subtext={resultA11.laserClass === result.laserClass ? "the same: A11 changes only 1250–1400 nm" : "skin AEL caps Classes 1 and 3R at about 0.1 W"}
+                tone={CLASS_TONES[resultA11.laserClass]}
+              />
+            ) : null}
             <ResultCard
               label="Beam at the naked-eye stop (Condition 3)"
               value={`${fmtNum(result.diameter3 * 1e3)} mm`}
@@ -113,6 +122,13 @@ export default function ClassificationPage() {
               tone="cyan"
             />
           </div>
+          {c1Unassessed && (
+            <p className="text-amber-300 text-sm mb-4">
+              Condition 1 (telescope viewing) not evaluated, so the class may be higher: outside 400–1400 nm it isn&apos;t
+              modelled here, and this beam is wider than the Condition 3 stop, so a telescope&apos;s larger stop collects more
+              of it.
+            </p>
+          )}
           {nearLimit && (
             <p className="text-amber-300 text-sm mb-4">
               Within 4 % of a class limit: the standard&apos;s tables round to two figures, so check this power against them.
@@ -173,13 +189,15 @@ export default function ClassificationPage() {
           only), Class 3R five times Class 1 or 2, Class 3B 0.5 W (less in the UV). Each beam is measured as the power
           inside the stop: naked eye 100 mm from the beam waist (Condition 3), telescope with a 50 mm stop at 2 m
           (Condition 1). From 1250 to 1400 nm IEC caps Classes 1 and 3R at 0.5 W instead of ICNIRP&apos;s anterior-eye
-          limit; in the EU the amendment A11 also caps them at the skin limit, about 0.1 W.
+          limit; in the EU the amendment A11 also caps them at the skin limit, about 0.1 W. Both classes are shown; the
+          table and chart are IEC&apos;s.
         </p>
         <p>
           The AELs are rebuilt from the limits they come from (ICNIRP 2013 from 400 nm), so they differ from the
           standard&apos;s tables by its rounding to two figures (up to 4 %), and a power that close to a class boundary needs the
           tables. Not covered: pulsed and modulated lasers (pulse trains, N^−0.25), scanning beams, Class 1C,
-          Condition 1 outside 400–1400 nm, the extended-source field of view. Classification for a product needs the
+          Condition 1 outside 400–1400 nm (a warning shows when the beam is wider than the Condition 3 stop there), the
+          extended-source field of view. Classification for a product needs the
           full procedure of IEC 60825-1, with measurements.
         </p>
       </div>

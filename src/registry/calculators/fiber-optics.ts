@@ -576,7 +576,8 @@ export const fiberOptics: CalculatorEntry[] = [
     title: "Fiber Link Budget Calculator",
     description: "Calculate total optical link loss, received power, and link margin for fiber optic systems.",
     heading: "Fiber Link Budget",
-    lede: "Total optical link loss budget calculator. Power budget vs. accumulated losses.",
+    lede: "Received power and margin of a fiber link: the launch power less the fiber, connector and splice losses, held against the receiver sensitivity.",
+    keywords: ["power budget", "loss budget", "link margin", "fibre link", "how far can a fiber link go"],
     tier: "exact",
     modelNote: "Decibel power budget P_tx = P_rx + C_L + M_s, with the margin held above the receiver sensitivity rather than subtracted from the received power. Dispersion and other penalties belong in the margin; overload not checked.",
     references: [

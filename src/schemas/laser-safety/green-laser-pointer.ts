@@ -7,7 +7,7 @@ import { ICNIRP_2013, WAVELENGTH } from "./common";
 
 const POINTER_SOURCES = `${ICNIRP_2013}, Tables 5 and 8 (eye limits, 0.25 s unintended view of a visible beam); ` +
   "IEC 60825-1:2014 Tables 3–9 (class limits); ICAO Annex 11 / Doc 9815 laser-free, critical and sensitive flight-zone " +
-  "irradiances (50 nW/cm², 5 µW/cm², 100 µW/cm²); peak irradiance 8P/(πd²) of a TEM₀₀ beam, d(r) = d + rφ";
+  "irradiances (50 nW/cm², 5 µW/cm², 100 µW/cm²); peak irradiance 8P/(πd²) of a TEM₀₀ beam, d(r) = √(d² + (rφ)²)";
 
 /** The class as a number, in the order of the standard's classes. */
 const RANK: Record<LaserClass, number> = { "1": 1, "1M": 2, "2": 3, "2M": 4, "3R": 5, "3B": 6, "4": 7 };
@@ -44,6 +44,9 @@ export default defineSchema({
     if (cls.laserClass === null || Number.isNaN(nohd)) warnings.push("The limits cover 180 nm to 1 mm.");
     if (outsideRule) warnings.push("Outside 400–1400 nm ICNIRP 2013 uses the longest exposure expected; 10 s is assumed.");
     if (!visible) warnings.push("Dazzle levels apply to visible beams only.");
+    const dazzle = visible ? [rangeToIrradiance(power, beam, ICAO_LEVELS.sensitive), rangeToIrradiance(power, beam, ICAO_LEVELS.critical), rangeToIrradiance(power, beam, ICAO_LEVELS.laserFree)] : [];
+    if (nohd === Infinity) warnings.push("The beam doesn't spread (φ = 0): the eye hazard extends to any range.");
+    if (dazzle.includes(Infinity)) warnings.push("The beam doesn't spread (φ = 0): each dazzle level it exceeds extends to any range.");
     return {
       values: {
         classRank: cls.laserClass === null ? NaN : RANK[cls.laserClass],
@@ -51,9 +54,9 @@ export default defineSchema({
         beamAtDistance: dAtR,
         pupilIrradiance: apertureIrradiance(power, dAtR, PUPIL),
         peakIrradiance: peakIrradiance(power, dAtR),
-        flashBlindRange: visible ? rangeToIrradiance(power, beam, ICAO_LEVELS.sensitive) : NaN,
-        glareRange: visible ? rangeToIrradiance(power, beam, ICAO_LEVELS.critical) : NaN,
-        distractionRange: visible ? rangeToIrradiance(power, beam, ICAO_LEVELS.laserFree) : NaN,
+        flashBlindRange: visible ? dazzle[0] : NaN,
+        glareRange: visible ? dazzle[1] : NaN,
+        distractionRange: visible ? dazzle[2] : NaN,
       },
       warnings,
     };
@@ -61,21 +64,21 @@ export default defineSchema({
   checks: [
     {
       // 5 mW at 532 nm, 1.5 mm, 1.2 mrad, 10 m: 5 mW is 5 × the 1 mW Class 2 limit, so Class 3R (rank 5).
-      // Peak irradiance 8P/(πd²) with d = 1.5 mm + 10 m × 1.2 mrad = 13.5 mm: 0.04 W / 5.72555e-4 m² = 69.86225 W/m²
-      // = 6986.2252 µW/cm².
+      // Peak irradiance 8P/(πd²) with d = √(1.5² + (10 m × 1.2 mrad)²) = √146.25 = 12.09339 mm: 0.04 W / 4.594580e-4 m²
+      // = 87.05911 W/m² = 8705.911 µW/cm².
       source: POINTER_SOURCES,
       basis: "computed",
       inputs: { power: 5, wavelength: 532, beamDia: 1.5, divergence: 1.2, distance: 10 },
-      expect: { classRank: 5, peakIrradiance: 6986.225211 },
+      expect: { classRank: 5, peakIrradiance: 8705.911417 },
       tolerance: 1e-8,
     },
     {
       // The ICAO levels E: the beam is down to E at d = √(8P/(πE)) (0.112838 m, 0.504627 m, 5.046265 m for
-      // 100 µW/cm², 5 µW/cm², 50 nW/cm² at 5 mW), reached at r = (d − 1.5 mm)/1.2 mrad.
+      // 100 µW/cm², 5 µW/cm², 50 nW/cm² at 5 mW), reached at r = √(d² − (1.5 mm)²)/1.2 mrad.
       source: POINTER_SOURCES,
       basis: "computed",
       inputs: { power: 5, wavelength: 532, beamDia: 1.5, divergence: 1.2 },
-      expect: { flashBlindRange: 92.78159726, glareRange: 419.272087, distractionRange: 4203.970871 },
+      expect: { flashBlindRange: 94.02328851, glareRange: 420.5202292, distractionRange: 4205.220684 },
       tolerance: 1e-8,
     },
   ],

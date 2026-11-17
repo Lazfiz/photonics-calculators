@@ -150,7 +150,7 @@ export default function IndustrialLaserSafetyPage() {
       )}
 
       <p className="text-sm text-gray-400 mb-8">
-        The direct-beam NOHD grows the beam as a + rφ (ANSI Z136.1, IEC TR 60825-14). It is the NOHD of the unfocused (collimated, head-off) exit beam, which is
+        The direct-beam NOHD grows the beam as √(a² + (rφ)²), a Gaussian beam with its waist at the exit (the beam of ANSI Z136.1&apos;s NOHD formula; a + rφ would give a shorter NOHD). It is the NOHD of the unfocused (collimated, head-off) exit beam, which is
         conservative; behind a focusing head the beam spreads at about (beam diameter)/f, see the medical laser safety
         page (lens-on-laser) for that case. A diffuse reflection is Lambertian,
         ρP/(πr²) beyond a few spot diameters (nearer, the Gaussian spot&apos;s exact form), and the spot is an

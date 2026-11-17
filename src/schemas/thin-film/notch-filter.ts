@@ -34,6 +34,10 @@ export default defineSchema({
     const lambda0 = notchWl; // SI (m)
     const s = notchFilterSummary({ nH, nL, nSub, nInc, lambda0, pairs });
     const base = { nH, nL, nSub, nInc, lambda0 };
+    const warnings = s.valid ? [] : ["Set nH above nL, positive indices and λ₀ in 100–20 000 nm."];
+    if (s.valid && !(Number.isFinite(s.notch.short) && Number.isFinite(s.notch.long))) {
+      warnings.push("The reflection band has no half-height edges (too few pairs: the peak is not a clear band), so the notch width is undefined.");
+    }
     return {
       values: {
         reflectance: s.R0,
@@ -48,7 +52,7 @@ export default defineSchema({
         pairsOD6: notchPairsForOD(6, base),
         layerCount: s.indices.length,
       },
-      warnings: s.valid ? [] : ["Set nH above nL, positive indices and λ₀ in 100–20 000 nm."],
+      warnings,
     };
   },
   checks: [

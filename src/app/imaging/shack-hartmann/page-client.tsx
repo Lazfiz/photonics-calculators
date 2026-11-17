@@ -115,7 +115,7 @@ export default function ShackHartmannPage() {
         <ResultCard label="Max defocus" value={fits ? fmt(range.defocusDiopters, 2, "D") : "—"} tone="yellow" subtext={fits ? `${(range.defocusPV / lambda).toFixed(1)} waves PV` : undefined} />
         <ResultCard label="Wavefront per pixel shift" value={fmt(perPixel * 1e9, 1, "nm/px")} tone="cyan" subtext={`Tilt ${fmt((p / f) * 1e6, 0, "µrad/px")}`} />
         <ResultCard label={`Centroid noise (${photons} photons)`} value={fmt(sigmaC * 1e6, 3, "µm")} tone="blue" subtext={`${fmt(sigmaW * 1e9, 2, "nm")} wavefront per lenslet`} />
-        <ResultCard label="Fresnel number d²/λf" value={Number.isFinite(nF) ? nF.toFixed(2) : "—"} tone="gray" subtext={`Spot fits a lenslet above ${minFresnel}`} />
+        <ResultCard label="Fresnel number d²/λf (full pitch d; 4 × a²/λf)" value={Number.isFinite(nF) ? nF.toFixed(2) : "—"} tone="gray" subtext={`Spot fits a lenslet above ${minFresnel}`} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-6">

@@ -424,3 +424,16 @@ test("Anterior segment against retina at 1150–1400 nm", () => {
   assert.ok(limitMaxPower(limitOf(nm(1298), "retinalThermal"), 2e-3, 10) < limitMaxPower(limitOf(nm(1298), "anteriorSegment"), 2e-3, 10));
   assert.ok(limitMaxPower(limitOf(nm(1300), "retinalThermal"), 2e-3, 10) > limitMaxPower(limitOf(nm(1300), "anteriorSegment"), 2e-3, 10));
 });
+
+test("docs/laser-safety-cw-validation.md: seven CW point-source cases (ICNIRP 2013 Table 5)", () => {
+  // Least eye limit at λ and t, J/m² (the doc gives mJ/cm² = 10 J/m²). 400–700 nm thermal 18 t^0.75 to 10 s; from 10 s
+  // the photochemical 100 C_B J/m² to 100 s, then 1 C_B W/m² (C_B = 10^(0.02(λ − 450)) from 450 nm), against the
+  // thermal 10 W/m² (α_min); 700–1050 nm from 10 s, 10 C_A W/m² (C_A = 10^(0.002(λ − 700))).
+  const least = (nm: number, t: number) =>
+    Math.min(...eyeLimits(nm * 1e-9).map((l) => exposureLimit(l, t)).filter((H) => Number.isFinite(H)));
+  const cases: [number, number, number][] = [
+    [440, 0.25, 6.364], [440, 30, 100], [470, 30, 251.189], [470, 600, 1507.132],
+    [532, 600, 6000], [633, 3600, 36000], [850, 3600, 71829.443],
+  ];
+  for (const [nm, t, H] of cases) assertRel(least(nm, t), H, 1e-4, `${nm} nm, ${t} s`);
+});

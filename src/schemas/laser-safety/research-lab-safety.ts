@@ -61,11 +61,12 @@ export default defineSchema({
       tolerance: 1e-8,
     },
     {
-      // Room 3 m × 4 m: diagonal 5 m; beam d + rφ = 1.5 mm + 5 m × 1.5 mrad = 9 mm.
-      source: "Beam growth d + rφ as in ANSI Z136.1-2014 Appendix B and IEC TR 60825-14",
+      // Room 3 m × 4 m: diagonal 5 m; beam √(d² + (rφ)²) = √(1.5² + (5 m × 1.5 mrad)²) = √58.5 = 7.648529 mm.
+      source: "Gaussian beam growth √(d² + (rφ)²), the beam diameter of ANSI Z136.1 Appendix B's NOHD (1/φ)√(4P/(π MPE) − a²) " +
+        "(Eq. B51 of the 2007 edition, quoted in Sandia report SAND2007-5052, p. 31)",
       basis: "computed",
       inputs: { labLength: 3, labWidth: 4 },
-      expect: { beamAtWall: 9 },
+      expect: { beamAtWall: 7.648529270 },
       tolerance: 1e-8,
     },
   ],

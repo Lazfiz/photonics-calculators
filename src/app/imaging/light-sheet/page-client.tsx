@@ -109,7 +109,7 @@ export default function LightSheetPage() {
             <h3 className="text-lg font-semibold mb-2">Model</h3>
             <div className="text-sm text-gray-300 space-y-1 font-mono">
               <p>w₀ = λ_ex/(π NA_ill), z_R = π n w₀²/λ_ex, w(x) = w₀ √(1 + (x/z_R)²)</p>
-              <p>Sheet FWHM = √(2 ln 2) w₀; detection axial FWHM = 0.88 λ_em/(n − √(n² − NA_det²))</p>
+              <p>Sheet FWHM = √(2 ln 2) w₀; detection axial FWHM = 0.886 λ_em/(n − √(n² − NA_det²))</p>
               <p>Effective axial FWHM = (1/FWHM_sheet² + 1/FWHM_det²)^(−1/2)</p>
               <p>Lateral FWHM = 0.51 λ_em/NA_det (Airy)</p>
             </div>

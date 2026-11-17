@@ -2,9 +2,10 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import { LAMBDA_D, abbeNumber, fromResonanceWavelengths, inRange, refractiveIndex } from "../src/physics/materials/sellmeier";
+import { CRYSTAL_SHEETS } from "../src/physics/materials/crystal-properties";
 import { MATERIALS } from "../src/physics/materials/sellmeier-data";
 import {
-  WINDOW_MATERIALS, fresnelLimitTransmission, surfaceReflectance, transmits, windowIndex,
+  WINDOW_MATERIALS, dnDTConvention, fresnelLimitTransmission, surfaceReflectance, transmits, windowIndex,
 } from "../src/physics/materials/window-materials";
 
 const um = 1e-6;
@@ -110,4 +111,47 @@ test("domain: n = 1 transmits all, bad n is NaN, bands and fit ranges", () => {
   assert.equal(transmits(WINDOW_MATERIALS.si, 50 * um), true);
   assert.equal(transmits(WINDOW_MATERIALS.si, 20 * um), false);
   assert.equal(inRange(MATERIALS.zblan.model, 4 * um), false);
+});
+
+test("dn/dT presets: fused silica absolute (Leviton & Frey 2006) and quartz n_o (Crystran ∥ c)", () => {
+  // Leviton & Frey, Proc. SPIE 6273, 62732K (2006), doi 10.1117/12.672853, Table 6: Corning 7980 absolute dn/dT at 295 K,
+  // 8.86e-6 /K at 0.6 µm (Crystran's 12.9e-6 is high; values near 10e-6 are relative to air).
+  assertAbs(WINDOW_MATERIALS.fusedSilica.dnDT ?? NaN, 8.86e-6, 1e-12, "fused silica dn/dT");
+  // Crystran quartz: ∥ c (light along c, n_o) −5.5e-6, ⊥ c (n_e) −6.5e-6; the window uses the ordinary ray.
+  assertAbs(WINDOW_MATERIALS.quartz.dnDT ?? NaN, CRYSTAL_SHEETS.quartz.dnDT.para, 1e-12, "quartz window = dn_o/dT");
+  assertAbs(WINDOW_MATERIALS.quartz.dnDT ?? NaN, -5.5e-6, 1e-12, "quartz dn_o/dT");
+});
+
+test("dn/dT: absolute CHARMS values at 295 K where CHARMS measured the material; the rest labelled (recheck 2026-11-16)", () => {
+  // CaF₂: Leviton, Frey & Madison, SPIE 6692, 669204 (2007), doi 10.1117/12.735594, Table 3, −1.2e-5 at 0.6 µm.
+  // BaF₂ and LiF: Leviton, Frey & Kvamme, SPIE 5904, 59040O (2005), doi 10.1117/12.619306, Tables 4 and 8 at 0.6 µm;
+  // ZnSe Table 12 at 5.5 µm. Si and Ge: Frey, Leviton & Madison, SPIE 6273, 62732J (2006), doi 10.1117/12.672850,
+  // Tables 4 and 9 at 5.5 µm. Fused silica: Leviton & Frey 2006, Table 6 at 0.6 µm.
+  const absolute: [keyof typeof WINDOW_MATERIALS, number, number][] = [
+    ["fusedSilica", 8.86e-6, 0.6], ["caf2", -1.2e-5, 0.6], ["baf2", -1.64e-5, 0.6], ["lif", -1.73e-5, 0.6],
+    ["znse", 6.17e-5, 5.5], ["si", 1.69e-4, 5.5], ["ge", 4.16e-4, 5.5],
+  ];
+  for (const [id, dndt, lambda_um] of absolute) {
+    const m = WINDOW_MATERIALS[id];
+    assertAbs(m.dnDT ?? NaN, dndt, 1e-12, `${id} dn/dT`);
+    assertAbs(m.dnDTAbsolute?.lambda ?? NaN, lambda_um * um, 1e-15, `${id} wavelength`);
+    assert.match(m.dnDTAbsolute!.citation, /doi 10\.1117\/12\./);
+    assert.match(dnDTConvention(m), /^absolute \(in vacuum\) at /);
+  }
+  // Crystran's CaF₂ −10.6, BaF₂ −15.2 and LiF −16 ×10⁻⁶ /K are these plus −n·dn_air/dT (dn_air/dT = −(n_air − 1)/T =
+  // −2.706e-4/295 K = −0.917e-6 /K, Edlén 1966; n ≈ 1.43, 1.47, 1.39): consistent with relative to air, within 0.2e-6
+  // (CaF₂ has two figures; BaF₂ at 1 µm, −16.6 + 1.35 = −15.25, is closer).
+  for (const [id, crystran, n] of [["caf2", -10.6e-6, 1.43], ["baf2", -15.2e-6, 1.47], ["lif", -16e-6, 1.39]] as const) {
+    assertAbs((WINDOW_MATERIALS[id].dnDT ?? NaN) + n * 0.917e-6, crystran, 0.2e-6, `${id} absolute → relative to air`);
+  }
+  assertAbs(-16.6e-6 + 1.47 * 0.917e-6, -15.2e-6, 0.1e-6, "BaF₂ at 1 µm");
+  // No CHARMS table: sapphire, ZnS and the others keep Crystran's value, labelled as such; N-BK7 has none.
+  for (const id of ["sapphire", "zns", "quartz", "mgf2", "diamond"] as const) {
+    assert.equal(WINDOW_MATERIALS[id].dnDTAbsolute, undefined);
+    assert.match(dnDTConvention(WINDOW_MATERIALS[id]), /not stated/);
+  }
+  assert.equal(dnDTConvention(WINDOW_MATERIALS.bk7), "no sourced dn/dT");
+  // Not Crystran's: each names its own source.
+  assert.match(dnDTConvention(WINDOW_MATERIALS.amtir1), /^Amorphous Materials/);
+  assert.match(dnDTConvention(WINDOW_MATERIALS.zblan), /Poulain 2024/);
 });
