@@ -19,6 +19,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Review probe scripts (docs/audit), run with npx tsx.
+    "docs/audit/**",
   ]),
 ]);
 

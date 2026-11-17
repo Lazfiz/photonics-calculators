@@ -69,9 +69,9 @@ test("axial PSF: high-NA sinc² reduces to the paraxial sinc²(u/4) (Born & Wolf
   assertRel(2 * zHalf, 523.24 * nm, 1e-4, "axial FWHM");
   assertRel(axialFirstZero(550 * nm, 1.518, 1.4), 590.63 * nm, 1e-4, "first zero");
   assert.ok(Math.abs(axialIntensity(zHalf, 550 * nm, 1.518, 1.4) - 0.5) < 1e-12, "half max");
-  // The Zeiss 0.88 rounds this curve's 0.8859: within 0.7 %.
-  assertRel(axialPsfFwhm(550 * nm, 1.518, 1.4), 5.1975e-7, 1e-4, "Zeiss 0.88");
-  assertRel(axialPsfFwhm(550 * nm, 1.518, 1.4), 2 * zHalf, 0.007, "0.88 vs 0.886");
+  // optical-sectioning-thickness uses 0.886 for this curve's 0.88589 (Zeiss rounds it to 0.88): 0.886 · 550/0.931206 nm.
+  assertRel(axialPsfFwhm(550 * nm, 1.518, 1.4), 5.23298e-7, 1e-5, "0.886");
+  assertRel(axialPsfFwhm(550 * nm, 1.518, 1.4), 2 * zHalf, 2e-4, "0.886 vs the exact sinc² 0.88589");
   assert.ok(Number.isNaN(axialIntensity(0, 550 * nm, 1.0, 1.2)), "NA > n");
   assert.ok(Number.isNaN(axialFirstZero(550 * nm, 1.33, 1.33)), "NA = n");
 });

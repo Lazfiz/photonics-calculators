@@ -35,7 +35,7 @@ export const materials: CalculatorEntry[] = [
     lede: "nₒ(λ) and nₑ(λ) from each crystal's published Sellmeier formula; Δn = nₑ − nₒ, and a plate of thickness d with the optic axis in its face retards by |Δn|·d/λ waves.",
     keywords: ["Ordinary and Extraordinary Index", "Birefringence Δn", "BBO and KDP Refractive Index", "Crystal Birefringence Data"],
     tier: "exact",
-    modelNote: "Exact for each published Sellmeier fit inside its wavelength range (outside it the page shows no value); the fits match measurements to about 1e-4 in n. Retardance assumes normal incidence with the optic axis in the plate face, at the fit's temperature.",
+    modelNote: "Exact for each published Sellmeier fit inside its wavelength range (outside it the page shows no value); how closely the fit matches measurements differs by crystal: about 1e-4 in n for quartz, calcite, MgF₂ and sapphire, 1e-3 to 1e-2 for YVO₄ and rutile (rutile's Δn runs about 2.5 % high against Bond 1965). Retardance assumes normal incidence with the optic axis in the plate face, at the fit's temperature.",
     references: [
       {
         citation: "refractiveindex.info database (CC0). Sellmeier data sets, each with its original reference shown on the page.",
@@ -336,7 +336,7 @@ export const materials: CalculatorEntry[] = [
     lede: "Compare IR transmitting materials and glasses. n(λ, T) = n(λ, T₀) + (dn/dT)(T − T₀), with n(λ, T₀) from each material's published Sellmeier formula.",
     keywords: ["Infrared Materials", "Chalcogenide Glass Properties", "Fluoride Glass (ZBLAN)"],
     tier: "textbook",
-    modelNote: "Index from published Sellmeier fits inside their ranges, shifted linearly by one room-temperature dn/dT; transmission is the lossless two-surface Fresnel limit 2n/(n² + 1). Bands, dn/dT, conductivity and hardness are Crystran data-sheet values, and Amorphous Materials' for AMTIR-1 and As₂S₃ (AMTIR-6: band and hardness only, its dn/dT changes sign across the band); ZBLAN's Knoop 250 kg/mm² and dn/dT −11.5 ×10⁻⁶/K (midpoint of −8 to −15 for fluoride glasses) are from Poulain's 2024 review, with no band or conductivity. AMTIR-1's single dn/dT is about 2× low below 1.5 µm.",
+    modelNote: "Index from published Sellmeier fits inside their ranges, shifted linearly by one room-temperature dn/dT taken at one stated wavelength and used at all; transmission is the lossless two-surface Fresnel limit 2n/(n² + 1). dn/dT is absolute (in vacuum, 295 K) from NASA CHARMS for Si, Ge, ZnSe, CaF₂, BaF₂ and LiF. Bands, the other dn/dT, conductivity and hardness are Crystran data-sheet values, and Amorphous Materials' for AMTIR-1 and As₂S₃ (AMTIR-6: band and hardness only, its dn/dT changes sign across the band); ZBLAN's Knoop 250 kg/mm² and dn/dT −11.5 ×10⁻⁶/K (midpoint of −8 to −15 for fluoride glasses) are from Poulain's 2024 review, with no band or conductivity. AMTIR-1's single dn/dT is about 2× low below 1.5 µm.",
     references: [
       {
         citation: "refractiveindex.info database (CC0). Sellmeier data sets, each with its original reference shown on the page. Used for Ge, Si, ZnSe, ZnS, CaF₂, BaF₂, MgF₂, NaCl, KBr, CsI, KRS-5, As₂S₃ and ZBLAN.",
@@ -352,6 +352,18 @@ export const materials: CalculatorEntry[] = [
       {
         citation: "Gan F. (1995). Optical properties of fluoride glasses: a review. J. Non-Cryst. Solids 184, 9. ZBLAN dispersion formula (n_d 1.5011).",
         url: "https://doi.org/10.1016/0022-3093(94)00592-3",
+      },
+      {
+        citation: "Frey B. J., Leviton D. B., Madison T. J. (2006). Temperature-dependent refractive index of silicon and germanium. Proc. SPIE 6273, 62732J. Absolute dn/dT at 295 K, Tables 4 and 9 (5.5 µm).",
+        url: "https://doi.org/10.1117/12.672850",
+      },
+      {
+        citation: "Leviton D. B., Frey B. J., Kvamme T. (2005). High accuracy, absolute, cryogenic refractive index measurements of infrared lens materials for JWST NIRCam using CHARMS. Proc. SPIE 5904, 59040O. Absolute dn/dT at 295 K: BaF₂ and LiF (Tables 4 and 8, 0.6 µm), ZnSe (Table 12, 5.5 µm).",
+        url: "https://doi.org/10.1117/12.619306",
+      },
+      {
+        citation: "Leviton D. B., Frey B. J., Madison T. J. (2007). Temperature-dependent refractive index of CaF2 and Infrasil 301. Proc. SPIE 6692, 669204. Absolute dn/dT of CaF₂ at 295 K, Table 3 (0.6 µm).",
+        url: "https://doi.org/10.1117/12.735594",
       },
       {
         citation: "Zhu X., Peyghambarian N. (2010). High-power ZBLAN glass fiber lasers: review and prospect. Adv. OptoElectron. 2010, 501956. Table 1: ZBLAN n 1.499 at 589 nm, Abbe number 76; n_d varies with composition by a few 10⁻³.",
@@ -496,11 +508,15 @@ export const materials: CalculatorEntry[] = [
         url: "https://doi.org/10.1364/OPTICA.1.000436",
       },
       {
+        citation: "Reichert M. et al. (2016). Temporal, spectral, and polarization dependence of the nonlinear optical response of carbon disulfide: erratum. Optica 3, 657. Corrected Table 1: electronic n₂ 1.5 ± 0.4 × 10⁻¹⁹ m²/W (the original gave 2.0).",
+        url: "https://doi.org/10.1364/OPTICA.3.000657",
+      },
+      {
         citation: "Kedenburg S., Vieweg M., Gissibl T., Giessen H. (2012). Linear refractive index and absorption measurements of nonlinear optical liquids in the visible and near-infrared spectral region. Opt. Mater. Express 2, 1588. n₀ of CS₂.",
         url: "https://doi.org/10.1364/OME.2.001588",
       },
       {
-        citation: "Wahlstrand J. K., Cruz C. D. (2026). Precise measurement of the Kerr coefficient using phase-sensitive pump–probe hyperspectral imaging. Rev. Sci. Instrum. 97(8). Fused silica n₂ = 2.18 ± 0.14 × 10⁻¹⁶ cm²/W at 1024 nm (Z-scan).",
+        citation: "Wahlstrand J. K., Cruz C. D. (2026). Precise measurement of the Kerr coefficient using phase-sensitive pump–probe hyperspectral imaging. Rev. Sci. Instrum. 97(8). Fused silica n₂ = 2.18 ± 0.14 × 10⁻¹⁶ cm²/W at 1024 nm (Sec. III, Z-scan benchmark of their pump–probe method).",
         url: "https://doi.org/10.1063/5.0331814",
       },
       {
@@ -738,6 +754,10 @@ export const materials: CalculatorEntry[] = [
         url: "https://doi.org/10.1007/0-387-29338-8",
       },
       {
+        citation: "Leviton D. B., Frey B. J. et al. (2005–2007). Absolute refractive index and dn/dT from CHARMS (NASA GSFC), in vacuum at 295 K: Proc. SPIE 5904, 59040O (BaF₂, LiF, ZnSe; Tables 4, 8, 12); 6273, 62732J (Si, Ge; Tables 4, 9); 6273, 62732K (fused silica, Table 6); 6692, 669204 (CaF₂, Table 3). The absolute dn/dT used here.",
+        url: "https://doi.org/10.1117/12.619306",
+      },
+      {
         citation: "Crystran. Handbook of Infrared and Ultraviolet Optical Materials, data sheets: thermal conductivity and dn/dT.",
         url: "https://www.crystran.com/optical-materials",
       },
@@ -842,6 +862,10 @@ export const materials: CalculatorEntry[] = [
       {
         citation: "Bristow A. D., Rotenberg N., van Driel H. M. (2007). Two-photon absorption and Kerr coefficients of silicon for 850–2200 nm. Appl. Phys. Lett. 90, 191104. β = 2.1 cm/GW at 1220 nm; indirect-gap fit C = 43 cm/GW.",
         url: "https://doi.org/10.1063/1.2737359",
+      },
+      {
+        citation: "Dinu M., Quochi F., Garcia H. (2003). Third-order nonlinearities in silicon at telecom wavelengths. Appl. Phys. Lett. 82, 2954. β ≈ 0.79 cm/GW near 1550 nm.",
+        url: "https://doi.org/10.1063/1.1571665",
       },
     ],
   },

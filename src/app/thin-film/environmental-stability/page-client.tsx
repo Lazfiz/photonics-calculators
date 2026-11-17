@@ -77,7 +77,7 @@ export default function EnvironmentalStabilityPage() {
   const [lawHRaw, setLawH] = useURLState("lawH", "linear");
   const [lawLRaw, setLawL] = useURLState("lawL", "linear");
   const [dndtHRaw, setDndtH] = useURLState("dndtH", 20); // 1e-6/K
-  const [dndtLRaw, setDndtL] = useURLState("dndtL", 12.9);
+  const [dndtLRaw, setDndtL] = useURLState("dndtL", 8.86);
   const [cteHRaw, setCteH] = useURLState("cteH", 8); // 1e-6/K
   const [cteLRaw, setCteL] = useURLState("cteL", 0.55);
   const [levelRaw, setLevel] = useURLState("level", 300); // µm
@@ -97,7 +97,7 @@ export default function EnvironmentalStabilityPage() {
   };
   const L: CoatingMaterial = {
     n: clamp(nLRaw, 1, 5, 1.45), p: clamp(pLRaw, 0.5, 1, 0.85), law: lawOf(lawLRaw),
-    dnDT: clamp(dndtLRaw, -1000, 1000, 12.9) * PPM, cte: clamp(cteLRaw, -100, 100, 0.55) * PPM,
+    dnDT: clamp(dndtLRaw, -1000, 1000, 8.86) * PPM, cte: clamp(cteLRaw, -100, 100, 0.55) * PPM,
   };
   const nSub = clamp(nSubRaw, 1, 5, 1.52);
   const nInc = clamp(nIncRaw, 1, 5, 1);
@@ -164,8 +164,8 @@ export default function EnvironmentalStabilityPage() {
       <p className="text-xs text-gray-400 mb-6">
         The indices are those of the dry film (empty pores, as in vacuum) at {T0_C} °C, where each layer is a quarter
         wave at λ₀. Packing densities are most often 0.8–0.9 for evaporated films and near 1 for ion-assisted and
-        sputtered ones (Macleod 1988). The L defaults are bulk fused silica (Crystran: dn/dT 12.9 × 10⁻⁶/K, α 0.55 ×
-        10⁻⁶/K); the H defaults are placeholders, so enter your film&apos;s values. How much of the pore volume fills
+        sputtered ones (Macleod 1988). The L defaults are bulk fused silica (dn/dT 8.86 × 10⁻⁶/K absolute at 0.6 µm, Leviton &amp; Frey 2006; α 0.55 ×
+        10⁻⁶/K, Crystran); the H defaults are placeholders, so enter your film&apos;s values. How much of the pore volume fills
         depends on the humidity, the pore sizes and the time since venting.
       </p>
 

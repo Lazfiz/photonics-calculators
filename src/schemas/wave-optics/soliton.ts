@@ -19,7 +19,7 @@ export default defineSchema({
     { key: "solitonPeriod", label: "Soliton period z₀ = (π/2) L_D", unit: "m", toSI: 1, siUnit: "m" },
     { key: "fundamentalPower", label: "Fundamental soliton power P₁ = |β₂|/(γT₀²)", unit: "W", toSI: 1, siUnit: "W" },
     { key: "solitonOrder", label: "Soliton order N = √(γP₀T₀²/|β₂|)", unit: "", toSI: 1, siUnit: "" },
-    { key: "solitonCount", label: "Solitons inside the input, floor(N + 1/2) (anomalous dispersion)", unit: "", toSI: 1, siUnit: "" },
+    { key: "solitonCount", label: "Solitons inside the input, ceil(N + 1/2) - 1 (anomalous dispersion)", unit: "", toSI: 1, siUnit: "" },
     { key: "strongestSolitonPower", label: "Peak power of the strongest soliton, (2N − 1)²P₁", unit: "W", toSI: 1, siUnit: "W" },
   ],
   compute({ pulseWidth, peakPower, beta2, gamma }) {
@@ -64,8 +64,8 @@ export default defineSchema({
       tolerance: 1e-8,
     },
     {
-      // N = 1.329763: one soliton, floor(N + 1/2) = 1, amplitude 2N - 1 = 1.659526, so the strongest has (2N - 1)^2 P1 = 7787.35 W.
-      source: "Satsuma J., Yajima N. (1974). Initial value problems of one-dimensional self-modulation of nonlinear waves in dispersive media. Prog. Theor. Phys. Suppl. 55, 284–306 (the input N sech τ holds ⌊N + ½⌋ solitons of amplitude 2η_k).",
+      // N = 1.329763: one soliton, ceil(N + 1/2) - 1 = 1, amplitude 2N - 1 = 1.659526, so the strongest has (2N - 1)^2 P1 = 7787.35 W.
+      source: "Satsuma J., Yajima N. (1974). Initial value problems of one-dimensional self-modulation of nonlinear waves in dispersive media. Prog. Theor. Phys. Suppl. 55, 284–306 (the input N sech τ holds ⌈N + ½⌉ − 1 solitons of amplitude 2η_k).",
       basis: "computed",
       inputs: {},
       expect: { solitonCount: 1, strongestSolitonPower: 7787.349704212554 },

@@ -403,10 +403,10 @@ export const spectroscopy: CalculatorEntry[] = [
   {
     slug: "optical-path-length",
     title: "Optical Path Length Calculator",
-    description: "Optical path length nL through a slab crossed N times at any incidence angle, with the phase delay OPL/c, the group delay n_g L/c and the extra delay against vacuum; n and n_g from Sellmeier data for common glasses.",
+    description: "Optical path length nL through a slab crossed N times at any incidence angle, with the phase delay OPL/c, the group delay n_g L/c and the extra delay when the slab is inserted (versus the path it replaces); n and n_g from Sellmeier data for common glasses.",
     lede: "OPL = nL and group delay n_g L/c along the refracted ray, L = N·d/cos θ_t, for a custom medium or a catalog glass.",
     tier: "exact",
-    modelNote: "Exact ray path through a homogeneous plane-parallel slab entered from air, with multiple reflections between the faces ignored; glass indices from the Sellmeier formulas within their stated wavelength ranges.",
+    modelNote: "Exact ray path through a homogeneous plane-parallel slab entered from air, with multiple reflections between the faces ignored. The insertion delay and OPD compare with the vacuum segment the ray replaces, d cos(θ − θ_t)/cos θ_t per pass (Born & Wolf §7.6.1); glass indices from the Sellmeier formulas within their stated wavelength ranges.",
     references: [
       { citation: "Hecht E. (2017). Optics, 5th ed., chs. 4 and 7. Pearson." },
       { citation: "Saleh B. E. A., Teich M. C. (2007). Fundamentals of Photonics, 2nd ed., ch. 5. Wiley." },

@@ -36,8 +36,7 @@ import { ATM, k_B } from "../constants";
 export const KOSCHMIEDER = -Math.log(0.02);
 /** Reference wavelength of the visibility definition, m. */
 export const VISIBILITY_WAVELENGTH = 550e-9;
-/** dB per e-fold of power, 10 log₁₀ e ≈ 4.343 (not a neper: ISO 80000-3 has 1 Np = 8.686 dB, a field ratio). */
-export const DB_PER_E_FOLD = 10 / Math.LN10;
+export { DB_PER_E_FOLD } from "../math"; // defined once there; re-exported for the free-space pages
 
 const STANDARD_PRESSURE = ATM; // Pa
 const STANDARD_TEMPERATURE = 288.15; // K

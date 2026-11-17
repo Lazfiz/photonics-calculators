@@ -49,6 +49,9 @@ export default defineSchema({
       }
     }
     const res = r.results;
+    if (res && !Number.isFinite(res.edge)) {
+      warnings.push("The stack transmits 50 % or more at its design wavelength (too few periods for this nH/nL contrast), so T never crosses 50 %: no edge.");
+    }
     return {
       values: {
         meanReflectance: res?.block.mean ?? NaN,

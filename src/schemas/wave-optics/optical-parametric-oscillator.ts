@@ -36,12 +36,14 @@ export default defineSchema({
     const r = sroModel(process, crystalLength, pumpPower, beamRadius, walkOff, cavityLoss);
     const warnings: string[] = [];
     if (!(Number.isFinite(r.g) && Number.isFinite(r.Pth))) warnings.push("No result: the signal wavelength must be longer than the pump wavelength.");
+    const aperture = walkOffApertureLength(beamRadius, walkOff);
+    if (aperture === Infinity) warnings.push("With no walk-off (ρ = 0) the beams never separate: the aperture length is infinite.");
     return {
       values: {
         idlerWavelength: r.lambdaIdler,
         pumpIntensity: r.intensity,
         gainCoefficient: r.g,
-        apertureLength: walkOffApertureLength(beamRadius, walkOff),
+        apertureLength: aperture,
         effectiveLength: r.Leff,
         gainLength: r.gL,
         singlePassGain: r.singlePassGain,

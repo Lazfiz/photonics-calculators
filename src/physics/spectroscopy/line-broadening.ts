@@ -102,6 +102,7 @@ export function voigtFwhm(fwhmG: number, fwhmL: number): number {
  * (J. Quant. Spectrosc. Radiat. Transfer 17, 233, doi 10.1016/0022-4073(77)90161-3).
  */
 export function voigtFwhmOlivero(fwhmG: number, fwhmL: number): number {
+  if (!(fwhmG >= 0 && fwhmL >= 0 && Number.isFinite(fwhmG + fwhmL))) return NaN;
   return 0.5346 * fwhmL + Math.sqrt(0.2166 * fwhmL * fwhmL + fwhmG * fwhmG);
 }
 

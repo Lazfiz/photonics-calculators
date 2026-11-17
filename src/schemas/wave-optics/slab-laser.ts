@@ -50,6 +50,7 @@ export default defineSchema({
     if (!op.tir) {
       warnings.push("The face incidence angle is below the critical angle: the beam leaks out of the faces instead of totally reflecting. Use fewer bounces or a longer slab; no output power is given.");
     }
+    if (op.lens === Infinity) warnings.push("No thermal lens forms (no pump, no heat fraction, or dn/dT = 0): its focal length is infinite.");
     return {
       values: {
         zigzagAngle: op.theta,

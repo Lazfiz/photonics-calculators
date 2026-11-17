@@ -16,7 +16,7 @@ export default function ConnectorInsertionLossPage() {
   const [ilGradeRaw, setIlGrade] = useURLState("ilGrade", "C");
   const [rlGradeRaw, setRlGrade] = useURLState("rlGrade", "2");
   const [numConnectors, setNumConnectors] = useURLState("numConnectors", 4, { min: 1 });
-  const [fiberCoreDiam, setFiberCoreDiam] = useURLState("fiberCoreDiam", 9, { min: 1 }); // µm MFD
+  const [fiberCoreDiam, setFiberCoreDiam] = useURLState("fiberCoreDiam", 10.4, { min: 1 }); // µm MFD (G.652 ≈ 10.4 at 1550 nm)
   const [lateralOffset, setLateralOffset] = useURLState("lateralOffset", 0.3, { min: 0 }); // µm
   const [angularMisalign, setAngularMisalign] = useURLState("angularMisalign", 0.3, { min: 0, max: 29 }); // degrees
   const [gapDistance, setGapDistance] = useURLState("gapDistance", 0.05, { min: 0, max: MAX_GAP_UM }); // µm
@@ -169,7 +169,9 @@ export default function ConnectorInsertionLossPage() {
             passes included). It ignores angled polish, contamination and glass-to-glass contact defects, which set the
             real grade; the grade comparison is therefore a necessary check only.</p>
           <p>Physical-contact (PC, UPC, APC) connectors have z = 0, so only offset and tilt remain, and the tilt is taken in
-            glass (the fibre index). With a gap the total uses the unfavourable tilt sense. Use the phase index (≈ 1.447 for
+            glass (the fibre index). Any gap, however small, puts the tilt in the gap medium instead, so the tilt loss drops
+            by n² at the first nanometre of air (9 µm mode field, 0.3°, 1550 nm: 0.0207 dB in contact, 0.0099 dB at a 0.05 µm air gap). With a gap
+            the total uses the unfavourable tilt sense. Use the phase index (≈ 1.447 for
             SMF-28 at 1550 nm), not the datasheet group index 1.4682. The grade limits are random-mate statistics; adding N
             limit values gives a pessimistic worst case.</p>
         </div>

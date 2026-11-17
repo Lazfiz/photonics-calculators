@@ -105,7 +105,8 @@ export default function OPOCalculator() {
         <p className="text-gray-500 text-xs mt-2">
           Plane-wave estimate (Boyd, Nonlinear Optics §2.8–2.9): perfect phase matching assumed, no pump depletion,
           no focusing optimisation (Boyd–Kleinman). Walk-off: pump and signal mode of equal radius in the near field, pump centred on the signal axis at mid-crystal. α is the signal&apos;s round-trip power loss, output coupling included;
-          the idler is not resonated.
+          the idler is not resonated. Iₚ is the beam-average intensity P/(πw²); the optical-parametric-amplifier and
+          difference-frequency pages use the on-axis 2P/(πw²), so the same beam gives them a g² twice as large.
         </p>
       </div>
 

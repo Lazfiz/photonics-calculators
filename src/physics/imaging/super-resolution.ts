@@ -7,7 +7,7 @@
  * - STED: d = λ/(2NA √(1 + I/I_s)), V. Westphal, S. W. Hell, Phys. Rev. Lett. 94, 143903 (2005). The law scales the
  *   FWHM λ/(2NA); feeding it the Rayleigh distance 0.61 λ/NA (as the page did) overstates d by 22 %. 2D STED
  *   (vortex depletion) leaves the axial FWHM unchanged.
- * - Axial diffraction limit: one-photon FWHM 0.88 λ/(n − √(n² − NA²)) (optical-sectioning-thickness module).
+ * - Axial diffraction limit: one-photon FWHM 0.886 λ/(n − √(n² − NA²)) (optical-sectioning-thickness module).
  * - Localization: σ = s/√N with s ≈ 0.21 λ/NA, the standard deviation of the Gaussian that best fits the Airy
  *   PSF (B. Zhang, J. Zerubia, J.-C. Olivo-Marin, Appl. Opt. 46, 1819 (2007)). This is the shot-noise limit of
  *   R. E. Thompson, D. R. Larson, W. W. Webb, Biophys. J. 82, 2775 (2002); pixelation, background and EMCCD

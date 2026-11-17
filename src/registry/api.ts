@@ -127,6 +127,7 @@ export function buildOpenApi() {
             },
           },
           400: { $ref: "#/components/responses/BadInput" },
+          404: { $ref: "#/components/responses/NotFound" },
           429: { $ref: "#/components/responses/TooMany" },
         },
       },
@@ -183,6 +184,7 @@ export function buildOpenApi() {
       },
       responses: {
         BadInput: { description: "Unknown input, not a number, outside the page's range, or not one of the options.", ...error },
+        NotFound: { description: "No calculator at this path; the ones the API runs are listed here.", ...error },
         TooMany: { description: "Rate limit; try again in a minute.", ...error },
       },
     },

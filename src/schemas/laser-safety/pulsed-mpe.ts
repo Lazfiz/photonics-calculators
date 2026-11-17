@@ -37,13 +37,15 @@ export default defineSchema({
         warnings: ["The eye limits cover 180 nm to 1 mm."],
       };
     }
+    const train1 = !(prf > 0 && result.pulses > 1);
     return {
+      warnings: train1 ? ["The exposure holds a single pulse, so no average-power limit applies; the maximum pulse energy is the limit for that one pulse."] : [],
       values: {
         maxPulseEnergy: result.qMax,
         pulseOverMax: pulseEnergy / result.qMax,
         pulses: result.pulses,
         bindingRule: result.rule ?? NaN,
-        maxAveragePower: prf > 0 && result.pulses > 1 ? result.qMax * prf : NaN,
+        maxAveragePower: train1 ? NaN : result.qMax * prf,
       },
     };
   },
