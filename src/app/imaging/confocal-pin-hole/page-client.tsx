@@ -76,7 +76,7 @@ export default function ConfocalPinholePage() {
               <p>1 AU = 1.22 λ/NA at the sample, × M at the pinhole</p>
               <p>Throughput = 1 − J₀²(v) − J₁²(v), v = 3.832 × pinhole (AU)</p>
               <p>Lateral FWHM: 0.37 λ/NA (pinhole → 0) to 0.51 λ/NA (open)</p>
-              <p>Section FWHM: 0.68 λ/(n − √(n² − NA²)) (pinhole → 0), 0.88 at 1 AU, growing with the pinhole</p>
+              <p>Section FWHM: 0.68 λ/(n − √(n² − NA²)) (pinhole → 0), 0.877 at 1 AU, growing with the pinhole</p>
             </div>
             <p className="text-xs text-gray-500 mt-2">
               Scalar paraxial theory of a confocal fluorescence microscope with equal excitation and emission
