@@ -9,8 +9,9 @@ const index = buildSearchIndex();
 test("site search: nonsense finds nothing instead of the highest-priority pages (Codex review 2026-10-13)", () => {
   assert.deepEqual(searchItems(index, "xyzzy"), []);
   assert.deepEqual(searchItems(index, "qwfp zzkv"), []);
-  // One real word plus one nonsense word: every term must match.
-  assert.deepEqual(searchItems(index, "laser xyzzy"), []);
+  // One real word plus one nonsense word: no exact match, so the closest pages, labelled as such
+  // (tests/search-golden.test.ts; upgrades review 2026-11 replaced the every-word rule).
+  assert.ok(searchItems(index, "laser xyzzy").length > 0);
   assert.deepEqual(searchItems(index, "   "), []);
 });
 

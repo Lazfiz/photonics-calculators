@@ -42,12 +42,12 @@ const heroSpec: { id: HeroBranchId; category: string; calculators: string[] }[] 
   {
     id: "imaging",
     category: "imaging",
-    calculators: ["/wave-optics/gaussian-beam", "/imaging/airy-disk", "/imaging/afocal"],
+    calculators: ["/imaging/airy-disk", "/imaging/afocal", "/imaging/image-distance"],
   },
   {
     id: "interference",
     category: "wave-optics",
-    calculators: ["/spectroscopy/etalon-fsr", "/thin-film/fabry-perot-filter", "/wave-optics/optical-waveguide"],
+    calculators: ["/wave-optics/gaussian-beam", "/spectroscopy/etalon-fsr", "/wave-optics/optical-waveguide"],
   },
 ];
 

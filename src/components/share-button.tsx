@@ -4,18 +4,17 @@ import { useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import { currentQuery, subscribe } from "@/lib/url-state-store";
 
-/** Shown once the page has URL params; copies the link that reproduces the inputs. */
+/** Copies the page's link with the current inputs (the plain page link while they are the defaults). */
 export default function ShareButton() {
   const pathname = usePathname();
   // Prerender and hydration see no params (as `useURLState` does); the real query follows right
   // after hydration and on every input change.
   const query = useSyncExternalStore(subscribe, () => currentQuery(pathname), () => "");
   const [copied, setCopied] = useState(false);
-  if (!query) return null;
   return (
     <button
       onClick={() => {
-        const url = `${window.location.origin}${pathname}?${query}${window.location.hash}`;
+        const url = `${window.location.origin}${pathname}${query ? `?${query}` : ""}${window.location.hash}`;
         // The clipboard API is missing or blocked in insecure contexts; the address bar still has the link.
         navigator.clipboard?.writeText(url).then(
           () => {

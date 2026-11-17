@@ -400,7 +400,7 @@ export const materials: CalculatorEntry[] = [
     slug: "magneto-optic",
     title: "Faraday Rotation & Verdet Constants",
     description: "Faraday rotation θ = VBL in TGG, TSAG, CeF₃ and fused silica, with the Verdet constant's dispersion from published fits, the field or length for a 45° isolator rotator, and YIG's saturated rotation at 1550 nm.",
-    keywords: ["Verdet Constant", "Faraday Isolator", "Faraday Rotator", "TGG"],
+    keywords: ["Verdet Constant", "Faraday Isolator", "Optical Isolator", "Faraday Rotator", "TGG"],
     tier: "textbook",
     modelNote: "θ = VBL is exact for a uniform field. V(λ) at room temperature comes from published fits inside their ranges: the single-transition model for the Tb³⁺ and Ce³⁺ paramagnets (Vojna et al.), a dispersion fit for fused silica (Tran et al.). YIG is ferrimagnetic, so only its saturated rotation at 1550 nm is given.",
     references: [

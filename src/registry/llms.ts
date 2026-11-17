@@ -8,6 +8,7 @@ import { TIERS, UNREVIEWED, tierInfo } from "./tiers";
 
 export function buildLlmsTxt(): string {
   const listed = calculators.filter((calculator) => !calculator.hidden);
+  const runnable = new Set(schemas.map((schema) => schema.href));
   const tiers = [...Object.values(TIERS), UNREVIEWED].map((tier) => `  - ${tier.label}: ${tier.definition}`);
   const lines = [
     "# Photonics Calculators",
@@ -23,7 +24,8 @@ export function buildLlmsTxt(): string {
     `- How the calculators are checked (tests, blind audit): ${SITE_URL}/about#verification`,
     `- JSON API (${schemas.length} calculators so far): GET ${SITE_URL}${apiPath("/<category>/<slug>")} with the ` +
       `page's URL query, e.g. ${SITE_URL}${apiPath("/wave-optics/gaussian-beam")}?wavelength=1064&waist=500&z=100. ` +
-      `Inputs, units, ranges and outputs: ${SITE_URL}/openapi.json. Each result carries the model tier and references.`,
+      `Inputs, units, ranges and outputs: ${SITE_URL}/openapi.json. Each result carries the model tier and references. ` +
+      "The pages it runs are marked [API] below.",
     `- MCP server (streamable HTTP, no key): ${SITE_URL}/mcp, with the tools find_calculator, run_calculator, ` +
       `get_checks and report_problem. Claude Code: \`claude mcp add --transport http photonics ${SITE_URL}/mcp\`.`,
     `- Reference cases with this deployment's results: ${SITE_URL}/checks.json. Please check results that matter ` +
@@ -38,7 +40,7 @@ export function buildLlmsTxt(): string {
     for (const calculator of listed.filter((c) => c.category === category.id)) {
       lines.push(
         `- [${calculator.title}](${SITE_URL}${calculator.href}): ${calculator.description} ` +
-          `(${tierInfo(calculator.tier).label})`,
+          `(${tierInfo(calculator.tier).label})${runnable.has(calculator.href) ? ` [API: ${SITE_URL}${apiPath(calculator.href)}]` : ""}`,
       );
     }
   }

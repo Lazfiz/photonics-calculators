@@ -5,6 +5,7 @@ import robots, { AI_CRAWLERS } from "../src/app/robots";
 import { INDEXNOW_KEY, SITE_URL } from "../src/lib/site";
 import { calculators, categories } from "../src/registry";
 import { buildLlmsTxt } from "../src/registry/llms";
+import { schemas } from "../src/schemas";
 
 test("robots.txt allows everything, names the AI crawlers and points at the sitemap", () => {
   const { rules, sitemap } = robots();
@@ -23,7 +24,7 @@ test("llms.txt links every listed calculator once, with its tier, under its cate
   assert.match(text, /^# Photonics Calculators\n\n> \d+ free, open-source/);
   assert.match(text, /\/about#verification/);
   assert.match(text, /^- JSON API \(\d+ calculators so far\): GET https:\S+\/api\/v1\/<category>\/<slug> .+\/openapi\.json\./m);
-  const links = [...text.matchAll(/^- \[[^\]]+\]\((https:[^)]+)\): .+ \((Exact|Textbook approximation|Illustrative|Not yet reviewed)\)$/gm)];
+  const links = [...text.matchAll(/^- \[[^\]]+\]\((https:[^)]+)\): .+ \((Exact|Textbook approximation|Illustrative|Not yet reviewed)\)(?: \[API: https:\S+\])?$/gm)];
   const listed = calculators.filter((calculator) => !calculator.hidden);
   assert.deepEqual(
     links.map((match) => match[1]).sort(),
@@ -32,6 +33,11 @@ test("llms.txt links every listed calculator once, with its tier, under its cate
   // Categories in home-page order, each calculator under its own.
   const headings = [...text.matchAll(/^## (.+)$/gm)].map((match) => match[1]);
   assert.deepEqual(headings, categories.map((category) => category.label));
+  // Runnable pages carry their API URL (upgrades review 2026-11, quick win 13).
+  const marked = [...text.matchAll(/ \[API: https:\S+\/api\/v1(\/[^\]]+)\]$/gm)].map((match) => match[1]);
+  const runnable = new Set(schemas.map((schema) => schema.href));
+  assert.deepEqual(marked.sort(), listed.filter((calculator) => runnable.has(calculator.href)).map((c) => c.href).sort());
+  assert.ok(marked.length > 200);
   const fiber = text.slice(text.indexOf("## Fiber Optics"), text.indexOf("## Thin Film"));
   assert.match(fiber, /\/fiber-optics\/chromatic-dispersion\)/);
 });
