@@ -16,8 +16,8 @@ export default defineSchema({
       key: "beamGrowth",
       label: "Beam growth with range r",
       options: [
-        { value: "gaussian", label: "Gaussian √(a² + (rφ)²), waist at the aperture (ANSI Z136.1 NOHD)" },
-        { value: "linear", label: "Linear a + rφ (shorter NOHD, less conservative)" },
+        { value: "gaussian", label: "Gaussian (ANSI Z136.1 NOHD)" },
+        { value: "linear", label: "Linear (shorter NOHD)" },
       ],
       default: "gaussian",
     },
