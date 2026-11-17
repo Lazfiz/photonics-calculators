@@ -21,7 +21,7 @@
  *   at 700–1400 nm twice it, for an eye-only exposure; below 700 nm once, "for large retinal spot sizes", so only for
  *   α > α_min (for a point source it never binds there). Skin 200 C_A J/m² to 100 ns, 1.1×10⁴ C_A t^0.25 J/m² to
  *   10 s, then 2×10³ C_A W/m², on the skin's 3.5 mm aperture with its note b (below). Both limits are checked from
- *   1150 nm ("both retinal damage and damage to the anterior segment has to be considered", p. 281). Averaged, it
+ *   1150 nm ("both retinal damage and damage to the anterior segment has to be considered", p. 282). Averaged, it
  *   binds from about 1300 nm (t ≥ 10 s), where C_C raises the retinal limit, and for a large source with an open
  *   field of view; under note b also for narrow infrared beams (1064 nm, 10 s: below d ≈ 0.5 mm).
  * - 1400 nm – 1 mm, cornea: 10³ J/m² to 1 ms, then 5.6×10³ t^0.25 J/m² (1400–1500 and 1800–2600 nm); 10⁴ J/m²

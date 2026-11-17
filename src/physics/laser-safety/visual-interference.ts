@@ -36,7 +36,7 @@ export function rangeToIrradiance(P: number, beam: BeamGeometry, E: number): num
 }
 
 /**
- * Eye exposure time of the green-laser-pointer page (ICNIRP 2013 p. 285): 0.25 s for an unintended view of a visible
+ * Eye exposure time of the green-laser-pointer page (ICNIRP 2013 p. 286): 0.25 s for an unintended view of a visible
  * (400–700 nm) beam, 10 s at 700–1400 nm; elsewhere the longest expected exposure applies and 10 s is assumed
  * (`outsideRule`).
  */

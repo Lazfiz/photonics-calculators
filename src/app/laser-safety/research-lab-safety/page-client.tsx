@@ -64,7 +64,7 @@ export default function ResearchLabSafetyPage() {
         <ValidatedNumberInput label="Divergence, 1/e² full angle (mrad)" value={divergence} onChange={setDivergence} min={0} step="any" />
         <div>
           <ValidatedNumberInput label="Eye exposure time (s)" value={exposureTime} onChange={setExposureTime} min={1e-9} max={30000} step="any" />
-          <p className="text-xs text-gray-500 mt-2">0.25 s for an unintended view of a visible beam, 10 s in the near infrared (700–1400 nm); outside 400–1400 nm ICNIRP 2013 (p. 285) uses the longest exposure expected.</p>
+          <p className="text-xs text-gray-500 mt-2">0.25 s for an unintended view of a visible beam, 10 s in the near infrared (700–1400 nm); outside 400–1400 nm ICNIRP 2013 (p. 286) uses the longest exposure expected.</p>
         </div>
         <ValidatedNumberInput label="Lab length (m)" value={labLength} onChange={setLabLength} min={0} step="any" />
         <ValidatedNumberInput label="Lab width (m)" value={labWidth} onChange={setLabWidth} min={0} step="any" />

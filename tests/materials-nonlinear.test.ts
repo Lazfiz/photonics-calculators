@@ -97,7 +97,7 @@ test("Gases (Zahedpour 2015), CS₂ (Reichert 2014) and fused silica at 1024 nm 
   // P_cr = 3.77 λ²/(8π n₀ n₂) for N₂: 3.77 · 6.4e-13 / (8π · 1.000275 · 7.9e-24) = 1.21488e10 W.
   const n2gas = KERR_MEDIA.nitrogen;
   assertRel(criticalPower(n2gas.lambda, n2gas.n0, n2gas.n2), 1.21488e10, 1e-5, "P_cr N₂");
-  // Reichert et al. 2016 erratum (Optica 3, 657, doi 10.1364/OPTICA.3.000657) corrected Table 1: electronic 1.5, collision 1.0, libration 7.6, diffusive 18 (10⁻¹⁹ m²/W); Eq. 18 sums them.
+  // Reichert et al. 2016 erratum (Optica 3, 657, doi 10.1364/OPTICA.3.000657) corrected Table 1: electronic 1.5, collision 1.0, libration 7.6, diffusive 18 (10⁻¹⁹ m²/W); Eq. 18 (Optica 1, 436, p. 442) sums them for pulses > 10 ps. Read 2026-11 (erratum p. 658; 800 nm, 50 fs pump).
   assertRel(KERR_MEDIA.cs2.n2, 1.5e-19, 1e-12, "CS₂ fs");
   assertRel(KERR_MEDIA["cs2-long"].n2, 2.81e-18, 1e-12, "CS₂ > 10 ps");
   // Kedenburg et al.: n² = 1 + 1.50387 · 0.64/(0.64 − 0.03049) = 2.579097 → n = 1.605957 at 800 nm.
