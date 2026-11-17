@@ -6,7 +6,7 @@ export const laserSafety: CalculatorEntry[] = [
     title: "Accessible Emission Limits (AEL)",
     description: "IEC 60825-1:2014 accessible emission limits of Classes 1, 2, 3R and 3B from 180 nm to 1 mm: for one emission of a given duration, and for a CW laser over the class time base.",
     tier: "textbook",
-    modelNote: "AELs rebuilt from the limits they come from (ICNIRP 2013 from 400 nm, IEC's UV values over 1 mm), so within IEC's two-figure rounding; Class 3B cap at 1250–1400 nm, EU A11 optional. Not modelled: pulse trains, Class 1C.",
+    modelNote: "AELs rebuilt from the limits they come from (ICNIRP 2013 from 400 nm, IEC's UV values over 1 mm), so within IEC's two-figure rounding; Class 3B cap at 1250–1400 nm, EU A11 skin AEL for Classes 1 and 3R (1×, the cautious reading) through the corneal stop per Schulmeister 2022 (A11 text not read). Not modelled: pulse trains, Class 1C, below 1 ns.",
     references: [
       {
         citation: "IEC 60825-1:2014. Safety of laser products – Part 1: Equipment classification and requirements. 4.3 e) (time bases), Tables 3–8 (AELs), Table 10 (measurement conditions).",
@@ -24,7 +24,7 @@ export const laserSafety: CalculatorEntry[] = [
         url: "https://www.seibersdorf-laboratories.at/fileadmin/user_upload/docs/le/las/publ/whitepaper_iec-60825-1.pdf",
       },
       {
-        citation: "Schulmeister, K. (2022). The European Amendment A11:2021 to EN 60825-1. White paper, Seibersdorf Laboratories. Skin AEL at 1250–1400 nm.",
+        citation: "Schulmeister, K. (2022). White Paper: The European Amendment A11:2021 to EN 60825-1. Seibersdorf Laboratories, v2c, §4: the skin AEL at 1250–1400 nm for Classes 1, 1M and 3R, through 1 mm to 0.35 s, 1.5 t^0.375 mm to 10 s, then 3.5 mm (the A11 text itself not read).",
         url: "https://www.seibersdorf-laboratories.at/fileadmin/user_upload/docs/le/las/publ/whitepaper_a11_to_en_60825-1.pdf",
       },
     ],
@@ -161,7 +161,7 @@ export const laserSafety: CalculatorEntry[] = [
         url: "https://www.seibersdorf-laboratories.at/fileadmin/user_upload/docs/le/las/publ/whitepaper_iec-60825-1.pdf",
       },
       {
-        citation: "Schulmeister, K. (2022). The European Amendment A11:2021 to EN 60825-1. White paper, Seibersdorf Laboratories. Skin AEL at 1250–1400 nm.",
+        citation: "Schulmeister, K. (2022). White Paper: The European Amendment A11:2021 to EN 60825-1. Seibersdorf Laboratories, v2c, §4: the skin AEL at 1250–1400 nm for Classes 1, 1M and 3R, through 1 mm to 0.35 s, 1.5 t^0.375 mm to 10 s, then 3.5 mm (the A11 text itself not read).",
         url: "https://www.seibersdorf-laboratories.at/fileadmin/user_upload/docs/le/las/publ/whitepaper_a11_to_en_60825-1.pdf",
       },
     ],
@@ -680,7 +680,7 @@ export const laserSafety: CalculatorEntry[] = [
     title: "Ultrafast Laser Safety Calculator",
     description: "Eye safety of femtosecond and picosecond lasers on the ICNIRP 2013 limits: sub-ns single-pulse limits, the average-power rule that governs MHz trains, eyewear OD and NOHD.",
     tier: "textbook",
-    modelNote: "ICNIRP 2013 repetitive-pulse rules with the sub-ns rows (1 mJ/m² from 100 fs to 10 ps; the cornea below 10 % of its 1 ns limit, p. 287); round Gaussian beam over each aperture, NOHD with √(a² + (rφ)²). Not modelled: bursts, harmonics, eyewear saturation.",
+    modelNote: "ICNIRP 2013 repetitive-pulse rules with the sub-ns rows (1 mJ/m² from 100 fs to 10 ps; the cornea and the 700–1400 nm anterior segment below 10 % of their 1 ns limits, p. 287); round Gaussian beam over each aperture, NOHD with √(a² + (rφ)²). Not modelled: bursts, harmonics, eyewear saturation.",
     references: [
       {
         citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Repetitive pulse exposures (p. 287), Tables 4, 5 and 8.",

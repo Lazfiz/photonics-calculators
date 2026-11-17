@@ -5,7 +5,7 @@ import {
   correctionCP, limitMaxEnergy, pulseCount, pulseLimits, pulseTrainLimits, pulseTrainSafeDiameter, timeTi, trainLimit,
   type PulseTrain,
 } from "../src/physics/laser-safety/pulse-train";
-import { averagedOnly } from "../src/physics/laser-safety/eye-exposure-limits";
+import { averagedOnly, exposureLimit } from "../src/physics/laser-safety/eye-exposure-limits";
 
 // ICNIRP, "Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm", Health
 // Phys. 105(3), 271–295 (2013), doi:10.1097/HP.0b013e3182983fd4: "Repetitive pulse exposures" (p. 287, rules 1–3 and
@@ -207,6 +207,19 @@ test("Below 1 ns at the cornea: the lower of the held irradiance and 10 % of the
   assertRel(averagedTrain(nm(355), single(5e-10)).qMax, 0.1 * 5.6e3 * Math.pow(1e-9, 0.25) * A1, 1e-12, "355 nm, 500 ps");
   // The retina keeps Table 5's rows: 2 C_A mJ/m² from 10 ps at 633 nm (C_A = 1), over 7 mm.
   assertRel(pulseTrainLimits(nm(633), 0, single(5e-10)).qMax, 2e-3 * A7, 1e-12, "633 nm, 500 ps");
+});
+
+test("Below 1 ns on the anterior segment: also 10 % of the 1 ns limit (audit M3)", () => {
+  // ICNIRP 2013 Table 5 note d: from 700 nm the anterior-segment limit is twice the skin limit, 2 · 200 C_A J/m² at 1 ns,
+  // 2000 J/m² at 1350 nm (C_A = 5). p. 287's interim guideline for the skin keeps sub-ns exposures below 10 % of that,
+  // 200 J/m²; p. 282 holds the 1 ns irradiance (2×10¹² W/m²), the lower of the two below 100 ps.
+  const limit = pulseLimits(nm(1350), 1.5e-3).find((l) => l.kind === "anteriorSegment")!;
+  assertRel(exposureLimit(limit, 5e-10), 200, 1e-12, "1350 nm, 500 ps: 10 %");
+  assertRel(exposureLimit(limit, 5e-11), 2e12 * 5e-11, 1e-12, "1350 nm, 50 ps: irradiance held");
+  assertRel(exposureLimit(limit, 1e-9), 2000, 1e-12, "1350 nm, 1 ns unchanged");
+  // 800 nm: C_A = 10^(0.2) = 1.585, 2 · 200 · 1.585 = 633.96 J/m² at 1 ns, 63.40 J/m² at 500 ps.
+  const l800 = pulseLimits(nm(800), 1.5e-3).find((l) => l.kind === "anteriorSegment")!;
+  assertRel(exposureLimit(l800, 5e-10), 0.1 * 400 * Math.pow(10, 0.2), 1e-12, "800 nm, 500 ps");
 });
 
 test("Table 5 note c on pulses: a beam under 1 mm (1/e) is held to its peak below 0.35 s", () => {
