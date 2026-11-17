@@ -9,7 +9,7 @@ const SLAB = "Geometric ray through a plane-parallel slab entered from air: Snel
   "ch. 4 and 7; B. E. A. Saleh, M. C. Teich, Fundamentals of Photonics, 2nd ed., Wiley 2007, ch. 5); insertion OPD N d (n cos θ_t − cos θ) " +
   "and delay of a plane-parallel plate (M. Born, E. Wolf, Principles of Optics, 7th ed., §7.5.1, fringes with a plane-parallel plate; the insertion delay follows from its path difference).";
 const MALITSON = "I. H. Malitson (1965). Interspecimen comparison of the refractive index of fused silica. J. Opt. Soc. Am. 55, 1205–1209, " +
-  "doi:10.1364/JOSA.55.001205 (Sellmeier fit, 0.21–6.7 µm, 20 °C): n² − 1 = Σ Bᵢλ²/(λ² − Cᵢ²) with B = 0.6961663, 0.4079426, 0.8974794 " +
+  "doi:10.1364/JOSA.55.001205 (Sellmeier fit to his 0.21–3.71 µm data, 20 °C): n² − 1 = Σ Bᵢλ²/(λ² − Cᵢ²) with B = 0.6961663, 0.4079426, 0.8974794 " +
   "and C = 0.0684043, 0.1162414, 9.896161 µm.";
 
 export default defineSchema({
