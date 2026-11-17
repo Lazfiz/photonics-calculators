@@ -166,7 +166,9 @@ test("the eye at the window, or a sweep that doesn't clear it, is a stationary b
 test("hazard distance: where the ratio crosses 1, inside the stationary NOHD", () => {
   const Q = 10e-6;
   const stationary = rangeToDiameter(beam, pulseTrainSafeDiameter(905e-9, Q, { ...pulses, exposure: 10 }));
-  assertRel(stationary, 147.456, 1e-4, "stationary NOHD (Gaussian growth)");
+  // Regression. 148.354 m since verification 2026-11 M1 (the 10 s train is held to Table 5's 10 C_A W/m² · 10 s at
+  // 10 s, not to 18 C_A t^0.75 at its last pulse, 1.2 % higher); 147.456 m before.
+  assertRel(stationary, 148.354, 1e-4, "stationary NOHD (Gaussian growth)");
   const r = lidarHazardDistance(905e-9, Q, beam, pulses, rotating, 4 * stationary);
   assert.ok(Q > lidarMaxEnergyAt(905e-9, beam, pulses, rotating, r * (1 - 1e-5)), "over just inside");
   assert.ok(Q <= lidarMaxEnergyAt(905e-9, beam, pulses, rotating, r * (1 + 1e-5)), "within just outside");

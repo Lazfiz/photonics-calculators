@@ -94,7 +94,7 @@ export default function UltrafastLaserSafetyPage() {
         <p>
           A mode-locked oscillator puts tens of millions of pulses into the eye each second, so the average power, not the
           single pulse, sets the limit: ICNIRP 2013&apos;s rule 2 holds every group of pulses to the limit for the time it
-          spans, up to the whole exposure. Pulses closer together than T_i (5 µs below 1050 nm, 13 µs above) also count as
+          spans, up to the whole exposure. Pulses closer together than T_i (5 µs to 1050 nm, 13 µs from 1051 nm) also count as
           one pulse for the C_P rule. The single-pulse limits below 1 ns are ICNIRP 2013 Table 5&apos;s: 1 mJ/m² over the
           7 mm pupil from 100 fs to 10 ps (× C_C above 1050 nm; no C_A), 2 C_A mJ/m² from 10 ps (20 C_C mJ/m² at 1050–1400 nm); shorter than 100 fs, and
           on the cornea and anterior segment below 1 ns, the irradiance is held at the shortest tabulated value. For the

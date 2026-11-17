@@ -58,11 +58,16 @@ export const UNIAXIAL_CRYSTALS = {
     name: "Yttrium orthovanadate (YVO₄)",
     o: fromSquaredForm(1, [2.7665], [0.026884], [0.488, 3.39]),
     e: fromSquaredForm(1, [3.593], [0.032103], [0.488, 3.39]),
-    // One-term fit over Lomheim & DeShazer's 0.488–3.39 µm data; checked against Shi et al. 2001 only from 0.6 to
-    // 1.34 µm (review 2026-11 P2-M8). Toward 3.39 µm it departs from Shi's three-term fit (n_o 1.942 vs 1.913).
+    // One-term fit by Lomheim & DeShazer to the 0.488–3.39 µm data of M. Birnbaum, L. G. DeShazer, NASA report,
+    // contract NAS 5-22387 (1976) (the refractiveindex.info database, CC0, gives both and this range). The only second
+    // source here, Shi et al. 2001, is a fit over 0.48–1.34 µm (same database); it agrees within 0.004 from 0.6 to
+    // 1.34 µm (tests/polarization-uniaxial.test.ts). Its 1.913 at 3.39 µm (this fit: 1.942), quoted in review 2026-11
+    // P2-M8, is an extrapolation, so it says nothing about this fit there. The range is the measured one and stays
+    // until the 1976 data can be read (verification 2026-11 M4).
     reference:
-      "T. S. Lomheim, L. G. DeShazer, J. Appl. Phys. 49, 5517 (1978), doi:10.1063/1.324471; a one-term fit, about " +
-      "0.03 above the three-term fit of Shi et al. (2001) near 3.4 µm",
+      "T. S. Lomheim, L. G. DeShazer, J. Appl. Phys. 49, 5517 (1978), doi:10.1063/1.324471, a one-term fit to the " +
+      "data of M. Birnbaum, L. G. DeShazer, NASA report NAS 5-22387 (1976); checked against Shi et al. (2001) only " +
+      "over 0.6–1.34 µm, the range of their fit",
     temperature_C: null,
   },
   linbo3: {
