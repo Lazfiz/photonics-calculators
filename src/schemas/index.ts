@@ -1,4 +1,15 @@
 // Every calculator the API can run, by registry href. tests/api-schemas.test.ts checks each against its page.
+import afterpulsing from "./detectors/afterpulsing";
+import amplifierNoise from "./detectors/amplifier-noise";
+import antiblooming from "./detectors/antiblooming";
+import avalancheGain from "./detectors/avalanche-gain";
+import backIllumination from "./detectors/back-illumination";
+import detectorBandwidth from "./detectors/bandwidth";
+import boxcarIntegrator from "./detectors/boxcar-integrator";
+import junctionCapacitance from "./detectors/capacitance";
+import ccdVsCmos from "./detectors/ccd-vs-cmos";
+import channelPhotomultiplier from "./detectors/channel-photomultiplier";
+import coolingBenefit from "./detectors/cooling-benefit";
 import attenuation from "./fiber-optics/attenuation";
 import bendInsensitive from "./fiber-optics/bend-insensitive";
 import birefringenceFiber from "./fiber-optics/birefringence-fiber";
@@ -350,6 +361,8 @@ export const schemas: readonly CalculatorSchema[] = [
   nonzeroDispersion, otdrAnalysis, photonicCrystal,
   polarizationController, polarizationMaintaining, polarizationModeDispersion, pumpCombiner, rareEarthDoped, sbsThreshold, sidePolished,
   specialtyFiber, spliceLoss, srsThreshold, vNumber, wdmCoupler,
+  afterpulsing, amplifierNoise, antiblooming, avalancheGain, backIllumination, detectorBandwidth,
+  boxcarIntegrator, junctionCapacitance, ccdVsCmos, channelPhotomultiplier, coolingBenefit,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));
