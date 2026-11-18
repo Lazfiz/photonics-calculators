@@ -1,0 +1,18 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.Lazfiz/photonics-calculators",
+  "title": "Photonics Calculators",
+  "description": "Runs 400+ optics and photonics calculators (laser safety, fiber, thin film, imaging) with sources.",
+  "version": "1.0.0",
+  "websiteUrl": "https://photonicscalculators.com",
+  "repository": {
+    "url": "https://github.com/Lazfiz/photonics-calculators",
+    "source": "github"
+  },
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://photonicscalculators.com/mcp"
+    }
+  ]
+}
