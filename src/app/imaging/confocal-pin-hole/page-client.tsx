@@ -7,7 +7,7 @@ import { useURLState } from "../../../hooks/use-url-state";
 import {
   CONFOCAL_MAX_PINHOLE_AU, confocalLateralFwhm, confocalOpticalSectionFwhm, pinholeThroughput,
 } from "../../../physics/imaging/confocal";
-import { airyUnit, confocalSectionFwhm } from "../../../physics/imaging/optical-sectioning-thickness";
+import { confocalPinholeSummary, WILHELM_MIN_PINHOLE_AU } from "../../../physics/imaging/confocal-pin-hole";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 
@@ -25,14 +25,16 @@ export default function ConfocalPinholePage() {
   const lambda = wavelength * 1e-9;
   const valid = na < n;
 
-  const airyObjectNm = airyUnit(lambda, na) * 1e9;
-  const airyPinholeUm = (airyObjectNm * magnification) / 1000;
-  const pinholeUm = pinholeAU * airyPinholeUm;
-  const throughput = pinholeThroughput(pinholeAU);
-  const lateralNm = confocalLateralFwhm(lambda, na, pinholeAU) * 1e9;
-  const sectionNm = confocalOpticalSectionFwhm(lambda, n, na, pinholeAU) * 1e9;
-  const wilhelmNm = confocalSectionFwhm(lambda, n, na, pinholeAU) * 1e9;
-  const wilhelmPct = (100 * (wilhelmNm - sectionNm)) / sectionNm;
+  const summary = confocalPinholeSummary(lambda, na, magnification, n, pinholeAU);
+  const airyObjectNm = summary.airyObject * 1e9;
+  const airyPinholeUm = summary.airyPinhole * 1e6;
+  const pinholeUm = summary.pinholeDiameter * 1e6;
+  const throughput = summary.throughput;
+  const lateralNm = summary.lateral * 1e9;
+  const sectionNm = summary.section * 1e9;
+  const wilhelmNm = summary.wilhelm * 1e9;
+  const wilhelmPct = 100 * summary.wilhelmExcess;
+  const wilhelmShown = pinholeAU >= WILHELM_MIN_PINHOLE_AU;
 
   const aus = Array.from({ length: 51 }, (_, i) => i / 10);
   const chartData = [
@@ -66,7 +68,7 @@ export default function ConfocalPinholePage() {
             <p className="text-gray-300">Optical section FWHM = <span className="text-blue-400 font-mono">{sectionNm.toFixed(0)} nm</span></p>
             <p className="text-gray-300">
               Wilhelm&apos;s geometric formula (valid ≥ 1 AU) ={" "}
-              <span className="text-gray-400 font-mono">{pinholeAU >= 1 ? `${wilhelmNm.toFixed(0)} nm` : "—"}</span>
+              <span className="text-gray-400 font-mono">{wilhelmShown ? `${wilhelmNm.toFixed(0)} nm` : "—"}</span>
             </p>
           </div>
 
@@ -82,7 +84,7 @@ export default function ConfocalPinholePage() {
               Scalar paraxial theory of a confocal fluorescence microscope with equal excitation and emission
               wavelengths; a Stokes shift widens both FWHMs slightly. The optical section is the response to a thin
               fluorescent plane. Wilhelm&apos;s geometric formula √[(0.886 λ/(n − √(n² − NA²)))² + (√2 n PH/NA)²]{" "}
-              {pinholeAU >= 1 && Number.isFinite(wilhelmPct) ? `lies ${wilhelmPct.toFixed(0)} % above it here` : "lies above it from 1 AU upward (set the pinhole to 1 AU or more to see by how much)"}.
+              {wilhelmShown && Number.isFinite(wilhelmPct) ? `lies ${wilhelmPct.toFixed(0)} % above it here` : "lies above it from 1 AU upward (set the pinhole to 1 AU or more to see by how much)"}.
               From 1 to 0.5 AU the lateral FWHM narrows from 0.50 to 0.40 λ/NA (20 %) while the throughput falls from 84 % to 59 %.
             </p>
           </div>

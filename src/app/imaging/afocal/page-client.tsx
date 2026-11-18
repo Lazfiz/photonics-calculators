@@ -3,7 +3,8 @@
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { focalDistances, twoElementPower, twoLensABCD } from "../../../physics/imaging/gaussian-optics";
+import { afocalSummary } from "../../../physics/imaging/afocal";
+import { twoElementPower } from "../../../physics/imaging/gaussian-optics";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const DEG = Math.PI / 180;
@@ -29,27 +30,17 @@ export default function AfocalPage() {
   const thetaDeg = clamp(angleRaw, 0, 30, 2);
   const beam = clamp(beamRaw, 0.1, 500, 5);
 
-  const tAfocal = f1 + f2;
-  const abcd = twoLensABCD(f1, f2, t);
-  const { efl, bfd, ffd } = focalDistances(abcd);
-  const powerD = twoElementPower(1000 / f1, 1000 / f2, t / 1000); // dioptres
-
-  let problem = "";
-  if (Math.abs(f1) < 0.1 || Math.abs(f2) < 0.1) problem = "Each focal length must be non-zero (at least 0.1 mm in magnitude).";
-  const afocalPossible = tAfocal > 0;
-  // Afocal within 1 µm of spacing: then C = 0 to rounding.
-  const afocal = !problem && afocalPossible && Math.abs(t - tAfocal) < 1e-3;
-  const M = -f1 / f2; // angular magnification of the afocal design
-  const kind = f1 > 0 && f2 > 0 ? "Keplerian (inverted, real intermediate focus)" : "Galilean (upright, no real focus)";
-  const thetaOut = Math.atan(M * Math.tan(thetaDeg * DEG)) / DEG;
-
-  const notice = problem
-    ? ""
-    : !afocalPossible
-      ? `f₁ + f₂ = ${tAfocal.toFixed(1)} mm ≤ 0: no positive spacing makes these lenses afocal.`
-      : afocal
-        ? ""
-        : `The spacing is ${(t - tAfocal).toFixed(3)} mm from the afocal spacing f₁ + f₂, so the system has power and a collimated beam leaves it converging or diverging.`;
+  // The summary works in SI (m, rad, dioptres); the page shows mm.
+  const s = afocalSummary({ f1: f1 * 1e-3, f2: f2 * 1e-3, t: t * 1e-3, theta: thetaDeg * DEG, beam: beam * 1e-3 });
+  const { problem, afocalPossible, afocal, notice } = s;
+  const tAfocal = s.afocalSpacing * 1e3;
+  const powerD = s.power; // dioptres
+  const efl = s.efl * 1e3;
+  const bfd = s.bfd * 1e3;
+  const ffd = s.ffd * 1e3;
+  const M = s.magnification; // angular magnification of the afocal design
+  const kind = s.keplerian ? "Keplerian (inverted, real intermediate focus)" : "Galilean (upright, no real focus)";
+  const thetaOut = s.outputAngle / DEG;
 
   // System power against spacing: a straight line through 0 at t = f₁ + f₂.
   const tLo = Math.max(0, Math.min(t, tAfocal) - 0.3 * Math.max(Math.abs(tAfocal), 50));
@@ -81,15 +72,15 @@ export default function AfocalPage() {
           ) : (
             <>
               {row("Afocal spacing f₁ + f₂", fmt(tAfocal, 2, " mm"), "text-green-400")}
-              {row("System matrix A, B", `${fmt(abcd.A, 4)}, ${fmt(abcd.B, 2)} mm`)}
-              {row("System matrix C, D", `${fmt(abcd.C * 1000, 4)} dpt, ${fmt(abcd.D, 4)}`)}
+              {row("System matrix A, B", `${fmt(s.A, 4)}, ${fmt(s.B * 1e3, 2)} mm`)}
+              {row("System matrix C, D", `${fmt(s.C, 4)} dpt, ${fmt(s.D, 4)}`)}
               {afocal ? (
                 <>
                   {row("Type", kind, "text-purple-400")}
                   {row("Angular magnification M = −f₁/f₂", fmt(M, 4, "×"), "text-blue-400")}
                   {row("Output half-angle, tan θ′ = M tan θ", fmt(thetaOut, 3, "°"), "text-yellow-400")}
-                  {row("Output beam diameter |f₂/f₁|·D", fmt(beam * Math.abs(f2 / f1), 3, " mm"))}
-                  {f1 > 0 && f2 > 0 && row("Intermediate image (field stop) diameter 2f₁ tan θ", fmt(2 * f1 * Math.tan(thetaDeg * DEG), 3, " mm"))}
+                  {row("Output beam diameter |f₂/f₁|·D", fmt(s.outputBeam * 1e3, 3, " mm"))}
+                  {f1 > 0 && f2 > 0 && row("Intermediate image (field stop) diameter 2f₁ tan θ", fmt(s.fieldStopDiameter * 1e3, 3, " mm"))}
                 </>
               ) : (
                 <>

@@ -13,6 +13,9 @@
  *   (2020), doi:10.1038/s41596-020-0360-2). The mismatch also adds spherical aberration that grows with depth.
  */
 
+import { axialPsfFwhm } from "./optical-sectioning-thickness";
+import { abbeLateralFwhm } from "./super-resolution";
+
 const positive = (x: number) => Number.isFinite(x) && x > 0;
 
 /** Ballistic fraction exp(−(µ_a + µ_s) z), coefficients in m⁻¹, z in m. */
@@ -38,4 +41,45 @@ export function marginalFocalShift(NA: number, nImmersion: number, nSample: numb
   if (!(positive(NA) && NA < nImmersion && NA < nSample && Number.isFinite(nImmersion + nSample))) return NaN;
   const tanAlpha = (n: number) => NA / Math.sqrt(n * n - NA * NA);
   return tanAlpha(nImmersion) / tanAlpha(nSample);
+}
+
+export interface ClearedTissueSummary {
+  /** Non-empty when the NA is impossible with the immersion or the sample index; resolution and focal shifts are then NaN. */
+  problem: string;
+  /** Abbe lateral FWHM λ/(2NA), m. */
+  lateral: number;
+  /** Widefield axial FWHM in the sample, m. */
+  axial: number;
+  ballistic: number;
+  /** Ballistic loss, dB. */
+  lossDb: number;
+  /** Scattering length 1/µ_s, m (Infinity when µ_s = 0). */
+  scatteringLength: number;
+  /** Depth at which the ballistic fraction is 1/e, m. */
+  depth1e: number;
+  /** Depth at which the ballistic fraction is 1 %, m. */
+  depth1pc: number;
+  paraxialShift: number;
+  marginalShift: number;
+}
+
+/** SI inputs (m, m⁻¹). */
+export function clearedTissueSummary(
+  NA: number, lambda: number, nSample: number, nImmersion: number, depth: number, muA: number, muS: number,
+): ClearedTissueSummary {
+  let problem = "";
+  if (!(NA < nImmersion)) problem = `An NA of ${NA} is not possible with an immersion index of ${nImmersion}.`;
+  else if (!(NA < nSample)) problem = `NA ${NA} is not possible inside a sample of n = ${nSample}: the marginal rays are totally reflected.`;
+  return {
+    problem,
+    lateral: problem ? NaN : abbeLateralFwhm(lambda, NA),
+    axial: problem ? NaN : axialPsfFwhm(lambda, nSample, NA),
+    ballistic: ballisticFraction(muA, muS, depth),
+    lossDb: 10 * Math.LOG10E * (muA + muS) * depth,
+    scatteringLength: 1 / muS,
+    depth1e: ballisticDepth(muA, muS, Math.exp(-1)),
+    depth1pc: ballisticDepth(muA, muS, 0.01),
+    paraxialShift: problem ? NaN : paraxialFocalShift(nImmersion, nSample),
+    marginalShift: problem ? NaN : marginalFocalShift(NA, nImmersion, nSample),
+  };
 }

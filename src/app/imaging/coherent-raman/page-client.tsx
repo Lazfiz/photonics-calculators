@@ -1,13 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import {
-  antiStokesWavelength, carsLineshape, carsPeakDetuning, excitationBandwidth, ramanShiftFrequency, srsLineshape, stokesWavelength,
-} from "../../../physics/imaging/coherent-raman";
-import { focalPeakIntensity, gaussianPulsePeakPower, pulseEnergy } from "../../../physics/imaging/multiphoton-focus";
+import { carsLineshape, srsLineshape } from "../../../physics/imaging/coherent-raman";
+import { coherentRamanSummary } from "../../../physics/imaging/coherent-raman-summary";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits: number, unit: string) => (Number.isFinite(x) ? `${x.toFixed(digits)} ${unit}` : "—");
@@ -34,27 +31,23 @@ export default function CoherentRamanPage() {
   const linewidth = clamp(linewidthRaw, 1, 100, 15);
   const chiNR = clamp(chiNRRaw, 0, 10, 0.3);
 
-  const results = useMemo(() => {
-    const lambdaP = pumpWl * 1e-9;
-    const shift = wavenumber * 100; // 1/m
-    const lambdaS = stokesWavelength(lambdaP, shift);
-    const f = repRate * 1e6, tau = pulseWidth * 1e-12;
-    const peakPowerPump = gaussianPulsePeakPower(pumpPower * 1e-3, f, tau);
-    const peakPowerStokes = gaussianPulsePeakPower(stokesPower * 1e-3, f, tau);
-    return {
-      stokesWl: lambdaS * 1e9,
-      antiStokesWl: antiStokesWavelength(lambdaP, shift) * 1e9,
-      freqDiff_THz: ramanShiftFrequency(shift) / 1e12,
-      pulseEnergyPump: pulseEnergy(pumpPower * 1e-3, f),
-      pulseEnergyStokes: pulseEnergy(stokesPower * 1e-3, f),
-      peakPowerPump,
-      peakPowerStokes,
-      intensityPump: focalPeakIntensity(peakPowerPump, lambdaP, na), // W/m²
-      intensityStokes: focalPeakIntensity(peakPowerStokes, lambdaS, na),
-    };
-  }, [pumpWl, wavenumber, pumpPower, stokesPower, pulseWidth, repRate, na]);
+  const summary = coherentRamanSummary({
+    pumpWavelength: pumpWl * 1e-9, ramanShift: wavenumber * 100, pumpPower: pumpPower * 1e-3, stokesPower: stokesPower * 1e-3,
+    pulseWidth: pulseWidth * 1e-12, repRate: repRate * 1e6, na, linewidth: linewidth * 100, chiNR,
+  });
+  const results = {
+    stokesWl: summary.stokesWavelength * 1e9,
+    antiStokesWl: summary.antiStokesWavelength * 1e9,
+    freqDiff_THz: summary.frequencyDifference / 1e12,
+    pulseEnergyPump: summary.pulseEnergyPump,
+    pulseEnergyStokes: summary.pulseEnergyStokes,
+    peakPowerPump: summary.peakPowerPump,
+    peakPowerStokes: summary.peakPowerStokes,
+    intensityPump: summary.intensityPump, // W/m²
+    intensityStokes: summary.intensityStokes,
+  };
 
-  const spectrumPlot = useMemo(() => {
+  const spectrumPlot = (() => {
     const wn: number[] = [];
     const carsY: number[] = [];
     const srs: number[] = [];
@@ -67,19 +60,19 @@ export default function CoherentRamanPage() {
     return cars
       ? [{ x: wn, y: carsY.map((v) => v / maxCars), name: "CARS |χ_NR + χ_R|²", line: { color: "#60a5fa" }, type: "scatter", mode: "lines" }]
       : [{ x: wn, y: srs, name: "SRS Im χ_R", line: { color: "#f87171" }, type: "scatter", mode: "lines" }];
-  }, [wavenumber, linewidth, chiNR, cars]);
+  })();
 
-  const powerPlot = useMemo(() => {
+  const powerPlot = (() => {
     // Both beams scaled together by p/P: CARS ∝ I_p² I_s ∝ p³, SRS ∝ I_p I_s ∝ p².
     const powers: number[] = [];
     for (let p = 1; p <= 100; p += 1) powers.push(p);
     return cars
       ? [{ x: powers, y: powers.map((p) => (p / 100) ** 3), name: "CARS ∝ P³", line: { color: "#60a5fa" }, type: "scatter", mode: "lines" }]
       : [{ x: powers, y: powers.map((p) => (p / 100) ** 2), name: "SRS ∝ P²", line: { color: "#f87171" }, type: "scatter", mode: "lines" }];
-  }, [cars]);
+  })();
 
-  const peakShift = carsPeakDetuning(linewidth, chiNR);
-  const bandwidthCm = excitationBandwidth(pulseWidth * 1e-12) / 100;
+  const peakShift = summary.carsPeakShift / 100; // cm⁻¹
+  const bandwidthCm = summary.excitationBandwidth / 100;
 
   return (
     <>

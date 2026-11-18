@@ -19,11 +19,11 @@ test("thermalNoiseSummary: hand-worked", () => {
 });
 
 test("thermalNoiseSummary: Planck regime and T = 0", () => {
-  // T = 300 K: k_B·T/h = 6.2509e12 Hz; B = 1e12 Hz > 0.1·that; saturation (π²/6)(4.141947e-21)²/6.62607015e-34 = 4.2593e-8 W
+  // T = 300 K: k_B·T/h = 6.2509e12 Hz; B = 1e12 Hz > 0.1·that; saturation (π²/6)(4.141947e-21)²/6.62607015e-34 = 4.2589e-8 W
   const hot = thermalNoiseSummary({ resistance: 1000, temperature: 300, bandwidth: 1e12 });
   assertRel(hot.quantumFrequency, 6.25e12, 1e-3, "f_q");
   assert.equal(hot.quantumRegime, true);
-  assertRel(hot.planckSaturationPower, 4.2593e-8, 1e-3, "P_sat");
+  assertRel(hot.planckSaturationPower, 4.2589e-8, 1e-4, "P_sat");
   const cold = thermalNoiseSummary({ resistance: 1000, temperature: 0, bandwidth: 1e6 });
   assert.equal(cold.power, 0);
   assert.equal(cold.powerDbm, -Infinity);

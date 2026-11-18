@@ -1,12 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import {
-  cutoffFrequency, diffractionMtf, wienerGain, wienerHalfFrequency, wienerTransfer,
-} from "../../../physics/imaging/diffraction-mtf";
+import { diffractionMtf, wienerGain, wienerTransfer } from "../../../physics/imaging/diffraction-mtf";
+import { wienerRestorationSummary } from "../../../physics/imaging/deconvolution";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const um = 1e-6;
@@ -28,16 +26,13 @@ export default function DeconvolutionPage() {
   const na = clamp(naRaw, 0.1, 1.7, 1.4);
   const wavelengthNm = clamp(wavelengthRaw, 200, 2000, 550);
   const snrDb = clamp(snrRaw, 0, 80, 30);
-  const nsr = 10 ** (-snrDb / 10);
+  const summary = wienerRestorationSummary(na, wavelengthNm * nm, snrDb);
+  const { nsr, cutoff: fc, nuHalf, peakGain } = summary;
+  const passbandPeriodNm = summary.passbandPeriod / nm;
+  const restoredPeriodNm = summary.restoredPeriod / nm;
+  const rayleighNm = summary.rayleighDistance / nm;
 
-  const fc = cutoffFrequency(na, wavelengthNm * nm);
-  const nuHalf = wienerHalfFrequency(nsr);
-  const passbandPeriodNm = 1 / fc / nm;
-  const restoredPeriodNm = passbandPeriodNm / nuHalf;
-  const rayleighNm = (0.61 * wavelengthNm) / na;
-  const peakGain = 1 / (2 * Math.sqrt(nsr));
-
-  const chart = useMemo(() => {
+  const chart = (() => {
     const nus = Array.from({ length: 201 }, (_, k) => k / 200);
     const x = nus.map((v) => v * fc * um);
     const h = nus.map(diffractionMtf);
@@ -47,7 +42,7 @@ export default function DeconvolutionPage() {
       { x, y: h.map((v) => wienerGain(v, nsr) * Math.sqrt(nsr)), type: "scatter" as const, mode: "lines" as const, name: "Filter gain × √NSR", line: { color: "#f87171", dash: "dash" } },
       { x: [nuHalf * fc * um], y: [0.5], type: "scatter" as const, mode: "markers" as const, name: "Restored transfer ½", marker: { color: "#facc15", size: 10 } },
     ];
-  }, [fc, nsr, nuHalf]);
+  })();
 
   return (
     <>
