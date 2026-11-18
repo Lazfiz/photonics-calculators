@@ -4,7 +4,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { exponentialSpreadMtf, gaussianBlurMtf, pixelApertureMtf } from "../../../physics/detectors/sensor-mtf";
+import { modulationTransferSummary, mtfTerms } from "../../../physics/detectors/modulation-transfer";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const pct = (x: number) => `${(x * 100).toFixed(1)} %`;
@@ -22,17 +22,9 @@ export default function ModulationTransferPage() {
 
   // SI inside: lengths in m, frequencies in cycles/m; the page shows lp/mm.
   const pitch = pixelPitch * 1e-6;
-  const aperture = pitch * Math.sqrt(fillFactor); // square active area: √FF per axis
-  const spread = spreadLength * 1e-6;
-  const sigma = opticalBlur * 1e-6;
-  const nyquist = 1 / (2 * pitch);
-  const terms = (f: number) => {
-    const pixel = pixelApertureMtf(f, aperture);
-    const diffusion = exponentialSpreadMtf(f, spread);
-    const blur = gaussianBlurMtf(f, sigma);
-    return { pixel, diffusion, blur, total: pixel * diffusion * blur };
-  };
-  const atNyquist = terms(nyquist);
+  const model = { pitch, spreadLength: spreadLength * 1e-6, fillFactor, blurSigma: opticalBlur * 1e-6 };
+  const { nyquist, aperture, ...atNyquist } = modulationTransferSummary(model); // square active area: √FF per axis
+  const terms = (f: number) => mtfTerms(f, model);
 
   const freq = Array.from({ length: 301 }, (_, i) => (i / 300) * 2 * nyquist);
   const curves = freq.map(terms);

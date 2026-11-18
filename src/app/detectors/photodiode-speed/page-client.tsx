@@ -5,12 +5,9 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { abs as cabs } from "../../../physics/complex";
 import { useURLState } from "../../../hooks/use-url-state";
-import { johnsonNoise, responsivity as responsivityOf } from "../../../physics/detectors/noise";
-import {
-  combinedBandwidth, depletionWidth, diffusionBandwidth, diffusionResponse, driftFraction, photodiodeBandwidth, photodiodeResponse,
-  rcBandwidth, transitBandwidth,
-} from "../../../physics/detectors/photodiode-rc";
-import { siliconAbsorption } from "../../../physics/materials/silicon-absorption";
+import { johnsonNoise } from "../../../physics/detectors/noise";
+import { combinedBandwidth, diffusionResponse, photodiodeResponse, rcBandwidth } from "../../../physics/detectors/photodiode-rc";
+import { photodiodeSpeedSummary } from "../../../physics/detectors/photodiode-speed";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmtHz = (f: number) => (!Number.isFinite(f) ? "—" : f >= 1e9 ? `${(f / 1e9).toFixed(2)} GHz` : `${(f / 1e6).toFixed(2)} MHz`);
@@ -42,20 +39,10 @@ export default function PhotodiodeSpeedPage() {
   const areaMin = clamp(areaMinRaw, 1e-6, 1e4, 0.001);
   const areaMax = Math.max(clamp(areaMaxRaw, 1e-6, 1e4, 10), areaMin * 1.01);
 
-  const responsivity = responsivityOf(qe, wavelength_nm * 1e-9);
-  const W = depletionWidth(capacitanceDensity, epsR); // m
-  const fTransit = transitBandwidth(velocity, W);
+  const { responsivity, alpha, W, fTransit, fRC1, f1, driftShare, fDiffusion, diffusionLimited, response1, fTotal } = photodiodeSpeedSummary({
+    wavelength_nm, qe, capacitanceDensity, epsR, velocity, loadResistance, absorptionDepth_um, diffusionLength, diffusivity,
+  });
   const capAt = (a_mm2: number) => capacitanceDensity * a_mm2 * 1e-6; // F
-  const fRC1 = rcBandwidth(loadResistance, capAt(1));
-  const f1 = combinedBandwidth(fRC1, fTransit);
-  const alpha = absorptionDepth_um > 0 ? 1e6 / absorptionDepth_um : siliconAbsorption(wavelength_nm * 1e-9); // 1/m
-  const driftShare = driftFraction(alpha, W, diffusionLength);
-  const fDiffusion = diffusionBandwidth(alpha, W, diffusionLength, diffusivity);
-  const diffusionLimited = driftShare < Math.SQRT1_2;
-
-  // Response at 1 mm²: intrinsic drift + diffusion, times the RC pole and the transit sinc of the drift model.
-  const response1 = { alpha, width: W, diffusionLength, diffusivity, fTransit, fRC: fRC1 };
-  const fTotal = photodiodeBandwidth(response1);
   const fCorner = (diffusivity * (alpha ** 2 + diffusionLength ** -2)) / (2 * Math.PI);
   const fRef = Number.isFinite(fCorner) ? Math.min(f1, fCorner) : f1;
   const freqs = Array.from({ length: 300 }, (_, i) => (fRef / 1e3) * Math.pow((3 * f1) / (fRef / 1e3), i / 299));

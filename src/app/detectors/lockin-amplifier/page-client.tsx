@@ -5,10 +5,8 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  lockinSnrGain,
-  lowPassEnbw,
+  lockinSummary,
   lowPassMagnitude,
-  referenceMatch,
   type LockinFilter,
   type LockinReference,
 } from "../../../physics/detectors/lockin";
@@ -41,14 +39,11 @@ export default function LockinAmplifierPage() {
 
   // Unit-power reference: in phase, X = g_k·(A/√2)·cos φ; detuned, X beats at Δf_k with envelope g_k·(A/√2)·|H(Δf_k)|.
   // A square reference detects the signal at the odd harmonic k·f_r with the largest g_k·|H(Δf_k)|.
-  const match = referenceMatch(signalFreq, refFreq, phaseRad, tau, order, filter, reference);
+  const { enbw_Hz: enbw, match, outputSignal_V: outputSignal, outputNoise_V: outputNoise, snrInput, snrGain } = lockinSummary({
+    phase_rad: phaseRad, signal_Hz: signalFreq, reference_Hz: refFreq, tau, order, filter, reference, inputBandwidth_Hz: inputBandwidth,
+    amplitude_V: signalAmp, noiseDensity_VrtHz: noiseDensity,
+  });
   const deltaF = match.detuning_Hz;
-  const enbw = lowPassEnbw(tau, order, filter);
-  const outputSignal = (signalAmp / Math.SQRT2) * match.gain;
-  const outputNoise = noiseDensity * Math.sqrt(enbw);
-  const inputNoise = noiseDensity * Math.sqrt(inputBandwidth);
-  const snrInput = signalAmp / Math.SQRT2 / inputNoise;
-  const snrGain = lockinSnrGain({ phase_rad: phaseRad, signal_Hz: signalFreq, reference_Hz: refFreq, tau, order, filter, reference, inputBandwidth_Hz: inputBandwidth });
 
   // Filter response vs detuning, 1e-3/τ … 1e2/τ, for orders 1–4 of the chosen filter type.
   const n = 161;

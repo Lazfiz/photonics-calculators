@@ -4,11 +4,9 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { generationCurrent, generationCurrentAtBias, generationNoiseDensity } from "../../../physics/detectors/dark-current";
-import { cutoffWavelength, ingaasAbsorption, ingaasIntrinsicDensity } from "../../../physics/detectors/ingaas";
-import { photodiodeQe } from "../../../physics/detectors/photodiode-qe";
-import { responsivity } from "../../../physics/detectors/responsivity";
-import { ingaasBandGap } from "../../../physics/materials/bandgap";
+import { generationCurrent } from "../../../physics/detectors/dark-current";
+import { ingaasIntrinsicDensity } from "../../../physics/detectors/ingaas";
+import { ingaasParametersSummary, ingaasQeAt } from "../../../physics/detectors/ingaas-parameters";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmtE = (x: number, digits = 3) => (Number.isFinite(x) ? x.toExponential(digits) : "—");
@@ -30,17 +28,10 @@ export default function IngaasParametersPage() {
   const lifetime = clamp(lifetimeRaw, 0.01, 1e4, 100) * 1e-6; // s
   const reflectance = clamp(reflectanceRaw, 0, 99, 2) / 100;
 
-  const Eg = ingaasBandGap(x, T);
-  const cutoff_nm = cutoffWavelength(Eg) * 1e9;
-  const qeAt = (lambda_nm: number) =>
-    photodiodeQe({ alpha: ingaasAbsorption(lambda_nm * 1e-9, Eg), reflectance, depletionWidth: thickness });
-  const ni = ingaasIntrinsicDensity(x, T);
-  const genCurrent = generationCurrent(ni, thickness, area, lifetime);
-  const dark = generationCurrentAtBias(genCurrent, bias, T);
-  const noise = generationNoiseDensity(genCurrent); // A/√Hz
-  const r1550 = responsivity(qeAt(1550), 1550e-9);
-  const nep1550 = r1550 > 0 ? noise / r1550 : NaN;
-  const dStar1550 = Math.sqrt(areaMm2 * 1e-2) / nep1550; // cm·Hz^½/W
+  const { bandGap: Eg, cutoff_nm, qe1300, qe1550, r1550, ni, genCurrent, dark, nep1550, dStar1550 } = ingaasParametersSummary({
+    T, x, thickness, area, bias, lifetime, reflectance,
+  });
+  const qeAt = (lambda_nm: number) => ingaasQeAt(lambda_nm, { bandGap: Eg, reflectance, thickness });
 
   const lambdaMax = Math.min(4000, Math.max(1800, Math.ceil((cutoff_nm + 300) / 100) * 100));
   const wl = Array.from({ length: 241 }, (_, i) => 950 + (i * (lambdaMax - 950)) / 240); // the α prefactor is fitted over 0.95–1.62 µm
@@ -68,7 +59,7 @@ export default function IngaasParametersPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="Band Gap E_g" value={`${Eg.toFixed(4)} eV`} tone="blue" subtext={`Vurgaftman 2001, x = ${x.toFixed(2)}, ${T.toFixed(0)} K`} />
         <ResultCard label="Cutoff λ_c" value={`${cutoff_nm.toFixed(0)} nm`} tone="green" />
-        <ResultCard label="QE @ 1300 / 1550 nm" value={`${(qeAt(1300) * 100).toFixed(1)} / ${(qeAt(1550) * 100).toFixed(1)} %`} tone="yellow" />
+        <ResultCard label="QE @ 1300 / 1550 nm" value={`${(qe1300 * 100).toFixed(1)} / ${(qe1550 * 100).toFixed(1)} %`} tone="yellow" />
         <ResultCard label="R @ 1550 nm" value={`${r1550.toFixed(3)} A/W`} tone="purple" />
         <ResultCard label="Intrinsic Density n_i" value={`${fmtE(ni * 1e-6, 2)} cm⁻³`} tone="cyan" />
         <ResultCard label="Dark Current" value={`${fmtE(dark)} A`} tone="red" subtext={`generation limit ${fmtE(genCurrent)} A`} />

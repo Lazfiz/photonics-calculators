@@ -4,8 +4,8 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { noiseEquivalentPower, responsivity as responsivityOf } from "../../../physics/detectors/noise";
-import { tiaBandwidth, tiaButterworthCf, tiaFilteredNoise, tiaSpotNoise, type TiaNoiseInputs } from "../../../physics/detectors/tia";
+import { tiaAmp, tiaNoiseAtRf, tiaNoiseSummary, type TiaNoiseParams } from "../../../physics/detectors/photodiode-tia-noise";
+import { tiaSpotNoise } from "../../../physics/detectors/tia";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmtHz = (f: number) => (!Number.isFinite(f) ? "—" : f >= 1e9 ? `${(f / 1e9).toFixed(2)} GHz` : f >= 1e6 ? `${(f / 1e6).toFixed(2)} MHz` : `${(f / 1e3).toFixed(2)} kHz`);
@@ -30,27 +30,13 @@ export default function PhotodiodeTiaNoisePage() {
   const rf = clamp(feedbackResistanceRaw, 1e-6, 1e6, 1) * 1e6;
   const temperature = clamp(temperatureRaw, 0, 1000, 300);
 
-  const responsivity = responsivityOf(qe, wavelength_nm * 1e-9);
-  const amp = (feedbackR: number): TiaNoiseInputs => ({ currentNoise: iN, voltageNoise: eN, feedbackR, inputC, temperature });
-  // Noise weighted by the Butterworth TIA response up to the post-filter B; F is the noise-equivalent bandwidth.
-  const atRf = (feedbackR: number) => {
-    const fTia = tiaBandwidth(gbw, feedbackR, inputC);
-    const { terms, enbw: F } = tiaFilteredNoise(amp(feedbackR), fTia, band);
-    const iRms = Math.sqrt(terms.total * F);
-    return { fTia, F, terms, iRms, nep: noiseEquivalentPower(iRms, responsivity) };
+  const params: TiaNoiseParams = {
+    wavelength_nm, qe, currentNoise: iN, voltageNoise: eN, inputC, gbw, band, feedbackR: rf, temperature,
   };
-  const { fTia, F, terms, iRms, nep } = atRf(rf);
-  const cf = tiaButterworthCf(gbw, rf, inputC);
-  const parts = [
-    { name: "amplifier i_n", v: terms.current },
-    { name: "Johnson of R_f", v: terms.johnson },
-    { name: "e_n/R_f", v: terms.voltage },
-    { name: "e_n·2πf·C_S", v: terms.capacitive },
-  ];
-  const dominant = parts.reduce((a, b) => (b.v > a.v ? b : a));
+  const { responsivity, fTia, F, terms, iRms, nep, cf, dominant } = tiaNoiseSummary(params);
 
   const freqs = Array.from({ length: 200 }, (_, i) => 100 * Math.pow(Math.max(fTia, 1e3) / 100, i / 199));
-  const spot = freqs.map(f => tiaSpotNoise(amp(rf), f));
+  const spot = freqs.map(f => tiaSpotNoise(tiaAmp(params, rf), f));
   const toFa = (x: number) => (x > 0 ? Math.sqrt(x) * 1e15 : null);
   const densityChart = [
     { x: freqs, y: spot.map(s => toFa(s.current)), type: "scatter", mode: "lines", name: "i_n", line: { color: "#f87171" } },
@@ -61,7 +47,7 @@ export default function PhotodiodeTiaNoisePage() {
   ];
 
   const gains = Array.from({ length: 200 }, (_, i) => 1e3 * Math.pow(1e5, i / 199)); // 1 kΩ to 100 MΩ
-  const sweep = gains.map(atRf);
+  const sweep = gains.map(g => tiaNoiseAtRf(params, g));
   const rfChart = [
     { x: gains, y: sweep.map(s => s.nep), type: "scatter", mode: "lines", name: "NEP (W)", line: { color: "#34d399" } },
     { x: gains, y: sweep.map(s => s.F), type: "scatter", mode: "lines", name: "Noise bandwidth ENBW (Hz)", line: { color: "#60a5fa", dash: "dash" }, yaxis: "y2" },
@@ -84,7 +70,7 @@ export default function PhotodiodeTiaNoisePage() {
         <ResultCard label="Responsivity" value={`${(responsivity * 1e3).toFixed(2)} mA/W`} tone="blue" />
         <ResultCard label="TIA Bandwidth" value={fmtHz(fTia)} tone="cyan" subtext={`√(GBW/2πR_f·C_S); Butterworth C_f = ${Number.isFinite(cf) ? `${(cf * 1e12).toPrecision(3)} pF` : "—"}`} />
         <ResultCard label="Noise Bandwidth (ENBW)" value={fmtHz(F)} tone={band > fTia ? "orange" : "purple"} subtext={band > fTia ? "Set by the TIA roll-off (B > f_TIA); the e_n·C noise peaks near f_TIA" : "Set by the post-filter B"} />
-        <ResultCard label="Input Noise Current" value={`${iRms.toExponential(3)} A rms`} tone="yellow" subtext={`Dominant: ${dominant.name}; ${(Math.sqrt(terms.total) * 1e15).toFixed(1)} fA/√Hz band average`} />
+        <ResultCard label="Input Noise Current" value={`${iRms.toExponential(3)} A rms`} tone="yellow" subtext={`Dominant: ${dominant}; ${(Math.sqrt(terms.total) * 1e15).toFixed(1)} fA/√Hz band average`} />
         <ResultCard label="NEP (in the noise band)" value={`${nep.toExponential(3)} W`} tone="green" subtext={`Output noise ${(iRms * rf * 1e3).toPrecision(3)} mV rms`} />
       </div>
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1">
