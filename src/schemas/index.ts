@@ -138,6 +138,17 @@ import confocalPinHole from "./imaging/confocal-pin-hole";
 import confocalResolution from "./imaging/confocal-resolution";
 import contrastMethods from "./imaging/contrast-methods";
 import deconvolution from "./imaging/deconvolution";
+import denoisingAlgorithms from "./imaging/denoising-algorithms";
+import digitalHolography from "./imaging/digital-holography";
+import dof from "./imaging/dof";
+import dynamicRange from "./imaging/dynamic-range";
+import expansionMicroscopy from "./imaging/expansion-microscopy";
+import fcs from "./imaging/fcs";
+import fluorescenceSpectra from "./imaging/fluorescence-spectra";
+import fovCalculator from "./imaging/fov-calculator";
+import frap from "./imaging/frap";
+import hyperspectralMicroscopy from "./imaging/hyperspectral-microscopy";
+import illumination from "./imaging/illumination";
 import lowCoherence from "./imaging/low-coherence";
 import tirf from "./imaging/tirf";
 import aelLimits from "./laser-safety/ael-limits";
@@ -427,6 +438,8 @@ export const schemas: readonly CalculatorSchema[] = [
   temporalNoise, thermalNoise, uniformity, vacuumPhotodiode, wellCapacity,
   threeDReconstruction, imagingAdaptiveOptics, afocal, clearedTissue, coherentRaman, computationalImaging,
   computerGeneratedHolography, confocalPinHole, confocalResolution, contrastMethods, deconvolution,
+  denoisingAlgorithms, digitalHolography, dof, dynamicRange, expansionMicroscopy, fcs, fluorescenceSpectra,
+  fovCalculator, frap, hyperspectralMicroscopy, illumination,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));
