@@ -32,6 +32,17 @@ import photodiodeSpeed from "./detectors/photodiode-speed";
 import photodiodeTiaNoise from "./detectors/photodiode-tia-noise";
 import photonCounting from "./detectors/photon-counting";
 import photonTransfer from "./detectors/photon-transfer";
+import pixelCrosstalk from "./detectors/pixel-crosstalk";
+import pmt from "./detectors/pmt";
+import quantumEfficiency from "./detectors/quantum-efficiency";
+import readoutNoise from "./detectors/readout-noise";
+import resetNoise from "./detectors/reset-noise";
+import responsivity from "./detectors/responsivity";
+import saturation from "./detectors/saturation";
+import shotNoise from "./detectors/shot-noise";
+import siVsIngaas from "./detectors/si-vs-ingaas";
+import siliconPhotodiode from "./detectors/silicon-photodiode";
+import singlePhotonCountingModule from "./detectors/single-photon-counting-module";
 import attenuation from "./fiber-optics/attenuation";
 import bendInsensitive from "./fiber-optics/bend-insensitive";
 import birefringenceFiber from "./fiber-optics/birefringence-fiber";
@@ -389,6 +400,8 @@ export const schemas: readonly CalculatorSchema[] = [
   excessNoise, flickerNoise, gainBandwidth, gainTemperature, geigerModeAvalanche,
   ingaasParameters, intensifiedCcd, linearModeAvalanche, lockinAmplifier, microchannelPlate, modulationTransfer,
   nep, photodiodeSpeed, photodiodeTiaNoise, photonCounting, photonTransfer,
+  pixelCrosstalk, pmt, quantumEfficiency, readoutNoise, resetNoise, responsivity,
+  saturation, shotNoise, siVsIngaas, siliconPhotodiode, singlePhotonCountingModule,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));

@@ -4,7 +4,7 @@ import { defineSchema } from "../types";
 const VURGAFTMAN = "Vurgaftman I., Meyer J. R., Ram-Mohan L. R. (2001). Band parameters for III–V compound semiconductors and their alloys. " +
   "J. Appl. Phys. 89, 5815–5875, doi:10.1063/1.1368156: E_g(x, T) = (1−x)·E_g,GaAs(T) + x·E_g,InAs(T) − 0.477·x(1−x), E_g(T) = E_g(0) − αT²/(T+β) " +
   "(GaAs 1.519 eV, 5.405e-4 eV/K, 204 K; InAs 0.417 eV, 2.76e-4 eV/K, 93 K); n_i = 6.3e11 cm⁻³ at x = 0.53, 300 K (Paul S., Roy J. B., Basu P. K. (1991). " +
-  "J. Appl. Phys. 69, 827–829, doi:10.1063/1.348919) scaled with T^(3/2)·exp(−E_g/2k_BT); α = 2.4e4 cm⁻¹·√(E − E_g/eV), a least-squares fit to Adachi S. (1989). " +
+  "J. Appl. Phys. 69, 827–829, doi:10.1063/1.348919) scaled with T^(3/2)·exp(−E_g/2k_BT); α = 2.4e4 cm⁻¹·eV^−½·√(E − E_g), a least-squares fit to Adachi S. (1989). " +
   "J. Appl. Phys. 66, 6030, doi:10.1063/1.343580 over 0.95–1.62 µm; QE = (1−R)(1−e^(−αd)); I_gen = q·n_i·d·A/τ_g, I_dark = I_gen·(1−e^(qV/2k_BT)) " +
   "(Sze S. M., Ng K. K. (2007). Physics of Semiconductor Devices, 3rd ed. Wiley, doi:10.1002/0470068329, ch. 2); i_n = √(2q·I_gen), NEP = i_n/ℛ, D* = √A/NEP (Dereniak E. L., Boreman G. D. (1996). Infrared Detectors and Systems. Wiley, ch. 5).";
 const BEYOND = "1550 nm is beyond the cutoff wavelength, so the detector has no response there and NEP and D* are undefined.";
