@@ -3,7 +3,8 @@
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { exitPupilDiameter, totalMag, usefulMagRange } from "../../../physics/imaging/microscope";
+import { exitPupilDiameter } from "../../../physics/imaging/microscope";
+import { pupilMatchingSummary } from "../../../physics/imaging/pupil-matching";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const mm = 1e-3;
@@ -27,18 +28,17 @@ export default function PupilMatchingPage() {
   const Meye = clamp(eyepieceRaw, 1, 30, 10);
   const eyePupilMm = clamp(eyePupilRaw, 1, 8, 4);
 
-  const M = totalMag(Mobj, Meye);
-  const pupilMm = exitPupilDiameter(na, M) / mm;
-  const useful = usefulMagRange(na);
-  const eyepieceRange = { min: useful.min / Mobj, max: useful.max / Mobj };
-  const filled = Math.min(1, pupilMm / eyePupilMm);
-  const verdict = pupilMm > 1
+  const summary = pupilMatchingSummary(na, Mobj, Meye, eyePupilMm * mm);
+  const { magnification: M, filled, eyeStop } = summary;
+  const pupilMm = summary.exitPupil / mm;
+  const useful = { min: summary.usefulMin, max: summary.usefulMax };
+  const eyepieceRange = { min: summary.eyepieceMin, max: summary.eyepieceMax };
+  const verdict = summary.verdict === "large"
     ? "larger than 1 mm: magnification below 500·NA, the eye cannot resolve all the detail the objective passes"
-    : pupilMm < 0.5
+    : summary.verdict === "small"
       ? "smaller than 0.5 mm: magnification above 1000·NA is empty"
       : "between 0.5 and 1 mm: the useful range";
 
-  const eyeStop = pupilMm > eyePupilMm;
   const nas = Array.from({ length: 171 }, (_, k) => 0.01 + k * 0.01);
   const chart = [
     { x: nas, y: nas.map((a) => exitPupilDiameter(a, M) / mm), type: "scatter" as const, mode: "lines" as const, name: `Exit pupil at ${fmt(M, 0)}×`, line: { color: "#60a5fa" } },
@@ -65,7 +65,7 @@ export default function PupilMatchingPage() {
           {row("Eyepieces for the useful range", `${fmt(eyepieceRange.min, 1)}–${fmt(eyepieceRange.max, 1)}×`, "text-yellow-400")}
           {row("Share of the eye pupil diameter used", fmt(100 * filled, 0, " %"))}
           <p className="text-sm text-purple-400">Exit pupil {verdict}.</p>
-          {eyeStop && <p className="text-sm text-purple-400">The eye pupil becomes the aperture stop: the effective NA drops to ≈ NA·d_eye/D = {fmt((na * eyePupilMm) / pupilMm, 3)}.</p>}
+          {eyeStop && <p className="text-sm text-purple-400">The eye pupil becomes the aperture stop: the effective NA drops to ≈ NA·d_eye/D = {fmt(summary.effectiveNa, 3)}.</p>}
         </div>
       </div>
 

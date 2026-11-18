@@ -4,58 +4,44 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { dynamicRangeDb } from "../../../physics/detectors/camera-snr";
-import { darkCurrentDensity, darkReadCrossoverTemperature, doublingLawRatio } from "../../../physics/detectors/dark-current";
+import { doublingLawRatio } from "../../../physics/detectors/dark-current";
 import { sensorNoise } from "../../../physics/detectors/sensor-noise";
+import {
+  DARK_REF_TEMP as T_REF,
+  SENSOR_PRESETS,
+  SENSOR_TEMP_MAX as T_MAX,
+  SENSOR_TEMP_MIN as T_MIN,
+  type SensorPreset as Preset,
+  sensorCmosSummary,
+} from "../../../physics/imaging/sensor-cmos";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits: number) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
-const T_MIN = -120, T_MAX = 60; // °C, range of the sensor-temperature input
-const T_REF = 25; // °C, reference temperature of the dark-current input
-
-interface Preset {
-  pixelPitch: number; // µm
-  wellCapacity: number; // e⁻
-  readNoise: number; // e⁻ rms
-  darkCurrent: number; // e⁻/s per pixel at 25 °C
-  sensorTemp: number; // °C
-  quantumEfficiency: number;
-  conversionGain: number; // e⁻/DN
-  bitDepth: number;
-  exposureTime: number; // ms
-}
-
-// Representative values, not a specific camera: an air-cooled sCMOS and a deep-cooled back-thinned MPP CCD.
-const PRESETS: Record<"cmos" | "ccd", Preset> = {
-  cmos: { pixelPitch: 6.5, wellCapacity: 25000, readNoise: 1.5, darkCurrent: 2, sensorTemp: 0, quantumEfficiency: 0.7, conversionGain: 0.5, bitDepth: 16, exposureTime: 100 },
-  ccd: { pixelPitch: 16, wellCapacity: 80000, readNoise: 8, darkCurrent: 200, sensorTemp: -70, quantumEfficiency: 0.92, conversionGain: 1.2, bitDepth: 16, exposureTime: 1000 },
-};
-const D = PRESETS.cmos;
 
 export default function SensorDesignPage() {
   const [photonsRaw, setPhotons] = useURLState("photons", 1000);
-  const [qeRaw, setQuantumEfficiency] = useURLState("quantumEfficiency", D.quantumEfficiency);
-  const [pitchRaw, setPixelPitch] = useURLState("pixelPitch", D.pixelPitch);
-  const [wellRaw, setWellCapacity] = useURLState("wellCapacity", D.wellCapacity);
-  const [readRaw, setReadNoise] = useURLState("readNoise", D.readNoise);
-  const [darkRaw, setDarkCurrent] = useURLState("darkCurrent", D.darkCurrent);
-  const [tempRaw, setSensorTemp] = useURLState("sensorTemp", D.sensorTemp);
+  const [qeRaw, setQuantumEfficiency] = useURLState("quantumEfficiency", SENSOR_PRESETS.cmos.quantumEfficiency);
+  const [pitchRaw, setPixelPitch] = useURLState("pixelPitch", SENSOR_PRESETS.cmos.pixelPitch);
+  const [wellRaw, setWellCapacity] = useURLState("wellCapacity", SENSOR_PRESETS.cmos.wellCapacity);
+  const [readRaw, setReadNoise] = useURLState("readNoise", SENSOR_PRESETS.cmos.readNoise);
+  const [darkRaw, setDarkCurrent] = useURLState("darkCurrent", SENSOR_PRESETS.cmos.darkCurrent);
+  const [tempRaw, setSensorTemp] = useURLState("sensorTemp", SENSOR_PRESETS.cmos.sensorTemp);
   const [doublingRaw, setDoublingTemp] = useURLState("doublingTemp", 6);
-  const [exposureRaw, setExposureTime] = useURLState("exposureTime", D.exposureTime);
-  const [gainRaw, setConversionGain] = useURLState("conversionGain", D.conversionGain);
-  const [bitsRaw, setBitDepth] = useURLState("bitDepth", D.bitDepth);
+  const [exposureRaw, setExposureTime] = useURLState("exposureTime", SENSOR_PRESETS.cmos.exposureTime);
+  const [gainRaw, setConversionGain] = useURLState("conversionGain", SENSOR_PRESETS.cmos.conversionGain);
+  const [bitsRaw, setBitDepth] = useURLState("bitDepth", SENSOR_PRESETS.cmos.bitDepth);
 
   const photons = clamp(photonsRaw, 0, 1e7, 1000);
-  const qe = clamp(qeRaw, 0.01, 1, D.quantumEfficiency);
-  const pitch = clamp(pitchRaw, 0.5, 50, D.pixelPitch);
-  const well = clamp(wellRaw, 100, 1e6, D.wellCapacity);
-  const read = clamp(readRaw, 0.1, 100, D.readNoise);
-  const darkRef = clamp(darkRaw, 0, 1e5, D.darkCurrent);
-  const temp = clamp(tempRaw, T_MIN, T_MAX, D.sensorTemp);
+  const qe = clamp(qeRaw, 0.01, 1, SENSOR_PRESETS.cmos.quantumEfficiency);
+  const pitch = clamp(pitchRaw, 0.5, 50, SENSOR_PRESETS.cmos.pixelPitch);
+  const well = clamp(wellRaw, 100, 1e6, SENSOR_PRESETS.cmos.wellCapacity);
+  const read = clamp(readRaw, 0.1, 100, SENSOR_PRESETS.cmos.readNoise);
+  const darkRef = clamp(darkRaw, 0, 1e5, SENSOR_PRESETS.cmos.darkCurrent);
+  const temp = clamp(tempRaw, T_MIN, T_MAX, SENSOR_PRESETS.cmos.sensorTemp);
   const doubling = clamp(doublingRaw, 3, 12, 6);
-  const exposureMs = clamp(exposureRaw, 0.01, 3.6e6, D.exposureTime);
-  const electronsPerDn = clamp(gainRaw, 0.01, 1000, D.conversionGain);
-  const bits = Math.round(clamp(bitsRaw, 8, 24, D.bitDepth));
+  const exposureMs = clamp(exposureRaw, 0.01, 3.6e6, SENSOR_PRESETS.cmos.exposureTime);
+  const electronsPerDn = clamp(gainRaw, 0.01, 1000, SENSOR_PRESETS.cmos.conversionGain);
+  const bits = Math.round(clamp(bitsRaw, 8, 24, SENSOR_PRESETS.cmos.bitDepth));
 
   const applyPreset = (p: Preset) => {
     setPixelPitch(p.pixelPitch);
@@ -70,20 +56,13 @@ export default function SensorDesignPage() {
   };
 
   const t = exposureMs / 1000;
-  const darkRate = darkRef * doublingLawRatio(temp, T_REF, doubling); // e⁻/s at the sensor temperature
-  const dark = darkRate * t;
-  const adcFullScale = electronsPerDn * (2 ** bits - 1);
-  const maxSignal = Math.min(well, adcFullScale);
-  const noiseAt = (signal: number) => sensorNoise({ signal, read, dark, electronsPerDn }).temporal;
-  const floor = noiseAt(0);
-  const signal = qe * photons;
-  const saturated = signal + dark > maxSignal;
-  const noise = noiseAt(signal);
-  const drExposure = dynamicRangeDb(maxSignal, floor, dark); // the dark charge occupies the well and the ADC range
-  const snr = saturated ? NaN : signal / noise;
-  const crossoverRaw = darkReadCrossoverTemperature(read, darkRef * t, T_REF, doubling);
-  const crossoverInRange = Number.isFinite(crossoverRaw) && crossoverRaw >= T_MIN && crossoverRaw <= T_MAX;
-  const density = darkCurrentDensity(darkRef, pitch * 1e-6) * 1e8; // A/m² → pA/cm²
+  const m = sensorCmosSummary({
+    photons, quantumEfficiency: qe, pitch: pitch * 1e-6, well, read, darkRef, temp, doubling, exposure: t, electronsPerDn, bits,
+  });
+  const { signal, darkRate, dark, adcFullScale, maxSignal, floor, noise, saturated, snr, drExposureDb: drExposure, crossoverInRange } = m;
+  const crossoverRaw = m.crossoverTemp;
+  const density = m.darkDensity * 1e8; // A/m² → pA/cm²
+  const noiseAt = (s: number) => sensorNoise({ signal: s, read, dark, electronsPerDn }).temporal;
 
   const photonMax = Math.max(1e6, 10 * photons);
   const photonAxis = Array.from({ length: 241 }, (_, i) => 10 ** ((i / 240) * Math.log10(photonMax)));
@@ -114,8 +93,8 @@ export default function SensorDesignPage() {
     <>
       <div className="flex flex-wrap gap-2 mb-4">
         <span className="text-sm text-gray-400 self-center">Load preset:</span>
-        <button type="button" onClick={() => applyPreset(PRESETS.cmos)} className="px-3 py-1.5 rounded bg-gray-800 hover:bg-gray-700 text-sm">Air-cooled sCMOS</button>
-        <button type="button" onClick={() => applyPreset(PRESETS.ccd)} className="px-3 py-1.5 rounded bg-gray-800 hover:bg-gray-700 text-sm">Deep-cooled CCD</button>
+        <button type="button" onClick={() => applyPreset(SENSOR_PRESETS.cmos)} className="px-3 py-1.5 rounded bg-gray-800 hover:bg-gray-700 text-sm">Air-cooled sCMOS</button>
+        <button type="button" onClick={() => applyPreset(SENSOR_PRESETS.ccd)} className="px-3 py-1.5 rounded bg-gray-800 hover:bg-gray-700 text-sm">Deep-cooled CCD</button>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Signal (photons/pixel)" value={photonsRaw} onChange={setPhotons} min={0} max={10000000} />
@@ -135,14 +114,14 @@ export default function SensorDesignPage() {
         <ResultCard label="Signal" value={`${fmt(signal, 1)} e⁻`} subtext={saturated ? "Saturated: above the full well or ADC full scale" : `QE × ${photons} photons`} tone={saturated ? "red" : "blue"} />
         <ResultCard label="SNR" value={fmt(snr, 2)} subtext={`Total temporal noise ${fmt(noise, 2)} e⁻`} tone="green" />
         <ResultCard label="Dark Charge" value={`${fmt(dark, 4)} e⁻`} subtext={`${darkRate.toExponential(3)} e⁻/s at ${temp} °C`} tone="red" />
-        <ResultCard label="Noise Floor" value={`${fmt(floor, 3)} e⁻`} subtext={`${fmt(floor / electronsPerDn, 2)} DN${floor / electronsPerDn < 0.5 ? ": below 0.5 DN, the ADC step limits it" : ""}`} tone="purple" />
-        <ResultCard label="Dynamic Range (FW/σ_read)" value={`${fmt(dynamicRangeDb(well, read), 2)} dB`} subtext={`${fmt(Math.log2(well / read), 2)} stops, the usual datasheet figure`} tone="green" />
-        <ResultCard label="Dynamic Range at this exposure" value={Number.isFinite(drExposure) ? `${fmt(drExposure, 2)} dB` : "—"} subtext={Number.isFinite(drExposure) ? `${fmt(Math.log2((maxSignal - dark) / floor), 2)} stops: (min(FW, ADC full scale) − D)/noise floor` : "The dark charge fills the well"} tone="green" />
-        <ResultCard label="ADC Full Scale" value={`${fmt(adcFullScale, 0)} e⁻`} subtext={adcFullScale < well ? "Below the full well: the ADC clips first" : `Quantization noise ${fmt(electronsPerDn / Math.sqrt(12), 3)} e⁻`} tone={adcFullScale < well ? "orange" : "yellow"} />
-        <ResultCard label="Peak SNR √FW" value={fmt(Math.sqrt(maxSignal), 1)} subtext="Shot-noise limit at the largest signal" tone="cyan" />
+        <ResultCard label="Noise Floor" value={`${fmt(floor, 3)} e⁻`} subtext={`${fmt(m.floorDn, 2)} DN${m.adcLimitsFloor ? ": below 0.5 DN, the ADC step limits it" : ""}`} tone="purple" />
+        <ResultCard label="Dynamic Range (FW/σ_read)" value={`${fmt(m.drDatasheetDb, 2)} dB`} subtext={`${fmt(m.drDatasheetStops, 2)} stops, the usual datasheet figure`} tone="green" />
+        <ResultCard label="Dynamic Range at this exposure" value={Number.isFinite(drExposure) ? `${fmt(drExposure, 2)} dB` : "—"} subtext={Number.isFinite(drExposure) ? `${fmt(m.drExposureStops, 2)} stops: (min(FW, ADC full scale) − D)/noise floor` : "The dark charge fills the well"} tone="green" />
+        <ResultCard label="ADC Full Scale" value={`${fmt(adcFullScale, 0)} e⁻`} subtext={adcFullScale < well ? "Below the full well: the ADC clips first" : `Quantization noise ${fmt(m.quantization, 3)} e⁻`} tone={adcFullScale < well ? "orange" : "yellow"} />
+        <ResultCard label="Peak SNR √FW" value={fmt(m.peakSnr, 1)} subtext="Shot-noise limit at the largest signal" tone="cyan" />
         <ResultCard label="Dark ≤ Read Noise Below" value={crossoverInRange ? `${fmt(crossoverRaw, 1)} °C` : "—"} subtext={crossoverInRange ? "Cooling further gains little at this exposure" : `outside the ${T_MIN.toString().replace("-", "−")}…${T_MAX} °C range`} tone="blue" />
         <ResultCard label="Dark Current Density at 25 °C" value={`${fmt(density, 3)} pA/cm²`} subtext={`q·R/p² for a ${pitch} µm pixel`} tone="gray" />
-        <ResultCard label="Full-Well Density" value={`${fmt(well / pitch ** 2, 0)} e⁻/µm²`} subtext="Full well per pixel area" tone="gray" />
+        <ResultCard label="Full-Well Density" value={`${fmt(m.wellDensity / 1e12, 0)} e⁻/µm²`} subtext="Full well per pixel area" tone="gray" />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2 mb-8">

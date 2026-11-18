@@ -20,8 +20,10 @@
 export type LensletShape = "square" | "circular";
 
 const positive = (...xs: number[]) => xs.every((x) => Number.isFinite(x) && x > 0);
-const FIRST_ZERO = { square: 1, circular: 1.21967 } as const; // sinc² zero at 1, Airy zero 3.8317/π
-const FWHM = { square: 0.885893, circular: 1.028994 } as const; // in λf/d: 2·0.442946, 2·1.616340/π
+// In λf/d. First zero: sinc² at 1; Airy at j₁,₁/π, j₁,₁ = 3.8317059702075125 (first zero of J₁, DLMF 10.21).
+const FIRST_ZERO = { square: 1, circular: 3.8317059702075125 / Math.PI } as const;
+// FWHM: 2x½/π with sinc²(x½) = ½ at x½ = 1.39155737 (square); 2v½/π with [2J₁(v)/v]² = ½ at v½ = 1.61633995 (circular).
+const FWHM = { square: 0.8858929413789047, circular: 1.028993969962188 } as const;
 
 /** Spot radius to the first dark ring/line, m. */
 export function spotFirstZeroRadius(lambda: number, f: number, d: number, shape: LensletShape): number {
@@ -97,4 +99,14 @@ export function lensletsInPupil(D: number, d: number, withCells = false) {
     }
   }
   return { full, partial, cells };
+}
+
+/** Maréchal's exp(−(2πσ/λ)²) is good to about 10 % only down to this Strehl ratio (the page warns below it). */
+export const MARECHAL_VALID_STREHL = 0.3;
+/** Centroiding is biased toward pixel centres when the spot FWHM is under this many pixels (the page warns). */
+export const PIXEL_LOCKING_FWHM_PIXELS = 2;
+
+/** Wavefront step across one lenslet that a centroid error σ_c on the detector corresponds to, σ_c·d/f, m. */
+export function centroidWavefrontNoise(centroidSigma: number, f: number, d: number): number {
+  return positive(f, d) && Number.isFinite(centroidSigma) ? (centroidSigma * d) / f : NaN;
 }

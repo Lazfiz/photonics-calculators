@@ -4,6 +4,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { plenopticCamera } from "../../../physics/imaging/light-field";
+import { MICRO_IMAGE_GAP_FILL, MICRO_IMAGE_OVERLAP_FILL } from "../../../physics/imaging/plenoptic-camera";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const nm = 1e-9;
@@ -51,8 +52,8 @@ export default function PlenopticCameraPage() {
   const focusTooClose = !(focusM * 1000 > mainFocalMm);
   const fill = r.microImageFill;
   const fillNote = !Number.isFinite(fill) ? "—"
-    : fill > 1.02 ? "micro-images overlap"
-      : fill < 0.98 ? "micro-images leave gaps: pixels go unused"
+    : fill > MICRO_IMAGE_OVERLAP_FILL ? "micro-images overlap"
+      : fill < MICRO_IMAGE_GAP_FILL ? "micro-images leave gaps: pixels go unused"
         : "matched: micro-images tile the sensor";
 
   // Sweep N with matched lenslets (pitch N·p, f_µ = N_w·pitch) on the same sensor and main lens.
@@ -71,7 +72,7 @@ export default function PlenopticCameraPage() {
       {focusTooClose && (
         <p className="mb-4 text-sm text-red-400">The focus distance must exceed the main-lens focal length: only the refocus distances are blank.</p>
       )}
-      {fill > 1.02 && (
+      {fill > MICRO_IMAGE_OVERLAP_FILL && (
         <p className="mb-4 text-sm text-yellow-300">Overlapping micro-images mix neighbouring views in a band D − p_µ wide; N counts only the 2p_µ − D clean pixels.</p>
       )}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">

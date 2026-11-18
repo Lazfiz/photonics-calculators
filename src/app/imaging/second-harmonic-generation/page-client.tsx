@@ -4,12 +4,11 @@ import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { focalIntensityRadius } from "../../../physics/imaging/multiphoton-focus";
+import { averageShgPower, shgCoefficient } from "../../../physics/imaging/second-harmonic-generation";
 import {
-  focalIntensityRadius, focalPeakIntensity, gaussianPulsePeakPower, multiphotonFwhm, pulseEnergy,
-} from "../../../physics/imaging/multiphoton-focus";
-import {
-  averageShgPower, backwardCoherenceLength, forwardCoherenceLength, shgCoefficient,
-} from "../../../physics/imaging/second-harmonic-generation";
+  SHG_DEPLETION_EFFICIENCY, SHG_PARAXIAL_NA_LIMIT, shgSummary,
+} from "../../../physics/imaging/second-harmonic-generation-summary";
 
 const fmt = (x: number, digits: number, unit: string) => (Number.isFinite(x) ? `${x.toFixed(digits)} ${unit}` : "—");
 const sci = (x: number, unit: string) => (Number.isFinite(x) ? `${x.toExponential(2)} ${unit}` : "—");
@@ -25,33 +24,27 @@ export default function SecondHarmonicGenerationPage() {
   const [crystalLength, setCrystalLength] = useURLState("crystalLength", 10, { min: 0.1, max: 1000 }); // µm
   const [dn, setDn] = useURLState("dn", 0.01, { min: -0.5, max: 0.5 }); // n(2ω) − n(ω)
 
-  const results = useMemo(() => {
-    const lam = wavelength * 1e-9;
-    const P = avgPower * 1e-3, f = repRate * 1e6, tau = pulseWidth * 1e-15;
-    const w0 = focalIntensityRadius(lam, na);
-    const shg = shgCoefficient({ lambda: lam, length: crystalLength * 1e-6, deff: chi2 * 1e-12, nOmega: n, deltaN: dn, w0 });
-    const shPower = averageShgPower(shg.K, P, f, tau);
-    const fwhm = multiphotonFwhm(lam, n, na, 2);
-    const peakPower = gaussianPulsePeakPower(P, f, tau);
-    const g = (x: number) => (na < n ? x : NaN); // the focus formulas need NA < n
-    return {
-      shgNm: wavelength / 2,
-      lateral: g(fwhm.lateral * 1e9),
-      axial: g(fwhm.axial * 1e6),
-      pulseEnergy: pulseEnergy(P, f) * 1e9,
-      peakIntensity: g(focalPeakIntensity(peakPower, lam, na)),
-      w0: g(w0 * 1e6),
-      b: g(shg.b * 1e6),
-      xi: g(shg.xi),
-      h: g(shg.h),
-      forwardLc: forwardCoherenceLength(lam, dn) * 1e6,
-      backwardLc: backwardCoherenceLength(lam, n, n + dn) * 1e9,
-      shPower: g(shPower),
-      efficiency: g(shPower / P),
-      nearFieldEfficiency: g(averageShgPower(shg.KNearField, P, f, tau) / P),
-      bandwidth: 0.441 / tau / 1e12, // THz, transform-limited Gaussian
-    };
-  }, [wavelength, na, n, pulseWidth, avgPower, repRate, chi2, crystalLength, dn]);
+  const s = shgSummary({
+    lambda: wavelength * 1e-9, na, n, pulseWidth: pulseWidth * 1e-15, avgPower: avgPower * 1e-3, repRate: repRate * 1e6,
+    deff: chi2 * 1e-12, length: crystalLength * 1e-6, deltaN: dn,
+  });
+  const results = {
+    shgNm: s.shgWavelength * 1e9,
+    lateral: s.lateralFwhm * 1e9,
+    axial: s.axialFwhm * 1e6,
+    pulseEnergy: s.pulseEnergy * 1e9,
+    peakIntensity: s.peakIntensity,
+    w0: s.w0 * 1e6,
+    b: s.b * 1e6,
+    xi: s.xi,
+    h: s.h,
+    forwardLc: s.forwardCoherenceLength * 1e6,
+    backwardLc: s.backwardCoherenceLength * 1e9,
+    shPower: s.shPower,
+    efficiency: s.efficiency,
+    nearFieldEfficiency: s.nearFieldEfficiency,
+    bandwidth: s.bandwidth / 1e12, // THz, transform-limited Gaussian
+  };
 
   const plotData = useMemo(() => {
     if (!(na < n)) return [];
@@ -120,8 +113,8 @@ export default function SecondHarmonicGenerationPage() {
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Conversion efficiency (average)</span><span className="font-mono text-pink-400">{sci(results.efficiency * 100, "%")}</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Plane-wave L² estimate</span><span className="font-mono text-gray-400">{sci(results.nearFieldEfficiency * 100, "%")}</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Fundamental bandwidth (Gaussian, TL)</span><span className="font-mono text-orange-400">{fmt(results.bandwidth, 2, "THz")}</span></div>
-          {na < n && na > 0.5 && <p className="text-sm text-yellow-300" role="status">The Gaussian-beam focus is indicative only above NA ≈ 0.5.</p>}
-          {results.efficiency > 0.1 && <p className="text-sm text-yellow-300" role="status">Above ≈ 10 % the fundamental is depleted and this undepleted-pump estimate is too high.</p>}
+          {na < n && na > SHG_PARAXIAL_NA_LIMIT && <p className="text-sm text-yellow-300" role="status">The Gaussian-beam focus is indicative only above NA ≈ 0.5.</p>}
+          {results.efficiency > SHG_DEPLETION_EFFICIENCY && <p className="text-sm text-yellow-300" role="status">Above ≈ 10 % the fundamental is depleted and this undepleted-pump estimate is too high.</p>}
           <div className="text-xs text-gray-500 mt-2 space-y-1">
             <p>P_2ω = 16π² d_eff² L P_ω² h(σ, ξ)/(ε₀ c n_ω n_2ω λ³), h = |∫_−ξ^ξ e^(iστ)/(1 + iτ) dτ|²/(4ξ), ξ = L/b, σ = bΔk/2, Δk = 2k_ω − k_2ω (Boyd &amp; Kleinman, J. Appl. Phys. 39, 3597, 1968).</p>
             <p>For L ≪ b this is the plane-wave 8π² d² L² I sinc²(ΔkL/2)/(ε₀ c n_ω² n_2ω λ²). For L ≫ b and normal dispersion (n(2ω) &gt; n(ω)), the Gouy phase cancels the harmonic from a uniform slab: in tissue, SHG comes from structure on the scale of the focus and the coherence lengths.</p>
