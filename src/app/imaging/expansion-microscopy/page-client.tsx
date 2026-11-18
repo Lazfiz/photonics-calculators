@@ -3,6 +3,7 @@
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { expansionSummary } from "../../../physics/imaging/expansion-microscopy";
 import { expansionEffectiveResolution } from "../../../physics/imaging/super-resolution";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -33,7 +34,8 @@ export default function ExpansionMicroscopyPage() {
   const other = mode === "pre" ? "post" : "pre";
 
   const resAt = (e: number, m: "pre" | "post") => expansionEffectiveResolution(d * nm, e, probe * nm, linker * nm, m) / nm;
-  const effective = resAt(E, mode);
+  const sum = expansionSummary(d * nm, E, probe * nm, linker * nm, mode, gel * 1e-6);
+  const effective = sum.effective / nm;
   const L = Math.hypot(probe, linker);
   const labelTerm = mode === "post" ? L / E : L;
 
@@ -69,11 +71,11 @@ export default function ExpansionMicroscopyPage() {
           {row("Label displacement √(probe² + linker²)", fmt(L, 1, " nm"))}
           {row(mode === "pre" ? "Label term (not reduced)" : "Label term L/E", fmt(labelTerm, 1, " nm"), "text-cyan-400")}
           {row("Effective resolution", fmt(effective, 1, " nm"), "text-blue-400")}
-          {row(`With ${other}-expansion labelling`, fmt(resAt(E, other), 1, " nm"))}
+          {row(`With ${other}-expansion labelling`, fmt(sum.effectiveOther / nm, 1, " nm"))}
           {row("Field of view (linear)", fmt(100 / E, 1, " %"), "text-purple-400")}
           {row("Field of view (area)", fmt(100 / (E * E), 2, " %"), "text-purple-400")}
           {row("Expanded gel thickness", fmt(gel * E, 0, " µm"), "text-red-400")}
-          {row("Volume to image (× unexpanded)", fmt(E ** 3, 0, "×"))}
+          {row("Volume to image (× unexpanded)", fmt(sum.volumeFactor, 0, "×"))}
           <div className="text-xs text-gray-500 mt-2 space-y-1">
             <p>d_eff = √((d/E)² + L²) for labels applied before expansion; √((d/E)² + (L/E)²) for labels applied after it.</p>
             <p>Assumes isotropic expansion; distortion of a few per cent and incomplete labelling add to the error.</p>

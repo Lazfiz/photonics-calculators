@@ -3,11 +3,10 @@
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { cameraSnr } from "../../../physics/detectors/camera-snr";
+import { hyperspectralBandSnr, hyperspectralBytes, hyperspectralSummary, BYTES_PER_MIB, HYPERSPECTRAL_BIT_DEPTHS } from "../../../physics/imaging/hyperspectral-microscopy";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
-const MIB = 1024 * 1024;
 
 export default function HyperspectralMicroscopyPage() {
   const [startRaw, setStart] = useURLState("startNm", 400);
@@ -27,7 +26,7 @@ export default function HyperspectralMicroscopyPage() {
   const end = Math.max(start + 1, clamp(endRaw, 400, 1200, 720));
   const bands = Math.round(clamp(bandsRaw, 1, 512, 32));
   const pixels = Math.round(clamp(pixelsRaw, 16, 4096, 256));
-  const bitDepth = [8, 10, 12, 14, 16].includes(bitDepthRaw) ? bitDepthRaw : 16;
+  const bitDepth = (HYPERSPECTRAL_BIT_DEPTHS as readonly number[]).includes(bitDepthRaw) ? bitDepthRaw : 16;
   const exposure = clamp(exposureRaw, 0.01, 1e5, 100) * 1e-3;
   const frames = Math.round(clamp(framesRaw, 1, 1e4, 10));
   const compression = clamp(compressionRaw, 1, 100, 1);
@@ -36,21 +35,11 @@ export default function HyperspectralMicroscopyPage() {
   const readNoise = clamp(readRaw, 0, 100, 1.5);
   const dark = clamp(darkRaw, 0, 1e4, 0.5);
 
-  // Data cube, bits packed: N_x·N_y·N_λ·bits·frames/8 bytes.
-  const bandwidth = (end - start) / bands;
-  const bytes = (pixels * pixels * bands * bitDepth * frames) / 8;
-  const sizeMiB = bytes / MIB;
-  const totalTime = frames * bands * exposure;
-
-  // Band-sequential acquisition with a flat spectrum: S = Φ_λ·Δλ·t·QE electrons per band and frame.
-  const snrBand = (dl: number, t: number, nFrames = 1) => {
-    const S = flux * dl * t * qe;
-    // Summing n frames: signal n·S, variance n·(S + D) + n·σ_r², so SNR grows as √n.
-    return Math.sqrt(nFrames) * cameraSnr({ signal: S, read: readNoise, dark: dark * t });
-  };
-  const signal = flux * bandwidth * exposure * qe;
-  const snrFrame = snrBand(bandwidth, exposure);
-  const snrSum = snrBand(bandwidth, exposure, frames);
+  const { bandwidth_nm: bandwidth, sizeMiB, cubeMiB, totalTime, signal, snrFrame, snrSum, compressedMiB, dataRate } = hyperspectralSummary({
+    start_nm: start, end_nm: end, bands, pixels, bitDepth, exposure_s: exposure, frames, compression, flux, qe, readNoise, dark,
+  });
+  const snrOpts = { flux, qe, readNoise, dark };
+  const snrBand = (dl: number, t: number, nFrames = 1) => hyperspectralBandSnr(snrOpts, dl, t, nFrames);
 
   const bandGrid = (() => { const top = Math.max(256, 2 * bands); return Array.from({ length: 64 }, (_, i) => 1 + ((top - 1) * i) / 63); })();
   const range = end - start;
@@ -60,7 +49,7 @@ export default function HyperspectralMicroscopyPage() {
     { x: [bands], y: [snrSum], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#facc15", size: 10 } },
   ];
   const sizeChart = [
-    { x: bandGrid, y: bandGrid.map((n) => (pixels * pixels * n * bitDepth * frames) / 8 / MIB), type: "scatter" as const, mode: "lines" as const, name: "Raw cube", line: { color: "#a78bfa", width: 2 } },
+    { x: bandGrid, y: bandGrid.map((n) => hyperspectralBytes(pixels, n, bitDepth, frames) / BYTES_PER_MIB), type: "scatter" as const, mode: "lines" as const, name: "Raw cube", line: { color: "#a78bfa", width: 2 } },
     { x: [bands], y: [sizeMiB], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#facc15", size: 10 } },
   ];
 
@@ -70,7 +59,7 @@ export default function HyperspectralMicroscopyPage() {
         {[
           ["Band width Δλ", fmt(bandwidth, 2, " nm"), "text-blue-400"],
           ["Raw data, all frames", fmt(sizeMiB, 1, " MiB"), "text-green-400"],
-          ["One cube", fmt(sizeMiB / frames, 1, " MiB"), "text-green-300"],
+          ["One cube", fmt(cubeMiB, 1, " MiB"), "text-green-300"],
           ["Acquisition time", fmt(totalTime, 1, " s"), "text-yellow-400"],
           ["SNR per band, frames summed", fmt(snrSum, 1), "text-purple-400"],
         ].map(([label, value, color]) => (
@@ -89,7 +78,7 @@ export default function HyperspectralMicroscopyPage() {
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Bit depth (packed)</span>
           <select value={bitDepth} onChange={(e) => setBitDepth(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
-            {[8, 10, 12, 14, 16].map((b) => <option key={b} value={b}>{b}-bit</option>)}
+            {HYPERSPECTRAL_BIT_DEPTHS.map((b) => <option key={b} value={b}>{b}-bit</option>)}
           </select>
         </label>
         <ValidatedNumberInput label="Exposure per band (ms)" value={exposureRaw} onChange={setExposure} min={0.01} max={1e5} />
@@ -108,8 +97,8 @@ export default function HyperspectralMicroscopyPage() {
             ["Signal per band and frame", fmt(signal, 0, " e⁻")],
             ["SNR, one frame", fmt(snrFrame, 1)],
             [`SNR, ${frames} frames summed`, fmt(snrSum, 1)],
-            ["Compressed size", fmt(sizeMiB / compression, 1, " MiB")],
-            ["Raw data rate (exposure-limited)", fmt(sizeMiB / totalTime, 2, " MiB/s")],
+            ["Compressed size", fmt(compressedMiB, 1, " MiB")],
+            ["Raw data rate (exposure-limited)", fmt(dataRate, 2, " MiB/s")],
           ].map(([label, value]) => (
             <div key={label} className="flex justify-between border-b border-gray-800 pb-2">
               <span className="text-gray-400">{label}</span>

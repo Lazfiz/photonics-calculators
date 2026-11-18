@@ -3,9 +3,8 @@
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import {
-  FLUOROPHORES, brightness, emissionFraction, fluorophoreByName, forsterOverlap, forsterRadius, fretEfficiency, relativeSignal, spectrumAt,
-} from "../../../physics/imaging/fluorophores";
+import { FLUOROPHORES, brightness, fluorophoreByName, spectrumAt } from "../../../physics/imaging/fluorophores";
+import { fluorescenceSpectraSummary } from "../../../physics/imaging/fluorescence-spectra";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
@@ -37,17 +36,11 @@ export default function FluorescenceSpectraPage() {
   const n = clamp(nRaw, 1, 2, 1.4);
   const r = clamp(rRaw, 0.5, 20, 5) * 1e-9;
 
-  const dyes = [dye1, dye2].map((f) => ({
-    f,
-    ex: spectrumAt(f.ex, laser),
-    inFilter: emissionFraction(f.em, lo, hi),
-    signal: relativeSignal(f, [laser], lo, hi),
-  }));
-  const bleed = dyes[1].signal / dyes[0].signal;
-  const bleedReverse = dyes[0].signal / dyes[1].signal;
-  const J = forsterOverlap(dye1, dye2);
-  const R0 = forsterRadius(J, dye1.quantumYield, kappa2, n);
-  const E = fretEfficiency(r, R0);
+  const summary = fluorescenceSpectraSummary({
+    donor: dye1, acceptor: dye2, laser, filterLow: lo, filterHigh: hi, kappa2, n, distance: r,
+  });
+  const dyes = [dye1, dye2].map((f, i) => ({ f, ex: summary.dyes[i].excitation, inFilter: summary.dyes[i].inFilter }));
+  const { bleed, bleedReverse, overlap: J, R0, efficiency: E } = summary;
 
   const wl = Array.from({ length: Math.max(800, Math.ceil(center + width / 2)) - 350 + 1 }, (_, i) => 350 + i);
   const shape = (b: typeof dye1.ex) => wl.map((l) => spectrumAt(b, l * 1e-9));

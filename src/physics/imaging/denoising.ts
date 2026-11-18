@@ -88,3 +88,36 @@ export function halfResponseFrequency(transfer: (f: number) => number): number {
 export function visuShrinkThreshold(sigma: number, N: number): number {
   return finitePositive(sigma) && Number.isFinite(N) && N > 1 ? sigma * Math.sqrt(2 * Math.log(N)) : NaN;
 }
+
+export type DenoisingFilter = "box" | "gaussian" | "median";
+
+// The median quadrature costs a few ms per window size: cache it.
+const medianCache = new Map<number, number>();
+
+/** `medianNoiseRatio(k)`, cached per window size. */
+export function cachedMedianNoiseRatio(k: number): number {
+  let r = medianCache.get(k);
+  if (r === undefined) medianCache.set(k, (r = medianNoiseRatio(k)));
+  return r;
+}
+
+/**
+ * What the denoising page shows for one filter: the output-to-input noise ratio, output noise, SNR gain, the transfer
+ * function's half-response frequency f₅₀ and H(0.25 cy/px) (NaN for the nonlinear median, which has no transfer
+ * function; f₅₀ is also NaN when |H| stays above 0.5 up to Nyquist) and the VisuShrink threshold for `side` × `side`
+ * coefficients. `k` is the window side (box, median), `sigmaS` the Gaussian σ_s in pixels, `sigmaIn` the input noise std.
+ */
+export function denoisingSummary(
+  filter: DenoisingFilter, k: number, sigmaS: number, sigmaIn: number, side: number,
+): { ratio: number; outputNoise: number; gainDb: number; f50: number; hQuarter: number; threshold: number } {
+  const ratio = filter === "box" ? boxNoiseRatio(k) : filter === "gaussian" ? gaussianNoiseRatio(sigmaS) : cachedMedianNoiseRatio(k);
+  const transfer = filter === "box" ? (f: number) => boxTransfer(k, f) : filter === "gaussian" ? (f: number) => gaussianTransfer(sigmaS, f) : null;
+  return {
+    ratio,
+    outputNoise: sigmaIn * ratio,
+    gainDb: snrGainDb(ratio),
+    f50: transfer ? halfResponseFrequency(transfer) : NaN,
+    hQuarter: transfer ? transfer(0.25) : NaN,
+    threshold: visuShrinkThreshold(sigmaIn, side * side),
+  };
+}

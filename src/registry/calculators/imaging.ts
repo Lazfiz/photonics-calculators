@@ -321,7 +321,7 @@ export const imaging: CalculatorEntry[] = [
         url: "https://www.emva.org/wp-content/uploads/EMVA1288-3.1a.pdf",
       },
       {
-        citation: "Janesick J. R. (2007). Photon Transfer: DN → λ. SPIE Press, ch. 5. Read, shot and fixed-pattern noise regimes of the photon transfer curve.",
+        citation: "Janesick J. R. (2007). Photon Transfer: DN → λ. SPIE Press. Read, shot and fixed-pattern noise regimes of the photon transfer curve.",
         url: "https://doi.org/10.1117/3.725073",
       },
     ],

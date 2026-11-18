@@ -4,8 +4,8 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { dynamicRangeDb } from "../../../physics/detectors/camera-snr";
-import { sensorNoise, shotPrnuCrossover, shotReadCrossover } from "../../../physics/detectors/sensor-noise";
+import { sensorNoise } from "../../../physics/detectors/sensor-noise";
+import { dynamicRangeSummary, NOISE_FLOOR_ADC_LIMIT_DN } from "../../../physics/imaging/dynamic-range";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits: number) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
@@ -28,22 +28,19 @@ export default function DynamicRangePage() {
   const dsnu = clamp(dsnuRaw, 0, 100, 0.5);
 
   // The ADC full scale is matched to the full well, so one DN is K = FW/(2^bits − 1) electrons.
-  const electronsPerDn = well / (2 ** bits - 1);
-  const dark = (darkRate * exposureMs) / 1000;
+  const s = dynamicRangeSummary({ well, read, darkRate, exposure: exposureMs / 1000, bits, prnu, dsnu });
+  const { dark, electronsPerDn, floor, floorDn } = s;
+  const dr = s.dynamicRangeDb;
   const noiseAt = (signal: number) => sensorNoise({ signal, read, dark, prnu, dsnu, electronsPerDn });
-  const floor = noiseAt(0).temporal;
-  const dr = dynamicRangeDb(well, floor, dark);
-  const half = noiseAt(well / 2);
-  const floorDn = floor / electronsPerDn;
 
   const signalAxis = Array.from({ length: 201 }, (_, i) => well * 10 ** (-6 + (6 * i) / 200));
   const chartData = [
     {
-      x: signalAxis, y: signalAxis.map(s => s / noiseAt(s).total),
+      x: signalAxis, y: signalAxis.map(S => S / noiseAt(S).total),
       type: "scatter" as const, mode: "lines" as const, name: "SNR with fixed-pattern noise", line: { color: "#60a5fa", width: 2 },
     },
     {
-      x: signalAxis, y: signalAxis.map(s => s / noiseAt(s).temporal),
+      x: signalAxis, y: signalAxis.map(S => S / noiseAt(S).temporal),
       type: "scatter" as const, mode: "lines" as const, name: "After flat-field correction (temporal noise)", line: { color: "#34d399", width: 2, dash: "dash" },
     },
     ...(prnu > 0
@@ -65,18 +62,18 @@ export default function DynamicRangePage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ResultCard label="Dynamic Range" value={Number.isFinite(dr) ? `${fmt(dr, 2)} dB` : "—"} subtext={Number.isFinite(dr) ? `${fmt(Math.log2((well - dark) / floor), 2)} stops, (FW − D)/temporal dark noise` : "dark charge fills the well"} tone="green" />
+        <ResultCard label="Dynamic Range" value={Number.isFinite(dr) ? `${fmt(dr, 2)} dB` : "—"} subtext={Number.isFinite(dr) ? (s.warnings[0] ?? `${fmt(s.stops, 2)} stops, (FW − D)/temporal dark noise`) : "dark charge fills the well"} tone={s.warnings.length > 0 ? "orange" : "green"} />
         <ResultCard label="Temporal Noise Floor" value={`${fmt(floor, 3)} e⁻`} subtext={`√(σ_read² + D + σ_q²); dark charge ${fmt(dark, 4)} e⁻`} tone="red" />
-        <ResultCard label="ADC Step" value={`${fmt(electronsPerDn, 3)} e⁻/DN`} subtext={`Quantization noise ${fmt(half.quantization, 3)} e⁻`} tone="yellow" />
+        <ResultCard label="ADC Step" value={`${fmt(electronsPerDn, 3)} e⁻/DN`} subtext={`Quantization noise ${fmt(s.quantization, 3)} e⁻`} tone="yellow" />
         <ResultCard
           label="Noise Floor in DN"
           value={fmt(floorDn, 2)}
-          subtext={floorDn < 0.5 ? "Below 0.5 DN: the ADC step sets the floor, add bits" : "The ADC samples the noise floor"}
-          tone={floorDn < 0.5 ? "orange" : "purple"}
+          subtext={floorDn < NOISE_FLOOR_ADC_LIMIT_DN ? "Below 0.5 DN: the ADC step sets the floor, add bits" : "The ADC samples the noise floor"}
+          tone={floorDn < NOISE_FLOOR_ADC_LIMIT_DN ? "orange" : "purple"}
         />
-        <ResultCard label="SNR at Half Full Well" value={fmt((well / 2) / half.total, 2)} subtext={`${fmt((well / 2) / half.temporal, 2)} after flat-field correction`} tone="blue" />
-        <ResultCard label="Shot = Read Noise at" value={`${fmt(shotReadCrossover(read), 2)} e⁻`} subtext="Read-noise-limited below" tone="cyan" />
-        <ResultCard label="Shot = PRNU Noise at" value={Number.isFinite(shotPrnuCrossover(prnu)) ? `${fmt(shotPrnuCrossover(prnu), 0)} e⁻` : "never (PRNU 0)"} subtext="PRNU-limited above; SNR → 1/PRNU" tone="cyan" />
+        <ResultCard label="SNR at Half Full Well" value={fmt(s.snrHalf, 2)} subtext={`${fmt(s.snrHalfFlat, 2)} after flat-field correction`} tone="blue" />
+        <ResultCard label="Shot = Read Noise at" value={`${fmt(s.shotReadCrossover, 2)} e⁻`} subtext="Read-noise-limited below" tone="cyan" />
+        <ResultCard label="Shot = PRNU Noise at" value={Number.isFinite(s.shotPrnuCrossover) ? `${fmt(s.shotPrnuCrossover, 0)} e⁻` : "never (PRNU 0)"} subtext="PRNU-limited above; SNR → 1/PRNU" tone="cyan" />
         <ResultCard label="Spatial Dark Noise (DSNU)" value={`${fmt(dsnu, 2)} e⁻`} subtext="Removed by dark-frame subtraction" tone="gray" />
       </div>
 
