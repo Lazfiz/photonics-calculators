@@ -160,6 +160,17 @@ import opticalCoherence from "./imaging/optical-coherence";
 import opticalPower from "./imaging/optical-power";
 import opticalSectioningThickness from "./imaging/optical-sectioning-thickness";
 import palmStorm from "./imaging/palm-storm";
+import photoacoustic from "./imaging/photoacoustic";
+import pixelFov from "./imaging/pixel-fov";
+import plenopticCamera from "./imaging/plenoptic-camera";
+import psfCalculator from "./imaging/psf-calculator";
+import pupilMatching from "./imaging/pupil-matching";
+import registration from "./imaging/registration";
+import resolution from "./imaging/resolution";
+import secondHarmonicGeneration from "./imaging/second-harmonic-generation";
+import sensorCmos from "./imaging/sensor-cmos";
+import shackHartmann from "./imaging/shack-hartmann";
+import signalToNoise from "./imaging/signal-to-noise";
 import lowCoherence from "./imaging/low-coherence";
 import tirf from "./imaging/tirf";
 import aelLimits from "./laser-safety/ael-limits";
@@ -452,7 +463,8 @@ export const schemas: readonly CalculatorSchema[] = [
   denoisingAlgorithms, digitalHolography, dof, dynamicRange, expansionMicroscopy, fcs, fluorescenceSpectra,
   fovCalculator, frap, hyperspectralMicroscopy, illumination, imageDistance, lightField, lightSheet,
   magnification, mtf, multiphotonDepth, naFNumber, opticalCoherence, opticalPower, opticalSectioningThickness,
-  palmStorm,
+  palmStorm, photoacoustic, pixelFov, plenopticCamera, psfCalculator, pupilMatching, registration, resolution,
+  secondHarmonicGeneration, sensorCmos, shackHartmann, signalToNoise,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));
