@@ -40,7 +40,10 @@ test("API schemas: each names a registry page and has well-formed inputs, output
       assert.ok(input.toSI > 0, `${schema.href} ${input.key} toSI`);
     }
     for (const output of schema.outputs) assert.ok(output.toSI > 0, `${schema.href} ${output.key} toSI`);
-    assert.ok(schema.checks.length >= 1 && schema.checks.length <= 3, `${schema.href}: 1–3 checks`);
+    // 1–3 cases worked from the equations, plus up to 2 whose values an independent source prints (ROADMAP 10f).
+    const computed = schema.checks.filter((c) => c.basis === "computed").length;
+    assert.ok(schema.checks.length >= 1 && computed <= 3 && schema.checks.length - computed <= 2,
+      `${schema.href}: 1–3 computed and ≤ 2 printed checks`);
   }
 });
 
