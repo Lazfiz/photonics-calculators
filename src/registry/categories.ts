@@ -6,7 +6,7 @@ export const categories: Category[] = [
     id: "laser-safety",
     label: "Laser Safety",
     title: "Laser Safety Calculators",
-    description: "Educational laser safety calculators on the ICNIRP 2013 exposure limits and IEC 60825-1 classes: MPE, NOHD, optical density, pulse trains, scanned beams, UV and blue light.",
+    description: "Educational laser safety calculators on the ICNIRP 2013 limits and IEC 60825-1 classes: MPE, NOHD, optical density, pulse trains, scanned beams, UV, blue light.",
     heading: "Laser Safety",
     keywords: ["laser safety", "mpe", "nohd", "od", "eyewear", "hazard"],
     priority: 55,

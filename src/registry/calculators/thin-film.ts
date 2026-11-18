@@ -88,7 +88,8 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "adhesion-testing",
     title: "Adhesion Testing",
-    description: "Thin-film adhesion tests: Benjamin–Weaver shear stress from a scratch critical load, Kendall peel energy, ASTM D3359 tape classes, and bend-test film stress with crack and delamination driving forces.",
+    description: "Thin-film adhesion tests: Benjamin–Weaver shear stress from scratch critical load, Kendall peel energy, ASTM D3359 tape classes, bend-test film stress.",
+    lede: "Thin-film adhesion tests: Benjamin–Weaver shear stress from a scratch critical load, Kendall peel energy, ASTM D3359 tape classes, and bend-test film stress with crack and delamination driving forces.",
     tier: "textbook",
     modelNote: "Benjamin–Weaver shear stress for a plastic substrate (ranks coatings; not a work of adhesion); Kendall elastic peel; ASTM D3359 B classes; bend-test G for a thin film, matched moduli (Hutchinson–Suo).",
     references: [
@@ -128,7 +129,7 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "angle-tuning",
     title: "Angle Tuning of Coatings",
-    description: "Changing the angle of incidence shifts the spectral response of thin-film coatings toward shorter wavelengths: s and p spectra of a quarter-wave stack versus angle.",
+    description: "Angle of incidence shifts a thin-film coating's spectrum to shorter wavelengths: s and p spectra of a quarter-wave stack vs angle.",
     lede: "Changing the angle of incidence shifts the spectral response of thin-film coatings toward shorter wavelengths (blue shift). TE (s) and TM (p) respond differently: the p stop band narrows as the angle grows. The centre follows λ(θ) ≈ λ₀(cos θ_H + cos θ_L)/2, where θ_H and θ_L are the angles inside the layers.",
     tier: "textbook",
     modelNote: "Exact s and p transfer-matrix spectra of a lossless (HL)^N quarter-wave stack with constant indices. The centre-wavelength curve is the first-order rule λ₀(cos θ_H + cos θ_L)/2, not a fit to the spectra.",
@@ -137,7 +138,7 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "anti-fog",
     title: "Anti-Fog Coating Design",
-    description: "Hydrophilic anti-fog coating: transmittance dry and under a water film, the share of a droplet's footprint lost to total internal reflection, and the wetting tension from the contact angle.",
+    description: "Hydrophilic anti-fog coating: transmittance dry and under a water film, droplet area lost to total internal reflection, wetting tension from contact angle.",
     lede: "Fog scatters because condensed water forms droplets. A hydrophilic coating lowers the contact angle so the water spreads into a film, which costs only a weak, flat reflection.",
     tier: "textbook",
     modelNote: "Coating and a thick water film added incoherently (transfer matrix, normal incidence, lossless layers, constant indices). Droplets: spherical caps in geometric optics, TIR share of the footprint for θ ≤ 90°.",
@@ -154,7 +155,7 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "beamsplitter",
     title: "Beamsplitter Design",
-    description: "Design a dielectric beamsplitter for a target reflectance: the single-layer index it needs, quarter-wave stack reflectances, a thinned-layer design and an all-quarter-wave H M H design.",
+    description: "Dielectric beamsplitter design for a target reflectance: the single-layer index it needs, quarter-wave stack reflectances, thinned-layer and H M H designs.",
     lede: "Dielectric beamsplitters split light into reflected and transmitted beams. A single quarter-wave layer of ZnS reflects only 32 % from air on glass; 50 % would need n ≈ 2.98. Quarter-wave stacks H, HLH, HLHLH step up to 32, 66 and 85 %. For 50 %, thin one layer of HLH (exact at λ₀ only) or use H M H with n_M ≈ 1.86 (flat at λ₀).",
     tier: "exact",
     modelNote: "Transfer matrix at normal incidence, constant lossless indices, back surface ignored. A plate splitter at 45° splits s and p differently; not modelled.",
@@ -163,7 +164,8 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "bragg-reflector",
     title: "Bragg Reflector",
-    description: "Dielectric distributed Bragg reflector: reflectance spectrum, stop band and period, and the band structure of the 1D photonic crystal with its gap/midgap ratio and Bloch decay per period.",
+    description: "Distributed Bragg reflector (DBR): reflectance spectrum, stop band and period, and the 1D photonic crystal band structure with gap/midgap ratio and Bloch decay.",
+    lede: "Dielectric distributed Bragg reflector: reflectance spectrum, stop band and period, and the band structure of the 1D photonic crystal with its gap/midgap ratio and Bloch decay per period.",
     keywords: ["Photonic Bandgap"],
     tier: "exact",
     modelNote: "Transfer matrix of an (HL)^N quarter-wave stack at normal incidence with constant, lossless indices; back surface ignored. Peak R, the stop-band edges, the gap/midgap ratio and the Bloch decay ln(n_H/n_L) are closed forms for the infinite stack; the band diagram is its exact Bloch dispersion.",
@@ -258,7 +260,7 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "ellipsometry-measurement",
     title: "Ellipsometry Measurement",
-    description: "Invert ellipsometry data (Psi, Delta) to the pseudo-dielectric function and pseudo-refractive index of a substrate, or to the thickness of a transparent film of known index.",
+    description: "Invert ellipsometry data (Psi, Delta) to a substrate's pseudo-dielectric function and pseudo-index, or to the thickness of a transparent film of known index.",
     lede: "Invert ellipsometry data (Ψ, Δ) to the pseudo-dielectric function and pseudo-refractive index (two-phase ambient/substrate model), or to the thickness of a transparent film of known index on a known substrate.",
     tier: "exact",
     modelNote: "Two-phase inversion, exact for a bare isotropic substrate (else ⟨n⟩, ⟨k⟩ are pseudo-values). Film: exact three-phase inversion for one lossless film of known index, modulo the period D_φ; |X| ≠ 1 flags a misfit.",
@@ -290,7 +292,7 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "environmental-stability",
     title: "Environmental Stability",
-    description: "How water in porous layers and temperature shift a quarter-wave stack's spectrum, how much area particles of an IEST-STD-CC1246 cleanliness level obscure, and the Arrhenius–Peck acceleration factor of an ageing test.",
+    description: "Coating stability: quarter-wave stack shift from water in porous layers and temperature, IEST-STD-CC1246 particle obscuration, Arrhenius–Peck ageing factor.",
     lede: "Water filling the pores of a film of packing density p raises its index (n = p·n_s + (1 − p)·n_v, n_v = 1 + 0.333 f), temperature moves it by dn/dT and the thickness by α, corrected for the substrate's hold on the film; a level-L surface carries N(≥x) = 10^(0.926(log²L − log²x)) particles per 0.1 m²; an ageing test at T_test stands for AF = (RH_test/RH_use)ⁿ·exp[(Eₐ/k_B)(1/T_use − 1/T_test)] times as long in use.",
     keywords: ["Packing Density", "Vacuum-to-Air Shift", "CC1246 Cleanliness Level", "Percent Area Coverage", "Arrhenius Acceleration Factor", "Aging of Optical Materials", "Contamination Effects", "Humidity Effects on Optics"],
     tier: "textbook",
@@ -343,7 +345,8 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "hard-coating",
     title: "Hard Coating Design",
-    description: "Single hard coating on a lens or window: reflectance and the absentee (half-wave) thickness, substrate bow from film stress (Stoney), and the thickness below which the film cannot delaminate.",
+    description: "Hard coating on a lens or window: reflectance, absentee (half-wave) thickness, Stoney substrate bow from film stress, critical delamination thickness.",
+    lede: "Single hard coating on a lens or window: reflectance and the absentee (half-wave) thickness, substrate bow from film stress (Stoney), and the thickness below which the film cannot delaminate.",
     tier: "textbook",
     modelNote: "Optics: exact one-layer transfer matrix, lossless. Stress: Stoney (film ≪ substrate, small bow) and the energy bound (1 − ν)σ²t/E < Γ against delamination. Hardness and scratch resistance not modelled.",
     references: [macleod("ch. 4 (single-layer coatings)"), stoney1909, hutchinsonSuo],
@@ -351,7 +354,7 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "heat-mirror",
     title: "Heat Mirror Design",
-    description: "Transparent heat mirror (low-e glass): a thin silver film between two high-index layers. Light and solar transmittance of the pane and the thermal emittance of the coated face.",
+    description: "Transparent heat mirror (low-e glass): a thin silver film between high-index layers. Light and solar transmittance and the thermal emittance of the coated face.",
     lede: "A heat mirror passes visible light and reflects thermal infrared. A silver film about 10–15 nm thick between two high-index layers (TiO₂/Ag/TiO₂) does both: it transmits most of the light and keeps the emittance low.",
     tier: "textbook",
     modelNote: "Transfer matrix at normal incidence; Ag from Yang et al. 2015, dielectric with constant n. Lossless glass, back face added incoherently. ε is the Planck-weighted normal 1 − R, not hemispherical.",
@@ -368,7 +371,8 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "ion-assisted-deposition",
     title: "Ion-Assisted Deposition (IAD)",
-    description: "Ion-assisted deposition: ion and molecule arrival rates, ions per deposited molecule, and ion energy and momentum per molecule from the ion current density, ion energy and deposition rate.",
+    description: "Ion-assisted deposition: ion and molecule arrival rates, ions per deposited molecule, and ion energy and momentum per molecule from current density and rate.",
+    lede: "Ion-assisted deposition: ion and molecule arrival rates, ions per deposited molecule, and ion energy and momentum per molecule from the ion current density, ion energy and deposition rate.",
     tier: "exact",
     modelNote: "Arrival-rate bookkeeping: singly charged ions, current density measured at the substrate, sticking 1, mass rate = rate × monitor density. Packing density, index and stress depend on the process and are not predicted.",
     references: [martinIad, ohring("ch. 5 (ion-beam-assisted deposition)", "10.1016/b978-012524975-1/50008-2")],
@@ -426,7 +430,8 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "plasma-deposition",
     title: "Plasma Deposition",
-    description: "Argon discharge for plasma-assisted deposition: electron temperature from particle balance, plasma density from power balance, ion flux and ion energy at the substrate, Debye length.",
+    description: "Argon discharge for plasma-assisted deposition: electron temperature, plasma density from power balance, ion flux and energy at the substrate, Debye length.",
+    lede: "Argon discharge for plasma-assisted deposition: electron temperature from particle balance, plasma density from power balance, ion flux and ion energy at the substrate, Debye length.",
     tier: "textbook",
     modelNote: "Argon global model in a cylinder: Maxwellian electrons, ground-state ionisation, floating walls, collisionless sheath, h-factors from low pressure to ambipolar diffusion. No deposition chemistry; P is absorbed power.",
     references: [
@@ -497,7 +502,8 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "sputtering-deposition",
     title: "Sputtering Deposition",
-    description: "DC magnetron sputtering of a metal target in argon: ion current, sputtered atom rate from measured yields, on-axis deposition rate, sputtered-atom energy, gas thermalisation distance and structure zone.",
+    description: "DC magnetron sputtering in argon: ion current, sputtered atom rate from yields, deposition rate, atom energy, thermalisation distance and structure zone.",
+    lede: "DC magnetron sputtering of a metal target in argon: ion current, sputtered atom rate from measured yields, on-axis deposition rate, sputtered-atom energy, gas thermalisation distance and structure zone.",
     tier: "textbook",
     modelNote: "Measured 500 eV Ar⁺ yields, ion current P/(V(1+γ)), cosine disk on axis, sticking 1, bulk density. The rate ignores gas scattering; Westwood's thermalisation distance and the Thompson spectrum give the share that diffuses. Not reactive.",
     references: [
@@ -549,7 +555,8 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "thermal-evaporation",
     title: "Thermal Evaporation",
-    description: "Thermal evaporation of metals: vapour pressure from the Alcock et al. fits, Hertz–Knudsen flux, growth rate and thickness profile from a small cosine source, mean free path and structure zone.",
+    description: "Thermal evaporation of metals: vapour pressure (Alcock), Hertz–Knudsen flux, rate and thickness profile of a cosine source, mean free path, structure zone.",
+    lede: "Thermal evaporation of metals: vapour pressure from the Alcock et al. fits, Hertz–Knudsen flux, growth rate and thickness profile from a small cosine source, mean free path and structure zone.",
     tier: "textbook",
     modelNote: "Alcock fits (±5 %). Free-evaporation flux (α ≤ 1) from a small cosine source onto a flat, parallel substrate; sticking 1, bulk density. No vapour cloud, gas scattering or source depletion. Metal zones.",
     references: [

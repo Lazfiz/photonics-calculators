@@ -4,7 +4,8 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "acquisition-tracking",
     title: "FSO Acquisition and Tracking",
-    description: "Stare acquisition probability, raster scan lines and time over the 3σ uncertainty cone, beacon margin and the quadrant-detector tracking error for a free-space optical terminal.",
+    description: "Stare acquisition probability, raster scan lines and time over the 3σ uncertainty cone, beacon margin and quadrant-detector tracking error of an FSO terminal.",
+    lede: "Stare acquisition probability, raster scan lines and time over the 3σ uncertainty cone, beacon margin and the quadrant-detector tracking error for a free-space optical terminal.",
     tier: "illustrative",
     modelNote: "Circular Gaussian pointing error; raster without turnaround, overlap or dwell; quadrant-cell NEA (3π/16)(λ/D)/SNR for a point source. A sizing estimate, not an acquisition-sequence simulation.",
     references: [
@@ -46,7 +47,8 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "aperture-averaging",
     title: "Aperture Averaging",
-    description: "Weak-fluctuation aperture-averaging factor for plane and spherical waves (exact integrals for a hard circular or Gaussian aperture, and Andrews' fits), Rytov variance and the all-regime scintillation index versus receiver diameter.",
+    description: "Aperture-averaging factor for plane and spherical waves in weak turbulence (exact integrals, Andrews' fits), Rytov variance, scintillation vs receiver size.",
+    lede: "Weak-fluctuation aperture-averaging factor for plane and spherical waves (exact integrals for a hard circular or Gaussian aperture, and Andrews' fits), Rytov variance and the all-regime scintillation index versus receiver diameter.",
     tier: "textbook",
     modelNote: "Weak fluctuations, constant Cn²: exact Kolmogorov integrals for a hard circular aperture (plane wave) and a Gaussian aperture (plane and spherical); Andrews 1992 fits shown. All-regime σ_I² is an interpolation.",
     references: [
@@ -91,7 +93,8 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "background-noise",
     title: "FSO Background Noise",
-    description: "Background power, photon rate and photoelectrons per bit from clear sky, clouds or the Sun for a given field of view, aperture, filter passband and wavelength (850–1550 nm).",
+    description: "Background power, photon rate and photoelectrons per bit from clear sky, clouds or Sun for your field of view, aperture, filter and wavelength (850–1550 nm).",
+    lede: "Background power, photon rate and photoelectrons per bit from clear sky, clouds or the Sun for a given field of view, aperture, filter passband and wavelength (850–1550 nm).",
     tier: "textbook",
     modelNote: "P = L·A·Ω·Δλ·T·η with Ω = π sin²(FOV/2). Sky and cloud radiances are typical daytime values at 850–1550 nm (real skies vary ≈ ×10; no night sky or Moon); the Sun is a 5772 K disc above the atmosphere (±20 %). Out-of-band light is fully blocked.",
     references: [
@@ -141,7 +144,8 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "bpsk-qpsk",
     title: "BPSK and QPSK Error Rates",
-    description: "Bit and symbol error rates of BPSK, Gray-coded QPSK and OQPSK versus Eb/N0, with spectral efficiency, bandwidth, and the shot-noise-limited coherent receive power and margin.",
+    description: "Bit and symbol error rates of BPSK, Gray-coded QPSK and OQPSK vs Eb/N0, with spectral efficiency, bandwidth and the shot-noise-limited coherent receive power.",
+    lede: "Bit and symbol error rates of BPSK, Gray-coded QPSK and OQPSK versus Eb/N0, with spectral efficiency, bandwidth, and the shot-noise-limited coherent receive power and margin.",
     tier: "textbook",
     modelNote: "Exact error rates for ideal coherent detection in AWGN. Required power at the LO shot-noise limit, N₀ = hν/η (heterodyne) or hν/2η (homodyne BPSK); no thermal noise, LO RIN or ASE.",
     references: [
@@ -157,7 +161,8 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "channel-capacity",
     title: "FSO Channel Capacity",
-    description: "Shannon capacity and the net rate of OOK, BPSK, QPSK, 8-PSK and 16-QAM after hard-decision FEC, gated on their exact AWGN bit error rates, with the required SNR and the gap to Shannon.",
+    description: "Shannon capacity and the net rate of OOK, BPSK, QPSK, 8-PSK and 16-QAM after hard-decision FEC from exact AWGN error rates, required SNR and gap to Shannon.",
+    lede: "Shannon capacity and the net rate of OOK, BPSK, QPSK, 8-PSK and 16-QAM after hard-decision FEC, gated on their exact AWGN bit error rates, with the required SNR and the gap to Shannon.",
     tier: "exact",
     modelNote: "Exact for coherent detection in complex AWGN: Gray mapping, Nyquist signalling (SNR = Es/N0). FEC is reduced to an input-BER limit. Direct-detection and photon-counting channels have other capacities.",
     references: [
@@ -178,7 +183,8 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "diversity-reception",
     title: "Diversity Reception",
-    description: "Required fade margin and diversity gain of selection, equal-gain and maximal-ratio combining with N receivers, from the irradiance correlation at their separation in weak turbulence.",
+    description: "Fade margin and diversity gain of selection, equal-gain and maximal-ratio combining with N receivers, from their irradiance correlation in weak turbulence.",
+    lede: "Required fade margin and diversity gain of selection, equal-gain and maximal-ratio combining with N receivers, from the irradiance correlation at their separation in weak turbulence.",
     tier: "textbook",
     modelNote: "Weak fluctuations: log-normal receivers correlated by the plane-wave irradiance covariance at one separation d. SC, EGC and MRC outages are exact for that model (numerical convolution, < 0.001 dB).",
     references: [
@@ -198,7 +204,7 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "eye-safety-fso",
     title: "FSO Eye Safety",
-    description: "NOHD, IEC 60825-1 laser class and exposure margin at a chosen distance for a free-space optical transmitter, on the ICNIRP 2013 eye limits with a diverging Gaussian beam.",
+    description: "NOHD, IEC 60825-1 class and exposure margin at a distance for a free-space optical transmitter, on the ICNIRP 2013 eye limits with a diverging Gaussian beam.",
     lede: "How far from a free-space optical transmitter the beam is within every eye exposure limit, its laser class, and the margin at a distance you choose.",
     tier: "exact",
     modelNote: "ICNIRP 2013 eye limits for one CW exposure up to t; Gaussian beam averaged over each limit's aperture (its peak if under 1 mm (1/e) on the cornea below 0.35 s, ICNIRP Table 5 note c), growing as √(a² + (rφ)²); IEC 60825-1 class. Not modelled: atmosphere, optical aids, scintillation, pulsed modulation.",
@@ -234,7 +240,8 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "fog-attenuation",
     title: "Fog Attenuation",
-    description: "Optical attenuation in fog from visibility with the Kim, Kruse or Al Naboulsi (advection, radiation fog) model: specific attenuation in dB/km, path loss and transmittance.",
+    description: "Fog attenuation from visibility with the Kim, Kruse or Al Naboulsi (advection, radiation fog) model: specific attenuation in dB/km, path loss and transmittance.",
+    lede: "Optical attenuation in fog from visibility with the Kim, Kruse or Al Naboulsi (advection, radiation fog) model: specific attenuation in dB/km, path loss and transmittance.",
     tier: "textbook",
     modelNote: "Empirical visibility laws: Kim or Kruse aerosol exponents, or Al Naboulsi's advection and radiation fog fits (690–1550 nm, V = 50–1000 m). They give a mean loss; measured fog loss scatters widely around it.",
     references: [
@@ -258,7 +265,8 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "geometric-loss",
     title: "FSO Geometric Loss",
-    description: "Geometric spreading loss of a divergent FSO beam: top-hat footprint from exit aperture and divergence versus the exact Gaussian-beam capture by the receiver aperture.",
+    description: "Geometric loss of a divergent FSO beam: top-hat footprint from exit aperture and divergence against exact Gaussian-beam capture by the receiver aperture.",
+    lede: "Geometric spreading loss of a divergent FSO beam: top-hat footprint from exit aperture and divergence versus the exact Gaussian-beam capture by the receiver aperture.",
     tier: "textbook",
     modelNote: "Top-hat d_t + θR footprint (≥ 0 dB) beside the exact capture 1 − exp(−2a²/w²) of a Gaussian beam with half-angle θ/2 leaving the exit aperture (w² = w₀² + (θR/2)², w₀ = max(d_t/2, λ/(πθ/2))), 3.01 dB better for a small receiver once θR ≫ d_t. Perfect pointing, no turbulence.",
     references: [
@@ -283,7 +291,8 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "lasercom-link",
     title: "Lasercom Link Budget",
-    description: "Lasercom link budget with uniform-aperture transmit and receive gains (πD/λ)²η, free-space path loss, spot size at the receiver, and pointing and atmospheric losses.",
+    description: "Lasercom link budget: uniform-aperture transmit and receive gains (πD/λ)²η, free-space path loss, spot size at the receiver, pointing and atmospheric losses.",
+    lede: "Lasercom link budget with uniform-aperture transmit and receive gains (πD/λ)²η, free-space path loss, spot size at the receiver, and pointing and atmospheric losses.",
     tier: "textbook",
     modelNote: "Friis P_r = P_t G_t G_r (λ/4πR)² with G = (πD/λ)² η at each end; FSPL and gains count the spreading once. Capped at P_t η_t η_r; flags R < 2D_t²/λ. Pointing and atmosphere as fixed dB.",
     references: [
@@ -304,7 +313,7 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "link-budget",
     title: "FSO Link Budget",
-    description: "Free-space optical link budget from transmitter divergence, receiver aperture, path loss and atmospheric attenuation per km, with the margin against receiver sensitivity versus range.",
+    description: "Free-space optical link budget from divergence, receiver aperture, path loss and atmospheric loss per km, with the margin over receiver sensitivity vs range.",
     lede: "Free-space optical link budget from transmitter divergence, receiver aperture, path loss and atmospheric attenuation, with presets and the margin versus range.",
     related: [
       { href: "/free-space-comms/geometric-loss" },
@@ -332,7 +341,8 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "optical-antenna",
     title: "Optical Antenna Gain",
-    description: "Telescope transmit gain (Klein–Degnan, clipped and obscured Gaussian beam), receive gain, far-field divergence, beam waist and Rayleigh range, with beam quality M² up to 10 as a Gaussian Schell-model beam.",
+    description: "Telescope transmit gain (Klein–Degnan, clipped and obscured Gaussian beam), receive gain, divergence, waist and Rayleigh range, M² up to 10 (Schell model).",
+    lede: "Telescope transmit gain (Klein–Degnan, clipped and obscured Gaussian beam), receive gain, far-field divergence, beam waist and Rayleigh range, with beam quality M² up to 10 as a Gaussian Schell-model beam.",
     tier: "textbook",
     modelNote: "Klein–Degnan gain of a clipped, obscured Gaussian; M² ≤ 10 as a Gaussian Schell-model beam (Gori's tilted coherent copies); 1/e² half-angle from the far field; receive gain (πD/λ)²(1 − γ²)η.",
     references: [
@@ -357,7 +367,8 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "point-ahead",
     title: "Point-Ahead Angle",
-    description: "Point-ahead angle 2v⊥/c from the transverse relative velocity, compared with the diffraction half-angle, with the miss distance and light time for LEO and GEO laser links.",
+    description: "Point-ahead angle 2v⊥/c from transverse relative velocity against the diffraction half-angle, with miss distance and light time for LEO and GEO laser links.",
+    lede: "Point-ahead angle 2v⊥/c from the transverse relative velocity, compared with the diffraction half-angle, with the miss distance and light time for LEO and GEO laser links.",
     tier: "textbook",
     modelNote: "θ = 2v⊥/c to first order in v/c, with v⊥ the inertial transverse velocity (GEO preset: ω_E(r_GEO − R_E) = 2.61 km/s; LEO presets: orbital velocity less the equatorial station's rotation, 7.15 km/s prograde, 7.63 km/s polar). Straight-line light path, no refraction; uniform-aperture 1.22λ/D for comparison.",
     references: [
@@ -394,7 +405,8 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "quantum-key-distribution",
     title: "QKD Secure Key Rate",
-    description: "Decoy-state BB84 secure key rate (GLLP), QBER, single-photon gain, maximum distance and optimal mean photon number versus channel loss, with the PLOB repeaterless bound.",
+    description: "Decoy-state BB84 key rate (GLLP), QBER, single-photon gain, maximum distance and optimal mean photon number vs channel loss, with the PLOB repeaterless bound.",
+    lede: "Decoy-state BB84 secure key rate (GLLP), QBER, single-photon gain, maximum distance and optimal mean photon number versus channel loss, with the PLOB repeaterless bound.",
     tier: "textbook",
     modelNote: "Asymptotic decoy-state BB84 (infinite decoys and key), GLLP rate with error-correction cost f·Q_μ·H₂(E_μ), Poisson source, threshold detectors. Reproduces the 142 km GYS limit of Ma et al. 2005.",
     references: [
@@ -411,7 +423,8 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "rain-attenuation",
     title: "Rain Attenuation",
-    description: "Specific and path attenuation of a free-space optical link in rain with the ITU-R P.1814-1 model: γ = k·R^α for a gamma drop-size distribution, path reduction factor and multiple-scattering gain.",
+    description: "FSO rain attenuation by ITU-R P.1814-1: specific and path attenuation, γ = k·R^α for a gamma drop-size distribution, path reduction, multiple-scattering gain.",
+    lede: "Specific and path attenuation of a free-space optical link in rain with the ITU-R P.1814-1 model: γ = k·R^α for a gamma drop-size distribution, path reduction factor and multiple-scattering gain.",
     tier: "textbook",
     modelNote: "ITU-R P.1814-1: γ = k·R^α (Mie, gamma DSD, µ = −2…2), path reduction and multiple-scattering gain for L ≤ 5 km; flat over 780–850 and 1520–1600 nm. Gain fit tapered below 1 mm/h. No rain-rate statistics.",
     references: [
@@ -424,7 +437,8 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "receiver-fov",
     title: "Receiver FOV vs Background Noise",
-    description: "Electrical SNR of a PIN or APD receiver versus field of view, with background light from clear sky, clouds or the Sun, the signal clipped by the field stop (diffraction and turbulence), and the FOV at which background noise overtakes amplifier noise.",
+    description: "PIN or APD receiver SNR vs field of view: sky, cloud or Sun background, signal clipped by the field stop, and where background overtakes amplifier noise.",
+    lede: "Electrical SNR of a PIN or APD receiver versus field of view, with background light from clear sky, clouds or the Sun, the signal clipped by the field stop (diffraction and turbulence), and the FOV at which background noise overtakes amplifier noise.",
     tier: "textbook",
     modelNote: "Shot noise with McIntyre's F plus amplifier noise; background L·A·Ω·Δλ·η, typical sky radiances. Field stop: long-exposure encircled energy (aperture OTF × Fried's, spherical or plane r₀, tilt included).",
     references: [
@@ -482,7 +496,8 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "snow-attenuation",
     title: "Snow Attenuation",
-    description: "Specific and total attenuation of a free-space optical link in dry or wet snow from the water-equivalent snowfall rate and wavelength, with the Koschmieder-equivalent visibility.",
+    description: "Specific and total FSO attenuation in dry or wet snow from the water-equivalent snowfall rate and wavelength, with the Koschmieder-equivalent visibility.",
+    lede: "Specific and total attenuation of a free-space optical link in dry or wet snow from the water-equivalent snowfall rate and wavelength, with the Koschmieder-equivalent visibility.",
     tier: "textbook",
     modelNote: "Empirical γ = a·S^b (dry/wet snow) from TU Graz FSO work; S read as liquid-water-equivalent rate (the source is not explicit). Flake type and density scatter real attenuation by a factor of several.",
     references: [
@@ -503,7 +518,8 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "wavelength-selection",
     title: "FSO Wavelength Selection",
-    description: "Compare 850, 1064, 1310 and 1550 nm for an FSO link by Class 1 eye-safety limit, atmospheric loss over the range, component maturity and cost, and get a weighted recommendation.",
+    description: "Compare 850, 1064, 1310 and 1550 nm for an FSO link: Class 1 eye-safety limit, atmospheric loss, component maturity and cost, and a weighted recommendation.",
+    lede: "Compare 850, 1064, 1310 and 1550 nm for an FSO link by Class 1 eye-safety limit, atmospheric loss over the range, component maturity and cost, and get a weighted recommendation.",
     tier: "illustrative",
     modelNote: "Qualitative ranking. Eye safety from the IEC Class 1 point-source limit and atmosphere from Kim's law are computed; component and cost ratings are editorial. Ignores link margin, background light, turbulence.",
     references: [

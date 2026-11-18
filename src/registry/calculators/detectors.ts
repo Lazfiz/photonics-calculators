@@ -668,7 +668,8 @@ export const detectors: CalculatorEntry[] = [
   {
     slug: "pixel-crosstalk",
     title: "Pixel Crosstalk & MTF",
-    description: "Charge diffusion and electrical crosstalk in a silicon image sensor: absorption depth, charge reaching the neighbouring pixels vs wavelength, and MTF at Nyquist.",
+    description: "Charge diffusion and electrical crosstalk in a silicon image sensor: absorption depth, charge reaching neighbouring pixels vs wavelength, and MTF at Nyquist.",
+    lede: "Charge diffusion and electrical crosstalk in a silicon image sensor: absorption depth, charge reaching the neighbouring pixels vs wavelength, and MTF at Nyquist.",
     tier: "textbook",
     modelNote: "Seib's field-free diffusion for front illumination: light absorbed in the depletion depth W is collected in place, and below it carriers diffuse with length L₀ in a semi-infinite field-free region, so it overstates near-infrared crosstalk for thin-epitaxy sensors. No reflection or surface recombination. Diffusion crosstalk is the charge reaching the two adjacent columns when one column is lit uniformly (100 % fill), integrated from the line-spread MTF. The extra crosstalk X is a nearest-neighbour kernel [X/2, 1 − X, X/2].",
     references: [
@@ -699,7 +700,7 @@ export const detectors: CalculatorEntry[] = [
   {
     slug: "quantum-efficiency",
     title: "Quantum Efficiency",
-    description: "Silicon and InGaAs detector quantum efficiency vs wavelength from absorption data: collecting thickness, diffusion length, dead layer, surface reflection, fill factor and microlens gain.",
+    description: "Quantum efficiency of Si and InGaAs detectors vs wavelength: collecting thickness, diffusion length, dead layer, reflection, fill factor and microlens gain.",
     lede: "Detector QE from the absorption coefficient: silicon photodiode, back-illuminated and deep-depletion CCD and front-illuminated CMOS structures, and an InGaAs p-i-n, with reflection, dead-layer and fill-factor losses.",
     keywords: ["CCD quantum efficiency", "CMOS quantum efficiency", "fill factor"],
     tier: "textbook",
