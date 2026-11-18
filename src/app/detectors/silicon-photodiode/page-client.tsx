@@ -4,13 +4,9 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { hc_eV_nm } from "../../../physics/constants";
-import { siliconAbsorption } from "../../../physics/materials/silicon-absorption";
-import { photodiodeQe } from "../../../physics/detectors/photodiode-qe";
-import { responsivity } from "../../../physics/detectors/responsivity";
-import { generationCurrent, siliconIntrinsicDensity } from "../../../physics/detectors/dark-current";
-import { VARSHNI, varshniBandGap } from "../../../physics/materials/bandgap";
-import { EPS_R_SILICON, depletionCapacitance } from "../../../physics/detectors/photodiode-rc";
+import {
+  siliconPhotodiodeDark, siliconPhotodiodeQe, siliconPhotodiodeResponsivity, siliconPhotodiodeSummary, type SiliconPhotodiodeParams,
+} from "../../../physics/detectors/silicon-photodiode";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 3) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
@@ -32,21 +28,12 @@ export default function SiliconPhotodiodePage() {
   const lifetime = clamp(lifetimeRaw, 0.001, 100, 1);
 
   const W = depletionWidth * 1e-6;
-  const L = diffusionLength * 1e-6;
   const A = area * 1e-6;
-  const Eg = varshniBandGap(temperature, VARSHNI.si);
-  const bandGapWavelength = hc_eV_nm / Eg;
-
-  const qeAt = (nm: number, width = W, diffusion = L) =>
-    photodiodeQe({ alpha: siliconAbsorption(nm * 1e-9), reflectance: surfaceReflectivity, depletionWidth: width, diffusionLength: diffusion });
-  const responsivityAt = (nm: number) => responsivity(qeAt(nm), nm * 1e-9);
-
-  const wl = Array.from({ length: 226 }, (_, i) => 300 + i * 4);
-  const resp = wl.map(responsivityAt);
-  const peakIndex = resp.reduce((best, r, i) => (r > resp[best] ? i : best), 0);
-
-  const darkCurrent = generationCurrent(siliconIntrinsicDensity(temperature), W, A, lifetime * 1e-3);
-  const capPF = depletionCapacitance(A, W, EPS_R_SILICON) * 1e12;
+  const params: SiliconPhotodiodeParams = { T: temperature, W, L: diffusionLength * 1e-6, area: A, reflectance: surfaceReflectivity, lifetime: lifetime * 1e-3 };
+  const qeAt = (nm: number, width = W, diffusion = params.L) => siliconPhotodiodeQe(nm, params, width, diffusion);
+  const responsivityAt = (nm: number) => siliconPhotodiodeResponsivity(nm, params);
+  const { bandGap: Eg, bandGapWavelength, wl, resp, peakIndex, darkCurrent, capacitance } = siliconPhotodiodeSummary(params);
+  const capPF = capacitance * 1e12;
 
   const spectralChart = [
     { x: wl, y: wl.map((w) => qeAt(w) * 100), type: "scatter", mode: "lines", name: "QE (%)", line: { color: "#60a5fa", width: 2 }, yaxis: "y" },
@@ -69,7 +56,7 @@ export default function SiliconPhotodiodePage() {
   const temps = Array.from({ length: 101 }, (_, i) => tLo + (i * (tHi - tLo)) / 100);
   const darkVsTemp = [{
     x: temps,
-    y: temps.map((T) => generationCurrent(siliconIntrinsicDensity(T), W, A, lifetime * 1e-3) * 1e9),
+    y: temps.map((T) => siliconPhotodiodeDark(T, params) * 1e9),
     type: "scatter", mode: "lines", name: "I_dark", line: { color: "#f87171", width: 2 },
   }, {
     x: [temperature], y: [darkCurrent * 1e9], type: "scatter", mode: "markers", name: "Operating point", marker: { color: "#fbbf24", size: 9 },

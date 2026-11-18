@@ -4,8 +4,8 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { q } from "../../../physics/constants";
-import { analogSnr, dynodeExcessNoise, dynodeGain, uniformDynodes } from "../../../physics/detectors/electron-multiplier";
+import { dynodeGain, uniformDynodes } from "../../../physics/detectors/electron-multiplier";
+import { pmtSnrAtDelta, pmtSummary } from "../../../physics/detectors/pmt";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 2) => (Number.isFinite(x) ? x.toExponential(digits) : "—");
@@ -29,13 +29,9 @@ export default function PMTPage() {
   const photonRate = clamp(photonRateRaw, 0, 1e12, 1e6);
   const bandwidth_MHz = clamp(bandwidthRaw, 1, 1e4, 100);
 
-  const chain = uniformDynodes(delta, numDynodes);
-  const gain = dynodeGain(chain);
-  const enf = dynodeExcessNoise(chain);
-  const signalElectrons = photonRate * qe;
-  const signalCurrent = signalElectrons * q * gain;
-  const darkElectrons = (darkCurrent_nA * 1e-9) / (q * gain); // anode dark current referred to the cathode
-  const snr = analogSnr(signalElectrons, darkElectrons, bandwidth_MHz * 1e6, enf);
+  const { gain, excessNoise: enf, excessNoiseLimit, signalElectrons, signalCurrent, darkElectrons, snr } = pmtSummary({
+    numDynodes, delta, quantumEff: qe, darkCurrent: darkCurrent_nA * 1e-9, photonRate, bandwidth: bandwidth_MHz * 1e6,
+  });
 
   const stages = Array.from({ length: 16 }, (_, j) => j + 1);
   const gainChart = DELTAS.map((d, i) => ({
@@ -48,7 +44,7 @@ export default function PMTPage() {
 
   // SNR vs δ with the cathode dark emission held at its present value: only F changes with δ.
   const deltaAxis = Array.from({ length: 100 }, (_, i) => 2 + i * 0.03);
-  const snrAxis = deltaAxis.map((d) => analogSnr(signalElectrons, darkElectrons, bandwidth_MHz * 1e6, dynodeExcessNoise(uniformDynodes(d, numDynodes))));
+  const snrAxis = deltaAxis.map((d) => pmtSnrAtDelta(d, numDynodes, signalElectrons, darkElectrons, bandwidth_MHz * 1e6));
 
   return (
     <>
@@ -65,7 +61,7 @@ export default function PMTPage() {
         <ResultCard label="Gain (δⁿ)" value={fmt(gain)} tone="blue" />
         <ResultCard label="Signal Current" value={`${fmt(signalCurrent)} A`} tone="green" />
         <ResultCard label="Photoelectrons/s" value={fmt(signalElectrons)} tone="yellow" />
-        <ResultCard label="Excess Noise Factor F" value={Number.isFinite(enf) ? enf.toFixed(4) : "—"} tone="purple" subtext={`δ/(δ−1) = ${(delta / (delta - 1)).toFixed(4)} for infinitely many stages`} />
+        <ResultCard label="Excess Noise Factor F" value={Number.isFinite(enf) ? enf.toFixed(4) : "—"} tone="purple" subtext={`δ/(δ−1) = ${excessNoiseLimit.toFixed(4)} for infinitely many stages`} />
         <ResultCard label="Dark Electrons/s at Cathode" value={fmt(darkElectrons)} tone="orange" subtext="Anode dark current / (e·G)" />
         <ResultCard label="SNR" value={Number.isFinite(snr) ? snr.toPrecision(3) : "—"} tone="cyan" subtext={Number.isFinite(snr) ? `${bandwidth_MHz} MHz bandwidth` : "No signal or dark electrons"} />
       </div>

@@ -5,6 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { shotNoiseCurrent } from "../../../physics/detectors/noise";
+import { shotNoiseSummary } from "../../../physics/detectors/shot-noise";
 
 const fmt = (x: number, digits = 5) => (Number.isFinite(x) ? x.toPrecision(digits) : "—");
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -23,9 +24,7 @@ export default function ShotNoisePage() {
     ];
   }, [bandwidth]);
 
-  const iShot = shotNoiseCurrent(photocurrent, bandwidth);
-  const snrVal = photocurrent / iShot; // = √(I/(2qB)); NaN at I = 0 shows "—"
-  const snrPower = snrVal * snrVal;
+  const { iShot, snrAmplitude: snrVal, snrPower } = shotNoiseSummary(photocurrent, bandwidth); // snrVal = √(I/(2qB)); NaN at I = 0 shows "—"
 
   return (
     <>

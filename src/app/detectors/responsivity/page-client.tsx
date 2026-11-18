@@ -4,7 +4,8 @@ import SimpleLineChart from "../../../components/simple-line-chart";
 import ResultCard from "../../../components/result-card";
 import InputSlider from "../../../components/input-slider";
 import { useURLState } from "../../../hooks/use-url-state";
-import { photonsPerJoule, responsivity as responsivityAW } from "../../../physics/detectors/responsivity";
+import { responsivity as responsivityAW } from "../../../physics/detectors/responsivity";
+import { responsivitySummary } from "../../../physics/detectors/responsivity-summary";
 
 const wavelengthPresets = [405, 532, 850, 1310, 1550];
 const qePresets = [0.2, 0.5, 0.8, 0.95];
@@ -17,10 +18,9 @@ export default function ResponsivityPage() {
   const quantumEfficiency = clamp(qeRaw, 0, 1, 0.8);
   const wavelength = clamp(wavelengthRaw, 200, 2000, 1550);
 
-  const responsivity = responsivityAW(quantumEfficiency, wavelength * 1e-9);
-  const photonsPerWatt = photonsPerJoule(wavelength * 1e-9);
-  const photocurrentAt1mW_uA = responsivity * 1e-3 * 1e6;
-  const idealResponsivity = responsivityAW(1, wavelength * 1e-9);
+  const summary = responsivitySummary(quantumEfficiency, wavelength * 1e-9);
+  const { responsivity, photonsPerWatt, idealResponsivity } = summary;
+  const photocurrentAt1mW_uA = summary.photocurrent * 1e6;
 
   const wls = Array.from({ length: 250 }, (_, i) => 200 + i * 7.3);
   const chartSeries = [
