@@ -36,13 +36,15 @@
 
 ## API and MCP
 
-A growing set of calculators (those listed in `/openapi.json`) can also be run by programs and AI agents:
+Almost every calculator (410 of 411 on `main`; the live site gets them with each release; the full list is in
+`/openapi.json`) can also be run by programs and AI agents, with no key:
 
 - REST: `https://photonicscalculators.com/api/v1/<category>/<slug>?<inputs>`, described in
   [`/openapi.json`](https://photonicscalculators.com/openapi.json).
 - Reference cases and this deployment's results: [`/checks.json`](https://photonicscalculators.com/checks.json).
-- MCP server: `https://photonicscalculators.com/mcp` (for example
-  `claude mcp add --transport http photonics https://photonicscalculators.com/mcp`).
+- MCP server (streamable HTTP, no auth): `https://photonicscalculators.com/mcp`, with the tools `find_calculator`,
+  `run_calculator`, `get_checks` and `report_problem`. For example
+  `claude mcp add --transport http photonics https://photonicscalculators.com/mcp`.
 
 ## Run locally
 
