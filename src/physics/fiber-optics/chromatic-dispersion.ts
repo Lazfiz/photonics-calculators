@@ -42,7 +42,7 @@
  */
 
 import { c } from "../constants";
-import { GAUSSIAN_FWHM_PER_SIGMA } from "../math";
+import { GAUSSIAN_FWHM_PER_SIGMA, goldenSectionMax } from "../math";
 import {
   accumulatedDispersion, addedRmsBroadening, dcfLength, dispersionPenaltyDb, optimumPulseBroadening, residualSlope,
   toleratedAccumulatedDispersion, toleratedBroadening, usableHalfBandwidth,
@@ -149,26 +149,17 @@ export function transformLimitedBitRate(beta2: number, L: number): number {
   return 1 / (4 * Math.sqrt(Math.abs(beta2) * L));
 }
 
-const GOLDEN = (Math.sqrt(5) - 1) / 2;
-
 /**
  * Output rms width minimised over the input width σ₀ (unchirped Gaussian, Agrawal §2.4.2 formula), s. 0 when
- * β₂ = β₃ = 0. Golden-section search in ln σ₀² over ±14 e-folds of the scale of the minimum; 120 iterations
- * shrink the bracket to < 1e-20 of its width, far below double precision of σ.
+ * β₂ = β₃ = 0. Golden-section search (`goldenSectionMax` on −σ) in ln σ₀² over ±14 e-folds of the scale of the
+ * minimum, down to 1e-13 of the bracket width.
  */
 export function optimumOutputRmsWidth(beta2: number, beta3: number, L: number, sigmaOmega: number): number {
   const a2 = Math.abs(beta2) * L, a3 = Math.abs(beta3) * L;
   const scale = Math.max(a2, (a3 / 4) ** (2 / 3), a3 * sigmaOmega);
   if (!(scale > 0)) return scale === 0 ? 0 : NaN;
   const width = (x: number) => gaussianPulseRmsWidth({ sigma0: Math.exp(x / 2), beta2, beta3, L, sigmaOmega });
-  let lo = Math.log(scale) - 14, hi = Math.log(scale) + 14;
-  let x1 = hi - GOLDEN * (hi - lo), x2 = lo + GOLDEN * (hi - lo);
-  let f1 = width(x1), f2 = width(x2);
-  for (let i = 0; i < 120; i++) {
-    if (f1 < f2) { hi = x2; x2 = x1; f2 = f1; x1 = hi - GOLDEN * (hi - lo); f1 = width(x1); }
-    else { lo = x1; x1 = x2; f1 = f2; x2 = lo + GOLDEN * (hi - lo); f2 = width(x2); }
-  }
-  return Math.min(f1, f2);
+  return -goldenSectionMax((x) => -width(x), Math.log(scale) - 14, Math.log(scale) + 14).fx;
 }
 
 /** Dispersion state of a fibre at one wavelength for the length search: β₂, β₃ per metre and σ_ω. */
