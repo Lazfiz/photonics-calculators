@@ -21,6 +21,17 @@ import flickerNoise from "./detectors/flicker-noise";
 import gainBandwidth from "./detectors/gain-bandwidth";
 import gainTemperature from "./detectors/gain-temperature";
 import geigerModeAvalanche from "./detectors/geiger-mode-avalanche";
+import ingaasParameters from "./detectors/ingaas-parameters";
+import intensifiedCcd from "./detectors/intensified-ccd";
+import linearModeAvalanche from "./detectors/linear-mode-avalanche";
+import lockinAmplifier from "./detectors/lockin-amplifier";
+import microchannelPlate from "./detectors/microchannel-plate";
+import modulationTransfer from "./detectors/modulation-transfer";
+import nep from "./detectors/nep";
+import photodiodeSpeed from "./detectors/photodiode-speed";
+import photodiodeTiaNoise from "./detectors/photodiode-tia-noise";
+import photonCounting from "./detectors/photon-counting";
+import photonTransfer from "./detectors/photon-transfer";
 import attenuation from "./fiber-optics/attenuation";
 import bendInsensitive from "./fiber-optics/bend-insensitive";
 import birefringenceFiber from "./fiber-optics/birefringence-fiber";
@@ -376,6 +387,8 @@ export const schemas: readonly CalculatorSchema[] = [
   boxcarIntegrator, junctionCapacitance, ccdVsCmos, channelPhotomultiplier, coolingBenefit,
   cosmicRays, darkCurrent, darkNoiseTemperature, detectivity, electronMultiplying, emGain,
   excessNoise, flickerNoise, gainBandwidth, gainTemperature, geigerModeAvalanche,
+  ingaasParameters, intensifiedCcd, linearModeAvalanche, lockinAmplifier, microchannelPlate, modulationTransfer,
+  nep, photodiodeSpeed, photodiodeTiaNoise, photonCounting, photonTransfer,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));
