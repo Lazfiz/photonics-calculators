@@ -4,7 +4,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { gateNoiseBandwidth, gateNoiseRms, gaussianGateAverage, optimalGateWidth, optimalGateWidthRatio } from "../../../physics/detectors/boxcar";
+import { boxcarSingleShotSnr, boxcarSummary, optimalGateWidthRatio } from "../../../physics/detectors/boxcar";
 import { GAUSSIAN_FWHM_PER_SIGMA } from "../../../physics/math";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -45,19 +45,10 @@ export default function BoxcarIntegratorPage() {
   const repRate = clamp(repRateRaw, 1e-3, 1e9, 1000);
   const averages = Math.round(clamp(averagesRaw, 1, 1e9, 100));
 
-  const gateSignal = gaussianGateAverage(signalPeak, fwhm, gateWidth, gateDelay);
-  const gateNoise = gateNoiseRms(noiseDensity, inputBandwidth, gateWidth);
-  const snrSingle = gateNoise > 0 ? gateSignal / gateNoise : NaN;
-  const snrAveraged = snrSingle * Math.sqrt(averages);
-  const neb = gateNoiseBandwidth(gateWidth);
-  const measureTime = averages / repRate;
-  const inputNoise = noiseDensity * Math.sqrt(inputBandwidth);
-  const snrAtGate = (T: number) => {
-    const noise = gateNoiseRms(noiseDensity, inputBandwidth, T);
-    return noise > 0 ? gaussianGateAverage(signalPeak, fwhm, T, gateDelay) / noise : NaN;
-  };
-  const optimalGate = optimalGateWidth(fwhm, inputBandwidth);
-  const bandLimited = inputBandwidth * fwhm < 2;
+  const { gateSignal, gateNoise, snrSingle, snrAveraged, neb, measureTime, inputNoise, optimalGate, bandLimited } = boxcarSummary({
+    gateWidth, fwhm, gateDelay, signalPeak, noiseDensity, inputBandwidth, repRate, averages,
+  });
+  const snrAtGate = (T: number) => boxcarSingleShotSnr(signalPeak, fwhm, T, gateDelay, noiseDensity, inputBandwidth);
 
   // Trace: pulse and gate on a ±(2·FWHM + |delay| + gate/2) window around the pulse peak, in ns.
   const halfSpan = 2 * fwhm + Math.abs(gateDelay) + gateWidth / 2;

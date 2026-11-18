@@ -4,7 +4,8 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { minDetectableSignal, quantizationNoiseElectrons, sensorNoiseElectrons } from "../../../physics/detectors/noise";
+import { amplifierNoiseSummary, readFloorElectrons } from "../../../physics/detectors/amplifier-noise";
+import { sensorNoiseElectrons } from "../../../physics/detectors/noise";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 
@@ -16,14 +17,8 @@ export default function AmplifierNoisePage() {
   const gain = clamp(gainRaw, 0.1, 1e5, 2);
   const signal = clamp(signalRaw, 1, 1e9, 1000);
 
-  const quantNoise = quantizationNoiseElectrons(gain);
-  const readFloor = Math.hypot(en, quantNoise); // e⁻ rms: amplifier and ADC quantisation in quadrature
-  const readFloorAt = (e: number) => Math.hypot(e, quantNoise);
-  const noiseDn = readFloor / gain;
-  const shotNoise = Math.sqrt(signal);
-  const totalNoise = sensorNoiseElectrons({ signal, read: readFloor });
-  const snrTotal = signal / totalNoise;
-  const minDetectable = minDetectableSignal(readFloor, 3);
+  const { quantNoise, noiseDn, shotNoise, totalNoise, snrTotal, minDetectable } = amplifierNoiseSummary({ inputNoise: en, conversionGain: gain, signal });
+  const readFloorAt = (e: number) => readFloorElectrons(e, gain); // e⁻ rms: amplifier and ADC quantisation in quadrature
 
   const enMax = Math.max(50, 2 * en);
   const enVals = Array.from({ length: 200 }, (_, i) => 0.5 + (i / 199) * (enMax - 0.5));

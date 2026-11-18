@@ -4,9 +4,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { h, k_B } from "../../../physics/constants";
-import { johnsonNoise, ktcNoise, shotNoiseCurrent } from "../../../physics/detectors/noise";
-import { rcBandwidth, rcFilteredNoise } from "../../../physics/detectors/photodiode-rc";
+import { bandwidthNoiseModel, bandwidthSummary, CLASSICAL_LIMIT_FRACTION, quantumCorrectionNeeded, SIGNAL_VOLTAGE_LIMIT, signalVoltageTooHigh } from "../../../physics/detectors/bandwidth";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 
@@ -23,23 +21,16 @@ export default function BandwidthPage() {
   const temperature = clamp(temperatureRaw, 0, 1000, 300);
 
   // Photodiode on a load R_L: both noise currents see the impedance R_L ∥ C_j, a first-order low-pass at f_c.
-  const fc = rcBandwidth(loadR, capacitance);
-  const johnsonDensity = johnsonNoise(loadR, temperature, 1).v ** 2; // 4k_B·T·R, V²/Hz at f ≪ f_c
-  const shotDensity = (shotNoiseCurrent(photoCurrent, 1) * loadR) ** 2; // 2q·I·R², V²/Hz at f ≪ f_c
-  const noiseAt = (B: number) => {
-    const vJ = Math.sqrt(rcFilteredNoise(johnsonDensity, fc, B));
-    const vS = Math.sqrt(rcFilteredNoise(shotDensity, fc, B));
-    return { vJ, vS, vT: Math.hypot(vJ, vS) };
-  };
-  const { vJ: vJohnson, vS: vShot, vT: vTotal } = noiseAt(bandwidth);
-  const kTC = ktcNoise(capacitance, temperature).v;
+  const model = bandwidthNoiseModel({ capacitance, loadR, photoCurrent, temperature });
+  const { fc, johnsonDensity } = model;
+  const { vJohnson, vShot, vTotal, kTC } = bandwidthSummary({ bandwidth, capacitance, loadR, photoCurrent, temperature });
 
   const bws = Array.from({ length: 200 }, (_, i) => 1e3 * Math.pow(1e8, i / 199)); // 1 kHz to 100 GHz
-  const curves = bws.map(noiseAt);
+  const curves = bws.map(model.noiseAt);
   const chartData = [
-    { x: bws, y: curves.map(n => n.vJ), type: "scatter" as const, mode: "lines" as const, name: "Johnson (R_L)", line: { color: "#f87171" } },
-    { x: bws, y: curves.map(n => (n.vS > 0 ? n.vS : null)), type: "scatter" as const, mode: "lines" as const, name: "Shot", line: { color: "#34d399" } },
-    { x: bws, y: curves.map(n => n.vT), type: "scatter" as const, mode: "lines" as const, name: "Total", line: { color: "#60a5fa" } },
+    { x: bws, y: curves.map(n => n.vJohnson), type: "scatter" as const, mode: "lines" as const, name: "Johnson (R_L)", line: { color: "#f87171" } },
+    { x: bws, y: curves.map(n => (n.vShot > 0 ? n.vShot : null)), type: "scatter" as const, mode: "lines" as const, name: "Shot", line: { color: "#34d399" } },
+    { x: bws, y: curves.map(n => n.vTotal), type: "scatter" as const, mode: "lines" as const, name: "Total", line: { color: "#60a5fa" } },
     { x: bws, y: bws.map(B => Math.sqrt(johnsonDensity * B)), type: "scatter" as const, mode: "lines" as const, name: "√(4kTR·Δf), no RC roll-off", line: { color: "#9ca3af", dash: "dot" } },
   ];
 
@@ -59,14 +50,14 @@ export default function BandwidthPage() {
         <ResultCard label="Total Noise (V rms)" value={vTotal.toExponential(3)} tone="yellow" />
         <ResultCard label="Johnson Limit √(kT/C)" value={kTC.toExponential(3) + " V"} tone="purple" subtext="Δf → ∞, independent of R_L" />
       </div>
-      {photoCurrent * loadR > 0.3 && (
+      {signalVoltageTooHigh(photoCurrent, loadR) && (
         <p className="mb-6 text-sm text-yellow-400">
-          Signal voltage I·R_L above 0.3 V: beyond the unbiased photovoltaic range; reverse bias not modelled.
+          Signal voltage I·R_L above {SIGNAL_VOLTAGE_LIMIT} V: beyond the unbiased photovoltaic range; reverse bias not modelled.
         </p>
       )}
-      {Math.min(bandwidth, fc) > 0.1 * k_B * temperature / h && (
+      {quantumCorrectionNeeded(bandwidth, fc, temperature) && (
         <p className="mb-6 text-sm text-yellow-400">
-          Noise band above 0.1·k_B·T/h: classical Johnson density; quantum (hf ≳ k_BT) correction not modelled.
+          Noise band above {CLASSICAL_LIMIT_FRACTION}·k_B·T/h: classical Johnson density; quantum (hf ≳ k_BT) correction not modelled.
         </p>
       )}
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1">

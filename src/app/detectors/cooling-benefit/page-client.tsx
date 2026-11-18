@@ -4,14 +4,11 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { darkCurrentRatio } from "../../../physics/detectors/dark-current";
-import { INGAAS_LATTICE_MATCHED_X, VARSHNI, ingaasBandGap, varshniBandGap } from "../../../physics/materials/bandgap";
+import { coolingModel, coolingSummary, KELVIN, REFERENCE_TEMPERATURE_C } from "../../../physics/detectors/cooling-benefit";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmtE = (x: number, digits = 2) => (Number.isFinite(x) ? x.toExponential(digits) : "—");
 const fmtF = (x: number) => (Number.isFinite(x) ? x.toFixed(1) : "—");
-const KELVIN = 273.15;
-const T_REF = 25 + KELVIN;
 
 export default function CoolingBenefitPage() {
   const [egSiRaw, setEgSi] = useURLState("egSi", 1.12);
@@ -35,15 +32,8 @@ export default function CoolingBenefitPage() {
   const exposureTime = clamp(exposureTimeRaw, 1e-6, 1e5, 1); // s
   const coolTemp = clamp(coolTempRaw, -150, 25, -40); // °C
 
-  const siGapAt = (T: number) => (siVarshni ? varshniBandGap(T, VARSHNI.si) : egSi);
-  // Si: depletion generation current ∝ n_i. InGaAs: diffusion current ∝ n_i².
-  const siDark = (Tc: number) => darkCurrent25Si * darkCurrentRatio(Tc + KELVIN, T_REF, siGapAt(Tc + KELVIN), "generation", siGapAt(T_REF));
-  const inGaAsGapAt = (T: number) => (inGaAsVurgaftman ? ingaasBandGap(INGAAS_LATTICE_MATCHED_X, T) : egInGaAs);
-  const inGaAsDark = (Tc: number) => darkCurrent25InGaAs * darkCurrentRatio(Tc + KELVIN, T_REF, inGaAsGapAt(Tc + KELVIN), "diffusion", inGaAsGapAt(T_REF));
-  const snr = (dark: number) => {
-    const noise = Math.sqrt(signal + dark * exposureTime + readNoise * readNoise);
-    return noise > 0 ? signal / noise : NaN;
-  };
+  const params = { siVarshni, egSi, inGaAsVurgaftman, egInGaAs, darkCurrent25Si, darkCurrent25InGaAs, signal, readNoise, exposureTime };
+  const { siGapAt, inGaAsGapAt, siDark, inGaAsDark, snr } = coolingModel(params);
 
   const n = 141;
   const temps = Array.from({ length: n }, (_, i) => -100 + i);
@@ -54,8 +44,7 @@ export default function CoolingBenefitPage() {
     { x: temps, y: temps.map(T => snr(inGaAsDark(T))), type: "scatter" as const, mode: "lines" as const, name: "InGaAs SNR", line: { color: "#fb923c", dash: "dash" }, yaxis: "y2" },
   ];
 
-  const siReduction = darkCurrent25Si / siDark(coolTemp);
-  const inGaAsReduction = darkCurrent25InGaAs / inGaAsDark(coolTemp);
+  const { siReduction, inGaAsReduction, siDarkCooled, inGaAsDarkCooled, siSnr25, siSnrCooled, inGaAsSnr25, inGaAsSnrCooled } = coolingSummary(params, coolTemp);
 
   return (
     <>
@@ -68,7 +57,7 @@ export default function CoolingBenefitPage() {
           </select>
         </label>
         {siVarshni ? (
-          <p className="text-sm text-gray-400 self-end pb-2">Si E_g: {siGapAt(T_REF).toFixed(3)} eV at 25 °C, {siGapAt(coolTemp + KELVIN).toFixed(3)} eV at {coolTemp} °C</p>
+          <p className="text-sm text-gray-400 self-end pb-2">Si E_g: {siGapAt(REFERENCE_TEMPERATURE_C + KELVIN).toFixed(3)} eV at 25 °C, {siGapAt(coolTemp + KELVIN).toFixed(3)} eV at {coolTemp} °C</p>
         ) : (
           <ValidatedNumberInput label="Si Band Gap (eV)" value={egSiRaw} onChange={setEgSi} min={0.1} max={6} step="0.01" />
         )}
@@ -80,7 +69,7 @@ export default function CoolingBenefitPage() {
           </select>
         </label>
         {inGaAsVurgaftman ? (
-          <p className="text-sm text-gray-400 self-end pb-2">InGaAs E_g: {inGaAsGapAt(T_REF).toFixed(3)} eV at 25 °C, {inGaAsGapAt(coolTemp + KELVIN).toFixed(3)} eV at {coolTemp} °C</p>
+          <p className="text-sm text-gray-400 self-end pb-2">InGaAs E_g: {inGaAsGapAt(REFERENCE_TEMPERATURE_C + KELVIN).toFixed(3)} eV at 25 °C, {inGaAsGapAt(coolTemp + KELVIN).toFixed(3)} eV at {coolTemp} °C</p>
         ) : (
           <ValidatedNumberInput label="InGaAs Band Gap (eV)" value={egInGaAsRaw} onChange={setEgInGaAs} min={0.1} max={6} step="0.01" />
         )}
@@ -92,10 +81,10 @@ export default function CoolingBenefitPage() {
         <ValidatedNumberInput label="Exposure Time (s)" value={exposureTimeRaw} onChange={setExposureTime} min={1e-6} max={1e5} step="0.1" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ResultCard label="Si Dark Reduction" value={`×${fmtE(siReduction, 1)}`} tone="blue" subtext={`${fmtE(siDark(coolTemp))} e⁻/s at ${coolTemp} °C`} />
-        <ResultCard label="InGaAs Dark Reduction" value={`×${fmtE(inGaAsReduction, 1)}`} tone="orange" subtext={`${fmtE(inGaAsDark(coolTemp))} e⁻/s at ${coolTemp} °C; pure diffusion, an upper bound`} />
-        <ResultCard label="Si SNR (25 °C → cooled)" value={`${fmtF(snr(siDark(25)))} → ${fmtF(snr(siDark(coolTemp)))}`} tone="green" />
-        <ResultCard label="InGaAs SNR (25 °C → cooled)" value={`${fmtF(snr(inGaAsDark(25)))} → ${fmtF(snr(inGaAsDark(coolTemp)))}`} tone="yellow" />
+        <ResultCard label="Si Dark Reduction" value={`×${fmtE(siReduction, 1)}`} tone="blue" subtext={`${fmtE(siDarkCooled)} e⁻/s at ${coolTemp} °C`} />
+        <ResultCard label="InGaAs Dark Reduction" value={`×${fmtE(inGaAsReduction, 1)}`} tone="orange" subtext={`${fmtE(inGaAsDarkCooled)} e⁻/s at ${coolTemp} °C; pure diffusion, an upper bound`} />
+        <ResultCard label="Si SNR (25 °C → cooled)" value={`${fmtF(siSnr25)} → ${fmtF(siSnrCooled)}`} tone="green" />
+        <ResultCard label="InGaAs SNR (25 °C → cooled)" value={`${fmtF(inGaAsSnr25)} → ${fmtF(inGaAsSnrCooled)}`} tone="yellow" />
       </div>
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1">
         <p>Si (depletion generation): I ∝ n_i ∝ T^(3/2) · exp(−E_g/2k_BT)</p>

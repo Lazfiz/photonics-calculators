@@ -3,28 +3,11 @@
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { cameraSnr, dynamicRangeDb, EM_REGISTER_STAGES_CCD97, emExcessNoiseFactorSq, emMaxSignal } from "../../../physics/detectors/camera-snr";
+import { EM_REGISTER_STAGES_CCD97 } from "../../../physics/detectors/camera-snr";
+import { evaluateSensor, SENSORS, type Sensor } from "../../../physics/detectors/ccd-vs-cmos";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 
-interface Sensor {
-  name: string;
-  readNoise: number; // e⁻ rms at the output amplifier
-  darkCurrent: number; // e⁻/pix/s
-  wellCapacity: number; // e⁻, pixel
-  registerWell?: number; // e⁻, EM gain register
-  pixelSize: number; // µm
-  qe: number;
-  frameRate: number; // full frame, fps
-}
-
-// Representative values. EMCCD: Andor iXon Ultra 897 specifications (17 MHz EM amplifier, −100 °C).
-const SENSORS: Sensor[] = [
-  { name: "CCD", readNoise: 3, darkCurrent: 0.001, wellCapacity: 100000, pixelSize: 15, qe: 0.95, frameRate: 10 },
-  { name: "sCMOS", readNoise: 1.5, darkCurrent: 0.01, wellCapacity: 50000, pixelSize: 6.5, qe: 0.9, frameRate: 100 },
-  { name: "Phone CMOS", readNoise: 2, darkCurrent: 5, wellCapacity: 6000, pixelSize: 1.2, qe: 0.65, frameRate: 60 },
-  { name: "EMCCD", readNoise: 89, darkCurrent: 0.00011, wellCapacity: 180000, registerWell: 800000, pixelSize: 16, qe: 0.95, frameRate: 56 },
-];
 const sensorColors = ["text-blue-400", "text-green-400", "text-yellow-400", "text-purple-400"];
 const plotColors = ["#60a5fa", "#34d399", "#fbbf24", "#c084fc"];
 
@@ -37,21 +20,7 @@ export default function CcdVsCmosPage() {
   const exposureTime = clamp(exposureRaw, 1e-6, 1e4, 1);
   const emGain = clamp(emGainRaw, 1, 1000, 300);
 
-  const evaluate = (s: Sensor, nPhotons: number) => {
-    const gain = s.registerWell ? emGain : 1;
-    const signal = s.qe * nPhotons;
-    const dark = s.darkCurrent * exposureTime;
-    const maxSignal = s.registerWell ? emMaxSignal(s.wellCapacity, s.registerWell, gain) : s.wellCapacity;
-    const excessNoiseFactorSq = s.registerWell ? emExcessNoiseFactorSq(gain, EM_REGISTER_STAGES_CCD97) : 1;
-    const saturated = signal + dark > maxSignal;
-    return {
-      signal,
-      saturated,
-      snr: saturated ? NaN : cameraSnr({ signal, dark, read: s.readNoise, gain, excessNoiseFactorSq }),
-      floor: s.readNoise / gain,
-      dynamicRange: dynamicRangeDb(maxSignal, s.readNoise / gain),
-    };
-  };
+  const evaluate = (s: Sensor, nPhotons: number) => evaluateSensor(s, nPhotons, exposureTime, emGain);
 
   const photonAxis = Array.from({ length: 241 }, (_, i) => 10 ** (i / 40));
   const chartData: Record<string, unknown>[] = SENSORS.map((s, idx) => ({
