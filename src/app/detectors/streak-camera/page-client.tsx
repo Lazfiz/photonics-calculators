@@ -5,8 +5,8 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  gaussianAllowance, limitingResolutionBlur, quadratureFwhm, rectGaussFwhm, streakTime, streakWindow,
-} from "../../../physics/detectors/photoemission";
+  STREAK_BLUR_MTF, STREAK_FASTEST_SWEEP_MM_NS, streakBlur, streakSummary, streakTermsAt,
+} from "../../../physics/detectors/streak-camera";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 
@@ -26,11 +26,9 @@ function fmtTime(t: number): string {
 // spread fits under the sheet's < 800 fs total for any MTF reading from 2 % (0.59 ps allowed) to 10 % (0.68 ps), but
 // only at the 60 ps best-case fastest range (factory set to 60–80 ps; 80 ps allows 0.48 ps). Jitter matters only when
 // sweeps are summed; the sheet's values exclude light-source jitter.
-const FASTEST_SWEEP = 9.44 / 0.06; // mm/ns
-const BLUR_MTF = 0.05;
 
 export default function StreakCameraPage() {
-  const [sweepRaw, setSweepSpeed] = useURLState("sweepSpeed", FASTEST_SWEEP); // mm/ns on the screen
+  const [sweepRaw, setSweepSpeed] = useURLState("sweepSpeed", STREAK_FASTEST_SWEEP_MM_NS); // mm/ns on the screen
   const [slitRaw, setSlitWidth] = useURLState("slitWidth", 10); // µm
   const [magRaw, setMagnification] = useURLState("magnification", 2.77);
   const [pixelRaw, setCcdPixelSize] = useURLState("ccdPixelSize", 9.75); // µm on the screen
@@ -41,7 +39,7 @@ export default function StreakCameraPage() {
   const [lpmmRaw, setLpmm] = useURLState("lpmm", 35); // lp/mm at the photocathode
   const [specRaw, setSpec] = useURLState("spec", 0.8); // ps, data-sheet total resolution
 
-  const sweep_mm_ns = clamp(sweepRaw, 1e-6, 1000, FASTEST_SWEEP);
+  const sweep_mm_ns = clamp(sweepRaw, 1e-6, 1000, STREAK_FASTEST_SWEEP_MM_NS);
   const slit_um = clamp(slitRaw, 1, 5000, 10);
   const mag = clamp(magRaw, 0.1, 10, 2.77);
   const pixel_um = clamp(pixelRaw, 1, 100, 9.75);
@@ -51,25 +49,15 @@ export default function StreakCameraPage() {
   const jitter = clamp(jitterRaw, 0, 1e9, 0) * 1e-12;
   const lpmm = clamp(lpmmRaw, 1, 1000, 35);
   const spec = clamp(specRaw, 0, 1e9, 0.8) * 1e-12;
-  const blur = limitingResolutionBlur(lpmm * 1e3, BLUR_MTF) * mag; // m FWHM on the screen
-
-  const resolutionAt = (mmPerNs: number) => {
-    const v = mmPerNs * 1e6; // m/s
-    const slit = streakTime(slit_um * 1e-6 * mag, v);
-    const pixel = streakTime(pixel_um * 1e-6, v);
-    const known = quadratureFwhm([jitter, streakTime(blur, v)]);
-    const gauss = quadratureFwhm([tube, known]);
-    return { slit, pixel, known, gauss, total: rectGaussFwhm([slit, pixel], gauss), quad: quadratureFwhm([slit, pixel, gauss]) };
+  const camera = {
+    slitWidth: slit_um * 1e-6, magnification: mag, pixelSize: pixel_um * 1e-6, pixels, tube, screenLength: screen_mm * 1e-3,
+    jitter, limitingResolution: lpmm * 1e3, spec,
   };
-  const { slit, pixel, known, gauss, total, quad } = resolutionAt(sweep_mm_ns);
-  const allowance = gaussianAllowance([slit, pixel], known, spec);
-  const window = streakWindow(pixels * pixel_um * 1e-6, screen_mm * 1e-3, sweep_mm_ns * 1e6);
-  const screenLimited = screen_mm * 1e3 < pixels * pixel_um;
-  // Sampling: under two pixels per FWHM (Nyquist) the pulse shape isn't resolved; the pixel rect above is only its aperture.
-  const undersampled = total < 2 * pixel;
-  const terms: [string, number][] = [["slit image", slit], ["pixel", pixel], ["tube, blur and jitter", gauss]];
-  const overSpec = total > spec * (1 + 1e-9);
-  const dominant = terms.reduce((a, b) => (b[1] > a[1] ? b : a))[0];
+  const blur = streakBlur(camera); // m FWHM on the screen
+  const resolutionAt = (mmPerNs: number) => streakTermsAt(camera, mmPerNs * 1e6);
+  const {
+    slit, pixel, total, quad, blurTime, allowance, window, screenLimited, undersampled, overSpec, dominant,
+  } = streakSummary(camera, sweep_mm_ns * 1e6);
 
   const speeds = Array.from({ length: 101 }, (_, i) => 10 ** (-2 + i / 20)); // 0.01 to 1000 mm/ns
   const rows = speeds.map(resolutionAt);
@@ -100,7 +88,7 @@ export default function StreakCameraPage() {
         <ResultCard label="Slit-Image Term" value={fmtTime(slit)} tone="blue" subtext="w·M / v" />
         <ResultCard label="Pixel Term" value={fmtTime(pixel)} tone="green" subtext="p / v (time per pixel)" />
         <ResultCard label="Temporal Resolution (FWHM)" value={fmtTime(total)} tone="purple" subtext={`Rectangles ⊗ Gaussian; the ${dominant} term dominates. Quadrature would give ${fmtTime(quad)}${undersampled ? `. Under 2 pixels (${fmtTime(2 * pixel)}) per FWHM the shape is not resolved; sampling sets the reading` : ""}`} />
-        <ResultCard label="Screen Blur Term" value={fmtTime(streakTime(blur, sweep_mm_ns * 1e6))} tone="orange" subtext={`${(blur * 1e6).toFixed(1)} µm FWHM on the screen: ${lpmm} lp/mm read as ${BLUR_MTF * 100} % MTF, times M`} />
+        <ResultCard label="Screen Blur Term" value={fmtTime(blurTime)} tone="orange" subtext={`${(blur * 1e6).toFixed(1)} µm FWHM on the screen: ${lpmm} lp/mm read as ${STREAK_BLUR_MTF * 100} % MTF, times M`} />
         <ResultCard label="Tube Spread the Data Sheet Allows" value={fmtTime(allowance)} tone="cyan" subtext={Number.isFinite(allowance) ? `Largest Gaussian tube term that keeps the total at ${fmtTime(spec)} with these slit, pixel, blur and jitter terms; valid at the sweep the spec was measured at (C16910: fastest), and it also holds the test pulse width${overSpec ? "; the entered tube spread exceeds it" : ""}` : `The slit, pixel, blur and jitter terms alone exceed ${fmtTime(spec)}`} />
         <ResultCard label="Time Window" value={fmtTime(window)} tone="yellow" subtext={screenLimited ? `screen length ${screen_mm} mm / v; the readout (${pixels} × p) overfills the screen` : `${pixels} pixels × p / v (inside the ${screen_mm} mm screen)`} />
       </div>

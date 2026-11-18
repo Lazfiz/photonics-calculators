@@ -4,22 +4,10 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { siliconAbsorption } from "../../../physics/materials/silicon-absorption";
-import { photodiodeQe } from "../../../physics/detectors/photodiode-qe";
-import { quantumEfficiencyFromResponsivity, responsivity } from "../../../physics/detectors/responsivity";
+import { spectralResponseSummary } from "../../../physics/detectors/spectral-response";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 3) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
-
-/** First wavelength (linear interpolation) where y crosses `level`, scanning from index `from` in steps of `dir`. */
-function crossing(x: number[], y: number[], from: number, dir: 1 | -1, level: number): number {
-  for (let i = from; i + dir >= 0 && i + dir < y.length; i += dir) {
-    const a = y[i];
-    const b = y[i + dir];
-    if (a >= level && b < level) return x[i] + ((a - level) / (a - b)) * (x[i + dir] - x[i]);
-  }
-  return NaN;
-}
 
 export default function SpectralResponsePage() {
   const [WRaw, setW] = useURLState("thickness", 20); // µm
@@ -33,28 +21,23 @@ export default function SpectralResponsePage() {
   const meas = clamp(measRaw, 0, 10, 0.6);
   const measWl = clamp(measWlRaw, 200, 2000, 900);
 
-  const qeAt = (nm: number) =>
-    photodiodeQe({ alpha: siliconAbsorption(nm * 1e-9), reflectance: R, depletionWidth: W * 1e-6, diffusionLength: L * 1e-6 });
-
-  const wl = Array.from({ length: 241 }, (_, i) => 250 + i * 5);
-  const qe = wl.map(qeAt);
-  const resp = wl.map((w, i) => responsivity(qe[i], w * 1e-9));
-  const peakIndex = resp.reduce((best, r, i) => (r > resp[best] ? i : best), 0);
-  const peak = resp[peakIndex];
-  const halfShort = crossing(wl, resp, peakIndex, -1, peak / 2);
-  const halfLong = crossing(wl, resp, peakIndex, 1, peak / 2);
+  const r = spectralResponseSummary({ W: W * 1e-6, L: L * 1e-6, reflectance: R, measuredResponsivity: meas, measuredWavelength: measWl * 1e-9 });
+  const wl = r.wavelengthNm;
+  const qe = r.qe;
+  const resp = r.responsivity;
+  const peak = r.peakResponsivity;
 
   // A crossing that does not occur inside the wavelength grid lies beyond its end.
   const bandEdge = (x: number, side: "short" | "long") =>
     Number.isFinite(x) ? fmt(x, 0) : !(peak > 0) ? "—" : side === "short" ? `< ${wl[0]}` : `> ${wl[wl.length - 1]}`;
-  const halfBand = !(peak > 0) ? "—" : `${bandEdge(halfShort, "short")}–${bandEdge(halfLong, "long")} nm`;
+  const halfBand = !(peak > 0) ? "—" : `${bandEdge(r.halfShortNm, "short")}–${bandEdge(r.halfLongNm, "long")} nm`;
 
-  const measQe = quantumEfficiencyFromResponsivity(meas, measWl * 1e-9);
+  const measQe = r.impliedQe;
   const impossible = measQe > 1;
 
   const chartData = [
     { x: wl, y: resp, type: "scatter", mode: "lines", name: "Silicon model ℛ (A/W)", line: { color: "#60a5fa", width: 2 }, yaxis: "y" },
-    { x: wl, y: wl.map((w) => responsivity(1, w * 1e-9)), type: "scatter", mode: "lines", name: "η = 1 limit (A/W)", line: { color: "#9ca3af", width: 1, dash: "dash" }, yaxis: "y" },
+    { x: wl, y: r.limit, type: "scatter", mode: "lines", name: "η = 1 limit (A/W)", line: { color: "#9ca3af", width: 1, dash: "dash" }, yaxis: "y" },
     { x: wl, y: qe.map((v) => v * 100), type: "scatter", mode: "lines", name: "QE (%)", line: { color: "#f87171", width: 2, dash: "dot" }, yaxis: "y2" },
     { x: [measWl], y: [meas], type: "scatter", mode: "markers", name: "Datasheet value", marker: { color: impossible ? "#ef4444" : "#22c55e", size: 9 }, yaxis: "y" },
   ];
@@ -69,9 +52,9 @@ export default function SpectralResponsePage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <ResultCard label="Peak responsivity" value={`${fmt(peak)} A/W`} tone="blue" subtext={`at ${wl[peakIndex]} nm, QE ${fmt(qe[peakIndex] * 100, 1)}%`} />
+        <ResultCard label="Peak responsivity" value={`${fmt(peak)} A/W`} tone="blue" subtext={`at ${r.peakWavelengthNm} nm, QE ${fmt(r.peakQe * 100, 1)}%`} />
         <ResultCard label="Half-response band" value={halfBand} tone="green" subtext="ℛ ≥ ℛ_peak/2" />
-        <ResultCard label="Responsivity @ 650 nm" value={`${fmt(responsivity(qeAt(650), 650e-9))} A/W`} tone="yellow" subtext={`QE ${fmt(qeAt(650) * 100, 1)}%`} />
+        <ResultCard label="Responsivity @ 650 nm" value={`${fmt(r.responsivity650)} A/W`} tone="yellow" subtext={`QE ${fmt(r.qe650 * 100, 1)}%`} />
       </div>
 
       <h2 className="text-lg font-semibold mb-3">Check a datasheet value</h2>
@@ -82,7 +65,7 @@ export default function SpectralResponsePage() {
           label="Implied quantum efficiency"
           value={Number.isFinite(measQe) ? `${(measQe * 100).toFixed(1)}%` : "—"}
           tone={impossible ? "red" : "green"}
-          subtext={impossible ? "η > 100%: impossible without internal gain (APD, PMT)" : `η = 1 limit ${fmt(responsivity(1, measWl * 1e-9))} A/W`}
+          subtext={impossible ? "η > 100%: impossible without internal gain (APD, PMT)" : `η = 1 limit ${fmt(r.limitAtMeasured)} A/W`}
         />
       </div>
 

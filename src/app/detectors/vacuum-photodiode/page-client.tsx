@@ -4,23 +4,16 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { epsilon_0 } from "../../../physics/constants";
-import { johnsonNoise, shotNoiseCurrent } from "../../../physics/detectors/noise";
-import {
-  PHOTOCATHODE_DARK_EMISSION, childLangmuirCurrentDensity, effectiveThermionicBarrier, planarTransitTime, thermionicCurrentDensity,
-  thresholdWavelength, vacuumTransitBandwidth,
-} from "../../../physics/detectors/photoemission";
-import { combinedBandwidth, rcBandwidth } from "../../../physics/detectors/photodiode-rc";
-import { responsivity } from "../../../physics/detectors/responsivity";
+import { PHOTOCATHODE_DARK_EMISSION, planarTransitTime, vacuumTransitBandwidth } from "../../../physics/detectors/photoemission";
+import { combinedBandwidth } from "../../../physics/detectors/photodiode-rc";
+import { shotNoiseCurrent } from "../../../physics/detectors/noise";
+import { FA_PER_CM2, vacuumPhotodiodeSummary } from "../../../physics/detectors/vacuum-photodiode";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 2) => (Number.isFinite(x) ? x.toExponential(digits) : "—");
 const fix = (x: number, digits = 2) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
 
 // Defaults: a UV vacuum photodiode with a 100 mm² K₂CsSb cathode 2 mm from a planar anode, read across a 50 Ω load.
-const T_LOAD = 298.15; // K: the load stays at room temperature whatever the cathode does
-const T_REF = 298.15; // K: the dark-emission table is at 25 °C
-const FA_PER_CM2 = 1e-11; // A/m² per fA/cm²
 export default function VacuumPhotodiodePage() {
   const [qeRaw, setQuantumEff] = useURLState("quantumEff", 0.25);
   const [wavelengthRaw, setWavelength] = useURLState("wavelength", 300); // nm
@@ -47,26 +40,15 @@ export default function VacuumPhotodiodePage() {
   const stray_pF = clamp(strayRaw, 0, 1000, 0);
 
   const gap = gap_mm * 1e-3;
-  const area = area_mm2 * 1e-6;
-  const cutoff_nm = thresholdWavelength(phi) * 1e9;
-  const resp = wavelength_nm <= cutoff_nm ? responsivity(qe, wavelength_nm * 1e-9) : 0;
-  const iPhoto = power * resp;
-  const psi = effectiveThermionicBarrier(dark_fA * FA_PER_CM2, T_REF);
-  const iDark = thermionicCurrentDensity(T, psi) * area;
-  const transit = planarTransitTime(gap, voltage);
-  const fTransit = vacuumTransitBandwidth(transit);
-  const capGap = (epsilon_0 * area) / gap;
-  const capacitance = capGap + stray_pF * 1e-12;
-  const fRC = rcBandwidth(load, capacitance);
-  const bandwidth = combinedBandwidth(fRC, fTransit);
-  const iShot = shotNoiseCurrent(iPhoto + iDark, bandwidth);
-  const iJohnson = johnsonNoise(load, T_LOAD, bandwidth).i;
-  const iNoise = Math.hypot(iShot, iJohnson);
-  const snrDb = 20 * Math.log10(iPhoto / iNoise);
-  const iChild = childLangmuirCurrentDensity(voltage, gap) * area;
-  const overChild = iPhoto + iDark > iChild;
-  const loadDrop = iPhoto * load; // V dropped across the load by the DC photocurrent
-  const loadCollapse = loadDrop > 0.1 * voltage;
+  const stray = stray_pF * 1e-12;
+  const r = vacuumPhotodiodeSummary({
+    qe, wavelength: wavelength_nm * 1e-9, power, phi, voltage, gap, area: area_mm2 * 1e-6, load, temperature: T,
+    darkEmission25: dark_fA * FA_PER_CM2, strayCapacitance: stray,
+  });
+  const { responsivity: resp, photocurrent: iPhoto, darkCurrent: iDark, barrier: psi, transitTime: transit, transitBandwidth: fTransit } = r;
+  const { gapCapacitance: capGap, capacitance, rcBandwidth: fRC, bandwidth, shotNoise: iShot, johnsonNoise: iJohnson } = r;
+  const { snrDb, childLimit: iChild, overChild, loadDrop, loadCollapse } = r;
+  const cutoff_nm = r.cutoff * 1e9;
 
   const powers = Array.from({ length: 121 }, (_, i) => 10 ** (-12 + i / 10)); // 1 pW to 1 W
   const noiseChart = [

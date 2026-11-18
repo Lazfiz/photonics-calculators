@@ -4,11 +4,12 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { prnuPattern, sensorNoise, shotPrnuCrossover } from "../../../physics/detectors/sensor-noise";
+import { prnuPattern } from "../../../physics/detectors/sensor-noise";
+import { prnuMap, snrToDb, uniformitySummary } from "../../../physics/detectors/uniformity";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fix = (x: number, digits = 2) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
-const db = (snr: number) => (snr > 0 ? 20 * Math.log10(snr) : NaN);
+const db = snrToDb;
 
 const MAP_SIZE = 80;
 const PATTERN = prnuPattern(MAP_SIZE);
@@ -27,16 +28,10 @@ export default function UniformityPage() {
   const dsnu = clamp(dsnuRaw, 0, 10000, 2);
   const readNoise = clamp(readRaw, 0, 1000, 5);
 
-  const n = sensorNoise({ signal: meanSignal, dark: darkSignal, read: readNoise, prnu, dsnu });
-  const snr = n.total > 0 ? meanSignal / n.total : NaN;
-  const snrFlat = n.temporal > 0 ? meanSignal / n.temporal : NaN;
-  const crossover = shotPrnuCrossover(prnu);
+  const { noise: n, snr, snrFlat, crossover } = uniformitySummary({ signal: meanSignal, dark: darkSignal, read: readNoise, prnu, dsnu });
 
   // Map of the photo response S·(1 + PRNU·pattern): its spatial rms is PRNU·S by construction.
-  const z = PATTERN.map(row => row.map(v => meanSignal * (1 + prnu * v)));
-  const values = z.flat();
-  const mapMean = values.reduce((s, v) => s + v, 0) / values.length;
-  const mapRms = Math.sqrt(values.reduce((s, v) => s + (v - mapMean) ** 2, 0) / (values.length - 1));
+  const { z, rms: mapRms } = prnuMap(meanSignal, prnu, PATTERN);
   const mapData = [{ x: INDEX, y: INDEX, z, type: "heatmap" as const, colorscale: "Viridis", name: "Signal (e⁻)" }];
 
   // One frame of a flat field spreads by σ_total; averaging many frames leaves σ_spatial.

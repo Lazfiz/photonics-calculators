@@ -4,7 +4,8 @@ import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { enobFromSinad, idealSqnrDb, sinadWithQuantizationDb } from "../../../physics/detectors/noise";
+import { idealSqnrDb, sinadWithQuantizationDb } from "../../../physics/detectors/noise";
+import { sndrSummary } from "../../../physics/detectors/sndr";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmtDb = (x: number) => (x === Infinity ? "∞" : x === -Infinity ? "−∞" : Number.isFinite(x) ? x.toFixed(2) : "—");
@@ -30,13 +31,8 @@ export default function SNDRPage() {
     ];
   }, [signalPower, noisePower, distortionPower, bits]);
 
-  const snr = 10 * Math.log10(signalPower / noisePower);
-  const sinad = 10 * Math.log10(signalPower / (noisePower + distortionPower));
-  const sdr = 10 * Math.log10(signalPower / distortionPower); // signal to total distortion; SFDR would need the largest spur
-  const thd = 10 * Math.log10(distortionPower / signalPower);
-  const sinadQ = sinadWithQuantizationDb(signalPower, noisePower, distortionPower, bits);
-  const enob = enobFromSinad(sinadQ);
-  const sqnr = idealSqnrDb(bits);
+  // sdr: signal to total distortion; SFDR would need the largest spur
+  const { snr, sinad, sdr, thd, sinadQuantized: sinadQ, enob, sqnr } = sndrSummary({ signalPower, noisePower, distortionPower, bits });
 
   return (
     <>
