@@ -203,6 +203,8 @@ const erfIntegral = (x: number) => x * erf(x) + Math.exp(-x * x) / Math.sqrt(Mat
  * s = σ√2, rect a ⊗ Gauss ∝ erf((t + a/2)/s) − erf((t − a/2)/s), and the second rectangle integrates that with
  * ∫erf; the half-maximum point is bisected (firstCrossing, 1e-13 relative). Rectangles alone give max(a, b) (a
  * trapezoid); a Gaussian alone gives g. Quadrature overstates the rectangles: √(a² + b²) instead of max(a, b).
+ * When g ≥ 1e3 × (a + b) the erf differences lose precision, so the variances add instead (a rect of width w has
+ * variance w²/12): FWHM = √(g² + 8·ln 2·(a² + b²)/12), whose error is O(((a + b)/g)⁴) < 1e-12.
  */
 export function rectGaussFwhm(rectWidths: readonly number[], gaussianFwhm: number): number {
   if (!(gaussianFwhm >= 0) || rectWidths.length > 2 || !rectWidths.every((w) => w >= 0)) return NaN;
@@ -210,6 +212,7 @@ export function rectGaussFwhm(rectWidths: readonly number[], gaussianFwhm: numbe
   const span = rects.reduce((s, w) => s + w, 0);
   if (span === 0) return gaussianFwhm;
   if (gaussianFwhm <= 1e-9 * span) return Math.max(...rects);
+  if (gaussianFwhm >= 1e3 * span) return Math.sqrt(gaussianFwhm ** 2 + ((8 * Math.LN2) / 12) * rects.reduce((s, w) => s + w * w, 0));
   const s = (gaussianFwhm / FWHM_PER_SIGMA) * Math.SQRT2;
   const profile = rects.length === 1
     ? (t: number) => erf((t + span / 2) / s) - erf((t - span / 2) / s)

@@ -136,6 +136,12 @@ test("streak camera: time per length and quadrature resolution", () => {
   close(w, 4.997483, 1e-6);
   // A tiny Gaussian converges on the trapezoid's FWHM.
   close(rectGaussFwhm([5, 2], 1e-6), 5, 1e-6);
+  // A Gaussian far wider than the rectangles: variances add, FWHM = √(g² + 8 ln2·Σw²/12). Rect 3 ⊗ Gauss 3000:
+  // √(9e6 + 6 ln 2) = 3000.000693147; just below the switch (g = 2990, bisection) the same expansion gives
+  // √(2990² + 6 ln 2) = 2990.000695465. Gauss 1e7 ⊗ rects 1 and 2 ps: 1e7 + (8 ln 2·5/12)/(2e7) to 1e-15 (was 2e6 before).
+  close(rectGaussFwhm([3], 3000), 3000.000693147, 1e-12);
+  close(rectGaussFwhm([3], 2990), 2990.000695465, 1e-10);
+  close(rectGaussFwhm([1, 2], 1e7), 1e7, 1e-12);
   assert.ok(Number.isNaN(rectGaussFwhm([1, 1, 1], 1)));
   assert.ok(Number.isNaN(rectGaussFwhm([1], -1)));
   assert.equal(quadratureFwhm([]), 0);
