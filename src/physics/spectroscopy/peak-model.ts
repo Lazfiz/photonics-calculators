@@ -182,7 +182,7 @@ export function bandStats(f: (x: number) => number, a: number, b: number, sample
   for (let i = 0; i <= samples; i++) {
     const y = f(a + i * dx);
     if (Number.isNaN(y)) return nan;
-    if (y > yMax) (yMax = y), (iMax = i);
+    if (y > yMax) { yMax = y; iMax = i; }
   }
   if (!(yMax > 0)) return nan;
   let peak = a + iMax * dx;
