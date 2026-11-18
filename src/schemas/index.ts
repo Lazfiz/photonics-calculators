@@ -23,6 +23,17 @@ import fiberLaser from "./fiber-optics/fiber-laser";
 import fiberLoopMirror from "./fiber-optics/fiber-loop-mirror";
 import fiberOpticSensor from "./fiber-optics/fiber-optic-sensor";
 import fiberTaper from "./fiber-optics/fiber-taper";
+import fiberLinkBudget from "./fiber-optics/link-budget";
+import lowWaterPeak from "./fiber-optics/low-water-peak";
+import macroBendingLoss from "./fiber-optics/macro-bending-loss";
+import microBend from "./fiber-optics/micro-bend";
+import modeCoupling from "./fiber-optics/mode-coupling";
+import modeFieldDiameter from "./fiber-optics/mode-field-diameter";
+import multiCore from "./fiber-optics/multi-core";
+import nonlinearEffects from "./fiber-optics/nonlinear-effects";
+import nonzeroDispersion from "./fiber-optics/nonzero-dispersion";
+import otdrAnalysis from "./fiber-optics/otdr-analysis";
+import photonicCrystal from "./fiber-optics/photonic-crystal";
 import acquisitionTracking from "./free-space-comms/acquisition-tracking";
 import adaptiveOptics from "./free-space-comms/adaptive-optics";
 import apertureAveraging from "./free-space-comms/aperture-averaging";
@@ -323,6 +334,8 @@ export const schemas: readonly CalculatorSchema[] = [
   dShapedFiber, dispersionComp, dispersionShifted, fiberAmplifier, fiberBandwidth,
   fiberBraggGrating, fiberBraggGratingSensor, fiberBundle, fiberCharacterization, fiberCoupler, fiberDelayLine,
   fiberGyroscope, fiberLaser, fiberLoopMirror, fiberOpticSensor, fiberTaper,
+  fiberLinkBudget, lowWaterPeak, macroBendingLoss, microBend, modeCoupling, modeFieldDiameter, multiCore, nonlinearEffects,
+  nonzeroDispersion, otdrAnalysis, photonicCrystal,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));
