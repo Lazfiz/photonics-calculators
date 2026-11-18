@@ -17,6 +17,7 @@ interface PhotonicChipHeroProps {
 
 const HUD_TOP: Record<HeroBranchId, string> = { spectral: "10%", imaging: "34%", interference: "54%" };
 const SPEEDS = [0.5, 1, 2];
+const CYCLE_MS = 2600;
 
 function percent(fraction: number): string {
   return `${Math.round(fraction * 1000) / 10}%`;
@@ -30,9 +31,14 @@ export default function PhotonicChipHero({ branches, children }: PhotonicChipHer
   const router = useRouter();
   const ids = useId();
   const stageRef = useRef<HTMLElement>(null);
+  const artRef = useRef<HTMLDivElement>(null);
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Touch and pen input get no hover: the first tap on a branch highlights it ("arms" it), the second opens it.
+  const pointerType = useRef("mouse");
+  const userClicked = useRef(false);
 
   const [hovered, setHoveredState] = useState<HeroHover>(null);
+  const [armed, setArmed] = useState<HeroBranchId | null>(null);
   const [wavelength, setWavelength] = useState(1550);
   const [phaseDeg, setPhaseDeg] = useState(0);
   const [speed, setSpeed] = useState(1);
@@ -42,12 +48,41 @@ export default function PhotonicChipHero({ branches, children }: PhotonicChipHer
   const split = useMemo(() => heroPowerSplit((phaseDeg * Math.PI) / 180), [phaseDeg]);
   const byId = useMemo(() => new Map(branches.map((b) => [b.id, b])), [branches]);
 
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    const track = (e: PointerEvent) => {
+      pointerType.current = e.pointerType;
+    };
+    window.addEventListener("pointerdown", track, { capture: true, passive: true });
+    window.addEventListener("pointermove", track, { capture: true, passive: true });
+    return () => {
+      window.removeEventListener("pointerdown", track, { capture: true });
+      window.removeEventListener("pointermove", track, { capture: true });
       if (leaveTimer.current) clearTimeout(leaveTimer.current);
-    },
-    [],
-  );
+    };
+  }, []);
+
+  // Touch screens: cycle the highlight through the branches while the art is on screen, until the first click in the hero.
+  useEffect(() => {
+    const art = artRef.current;
+    if (!art || !window.matchMedia("(hover: none)").matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let onScreen = false;
+    const observer = new IntersectionObserver(([entry]) => {
+      onScreen = entry?.isIntersecting ?? false;
+    }, { threshold: 0.5 });
+    observer.observe(art);
+    let step = -1;
+    const timer = setInterval(() => {
+      if (!onScreen || userClicked.current || document.hidden) return;
+      step = (step + 1) % branches.length;
+      const next = branches[step];
+      if (next) setHoveredState(next.id);
+    }, CYCLE_MS);
+    return () => {
+      clearInterval(timer);
+      observer.disconnect();
+    };
+  }, [branches]);
 
   // A short delay on leave lets the pointer cross from the art onto the HUD card without it disappearing.
   const setHover = useCallback((next: HeroHover) => {
@@ -62,12 +97,26 @@ export default function PhotonicChipHero({ branches, children }: PhotonicChipHer
     }
   }, []);
 
+  // Browsers emulate mouseenter/mouseleave on a tap; only a real mouse may hover.
+  const setMouseHover = useCallback(
+    (next: HeroHover) => {
+      if (pointerType.current === "mouse") setHover(next);
+    },
+    [setHover],
+  );
+
   const goTo = useCallback(
     (id: HeroBranchId) => {
       const branch = byId.get(id);
-      if (branch) router.push(branch.href);
+      if (!branch) return;
+      if (pointerType.current === "mouse" || armed === id) {
+        router.push(branch.href);
+        return;
+      }
+      setArmed(id);
+      setHover(id);
     },
-    [byId, router],
+    [armed, byId, router, setHover],
   );
 
   const stepPhase = useCallback(() => {
@@ -100,6 +149,9 @@ export default function PhotonicChipHero({ branches, children }: PhotonicChipHer
         ref={stageRef}
         aria-label="Photonic chip overview"
         onMouseMove={handleMouseMove}
+        onClickCapture={() => {
+          userClicked.current = true;
+        }}
         className="hero-stage relative select-none overflow-hidden"
         style={{ "--hero-speed": speed } as CSSProperties}
       >
@@ -112,8 +164,8 @@ export default function PhotonicChipHero({ branches, children }: PhotonicChipHer
                 <li key={branch.id}>
                   <Link
                     href={branch.href}
-                    onMouseEnter={() => setHover(branch.id)}
-                    onMouseLeave={() => setHover(null)}
+                    onMouseEnter={() => setMouseHover(branch.id)}
+                    onMouseLeave={() => setMouseHover(null)}
                     onFocus={() => setHover(branch.id)}
                     onBlur={() => setHover(null)}
                     className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition ${
@@ -132,21 +184,26 @@ export default function PhotonicChipHero({ branches, children }: PhotonicChipHer
           </div>
 
           {/* Art, plus the hover cards positioned in its coordinate frame. */}
-          <div className="relative aspect-video w-full xl:absolute xl:inset-0 xl:aspect-auto">
-            <PhotonicChipArt
-              hovered={hovered}
-              beam={beam}
-              split={split}
-              pulseBurst={pulseBurst}
-              onHover={setHover}
-              onBranchClick={goTo}
-              onChipClick={stepPhase}
-            />
+          <div
+            ref={artRef}
+            className="hero-crop relative aspect-video w-full xl:absolute xl:inset-0 xl:aspect-auto"
+          >
+            <div className="hero-crop-art h-full w-full">
+              <PhotonicChipArt
+                hovered={hovered}
+                beam={beam}
+                split={split}
+                pulseBurst={pulseBurst}
+                onHover={setMouseHover}
+                onBranchClick={goTo}
+                onChipClick={stepPhase}
+              />
+            </div>
 
             {hoveredBranch && hoveredVisual && (
               <div
-                onMouseEnter={() => setHover(hoveredBranch.id)}
-                onMouseLeave={() => setHover(null)}
+                onMouseEnter={() => setMouseHover(hoveredBranch.id)}
+                onMouseLeave={() => setMouseHover(null)}
                 style={{ top: HUD_TOP[hoveredBranch.id] }}
                 className="absolute right-[29%] z-30 hidden w-[330px] rounded-xl border border-cyan-400/50 bg-slate-950/95 p-4 shadow-[0_15px_50px_rgba(0,0,0,0.9),0_0_25px_rgba(0,242,255,0.18)] backdrop-blur-xl md:block"
               >
@@ -190,6 +247,34 @@ export default function PhotonicChipHero({ branches, children }: PhotonicChipHer
                   ½(1 ± sin Δφ).
                 </p>
               </div>
+            )}
+          </div>
+
+          {/* Phones: the highlighted branch, in place of the hover card. Fixed height so the cycle doesn't shift the page. */}
+          <div className="relative z-20 mx-4 mt-3 flex h-[5.75rem] flex-col justify-center rounded-xl border border-slate-800/90 bg-slate-950/85 px-3.5 py-2.5 sm:mx-8 md:hidden">
+            {hoveredBranch && hoveredVisual ? (
+              <>
+                <p className="flex items-center justify-between gap-2 font-mono text-[11px] uppercase tracking-widest text-cyan-300">
+                  <span>Branch {hoveredVisual.index}</span>
+                  <span className="normal-case tracking-normal text-slate-400">
+                    {armed === hoveredBranch.id ? "Tap again to open" : `${hoveredBranch.count} calculators`}
+                  </span>
+                </p>
+                <Link
+                  href={hoveredBranch.href}
+                  className="mt-0.5 flex min-h-6 items-center justify-between gap-2 text-sm font-bold text-white"
+                >
+                  <span>{hoveredBranch.title}</span>
+                  <span aria-hidden="true" className="text-cyan-400">
+                    ›
+                  </span>
+                </Link>
+                <code className="mt-0.5 truncate font-mono text-[11px] text-cyan-300/90">{hoveredVisual.formula}</code>
+              </>
+            ) : (
+              <p className="text-xs text-slate-300">
+                Tap a branch of the chip to highlight it, tap it again to open it. Tap the chip to step Δφ.
+              </p>
             )}
           </div>
 
@@ -296,8 +381,8 @@ export default function PhotonicChipHero({ branches, children }: PhotonicChipHer
             return (
               <article
                 key={branch.id}
-                onMouseEnter={() => setHover(branch.id)}
-                onMouseLeave={() => setHover(null)}
+                onMouseEnter={() => setMouseHover(branch.id)}
+                onMouseLeave={() => setMouseHover(null)}
                 onFocus={() => setHover(branch.id)}
                 onBlur={() => setHover(null)}
                 className={`flex flex-col justify-between rounded-xl border p-4 transition ${
