@@ -5,7 +5,8 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { gapReflectionFactor, gaussianCoupling, gaussianCouplingWorstTilt, lossDb } from "../../../physics/fiber-optics/gaussian-coupling";
+import { gaussianCoupling, lossDb } from "../../../physics/fiber-optics/gaussian-coupling";
+import { spliceLossSummary } from "../../../physics/fiber-optics/splice-loss";
 
 const UM = 1e-6;
 const DEG = Math.PI / 180;
@@ -20,29 +21,10 @@ export default function SpliceLossPage() {
   const [wavelength_nm, setWavelength] = useURLState("wavelength", 1550, { min: 200, max: 5000 });
   const [fiberIndex, setFiberIndex] = useURLState("fiberIndex", 1.447, { min: 1, max: 2 }); // fibre phase index (SMF-28 at 1550 nm; 1.4682 is its group index)
 
-  const calc = useMemo(() => {
-    const valid = lateralOffset >= 0 && angularMisalign >= 0 && angularMisalign < 30 && coreDiam > 0 && mfd2 > 0 &&
-      gap >= 0 && gapIndex >= 1 && fiberIndex >= 1 && wavelength_nm > 0;
-    const base = {
-      w1: (coreDiam / 2) * UM, w2: (mfd2 / 2) * UM, lambda: wavelength_nm * 1e-9, n: gapIndex,
-    };
-    const d = lateralOffset * UM, tilt = angularMisalign * DEG, z = gap * UM;
-    const loss = (j: Partial<typeof base> & { offset?: number; tilt?: number; gap?: number }) =>
-      valid ? lossDb(gaussianCouplingWorstTilt({ ...base, ...j })) : NaN;
-    const w = (coreDiam / 2) * UM;
-    // Multiple reflections between the faces (coherent sum of Gaussian passes in fibre 1's mode): the gap and total
-    // cards include them; 1 at physical contact (z = 0) and with index matching.
-    const reflection = valid ? gapReflectionFactor(fiberIndex, gapIndex, z, base.lambda, w) : NaN;
-    return {
-      // Each effect alone between equal modes of fibre 1's radius, then the mismatch alone, then the full joint.
-      latLoss: loss({ w2: w, offset: d }),
-      angLoss: loss({ w2: w, tilt }),
-      gapLoss: loss({ w2: w, gap: z }) + lossDb(reflection),
-      reflectionLoss: lossDb(reflection),
-      mismatchLoss: loss({}),
-      totalLoss: loss({ offset: d, tilt, gap: z }) + lossDb(reflection),
-    };
-  }, [lateralOffset, angularMisalign, coreDiam, mfd2, gap, gapIndex, fiberIndex, wavelength_nm]);
+  const calc = spliceLossSummary({
+    mfd1: coreDiam * UM, mfd2: mfd2 * UM, offset: lateralOffset * UM, tilt: angularMisalign * DEG, gap: gap * UM,
+    gapIndex, fiberIndex, lambda: wavelength_nm * 1e-9,
+  });
 
   const chartData = useMemo(() => {
     // Equal modes of fibre 1's radius, as in the Lateral and Angular cards. Plotly can't draw Infinity: use gaps.

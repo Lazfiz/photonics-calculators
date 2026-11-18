@@ -1,25 +1,16 @@
 "use client";
 
-import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import {
-  couplingCoefficient, evanescentIntensityRatio, lp01PowerBeyondPlane, polishedCouplerPhase,
-} from "../../../physics/fiber-optics/coupled-mode";
-import { LP11_CUTOFF_V, MIN_V, lp01Mode, vNumber } from "../../../physics/fiber-optics/macro-bending-loss";
-import { effectiveIndex, numericalAperture } from "../../../physics/fiber-optics/step-index-modes";
+import { PERTURBATION_FRACTION, lp01PowerBeyondPlane, polishedCouplerPhase } from "../../../physics/fiber-optics/coupled-mode";
+import { LP11_CUTOFF_V, MIN_V } from "../../../physics/fiber-optics/macro-bending-loss";
+import { sidePolishedSummary } from "../../../physics/fiber-optics/side-polished";
 
 const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
 const fmtPct = (x: number) =>
   !Number.isFinite(x) ? "—" : x >= 1e-3 ? `${(100 * x).toPrecision(3)} %` : `${(100 * x).toExponential(2)} %`;
-/**
- * First-order perturbation needs the shift to be small against the guidance margin n_eff − n₂, and the outer index
- * to stay well below n_eff (as it approaches n_eff the real tail spreads out and first order underestimates).
- */
-const PERTURBATION_FRACTION = 0.1;
-const NEAR_LEAK_FRACTION = 0.5;
 
 export default function SidePolishedPage() {
   const [remainingClad, setRemainingClad] = useURLState("remainingClad", 2, { min: 0, max: 30 }); // µm, core boundary to polished face
@@ -30,34 +21,13 @@ export default function SidePolishedPage() {
   const [n_overlay, setN_overlay] = useURLState("n_overlay", 1.43, { min: 1, max: 2 });
   const [blockRadius, setBlockRadius] = useURLState("blockRadius", 25, { min: 1, max: 500 }); // cm, radius the fibre is bent to in the block
 
-  const fiber = useMemo(
-    () => ({ a: (coreDia / 2) * 1e-6, n1: n_core, NA: numericalAperture(n_core, n_clad) }),
-    [coreDia, n_core, n_clad],
-  );
+  const calc = sidePolishedSummary({
+    remainingClad: remainingClad * 1e-6, coreDia: coreDia * 1e-6, lambda: wavelength * 1e-9,
+    nCore: n_core, nClad: n_clad, nOverlay: n_overlay, blockRadius: blockRadius * 1e-2,
+  });
+  const fiber = calc.fiber;
 
-  const calc = useMemo(() => {
-    const lambda = wavelength * 1e-9;
-    const V = vNumber(fiber, lambda);
-    const mode = lp01Mode(V);
-    const nEff = effectiveIndex(fiber, lambda, mode);
-    const rho0 = 1 + (remainingClad * 1e-6) / fiber.a;
-    const eta = lp01PowerBeyondPlane(mode, rho0);
-    // First-order perturbation: Δ(n_eff²) = η (n_ov² − n₂²) (Snyder & Love 1983), so Δn_eff ≈ η(n_ov² − n₂²)/(2 n_eff).
-    const dNeff = (eta * (n_overlay ** 2 - n_clad ** 2)) / (2 * nEff);
-    // Two identical fibres polished face to face, gap index-matched: minimum core spacing D₀ = 2(a + d).
-    const D0 = 2 * (fiber.a + remainingClad * 1e-6);
-    const kappa0 = couplingCoefficient(fiber, lambda, D0, mode);
-    const phi = polishedCouplerPhase(fiber, lambda, D0, blockRadius * 1e-2, mode);
-    return {
-      V, mode, nEff, eta, dNeff, kappa0, phi,
-      surface: evanescentIntensityRatio(mode, rho0),
-      decayLength_um: (fiber.a / mode.W) * 1e6,
-      coupled: Math.sin(phi) ** 2,
-      Leff_mm: (phi / kappa0) * 1e3,
-    };
-  }, [fiber, wavelength, remainingClad, n_overlay, n_clad, blockRadius]);
-
-  const chartData = useMemo(() => {
+  const chartData = (() => {
     const lambda = wavelength * 1e-9;
     const ds: number[] = [];
     const etas: (number | null)[] = [];
@@ -78,14 +48,9 @@ export default function SidePolishedPage() {
         ? [{ x: [remainingClad], y: [100 * calc.eta], type: "scatter" as const, mode: "markers" as const, name: "Your d", marker: { color: "#ffffff", size: 8 }, yaxis: "y" }]
         : []),
     ];
-  }, [calc.mode, calc.eta, fiber, wavelength, blockRadius, remainingClad]);
+  })();
 
-  const valid = Number.isFinite(calc.eta);
-  const leaky = valid && n_overlay >= calc.nEff;
-  const margin = calc.nEff - n_clad;
-  const strong = valid && !leaky && Math.abs(calc.dNeff) > PERTURBATION_FRACTION * margin;
-  const nearLeak = valid && !leaky && calc.nEff - n_overlay < NEAR_LEAK_FRACTION * margin;
-  const mismatchedGap = Math.abs(n_overlay - n_clad) > 0.002;
+  const { valid, leaky, margin, strong, nearLeak, mismatchedGap } = calc;
 
   return (
     <>
@@ -128,7 +93,7 @@ export default function SidePolishedPage() {
           first-order shift underestimates the true one.
         </p>
       )}
-      {valid && remainingClad < 0.5 && (
+      {calc.touching && (
         <p className="mb-6 text-sm text-gray-400" role="status">
           Under 0.5 µm of cladding is left: the twin cores almost touch, where coupled-mode theory is at its limit.
         </p>
@@ -136,13 +101,13 @@ export default function SidePolishedPage() {
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">
         <ResultCard label="Power beyond the face" value={fmtPct(calc.eta)} tone="blue" subtext={`V = ${fmt(calc.V, 3)}, n_eff = ${fmt(calc.nEff, 5)}`} />
-        <ResultCard label="Intensity at the face" value={fmtPct(calc.surface)} tone="cyan" subtext={`of the core-boundary value; field 1/e length a/W (intensity a/2W) = ${fmt(calc.decayLength_um, 2, " µm")}`} />
+        <ResultCard label="Intensity at the face" value={fmtPct(calc.surface)} tone="cyan" subtext={`of the core-boundary value; field 1/e length a/W (intensity a/2W) = ${fmt(calc.decayLength * 1e6, 2, " µm")}`} />
         <ResultCard label="Overlay shift Δn_eff" value={leaky || !valid ? "—" : calc.dNeff.toExponential(2)} tone="purple" subtext="first-order, η(n_ov² − n₂²)/(2n_eff)" />
         <ResultCard
           label="Polished coupler"
           value={fmtPct(calc.coupled)}
           tone="yellow"
-          subtext={`coupled to a twin fibre; κ₀ = ${Number.isFinite(calc.kappa0) ? calc.kappa0.toPrecision(3) : "—"} m⁻¹, L_eff = ${fmt(calc.Leff_mm, 2, " mm")}`}
+          subtext={`coupled to a twin fibre; κ₀ = ${Number.isFinite(calc.kappa0) ? calc.kappa0.toPrecision(3) : "—"} m⁻¹, L_eff = ${fmt(calc.Leff * 1e3, 2, " mm")}`}
         />
       </div>
       {mismatchedGap && (

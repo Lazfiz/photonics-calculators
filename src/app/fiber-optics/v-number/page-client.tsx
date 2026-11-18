@@ -1,53 +1,30 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { LP11_CUTOFF_V, lp11CutoffWavelength, vNumber } from "../../../physics/fiber-optics/macro-bending-loss";
-import { numericalAperture } from "../../../physics/fiber-optics/step-index-modes";
-import {
-  MAX_EXACT_MODE_V, asymptoticModeCount, countModes, guidedLpModes,
-} from "../../../physics/fiber-optics/step-index-modes";
+import { LP11_CUTOFF_V, vNumber } from "../../../physics/fiber-optics/macro-bending-loss";
+import { MAX_EXACT_MODE_V } from "../../../physics/fiber-optics/step-index-modes";
+import { vNumberProblem, vNumberSummary } from "../../../physics/fiber-optics/v-number";
 
 const MAX_LISTED_MODES = 12;
 
 export default function VNumberCalculator() {
   const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.1, { min: 0.1, max: 1000 }); // µm
   const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 100, max: 20000 }); // nm
-  const [inputMode, setInputMode] = useState<"na" | "indices">("na");
+  const [inputModeRaw, setInputMode] = useURLState("inputMode", "na");
+  const inputMode = inputModeRaw === "indices" ? "indices" : "na";
   const [na, setNa] = useURLState("na", 0.1246, { min: 0.001, max: 1 });
   const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.4494, { min: 1, max: 4 });
   const [claddingIndex, setCladdingIndex] = useURLState("claddingIndex", 1.444, { min: 1, max: 4 });
 
-  const calc = useMemo(() => {
-    const NA = inputMode === "na" ? na : numericalAperture(coreIndex, claddingIndex);
-    // n₁ only enters the NA; any n₁ > NA is valid when NA is entered directly.
-    const fiber = { a: coreRadius * 1e-6, n1: inputMode === "na" ? Math.max(1, 2 * NA) : coreIndex, NA };
-    const V = vNumber(fiber, wavelength * 1e-9);
-    const lpModes = guidedLpModes(V);
-    return {
-      NA,
-      fiber,
-      V,
-      cutoff_nm: lp11CutoffWavelength(fiber) * 1e9,
-      modes: countModes(lpModes),
-      approx: asymptoticModeCount(V),
-      lpModes,
-      acceptance_deg: NA <= 1 ? (Math.asin(NA) * 180) / Math.PI : NaN,
-    };
-  }, [inputMode, na, coreIndex, claddingIndex, coreRadius, wavelength]);
-
-  const invalidReason =
-    inputMode === "indices" && !(claddingIndex < coreIndex)
-      ? "The cladding index must be below the core index."
-      : !Number.isFinite(calc.V)
-        ? "Enter a positive core radius, wavelength and NA (NA < n₁)."
-        : null;
+  const summary = vNumberSummary({ mode: inputMode, a: coreRadius * 1e-6, lambda: wavelength * 1e-9, na, coreIndex, claddingIndex });
+  const calc = { ...summary, cutoff_nm: summary.cutoff * 1e9 };
+  const invalidReason = vNumberProblem(inputMode, coreIndex, claddingIndex, calc.V);
   const singleMode = calc.V < LP11_CUTOFF_V;
 
-  const chartData = useMemo(() => {
+  const chartData = (() => {
     if (!Number.isFinite(calc.NA)) return [];
     // 600–2000 nm, widened to keep the entered wavelength inside the plot.
     const lo = Math.min(600, 0.8 * wavelength);
@@ -62,7 +39,7 @@ export default function VNumberCalculator() {
       traces.push({ x: [wavelength], y: [calc.V], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#22c55e", size: 10 } });
     }
     return traces;
-  }, [calc.NA, calc.V, calc.fiber, wavelength]);
+  })();
 
   const modeList = calc.lpModes.slice(0, MAX_LISTED_MODES).map(({ l, m }) => `LP${l}${m}`).join(", ");
 
@@ -77,7 +54,7 @@ export default function VNumberCalculator() {
             <select
               id="v-input-mode"
               value={inputMode}
-              onChange={(e) => setInputMode(e.target.value as "na" | "indices")}
+              onChange={(e) => setInputMode(e.target.value)}
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none"
             >
               <option value="na">Numerical Aperture</option>
@@ -100,7 +77,7 @@ export default function VNumberCalculator() {
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               <ResultCard label="V-number" value={calc.V.toFixed(3)} tone={singleMode ? "green" : "yellow"} subtext={singleMode ? "V < 2.405: single-mode (LP01 only)" : "V ≥ 2.405: multimode"} />
-              <ResultCard label="Numerical aperture" value={calc.NA.toFixed(4)} tone="blue" subtext={Number.isFinite(calc.acceptance_deg) ? `Acceptance half-angle ${calc.acceptance_deg.toFixed(2)}° in air` : undefined} />
+              <ResultCard label="Numerical aperture" value={calc.NA.toFixed(4)} tone="blue" subtext={Number.isFinite(calc.acceptanceDeg) ? `Acceptance half-angle ${calc.acceptanceDeg.toFixed(2)}° in air` : undefined} />
               <ResultCard label="LP11 cutoff wavelength" value={`${calc.cutoff_nm.toFixed(0)} nm`} tone="purple" subtext="λc = 2πa·NA/2.405; single-mode above it" />
               <ResultCard
                 label="Guided modes"

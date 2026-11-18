@@ -1,8 +1,9 @@
 /**
  * WDM channel plans and the isolation of Gaussian passbands.
  *
- * DWDM (ITU-T G.694.1): channels sit at equal *frequency* steps Δν = 12.5, 25, 50, 100 or 200 GHz, anchored at
- * 193.1 THz; Δν ≈ cΔλ/λ² converts the wavelength spacing at the centre. CWDM (ITU-T G.694.2): 20 nm steps in
+ * DWDM (ITU-T G.694.1): the spacing is recognised as a G.694.1 value (Δν = 12.5, 25, 50, 100 or 200 GHz, from
+ * Δν ≈ cΔλ/λc² at the centre). The channels are then at equal frequency steps cΔλ/λc² about λc; they are not
+ * snapped to the grid and not anchored at 193.1 THz. CWDM (ITU-T G.694.2): 20 nm steps in
  * *wavelength*, 1271–1611 nm. A plan that matches neither is spaced equally in wavelength.
  *
  * Passbands are Gaussian in wavelength with full width at half maximum FWHM, σ = FWHM/(2√(2 ln 2)). The leak of a
@@ -78,4 +79,28 @@ export function gaussianPassband(detuning: number, fwhm: number): number {
 export function gaussianAdjacentIsolationDb(spacing: number, fwhm: number): number {
   if (!(spacing > 0 && fwhm > 0)) return NaN;
   return (10 / Math.LN10) * 4 * Math.LN2 * (spacing / fwhm) ** 2;
+}
+
+/** Wavelength range of the page's centre-wavelength input (and of typical WDM components), m. */
+export const WDM_RANGE: readonly [number, number] = [800 * 1e-9, 1700 * 1e-9];
+
+/**
+ * Page and API summary of a channel plan of n channels centred on λc (m) with spacing Δλ (m) and passband FWHM (m):
+ * the grid, channel wavelengths (m), whether the plan is invalid (no channels or one at or below zero wavelength), the
+ * first and last channel and their span (m, NaN when invalid), whether a channel lies outside `WDM_RANGE`, the
+ * frequency spacing cΔλ/λc² (Hz) and the adjacent-channel isolation of Gaussian passbands (dB).
+ */
+export function wdmPlanSummary(n: number, centre: number, spacing: number, fwhm: number) {
+  const grid = ituGrid(spacing, centre);
+  const channels = channelWavelengths(n, centre, spacing, grid.equalFrequency);
+  const planInvalid = channels.length === 0 || channels.some((ch) => !Number.isFinite(ch));
+  const first = planInvalid ? NaN : Math.min(...channels);
+  const last = planInvalid ? NaN : Math.max(...channels);
+  return {
+    grid, channels, planInvalid, first, last,
+    totalBandwidth: last - first,
+    outOfRange: !planInvalid && (first < WDM_RANGE[0] || last > WDM_RANGE[1]),
+    frequencySpacing: frequencyWidth(centre, spacing),
+    isolationDb: gaussianAdjacentIsolationDb(spacing, fwhm),
+  };
 }

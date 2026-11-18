@@ -155,3 +155,24 @@ export const MARCUSE_MIN_V = 1.2;
 export function specialtyMfd(f: SpecialtyFiber, lambda: number): number {
   return specialtyV(f, lambda) >= MARCUSE_MIN_V ? 2 * modeFieldRadius(asStepIndex(f), lambda) : NaN;
 }
+
+/**
+ * Page and API summary for one fibre at wavelength λ (m) and length L (m): V, whether λ is above the sheet cut-off
+ * (single-mode), whether the glass transmits at λ, the step-index cut-off and Marcuse MFD (m) at λ and at the sheet's
+ * MFD wavelength, whether λ lies in the sheet's operating band (null when the sheet gives none), the data-sheet loss
+ * figure (dB/m, NaN when none) and the loss over L (dB, NaN for L ≤ 0 or no figure).
+ */
+export function specialtySummary(f: SpecialtyFiber, lambda: number, length: number) {
+  const loss: DatasheetFigure | undefined = f.attenuation ?? f.absorption;
+  return {
+    V: specialtyV(f, lambda),
+    singleMode: lambda > f.cutoff,
+    transmits: lambda >= f.transmission[0] && lambda <= f.transmission[1],
+    cutoffModel: specialtyCutoff(f),
+    mfdModel: specialtyMfd(f, lambda),
+    mfdAtSheetLambda: specialtyMfd(f, f.mfd.lambda),
+    inBand: f.band ? lambda >= f.band[0] && lambda <= f.band[1] : null,
+    lossDbPerM: loss ? loss.dbPerM : NaN,
+    lossDb: loss && length > 0 ? loss.dbPerM * length : NaN,
+  };
+}

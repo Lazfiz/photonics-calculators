@@ -1,11 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { frequencyWidth } from "../../../physics/spectroscopy/wavenumber";
-import { ituGrid, channelWavelengths, gaussianPassband, gaussianAdjacentIsolationDb } from "../../../physics/fiber-optics/wdm-channel-plan";
+import { gaussianPassband, wdmPlanSummary } from "../../../physics/fiber-optics/wdm-channel-plan";
 
 export default function WDMCouplerCalculator() {
   // Ranges keep the spectrum (0.05 nm steps × channels) small: up to 96 channels, CWDM's 20 nm spacing.
@@ -17,28 +15,15 @@ export default function WDMCouplerCalculator() {
   const channelCount = Math.round(channelCountRaw);
 
   // Channel plan (SI inside the physics module; nm at the boundary)
-  const grid = useMemo(() => ituGrid(channelSpacing * 1e-9, centerWavelength * 1e-9), [channelSpacing, centerWavelength]);
-  const channels = useMemo(
-    () => channelWavelengths(channelCount, centerWavelength * 1e-9, channelSpacing * 1e-9, grid.equalFrequency).map((m) => m * 1e9),
-    [channelCount, centerWavelength, channelSpacing, grid],
-  );
-  const planInvalid = channels.length === 0 || channels.some((ch) => !Number.isFinite(ch));
-  const chMin = planInvalid ? NaN : Math.min(...channels);
-  const chMax = planInvalid ? NaN : Math.max(...channels);
-  const outOfRange = !planInvalid && (chMin < 800 || chMax > 1700);
-
-  // Frequency spacing in GHz
-  const freqSpacing = useMemo(() => {
-    return frequencyWidth(centerWavelength * 1e-9, channelSpacing * 1e-9) / 1e9;
-  }, [channelSpacing, centerWavelength]);
-
-  const isolationDb = gaussianAdjacentIsolationDb(channelSpacing * 1e-9, passbandWidth * 1e-9);
-
-  // Total bandwidth (first to last channel)
-  const totalBandwidth = planInvalid ? NaN : chMax - chMin;
+  const plan = wdmPlanSummary(channelCount, centerWavelength * 1e-9, channelSpacing * 1e-9, passbandWidth * 1e-9);
+  const { grid, planInvalid, outOfRange } = plan;
+  const channels = plan.channels.map((m) => m * 1e9);
+  const freqSpacing = plan.frequencySpacing / 1e9; // GHz
+  const isolationDb = plan.isolationDb;
+  const totalBandwidth = plan.totalBandwidth * 1e9; // nm
 
   // Composite spectral response
-  const spectrum = useMemo(() => {
+  const spectrum = (() => {
     if (planInvalid) return [];
     const wavelengths: number[] = [];
     const composite: number[] = [];
@@ -78,7 +63,7 @@ export default function WDMCouplerCalculator() {
       { x: wavelengths, y: composite, type: "scatter" as const, mode: "lines" as const, name: "Composite", line: { color: "#f59e0b", width: 2.5 } },
       ...channelTraces,
     ];
-  }, [channels, planInvalid, passbandWidth, insertionLoss, channelSpacing]);
+  })();
 
   const layout = {
     title: `WDM ${channelCount}-Channel Spectral Response`,

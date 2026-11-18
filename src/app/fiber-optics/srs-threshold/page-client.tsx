@@ -4,10 +4,8 @@ import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import {
-  SRS_POLARIZATION_FACTOR, alphaFromDbPerKm, effectiveLength, ramanGainAt, ramanOnOffGain, srsThreshold,
-  stokesWavelength,
-} from "../../../physics/fiber-optics/fiber-nonlinear";
+import { SRS_POLARIZATION_FACTOR, effectiveLength, ramanOnOffGain } from "../../../physics/fiber-optics/fiber-nonlinear";
+import { srsSpan, srsSummary, srsThresholdOf } from "../../../physics/fiber-optics/srs-threshold";
 
 const POL_CASES = [
   { key: "copolarized", label: "co-polarized / PM fibre (K = 1)", color: "#22c55e" },
@@ -25,19 +23,17 @@ export default function SRSThresholdPage() {
   const [ramanShift, setRamanShift] = useURLState("ramanShift", 13.2); // THz
 
   const results = useMemo(() => {
-    const lambda = Math.min(Math.max(wavelength, 400), 2200) * 1e-9;
-    const L = Math.max(fiberLength, 1e-3) * 1e3;
-    const Aeff = Math.max(effectiveArea, 1) * 1e-12;
-    const alpha = alphaFromDbPerKm(Math.max(loss, 0));
-    const gR = Math.max(ramanGain, 1e-17);
-
-    const Leff = effectiveLength(alpha, L);
-    const thresholds = POL_CASES.map(({ key }) => srsThreshold(Aeff, gR, Leff, SRS_POLARIZATION_FACTOR[key]));
+    const span = srsSpan({
+      lambda: wavelength * 1e-9, L: fiberLength * 1e3, Aeff: effectiveArea * 1e-12, lossDbPerKm: loss, gR: ramanGain,
+      shift: ramanShift * 1e12,
+    });
+    const { L, alpha, gR, Aeff } = span;
+    const { Leff, thresholds, gRAtLambda, lambdaStokes } = srsSummary(span);
 
     const lengths = Array.from({ length: 80 }, (_, i) => ((i + 1) / 80) * 2 * (L / 1e3)); // 0 … 2L, km
     const vsLength = POL_CASES.map(({ key, label, color }) => ({
       type: "scatter" as const, mode: "lines" as const, name: label, line: { color, width: 2 },
-      x: lengths, y: lengths.map((l) => srsThreshold(Aeff, gR, effectiveLength(alpha, l * 1e3), SRS_POLARIZATION_FACTOR[key])),
+      x: lengths, y: lengths.map((l) => srsThresholdOf(span, SRS_POLARIZATION_FACTOR[key], effectiveLength(alpha, l * 1e3))),
     }));
 
     // Undepleted-pump on-off gain up to half the co-polarized threshold (where it reaches 8 Np ≈ 35 dB).
@@ -48,11 +44,7 @@ export default function SRSThresholdPage() {
       y: pumps.map((p) => 10 * Math.log10(ramanOnOffGain(gR, p, Leff, Aeff, SRS_POLARIZATION_FACTOR[key]))),
     }));
 
-    return {
-      Leff, thresholds, vsLength, vsPump,
-      gRAtLambda: ramanGainAt(lambda),
-      lambdaStokes: stokesWavelength(lambda, Math.max(ramanShift, 0) * 1e12),
-    };
+    return { Leff, thresholds, vsLength, vsPump, gRAtLambda, lambdaStokes };
   }, [wavelength, fiberLength, effectiveArea, loss, ramanGain, ramanShift]);
 
   const chartLayout = (xTitle: string, yTitle: string) => ({
