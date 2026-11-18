@@ -3,7 +3,8 @@
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { exitPupilDiameter, objectiveMag, totalMag, usefulMagRange } from "../../../physics/imaging/microscope";
+import { magnificationSummary, VERDICT_TEXT } from "../../../physics/imaging/magnification";
+import { objectiveMag, totalMag } from "../../../physics/imaging/microscope";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const mm = 1e-3;
@@ -29,16 +30,11 @@ export default function MagnificationPage() {
   const eyepiece = clamp(eyepieceRaw, 1, 30, 15);
   const na = clamp(naRaw, 0.01, 1.7, 0.4);
 
-  const Mobj = objectiveMag(fObjMm * mm, fTubeMm * mm);
-  const Mcam = totalMag(Mobj, adapter);
-  const Mvis = totalMag(Mobj, eyepiece);
-  const useful = usefulMagRange(na);
-  const pupilMm = exitPupilDiameter(na, Mvis) / mm;
-  const verdict = Mvis < useful.min
-    ? "below the useful range: the eye cannot resolve all the detail the objective passes"
-    : Mvis > useful.max
-      ? "above the useful range: empty magnification"
-      : "within the useful range";
+  const sum = magnificationSummary(fObjMm * mm, fTubeMm * mm, adapter, eyepiece, na);
+  const { objective: Mobj, camera: Mcam, visual: Mvis } = sum;
+  const useful = { min: sum.usefulMin, max: sum.usefulMax };
+  const pupilMm = sum.exitPupil / mm;
+  const verdict = VERDICT_TEXT[sum.verdict];
 
   const fs = Array.from({ length: 101 }, (_, k) => 10 ** (k / 50));
   const chart = [

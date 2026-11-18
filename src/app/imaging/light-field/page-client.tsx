@@ -4,6 +4,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { SPARROW_FACTOR, lightFieldMicroscope } from "../../../physics/imaging/light-field";
+import { noAngleReason } from "../../../physics/imaging/light-field-summary";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const nm = 1e-9;
@@ -39,6 +40,7 @@ export default function LightFieldPage() {
   });
   const r = design(pitchUm * um);
   const naTooHigh = !(na < n);
+  const noAngle = noAngleReason(r);
 
   const pitches = Array.from({ length: 101 }, (_, k) => 10 * 100 ** (k / 100)); // 10 µm to 1 mm
   const sweep = pitches.map((p) => design(p * um));
@@ -55,9 +57,7 @@ export default function LightFieldPage() {
       {naTooHigh && (
         <p className="mb-4 text-sm text-red-400">The NA must be below the medium index n ({fmt(n, 2)}): results are blank.</p>
       )}
-      {r.nu < 1 && (
-        <p className="mb-4 text-sm text-yellow-400">The lenslet is narrower than the diffraction spot (N_u &lt; 1): it samples no angle, so there is no refocused or single-view depth of field.</p>
-      )}
+      {noAngle && <p className="mb-4 text-sm text-yellow-400">{noAngle}</p>}
       {r.pixelLimited && (
         <p className="mb-4 text-sm text-yellow-400">Pixel limited. A refocused slice still has e = W, so its depth of field uses the diffraction count W/R_obj; a single view uses the pixel-limited N_u.</p>
       )}

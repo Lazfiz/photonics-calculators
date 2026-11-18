@@ -3,9 +3,8 @@
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import {
-  coherenceLength, coherenceTime, degreeOfCoherence, fdOctSnr, octAxialResolution, spectralWidthHz,
-} from "../../../physics/imaging/oct";
+import { degreeOfCoherence, octAxialResolution } from "../../../physics/imaging/oct";
+import { OCT_NARROWBAND_LIMIT, exceedsNarrowbandLimit, opticalCoherenceSummary } from "../../../physics/imaging/optical-coherence";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 
@@ -39,15 +38,11 @@ export default function OpticalCoherencePage() {
 
   const lambda0 = lambdaNm * 1e-9;
   const dLambda = bwNm * 1e-9;
-  const dzAir = octAxialResolution(lambda0, dLambda);
-  const dzSample = octAxialResolution(lambda0, dLambda, n);
-  const lc = coherenceLength(lambda0, dLambda);
-  const tauC = coherenceTime(lambda0, dLambda);
-  const dNu = spectralWidthHz(lambda0, dLambda);
-  const aScanTime = 1 / (rateKhz * 1e3);
-  const pSignal = powerMw * 1e-3 * kappa * Rs; // Choma's P_s = R_s·S, scaled by κ
-  const snr = fdOctSnr(rho, pSignal, aScanTime);
-  const sensitivity = fdOctSnr(rho, powerMw * 1e-3 * kappa, aScanTime); // SNR of a perfect mirror = 1/R_s,min
+  // Choma's P_s = R_s·S scaled by κ; the sensitivity is the SNR of a perfect mirror = 1/R_s,min.
+  const {
+    axialResolutionAir: dzAir, axialResolutionSample: dzSample, coherenceLength: lc, coherenceTime: tauC,
+    spectralWidth: dNu, signalPower: pSignal, snr, sensitivity,
+  } = opticalCoherenceSummary(lambda0, dLambda, n, powerMw * 1e-3, Rs, kappa, rho, rateKhz * 1e3);
 
   const lambdas = Array.from({ length: 201 }, (_, i) => lambdaNm - 2 * bwNm + (i * 4 * bwNm) / 200);
   const spectrumChart = [
@@ -99,6 +94,9 @@ export default function OpticalCoherencePage() {
           <p className="text-xs text-gray-500">
             SNR = ρ P_s Δt/(2e) with Δt = 1/(A-scan rate) and the reference arm strong enough for shot-noise-limited
             detection. Spectral width Δλ/λ₀ = {(bwNm / lambdaNm).toFixed(3)}; the Gaussian formulas assume it is small.
+            {exceedsNarrowbandLimit(lambda0, dLambda) && (
+              <span className="text-yellow-400"> Above {OCT_NARROWBAND_LIMIT} they lose accuracy.</span>
+            )}
           </p>
         </div>
       </div>
