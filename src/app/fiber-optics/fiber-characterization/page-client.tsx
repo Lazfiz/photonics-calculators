@@ -5,14 +5,11 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { sellmeierDispersion } from "../../../physics/fiber-optics/chromatic-dispersion";
-import { SILICA_N2, nonlinearCoefficient } from "../../../physics/fiber-optics/fiber-nonlinear";
 import {
-  LP11_CUTOFF_V, MFD_FIT_V_RANGE, MIN_V, lp01Mode, lp11CutoffWavelength, modeFieldRadius, vNumber,
+  LP11_CUTOFF_V, MFD_FIT_V_RANGE, MIN_V, modeFieldRadius, vNumber,
 } from "../../../physics/fiber-optics/macro-bending-loss";
-import {
-  coreConfinement, effectiveIndex, normalizedB, numericalAperture, petermannIIRadius, relativeIndexDifference,
-} from "../../../physics/fiber-optics/step-index-modes";
+import { WEAK_GUIDANCE_DELTA, fiberCharacterization } from "../../../physics/fiber-optics/fiber-characterization";
+import { numericalAperture, petermannIIRadius } from "../../../physics/fiber-optics/step-index-modes";
 
 const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
 
@@ -31,27 +28,24 @@ export default function FiberCharacterizationPage() {
 
   const calc = useMemo(() => {
     const lambda = wavelength * 1e-9;
-    const V = vNumber(fiber, lambda);
-    const mode = lp01Mode(V);
-    const w = modeFieldRadius(fiber, lambda);
-    const Aeff = Math.PI * w * w;
+    // S₀ in ps/(nm²·km) → s/m³: × 1e3. D in s/m² → ps/(nm·km): × 1e6.
+    const r = fiberCharacterization(coreRadius * 1e-6, coreIndex, claddingIndex, lambda, zeroDispersion * 1e-9, dispersionSlope * 1e3);
     return {
-      V,
-      NA: fiber.NA,
-      delta: relativeIndexDifference(fiber),
-      acceptance_deg: fiber.NA <= 1 ? (Math.asin(fiber.NA) * 180) / Math.PI : NaN,
-      cutoff_nm: lp11CutoffWavelength(fiber) * 1e9,
-      b: normalizedB(mode),
-      nEff: effectiveIndex(fiber, lambda, mode),
-      confinement: coreConfinement(mode),
-      mfd_um: 2e6 * w,
-      mfdPII_um: 2e6 * petermannIIRadius(fiber, lambda, mode),
-      aeff_um2: Aeff * 1e12,
-      gamma_perWkm: nonlinearCoefficient(SILICA_N2, lambda, Aeff) * 1e3,
-      // s/m² → ps/(nm·km): × 1e6. S₀ in ps/(nm²·km) → s/m³: × 1e3.
-      D: sellmeierDispersion(lambda, zeroDispersion * 1e-9, dispersionSlope * 1e3) * 1e6,
+      V: r.V,
+      NA: r.NA,
+      delta: r.delta,
+      acceptance_deg: (r.acceptanceAngle * 180) / Math.PI,
+      cutoff_nm: r.cutoff * 1e9,
+      b: r.b,
+      nEff: r.nEff,
+      confinement: r.confinement,
+      mfd_um: 1e6 * r.mfd,
+      mfdPII_um: 1e6 * r.mfdPetermannII,
+      aeff_um2: r.Aeff * 1e12,
+      gamma_perWkm: r.gamma * 1e3,
+      D: r.D * 1e6,
     };
-  }, [fiber, wavelength, zeroDispersion, dispersionSlope]);
+  }, [coreRadius, coreIndex, claddingIndex, wavelength, zeroDispersion, dispersionSlope]);
 
   const valid = Number.isFinite(calc.mfd_um) && Number.isFinite(calc.b);
 
@@ -112,7 +106,7 @@ export default function FiberCharacterizationPage() {
           V = {calc.V.toFixed(2)} is outside {MFD_FIT_V_RANGE[0]}–{MFD_FIT_V_RANGE[1]}: the Marcuse MFD fit is extrapolated; A_eff and γ use it.
         </p>
       )}
-      {valid && calc.delta > 0.05 && (
+      {valid && calc.delta > WEAK_GUIDANCE_DELTA && (
         <p className="mb-6 text-sm text-yellow-300" role="status">
           Δ = {(calc.delta * 100).toFixed(1)} % &gt; 5 %: this is a weak-guidance (LP) model, so the mode values are approximate.
         </p>

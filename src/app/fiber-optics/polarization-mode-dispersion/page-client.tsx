@@ -5,13 +5,11 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import {
-  MEAN_DGD_BIT_FRACTION, MEAN_TO_RMS, dgdExceedanceProbability, dgdPdf, meanDgd, pmdLimitedLength,
-} from "../../../physics/fiber-optics/polarization-mode-dispersion";
+import { MEAN_DGD_BIT_FRACTION, dgdPdf, meanDgd } from "../../../physics/fiber-optics/polarization-mode-dispersion";
+import { MINUTES_PER_YEAR, PS_PER_SQRT_KM, pmdSummary } from "../../../physics/fiber-optics/polarization-mode-dispersion-summary";
 
-const PS_SQRT_KM = 1e-12 / Math.sqrt(1e3); // ps/√km → s/√m
+const PS_SQRT_KM = PS_PER_SQRT_KM; // ps/√km → s/√m
 const CHART_RATES_GBPS = [2.5, 10, 40, 100];
-const MINUTES_PER_YEAR = 365.25 * 24 * 60;
 
 const fmt = (x: number, digits = 3) =>
   !Number.isFinite(x) ? "—" : x === 0 ? "0" : Math.abs(x) >= 0.01 && Math.abs(x) < 1e5 ? x.toPrecision(digits) : x.toExponential(2);
@@ -31,20 +29,16 @@ export default function PMDPage() {
   const [bitRate, setBitRate] = useURLState("bitRate", 10, { min: 0.1, max: 1000 }); // Gb/s
   const [maxToMean, setMaxToMean] = useURLState("maxToMean", 3, { min: 1, max: 8 }); // max DGD / mean DGD
 
-  const calc = useMemo(() => {
-    const mean = meanDgd(pmdCoeff * PS_SQRT_KM, length * 1e3);
-    const bitPeriod = 1 / (bitRate * 1e9);
-    const pOut = dgdExceedanceProbability(maxToMean * mean, mean);
-    return {
-      mean_ps: mean * 1e12,
-      rms_ps: (mean / MEAN_TO_RMS) * 1e12,
-      meanOverT: mean / bitPeriod,
-      maxDgd_ps: maxToMean * mean * 1e12,
-      maxOverT: (maxToMean * mean) / bitPeriod,
-      pOut,
-      maxLength_km: pmdLimitedLength(pmdCoeff * PS_SQRT_KM, bitRate * 1e9) / 1e3,
-    };
-  }, [pmdCoeff, length, bitRate, maxToMean]);
+  const sum = pmdSummary({ pmdCoefficient: pmdCoeff * PS_SQRT_KM, length: length * 1e3, bitRate: bitRate * 1e9, maxToMean });
+  const calc = {
+    mean_ps: sum.mean * 1e12,
+    rms_ps: sum.rms * 1e12,
+    meanOverT: sum.meanOverT,
+    maxDgd_ps: sum.maxDgd * 1e12,
+    maxOverT: sum.maxOverT,
+    pOut: sum.pOut,
+    maxLength_km: sum.maxLength / 1e3,
+  };
 
   const distributionData = useMemo(() => {
     const mean = calc.mean_ps;
@@ -83,7 +77,7 @@ export default function PMDPage() {
     return traces;
   }, [pmdCoeff, length, bitRate]);
 
-  const withinRule = calc.meanOverT <= MEAN_DGD_BIT_FRACTION;
+  const withinRule = sum.withinRule;
 
   return (
     <>

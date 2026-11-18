@@ -6,7 +6,8 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { couplingCoefficient } from "../../../physics/fiber-optics/coupled-mode";
-import { LP11_CUTOFF_V, MIN_V, lp11CutoffWavelength, vNumber } from "../../../physics/fiber-optics/macro-bending-loss";
+import { MIN_SPACING_IN_RADII, WEAK_GUIDANCE_MAX_DELTA, couplerSummary } from "../../../physics/fiber-optics/fiber-coupler";
+import { LP11_CUTOFF_V, MIN_V, lp11CutoffWavelength } from "../../../physics/fiber-optics/macro-bending-loss";
 import { relativeIndexDifference } from "../../../physics/fiber-optics/step-index-modes";
 
 const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
@@ -30,19 +31,18 @@ export default function FiberCouplerCalculator() {
 
   const lossLinear = 10 ** (-excessLoss / 10);
   const calc = useMemo(() => {
-    const V = vNumber(fiber, wavelength * 1e-9);
-    const kappa = kappaAt(wavelength); // 1/mm
-    const ratio = Math.sin(kappa * couplingLength) ** 2; // fraction coupled to port 2 (identical cores)
+    const s = couplerSummary(fiber, wavelength * 1e-9, coreSpacing * 1e-6, couplingLength * 1e-3, excessLoss, inputPower);
     return {
-      V, kappa, ratio,
-      through: inputPower + 10 * Math.log10((1 - ratio) * lossLinear),
-      coupled: inputPower + 10 * Math.log10(ratio * lossLinear),
-      L5050: Math.PI / (4 * kappa),
-      Lfull: Math.PI / (2 * kappa),
-      // Fractional change of κ per nm, from κ at ±1 nm.
-      slope: (kappaAt(wavelength + 1) - kappaAt(wavelength - 1)) / (2 * kappa),
+      V: s.V,
+      kappa: s.kappa * 1e-3, // 1/mm
+      ratio: s.ratio, // fraction coupled to port 2 (identical cores)
+      through: s.throughDbm,
+      coupled: s.coupledDbm,
+      L5050: s.L5050 * 1e3, // mm
+      Lfull: s.Lfull * 1e3,
+      slope: s.slopePerNm,
     };
-  }, [fiber, wavelength, kappaAt, couplingLength, inputPower, lossLinear]);
+  }, [fiber, wavelength, coreSpacing, couplingLength, excessLoss, inputPower]);
 
   const transferCurve = useMemo(() => {
     const lengths: number[] = [];
@@ -126,9 +126,9 @@ export default function FiberCouplerCalculator() {
         </p>
       )}
 
-      {valid && (delta > 0.02 || coreSpacing < 2.5 * coreRadius) && (
+      {valid && (delta > WEAK_GUIDANCE_MAX_DELTA || coreSpacing < MIN_SPACING_IN_RADII * coreRadius) && (
         <p className="mb-6 text-sm text-yellow-300" role="status">
-          {delta > 0.02 ? `Δ = ${(delta * 100).toFixed(1)} % > 2 %` : `D = ${coreSpacing} µm < 2.5a = ${(2.5 * coreRadius).toFixed(1)} µm`}: the
+          {delta > WEAK_GUIDANCE_MAX_DELTA ? `Δ = ${(delta * 100).toFixed(1)} % > 2 %` : `D = ${coreSpacing} µm < 2.5a = ${(MIN_SPACING_IN_RADII * coreRadius).toFixed(1)} µm`}: the
           weak-coupling (coupled-mode) model loses accuracy.
         </p>
       )}

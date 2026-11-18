@@ -4,22 +4,10 @@ import SimpleLineChart from "../../../components/simple-line-chart";
 import ResultCard from "../../../components/result-card";
 import InputSlider from "../../../components/input-slider";
 import { useURLState } from "../../../hooks/use-url-state";
-import { siliconAbsorption, siliconIndex } from "../../../physics/materials/silicon-absorption";
-import { ingaasBandGap } from "../../../physics/materials/bandgap";
-import { ingaasAbsorption, inpWindowEdge } from "../../../physics/detectors/ingaas";
-import { normalReflectance, photodiodeQe } from "../../../physics/detectors/photodiode-qe";
-import { responsivity } from "../../../physics/detectors/responsivity";
-
-const MATERIALS = ["si", "ingaas"] as const;
-type Material = (typeof MATERIALS)[number];
-// Wavelength range per material: Green's silicon table; In₀.₅₃Ga₀.₄₇As from below the InP edge to past its cutoff.
-const RANGE: Record<Material, { lo: number; hi: number; probe: number }> = {
-  si: { lo: 250, hi: 1450, probe: 850 },
-  ingaas: { lo: 800, hi: 1800, probe: 1550 },
-};
-// In₀.₅₃Ga₀.₄₇As at 300 K (Vurgaftman gap 0.7373 eV) read through an InP cap, opaque short of 916 nm.
-const INGAAS_GAP = ingaasBandGap(0.53, 300);
-const INP_EDGE = inpWindowEdge(300);
+import {
+  QE_MATERIALS, QE_RANGE, QE_SURFACES, quantumEfficiencySummary, resolveQeInputs,
+  type QeMaterial, type QeSurface,
+} from "../../../physics/detectors/quantum-efficiency";
 
 // Illustrative structures: collecting thickness W, substrate diffusion length L, dead layer d (µm).
 const PRESETS = [
@@ -29,10 +17,7 @@ const PRESETS = [
   { id: "fsi-cmos", label: "Front-illuminated CMOS", material: "si", W: 3, L: 0, d: 0.1, fill: 0.5, gain: 1.6 },
   { id: "ingaas-pin", label: "InGaAs p-i-n", material: "ingaas", W: 3, L: 0, d: 0, fill: 1, gain: 1 },
 ] as const;
-const SURFACES = ["ar", "bare"] as const;
-type Surface = (typeof SURFACES)[number];
 
-const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const pct = (x: number) => (Number.isFinite(x) ? `${(x * 100).toFixed(1)}%` : "—");
 
 export default function QuantumEfficiencyPage() {
@@ -45,44 +30,20 @@ export default function QuantumEfficiencyPage() {
   const [fillRaw, setFillFactor] = useURLState("fillFactor", 1);
   const [gainRaw, setMicrolensGain] = useURLState("microlensGain", 1);
   const [probeRaw, setProbeWavelength] = useURLState("probeWavelength", 850);
-  const material: Material = MATERIALS.find((m) => m === materialRaw) ?? "si";
-  const range = RANGE[material];
-  const W = clamp(WRaw, 0.5, 500, 20);
-  const L = material === "ingaas" ? 0 : clamp(LRaw, 0, 1000, 100); // the InP substrate is transparent: no substrate collection
-  const d = clamp(dRaw, 0, 2, 0);
-  // Bare-surface Fresnel needs n + ik, tabulated here for silicon only.
-  const surface: Surface = material === "si" ? SURFACES.find((s) => s === surfaceRaw) ?? "ar" : "ar";
-  const R = clamp(RRaw, 0, 0.5, 0.05);
-  const fillFactor = clamp(fillRaw, 0.1, 1, 1);
-  const microlensGain = clamp(gainRaw, 1, 3, 1);
-  const probe = clamp(probeRaw, range.lo, range.hi, range.probe);
-  const opticalFill = Math.min(1, fillFactor * microlensGain);
-  const surfaceOptions: readonly Surface[] = material === "si" ? SURFACES : ["ar"];
-
-  const reflectanceAt = (nm: number) => {
-    if (surface === "ar") return R;
-    const { n, k } = siliconIndex(nm * 1e-9);
-    return normalReflectance(n, k);
-  };
-  const alphaAt = (nm: number) => (material === "si" ? siliconAbsorption(nm * 1e-9) : ingaasAbsorption(nm * 1e-9, INGAAS_GAP));
-  const windowAt = (nm: number) => (material === "ingaas" && nm * 1e-9 <= INP_EDGE ? 0 : 1);
-  const internalQe = (nm: number) =>
-    windowAt(nm) * photodiodeQe({ alpha: alphaAt(nm), reflectance: 0, depletionWidth: W * 1e-6, diffusionLength: L * 1e-6, deadLayer: d * 1e-6 });
-  const externalQe = (nm: number) => (1 - reflectanceAt(nm)) * internalQe(nm) * opticalFill;
-
-  const wl = Array.from({ length: 241 }, (_, i) => range.lo + (i * (range.hi - range.lo)) / 240);
-  const qe = wl.map(externalQe);
-  const peakIndex = qe.reduce((best, v, i) => (v > qe[best] ? i : best), 0);
-  // Contiguous run of samples within 0.1 percentage points of the maximum (a flat top).
-  let tieLo = peakIndex, tieHi = peakIndex;
-  while (tieLo > 0 && qe[peakIndex] - qe[tieLo - 1] <= 1e-3) tieLo--;
-  while (tieHi < qe.length - 1 && qe[peakIndex] - qe[tieHi + 1] <= 1e-3) tieHi++;
-  const peakWavelength = tieHi > tieLo ? `${wl[tieLo].toFixed(0)}–${wl[tieHi].toFixed(0)} nm (flat)` : `${wl[peakIndex].toFixed(0)} nm`;
-  const probeQe = externalQe(probe);
+  const inputs = resolveQeInputs({
+    material: materialRaw, thickness: WRaw, diffusionLength: LRaw, deadLayer: dRaw, surface: surfaceRaw,
+    reflectance: RRaw, fillFactor: fillRaw, microlensGain: gainRaw, probeWavelength: probeRaw,
+  });
+  const { material, surface, W, L, d, fillFactor, microlensGain, probe, opticalFill } = inputs;
+  const range = QE_RANGE[material];
+  const surfaceOptions: readonly QeSurface[] = material === "si" ? QE_SURFACES : ["ar"];
+  const summary = quantumEfficiencySummary(inputs);
+  const { wl, qe, internal, peakIndex, probeQe, probeReflectance, probeResponsivity } = summary;
+  const peakWavelength = summary.peakHigh > summary.peakLow ? `${summary.peakLow.toFixed(0)}–${summary.peakHigh.toFixed(0)} nm (flat)` : `${summary.peakLow.toFixed(0)} nm`;
 
   const chartSeries = [
     { name: "Effective QE", color: "#60a5fa", points: wl.map((x, i) => ({ x, y: qe[i] * 100 })) },
-    { name: "Internal QE (no reflection or fill loss)", color: "#9ca3af", points: wl.map((x) => ({ x, y: internalQe(x) * 100 })) },
+    { name: "Internal QE (no reflection or fill loss)", color: "#9ca3af", points: wl.map((x, i) => ({ x, y: internal[i] * 100 })) },
     { name: "Probe", color: "#22c55e", showPoints: true, points: [{ x: probe, y: probeQe * 100 }] },
   ];
 
@@ -93,10 +54,10 @@ export default function QuantumEfficiencyPage() {
     setD(p.d);
     setFillFactor(p.fill);
     setMicrolensGain(p.gain);
-    if (p.material !== material) setProbeWavelength(RANGE[p.material].probe);
+    if (p.material !== material) setProbeWavelength(QE_RANGE[p.material].probe);
   };
   // Switching material loads its default structure: the silicon W, L and d mean nothing on an InP substrate.
-  const selectMaterial = (m: Material) => {
+  const selectMaterial = (m: QeMaterial) => {
     if (m !== material) applyPreset(PRESETS.find((p) => p.id === (m === "ingaas" ? "ingaas-pin" : "pin"))!);
   };
   const active = PRESETS.find((p) => p.material === material && p.W === W && p.L === L && p.d === d && p.fill === fillFactor && p.gain === microlensGain);
@@ -106,7 +67,7 @@ export default function QuantumEfficiencyPage() {
     <>
       <div className="mb-3 flex flex-wrap items-center gap-3 text-sm text-gray-300">
         <span>Absorber:</span>
-        {MATERIALS.map((m) => (
+        {QE_MATERIALS.map((m) => (
           <button key={m} onClick={() => selectMaterial(m)} className={chip(material === m)}>
             {m === "si" ? "Silicon" : "In₀.₅₃Ga₀.₄₇As (InP cap)"}
           </button>
@@ -146,7 +107,7 @@ export default function QuantumEfficiencyPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <ResultCard label="QE at probe λ" value={pct(probeQe)} tone="blue" subtext={`ℛ = ${Number.isFinite(probeQe) ? responsivity(probeQe, probe * 1e-9).toFixed(3) : "—"} A/W; R = ${pct(reflectanceAt(probe))}`} />
+        <ResultCard label="QE at probe λ" value={pct(probeQe)} tone="blue" subtext={`ℛ = ${Number.isFinite(probeQe) ? probeResponsivity.toFixed(3) : "—"} A/W; R = ${pct(probeReflectance)}`} />
         <ResultCard label="Peak QE" value={pct(qe[peakIndex])} tone="green" subtext={`Optical fill ${pct(opticalFill)}`} />
         <ResultCard label="Peak wavelength" value={peakWavelength} tone="yellow" />
       </div>

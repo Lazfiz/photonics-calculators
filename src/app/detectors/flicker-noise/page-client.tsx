@@ -5,7 +5,8 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { q } from "../../../physics/constants";
-import { flickerPsd, flickerRms, flickerShotCorner, shotNoiseCurrent } from "../../../physics/detectors/noise";
+import { flickerSummary } from "../../../physics/detectors/flicker-noise";
+import { flickerPsd } from "../../../physics/detectors/noise";
 
 const fmtE = (x: number, unit: string) => (Number.isFinite(x) ? `${x.toExponential(4)} ${unit}` : "—");
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -23,10 +24,7 @@ export default function FlickerNoisePage() {
   const fHigh = clamp(fHighRaw, 1e-9, 1e12, 1e6);
 
   const shotPsd = 2 * q * current; // A²/Hz
-  const cornerFreq = flickerShotCorner(kf, current, alpha);
-  const flickerNoiseRms = flickerRms(kf, current, alpha, fLow, fHigh);
-  const shotRms = fHigh > fLow ? shotNoiseCurrent(current, fHigh - fLow) : NaN;
-  const totalRms = Math.hypot(flickerNoiseRms, shotRms);
+  const { cornerFreq, flickerRms: flickerNoiseRms, shotRms, totalRms } = flickerSummary({ kf, current, alpha, fLow, fHigh });
 
   // Span the band and the corner, at most 16 decades.
   const fcPlot = cornerFreq > 0 && Number.isFinite(cornerFreq) ? cornerFreq : fLow;

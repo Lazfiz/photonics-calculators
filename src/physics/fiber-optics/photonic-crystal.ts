@@ -229,3 +229,24 @@ export function pcfMode(pitch: number, holeDiameter: number, lambda: number): Pc
     physical: ok,
   };
 }
+
+/** Wavelength range the page and its API accept, m (300 to 3000 nm; inside the Malitson fit of fused silica). */
+export const PCF_LAMBDA_RANGE: readonly [number, number] = [300 * 1e-9, 3000 * 1e-9];
+
+/** Why the page shows no result: holes not smaller than the pitch, wavelength outside the range, or d/Λ outside the fit. */
+export function pcfInputStatus(pitch: number, holeDiameter: number, lambda: number) {
+  const geometryBad = !(pitch > 0 && holeDiameter > 0 && holeDiameter < pitch);
+  return {
+    geometryBad,
+    lambdaBad: !(lambda >= PCF_LAMBDA_RANGE[0] && lambda <= PCF_LAMBDA_RANGE[1]),
+    dOutOfFit: !geometryBad && !inDRange(holeDiameter / pitch),
+  };
+}
+
+export type PcfGuidance = "endlessly-single-mode" | "single-mode" | "multimode" | "none";
+
+/** Guidance class of a mode: "none" when V is undefined (no mode, or d/Λ outside the fit). */
+export function pcfGuidance(mode: PcfMode | null): PcfGuidance {
+  if (!mode || !Number.isFinite(mode.V)) return "none";
+  return mode.endlesslySingleMode ? "endlessly-single-mode" : mode.singleMode ? "single-mode" : "multimode";
+}

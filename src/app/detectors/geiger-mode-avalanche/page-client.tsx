@@ -4,13 +4,10 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { afterpulseProbability } from "../../../physics/detectors/dead-time";
-import {
-  darkCountRate, doublingInterval, overbiasAtTemperature, trapEfficiencyAtOverbias, triggerProbability,
-} from "../../../physics/detectors/spad";
+import { geigerDarkCountRate, geigerOverbias, geigerSummary } from "../../../physics/detectors/geiger-mode-avalanche";
+import { triggerProbability } from "../../../physics/detectors/spad";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
-const K = 273.15;
 const T_REF = 25; // °C
 
 // Defaults: one 50 µm microcell of a Hamamatsu S13360-3050CS (datasheet KAPD1052E: V_BR 53 V, 3 V overvoltage,
@@ -45,19 +42,14 @@ export default function GeigerModeAPDPage() {
   const eta = clamp(etaRaw, 0, 1, 0.05);
   const trapTau_ns = clamp(trapTauRaw, 0.1, 1e5, 20);
 
-  const dcrAt = (dv: number, t_C: number) => finiteOrNaN(darkCountRate({
-    dcrRef, temperature: t_C + K, refTemperature: T_REF + K, activationEnergy: ea,
-    overbias: dv, overbiasRef, voltageScale: vc, fieldSlope: slope,
-  }));
-  const bvShift = beta * (temperature - T_REF);
-  const dv = overbiasAtTemperature(overbiasRef, beta, temperature, T_REF);
-  const pt = triggerProbability(dv, vc);
-  const pde = pdeMax * pt;
-  const dcr = dcrAt(dv, temperature);
-  const pap = afterpulseProbability([{ eta: trapEfficiencyAtOverbias(eta, dv, overbiasRef, vc), tau: trapTau_ns * 1e-9 }], deadTime_ns * 1e-9);
-  const maxRate = 1e9 / deadTime_ns;
-  const doubling = doublingInterval(ea, temperature + K);
-  const belowBreakdown = dv <= 0;
+  const params = {
+    overbiasRef, vc, pdeMax, temperature, beta, dcrRef, activationEnergy: ea, fieldSlope: slope,
+    deadTime: deadTime_ns * 1e-9, trapEfficiency: eta, trapLifetime: trapTau_ns * 1e-9,
+  };
+  const dcrAt = (dv: number, t_C: number) => finiteOrNaN(geigerDarkCountRate(params, dv, t_C));
+  const {
+    bvShift, overbias: dv, triggerProbability: pt, pde, dcr, afterpulseProbability: pap, maxRate, doubling, belowBreakdown,
+  } = geigerSummary(params);
 
   // Excess bias from 0 to 3× the reference, at the operating temperature's dark-rate scale.
   const dvs = Array.from({ length: 121 }, (_, i) => (i * 3 * overbiasRef) / 120);
@@ -70,9 +62,9 @@ export default function GeigerModeAPDPage() {
   const tLo = Math.min(-40, temperature);
   const temps = Array.from({ length: 126 }, (_, i) => tLo + (i * (Math.max(85, temperature) - tLo)) / 125);
   const tempChart = [
-    { x: temps, y: temps.map((t) => dcrAt(overbiasAtTemperature(overbiasRef, beta, t, T_REF), t)), type: "scatter" as const, mode: "lines" as const, name: "DCR (cps)", line: { color: "#a78bfa" } },
+    { x: temps, y: temps.map((t) => dcrAt(geigerOverbias(params, t), t)), type: "scatter" as const, mode: "lines" as const, name: "DCR (cps)", line: { color: "#a78bfa" } },
     { x: Number.isFinite(dcr) ? [temperature] : [], y: Number.isFinite(dcr) ? [dcr] : [], type: "scatter" as const, mode: "markers" as const, name: "Operating point", marker: { color: "#fbbf24", size: 8 } },
-    { x: temps, y: temps.map((t) => pdeMax * triggerProbability(overbiasAtTemperature(overbiasRef, beta, t, T_REF), vc) * 100), type: "scatter" as const, mode: "lines" as const, name: "PDE (%)", line: { color: "#34d399" }, yaxis: "y2" },
+    { x: temps, y: temps.map((t) => pdeMax * triggerProbability(geigerOverbias(params, t), vc) * 100), type: "scatter" as const, mode: "lines" as const, name: "PDE (%)", line: { color: "#34d399" }, yaxis: "y2" },
   ];
 
   return (

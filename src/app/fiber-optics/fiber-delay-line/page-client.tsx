@@ -4,16 +4,15 @@ import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { G652_LAMBDA0, G652_S0, groupDelay, sellmeierDispersion } from "../../../physics/fiber-optics/chromatic-dispersion";
 import {
-  G652_LAMBDA0, G652_S0, SMF_THERMAL_DELAY_COEFF, groupDelay, loopFsr, sellmeierDispersion, sellmeierSlope,
-} from "../../../physics/fiber-optics/chromatic-dispersion";
-import { rmsBroadening } from "../../../physics/fiber-optics/dispersion-comp";
-import { c } from "../../../physics/constants";
+  NARROW_SOURCE_FACTOR, SMF_THERMAL_DELAY_PS_PER_KM_K, THERMAL_REFERENCE_TEMPERATURE, delayLineSummary, isNarrowSource,
+} from "../../../physics/fiber-optics/fiber-delay-line";
 
 const nm = 1e-9, ps = 1e-12;
 const PS_NM_KM = 1e-6;
 const PS_KM_K = 1e-15; // ps/(km·K) → s/(m·K)
-const T_REF = 25; // °C
+const T_REF = THERMAL_REFERENCE_TEMPERATURE; // °C
 
 export default function FiberDelayLineCalculator() {
   const [fiberLength, setFiberLength] = useURLState("fiberLength", 100, { min: 0.001 }); // m
@@ -21,31 +20,22 @@ export default function FiberDelayLineCalculator() {
   const [signalWavelength, setSignalWavelength] = useURLState("signalWavelength", 1550, { min: 1260, max: 1625 }); // nm
   const [inputBitRate, setInputBitRate] = useURLState("inputBitRate", 10, { min: 0.001 }); // Gb/s
   const [temperature, setTemperature] = useURLState("temperature", 35, { min: -60, max: 150 }); // °C
-  const [thermalCoeff, setThermalCoeff] = useURLState("thermalCoeff", SMF_THERMAL_DELAY_COEFF / PS_KM_K, { min: 0, max: 100 }); // ps/(km·K)
+  const [thermalCoeff, setThermalCoeff] = useURLState("thermalCoeff", SMF_THERMAL_DELAY_PS_PER_KM_K, { min: 0, max: 100 }); // ps/(km·K)
   const [spectralWidth, setSpectralWidth] = useURLState("spectralWidth", 0.1, { min: 0 }); // nm, rms
 
   const valid = fiberLength > 0 && groupIndex >= 1 && signalWavelength > 0 && inputBitRate > 0 && spectralWidth >= 0;
 
   const calc = useMemo(() => {
     if (!valid) return null;
-    const lam = signalWavelength * nm;
-    const tau = groupDelay(fiberLength, groupIndex);
     // Standard single-mode fibre (ITU-T G.652 form) at the signal wavelength.
-    const D = sellmeierDispersion(lam, G652_LAMBDA0, G652_S0);
-    const S = sellmeierSlope(lam, G652_LAMBDA0, G652_S0);
-    return {
-      tau,
-      vg: c / groupIndex,
-      bitSlots: tau * inputBitRate * 1e9,
-      D,
-      broadening: rmsBroadening(D * fiberLength, S * fiberLength, spectralWidth * nm),
-      thermal: thermalCoeff * PS_KM_K * fiberLength * (temperature - T_REF),
-      fsr: loopFsr(fiberLength, groupIndex),
-    };
+    return delayLineSummary({
+      fiberLength, groupIndex, lambda: signalWavelength * nm, bitRate: inputBitRate * 1e9,
+      sigmaLambda: spectralWidth * nm, temperature, thermalCoeff: thermalCoeff * PS_KM_K,
+    });
   }, [valid, fiberLength, groupIndex, signalWavelength, inputBitRate, temperature, thermalCoeff, spectralWidth]);
 
   // Narrow-source regime: the broad-source formula needs σ_λ well above the modulation bandwidth λ²B/c.
-  const narrowSource = valid && spectralWidth * nm < (3 * (signalWavelength * nm) ** 2 * inputBitRate * 1e9) / c;
+  const narrowSource = valid && isNarrowSource(spectralWidth * nm, signalWavelength * nm, inputBitRate * 1e9);
 
   const delayCurve = useMemo(() => {
     const lengths = Array.from({ length: 101 }, (_, i) => (i * 5 * Math.max(fiberLength, 1)) / 100);
@@ -104,7 +94,7 @@ export default function FiberDelayLineCalculator() {
               <div className="space-y-3">
                 {row("Propagation delay:", show(calc ? calc.tau * 1e9 : undefined, 3, "ns"), "font-mono text-green-400 text-lg")}
                 {row("Group velocity:", show(calc ? calc.vg / 1e8 : undefined, 4, "× 10⁸ m/s"))}
-                {row("Group path n_g·L:", show(calc ? groupIndex * fiberLength : undefined, 2, "m"))}
+                {row("Group path n_g·L:", show(calc ? calc.groupPath : undefined, 2, "m"))}
                 {row("Bit slots stored:", show(calc?.bitSlots, 1, "bits"), "font-mono text-blue-400")}
                 {row("SMF dispersion D(λ):", show(calc ? calc.D / PS_NM_KM : undefined, 2, "ps/(nm·km)"))}
                 {row("rms dispersive spread:", show(calc ? calc.broadening / ps : undefined, 3, "ps"), "font-mono text-yellow-400")}
@@ -113,7 +103,7 @@ export default function FiberDelayLineCalculator() {
               </div>
               {narrowSource && (
                 <p className="mt-3 text-xs text-yellow-400">
-                  Narrow source (σ_λ &lt; 3λ²B/c): the broad-source spread above underestimates the broadening.
+                  Narrow source (σ_λ &lt; {NARROW_SOURCE_FACTOR}λ²B/c): the broad-source spread above underestimates the broadening.
                 </p>
               )}
             </div>

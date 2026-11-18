@@ -88,3 +88,38 @@ export function birefringentPhase(birefringence: number, length: number, lambda:
 export function loopCombPeriod(birefringence: number, length: number, lambda: number): number {
   return birefringence > 0 && length > 0 ? (lambda * lambda) / (birefringence * length) : NaN;
 }
+
+/** Every figure of the I-FOG page: S, detected power, shot-noise phase, Earth-rate phase, rate noise, ARW, τ, f_p, turns, π/2 rate. */
+export function gyroSummary(
+  fiberLength: number, coilDiameter: number, lambda: number, groupIndex: number,
+  sourcePower: number, lossDb: number, quantumEfficiency: number,
+) {
+  const S = sagnacScaleFactor(fiberLength, coilDiameter, lambda);
+  const Pd = sourcePower * 10 ** (-lossDb / 10);
+  const sigma = shotNoisePhase(Pd, lambda, quantumEfficiency);
+  const rate = noiseEquivalentRate(sigma, S);
+  return {
+    S, Pd, sigma,
+    phaseEarth: S * EARTH_ROTATION_RATE,
+    rateDegH: rate * RAD_PER_S_TO_DEG_PER_H,
+    arw: angleRandomWalkDegPerRootHour(rate),
+    tau: transitTime(fiberLength, groupIndex),
+    fp: properFrequency(fiberLength, groupIndex),
+    turns: fiberLength / (Math.PI * coilDiameter),
+    maxRateDegS: ((Math.PI / (2 * S)) * 180) / Math.PI, // rate at which the Sagnac phase reaches π/2
+  };
+}
+
+/** Longest comb period the loop-mirror page draws, m; a longer comb is flat across the plotted band. */
+export const COMB_MAX_PERIOD = 200e-9;
+
+/** Loop-mirror page figures: lumped transmission τ, isotropic R and T, comb period, T extrema over Δφ ∈ {0, π} and the extinction, dB. */
+export function loopMirrorSummary(k: number, lossDb: number, birefringence: number, length: number, lambda: number) {
+  const tau = 10 ** (-lossDb / 10);
+  const R = loopMirrorReflectance(k, tau);
+  const T = loopMirrorTransmittance(k, 0, tau);
+  const period = loopCombPeriod(birefringence, length, lambda);
+  const tMin = loopMirrorTransmittance(k, 0, tau), tMax = loopMirrorTransmittance(k, Math.PI, tau);
+  const extinction = tMin > 0 ? 10 * Math.log10(tMax / tMin) : Infinity;
+  return { tau, R, T, period, tMax, tMin, extinction };
+}

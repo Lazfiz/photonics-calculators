@@ -122,3 +122,39 @@ export function lockinSnrGain(p: LockinInputs): number {
   const m = referenceMatch(p.signal_Hz, p.reference_Hz, p.phase_rad, p.tau, p.order, p.filter, p.reference);
   return Math.abs(m.gain) * Math.sqrt(p.inputBandwidth_Hz / enbw);
 }
+
+export interface LockinSummaryInputs extends LockinInputs {
+  /** Signal peak amplitude A, V. */
+  amplitude_V: number;
+  /** Input white-noise density e_n, V/√Hz. */
+  noiseDensity_VrtHz: number;
+}
+
+export interface LockinSummary {
+  enbw_Hz: number;
+  match: ReferenceMatch;
+  /** Output X (matched, rms scale) or beat amplitude (detuned), V: (A/√2)·gain. */
+  outputSignal_V: number;
+  /** e_n·√ENBW, V rms. */
+  outputNoise_V: number;
+  /** e_n·√B_in, V rms. */
+  inputNoise_V: number;
+  /** (A/√2)/(e_n·√B_in). */
+  snrInput: number;
+  /** SNR_out/SNR_in. */
+  snrGain: number;
+  /** snrInput·snrGain. */
+  snrOutput: number;
+}
+
+/** Everything the lock-in page shows at one operating point (see the module comment for the model). */
+export function lockinSummary(p: LockinSummaryInputs): LockinSummary {
+  const enbw_Hz = lowPassEnbw(p.tau, p.order, p.filter);
+  const match = referenceMatch(p.signal_Hz, p.reference_Hz, p.phase_rad, p.tau, p.order, p.filter, p.reference);
+  const outputSignal_V = (p.amplitude_V / Math.SQRT2) * match.gain;
+  const outputNoise_V = p.noiseDensity_VrtHz * Math.sqrt(enbw_Hz);
+  const inputNoise_V = p.noiseDensity_VrtHz * Math.sqrt(p.inputBandwidth_Hz);
+  const snrInput = p.amplitude_V / Math.SQRT2 / inputNoise_V;
+  const snrGain = lockinSnrGain(p);
+  return { enbw_Hz, match, outputSignal_V, outputNoise_V, inputNoise_V, snrInput, snrGain, snrOutput: snrInput * snrGain };
+}

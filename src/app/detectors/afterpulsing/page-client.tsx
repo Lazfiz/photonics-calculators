@@ -4,6 +4,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { afterpulsingSummary } from "../../../physics/detectors/afterpulsing";
 import { afterpulseProbability, measuredRate } from "../../../physics/detectors/dead-time";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -28,11 +29,9 @@ export default function AfterpulsingPage() {
   const traps = [trap1, trap2];
   const td = deadTime * 1e-9;
 
-  // Only recorded avalanches fill traps: photons arriving while the diode is dead never trigger one.
-  const measured = measuredRate(countRate, td, "nonparalyzable");
-  const pAp = afterpulseProbability(traps, td);
-  const apRate = measured * pAp; // first order in P_ap: afterpulses of afterpulses are left out
-  const release1 = -Math.expm1(-td / trap1.tau);
+  const { measured, pAp, apRate, release1, warnings } = afterpulsingSummary({
+    tau1: trap1.tau, eta1, tau2: trap2.tau, eta2, deadTime: td, countRate,
+  });
 
   // Dead times from 0 to max(200 ns, 5 τ of the slower active trap).
   const tauMax = eta2 > 0 ? Math.max(tau1, tau2) : tau1;
@@ -66,16 +65,9 @@ export default function AfterpulsingPage() {
         <ResultCard label="Recorded Rate" value={`${(measured / 1e6).toFixed(4)} Mcps`} tone="blue" subtext="non-paralyzable dead time" />
         <ResultCard label={`Trap 1 Released in ${deadTime} ns`} value={`${(release1 * 100).toFixed(1)}%`} tone="green" subtext="1 − e^(−t_d/τ₁), harmless" />
       </div>
-      {pAp > 0.1 && (
-        <p className="mb-6 text-sm text-yellow-400">
-          P_ap above 10 %: afterpulses then trigger afterpulses of their own and steal dead time, which this first-order rate leaves out.
-        </p>
-      )}
-      {countRate * tauMax * 1e-9 > 0.1 && (
-        <p className="mb-6 text-sm text-yellow-400">
-          First-order rate: traps still full at the next photon are partly emptied by that avalanche, so R_ap is overestimated when R·τ ≳ 0.1.
-        </p>
-      )}
+      {warnings.map((w) => (
+        <p key={w} className="mb-6 text-sm text-yellow-400">{w}</p>
+      ))}
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1">
         <p>P_ap = Σ η_k · exp(−t_d / τ_k)  [Cova 1991; Ziarkash 2018]</p>
         <p>R_ap = m · P_ap,  m = R / (1 + R·t_d)</p>

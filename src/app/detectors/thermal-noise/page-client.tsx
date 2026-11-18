@@ -4,8 +4,8 @@ import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { h, k_B } from "../../../physics/constants";
 import { johnsonNoise } from "../../../physics/detectors/noise";
+import { THERMAL_QUANTUM_FRACTION, thermalNoiseSummary } from "../../../physics/detectors/thermal-noise";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 
@@ -23,10 +23,7 @@ export default function ThermalNoisePage() {
       { x: [resistance], y: [johnsonNoise(resistance, temperature, bandwidth).v], type: "scatter" as const, mode: "markers" as const, name: "Operating point", marker: { color: "#fbbf24", size: 9 } }];
   }, [resistance, temperature, bandwidth]);
 
-  const { v: vNoise, i: iNoise, p: pNoise } = johnsonNoise(resistance, temperature, bandwidth);
-  const fQuantum = (k_B * temperature) / h; // Hz: where hf = k_B·T
-  const quantumRegime = bandwidth > 0.1 * fQuantum;
-  const pNoise_dBm = 10 * Math.log10(pNoise / 1e-3);
+  const { voltage: vNoise, current: iNoise, power: pNoise, powerDbm: pNoise_dBm, quantumFrequency: fQuantum, quantumRegime, planckSaturationPower } = thermalNoiseSummary({ resistance, temperature, bandwidth }); // fQuantum: where hf = k_B·T
 
   return (
     <>
@@ -44,8 +41,8 @@ export default function ThermalNoisePage() {
         <p className="text-sm text-gray-500 mt-2">Classical limit hf ≪ k<sub>B</sub>T (k<sub>B</sub>T/h = {temperature > 0 ? `${(fQuantum / 1e12).toPrecision(3)} THz` : "0 Hz"} at {temperature} K).</p>
         {quantumRegime && (
           <p className="text-sm text-yellow-400 mt-1">
-            B = {bandwidth.toExponential(2)} Hz exceeds 0.1·k<sub>B</sub>T/h{temperature > 0 ? ` = ${fQuantum.toExponential(2)} Hz` : " (zero at T = 0)"}: the classical k<sub>B</sub>TB overstates the noise (Planck regime).
-            The Planck-integrated available power saturates at (π²/6)(k<sub>B</sub>T)²/h = {((Math.PI ** 2 / 6) * (k_B * temperature) ** 2 / h).toExponential(2)} W, however large B is.
+            B = {bandwidth.toExponential(2)} Hz exceeds {THERMAL_QUANTUM_FRACTION}·k<sub>B</sub>T/h{temperature > 0 ? ` = ${(THERMAL_QUANTUM_FRACTION * fQuantum).toExponential(2)} Hz` : " (zero at T = 0)"}: the classical k<sub>B</sub>TB overstates the noise (Planck regime).
+            The Planck-integrated available power saturates at (π²/6)(k<sub>B</sub>T)²/h = {planckSaturationPower.toExponential(2)} W, however large B is.
           </p>
         )}
       </div>

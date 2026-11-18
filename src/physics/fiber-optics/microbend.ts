@@ -28,7 +28,7 @@
  * Not included: discrete cladding modes (real spectra show resonances near Λc), the coating, random
  * deformation spectra, and the elasto-optic correction.
  */
-import { besselJ } from "../math";
+import { DB_PER_E_FOLD, besselJ } from "../math";
 import { lp01Mode, modeFieldRadius, vNumber, type Lp01Mode, type StepIndexFiber } from "./macro-bending-loss";
 import { claddingIndex } from "./step-index-modes";
 
@@ -124,4 +124,43 @@ export function peakTiltLoss(f: StepIndexFiber, lambda: number, A: number, perio
   if (!Number.isFinite(w) || !(A >= 0) || !(period > 0)) return NaN;
   const kn = ((2 * Math.PI) / lambda) * claddingIndex(f);
   return ((kn * w * A * 2 * Math.PI) / period / 2) ** 2;
+}
+
+/** First-order coupled-mode theory needs both the peak tilt loss and the loss per period well below this. */
+export const FIRST_ORDER_LIMIT = 0.1;
+
+export interface MicrobendSummary {
+  V: number;
+  /** Gaussian-mode loss, dB/m. */
+  gaussian: number;
+  /** max(peak tilt loss, loss per period): first-order theory needs it below FIRST_ORDER_LIMIT. */
+  firstOrder: number;
+  /** Exact-LP01 loss, dB per metre of deformed fibre. */
+  dBPerMetre: number;
+  /** dBPerMetre over `length`, dB. */
+  total: number;
+  /** Critical period Λc, m. */
+  Lc: number;
+  /** Tightest bend radius 1/(A (2π/Λ)²) at the crests, m (Infinity for A = 0). */
+  minBendRadius: number;
+  /** Mode-field diameter 2w (Marcuse fit), m. */
+  mfd: number;
+}
+
+/** Fibre, wavelength λ (m), amplitude A (m), period Λ (m), affected length (m). NaN outside the domain. */
+export function microbendSummary(f: StepIndexFiber, lambda: number, A: number, period: number, length: number): MicrobendSummary {
+  const V = vNumber(f, lambda);
+  const mode = lp01Mode(V);
+  const alpha = sinusoidalMicrobendLoss(f, lambda, A, period, mode);
+  const curvature = A * ((2 * Math.PI) / period) ** 2;
+  return {
+    V,
+    gaussian: DB_PER_E_FOLD * gaussianMicrobendLoss(f, lambda, A, period, mode),
+    firstOrder: Math.max(peakTiltLoss(f, lambda, A, period), alpha * period),
+    dBPerMetre: DB_PER_E_FOLD * alpha,
+    total: DB_PER_E_FOLD * alpha * length,
+    Lc: criticalPeriod(f, lambda, mode),
+    minBendRadius: curvature > 0 ? 1 / curvature : Infinity,
+    mfd: 2 * modeFieldRadius(f, lambda),
+  };
 }

@@ -1,24 +1,11 @@
 "use client";
 
-import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import {
-  averagePowerCoupling, couplingCoefficient, criticalBendRadius, pairCrosstalk,
-} from "../../../physics/fiber-optics/coupled-mode";
-import { LP11_CUTOFF_V, MIN_V, elastoOpticBendRadius, lp01Mode, vNumber } from "../../../physics/fiber-optics/macro-bending-loss";
-import { effectiveIndex, numericalAperture } from "../../../physics/fiber-optics/step-index-modes";
-
-/** Core layouts: nearest neighbours of the worst core, and the outer-core centre radius in pitches. */
-const LAYOUTS: Record<number, { neighbours: number; outerRadius: number; name: string }> = {
-  1: { neighbours: 0, outerRadius: 0, name: "single core" },
-  3: { neighbours: 2, outerRadius: 1 / Math.sqrt(3), name: "triangle" },
-  7: { neighbours: 6, outerRadius: 1, name: "hexagonal, centre core" },
-  12: { neighbours: 2, outerRadius: 1 / (2 * Math.sin(Math.PI / 12)), name: "ring of 12" },
-  19: { neighbours: 6, outerRadius: 2, name: "hexagonal, two rings" },
-};
+import { LP11_CUTOFF_V, MIN_V, elastoOpticBendRadius } from "../../../physics/fiber-optics/macro-bending-loss";
+import { CORE_LAYOUTS as LAYOUTS, WEAK_COUPLING_XT, WEAK_GUIDANCE_DELTA, multiCoreSummary } from "../../../physics/fiber-optics/multi-core";
 
 const toDb = (x: number) => 10 * Math.log10(x);
 /** Crosstalk in dB; 0 (no length, or h̄ underflowed) is shown as "−∞ dB". */
@@ -39,38 +26,14 @@ export default function MultiCoreFiberCalculator() {
   const [correlationLength, setCorrelationLength] = useURLState("correlationLength", 0.05, { min: 0.001, max: 10 }); // m
   const [outerCladding, setOuterCladding] = useURLState("outerCladding", 30, { min: 0, max: 200 }); // µm, outer core centre to cladding edge
 
-  const cores = LAYOUTS[numCores] ? numCores : 7; // a URL value that isn't a layout falls back to 7
-  const layout = LAYOUTS[cores];
+  // A URL value that isn't a layout falls back to 7 cores (inside multiCoreSummary).
+  const calc = multiCoreSummary({
+    numCores, corePitch_um: corePitch, coreRadius_um: coreRadius, coreIndex, claddingIndex, wavelength_nm: wavelength,
+    fiberLength_km: fiberLength, deltaBeta, bendRadius_mm: bendRadius, correlationLength, outerCladding_um: outerCladding,
+  });
+  const { cores, layout } = calc;
 
-  const fiber = useMemo(
-    () => ({ a: coreRadius * 1e-6, n1: coreIndex, NA: numericalAperture(coreIndex, claddingIndex) }),
-    [coreRadius, coreIndex, claddingIndex],
-  );
-
-  const calc = useMemo(() => {
-    const lambda = wavelength * 1e-9;
-    const V = vNumber(fiber, lambda);
-    const mode = lp01Mode(V);
-    const beta = (2 * Math.PI * effectiveIndex(fiber, lambda, mode)) / lambda;
-    const L = fiberLength * 1e3;
-    const xtAt = (pitch_um: number) => {
-      const kappa = couplingCoefficient(fiber, lambda, pitch_um * 1e-6, mode);
-      const h = averagePowerCoupling({
-        kappa, beta, pitch: pitch_um * 1e-6, bendRadius: bendRadius * 1e-3, correlationLength, deltaBeta,
-      });
-      return { kappa, h, pair: pairCrosstalk(h, L) };
-    };
-    const { kappa, h, pair } = xtAt(corePitch);
-    return {
-      V, beta, kappa, h, pair, xtAt,
-      // First-order sum over the nearest neighbours: valid while it is ≪ 1.
-      worst: layout.neighbours * pair,
-      rpk: deltaBeta !== 0 ? criticalBendRadius(beta, corePitch * 1e-6, deltaBeta) : Infinity,
-      claddingDiameter: 2 * (layout.outerRadius * corePitch + outerCladding),
-    };
-  }, [fiber, wavelength, fiberLength, corePitch, bendRadius, correlationLength, deltaBeta, layout, outerCladding]);
-
-  const plotData = useMemo(() => {
+  const plotData = (() => {
     const pitches: number[] = [];
     const pair: (number | null)[] = [];
     const worst: (number | null)[] = [];
@@ -103,10 +66,10 @@ export default function MultiCoreFiberCalculator() {
         name: "Current pitch", marker: { color: "#22c55e", size: 11 },
       }]
       : traces;
-  }, [calc, corePitch, layout, coreRadius]);
+  })();
 
   const valid = Number.isFinite(calc.kappa) && Number.isFinite(calc.h);
-  const weakCoupling = valid && calc.pair < 0.1;
+  const weakCoupling = valid && calc.pair < WEAK_COUPLING_XT;
   // Weak guidance (LP modes): Δ = (n₁² − n₂²)/(2n₁²) must be small; 3 % is the usual limit.
   const delta = (coreIndex ** 2 - claddingIndex ** 2) / (2 * coreIndex ** 2);
   const eoFactor = elastoOpticBendRadius(1, coreIndex);
@@ -145,7 +108,7 @@ export default function MultiCoreFiberCalculator() {
           V = {calc.V.toFixed(2)} &gt; {LP11_CUTOFF_V.toFixed(3)}: the cores carry LP11 as well; only LP01 coupling is computed, and LP11 couples far more strongly.
         </p>
       )}
-      {Number.isFinite(delta) && delta > 0.03 && (
+      {Number.isFinite(delta) && delta > WEAK_GUIDANCE_DELTA && (
         <p className="mb-6 text-sm text-yellow-300" role="status">
           Δ = {(delta * 100).toFixed(2)} % &gt; 3 %: outside the weakly guiding LP model, so κ and the LP01 field are only approximate.
         </p>

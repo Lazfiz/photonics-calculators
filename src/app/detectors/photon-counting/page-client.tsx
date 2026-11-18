@@ -4,7 +4,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { countLoss, measuredRate, nonParalyzableFano } from "../../../physics/detectors/dead-time";
+import { photonCountingSummary } from "../../../physics/detectors/photon-counting";
 import { poissonPmf } from "../../../physics/math";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -22,15 +22,10 @@ export default function PhotonCountingPage() {
   const countRate = clamp(countRateRaw, 1, 1e10, 1e6);
   const integrationTime = clamp(integrationTimeRaw, 1e-6, 1e5, 1);
 
-  const snr = Math.sqrt(mu);
-  const snrDb = 10 * Math.log10(mu); // 20·log₁₀ of the amplitude ratio √μ
-  const tau = deadTime * 1e-9;
-  const measured = measuredRate(countRate, tau, "nonparalyzable");
-  const loss = countLoss(countRate, tau, "nonparalyzable");
-  const recordedCounts = measured * integrationTime;
-  const fano = nonParalyzableFano(countRate, tau);
   // The dead-time-corrected rate R̂ = m/(1 − mτ) has relative error 1/√N_recorded (see dead-time.ts tests).
-  const correctedSnr = Math.sqrt(recordedCounts);
+  const { snr, snrDb, measured, loss, recordedCounts, fano, correctedSnr } = photonCountingSummary({
+    meanCounts: mu, deadTime: deadTime * 1e-9, countRate, integrationTime,
+  });
 
   // Counts within ±5σ (+2 for small μ); at most MAX_BARS bars, spaced by `stride` counts when the range is wider.
   const sigma = Math.sqrt(mu);

@@ -4,10 +4,8 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import {
-  channelGain, channelStrikes, channelYieldPerStrike, hexagonalPitch, maximumChannelGain, optimumLdRatio,
-  saturatedChannelGain, stackedGain,
-} from "../../../physics/detectors/electron-multiplier";
+import { channelGain, stackedGain } from "../../../physics/detectors/electron-multiplier";
+import { microchannelPlateSummary } from "../../../physics/detectors/microchannel-plate";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 2) => (Number.isFinite(x) ? x.toExponential(digits) : "—");
@@ -33,14 +31,13 @@ export default function MicrochannelPlatePage() {
   const V0 = clamp(v0Raw, 0.1, 10, 1);
   const qe = clamp(qeRaw, 0, 1, 0.25);
 
-  const ld = (length_mm * 1000) / diameter_um;
-  const strikes = channelStrikes(voltage, ld, V0);
-  const yieldPerStrike = channelYieldPerStrike(voltage, ld, A, V0);
-  const plateGain = channelGain(voltage, ld, A, V0);
-  const stackGain = stackedGain(plateGain, numPlates);
-  const limit = saturatedChannelGain(diameter_um * 1e-6);
-  const saturated = !(stackGain <= limit); // an overflowing stack (NaN) is saturated too
-  const outOfRange = strikes < 2 || yieldPerStrike > 4 || plateGain < 1;
+  const {
+    ld, strikes, yieldPerStrike, plateGain, stackGain, limit, saturated, outOfRange, optimumLd: ldOpt, peakPlateGain: gainOpt,
+    pitch, detection,
+  } = microchannelPlateSummary({
+    plates: numPlates, diameter: diameter_um * 1e-6, length: length_mm * 1e-3, openAreaRatio: oar, voltage, yieldConstant: A,
+    emissionEnergy: V0, qe,
+  });
   const phdNote = numPlates === 1
     ? saturated
       ? "Above the one-channel space-charge limit; ion feedback limits a straight-channel plate to 10³–10⁵ first"
@@ -48,10 +45,7 @@ export default function MicrochannelPlatePage() {
     : saturated
       ? "Stack product above the one-channel limit: the rear plate begins to saturate. Charge spreads over several rear channels, so Wiza reports (1–4)×10⁷ peak gain and 60–170 % FWHM for chevrons"
       : "Unsaturated, excess noise factor ≈ 2";
-  const ldOpt = optimumLdRatio(voltage, A, V0);
-  const gainOpt = maximumChannelGain(voltage, A);
-  const pitch_um = hexagonalPitch(diameter_um * 1e-6, oar) * 1e6;
-  const detection = qe * oar;
+  const pitch_um = pitch * 1e6;
 
   const volts = Array.from({ length: 151 }, (_, i) => 500 + i * 10);
   const single = volts.map((v) => channelGain(v, ld, A, V0));

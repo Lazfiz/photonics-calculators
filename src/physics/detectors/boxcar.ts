@@ -81,3 +81,47 @@ export function optimalGateWidth(fwhm: number, inputBandwidth: number): number {
   }
   return fwhm * Math.exp((a + b) / 2);
 }
+
+/** The input bandwidth × pulse width below which the band-limited noise model leaves the pulse unsmeared (B·FWHM < 2 is optimistic). */
+export const BOXCAR_BAND_LIMIT_BF = 2;
+
+/** Single-shot SNR of a gate of width T (s): gate-averaged signal over the rms gate noise; NaN without noise. */
+export function boxcarSingleShotSnr(
+  peak: number, fwhm: number, gateWidth: number, gateOffset: number, noiseDensity: number, inputBandwidth: number,
+): number {
+  const noise = gateNoiseRms(noiseDensity, inputBandwidth, gateWidth);
+  return noise > 0 ? gaussianGateAverage(peak, fwhm, gateWidth, gateOffset) / noise : NaN;
+}
+
+export interface BoxcarInputs {
+  /** Gate width (s), pulse FWHM (s), gate-centre offset from the pulse peak (s). */
+  gateWidth: number;
+  fwhm: number;
+  gateDelay: number;
+  /** Peak signal (V), noise density (V/√Hz), input noise bandwidth (Hz), repetition rate (Hz), whole number of averages. */
+  signalPeak: number;
+  noiseDensity: number;
+  inputBandwidth: number;
+  repRate: number;
+  averages: number;
+}
+
+/** Everything the page and the API report for one boxcar setting (SI). */
+export function boxcarSummary(p: BoxcarInputs) {
+  const gateSignal = gaussianGateAverage(p.signalPeak, p.fwhm, p.gateWidth, p.gateDelay);
+  const gateNoise = gateNoiseRms(p.noiseDensity, p.inputBandwidth, p.gateWidth);
+  const snrSingle = gateNoise > 0 ? gateSignal / gateNoise : NaN;
+  const optimalGate = optimalGateWidth(p.fwhm, p.inputBandwidth);
+  return {
+    gateSignal,
+    gateNoise,
+    snrSingle,
+    snrAveraged: snrSingle * Math.sqrt(p.averages),
+    neb: gateNoiseBandwidth(p.gateWidth),
+    measureTime: p.averages / p.repRate,
+    inputNoise: p.noiseDensity * Math.sqrt(p.inputBandwidth),
+    optimalGate,
+    optimalGateRatio: optimalGate / p.fwhm,
+    bandLimited: p.inputBandwidth * p.fwhm < BOXCAR_BAND_LIMIT_BF,
+  };
+}

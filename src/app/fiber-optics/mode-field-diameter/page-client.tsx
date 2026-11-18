@@ -6,11 +6,10 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  LP11_CUTOFF_V, MFD_FIT_V_RANGE, MIN_V, bendLossPerTurnDb, elastoOpticBendRadius, lp01Mode, lp11CutoffWavelength, modeFieldRadius, vNumber,
+  LP11_CUTOFF_V, MFD_FIT_V_RANGE, MIN_V, bendLossPerTurnDb, elastoOpticBendRadius, lp01Mode, modeFieldRadius, vNumber,
 } from "../../../physics/fiber-optics/macro-bending-loss";
-import {
-  claddingIndex, coreConfinement, effectiveIndex, lp01Field, normalizedB, petermannIIRadius, relativeIndexDifference,
-} from "../../../physics/fiber-optics/step-index-modes";
+import { REFERENCE_BEND_RADIUS, modeFieldSummary } from "../../../physics/fiber-optics/mode-field-diameter";
+import { lp01Field, petermannIIRadius } from "../../../physics/fiber-optics/step-index-modes";
 
 // SMF-28-like step-index equivalent: a = 4.1 µm, NA 0.1246, pure-silica cladding (n₂ = 1.4440 at 1550 nm).
 const SMF_PRESET = { coreRadius: 4.1, na: 0.1246, coreIndex: 1.4494 };
@@ -28,9 +27,9 @@ function finitePairs(xs: number[], ys: number[], floor = -Infinity) {
 
 export default function ModeFieldDiameterPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 200, max: 5000 }); // nm
-  const [coreRadius, setCoreRadius] = useURLState("coreRadius", SMF_PRESET.coreRadius, { min: 0.5, max: 100 }); // µm
-  const [na, setNa] = useURLState("na", SMF_PRESET.na, { min: 0.01, max: 0.5 });
-  const [coreIndex, setCoreIndex] = useURLState("coreIndex", SMF_PRESET.coreIndex, { min: 1, max: 4 });
+  const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.1, { min: 0.5, max: 100 }); // µm
+  const [na, setNa] = useURLState("na", 0.1246, { min: 0.01, max: 0.5 });
+  const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.4494, { min: 1, max: 4 });
   const [elastoOptic, setElastoOptic] = useURLState("elastoOptic", 1, { min: 0, max: 1 });
   const eo = elastoOptic === 1;
   const eoFactor = elastoOpticBendRadius(1, coreIndex);
@@ -43,27 +42,15 @@ export default function ModeFieldDiameterPage() {
 
   const fiber = useMemo(() => ({ a: coreRadius * 1e-6, n1: coreIndex, NA: na }), [coreRadius, coreIndex, na]);
 
-  const calc = useMemo(() => {
-    const lambda = wavelength * 1e-9;
-    const V = vNumber(fiber, lambda);
-    const mode = lp01Mode(V);
-    const wFit = modeFieldRadius(fiber, lambda);
-    const wPII = petermannIIRadius(fiber, lambda, mode);
-    return {
-      V,
-      mode,
-      delta: relativeIndexDifference(fiber),
-      n2: claddingIndex(fiber),
-      wFit_um: wFit * 1e6,
-      mfdFit_um: 2 * wFit * 1e6,
-      mfdPII_um: 2 * wPII * 1e6,
-      aeff_um2: Math.PI * (wFit * 1e6) ** 2,
-      cutoff_nm: lp11CutoffWavelength(fiber) * 1e9,
-      b: normalizedB(mode),
-      nEff: effectiveIndex(fiber, lambda, mode),
-      gamma: coreConfinement(mode),
-    };
-  }, [fiber, wavelength]);
+  const summary = modeFieldSummary(fiber, wavelength * 1e-9);
+  const calc = {
+    ...summary,
+    wFit_um: summary.wFit * 1e6,
+    mfdFit_um: 2 * summary.wFit * 1e6,
+    mfdPII_um: 2 * summary.wPII * 1e6,
+    aeff_um2: summary.aeff * 1e12,
+    cutoff_nm: summary.cutoff * 1e9,
+  };
 
   const valid = Number.isFinite(calc.mode.U);
 
@@ -182,7 +169,7 @@ export default function ModeFieldDiameterPage() {
             Marcuse 1976 curvature loss of LP01, as on the macrobending-loss page. {eo
               ? `The elasto-optic correction R_eff = R/(1 − p_e) ≈ ${eoFactor > 0 ? eoFactor.toFixed(2) : "—"} R is on (Schermer & Cole 2007 fit 1.28 R to measured SMF-28).`
               : "The elasto-optic correction is off (bare radius)."}{" "}
-            At 10 mm: {fmtDb(bendLossPerTurnDb(fiber, wavelength * 1e-9, 10e-3, undefined, eo))} dB/turn.
+            At 10 mm: {fmtDb(bendLossPerTurnDb(fiber, wavelength * 1e-9, REFERENCE_BEND_RADIUS, undefined, eo))} dB/turn.
           </p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">

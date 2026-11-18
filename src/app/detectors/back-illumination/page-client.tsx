@@ -4,10 +4,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { qeRatioSnrGain } from "../../../physics/detectors/noise";
-
-const REGIMES = ["shot", "read"] as const;
-type Regime = (typeof REGIMES)[number];
+import { backIlluminationSummary, NOISE_REGIMES as REGIMES, type NoiseRegime as Regime } from "../../../physics/detectors/back-illumination";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const pct = (x: number) => (Number.isFinite(x) ? `${(x * 100).toFixed(1)}%` : "—");
@@ -29,12 +26,7 @@ export default function BackIlluminationPage() {
   const microlensGain = clamp(gainRaw, 1, 3, 1.3);
   const regime: Regime = REGIMES.find((r) => r === regimeRaw) ?? "shot";
 
-  // The microlens gain cannot push the effective QE above 1.
-  const effectiveFi = Math.min(1, fiQE * microlensGain) * cfa;
-  const effectiveBi = Math.min(1, biQE * microlensGain) * cfa;
-  const qeRatio = effectiveFi > 0 ? effectiveBi / effectiveFi : NaN;
-  const snrGain = qeRatioSnrGain(qeRatio, regime);
-  const snrGainDb = 20 * Math.log10(snrGain);
+  const { effectiveFi, effectiveBi, qeRatio, snrGain, snrGainDb } = backIlluminationSummary({ fiQE, biQE, cfa, microlensGain, regime });
 
   const wl = Array.from({ length: 141 }, (_, i) => 300 + i * 5);
   const fi = wl.map((w) => effectiveFi * shape(w) * gateLoss(w));

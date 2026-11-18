@@ -40,3 +40,19 @@ export function bloomingOnset(fullWell: number, thresholdFraction: number, drain
   const threshold = thresholdFraction * fullWell;
   return threshold + (fullWell - threshold) / (1 - drainEfficiency);
 }
+
+export interface AntibloomingSummary extends AntibloomingResult {
+  /** Drain barrier T = a·W, e⁻. */
+  threshold: number;
+  /** Blooming onset N_b, e⁻ (Infinity for η = 1). */
+  onset: number;
+  /** Well capacity above the barrier, W − T, e⁻. */
+  headroom: number;
+}
+
+/** What the page shows for `excess` electrons above the barrier: the split of T + excess plus the onset and headroom. */
+export function antibloomingSummary(fullWell: number, thresholdFraction: number, excess: number, drainEfficiency: number): AntibloomingSummary {
+  const threshold = thresholdFraction * fullWell;
+  const split = antiblooming(threshold + excess, fullWell, thresholdFraction, drainEfficiency);
+  return { ...split, threshold, onset: bloomingOnset(fullWell, thresholdFraction, drainEfficiency), headroom: fullWell - threshold };
+}

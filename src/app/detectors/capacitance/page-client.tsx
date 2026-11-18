@@ -4,13 +4,12 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { capacitanceSummary, DOPING_PROFILES as PROFILES, gradingM, type DopingProfile as Profile } from "../../../physics/detectors/capacitance";
 import { GRADING_EXPONENT, junctionCapacitance, rcBandwidth } from "../../../physics/detectors/photodiode-rc";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmtHz = (f: number) => (!Number.isFinite(f) ? "—" : f >= 1e9 ? `${(f / 1e9).toFixed(2)} GHz` : f >= 1e6 ? `${(f / 1e6).toFixed(2)} MHz` : f >= 1e3 ? `${(f / 1e3).toFixed(2)} kHz` : `${f.toFixed(2)} Hz`);
 const fmtTau = (t: number) => (!Number.isFinite(t) ? "—" : t >= 1 ? `${t.toPrecision(3)} s` : t >= 1e-3 ? `${(t * 1e3).toPrecision(3)} ms` : t >= 1e-6 ? `${(t * 1e6).toPrecision(3)} µs` : t >= 1e-9 ? `${(t * 1e9).toPrecision(3)} ns` : `${(t * 1e12).toPrecision(3)} ps`);
-const PROFILES = ["abrupt", "graded", "custom"] as const;
-type Profile = (typeof PROFILES)[number];
 const LABELS: Record<Profile, string> = { abrupt: "Abrupt (m = 1/2)", graded: "Linearly graded (m = 1/3)", custom: "Custom m" };
 
 export default function CapacitancePage() {
@@ -29,11 +28,12 @@ export default function CapacitancePage() {
   const loadResistance = clamp(loadResistanceRaw, 1, 1e9, 50);
   const seriesResistance = clamp(seriesResistanceRaw, 0, 1e6, 10);
 
-  const m = profile === "custom" ? customM : GRADING_EXPONENT[profile];
-  const capacitance = junctionCapacitance(zeroBiasCap, reverseBias, builtInVoltage, m); // pF
+  const m = gradingM(profile, customM);
+  const { capacitance: capacitanceF, rcBw, rcTime } = capacitanceSummary({
+    zeroBiasCap: zeroBiasCap * 1e-12, builtInVoltage, reverseBias, profile, customM, loadResistance, seriesResistance,
+  });
+  const capacitance = capacitanceF / 1e-12; // pF
   const totalResistance = loadResistance + seriesResistance;
-  const rcBw = rcBandwidth(totalResistance, capacitance * 1e-12);
-  const rcTime = totalResistance * capacitance * 1e-12; // s
 
   const vMax = Math.max(20, reverseBias);
   const vr = Array.from({ length: 201 }, (_, i) => (i * vMax) / 200);

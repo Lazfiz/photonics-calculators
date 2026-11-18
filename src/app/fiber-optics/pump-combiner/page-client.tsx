@@ -1,12 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  combinerEtendueRatio, fiberEtendue, hexBundleDiameter, taperedPumpNA,
+  combinerEtendueRatio, hexBundleDiameter, taperedPumpNA,
 } from "../../../physics/fiber-optics/fiber-bundle";
+import { pumpCombinerSummary } from "../../../physics/fiber-optics/pump-combiner";
 
 const clamp = (x: number, lo: number, hi: number) => Math.min(Math.max(x, lo), hi);
 
@@ -33,25 +33,12 @@ export default function PumpCombinerCalculator() {
   const outDia_um = clamp(outDiaRaw, 1, 5000);
   const outNA = clamp(outNARaw, 0.01, 1);
 
-  const calc = useMemo(() => {
-    const totalFibres = N + (signalPort ? 1 : 0);
-    const bundle = hexBundleDiameter(totalFibres, pumpClad_um * 1e-6);
-    const taperRatio = Math.max(1, bundle / (outDia_um * 1e-6));
-    const naTaper = taperedPumpNA(pumpNA, bundle, outDia_um * 1e-6);
-    const U = combinerEtendueRatio(N, pumpCore_um * 1e-6, pumpNA, outDia_um * 1e-6, outNA);
-    const gPump = fiberEtendue(pumpCore_um * 1e-6, pumpNA) * 1e6; // mm²·sr
-    const gOut = fiberEtendue(outDia_um * 1e-6, outNA) * 1e6;
-    const pIn = N * P, pOut = pIn * eta;
-    return {
-      bundle, taperRatio, naTaper, U, pIn, pOut,
-      maxPorts: Math.floor(1 / combinerEtendueRatio(1, pumpCore_um * 1e-6, pumpNA, outDia_um * 1e-6, outNA) + 1e-9),
-      bIn: P / gPump, bOut: pOut / gOut,
-      signalT: 10 ** (-signalIL / 10),
-      taperOK: naTaper <= outNA, etendueOK: U <= 1,
-    };
-  }, [N, signalPort, P, eta, signalIL, pumpCore_um, pumpClad_um, pumpNA, outDia_um, outNA]);
+  const calc = pumpCombinerSummary({
+    ports: N, signalPort, power: P, efficiency: eta, signalLossDb: signalIL,
+    pumpCore: pumpCore_um * 1e-6, pumpClad: pumpClad_um * 1e-6, pumpNA, outDia: outDia_um * 1e-6, outNA,
+  });
 
-  const chartData = useMemo(() => {
+  const chartData = (() => {
     const ports = Array.from({ length: Math.max(36, N + 5) }, (_, i) => i + 1);
     const out = outDia_um * 1e-6;
     const taper = ports.map(n => Math.min(1, taperedPumpNA(pumpNA, hexBundleDiameter(n + (signalPort ? 1 : 0), pumpClad_um * 1e-6), out)));
@@ -62,7 +49,7 @@ export default function PumpCombinerCalculator() {
       { x: ports, y: ideal, type: "scatter" as const, mode: "lines" as const, name: "Étendue limit (cores only)", line: { color: "#60a5fa", width: 2 } },
       { x: ports, y: ports.map(() => outNA), type: "scatter" as const, mode: "lines" as const, name: "Output NA", line: { color: "#9ca3af", width: 1, dash: "dash" } },
     ];
-  }, [pumpNA, pumpCore_um, pumpClad_um, outDia_um, outNA, signalPort, N]);
+  })();
 
   const ok = (b: boolean) => (b ? "text-green-400" : "text-red-400");
 
@@ -103,7 +90,7 @@ export default function PumpCombinerCalculator() {
               <div className="flex justify-between"><span className="text-gray-400">Bundle Ø before taper:</span><span className="font-mono">{(calc.bundle * 1e6).toFixed(0)} µm</span></div>
               <div className="flex justify-between"><span className="text-gray-400">Taper ratio:</span><span className="font-mono">{calc.taperRatio.toFixed(3)}</span></div>
               <div className="flex justify-between"><span className="text-gray-400">Pump NA after taper:</span><span className={`font-mono ${ok(calc.taperOK)}`}>{calc.naTaper > 1 ? "> 1 (unguided)" : `${calc.naTaper.toFixed(3)} ${calc.taperOK ? "≤" : ">"} ${outNA}`}</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Pump brightness in / out:</span><span className="font-mono">{calc.bIn.toExponential(2)} / {calc.bOut.toExponential(2)} W/(mm²·sr)</span></div>
+              <div className="flex justify-between"><span className="text-gray-400">Pump brightness in / out:</span><span className="font-mono">{(calc.bIn * 1e-6).toExponential(2)} / {(calc.bOut * 1e-6).toExponential(2)} W/(mm²·sr)</span></div>
               <div className="flex justify-between"><span className="text-gray-400">Signal transmission:</span><span className="font-mono">{(calc.signalT * 100).toFixed(2)} %</span></div>
             </div>
           </div>

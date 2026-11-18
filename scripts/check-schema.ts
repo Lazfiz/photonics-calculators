@@ -59,6 +59,25 @@ async function check(schema: CalculatorSchema) {
       if (!Number.isFinite(value) && !(value === null && atDefaults.warnings.length > 0)) fail(`${h} ${key} = ${value} at the defaults, without a warning`);
     }
   }
+  // The api-schemas sweeps: each input alone at its min and max gives numbers or null with a warning, no warning twice;
+  // and in those runs, the defaults and each choice option, a null output names its reason (unless all are null).
+  const sweep: Record<string, number | string>[] = [{}];
+  for (const input of schema.inputs) sweep.push({ [input.key]: input.min }, { [input.key]: input.max });
+  for (const choice of choices) for (const option of choice.options) sweep.push({ [choice.key]: option.value });
+  for (const inputs of sweep) {
+    const parsed = parseInputs(schema, query(inputs));
+    if (!parsed.ok) continue;
+    const result = runSchema(schema, parsed.values);
+    const at = JSON.stringify(inputs);
+    const nulls = Object.entries(result.outputs).filter(([, v]) => v === null).map(([k]) => k);
+    for (const [key, value] of Object.entries(result.outputs)) {
+      if (!(Number.isFinite(value) || (value === null && result.warnings.length > 0))) fail(`${h} ${at} ${key} = ${value} without a warning`);
+    }
+    if (new Set(result.warnings).size !== result.warnings.length) fail(`${h} ${at}: a warning twice`);
+    if (nulls.length < schema.outputs.length) {
+      for (const key of nulls) if (!result.reasons[key]) fail(`${h} ${at} ${key} is null without a reason (add it to \`reasons\`)`);
+    }
+  }
   for (const c of schema.checks) {
     if (!(c.source.length > 20 && c.tolerance > 0 && c.tolerance <= 0.01)) fail(`${h}: source or tolerance of "${c.source}"`);
     const result = run(c.inputs as Record<string, number | string>);

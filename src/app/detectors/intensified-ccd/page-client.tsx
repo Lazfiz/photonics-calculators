@@ -4,15 +4,12 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { stackedGain } from "../../../physics/detectors/electron-multiplier";
-import { gaussianSpotShares, intensifiedSnr, intensifierNoiseFactor, PHOSPHOR_SCREENS, phosphorEfficiency, phosphorGain } from "../../../physics/detectors/photoemission";
+import { intensifiedCcdSummary, PHOSPHOR_IDS, type Phosphor } from "../../../physics/detectors/intensified-ccd";
+import { intensifiedSnr, PHOSPHOR_SCREENS } from "../../../physics/detectors/photoemission";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 2) => (Number.isFinite(x) ? x.toExponential(digits) : "—");
 const fix = (x: number, digits = 2) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
-
-type Phosphor = keyof typeof PHOSPHOR_SCREENS;
-const PHOSPHOR_IDS = Object.keys(PHOSPHOR_SCREENS) as Phosphor[];
 
 // Defaults: 10 photons per pixel, an MCP at 10³ and a fiber taper passing 10 %. Andor iStar DH334T (iStar CCD
 // specifications): 5 e⁻ read noise at 50 kHz, 100 000 e⁻ pixel well, smallest resolvable FWHM ≈ 2 CCD pixels (note 6).
@@ -40,7 +37,6 @@ export default function IntensifiedCCDPage() {
   const mcpGain = clamp(mcpGainRaw, 1, 1e6, 1e3);
   const plates = Math.round(clamp(platesRaw, 1, 2, 1));
   const kf = clamp(kfRaw, 1, 5, 1.6);
-  const mcpNoise = kf ** 2; // variance factor
   const screen_kV = clamp(screenRaw, 3, 10, 5); // the ∝ V phosphor scaling fails near the film's dead voltage
   const phosphorId: Phosphor = PHOSPHOR_IDS.find((p) => p === phosphorRaw) ?? "p43";
   const coupling = clamp(couplingRaw, 0.01, 1, 0.1);
@@ -53,24 +49,13 @@ export default function IntensifiedCCDPage() {
   const gate_ns = clamp(gateRaw, 1, 1e9, 100);
   const ph = PHOSPHOR_SCREENS[phosphorId];
 
-  const photoelectrons = signal * qe;
-  const background = bgRate * gate_ns * 1e-9 * qe;
-  const efficiency = phosphorEfficiency(ph.photonsAt5kV, 5e3, ph.peak);
-  const photonsPerElectron = phosphorGain(efficiency, screen_kV * 1e3, ph.peak);
-  const transfer = photonsPerElectron * coupling * ccdQe; // CCD e⁻ per MCP output electron
-  const gain = stackedGain(mcpGain, plates);
-  const ge = gain * transfer;
-  const spot = gaussianSpotShares(spotFwhm);
-  const noisePixels = 1 / spot.sumSquares;
-  const noiseFactor = intensifierNoiseFactor(mcpNoise, ge);
-  const snr = intensifiedSnr(photoelectrons, background, ge, mcpNoise, read, spot);
-  const output = photoelectrons * ge;
-  const evenFieldFull = !(output + background * ge <= fullWell);
-  const eventPeak = ge * spot.peak; // mean centre-pixel charge of one photoelectron
-  const eventFull = !(eventPeak <= fullWell);
-  const highGainLimit = photoelectrons / Math.sqrt((photoelectrons + spot.footprint * background) * mcpNoise);
-  const bareSignal = signal * bareQe;
-  const bareSnr = bareSignal / Math.sqrt(bareSignal + read ** 2);
+  const {
+    photoelectrons, background, efficiency, photonsPerElectron, transfer, gain, ge, spot, noisePixels, mcpNoise, noiseFactor, snr,
+    output, evenFieldFull, eventPeak, eventFull, highGainLimit, bareSnr, gainSaturated,
+  } = intensifiedCcdSummary({
+    signal, qe, mcpGain, plates, kf, screenVoltage: screen_kV * 1e3, phosphor: phosphorId, coupling, ccdQe, readNoise: read, fullWell,
+    spotFwhm, bareQe, backgroundRate: bgRate, gate: gate_ns * 1e-9,
+  });
   const snrAt = (g: number, bg: number) => intensifiedSnr(photoelectrons, bg, g * transfer, mcpNoise, read, spot);
 
   const gains = Array.from({ length: 121 }, (_, i) => 10 ** ((i / 20) * plates)); // 1 to 10⁶ per plate
@@ -119,7 +104,7 @@ export default function IntensifiedCCDPage() {
         <ResultCard label="Bare CCD SNR" value={fix(bareSnr)} tone="orange" subtext="Same photons at the bare QE, no gate, no background" />
       </div>
 
-      {gain > 1e7 && (
+      {gainSaturated && (
         <p className="mb-6 text-sm text-yellow-400">
           MCP stack gain {fmt(gain)} is above the ≈ 10⁷ chevron saturation level (Wiza 1979); the model doesn&apos;t saturate.
         </p>

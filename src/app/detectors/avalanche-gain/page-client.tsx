@@ -4,7 +4,8 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { APD_K_TABLE, excessNoiseFactor, excessNoiseIndex, millerGain } from "../../../physics/detectors/apd";
+import { APD_K_TABLE, excessNoiseFactor, millerGain } from "../../../physics/detectors/apd";
+import { avalancheGainSummary } from "../../../physics/detectors/avalanche-gain";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fixed = (x: number, digits: number) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
@@ -21,10 +22,7 @@ export default function AvalancheGainPage() {
   const n = clamp(nRaw, 0.1, 10, 3);
   const k = clamp(kRaw, 0, 1, 0.02);
 
-  const gain = millerGain(bias, breakdown, n);
-  const F = excessNoiseFactor(gain, k);
-  const x = excessNoiseIndex(gain, k);
-  const aboveBreakdown = gain === Infinity;
+  const { ratio, gain, noiseFactor: F, noiseIndex: x, noiseGain, aboveBreakdown } = avalancheGainSummary(bias, breakdown, n, k);
 
   const ratios = Array.from({ length: 200 }, (_, i) => 0.5 + (i * 0.499) / 199);
   const gainVsVoltage = [
@@ -59,10 +57,10 @@ export default function AvalancheGainPage() {
         <ValidatedNumberInput label="Ionization Ratio k" value={kRaw} onChange={setIonizationRatio} min={0} max={1} step="0.01" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ResultCard label="V/V_br" value={(bias / breakdown).toFixed(4)} tone="blue" />
+        <ResultCard label="V/V_br" value={ratio.toFixed(4)} tone="blue" />
         <ResultCard label="Gain M" value={aboveBreakdown ? "— (at or above breakdown)" : gain.toFixed(3)} tone="green" />
         <ResultCard label="Excess Noise F" value={aboveBreakdown ? "—" : F.toFixed(3)} tone="yellow" subtext={gain > 1 && !aboveBreakdown ? `F = M^${x.toFixed(3)}` : undefined} />
-        <ResultCard label="Noise Current Gain √F·M" value={aboveBreakdown ? "—" : fixed(Math.sqrt(F) * gain, 2)} tone="red" />
+        <ResultCard label="Noise Current Gain √F·M" value={aboveBreakdown ? "—" : fixed(noiseGain, 2)} tone="red" />
       </div>
       <div className="grid gap-6 md:grid-cols-2">
         <ChartPanel data={gainVsVoltage} layout={{ xaxis: { title: "Bias Voltage (V)", gridcolor: "#374151" }, yaxis: { title: "Gain M", type: "log", gridcolor: "#374151" } }} title="Gain vs Bias" />

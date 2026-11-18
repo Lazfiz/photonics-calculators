@@ -1,13 +1,11 @@
 "use client";
 
-import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  bendBirefringence, loopDiameterFor, loopRetardance, paddleStates,
-} from "../../../physics/fiber-optics/fiber-birefringence";
-import { ellipseAngles, handedness, stokesFromEllipse } from "../../../physics/polarization/stokes";
+  LOW_LOSS_LOOP_DIAMETER, MAX_BEND_STRAIN, polarizationControllerSummary,
+} from "../../../physics/fiber-optics/polarization-controller";
 
 const clamp = (x: number, lo: number, hi: number) => Math.min(Math.max(x, lo), hi);
 // Text for a result, or a dash when the model has no finite value.
@@ -47,25 +45,12 @@ export default function PolarizationControllerCalculator() {
   const [L1, L2, L3] = loops;
   const [A1, A2, A3] = angles;
 
-  const calc = useMemo(() => {
-    const perLoop = loopRetardance(d, D, lambda);
-    const paddles = [L1, L2, L3].map((N, i) => ({ retardance: N * perLoop, fastAxis: [A1, A2, A3][i] * DEG }));
-    const states = paddleStates(stokesFromEllipse(1, psi * DEG, chi * DEG), paddles);
-    const out = states[3];
-    return {
-      perLoop,
-      Bbend: bendBirefringence(d, D / 2),
-      paddles,
-      states,
-      out,
-      ell: ellipseAngles(out),
-      hand: handedness(out),
-      dQuarter: loopDiameterFor(Math.PI / 2, d, lambda, Math.max(L1, 1)),
-      dHalf: loopDiameterFor(Math.PI, d, lambda, Math.max(L2, 1)),
-    };
-  }, [d, D, lambda, L1, L2, L3, A1, A2, A3, psi, chi]);
+  const calc = polarizationControllerSummary({
+    lambda, claddingDiameter: d, loopDiameter: D, loops: [L1, L2, L3],
+    angles: [A1 * DEG, A2 * DEG, A3 * DEG], psi: psi * DEG, chi: chi * DEG,
+  });
 
-  const ellipse = useMemo(() => {
+  const ellipse = (() => {
     const { psi: az, chi: el } = calc.ell;
     const a = Math.cos(el), b = Math.sin(el), ca = Math.cos(Number.isFinite(az) ? az : 0), sa = Math.sin(Number.isFinite(az) ? az : 0);
     const ex: number[] = [], ey: number[] = [];
@@ -77,7 +62,7 @@ export default function PolarizationControllerCalculator() {
       }
     }
     return { ex, ey };
-  }, [calc.ell]);
+  })();
 
   const waves = (g: number) => g / (2 * Math.PI);
   const steps = [0, 1, 2, 3];
@@ -118,13 +103,13 @@ export default function PolarizationControllerCalculator() {
           sub="normalized, S₀ = 1" tone="text-gray-200" />
       </div>
 
-      {d / D > 0.01 && (
+      {d / D > MAX_BEND_STRAIN && (
         <p role="alert" className="mb-8 rounded-lg border border-red-700 bg-red-950 p-3 text-sm text-red-200">
           Bend strain d/D = {((d / D) * 100).toFixed(1)} % exceeds the ≈ 1 % proof-test strain of standard fibre: the
           fibre may break. Use loops of at least {(d * 100 * 1e3).toFixed(1)} mm.
         </p>
       )}
-      {D < 0.03 && (
+      {D < LOW_LOSS_LOOP_DIAMETER && (
         <p role="alert" className="mb-8 rounded-lg border border-yellow-700 bg-yellow-950 p-3 text-sm text-yellow-200">
           Below ≈ 30 mm loop diameter the bend loss of standard single-mode fibre at 1550 nm rises steeply and depends
           strongly on its NA (from ≈ 0.01 to ≈ 0.5 dB per turn at 20 mm). Check it with the macro-bending loss calculator

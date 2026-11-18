@@ -4,8 +4,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { dynamicRangeDb } from "../../../physics/detectors/camera-snr";
-import { sensorNoise, shotPrnuCrossover, shotReadCrossover } from "../../../physics/detectors/sensor-noise";
+import { photonTransferNoiseAt, photonTransferSummary } from "../../../physics/detectors/photon-transfer";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fix = (x: number, digits = 2) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
@@ -21,12 +20,9 @@ export default function PhotonTransferPage() {
   const wellCapacity = clamp(wellRaw, 100, 1e7, 50000);
   const prnu = clamp(prnuRaw, 0, 20, 1) / 100;
 
-  const noiseAt = (signal: number) => sensorNoise({ signal, read: readNoise, prnu, electronsPerDn: gain });
-  const full = noiseAt(wellCapacity);
-  const floor = Math.hypot(readNoise, full.quantization);
-  const readCross = shotReadCrossover(floor); // S = σ_r² + K²/12 (e⁻)
-  const prnuCross = shotPrnuCrossover(prnu);
-  const dynamicRange = dynamicRangeDb(wellCapacity, floor);
+  const noiseAt = (signal: number) => photonTransferNoiseAt(signal, { gain, read: readNoise, prnu });
+  const { full, floor, readCrossover: readCross, prnuCrossover: prnuCross, dynamicRangeDb: dynamicRange } =
+    photonTransferSummary({ gain, read: readNoise, wellCapacity, prnu }); // readCross: S = σ_r² + K²/12 (e⁻)
 
   const signals = Array.from({ length: 201 }, (_, i) => wellCapacity ** (i / 200));
   const noises = signals.map(noiseAt);

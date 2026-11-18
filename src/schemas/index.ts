@@ -1,4 +1,58 @@
 // Every calculator the API can run, by registry href. tests/api-schemas.test.ts checks each against its page.
+import afterpulsing from "./detectors/afterpulsing";
+import amplifierNoise from "./detectors/amplifier-noise";
+import antiblooming from "./detectors/antiblooming";
+import avalancheGain from "./detectors/avalanche-gain";
+import backIllumination from "./detectors/back-illumination";
+import detectorBandwidth from "./detectors/bandwidth";
+import boxcarIntegrator from "./detectors/boxcar-integrator";
+import junctionCapacitance from "./detectors/capacitance";
+import ccdVsCmos from "./detectors/ccd-vs-cmos";
+import channelPhotomultiplier from "./detectors/channel-photomultiplier";
+import coolingBenefit from "./detectors/cooling-benefit";
+import cosmicRays from "./detectors/cosmic-rays";
+import darkCurrent from "./detectors/dark-current";
+import darkNoiseTemperature from "./detectors/dark-noise-temperature";
+import detectivity from "./detectors/detectivity";
+import electronMultiplying from "./detectors/electron-multiplying";
+import emGain from "./detectors/em-gain";
+import excessNoise from "./detectors/excess-noise";
+import flickerNoise from "./detectors/flicker-noise";
+import gainBandwidth from "./detectors/gain-bandwidth";
+import gainTemperature from "./detectors/gain-temperature";
+import geigerModeAvalanche from "./detectors/geiger-mode-avalanche";
+import ingaasParameters from "./detectors/ingaas-parameters";
+import intensifiedCcd from "./detectors/intensified-ccd";
+import linearModeAvalanche from "./detectors/linear-mode-avalanche";
+import lockinAmplifier from "./detectors/lockin-amplifier";
+import microchannelPlate from "./detectors/microchannel-plate";
+import modulationTransfer from "./detectors/modulation-transfer";
+import nep from "./detectors/nep";
+import photodiodeSpeed from "./detectors/photodiode-speed";
+import photodiodeTiaNoise from "./detectors/photodiode-tia-noise";
+import photonCounting from "./detectors/photon-counting";
+import photonTransfer from "./detectors/photon-transfer";
+import pixelCrosstalk from "./detectors/pixel-crosstalk";
+import pmt from "./detectors/pmt";
+import quantumEfficiency from "./detectors/quantum-efficiency";
+import readoutNoise from "./detectors/readout-noise";
+import resetNoise from "./detectors/reset-noise";
+import responsivity from "./detectors/responsivity";
+import saturation from "./detectors/saturation";
+import shotNoise from "./detectors/shot-noise";
+import siVsIngaas from "./detectors/si-vs-ingaas";
+import siliconPhotodiode from "./detectors/silicon-photodiode";
+import singlePhotonCountingModule from "./detectors/single-photon-counting-module";
+import sndr from "./detectors/sndr";
+import spad from "./detectors/spad";
+import spadDeadTime from "./detectors/spad-dead-time";
+import spectralResponse from "./detectors/spectral-response";
+import streakCamera from "./detectors/streak-camera";
+import temporalNoise from "./detectors/temporal-noise";
+import thermalNoise from "./detectors/thermal-noise";
+import uniformity from "./detectors/uniformity";
+import vacuumPhotodiode from "./detectors/vacuum-photodiode";
+import wellCapacity from "./detectors/well-capacity";
 import attenuation from "./fiber-optics/attenuation";
 import bendInsensitive from "./fiber-optics/bend-insensitive";
 import birefringenceFiber from "./fiber-optics/birefringence-fiber";
@@ -12,6 +66,40 @@ import dispersionMap from "./fiber-optics/dispersion-map";
 import dispersionShifted from "./fiber-optics/dispersion-shifted";
 import fiberAmplifier from "./fiber-optics/fiber-amplifier";
 import fiberBandwidth from "./fiber-optics/fiber-bandwidth";
+import fiberBraggGrating from "./fiber-optics/fiber-bragg-grating";
+import fiberBraggGratingSensor from "./fiber-optics/fiber-bragg-grating-sensor";
+import fiberBundle from "./fiber-optics/fiber-bundle";
+import fiberCharacterization from "./fiber-optics/fiber-characterization";
+import fiberCoupler from "./fiber-optics/fiber-coupler";
+import fiberDelayLine from "./fiber-optics/fiber-delay-line";
+import fiberGyroscope from "./fiber-optics/fiber-gyroscope";
+import fiberLaser from "./fiber-optics/fiber-laser";
+import fiberLoopMirror from "./fiber-optics/fiber-loop-mirror";
+import fiberOpticSensor from "./fiber-optics/fiber-optic-sensor";
+import fiberTaper from "./fiber-optics/fiber-taper";
+import fiberLinkBudget from "./fiber-optics/link-budget";
+import lowWaterPeak from "./fiber-optics/low-water-peak";
+import macroBendingLoss from "./fiber-optics/macro-bending-loss";
+import microBend from "./fiber-optics/micro-bend";
+import modeCoupling from "./fiber-optics/mode-coupling";
+import modeFieldDiameter from "./fiber-optics/mode-field-diameter";
+import multiCore from "./fiber-optics/multi-core";
+import nonlinearEffects from "./fiber-optics/nonlinear-effects";
+import nonzeroDispersion from "./fiber-optics/nonzero-dispersion";
+import otdrAnalysis from "./fiber-optics/otdr-analysis";
+import photonicCrystal from "./fiber-optics/photonic-crystal";
+import polarizationController from "./fiber-optics/polarization-controller";
+import polarizationMaintaining from "./fiber-optics/polarization-maintaining";
+import polarizationModeDispersion from "./fiber-optics/polarization-mode-dispersion";
+import pumpCombiner from "./fiber-optics/pump-combiner";
+import rareEarthDoped from "./fiber-optics/rare-earth-doped";
+import sbsThreshold from "./fiber-optics/sbs-threshold";
+import sidePolished from "./fiber-optics/side-polished";
+import specialtyFiber from "./fiber-optics/specialty-fiber";
+import spliceLoss from "./fiber-optics/splice-loss";
+import srsThreshold from "./fiber-optics/srs-threshold";
+import vNumber from "./fiber-optics/v-number";
+import wdmCoupler from "./fiber-optics/wdm-coupler";
 import acquisitionTracking from "./free-space-comms/acquisition-tracking";
 import adaptiveOptics from "./free-space-comms/adaptive-optics";
 import apertureAveraging from "./free-space-comms/aperture-averaging";
@@ -310,6 +398,22 @@ export const schemas: readonly CalculatorSchema[] = [
   wedgeFilm, wideBandpass,
   attenuation, bendInsensitive, birefringenceFiber, fiberChromaticDispersion, connectorInsertionLoss, connectorReturnLoss,
   dShapedFiber, dispersionComp, dispersionShifted, fiberAmplifier, fiberBandwidth,
+  fiberBraggGrating, fiberBraggGratingSensor, fiberBundle, fiberCharacterization, fiberCoupler, fiberDelayLine,
+  fiberGyroscope, fiberLaser, fiberLoopMirror, fiberOpticSensor, fiberTaper,
+  fiberLinkBudget, lowWaterPeak, macroBendingLoss, microBend, modeCoupling, modeFieldDiameter, multiCore, nonlinearEffects,
+  nonzeroDispersion, otdrAnalysis, photonicCrystal,
+  polarizationController, polarizationMaintaining, polarizationModeDispersion, pumpCombiner, rareEarthDoped, sbsThreshold, sidePolished,
+  specialtyFiber, spliceLoss, srsThreshold, vNumber, wdmCoupler,
+  afterpulsing, amplifierNoise, antiblooming, avalancheGain, backIllumination, detectorBandwidth,
+  boxcarIntegrator, junctionCapacitance, ccdVsCmos, channelPhotomultiplier, coolingBenefit,
+  cosmicRays, darkCurrent, darkNoiseTemperature, detectivity, electronMultiplying, emGain,
+  excessNoise, flickerNoise, gainBandwidth, gainTemperature, geigerModeAvalanche,
+  ingaasParameters, intensifiedCcd, linearModeAvalanche, lockinAmplifier, microchannelPlate, modulationTransfer,
+  nep, photodiodeSpeed, photodiodeTiaNoise, photonCounting, photonTransfer,
+  pixelCrosstalk, pmt, quantumEfficiency, readoutNoise, resetNoise, responsivity,
+  saturation, shotNoise, siVsIngaas, siliconPhotodiode, singlePhotonCountingModule,
+  sndr, spad, spadDeadTime, spectralResponse, streakCamera,
+  temporalNoise, thermalNoise, uniformity, vacuumPhotodiode, wellCapacity,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));

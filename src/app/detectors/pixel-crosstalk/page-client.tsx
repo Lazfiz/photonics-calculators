@@ -4,16 +4,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import {
-  columnShares,
-  crosstalkKernelMtf,
-  neighbourFraction,
-  pixelApertureMtf,
-  seibCollection,
-  seibDiffusionFloor,
-  seibDiffusionMtf,
-} from "../../../physics/detectors/sensor-mtf";
-import { siliconAbsorption } from "../../../physics/materials/silicon-absorption";
+import { crosstalkAtWavelength, crosstalkMtfAt, pixelCrosstalkSummary } from "../../../physics/detectors/pixel-crosstalk";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const pct = (x: number, digits = 2) => (Number.isFinite(x) ? `${(x * 100).toFixed(digits)} %` : "—");
@@ -35,27 +26,15 @@ export default function PixelCrosstalkPage() {
   const pitch = pixelPitch * 1e-6;
   const W = depletionDepth * 1e-6;
   const L0 = diffusionLength * 1e-6;
-  const nyquist = 1 / (2 * pitch);
-
-  const diffusion = (lambdaNm: number) => {
-    const alpha = siliconAbsorption(lambdaNm * 1e-9);
-    const floor = seibDiffusionFloor(alpha, W, L0);
-    const shares = columnShares(f => seibDiffusionMtf(f, alpha, W, L0), pitch, floor);
-    return { alpha, shares, diffusionCrosstalk: 2 * shares[1], total: neighbourFraction(shares, kernel) };
-  };
-  const here = diffusion(wavelength);
-  const belowDepletion = Math.exp(-here.alpha * W);
-  const collected = seibCollection(0, here.alpha, W, L0);
-  const beyond = 1 - here.shares[0] - 2 * here.shares[1];
-  const mtfAt = (f: number) => {
-    const pixel = pixelApertureMtf(f, pitch);
-    const seib = seibDiffusionMtf(f, here.alpha, W, L0);
-    return { pixel, seib, total: pixel * seib * crosstalkKernelMtf(f, pitch, kernel) };
-  };
-  const atNyquist = mtfAt(nyquist);
+  const geometry = { pitch, depletion: W, diffusionLength: L0, kernel };
+  const wavelengthM = wavelength * 1e-9;
+  const summary = pixelCrosstalkSummary({ ...geometry, wavelength: wavelengthM });
+  const { nyquist, belowDepletion, collected, beyond, atNyquist } = summary;
+  const here = summary;
+  const mtfAt = (f: number) => crosstalkMtfAt(f, here.alpha, geometry);
 
   const wls = Array.from({ length: 81 }, (_, i) => 300 + 10 * i);
-  const sweep = wls.map(diffusion);
+  const sweep = wls.map((w) => crosstalkAtWavelength(w * 1e-9, geometry));
   const crosstalkData = [
     { x: wls, y: sweep.map(s => s.diffusionCrosstalk * 100), type: "scatter" as const, mode: "lines" as const, name: "Diffusion (Seib)", line: { color: "#60a5fa" } },
     { x: wls, y: sweep.map(s => s.total * 100), type: "scatter" as const, mode: "lines" as const, name: "Diffusion + kernel X", line: { color: "#f87171", width: 2 } },

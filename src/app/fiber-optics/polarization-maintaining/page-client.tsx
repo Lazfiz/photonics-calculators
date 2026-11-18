@@ -1,12 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import {
-  beatLength, crossPolarizedRatio, dgdPerLength, fibreCrosstalkDb, lengthToRatio, ratioFromDb, ratioToDb,
-} from "../../../physics/fiber-optics/fiber-birefringence";
+import { crossPolarizedRatio, ratioToDb } from "../../../physics/fiber-optics/fiber-birefringence";
+import { polarizationMaintainingSummary } from "../../../physics/fiber-optics/polarization-maintaining";
 
 const clamp = (x: number, lo: number, hi: number) => Math.min(Math.max(x, lo), hi);
 // Text for a result, or a dash when the model has no finite value.
@@ -53,27 +51,21 @@ export default function PMFiberCalculator() {
     setH(p.h);
   };
 
-  const calc = useMemo(() => {
-    const eps0 = ratioFromDb(er);
-    const outRatio = crossPolarizedRatio(eps0, h, L);
+  const calc = (() => {
+    // Stress birefringence barely depends on λ, so the group value ≈ the phase value (dgd = B/c).
+    const s = polarizationMaintainingSummary({ B, h, lambda, L, erDb: er, targetDb: target });
     const LMax = Math.max(10 * L, 10000);
     const xs: number[] = [], ys: (number | null)[] = [];
     for (let i = 0; i <= 200; i++) {
       const z = (LMax * i) / 200;
-      const v = ratioToDb(crossPolarizedRatio(eps0, h, z));
+      const v = ratioToDb(crossPolarizedRatio(s.eps0, h, z));
       xs.push(z);
       ys.push(Number.isFinite(v) ? v : null);
     }
     return {
-      L_B: beatLength(B, lambda),
-      // Stress birefringence barely depends on λ, so the group value ≈ the phase value.
-      dgd: dgdPerLength(B),
-      outDb: ratioToDb(outRatio),
-      fibreXt: fibreCrosstalkDb(h, L),
-      Ltarget: lengthToRatio(eps0, ratioFromDb(target), h),
-      xs, ys, LMax,
+      L_B: s.beatLength, dgd: s.dgd, outDb: s.outDb, fibreXt: s.fibreXt, Ltarget: s.Ltarget, xs, ys, LMax,
     };
-  }, [B, h, lambda, L, er, target]);
+  })();
 
   return (
     <>

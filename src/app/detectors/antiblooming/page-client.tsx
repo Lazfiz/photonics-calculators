@@ -4,7 +4,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { antiblooming, bloomingOnset } from "../../../physics/detectors/antiblooming";
+import { antiblooming, antibloomingSummary } from "../../../physics/detectors/antiblooming";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fix = (x: number, digits = 0) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
@@ -21,9 +21,8 @@ export default function AntibloomingPage() {
   const excessCharge = clamp(excessRaw, 0, 1e12, 20000);
   const efficiency = clamp(efficiencyRaw, 0, 1, 0.99);
 
-  const threshold = abThreshold * wellCapacity;
-  const split = antiblooming(threshold + excessCharge, wellCapacity, abThreshold, efficiency);
-  const onset = bloomingOnset(wellCapacity, abThreshold, efficiency);
+  const split = antibloomingSummary(wellCapacity, abThreshold, excessCharge, efficiency);
+  const { threshold, onset } = split;
 
   // Incident charge from 1 % of the well to 10× the blooming onset (or 10⁴ wells), log-spaced.
   const top = Math.min(1e4 * wellCapacity, Number.isFinite(onset) ? 10 * onset : 1e4 * wellCapacity);

@@ -4,9 +4,9 @@ import SimpleLineChart from "../../../components/simple-line-chart";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { codirectionalPeak, codirectionalPsi, codirectionalTransfer } from "../../../physics/fiber-optics/coupled-mode";
+import { codirectionalTransfer } from "../../../physics/fiber-optics/coupled-mode";
+import { modeCouplingSummary } from "../../../physics/fiber-optics/mode-coupling";
 
-const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
 const round6 = (x: number) => Number(x.toPrecision(6));
 
@@ -16,15 +16,16 @@ export default function ModeCouplingCalculator() {
   const [deltaBetaRaw, setDeltaBeta] = useURLState("propConstDiff", 0.1); // 1/mm
   const [inputPowerRaw, setInputPower] = useURLState("inputPower", 1); // mW
 
-  const L_mm = clamp(lengthRaw, 0, 1e7, 1000) * 1e-3;
-  const kappa = clamp(kappaRaw, 0, 1e4, 0.5); // 1/mm
-  const deltaBeta = clamp(deltaBetaRaw, -1e4, 1e4, 0.1); // 1/mm
-  const P0 = clamp(inputPowerRaw, 0, 1e9, 1); // mW
-
-  const psi = codirectionalPsi(kappa, deltaBeta);
-  const fraction = codirectionalTransfer(kappa, deltaBeta, L_mm);
-  const peak = codirectionalPeak(kappa, deltaBeta);
-  const beat = psi > 0 ? Math.PI / psi : Infinity; // period of the exchange, mm
+  const summary = modeCouplingSummary({ length: lengthRaw * 1e-6, kappa: kappaRaw * 1e3, deltaBeta: deltaBetaRaw * 1e3, inputPower: inputPowerRaw * 1e-3 });
+  // Page units: mm, mm⁻¹, mW.
+  const L_mm = summary.length * 1e3;
+  const kappa = summary.kappa * 1e-3;
+  const deltaBeta = summary.deltaBeta * 1e-3;
+  const P0 = summary.inputPower * 1e3;
+  const psi = summary.psi * 1e-3;
+  const fraction = summary.fraction;
+  const peak = { fraction: summary.peak.fraction, length: summary.peak.length * 1e3 };
+  const beat = summary.beat * 1e3; // period of the exchange, mm
 
   const zMax = Math.max(L_mm * 1.2, Number.isFinite(beat) ? 2 * beat : 0, 1e-3);
   // ~20 samples per exchange period π/ψ (capped), so long couplers do not alias.

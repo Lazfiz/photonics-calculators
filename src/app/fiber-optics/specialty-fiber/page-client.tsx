@@ -6,7 +6,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  MARCUSE_MIN_V, SPECIALTY_FIBERS, specialtyCutoff, specialtyMfd, specialtyV, type SpecialtyFiber, type SpecialtyFiberId,
+  MARCUSE_MIN_V, SPECIALTY_FIBERS, specialtySummary, specialtyV, type SpecialtyFiber, type SpecialtyFiberId,
 } from "../../../physics/fiber-optics/specialty-fiber";
 
 const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
@@ -28,22 +28,13 @@ export default function SpecialtyFiberPage() {
   const lambdaBad = !(wavelength >= 300 && wavelength <= 7000);
   const lengthBad = !(length > 0);
 
-  const calc = useMemo(() => {
-    const lam = wavelength * 1e-9;
-    const V = lambdaBad ? NaN : specialtyV(spec, lam);
-    const transmits = lam >= spec.transmission[0] && lam <= spec.transmission[1];
-    const loss = spec.attenuation ?? spec.absorption;
-    return {
-      V,
-      singleMode: lam > spec.cutoff,
-      transmits,
-      cutoffModel: specialtyCutoff(spec),
-      mfdModel: lambdaBad ? NaN : specialtyMfd(spec, lam),
-      mfdAtSheetLambda: specialtyMfd(spec, spec.mfd.lambda),
-      inBand: spec.band ? lam >= spec.band[0] && lam <= spec.band[1] : null,
-      lossDb: loss && !lengthBad ? loss.dbPerM * length : NaN,
-    };
-  }, [spec, wavelength, length, lambdaBad, lengthBad]);
+  const sum = specialtySummary(spec, wavelength * 1e-9, length);
+  const calc = {
+    ...sum,
+    V: lambdaBad ? NaN : sum.V,
+    mfdModel: lambdaBad ? NaN : sum.mfdModel,
+    lossDb: lengthBad ? NaN : sum.lossDb,
+  };
 
   const vData = useMemo(() => {
     const lo = spec.band ? Math.min(spec.band[0], spec.cutoff) * 0.8 : spec.cutoff * 0.6;

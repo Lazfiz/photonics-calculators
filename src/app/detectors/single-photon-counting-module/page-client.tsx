@@ -4,7 +4,8 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { countLoss, measuredRate } from "../../../physics/detectors/dead-time";
+import { measuredRate } from "../../../physics/detectors/dead-time";
+import { MAX_MODEL_LOSS, MIN_GATE_COUNTS, spcmSummary } from "../../../physics/detectors/single-photon-counting-module";
 import { countingSnr, photonRate } from "../../../physics/detectors/spad";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -30,14 +31,9 @@ export default function SPCMPage() {
 
   const tau = deadTime_ns * 1e-9;
   const lambda = wavelength_nm * 1e-9;
-  const photons = photonRate(power, lambda);
-  const signal = photons * pde;
-  const R = signal + dark;
-  const m = measuredRate(R, tau, "nonparalyzable");
-  const loss = countLoss(R, tau, "nonparalyzable");
-  const afterpulseRate = m * pap;
-  const snr = countingSnr({ signalRate: signal, darkRate: dark, afterpulseProb: pap, deadTime: tau, gateTime: gate });
-  const snrIdeal = countingSnr({ signalRate: signal, darkRate: dark, afterpulseProb: 0, deadTime: 0, gateTime: gate });
+  const { photons, rate: R, recorded: m, loss, correction, afterpulseRate, totalOutput, snr, snrIdeal } = spcmSummary({
+    deadTime: tau, darkRate: dark, pde, power, wavelength: lambda, afterpulseProb: pap, gate,
+  });
 
   // Incident power over 0.1 fW – 100 pW, 201 log-spaced points: up to Rτ ≈ 5 at the defaults, where the real
   // module already departs from a fixed dead time.
@@ -65,18 +61,18 @@ export default function SPCMPage() {
         <ResultCard label="Incident Photons" value={`${fmt(photons)} /s`} tone="blue" />
         <ResultCard label="Avalanche Rate R (photons + dark)" value={`${fmt(R)} /s`} tone="cyan" />
         <ResultCard label="Recorded Rate m" value={`${fmt(m)} /s`} tone="green" subtext={`${(loss * 100).toFixed(2)} % lost to dead time`} />
-        <ResultCard label="Dead-Time Correction R/m = 1 + Rτ" value={Number.isFinite(R) ? (1 + R * tau).toFixed(4) : "—"} tone="purple" />
+        <ResultCard label="Dead-Time Correction R/m = 1 + Rτ" value={Number.isFinite(correction) ? correction.toFixed(4) : "—"} tone="purple" />
         <ResultCard label="Afterpulse Rate m·P_ap" value={`${fmt(afterpulseRate)} /s`} tone="orange" />
-        <ResultCard label="Total Output m(1 + P_ap)" value={`${fmt(m + afterpulseRate)} /s`} tone="gray" />
+        <ResultCard label="Total Output m(1 + P_ap)" value={`${fmt(totalOutput)} /s`} tone="gray" />
         <ResultCard label={`SNR in ${gate} s (corrected)`} value={Number.isFinite(snr) ? snr.toFixed(1) : "—"} tone="yellow" />
         <ResultCard label="SNR without dead time or afterpulses" value={Number.isFinite(snrIdeal) ? snrIdeal.toFixed(1) : "—"} tone="gray" />
       </div>
-      {m * gate < 10 && (
+      {m * gate < MIN_GATE_COUNTS && (
         <p className="mb-6 text-sm text-yellow-400">
           Fewer than 10 counts are recorded in the gate: the SNR formula assumes many counts and is only indicative here.
         </p>
       )}
-      {loss > 0.1 && (
+      {loss > MAX_MODEL_LOSS && (
         <p className="mb-6 text-sm text-yellow-400">
           {(loss * 100).toFixed(0)} % of the avalanches fall in the dead time. Real modules drift from the non-paralyzable model
           here: the SPCM-AQRH datasheet lists a correction of 1.16 at 5 Mc/s recorded, where a fixed 22 ns gives 1.12. Use the

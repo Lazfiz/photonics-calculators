@@ -4,8 +4,8 @@ import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { q } from "../../../physics/constants";
 import { ktcNoise } from "../../../physics/detectors/noise";
+import { resetNoiseSummary } from "../../../physics/detectors/reset-noise";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 
@@ -16,7 +16,7 @@ export default function ResetNoisePage() {
   const temperature = clamp(temperatureRaw, 0, 1e4, 300);
 
   const op = useMemo(() => ktcNoise(capacitance, temperature), [capacitance, temperature]);
-  const { v: noiseV, electrons: noiseElectrons } = op;
+  const { noiseV, noiseElectrons, conversionGain } = resetNoiseSummary(capacitance, temperature);
 
   const chartData = useMemo(() => {
     const caps = Array.from({ length: 200 }, (_, i) => (capacitance / 30) * Math.pow(900, i / 199)); // C/30 to 30·C
@@ -28,8 +28,6 @@ export default function ResetNoisePage() {
       { x: [capacitance], y: [op.v], type: "scatter" as const, mode: "markers" as const, name: "Operating point (V)", marker: { color: "#fbbf24", size: 9, symbol: "diamond" }, yaxis: "y2" },
     ];
   }, [capacitance, temperature, op]);
-
-  const conversionGain = q / capacitance; // V/e⁻
 
   return (
     <>

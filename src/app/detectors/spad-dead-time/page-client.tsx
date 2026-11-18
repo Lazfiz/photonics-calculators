@@ -3,9 +3,8 @@
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import {
-  DEAD_TIME_MODELS, countLoss, measuredRate, paralyzablePeakRate, parseDeadTimeModel, trueRateAtLoss,
-} from "../../../physics/detectors/dead-time";
+import { DEAD_TIME_MODELS, countLoss, measuredRate, parseDeadTimeModel } from "../../../physics/detectors/dead-time";
+import { spadDeadTimeSummary } from "../../../physics/detectors/spad-dead-time";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const TABLE_RATES = [1, 5, 10, 20, 50, 100]; // Mcps
@@ -21,10 +20,7 @@ export default function SpadDeadTimePage() {
 
   const tau = deadTime * 1e-9; // s
   const R = trueRate * 1e6; // counts/s
-  const measured = measuredRate(R, tau, mode);
-  const loss = countLoss(R, tau, mode);
-  const rateAt10 = trueRateAtLoss(0.1, tau, mode);
-  const pastPeak = mode === "paralyzable" && R * tau > 1;
+  const { measured, loss, correction, rateAtLoss: rateAt10, peakRate, pastPeak } = spadDeadTimeSummary(tau, R, mode);
 
   // True rates from 0 to 4/τ, so the paralyzable peak at R = 1/τ is always on the chart.
   const rates = Array.from({ length: 201 }, (_, i) => (i * 4) / tau / 200 / 1e6);
@@ -71,10 +67,10 @@ export default function SpadDeadTimePage() {
         <div className="grid gap-3 sm:grid-cols-2">
           <div><span className="text-gray-400 text-sm">Measured Rate ({mode})</span><div className="text-xl font-mono text-green-400">{(measured / 1e6).toFixed(3)} Mcps</div></div>
           <div><span className="text-gray-400 text-sm">Count Loss = dead fraction of the time</span><div className="text-xl font-mono text-red-400">{(loss * 100).toFixed(2)}%</div></div>
-          <div><span className="text-gray-400 text-sm">Correction Factor R/m</span><div className="text-xl font-mono">{Number.isFinite(R / measured) ? (R / measured).toFixed(4) : "—"}</div>{!Number.isFinite(R / measured) && <div className="text-xs text-yellow-400">paralyzed: e^(Rτ) overflows, measured rate underflows to 0</div>}</div>
+          <div><span className="text-gray-400 text-sm">Correction Factor R/m</span><div className="text-xl font-mono">{Number.isFinite(correction) ? correction.toFixed(4) : "—"}</div>{!Number.isFinite(correction) && <div className="text-xs text-yellow-400">paralyzed: e^(Rτ) overflows, measured rate underflows to 0</div>}</div>
           <div><span className="text-gray-400 text-sm">True Rate at 10 % Loss</span><div className="text-xl font-mono">{(rateAt10 / 1e6).toFixed(2)} Mcps</div></div>
           {mode === "paralyzable" && (
-            <div><span className="text-gray-400 text-sm">Peak Recorded Rate 1/(eτ), at R = 1/τ</span><div className="text-xl font-mono">{(paralyzablePeakRate(tau) / 1e6).toFixed(3)} Mcps</div></div>
+            <div><span className="text-gray-400 text-sm">Peak Recorded Rate 1/(eτ), at R = 1/τ</span><div className="text-xl font-mono">{(peakRate / 1e6).toFixed(3)} Mcps</div></div>
           )}
         </div>
         {pastPeak && (

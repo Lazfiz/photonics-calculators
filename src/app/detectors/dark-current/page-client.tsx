@@ -4,13 +4,10 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { darkReadCrossoverTemperature, doublingLawRatio, localDoublingTemperature } from "../../../physics/detectors/dark-current";
-import { VARSHNI } from "../../../physics/materials/bandgap";
+import { darkCurrentAtTemperature, darkCurrentSummary } from "../../../physics/detectors/dark-current-summary";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmtE = (x: number, unit: string) => (Number.isFinite(x) ? `${x.toExponential(2)} ${unit}` : "—");
-const T_REF_C = 25;
-const KELVIN = 273.15;
 
 export default function DarkCurrentPage() {
   const [darkCurrent25Raw, setDarkCurrent25] = useURLState("darkCurrent25", 0.1);
@@ -23,18 +20,14 @@ export default function DarkCurrentPage() {
   const doublingT = clamp(tempFactorRaw, 2, 20, 6); // K
   const readNoise = clamp(readNoiseRaw, 0, 1e4, 5); // e⁻ rms
   const exposureTime = clamp(exposureTimeRaw, 1e-6, 1e5, 1); // s
-  const tA = clamp(tempMinRaw, -150, 150, -80);
-  const tB = clamp(tempMaxRaw, -150, 150, 40);
-  const tempMin = Math.min(tA, tB);
-  const tempMax = tA === tB ? tA + 1 : Math.max(tA, tB);
+  const tempA = clamp(tempMinRaw, -150, 150, -80);
+  const tempB = clamp(tempMaxRaw, -150, 150, 40);
 
-  const darkCurrentAtT = (Tc: number) => darkCurrent25 * doublingLawRatio(Tc + KELVIN, T_REF_C + KELVIN, doublingT);
   // Dark shot noise √(D·t) equals the read noise where D(T)·t = σ_r².
-  const crossoverTemp = darkReadCrossoverTemperature(readNoise, darkCurrent25 * exposureTime, T_REF_C, doublingT);
-  const dcAtMin = darkCurrentAtT(tempMin);
-  const dcAtMax = darkCurrentAtT(tempMax);
-  const siGenTd = localDoublingTemperature(T_REF_C + KELVIN, VARSHNI.si, "generation");
-  const siDiffTd = localDoublingTemperature(T_REF_C + KELVIN, VARSHNI.si, "diffusion");
+  const { tempMin, tempMax, dcAtMin, dcAtMax, ratio, crossoverTemp, siGenTd, siDiffTd } = darkCurrentSummary({
+    darkCurrent25, doublingT, readNoise, exposureTime, tempA, tempB,
+  });
+  const darkCurrentAtT = (Tc: number) => darkCurrentAtTemperature(darkCurrent25, doublingT, Tc);
 
   const n = 121;
   const temps = Array.from({ length: n }, (_, i) => tempMin + (i * (tempMax - tempMin)) / (n - 1));
@@ -60,7 +53,7 @@ export default function DarkCurrentPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label={`Dark @ ${tempMin} °C`} value={fmtE(dcAtMin, "e⁻/s")} tone="blue" />
         <ResultCard label={`Dark @ ${tempMax} °C`} value={fmtE(dcAtMax, "e⁻/s")} tone="red" />
-        <ResultCard label={`Ratio (${tempMax} / ${tempMin} °C)`} value={Number.isFinite(dcAtMax / dcAtMin) ? `×${(dcAtMax / dcAtMin).toExponential(1)}` : "—"} tone="yellow" />
+        <ResultCard label={`Ratio (${tempMax} / ${tempMin} °C)`} value={Number.isFinite(ratio) ? `×${ratio.toExponential(1)}` : "—"} tone="yellow" />
         <ResultCard
           label="Dark noise = read noise at"
           value={Number.isFinite(crossoverTemp) && crossoverTemp >= tempMin && crossoverTemp <= tempMax ? `${crossoverTemp.toFixed(1)} °C` : "Outside range"}

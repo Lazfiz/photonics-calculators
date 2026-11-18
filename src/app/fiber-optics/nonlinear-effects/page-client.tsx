@@ -5,22 +5,16 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { beta2FromD, beta3FromDS } from "../../../physics/fiber-optics/chromatic-dispersion";
 import {
-  SBS_POLARIZATION_FACTOR, SILICA_BRILLOUIN_GAIN, SRS_POLARIZATION_FACTOR, alphaFromDbPerKm, effectiveLength, fwmEfficiency, fwmPhaseMismatch, fwmProductRatio,
-  nonlinearCoefficient, nonlinearPhase, ramanGainAt, sbsLinewidthFactor, sbsThreshold, spmRmsBroadening, srsThreshold, xpmPhaseMax,
+  effectiveLength, nonlinearPhase, sbsLinewidthFactor, xpmPhaseMax,
 } from "../../../physics/fiber-optics/fiber-nonlinear";
+import { NONLINEAR_POLARIZATIONS, nonlinearSummary, toDb, type NonlinearPolarization } from "../../../physics/fiber-optics/nonlinear-effects";
 
 // Polarization factors K (threshold × K) for SBS and SRS; sources in fiber-nonlinear.ts.
-const POLARIZATIONS: Record<string, { label: string; sbs: number; srs: number }> = {
-  copolarized: { label: "Co-polarized (PM fibre, worst case)", sbs: SBS_POLARIZATION_FACTOR.copolarized, srs: SRS_POLARIZATION_FACTOR.copolarized },
-  standard: { label: "Standard fibre (random birefringence)", sbs: SBS_POLARIZATION_FACTOR.randomBirefringence, srs: SRS_POLARIZATION_FACTOR.standard },
-  scrambled: { label: "Standard fibre, scrambled pump", sbs: SBS_POLARIZATION_FACTOR.scrambled, srs: SRS_POLARIZATION_FACTOR.standard },
-};
-
-const toDb = (x: number) => {
-  const v = 10 * Math.log10(x);
-  return Number.isFinite(v) ? v : null;
+const POLARIZATIONS: Record<NonlinearPolarization, { label: string; sbs: number; srs: number }> = {
+  copolarized: { label: "Co-polarized (PM fibre, worst case)", ...NONLINEAR_POLARIZATIONS.copolarized },
+  standard: { label: "Standard fibre (random birefringence)", ...NONLINEAR_POLARIZATIONS.standard },
+  scrambled: { label: "Standard fibre, scrambled pump", ...NONLINEAR_POLARIZATIONS.scrambled },
 };
 
 export default function NonlinearEffectsPage() {
@@ -37,41 +31,17 @@ export default function NonlinearEffectsPage() {
   const [polarizationRaw, setPolarization] = useURLState("polarization", "copolarized");
   const [sourceLinewidth, setSourceLinewidth] = useURLState("sourceLinewidth", 0, { min: 0 }); // MHz, Lorentzian
   const [brillouinBandwidth, setBrillouinBandwidth] = useURLState("brillouinBandwidth", 35, { min: 1 }); // MHz FWHM, as on the SBS page
-  const polarization = polarizationRaw in POLARIZATIONS ? polarizationRaw : "copolarized";
+  const polarization: NonlinearPolarization = polarizationRaw in POLARIZATIONS ? (polarizationRaw as NonlinearPolarization) : "copolarized";
   const pol = POLARIZATIONS[polarization];
 
   const calc = useMemo(() => {
-    const P = 10 ** (power / 10) * 1e-3; // W
-    const L = Math.max(length, 1e-3) * 1e3;
-    const Aeff = Math.max(effectiveArea, 1) * 1e-12;
-    const a = alphaFromDbPerKm(Math.max(alpha, 0));
-    const lambda = Math.max(wavelength, 1) * 1e-9;
-    const N = Math.max(1, Math.round(numChannels));
-    const df = Math.max(channelSpacing, 0.1) * 1e9;
-
-    const gamma = nonlinearCoefficient(Math.max(n2, 0) * 1e-20, lambda, Aeff);
-    const Leff = effectiveLength(a, L);
-    const phiSPM = nonlinearPhase(gamma, P, Leff);
-    const phiXPM = xpmPhaseMax(gamma, P, Leff, N - 1);
-
-    // Nearest degenerate FWM products 2f₁ − f₂ and 2f₂ − f₁ (Δf_ik = Δf_jk = ∓Δf about f_k); β₃ makes them differ,
-    // so take the larger efficiency. β₂, β₃ from D and S at λ.
-    const D = dispersion * 1e-6; // s/m²
-    const beta2 = beta2FromD(D, lambda);
-    const beta3 = beta3FromDS(D, slope * 1e3, lambda); // S: ps/(nm²·km) → s/m³
-    const etaAt = (spacing: number) => Math.max(
-      fwmEfficiency(a, L, fwmPhaseMismatch(beta2, spacing, spacing, beta3)),
-      fwmEfficiency(a, L, fwmPhaseMismatch(beta2, -spacing, -spacing, beta3)),
-    );
-    const fwmRatio = (spacing: number) => fwmProductRatio(etaAt(spacing), phiSPM, true);
-    const eta = etaAt(df);
-
-    // Polarization factor K and a Lorentzian source linewidth (SBS only; the 13 THz Raman band is far wider).
-    const sbs = sbsThreshold({
-      Aeff, gB: SILICA_BRILLOUIN_GAIN, Leff, K: pol.sbs,
-      sourceLinewidth: Math.max(sourceLinewidth, 0) * 1e6, brillouinLinewidth: Math.max(brillouinBandwidth, 1) * 1e6,
+    const {
+      P, L, a, N, gamma, Leff, phiSPM, phiXPM, broadening, eta, fwmRatio: fwmRatioIn, df, sbsDbm, srsDbm, fwmRatioAt: fwmRatio,
+    } = nonlinearSummary({
+      powerDbm: power, length: length * 1e3, effectiveArea: effectiveArea * 1e-12, alphaDbPerKm: alpha, n2: n2 * 1e-20,
+      wavelength: wavelength * 1e-9, dispersion: dispersion * 1e-6, slope: slope * 1e3, numChannels, spacing: channelSpacing * 1e9,
+      polarization, sourceLinewidth: sourceLinewidth * 1e6, brillouinLinewidth: brillouinBandwidth * 1e6,
     });
-    const srs = srsThreshold(Aeff, ramanGainAt(lambda), Leff, pol.srs);
 
     const pLo = Math.min(-5, power - 5), pHi = Math.max(20, power + 5);
     const powers = Array.from({ length: 101 }, (_, i) => pLo + (i * (pHi - pLo)) / 100); // dBm
@@ -103,11 +73,11 @@ export default function NonlinearEffectsPage() {
     }];
 
     return {
-      P, N, gamma, Leff, phiSPM, phiXPM, broadening: spmRmsBroadening(phiSPM), eta, fwmRatio: fwmRatio(df),
-      sbsDbm: 10 * Math.log10(sbs * 1e3), srsDbm: 10 * Math.log10(srs * 1e3),
+      P, N, gamma, Leff, phiSPM, phiXPM, broadening, eta, fwmRatio: fwmRatioIn,
+      sbsDbm, srsDbm,
       phaseVsPower, phaseVsDistance, fwmVsSpacing,
     };
-  }, [power, length, effectiveArea, alpha, n2, wavelength, dispersion, slope, numChannels, channelSpacing, pol, sourceLinewidth, brillouinBandwidth]);
+  }, [power, length, effectiveArea, alpha, n2, wavelength, dispersion, slope, numChannels, channelSpacing, polarization, sourceLinewidth, brillouinBandwidth]);
 
   const sbsAbove = power > calc.sbsDbm;
   const srsAbove = power > calc.srsDbm;

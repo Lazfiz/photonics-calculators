@@ -4,30 +4,14 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { generationCurrent, siliconIntrinsicDensity } from "../../../physics/detectors/dark-current";
-import { ingaasIntrinsicDensity, ingaasPinQe, inpWindowEdge } from "../../../physics/detectors/ingaas";
-import { photodiodeSnr } from "../../../physics/detectors/noise";
-import { photodiodeQe } from "../../../physics/detectors/photodiode-qe";
-import { responsivity } from "../../../physics/detectors/responsivity";
-import { SILICON_LAMBDA_MAX, siliconAbsorption } from "../../../physics/materials/silicon-absorption";
-
-// Reference devices (illustrative, not products). Si p-i-n: collecting width W, substrate diffusion length L,
-// AR-coated front R, generation lifetime τ_g. InGaAs p-i-n: In₀.₅₃Ga₀.₄₇As fully depleted absorber d behind an InP cap.
-const SI = { W: 20e-6, L: 100e-6, R: 0.05, tauG: 1e-3 };
-const INGAAS = { x: 0.53, d: 3e-6, R: 0.02, tauG: 100e-6 };
-const WINDOWS = ["inp", "none"] as const;
-type Window = (typeof WINDOWS)[number];
+import {
+  INGAAS_WINDOWS, ingaasReferenceQe, pinSnr, siPinQe, siVsIngaasSummary, type IngaasWindow,
+} from "../../../physics/detectors/si-vs-ingaas";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const pct = (x: number) => (Number.isFinite(x) ? `${(x * 100).toFixed(1)}%` : "—");
 const fmtE = (x: number, digits = 2) => (Number.isFinite(x) ? x.toExponential(digits) : "—");
 const fmtSnr = (x: number) => (!Number.isFinite(x) ? "—" : x >= 1e4 ? x.toExponential(2) : x.toFixed(1));
-
-// Si absorption is Green's 300 K table; beyond 1450 nm silicon is transparent (k < 1e-13), so its QE is 0.
-const siQe = (lambda: number) =>
-  lambda > SILICON_LAMBDA_MAX
-    ? 0
-    : photodiodeQe({ alpha: siliconAbsorption(lambda), reflectance: SI.R, depletionWidth: SI.W, diffusionLength: SI.L });
 
 export default function SiVsInGaAsPage() {
   const [wavelengthRaw, setWavelength] = useURLState("wavelength", 1550);
@@ -43,24 +27,18 @@ export default function SiVsInGaAsPage() {
   const area = clamp(areaRaw, 0.001, 100, 1) * 1e-6; // m²
   const bandwidth = clamp(bandwidthRaw, 1e-6, 1e4, 1) * 1e6; // Hz
   const ampNoise = clamp(ampNoiseRaw, 0, 100, 1) * 1e-12; // A/√Hz
-  const cap: Window = WINDOWS.find((w) => w === windowRaw) ?? "inp";
+  const cap: IngaasWindow = INGAAS_WINDOWS.find((w) => w === windowRaw) ?? "inp";
 
-  const ingaasQe = (lambda: number) =>
-    ingaasPinQe(lambda, { x: INGAAS.x, T, thickness: INGAAS.d, reflectance: INGAAS.R, inpWindow: cap === "inp" });
-  const siDark = generationCurrent(siliconIntrinsicDensity(T), SI.W, area, SI.tauG);
-  const ingaasDark = generationCurrent(ingaasIntrinsicDensity(INGAAS.x, T), INGAAS.d, area, INGAAS.tauG);
-  const snr = (qe: number, lambda: number, dark: number) => photodiodeSnr(responsivity(qe, lambda) * powerW, dark, ampNoise, bandwidth);
-
+  const ingaasQe = (lambda: number) => ingaasReferenceQe(lambda, T, cap);
   const lambda = wavelength_nm * 1e-9;
-  const si = siQe(lambda);
-  const ingaas = ingaasQe(lambda);
-  const siSnr = snr(si, lambda, siDark);
-  const ingaasSnr = snr(ingaas, lambda, ingaasDark);
-  const edge_nm = inpWindowEdge(T) * 1e9;
-  const niRatio = ingaasIntrinsicDensity(INGAAS.x, T) / siliconIntrinsicDensity(T);
+  const { siQe: si, ingaasQe: ingaas, siResponsivity, ingaasResponsivity, siDark, ingaasDark, siSnr, ingaasSnr, inpEdge, niRatio } = siVsIngaasSummary({
+    lambda, power: powerW, T, area, bandwidth, ampNoise, window: cap,
+  });
+  const snr = (qe: number, lam: number, dark: number) => pinSnr(qe, lam, dark, powerW, ampNoise, bandwidth);
+  const edge_nm = inpEdge * 1e9;
 
   const wl = Array.from({ length: 281 }, (_, i) => 400 + i * 5);
-  const siSpectrum = wl.map((w) => siQe(w * 1e-9));
+  const siSpectrum = wl.map((w) => siPinQe(w * 1e-9));
   const ingaasSpectrum = wl.map((w) => ingaasQe(w * 1e-9));
   const qeTraces = [
     { x: wl, y: siSpectrum.map((v) => v * 100), type: "scatter", mode: "lines", name: "Si p-i-n", line: { color: "#60a5fa", width: 2 } },
@@ -88,7 +66,7 @@ export default function SiVsInGaAsPage() {
 
       <div className="mb-8 flex flex-wrap items-center gap-3 text-sm text-gray-300">
         <span>InGaAs window:</span>
-        {WINDOWS.map((w) => (
+        {INGAAS_WINDOWS.map((w) => (
           <button key={w} onClick={() => setWindow(w)} className={`rounded-full border px-3 py-1 transition ${cap === w ? "border-blue-400 bg-blue-500/15 text-blue-200" : "border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500"}`}>
             {w === "inp" ? `InP cap (standard, opaque below ${edge_nm.toFixed(0)} nm)` : "None (visible-extended)"}
           </button>
@@ -96,8 +74,8 @@ export default function SiVsInGaAsPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ResultCard label="Si QE" value={pct(si)} tone="blue" subtext={zeroReason(si, false) ?? `ℛ = ${responsivity(si, lambda).toFixed(3)} A/W`} />
-        <ResultCard label="InGaAs QE" value={pct(ingaas)} tone="orange" subtext={zeroReason(ingaas, true) ?? `ℛ = ${responsivity(ingaas, lambda).toFixed(3)} A/W`} />
+        <ResultCard label="Si QE" value={pct(si)} tone="blue" subtext={zeroReason(si, false) ?? `ℛ = ${siResponsivity.toFixed(3)} A/W`} />
+        <ResultCard label="InGaAs QE" value={pct(ingaas)} tone="orange" subtext={zeroReason(ingaas, true) ?? `ℛ = ${ingaasResponsivity.toFixed(3)} A/W`} />
         <ResultCard label="Si SNR" value={fmtSnr(siSnr)} tone="green" subtext={`dark ${fmtE(siDark)} A`} />
         <ResultCard label="InGaAs SNR" value={fmtSnr(ingaasSnr)} tone="yellow" subtext={`dark ${fmtE(ingaasDark)} A`} />
       </div>

@@ -4,7 +4,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { dynamicRangeDb, pixelCapacitance } from "../../../physics/detectors/camera-snr";
-import { minDetectableSignal } from "../../../physics/detectors/noise";
+import { wellCapacitySummary } from "../../../physics/detectors/well-capacity";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fix = (x: number, digits = 2) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
@@ -20,12 +20,11 @@ export default function WellCapacityPage() {
   const pixelSize_um = clamp(pixelRaw, 0.1, 100, 5);
   const voltageSwing = clamp(swingRaw, 0.01, 10, 1.5);
 
-  const dynamicRange = dynamicRangeDb(wellCapacity, readNoise);
-  const capacitance = pixelCapacitance(wellCapacity, voltageSwing);
-  const conversionGain_uV = (voltageSwing / wellCapacity) * 1e6;
-  const wellDensity = wellCapacity / (pixelSize_um * pixelSize_um);
-  const minDetectable = minDetectableSignal(readNoise, 3);
-  const usableBits = Math.log2(wellCapacity / readNoise);
+  const { dynamicRange, usableBits, capacitance, conversionGain, senseNodeNoise, wellDensity: wellDensityPerM2, minDetectable } = wellCapacitySummary({
+    wellCapacity, readNoise, pixelSize: pixelSize_um * 1e-6, voltageSwing,
+  });
+  const conversionGain_uV = conversionGain * 1e6;
+  const wellDensity = wellDensityPerM2 * 1e-12; // e⁻/μm²
 
   const wells = Array.from({ length: 201 }, (_, i) => 10 ** (3 + (i / 200) * 3));
   const chartData = [
@@ -47,7 +46,7 @@ export default function WellCapacityPage() {
         <p className="text-gray-300">Usable bits = <span className="text-blue-400 font-mono">{fix(usableBits, 1)} bits</span></p>
         <p className="text-gray-300">Pixel capacitance = <span className="text-blue-400 font-mono">{fix(capacitance * 1e15, 3)} fF</span></p>
         <p className="text-gray-300">Conversion gain = <span className="text-blue-400 font-mono">{fix(conversionGain_uV, 2)} µV/e⁻</span></p>
-        <p className="text-gray-300">Read noise at the sense node σ_r·q/C = <span className="text-blue-400 font-mono">{fix(readNoise * conversionGain_uV, 1)} µV</span></p>
+        <p className="text-gray-300">Read noise at the sense node σ_r·q/C = <span className="text-blue-400 font-mono">{fix(senseNodeNoise * 1e6, 1)} µV</span></p>
         <p className="text-gray-300">Full well density = <span className="text-blue-400 font-mono">{fix(wellDensity, 0)} e⁻/μm²</span></p>
         <p className="text-gray-300">Min detectable (SNR = 3, read + shot noise) = <span className="text-blue-400 font-mono">{fix(minDetectable, 1)} e⁻</span></p>
         <p className="text-gray-300 text-sm mt-1">DR = 20·log₁₀(N_well/σ_read), C = N_well·q/V_swing, S_min = (9 + √(81 + 36σ²))/2</p>

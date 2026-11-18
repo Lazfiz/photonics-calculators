@@ -1,19 +1,14 @@
 "use client";
 
-import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { DOPANT_PRESETS } from "../../../physics/fiber-optics/doped-fiber-gain";
 import {
-  DOPANT_PRESETS, absorptionDbPerM, amplifier, coreOverlap, fullInversionGainDb, intrinsicSaturationPower,
-  ionDensityFromWtPpm, twoLevelAt, type Beam, type DopedFiber,
-} from "../../../physics/fiber-optics/doped-fiber-gain";
-import { lp11CutoffWavelength, vNumber, type StepIndexFiber } from "../../../physics/fiber-optics/macro-bending-loss";
-import { numericalAperture } from "../../../physics/fiber-optics/step-index-modes";
+  ASE_WARNING_GAIN_DB, rareEarthProfile, rareEarthSpec, rareEarthSummary,
+} from "../../../physics/fiber-optics/rare-earth-doped";
 
-const clamp = (x: number, lo: number, hi: number) => Math.min(Math.max(x, lo), hi);
 const SIGMA_UNIT = 1e-25; // m², the unit of the cross-section inputs
-const dB = (x: number) => 10 * Math.log10(x);
 // Text for a result, or a dash when the model has no finite value.
 const show = (x: number, text: () => string) => (Number.isFinite(x) ? text() : "—");
 
@@ -52,21 +47,12 @@ export default function RareEarthDopedCalculator() {
   const [sesRaw, setSes] = useURLState("sigmaESignal", 3.0);
   const [tauRaw, setTau] = useURLState("tau", 10.2); // ms
 
-  const ion = DOPANT_PRESETS.find((d) => d.id === dopantRaw) ?? DOPANT_PRESETS[0];
-  const ppm = clamp(ppmRaw, 1, 50000);
-  const L = clamp(lengthRaw, 0.01, 200);
-  const r_um = clamp(radiusRaw, 0.5, 20);
-  const n1 = clamp(n1Raw, 1.3, 2);
-  const n2 = clamp(n2Raw, 1.3, n1);
-  const pump_mW = clamp(pumpRaw, 0, 5000);
-  const signal_dBm = clamp(signalRaw, -60, 20);
-  const lp_nm = clamp(lpRaw, 400, 2200);
-  const ls_nm = clamp(lsRaw, 400, 2200);
-  const sap = clamp(sapRaw, 0, 1000) * SIGMA_UNIT;
-  const sep = clamp(sepRaw, 0, 1000) * SIGMA_UNIT;
-  const sas = clamp(sasRaw, 0, 1000) * SIGMA_UNIT;
-  const ses = clamp(sesRaw, 0, 1000) * SIGMA_UNIT;
-  const tau_ms = clamp(tauRaw, 0.01, 100);
+  const spec = rareEarthSpec({
+    dopant: dopantRaw, ppm: ppmRaw, L: lengthRaw, a: radiusRaw * 1e-6, n1: n1Raw, n2: n2Raw, pump: pumpRaw * 1e-3, signalDbm: signalRaw,
+    lp: lpRaw * 1e-9, ls: lsRaw * 1e-9, sigmaAPump: sapRaw * SIGMA_UNIT, sigmaEPump: sepRaw * SIGMA_UNIT,
+    sigmaASignal: sasRaw * SIGMA_UNIT, sigmaESignal: sesRaw * SIGMA_UNIT, tau: tauRaw * 1e-3,
+  });
+  const { ion, ppm } = spec;
 
   const loadPreset = (id: string) => {
     const p = PRESETS.find((q) => q.id === id);
@@ -84,47 +70,17 @@ export default function RareEarthDopedCalculator() {
     setTau(d.tau * 1e3);
   };
 
-  const calc = useMemo(() => {
-    const N = ionDensityFromWtPpm(ppm, ion.molarMass);
-    const NA = numericalAperture(n1, n2);
-    const guide: StepIndexFiber = { a: r_um * 1e-6, n1, NA };
-    const lp = lp_nm * 1e-9;
-    const ls = ls_nm * 1e-9;
-    const gp = coreOverlap(guide, lp);
-    const gs = coreOverlap(guide, ls);
-    const fiber: DopedFiber = { N, area: Math.PI * guide.a ** 2, tau: tau_ms * 1e-3 };
-    const beams = (pumpW: number): Beam[] => [
-      { lambda: lp, sigmaA: sap, sigmaE: sep, overlap: gp, power: pumpW },
-      { lambda: ls, sigmaA: sas, sigmaE: ses, overlap: gs, power: 1e-3 * 10 ** (signal_dBm / 10) },
-    ];
-    const amp = amplifier(fiber, beams(pump_mW * 1e-3), L, 1);
-    const alphaP = absorptionDbPerM(gp, sap, N);
-
-    const lengths = Array.from({ length: 61 }, (_, i) => (i * 3 * L) / 60);
-    const sol = lengths.map((z) => twoLevelAt(fiber, beams(pump_mW * 1e-3), z).powers);
-    const gain = sol.map((p) => dB(p[1] / beams(0)[1].power));
-    const pumpLeft = sol.map((p) => (pump_mW > 0 ? (100 * p[0]) / (pump_mW * 1e-3) : NaN));
-    const keep = (ys: number[]) => {
-      const ok = ys.map((y) => Number.isFinite(y));
-      return { x: lengths.filter((_, i) => ok[i]), y: ys.filter((_, i) => ok[i]) };
-    };
-    return {
-      N, NA, gp, gs, alphaP,
-      V: vNumber(guide, ls),
-      cutoff: lp11CutoffWavelength(guide) * 1e9,
-      alphaS: absorptionDbPerM(gs, sas, N),
-      L90: 10 / alphaP,
-      pSatS: intrinsicSaturationPower(ls, fiber.area, gs, sas, ses, fiber.tau) * 1e3,
-      pSatP: intrinsicSaturationPower(lp, fiber.area, gp, sap, sep, fiber.tau) * 1e3,
-      fullInv: fullInversionGainDb(gs, ses, N, L),
-      gain: dB(amp.gain),
-      nf: dB(amp.noiseFigure),
-      data: [
-        { ...keep(gain), type: "scatter" as const, mode: "lines" as const, name: "Signal gain (dB)", line: { color: "#10b981" }, yaxis: "y" },
-        { ...keep(pumpLeft), type: "scatter" as const, mode: "lines" as const, name: "Pump remaining (%)", line: { color: "#f59e0b" }, yaxis: "y2" },
-      ],
-    };
-  }, [ppm, ion.molarMass, n1, n2, r_um, lp_nm, ls_nm, tau_ms, sap, sep, sas, ses, signal_dBm, pump_mW, L]);
+  const calc = rareEarthSummary(spec);
+  const profile = rareEarthProfile(spec);
+  const keep = (ys: number[]) => {
+    const ok = ys.map((y) => Number.isFinite(y));
+    return { x: profile.lengths.filter((_, i) => ok[i]), y: ys.filter((_, i) => ok[i]) };
+  };
+  const data = [
+    { ...keep(profile.gain), type: "scatter" as const, mode: "lines" as const, name: "Signal gain (dB)", line: { color: "#10b981" }, yaxis: "y" },
+    { ...keep(profile.pumpLeft), type: "scatter" as const, mode: "lines" as const, name: "Pump remaining (%)", line: { color: "#f59e0b" }, yaxis: "y2" },
+  ];
+  const cutoffNm = calc.cutoff * 1e9;
 
   const guided = Number.isFinite(calc.gp) && Number.isFinite(calc.gs);
 
@@ -163,17 +119,17 @@ export default function RareEarthDopedCalculator() {
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">
         <Card label="Ion Density N" value={`${calc.N.toExponential(3)} m⁻³`} sub={`${ppm} wt-ppm`} tone="text-gray-200" />
-        <Card label="NA and V" value={show(calc.V, () => `${calc.NA.toFixed(4)}, V = ${calc.V.toFixed(3)}`)} sub={show(calc.cutoff, () => `at the signal; LP11 cutoff ${calc.cutoff.toFixed(0)} nm`)} tone="text-gray-200" />
+        <Card label="NA and V" value={show(calc.V, () => `${calc.NA.toFixed(4)}, V = ${calc.V.toFixed(3)}`)} sub={show(calc.cutoff, () => `at the signal; LP11 cutoff ${cutoffNm.toFixed(0)} nm`)} tone="text-gray-200" />
         <Card label="Overlap Γ" value={guided ? `${calc.gp.toFixed(3)} / ${calc.gs.toFixed(3)}` : "—"}
           sub={[
             "pump / signal",
-            lp_nm < calc.cutoff ? "the pump is below the LP11 cutoff (V > 2.405), Γ_p is for LP01 only" : "",
-            ls_nm < calc.cutoff ? "the signal is below the LP11 cutoff (V > 2.405), Γ_s is for LP01 only" : "",
-            lp_nm >= calc.cutoff && ls_nm >= calc.cutoff ? "LP01 power in the core" : "",
+            spec.lp < calc.cutoff ? "the pump is below the LP11 cutoff (V > 2.405), Γ_p is for LP01 only" : "",
+            spec.ls < calc.cutoff ? "the signal is below the LP11 cutoff (V > 2.405), Γ_s is for LP01 only" : "",
+            spec.lp >= calc.cutoff && spec.ls >= calc.cutoff ? "LP01 power in the core" : "",
           ].filter(Boolean).join("; ")} tone="text-gray-200" />
         <Card label="Pump Absorption" value={show(calc.alphaP, () => `${calc.alphaP.toPrecision(4)} dB/m`)} sub={show(calc.alphaS, () => `signal ${calc.alphaS.toPrecision(4)} dB/m (unpumped)`)} tone="text-red-400" />
         <Card label="90 % Pump Absorbed" value={show(calc.L90, () => `${calc.L90.toPrecision(4)} m`)} sub="10 dB / α_p, small-signal (bleaching lengthens it)" tone="text-red-400" />
-        <Card label="Saturation Power" value={show(calc.pSatS, () => `${calc.pSatS.toPrecision(4)} mW`)} sub={show(calc.pSatP, () => `signal; pump ${calc.pSatP.toPrecision(4)} mW`)} tone="text-yellow-400" />
+        <Card label="Saturation Power" value={show(calc.pSatS, () => `${(calc.pSatS * 1e3).toPrecision(4)} mW`)} sub={show(calc.pSatP, () => `signal; pump ${(calc.pSatP * 1e3).toPrecision(4)} mW`)} tone="text-yellow-400" />
         <Card label="Signal Gain" value={show(calc.gain, () => `${calc.gain.toFixed(2)} dB`)}
           sub={show(calc.nf, () => `NF ${calc.nf.toFixed(2)} dB; full-inversion bound ${calc.fullInv.toFixed(1)} dB`)} tone="text-green-400" />
       </div>
@@ -185,7 +141,7 @@ export default function RareEarthDopedCalculator() {
         </p>
       )}
 
-      {guided && Number.isFinite(calc.gain) && calc.gain > 30 && (
+      {guided && Number.isFinite(calc.gain) && calc.gain > ASE_WARNING_GAIN_DB && (
         <p role="status" className="mb-8 rounded-lg border border-yellow-700 bg-yellow-950 p-3 text-sm text-yellow-200">
           Above ≈ 30 dB, amplified spontaneous emission (not modelled) would saturate the gain; real EDFAs stay lower.
         </p>
@@ -212,7 +168,7 @@ export default function RareEarthDopedCalculator() {
         </p>
       </div>
 
-      <ChartPanel data={calc.data} layout={{
+      <ChartPanel data={data} layout={{
         paper_bgcolor: "transparent", plot_bgcolor: "transparent",
         font: { color: "#9ca3af" },
         xaxis: { title: "Fiber Length (m)", gridcolor: "#374151" },

@@ -3,11 +3,11 @@
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { cameraSnr, compressiveResponse, dynamicRangeDb, quantizationNoise } from "../../../physics/detectors/camera-snr";
+import { compressiveResponse } from "../../../physics/detectors/camera-snr";
+import { SATURATION_BIT_DEPTHS as BIT_DEPTHS, saturationSummary } from "../../../physics/detectors/saturation";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fix = (x: number, digits = 2) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
-const BIT_DEPTHS = [8, 10, 12, 14, 16];
 
 export default function SaturationPage() {
   const [wellRaw, setFullWellCapacity] = useURLState("fullWellCapacity", 20000); // e⁻
@@ -20,13 +20,7 @@ export default function SaturationPage() {
   const bitDepth = BIT_DEPTHS.find(b => b === bitRaw) ?? 12;
   const nonlinearity = clamp(nlRaw, 0, 50, 0.5) / 100;
 
-  const dnMax = 2 ** bitDepth - 1;
-  const electronsPerDn = fullWell / dnMax;
-  const quantNoise = quantizationNoise(electronsPerDn);
-  const noiseFloor = Math.hypot(readNoise, quantNoise);
-  const dynamicRange = dynamicRangeDb(fullWell, readNoise);
-  const dynamicRangeAdc = dynamicRangeDb(fullWell, noiseFloor);
-  const snrSatDb = 20 * Math.log10(cameraSnr({ signal: fullWell, read: noiseFloor }));
+  const { dnMax, electronsPerDn, quantNoise, noiseFloor, dynamicRange, dynamicRangeAdc, snrSatDb } = saturationSummary({ fullWell, readNoise, bitDepth, nonlinearity });
 
   const input = Array.from({ length: 241 }, (_, i) => (i / 200) * fullWell);
   const real = input.map(v => compressiveResponse(v, fullWell, nonlinearity));

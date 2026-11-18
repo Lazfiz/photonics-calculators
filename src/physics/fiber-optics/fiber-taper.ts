@@ -27,6 +27,7 @@
  * whose small-V, large-W limit is V_cc ≈ √(2/(ln S + ¼)).
  */
 import { besselIScaled01, besselJ, besselKScaled, besselKScaled01, besselY, BESSEL_Y_MAX_X } from "../math";
+import { coreIndexFromNA, numericalAperture } from "./step-index-modes";
 
 export interface TaperPull {
   /** Untapered cladding radius r₀, m. */
@@ -284,4 +285,90 @@ export function adiabaticityScan(p: TaperPull, f0: ThreeLayerFibre, lambda: numb
     out.push({ r, angle: taperAngle(p, r), delineation: delineationAngle({ ...f0, a: f0.a * t, rho: r }, lambda) });
   }
   return out;
+}
+
+/** TE01/TM01 cut off at V = 2.405 for any index contrast, so below it the cladding–surround guide carries only HE11. */
+export const SINGLE_MODE_V = 2.405;
+/** Below this V_clad the scalar treatment of the cladding–surround boundary is no longer a fair approximation. */
+export const SCALAR_LIMIT_V_CLAD = 10;
+
+export interface TaperSpec {
+  /** Cladding and core diameters, m. */
+  initialDia: number;
+  coreDia: number;
+  na: number;
+  nClad: number;
+  nExt: number;
+  lambda: number;
+  /** Hot-zone length L₀ and elongation x, m; growth rate α. */
+  hotZone: number;
+  elongation: number;
+  alpha: number;
+}
+
+export interface TaperSummary {
+  pull: TaperPull;
+  shape: TaperShape;
+  /** Waist radius ÷ r₀. */
+  ratio: number;
+  V0: number;
+  /** Cladding diameter ratio (transition ÷ initial) where LP01 leaves the core. */
+  tcc: number;
+  /** LP01 effective index at the waist (undefined when none is guided). */
+  nEffWaist: number | undefined;
+  scan: AdiabaticitySample[];
+  worst: AdiabaticitySample | undefined;
+  /** Scan points where Ω_d is undefined (no guided LP01). */
+  undefinedPoints: number;
+  valid: boolean;
+  /** Core diameter at the waist, m. */
+  coreWaist: number;
+  VcoreWaist: number;
+  VcladWaist: number;
+  /** Cladding diameter below which the waist guide is single-mode, m. */
+  singleModeDia: number;
+  /** Cladding diameter at the core–cladding transition, m. */
+  transitionDia: number;
+  Vcc: number;
+  VccEstimate: number;
+  /** 1/e field depth into the surround at the waist, m. */
+  decay: number;
+  /** Largest Ω/Ω_d along the taper. */
+  worstRatio: number;
+}
+
+/** Birks–Li taper of a step-index fibre in a surround n₃ (all SI): shape, mode at the waist and Love's adiabaticity. */
+export function taperSummary(s: TaperSpec): TaperSummary {
+  const pull: TaperPull = { r0: s.initialDia / 2, L0: s.hotZone, x: s.elongation, alpha: s.alpha };
+  const fibre0: ThreeLayerFibre = { a: s.coreDia / 2, rho: pull.r0, n1: coreIndexFromNA(s.nClad, s.na), n2: s.nClad, n3: s.nExt };
+  const shape = taperShape(pull);
+  const ratio = shape.waistRadius / pull.r0;
+  const k = (2 * Math.PI) / s.lambda;
+  const V0 = k * fibre0.a * s.na;
+  const tcc = coreCladdingTransitionRatio(fibre0, s.lambda);
+  const waist = { ...fibre0, a: fibre0.a * ratio, rho: shape.waistRadius };
+  const [nEffWaist] = lp0Modes(waist, s.lambda, 1);
+  const cladNA = numericalAperture(s.nClad, s.nExt);
+  const scan = adiabaticityScan(pull, fibre0, s.lambda, 40);
+  // Ω_d is NaN where no LP01 is found (waists far below the wavelength); count those points instead of hiding them.
+  let worst: AdiabaticitySample | undefined;
+  let undefinedPoints = 0;
+  for (const p of scan) {
+    const r = p.angle / p.delineation;
+    if (!Number.isFinite(r)) undefinedPoints++;
+    else if (!worst || r > worst.angle / worst.delineation) worst = p;
+  }
+  return {
+    pull, shape, ratio, V0, tcc, nEffWaist, scan, worst, undefinedPoints,
+    valid: Number.isFinite(shape.waistRadius) && Number.isFinite(tcc),
+    coreWaist: s.coreDia * ratio,
+    VcoreWaist: V0 * ratio,
+    VcladWaist: k * shape.waistRadius * cladNA,
+    singleModeDia: (2 * SINGLE_MODE_V) / (k * cladNA),
+    transitionDia: s.initialDia * tcc,
+    Vcc: V0 * tcc,
+    VccEstimate: transitionVEstimate(s.initialDia / s.coreDia),
+    decay: nEffWaist !== undefined ? 1 / (k * Math.sqrt(nEffWaist ** 2 - s.nExt ** 2)) : NaN,
+    worstRatio: worst ? worst.angle / worst.delineation : NaN,
+  };
 }

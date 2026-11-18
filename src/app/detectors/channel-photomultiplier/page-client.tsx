@@ -5,9 +5,8 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { q } from "../../../physics/constants";
-import {
-  analogSnr, anodeSensitivity, photonCountingSnr, pulseResolutionFwhm,
-} from "../../../physics/detectors/electron-multiplier";
+import { channelPmtSummary } from "../../../physics/detectors/channel-photomultiplier";
+import { pulseResolutionFwhm } from "../../../physics/detectors/electron-multiplier";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 2) => (Number.isFinite(x) ? x.toExponential(digits) : "—");
@@ -37,16 +36,13 @@ export default function ChannelPMTPage() {
   const photons = clamp(photonsRaw, 1, 1e7, 100);
   const limit = clamp(limitRaw, 1e5, 1e10, 1e7);
 
-  const sensitivity = anodeSensitivity(qe, wavelength_nm * 1e-9, gain);
-  const signalRate = photonRate * qe;
-  const signalCurrent = signalRate * q * gain;
-  const darkCurrent = dark * q * gain; // dark counts come from the photocathode only
-  const countSnr = photonCountingSnr(signalRate, dark, gate);
-  const analog = analogSnr(signalRate, dark, 1 / (2 * gate), enf);
-  const nPe = photons * qe;
-  const pulseElectrons = nPe * gain;
-  const linear = pulseElectrons <= limit;
-  const resolution = linear ? pulseResolutionFwhm(nPe, enf) : NaN;
+  const {
+    sensitivity, signalRate, signalCurrent, darkCurrent, countSnr, analogSnr: analog, photoelectrons: nPe, pulseElectrons,
+    linear, saturated, resolution,
+  } = channelPmtSummary({
+    wavelength: wavelength_nm * 1e-9, quantumEff: qe, gain, excessNoise: enf, darkRate: dark, photonRate, gate,
+    photonsPerPulse: photons, linearLimit: limit,
+  });
 
   const axis = Array.from({ length: 121 }, (_, i) => 10 ** (i / 20)); // 1 to 10⁶ photons per pulse
   const cut = (p: number, f: number) => (p * qe * gain <= limit ? 100 * pulseResolutionFwhm(p * qe, f) : NaN);
@@ -79,8 +75,8 @@ export default function ChannelPMTPage() {
         <ResultCard label="Photoelectron Rate" value={`${fmt(signalRate)} /s`} tone="green" subtext={`Signal anode current ${fmt(signalCurrent)} A`} />
         <ResultCard label="Dark Anode Current" value={`${fmt(darkCurrent)} A`} tone="orange" subtext="Dark counts × e × G (photocathode emission)" />
         <ResultCard label="Photon-Counting SNR" value={Number.isFinite(countSnr) ? countSnr.toFixed(2) : "—"} tone="cyan"
-          subtext={gain >= 1e7 ? `${gate} s gate; saturated single-electron peak` : `${gate} s gate; below a gain of 10⁷ single pulses sit close to the electronic noise`} />
-        <ResultCard label="Analog SNR" value={Number.isFinite(analog) ? analog.toFixed(2) : "—"} tone="purple" subtext={`Bandwidth 1/(2T); the gain spread costs √F = ${Math.sqrt(enf).toFixed(3)}${gain >= 1e7 ? "; saturated, analog output no longer proportional" : ""}`} />
+          subtext={saturated ? `${gate} s gate; saturated single-electron peak` : `${gate} s gate; below a gain of 10⁷ single pulses sit close to the electronic noise`} />
+        <ResultCard label="Analog SNR" value={Number.isFinite(analog) ? analog.toFixed(2) : "—"} tone="purple" subtext={`Bandwidth 1/(2T); the gain spread costs √F = ${Math.sqrt(enf).toFixed(3)}${saturated ? "; saturated, analog output no longer proportional" : ""}`} />
         <ResultCard label="Pulse Resolution" value={Number.isFinite(resolution) ? `${(resolution * 100).toFixed(1)} % FWHM` : "—"} tone="red"
           subtext={linear ? `${nPe.toFixed(1)} photoelectrons, ${(pulseElectrons * q * 1e12).toPrecision(3)} pC` : `${fmt(pulseElectrons)} e⁻ exceeds the linear limit: the pulse is clipped`} />
       </div>

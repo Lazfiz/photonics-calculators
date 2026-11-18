@@ -4,8 +4,8 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { countLoss, measuredRate } from "../../../physics/detectors/dead-time";
-import { arrheniusFactor, countingSnr, dbmToWatts, doublingInterval, photonRate } from "../../../physics/detectors/spad";
+import { arrheniusFactor } from "../../../physics/detectors/spad";
+import { SPAD_LOSS_WARNING, SPAD_MIN_GATE_COUNTS, spadSnrAtPower, spadSummary } from "../../../physics/detectors/spad-summary";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 2) => (Number.isFinite(x) ? x.toExponential(digits) : "—");
@@ -38,15 +38,11 @@ export default function SPADPage() {
 
   const tau = deadTime_ns * 1e-9;
   const lambda = wavelength_nm * 1e-9;
-  const photons = photonRate(dbmToWatts(power_dBm), lambda);
-  const signal = photons * pde;
-  const dcr = dcrRef * arrheniusFactor(ea, temp_C + K, refTemp_C + K);
-  const R = signal + dcr;
-  const m = measuredRate(R, tau, "nonparalyzable");
-  const loss = countLoss(R, tau, "nonparalyzable");
-  const afterpulseRate = m * pap;
-  const snr = countingSnr({ signalRate: signal, darkRate: dcr, afterpulseProb: pap, deadTime: tau, gateTime: gate });
-  const doubling = doublingInterval(ea, temp_C + K);
+  const point = {
+    pde, dcrRef, refTemperatureC: refTemp_C, temperatureC: temp_C, activationEnergy: ea, deadTime: tau,
+    afterpulseProb: pap, powerDbm: power_dBm, wavelength: lambda, gate,
+  };
+  const { photons, dcr, rate: R, measured: m, loss, afterpulseRate, snr, doubling } = spadSummary(point);
 
   // DCR over T_ref ± 60 °C, widened to include the operating point (above 0 K).
   const tLo = Math.max(-260, Math.min(refTemp_C - 60, temp_C - 10));
@@ -59,8 +55,8 @@ export default function SPADPage() {
   // Power from 40 dB below to 30 dB above the input.
   const pwr = Array.from({ length: 141 }, (_, i) => power_dBm - 40 + i * 0.5);
   const snrChart = [
-    { x: pwr, y: pwr.map((p) => countingSnr({ signalRate: photonRate(dbmToWatts(p), lambda) * pde, darkRate: dcr, afterpulseProb: pap, deadTime: tau, gateTime: gate })), type: "scatter" as const, mode: "lines" as const, name: "With dead time and afterpulses", line: { color: "#34d399" } },
-    { x: pwr, y: pwr.map((p) => countingSnr({ signalRate: photonRate(dbmToWatts(p), lambda) * pde, darkRate: dcr, afterpulseProb: 0, deadTime: 0, gateTime: gate })), type: "scatter" as const, mode: "lines" as const, name: "Ideal (τ = 0, P_ap = 0)", line: { color: "#6b7280", dash: "dash" as const } },
+    { x: pwr, y: pwr.map((p) => spadSnrAtPower(point, p)), type: "scatter" as const, mode: "lines" as const, name: "With dead time and afterpulses", line: { color: "#34d399" } },
+    { x: pwr, y: pwr.map((p) => spadSnrAtPower(point, p, true)), type: "scatter" as const, mode: "lines" as const, name: "Ideal (τ = 0, P_ap = 0)", line: { color: "#6b7280", dash: "dash" as const } },
   ];
 
   return (
@@ -85,12 +81,12 @@ export default function SPADPage() {
         <ResultCard label="Afterpulse Rate m·P_ap" value={`${fmt(afterpulseRate)} /s`} tone="orange" />
         <ResultCard label={`SNR in ${gate} s`} value={Number.isFinite(snr) ? snr.toFixed(2) : "—"} tone="yellow" />
       </div>
-      {m * gate < 10 && (
+      {m * gate < SPAD_MIN_GATE_COUNTS && (
         <p className="mb-6 text-sm text-yellow-400">
           Fewer than 10 counts are recorded in the gate: the SNR formula assumes many counts and is only indicative here.
         </p>
       )}
-      {loss > 0.1 && (
+      {loss > SPAD_LOSS_WARNING && (
         <p className="mb-6 text-sm text-yellow-400">
           R·τ = {(R * tau).toFixed(2)}: {(loss * 100).toFixed(0)} % of the avalanches fall in the dead time and the recorded rate
           saturates at 1/τ = {fmt(1 / tau)} /s. {pap > 0 ? "The corrected SNR falls as the correction gain (1 + Rτ)² amplifies the afterpulse noise" : "Without afterpulses the corrected SNR levels off at √(T/τ)"}; attenuate the light or shorten the dead time.

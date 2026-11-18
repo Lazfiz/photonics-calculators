@@ -3,7 +3,7 @@
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { johnsonNoise, noiseEquivalentPower, shotNoiseCurrent, specificDetectivity } from "../../../physics/detectors/noise";
+import { nepSummary } from "../../../physics/detectors/nep";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 
@@ -21,13 +21,9 @@ export default function NEPPage() {
   const loadResistor = clamp(loadResistorRaw, 1e-3, 1e15, 50);
   const detectorArea_mm2 = clamp(detectorAreaRaw, 1e-6, 1e6, 1);
 
-  const iShot = shotNoiseCurrent(darkCurrent_nA * 1e-9, bandwidth);
-  const iThermal = johnsonNoise(loadResistor, temperature, bandwidth).i;
-  const totalNoiseCurrent = Math.hypot(iShot, iThermal);
-  const nep = noiseEquivalentPower(totalNoiseCurrent, responsivity); // W in the bandwidth B
-  const noiseFree = !(totalNoiseCurrent > 0); // T = 0 and I_d = 0
-  const nepSpectral = nep / Math.sqrt(bandwidth); // W/√Hz
-  const detectivity = specificDetectivity(detectorArea_mm2 * 1e-2, bandwidth, nep); // mm² → cm², Jones
+  const { iShot, iThermal, totalNoiseCurrent, nep, noiseFree, nepSpectral, detectivity } = nepSummary({
+    darkCurrent: darkCurrent_nA * 1e-9, responsivity, bandwidth, temperature, loadResistor, area_cm2: detectorArea_mm2 * 1e-2, // mm² → cm²
+  });
 
   return (
     <>

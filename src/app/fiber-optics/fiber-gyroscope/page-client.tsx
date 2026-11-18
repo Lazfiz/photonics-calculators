@@ -5,8 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  EARTH_ROTATION_RATE, RAD_PER_S_TO_DEG_PER_H, angleRandomWalkDegPerRootHour, noiseEquivalentRate, properFrequency,
-  sagnacScaleFactor, shotNoisePhase, transitTime,
+  angleRandomWalkDegPerRootHour, gyroSummary, noiseEquivalentRate, sagnacScaleFactor,
 } from "../../../physics/fiber-optics/sagnac";
 
 const clamp = (x: number, lo: number, hi: number) => Math.min(Math.max(x, lo), hi);
@@ -39,21 +38,7 @@ export default function FiberGyroscopePage() {
   const qe = clamp(qeRaw, 0.01, 1);
 
   const calc = useMemo(() => {
-    const lambda = lambda_nm * 1e-9;
-    const S = sagnacScaleFactor(L, D_mm * 1e-3, lambda);
-    const Pd = P_mW * 1e-3 * 10 ** (-loss_dB / 10);
-    const sigma = shotNoisePhase(Pd, lambda, qe);
-    const rate = noiseEquivalentRate(sigma, S);
-    return {
-      S, Pd, sigma,
-      phaseEarth: S * EARTH_ROTATION_RATE,
-      rateDegH: rate * RAD_PER_S_TO_DEG_PER_H,
-      arw: angleRandomWalkDegPerRootHour(rate),
-      tau: transitTime(L, nG),
-      fp: properFrequency(L, nG),
-      turns: L / (Math.PI * D_mm * 1e-3),
-      maxRateDegS: ((Math.PI / (2 * S)) * 180) / Math.PI, // rate at which the Sagnac phase reaches π/2
-    };
+    return gyroSummary(L, D_mm * 1e-3, lambda_nm * 1e-9, nG, P_mW * 1e-3, loss_dB, qe);
   }, [D_mm, L, lambda_nm, nG, P_mW, loss_dB, qe]);
 
   const chartData = useMemo(() => {

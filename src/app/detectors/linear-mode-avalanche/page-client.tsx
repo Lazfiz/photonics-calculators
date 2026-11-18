@@ -4,13 +4,11 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { c, h, q } from "../../../physics/constants";
-import { APD_K_TABLE, apdReceiver, excessNoiseFactor, optimumGain } from "../../../physics/detectors/apd";
+import { APD_K_TABLE, apdReceiver, excessNoiseFactor } from "../../../physics/detectors/apd";
+import { APD_GAIN_MAX as M_MAX, LINEAR_APD_MATERIALS as MATERIALS, linearApdIonizationRatio, linearApdSummary } from "../../../physics/detectors/linear-mode-avalanche";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 3) => (Number.isFinite(x) && x > 0 ? x.toExponential(digits) : "—");
-const MATERIALS = ["si", "ingaas", "ge", "custom"] as const;
-const M_MAX = 1e4;
 
 export default function LinearModeAPDPage() {
   const [gainRaw, setGain] = useURLState("gain", 100);
@@ -26,7 +24,7 @@ export default function LinearModeAPDPage() {
 
   const material = MATERIALS.find((m) => m === materialRaw) ?? "si";
   const gain = clamp(gainRaw, 1, M_MAX, 100);
-  const k = material === "custom" ? clamp(kRaw, 0, 1, 0.02) : APD_K_TABLE.find((m) => m.id === material)!.k;
+  const k = linearApdIonizationRatio(material, clamp(kRaw, 0, 1, 0.02));
   const qe = clamp(qeRaw, 0, 1, 0.8);
   const bandwidth = clamp(bandwidthRaw, 1, 1e11, 100e6);
   const darkCurrent = clamp(darkRaw, 0, 1e-3, 2.2e-13);
@@ -35,18 +33,12 @@ export default function LinearModeAPDPage() {
   const loadResistance = clamp(loadRaw, 1, 1e9, 1000);
   const temperature = clamp(temperatureRaw, 1, 500, 300);
 
-  // Unity-gain responsivity ℛ₀ = η·q·λ/(h·c), A/W.
-  const resp = (qe * q * wavelength_nm * 1e-9) / (h * c);
-  const receiver = { photocurrent: power * resp, darkCurrent, k, bandwidth, loadResistance, temperature };
-  const F = excessNoiseFactor(gain, k);
-  const r = apdReceiver(receiver, gain);
-  const darkShot = 2 * q * darkCurrent * gain * gain * F * bandwidth;
-  const totalNoise = Math.sqrt(r.shot + r.thermal);
-  // NEP at the operating gain, from the noise with no light: √(dark shot + thermal)/(M·ℛ₀).
-  const nep = Math.sqrt(darkShot + r.thermal) / (gain * resp);
-  const mOpt = optimumGain(receiver);
-  const mOptShown = Math.min(mOpt, M_MAX);
-  const snrOpt = apdReceiver(receiver, mOptShown).snr;
+  // Unity-gain responsivity ℛ₀ = η·q·λ/(h·c), A/W; NEP at the operating gain from the noise with no light.
+  const {
+    responsivity: resp, receiver, excessNoise: F, r, totalNoise, nep, optimumGain: mOpt, optimumGainShown: mOptShown, snrAtOptimum: snrOpt,
+  } = linearApdSummary({
+    gain, k, qe, bandwidth, darkCurrent, wavelength: wavelength_nm * 1e-9, power, loadResistance, temperature,
+  });
   const dB = (x: number) => (x > 0 ? `${(10 * Math.log10(x)).toFixed(2)} dB` : "—");
 
   // 300 gains from 1 to 10⁴ on a log grid.

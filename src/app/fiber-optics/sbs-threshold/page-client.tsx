@@ -4,9 +4,8 @@ import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import {
-  SBS_POLARIZATION_FACTOR, SILICA_BRILLOUIN_GAIN, alphaFromDbPerKm, brillouinShift, effectiveLength, sbsLinewidthFactor, sbsThreshold,
-} from "../../../physics/fiber-optics/fiber-nonlinear";
+import { SBS_POLARIZATION_FACTOR, SILICA_BRILLOUIN_GAIN, effectiveLength } from "../../../physics/fiber-optics/fiber-nonlinear";
+import { sbsSpan, sbsSummary, sbsThresholdOf } from "../../../physics/fiber-optics/sbs-threshold";
 
 const POL_CASES = [
   { key: "copolarized", label: "co-polarized / PM fibre (K = 1)", color: "#22c55e" },
@@ -26,18 +25,13 @@ export default function SBSThresholdPage() {
   const [laserLinewidth, setLaserLinewidth] = useURLState("laserLinewidth", 1); // MHz
 
   const results = useMemo(() => {
-    const lambda = Math.min(Math.max(wavelength, 400), 2200) * 1e-9;
-    const L = Math.max(fiberLength, 1e-3) * 1e3;
-    const Aeff = Math.max(effectiveArea, 1) * 1e-12;
-    const alpha = alphaFromDbPerKm(Math.max(loss, 0));
-    const gB = Math.max(brillouinGain, 1e-15);
-    const dnuB = Math.max(brillouinBandwidth, 0.1) * 1e6;
-    const dnuS = Math.max(laserLinewidth, 0) * 1e6;
-
-    const Leff = effectiveLength(alpha, L);
-    const threshold = (K: number, leff = Leff, dnu = dnuS) =>
-      sbsThreshold({ Aeff, gB, Leff: leff, K, sourceLinewidth: dnu, brillouinLinewidth: dnuB });
-    const thresholds = POL_CASES.map(({ key }) => threshold(SBS_POLARIZATION_FACTOR[key]));
+    const span = sbsSpan({
+      lambda: wavelength * 1e-9, L: fiberLength * 1e3, Aeff: effectiveArea * 1e-12, lossDbPerKm: loss, gB: brillouinGain,
+      dnuB: brillouinBandwidth * 1e6, dnuS: laserLinewidth * 1e6,
+    });
+    const { L, alpha, dnuB, dnuS } = span;
+    const { Leff, nuB, linewidthFactor, thresholds } = sbsSummary(span);
+    const threshold = (K: number, leff = Leff, dnu = dnuS) => sbsThresholdOf(span, K, leff, dnu);
 
     const lwMax = Math.max(5 * dnuB, 2 * dnuS) / 1e6; // MHz
     const linewidths = Array.from({ length: 81 }, (_, i) => (i * lwMax) / 80); // 0 … max(5Δν_B, 2Δν_s), MHz
@@ -49,10 +43,7 @@ export default function SBSThresholdPage() {
       }));
 
     return {
-      Leff,
-      nuB: brillouinShift(lambda),
-      linewidthFactor: sbsLinewidthFactor(dnuS, dnuB),
-      thresholds,
+      Leff, nuB, linewidthFactor, thresholds,
       vsLinewidth: [
         ...curves(linewidths, (K, lw) => threshold(K, Leff, lw * 1e6)),
         // The input linewidth on each curve.
