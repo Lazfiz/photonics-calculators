@@ -3,9 +3,8 @@
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import {
-  emmetropicAxialLength, ocularRefraction, opticalPower, spectacleCorrection, twoElementPower,
-} from "../../../physics/imaging/gaussian-optics";
+import { ocularRefraction } from "../../../physics/imaging/gaussian-optics";
+import { opticalPowerSummary } from "../../../physics/imaging/optical-power";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const mm = 1e-3;
@@ -37,14 +36,12 @@ export default function OpticalPowerPage() {
   const LMm = clamp(axialRaw, 15, 35, 24);
   const vertexMm = clamp(vertexRaw, 0, 20, 12);
 
-  const lensPower = Math.abs(fMm) < 0.1 ? NaN : opticalPower(fMm * mm);
-
-  const P = twoElementPower(P1, P2, tMm * mm, n);
-  const Lemm = emmetropicAxialLength(P1, P2, tMm * mm, n) / mm;
-  const K = ocularRefraction(P1, P2, tMm * mm, n, LMm * mm);
-  const Kspec = spectacleCorrection(K, vertexMm * mm);
-  const dKdL = (ocularRefraction(P1, P2, tMm * mm, n, (LMm + 0.05) * mm) - ocularRefraction(P1, P2, tMm * mm, n, (LMm - 0.05) * mm)) / 0.1;
-  const state = !Number.isFinite(K) ? "" : Math.abs(K) < 0.25 ? "emmetropic" : K < 0 ? "myopic" : "hyperopic";
+  const eye = opticalPowerSummary(fMm * mm, P1, P2, tMm * mm, n, LMm * mm, vertexMm * mm);
+  const { lensPower, eyePower: P, state } = eye;
+  const Lemm = eye.emmetropicLength / mm;
+  const K = eye.refraction;
+  const Kspec = eye.spectacle;
+  const dKdL = eye.dKdL * mm;
 
   const Lo = Math.max(15, Math.min(20, LMm - 2));
   const Hi = Math.min(35, Math.max(32, LMm + 2));

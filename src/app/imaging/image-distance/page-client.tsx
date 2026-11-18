@@ -3,8 +3,10 @@
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { conjugatesFromMag, thinLensImage } from "../../../physics/imaging/gaussian-optics";
+import { thinLensImage } from "../../../physics/imaging/gaussian-optics";
+import { imageDistanceSummary } from "../../../physics/imaging/image-distance";
 
+const mm = 1e-3;
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 
 const row = (label: string, value: string, color = "") => (
@@ -26,30 +28,14 @@ export default function ImageDistancePage() {
   const M0 = clamp(magRaw, -1000, 1000, -2);
   const fromMag = solve === "mag";
 
-  let o = o0;
-  let i = NaN;
-  let M = NaN;
-  let problem = "";
-  if (Math.abs(f) < 0.1) problem = "The focal length must not be 0.";
-  else if (fromMag) {
-    if (M0 === 0) problem = "M = 0 puts the object at infinity: use the focal length as the image distance.";
-    else {
-      ({ o, i } = conjugatesFromMag(f, M0));
-      M = M0;
-      if (Math.abs(M0 - 1) < 1e-9) {
-        problem = "M = +1: object and image both sit at the lens (o = i = 0).";
-      } else if (!(o > 0)) {
-        problem = `M = ${M0} with f = ${f} mm needs o = ${o.toFixed(2)} mm, a virtual object (light converging onto the lens). ${
-          f > 0 ? "A converging lens forms M < 0 (real) or M > 1 (virtual) from a real object." : "A diverging lens forms only 0 < M < 1 from a real object."
-        }`;
-      }
-    }
-  } else if (Math.abs(o - f) < 1e-9 * Math.abs(f)) problem = "The object is at the front focal point: the image is at infinity (collimated light).";
-  else ({ i, M } = thinLensImage(f, o));
+  const sum = imageDistanceSummary(f * mm, solve, o0 * mm, M0);
+  const { M, problem } = sum;
+  const o = sum.o / mm;
+  const i = sum.i / mm;
 
   const real = i > 0;
-  const newtonX = o - f;
-  const newtonXp = i - f;
+  const newtonX = sum.newtonX / mm;
+  const newtonXp = sum.newtonXPrime / mm;
 
   // i(o) in two branches split at the asymptote o = f, clipped at |i| ≤ 10|f|.
   const af = Math.abs(f);

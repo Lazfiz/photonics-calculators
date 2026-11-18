@@ -3,7 +3,8 @@
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { airyFirstZeroRadius, naFromFNumber, thinLensNa } from "../../../physics/imaging/diffraction-psf";
+import { naFromFNumber, thinLensNa } from "../../../physics/imaging/diffraction-psf";
+import { naFNumberSummary } from "../../../physics/imaging/na-fnumber";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 
@@ -14,10 +15,11 @@ export default function NAFNumberPage() {
   const wavelength = clamp(wavelengthRaw, 200, 20000, 550);
   const lambda = wavelength * 1e-9;
 
-  const na = naFromFNumber(fNumber);
-  const halfAngle = (Math.asin(na) * 180) / Math.PI;
-  const tanNa = thinLensNa(fNumber);
-  const airyDiameter = 2 * airyFirstZeroRadius(lambda, na); // 2.44 λ N
+  const summary = naFNumberSummary(fNumber, lambda);
+  const na = summary.na;
+  const halfAngle = (summary.halfAngle * 180) / Math.PI;
+  const tanNa = summary.thinLensNa;
+  const airyDiameter = summary.airyDiameter; // ≈ 2.44 λ N
 
   const fNums = Array.from({ length: 196 }, (_, i) => 0.5 + i * 0.1);
   const chartData = [

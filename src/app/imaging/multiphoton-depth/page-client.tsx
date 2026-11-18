@@ -1,12 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import {
-  ballisticFraction, gaussianPulsePeakPower, multiphotonFwhm, pulseEnergy,
-} from "../../../physics/imaging/multiphoton-focus";
+import { multiphotonDepthSummary } from "../../../physics/imaging/multiphoton-depth";
+import { ballisticFraction } from "../../../physics/imaging/multiphoton-focus";
 
 const fmt = (x: number, digits: number, unit: string) => (Number.isFinite(x) ? `${x.toFixed(digits)} ${unit}` : "—");
 
@@ -20,24 +18,21 @@ export default function MultiphotonDepthPage() {
   const [absorption, setAbsorption] = useURLState("absorption", 0.02, { min: 0, max: 10 }); // mm⁻¹
   const [scattering, setScattering] = useURLState("scattering", 6, { min: 0, max: 50 }); // mm⁻¹
 
-  const results = useMemo(() => {
-    const lam = wavelength * 1e-9;
-    const fwhm = multiphotonFwhm(lam, n, na, 2);
-    const mu = absorption + scattering; // mm⁻¹
-    // 2P signal at constant surface power ∝ exp(−2µd): depth where it falls to a fraction F is −ln F/(2µ).
-    const depthAt = (fraction: number) => (mu > 0 ? (-Math.log(fraction) / (2 * mu)) * 1000 : Infinity); // µm
-    return {
-      lateral: fwhm.lateral * 1e9, // nm
-      axial: fwhm.axial * 1e6, // µm
-      pulseEnergy: pulseEnergy(avgPower * 1e-3, repRate * 1e6) * 1e9, // nJ
-      peakPower: gaussianPulsePeakPower(avgPower * 1e-3, repRate * 1e6, pulseWidth * 1e-15) / 1e3, // kW
-      attenuationLength: mu > 0 ? 1000 / mu : Infinity, // µm
-      depth1e2: depthAt(0.01),
-      depth1e3: depthAt(0.001),
-    };
-  }, [na, wavelength, n, pulseWidth, repRate, avgPower, absorption, scattering]);
+  const summary = multiphotonDepthSummary({
+    na, lambda: wavelength * 1e-9, n, pulseWidth: pulseWidth * 1e-15, repRate: repRate * 1e6, avgPower: avgPower * 1e-3,
+    absorption: absorption * 1000, scattering: scattering * 1000, // mm⁻¹ → m⁻¹
+  });
+  const results = {
+    lateral: summary.lateral * 1e9, // nm
+    axial: summary.axial * 1e6, // µm
+    pulseEnergy: summary.pulseEnergy * 1e9, // nJ
+    peakPower: summary.peakPower / 1e3, // kW
+    attenuationLength: summary.attenuationLength * 1e6, // µm
+    depth1e2: summary.depth1e2 * 1e6, // µm
+    depth1e3: summary.depth1e3 * 1e6, // µm
+  };
 
-  const plotData = useMemo(() => {
+  const plotData = (() => {
     const depths: number[] = [];
     const signal: number[] = [];
     const excitation: number[] = [];
@@ -55,7 +50,7 @@ export default function MultiphotonDepthPage() {
       { x: depths, y: signal, name: "2P signal (%)", line: { color: "#60a5fa" }, type: "scatter", mode: "lines" },
       { x: depths, y: excitation, name: "Excitation (%)", line: { color: "#f87171", dash: "dash" }, type: "scatter", mode: "lines" },
     ];
-  }, [absorption, scattering, results.depth1e3]);
+  })();
 
   const valid = Number.isFinite(results.axial);
 

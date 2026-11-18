@@ -1,13 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import {
-  MAX_HIGH_NA_PHASE, cutoffFrequency, defocusW020, defocusedOtf, diffractionMtf, highNaDefocusOtf, highNaDefocusStrehl,
-} from "../../../physics/imaging/diffraction-mtf";
-import { defocusStrehlExact } from "../../../physics/imaging/wavefront";
+import { MAX_HIGH_NA_PHASE, defocusedOtf, diffractionMtf, highNaDefocusOtf } from "../../../physics/imaging/diffraction-mtf";
+import { mtfSummary } from "../../../physics/imaging/mtf";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const um = 1e-6;
@@ -34,21 +31,13 @@ export default function MTFPage() {
   const defocusUm = clamp(defocusRaw, -20, 20, 3);
   const nu = clamp(nuRaw, 0, 1, 0.5);
 
-  const fc = cutoffFrequency(na, wavelengthNm * nm);
-  const w020 = defocusW020(defocusUm * um, na, n) / (wavelengthNm * nm);
-  // Exact edge path difference n·Δz(1 − cos θ), sin θ = NA/n.
-  const edgeWaves = (n * defocusUm * um * (1 - Math.sqrt(1 - (na / n) ** 2))) / (wavelengthNm * nm);
-  // Exact phase 2πD√(1 − s²ρ²): D = nΔz/λ, s = NA/n.
-  const dWaves = (n * defocusUm * um) / (wavelengthNm * nm);
-  const s = na / n;
-  const inFocus = diffractionMtf(nu);
-  const defocused = defocusedOtf(nu, w020);
-  const exact = highNaDefocusOtf(nu, dWaves, s);
-  const strehl = defocusStrehlExact(Math.abs(w020) / Math.sqrt(12));
-  const strehlExact = highNaDefocusStrehl(dWaves, s);
-  const paraxialOptimistic = Math.abs(edgeWaves) > 1.1 * Math.abs(w020);
+  // Exact phase 2πD√(1 − s²ρ²): D = nΔz/λ, s = NA/n; edge path difference n·Δz(1 − cos θ).
+  const {
+    cutoff: fc, w020Waves: w020, edgeWaves, dWaves, s, inFocus, defocusedParaxial: defocused, defocusedExact: exact,
+    strehlParaxial: strehl, strehlExact, paraxialOptimistic,
+  } = mtfSummary(na, wavelengthNm * nm, n, defocusUm * um, nu);
 
-  const chart = useMemo(() => {
+  const chart = (() => {
     const nus = Array.from({ length: 101 }, (_, k) => k / 100);
     const curve = (otf: (v: number) => number, name: string, color: string, dash?: string) => ({
       x: nus.map((v) => (v * fc * um)), y: nus.map(otf), type: "scatter" as const, mode: "lines" as const,
@@ -61,7 +50,7 @@ export default function MTFPage() {
       curve((v) => highNaDefocusOtf(v, dWaves, s), `Δz = ${defocusUm} µm, exact phase`, "#f87171"),
       { x: [nu * fc * um, nu * fc * um, nu * fc * um], y: [inFocus, defocused, exact], type: "scatter" as const, mode: "markers" as const, name: "Chosen ν", marker: { color: "#facc15", size: 10 } },
     ];
-  }, [fc, w020, dWaves, s, defocusUm, nu, inFocus, defocused, exact]);
+  })();
 
   return (
     <>

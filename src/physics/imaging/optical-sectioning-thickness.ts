@@ -69,7 +69,7 @@ export function confocalSectionFwhmPointPinhole(lambda: number, n: number, NA: n
   return valid(lambda, n, NA) ? (0.64 * lambda) / axialDenominator(n, NA) : NaN;
 }
 
-/** Two-photon axial FWHM 2√(ln 2) · 0.532 λ_exc/(√2 (n − √(n² − NA²))) (Zipfel et al. 2003, NA > 0.7), m. */
+/** Two-photon axial FWHM 2√(ln 2) · 0.532 λ_exc/(√2 (n − √(n² − NA²))) (Zipfel et al. 2003), m. */
 export function twoPhotonAxialFwhm(lambdaExcitation: number, n: number, NA: number): number {
   if (!valid(lambdaExcitation, n, NA)) return NaN;
   return (2 * Math.sqrt(Math.LN2) * 0.532 * lambdaExcitation) / (Math.SQRT2 * axialDenominator(n, NA));

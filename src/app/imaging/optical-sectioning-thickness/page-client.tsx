@@ -4,10 +4,9 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import {
-  airyUnit, confocalSectionFwhm, confocalSectionFwhmPointPinhole, twoPhotonAxialFwhm, widefieldAxialFirstZero,
-} from "../../../physics/imaging/optical-sectioning-thickness";
 import { confocalOpticalSectionFwhm } from "../../../physics/imaging/confocal";
+import { confocalSectionFwhm, twoPhotonAxialFwhm, widefieldAxialFirstZero } from "../../../physics/imaging/optical-sectioning-thickness";
+import { TWO_PHOTON_WAVELENGTH_FACTOR, WILHELM_MIN_PINHOLE_AU, opticalSectioningSummary } from "../../../physics/imaging/optical-sectioning-thickness-summary";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmtUm = (x: number) => (Number.isFinite(x) ? `${(x * 1e6).toFixed(2)} µm` : "—");
@@ -31,14 +30,7 @@ export default function OpticalSectioningPage() {
 
   const lambda = wavelength * 1e-9;
   const n = refractiveIndex;
-  const results = {
-    widefield: widefieldAxialFirstZero(lambda, n, na),
-    confocal: confocalSectionFwhm(lambda, n, na, pinholeAU),
-    waveOptical: confocalOpticalSectionFwhm(lambda, n, na, pinholeAU),
-    pointPinhole: confocalSectionFwhmPointPinhole(lambda, n, na),
-    twoPhoton: twoPhotonAxialFwhm(2 * lambda, n, na),
-    pinholeDiameter: pinholeAU * airyUnit(lambda, na),
-  };
+  const results = opticalSectioningSummary(lambda, n, na, pinholeAU);
   const valid = Number.isFinite(results.confocal);
 
   const chartData = (() => {
@@ -50,7 +42,7 @@ export default function OpticalSectioningPage() {
       { ...finiteUm(nas, nas.map((a) => widefieldAxialFirstZero(lam, n, a))), type: "scatter", mode: "lines", name: "Widefield (first axial zero)", line: { color: "#60a5fa" } },
       { ...finiteUm(nas, nas.map((a) => confocalSectionFwhm(lam, n, a, pinholeAU))), type: "scatter", mode: "lines", name: `Confocal, Wilhelm (${pinholeAU} AU)`, line: { color: "#34d399" } },
       { ...finiteUm(nas, nas.map((a) => confocalOpticalSectionFwhm(lam, n, a, pinholeAU))), type: "scatter", mode: "lines", name: `Confocal, wave-optical (${pinholeAU} AU)`, line: { color: "#a78bfa", dash: "dot" } },
-      { ...finiteUm(nas, nas.map((a) => twoPhotonAxialFwhm(2 * lam, n, a))), type: "scatter", mode: "lines", name: "Two-photon axial FWHM (2λ)", line: { color: "#fbbf24", dash: "dash" } },
+      { ...finiteUm(nas, nas.map((a) => twoPhotonAxialFwhm(TWO_PHOTON_WAVELENGTH_FACTOR * lam, n, a))), type: "scatter", mode: "lines", name: "Two-photon axial FWHM (2λ)", line: { color: "#fbbf24", dash: "dash" } },
       { ...finiteUm([na], [confocalSectionFwhm(lam, n, na, pinholeAU)]), type: "scatter", mode: "markers", name: "Current", marker: { color: "#f87171", size: 12 } },
     ];
   })();
@@ -76,7 +68,7 @@ export default function OpticalSectioningPage() {
           label={`Confocal section, Wilhelm (${pinholeAU} AU)`}
           value={fmtUm(results.confocal)}
           tone="green"
-          subtext={pinholeAU < 1 ? `Below 1 AU this overestimates; point-pinhole limit ${fmtUm(results.pointPinhole)}` : `Point-pinhole limit ${fmtUm(results.pointPinhole)}`}
+          subtext={pinholeAU < WILHELM_MIN_PINHOLE_AU ? `Below 1 AU this overestimates; point-pinhole limit ${fmtUm(results.pointPinhole)}` : `Point-pinhole limit ${fmtUm(results.pointPinhole)}`}
         />
         <ResultCard
           label={`Confocal section, wave-optical (${pinholeAU} AU)`}
@@ -84,7 +76,7 @@ export default function OpticalSectioningPage() {
           tone="purple"
           subtext={Number.isFinite(results.waveOptical) ? `Scalar paraxial theory; Wilhelm is ${((results.confocal / results.waveOptical - 1) * 100).toFixed(0)} % above it` : "—"}
         />
-        <ResultCard label="Two-photon axial FWHM (point object, at 2λ)" value={fmtUm(results.twoPhoton)} tone="yellow" subtext={`λ_exc = ${(2 * wavelength).toFixed(0)} nm${na < 0.7 ? "; fit is for NA > 0.7" : ""}; a thin-plane section is ≈ 8 % larger (0.677 vs 0.638 in scalar theory)`} />
+        <ResultCard label="Two-photon axial FWHM (point object, at 2λ)" value={fmtUm(results.twoPhoton)} tone="yellow" subtext={`λ_exc = ${(TWO_PHOTON_WAVELENGTH_FACTOR * wavelength).toFixed(0)} nm; a thin-plane section is ≈ 8 % larger (0.677 vs 0.638 in scalar theory)`} />
         <ResultCard label="Pinhole diameter (object side)" value={fmtUm(results.pinholeDiameter)} tone="purple" subtext="× magnification at the pinhole plane" />
       </div>
 

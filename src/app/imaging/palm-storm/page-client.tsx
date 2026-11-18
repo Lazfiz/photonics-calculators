@@ -3,9 +3,9 @@
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { palmNyquist, palmStormSummary } from "../../../physics/imaging/palm-storm";
 import {
-  GAUSSIAN_FWHM_PER_SIGMA, PSF_SIGMA_COEFFICIENT, abbeLateralFwhm, localizationPrecision, mortensenPrecision,
-  nyquistResolution, smlmEffectiveResolution,
+  GAUSSIAN_FWHM_PER_SIGMA, localizationPrecision, mortensenPrecision, smlmEffectiveResolution,
 } from "../../../physics/imaging/super-resolution";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -48,17 +48,13 @@ export default function PALMSTORMPage() {
   const densityUnit = dim === 1 ? "µm⁻¹" : dim === 2 ? "µm⁻²" : "µm⁻³";
 
   const precisionAt = (N: number, e: "ls" | "mle") => mortensenPrecision(lambda, na, N, pixel * nm, background, { estimator: e, emccd });
-  const psfSigma = (PSF_SIGMA_COEFFICIENT * lambda) / na;
-  const sigmaLoc = precisionAt(photons, est);
-  const shotLimit = localizationPrecision(lambda, na, photons);
-  const nyquistAt = (rho: number) => nyquistResolution(rho * 1e6 ** dim, dim);
-  const nyquist = nyquistAt(density);
-  const effective = smlmEffectiveResolution(sigmaLoc, nyquist);
-  const diffraction = abbeLateralFwhm(lambda, na);
-  const acqTime = frames / fps;
+  const nyquistAt = (rho: number) => palmNyquist(rho, dim);
+  const {
+    psfSigma, sigmaLoc, shotLimit, nyquist, effective, diffraction, acquisitionTime: acqTime, undersampled,
+  } = palmStormSummary(lambda, na, photons, background, pixel * nm, est, emccd, density, dim, frames, fps);
 
   // Mortensen's formulas are correct to order a²/(12σ²); past a = 2σ that term exceeds 1/3.
-  const note = pixel * nm > 2 * psfSigma
+  const note = undersampled
     ? `A ${pixel} nm pixel is more than twice the PSF σ (${(psfSigma / nm).toFixed(0)} nm): the spot is undersampled and the a²/12 pixel correction is no longer small.`
     : "";
 

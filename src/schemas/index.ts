@@ -149,6 +149,17 @@ import fovCalculator from "./imaging/fov-calculator";
 import frap from "./imaging/frap";
 import hyperspectralMicroscopy from "./imaging/hyperspectral-microscopy";
 import illumination from "./imaging/illumination";
+import imageDistance from "./imaging/image-distance";
+import lightField from "./imaging/light-field";
+import lightSheet from "./imaging/light-sheet";
+import magnification from "./imaging/magnification";
+import mtf from "./imaging/mtf";
+import multiphotonDepth from "./imaging/multiphoton-depth";
+import naFNumber from "./imaging/na-fnumber";
+import opticalCoherence from "./imaging/optical-coherence";
+import opticalPower from "./imaging/optical-power";
+import opticalSectioningThickness from "./imaging/optical-sectioning-thickness";
+import palmStorm from "./imaging/palm-storm";
 import lowCoherence from "./imaging/low-coherence";
 import tirf from "./imaging/tirf";
 import aelLimits from "./laser-safety/ael-limits";
@@ -439,7 +450,9 @@ export const schemas: readonly CalculatorSchema[] = [
   threeDReconstruction, imagingAdaptiveOptics, afocal, clearedTissue, coherentRaman, computationalImaging,
   computerGeneratedHolography, confocalPinHole, confocalResolution, contrastMethods, deconvolution,
   denoisingAlgorithms, digitalHolography, dof, dynamicRange, expansionMicroscopy, fcs, fluorescenceSpectra,
-  fovCalculator, frap, hyperspectralMicroscopy, illumination,
+  fovCalculator, frap, hyperspectralMicroscopy, illumination, imageDistance, lightField, lightSheet,
+  magnification, mtf, multiphotonDepth, naFNumber, opticalCoherence, opticalPower, opticalSectioningThickness,
+  palmStorm,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));
