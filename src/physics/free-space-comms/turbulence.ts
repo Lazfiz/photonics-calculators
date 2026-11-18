@@ -581,10 +581,11 @@ export const NOLL_MAX_MODES = 5000;
 
 // Noll's diagonal covariance per mode of radial order n, up to a constant: (n + 1) Γ(n − 5/6)/Γ(n + 23/6).
 const nollModeShape = (n: number) => (n + 1) * Math.exp(lnGamma(n - 5 / 6) - lnGamma(n + 23 / 6));
-// Scale so that every mode beyond piston sums to Noll's 1.0299; the terms fall as n^(−14/3), so 2000 radial orders
-// (each holding n + 1 modes) leave a tail below 1e-9.
+// Scale so that every mode beyond piston sums to Noll's 1.0299. Radial order n (n + 1 modes) adds
+// (n + 1)² Γ(n − 5/6)/Γ(n + 23/6) ≈ (n + 1)^(−8/3) (Tricomi–Erdélyi), so the orders past 2000 add
+// (3/5)(2001.5)^(−5/3) ≈ 1.9e-6 of the ≈ 1.367 sum: added in closed form (residual < 1e-12 against a 2·10⁶-order sum).
 const NOLL_SCALE = (() => {
-  let sum = 0;
+  let sum = (3 / 5) * 2001.5 ** (-5 / 3);
   for (let n = 2000; n >= 1; n--) sum += (n + 1) * nollModeShape(n);
   return 1.0299 / sum;
 })();

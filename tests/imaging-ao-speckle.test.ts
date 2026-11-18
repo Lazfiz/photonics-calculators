@@ -22,6 +22,11 @@ test("Noll residual Δ_J after J corrected Zernike modes (JOSA 66, 207 (1976), T
   // Table IV, printed to 3 significant figures.
   const table: [number, number][] = [[2, 0.582], [3, 0.134], [4, 0.111], [6, 0.0648], [10, 0.0401], [15, 0.0279], [21, 0.0208]];
   for (const [j, delta] of table) assertRel(nollResidual(j), delta, 0.006, `Δ${j}`);
+  // Independent sum (own Lanczos lnΓ) of Noll's (n + 1)² Γ(n − 5/6)/Γ(n + 23/6) over radial orders to n = 2·10⁶ plus
+  // (3/5)N^(−5/3): 1.36703373961. Cutting at n = 2000 without the tail gave Δ₁₅ 5e-5 and Δ₁₀₀ 2.6e-4 too low (relative).
+  for (const [j, delta] of [[3, 0.134334783], [15, 0.0279063846], [100, 0.00552549587]]) {
+    assertRel(nollResidual(j), delta, 1e-8, `Δ${j} (full sum)`);
+  }
   // Noll's fit 0.2944 J^(−√3/2): the ROADMAP golden at J = 15; it matches Δ_J within 1.3 % for 10 ≤ J ≤ 100, but the
   // exact residual falls as J^(−5/6) (fitting error ∝ (d/r₀)^(5/3) with d ∝ J^(−1/2)), 8 % above the fit at J = 1000.
   assertRel(fittingErrorVariance(15, 1, 1), 0.02821, 1e-4, "asymptote at J = 15");
