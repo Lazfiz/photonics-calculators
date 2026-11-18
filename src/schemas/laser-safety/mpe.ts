@@ -68,5 +68,21 @@ export default defineSchema({
       expect: { radiantExposure: 90 },
       tolerance: 1e-9,
     },
+    {
+      // Table 5 prints the 1,500–1,800 nm limit for 1 ns – 10 s as the constant 10 kJ m⁻².
+      source: TABLE_5,
+      basis: "printed",
+      inputs: { wavelength: 1550, exposure: 1 },
+      expect: { radiantExposure: 1e4 },
+      tolerance: 1e-9,
+    },
+    {
+      // Table 5 prints the 1,400 nm – 1 mm limit for 10 s – 30 ks as the constant irradiance 1.0 kW m⁻².
+      source: TABLE_5,
+      basis: "printed",
+      inputs: { wavelength: 10600, exposure: 100 },
+      expect: { irradiance: 1000 },
+      tolerance: 1e-9,
+    },
   ],
 });

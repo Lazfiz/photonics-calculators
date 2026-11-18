@@ -64,5 +64,22 @@ export default defineSchema({
       expect: { radiantExposure: 11000, irradiance: 11000 },
       tolerance: 1e-9,
     },
+    {
+      // Table 7 prints 2.0 C_A kW m⁻² for 400–1,400 nm and 10 s – 30 ks, with C_A = 1 from 400 to 700 nm (Table 3).
+      source: TABLE_7,
+      basis: "printed",
+      inputs: { wavelength: 532, exposureTime: 100 },
+      expect: { irradiance: 2000 },
+      tolerance: 1e-9,
+    },
+    {
+      // Above 1,400 nm Table 7 takes the eye limit, which Table 5 prints for 10 s – 30 ks as 1.0 kW m⁻² (footnote c: an
+      // exposed area under 0.01 m²).
+      source: TABLE_7,
+      basis: "printed",
+      inputs: { wavelength: 10600, exposureTime: 100 },
+      expect: { irradiance: 1000 },
+      tolerance: 1e-9,
+    },
   ],
 });

@@ -85,5 +85,16 @@ export default defineSchema({
       expect: { nohd: 79.896, diameterAtNohd: 159.87 },
       tolerance: 2e-4,
     },
+    {
+      // A 1 W handheld at 1.5 mrad (Wicked Lasers Spyder III Arctic, 445 nm): NOHD = (32.8/1.5 mrad)√(0.5 × 1000 mW)
+      // = 489.0 ft = 149.05 m, the exit diameter neglected (here 1 µm). The page gives 149.10 m: the source's 32.8 √0.5
+      // stands for √(4 mW/(π × 25.4 W m⁻²)) in ft/mrad, 0.04 % below the page's 25.46 W m⁻² at 0.25 s.
+      source: "LaserPointerSafety.com (P. Murphy). Laser safety calculations, for eye and visual interference hazard " +
+        "distances: NOHD example 2a. https://www.laserpointersafety.com/safetyinfo/safetycalcs/index.html",
+      basis: "printed",
+      inputs: { power: 1000, wavelength: 445, exposure: 0.25, beamDia: 0.001, divergence: 1.5, beamDefinition: "1/e" },
+      expect: { nohd: 149.05 },
+      tolerance: 1e-3,
+    },
   ],
 });

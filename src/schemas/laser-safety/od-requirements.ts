@@ -36,5 +36,16 @@ export default defineSchema({
       expect: { irradiance: 1.299224025, od: 2.715744034, powerBehindFilter: 0.9621127502 },
       tolerance: 1e-8,
     },
+    {
+      // 5 W argon at 514 nm, 600 s intrabeam: H₀ = 4(5.0)/(π 0.7²) = 12.99 W/cm², OD = log₁₀(12.99/16.7×10⁻⁶) = 5.9 (the
+      // MPE line reads "16.7 W/cm2"; the substitution's 16.7×10⁻⁶ W/cm² is the value). OSHA puts all 5 W in the 7 mm
+      // pupil; a 1 mm beam does the same. The page gives 12.992 W/cm² and OD 5.891; the tolerance covers OD's one decimal.
+      source: "OSHA Technical Manual, Section III, Chapter 6: Laser Hazards, §V.D.2 (intrabeam optical density). " +
+        "https://www.osha.gov/otm/section-3-health-hazards/chapter-6",
+      basis: "printed",
+      inputs: { power: 5000, beamDiameter: 1, validatedMpeIrradiance: 16.7e-6, aperture: 7, safetyFactor: 1, beamDefinition: "1/e2" },
+      expect: { irradiance: 12.99, od: 5.9 },
+      tolerance: 1e-2,
+    },
   ],
 });
