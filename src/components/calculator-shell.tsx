@@ -46,11 +46,11 @@ export default function CalculatorShell({ href, children, maxWidthClassName = "m
             <ol className="flex flex-wrap items-center gap-1">
               {/* Every crumb is an ancestor, so each is a link; the page itself is the title. */}
               <li className="flex items-center gap-1">
-                <Link href="/" className="hover:text-gray-300">Home</Link>
+                <Link href="/" className="-my-1 py-1 hover:text-gray-300">Home</Link>
               </li>
               <li className="flex items-center gap-1">
                 <span aria-hidden="true">›</span>
-                <Link href={`/${category.id}`} className="hover:text-gray-300">{category.label}</Link>
+                <Link href={`/${category.id}`} className="-my-1 py-1 hover:text-gray-300">{category.label}</Link>
               </li>
               <li className="flex items-center gap-1">
                 <span aria-hidden="true">›</span>

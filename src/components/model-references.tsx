@@ -21,7 +21,7 @@ export function ModelBadge({ tier }: { tier?: ModelTier }) {
   return (
     <a
       href="#model"
-      className={`inline-block rounded-full border px-2.5 py-0.5 text-xs font-medium hover:brightness-125 ${BADGE_STYLES[tier ?? "unreviewed"]}`}
+      className={`inline-block rounded-full border px-2.5 py-1 text-xs font-medium hover:brightness-125 ${BADGE_STYLES[tier ?? "unreviewed"]}`}
     >
       Model: {tierInfo(tier).label}
     </a>

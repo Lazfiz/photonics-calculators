@@ -46,6 +46,12 @@ input[type="range"]::-moz-range-track {
   background: #374151;
 }
 
+/* Preflight sets sub/sup to 75 %, which is 9–10.5 px in the text-xs/text-sm formulas: keep them legible on phones. */
+sub,
+sup {
+  font-size: max(0.75em, 11px);
+}
+
 /* Home-page chip hero */
 @keyframes hero-photon-flow {
   from { stroke-dashoffset: 240; }
