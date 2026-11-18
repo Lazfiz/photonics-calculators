@@ -4,27 +4,14 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { CONFOCAL_MAX_PINHOLE_AU, confocalAxialFwhm, confocalLateralFwhm } from "../../../physics/imaging/confocal";
+import { CONFOCAL_MAX_PINHOLE_AU, confocalAxialFwhm } from "../../../physics/imaging/confocal";
+import {
+  methodResolution, RECONSTRUCTION_METHODS, reconstructionSummary, type ReconstructionMethod,
+} from "../../../physics/imaging/3d-reconstruction";
 import { airyFwhm } from "../../../physics/imaging/diffraction-psf";
-import { effectiveAxialFwhm, gaussianSheetFwhm, gaussianSheetRayleighRange } from "../../../physics/imaging/light-sheet";
 import { axialPsfFwhm } from "../../../physics/imaging/optical-sectioning-thickness";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
-
-const METHODS = ["widefield", "confocal", "lightsheet"] as const;
-type Method = (typeof METHODS)[number];
-
-/** Lateral and axial FWHM (m) of each method. */
-function resolution(method: Method, lambda: number, n: number, na: number, pinholeAU: number, sheetNA: number) {
-  if (method === "confocal") {
-    return { lateral: confocalLateralFwhm(lambda, na, pinholeAU), axial: confocalAxialFwhm(lambda, n, na, pinholeAU) };
-  }
-  const detection = axialPsfFwhm(lambda, n, na);
-  return {
-    lateral: airyFwhm(lambda, na),
-    axial: method === "widefield" ? detection : effectiveAxialFwhm(gaussianSheetFwhm(lambda, sheetNA), detection),
-  };
-}
 
 export default function Reconstruction3DPage() {
   const [numSlicesRaw, setNumSlices] = useURLState("numSlices", 100);
@@ -43,23 +30,18 @@ export default function Reconstruction3DPage() {
   const na = clamp(naRaw, 0.1, 1.7, 1.0);
   const wavelengthNm = clamp(wavelengthRaw, 300, 2000, 550);
   const n = clamp(refractiveIndexRaw, 1, 1.8, 1.33);
-  const method: Method = METHODS.find((m) => m === methodRaw) ?? "confocal";
+  const method: ReconstructionMethod = RECONSTRUCTION_METHODS.find((m) => m === methodRaw) ?? "confocal";
   const pinholeAU = clamp(pinholeAURaw, 0, CONFOCAL_MAX_PINHOLE_AU, 1);
   const sheetNA = clamp(excitationNARaw, 0.01, 0.3, 0.1);
   const fovUm = clamp(fovRaw, 1, 5000, 100);
   const lambda = wavelengthNm * 1e-9;
   const valid = na < n;
 
-  const res = resolution(method, lambda, n, na, pinholeAU, sheetNA);
-  const lateralNm = res.lateral * 1e9;
-  const axialNm = res.axial * 1e9;
-  const sheetLengthUm = 2 * gaussianSheetRayleighRange(lambda, sheetNA, n) * 1e6;
-  const pixelsPerSide = Math.round(fovUm / xyPixel);
-  const totalVoxels = numSlices * pixelsPerSide * pixelsPerSide;
-  const volumeBytes = totalVoxels * 2; // 16-bit
-  // Two samples per FWHM: a rule of thumb, near Nyquist (slightly finer) for widefield axial, looser than Nyquist for confocal.
-  const xyOk = xyPixel * 1000 <= lateralNm / 2;
-  const zOk = sliceSpacing * 1000 <= axialNm / 2;
+  const stack = reconstructionSummary(method, numSlices, sliceSpacing * 1e-6, xyPixel * 1e-6, na, lambda, n, pinholeAU, sheetNA, fovUm * 1e-6);
+  const lateralNm = stack.lateral * 1e9;
+  const axialNm = stack.axial * 1e9;
+  const sheetLengthUm = stack.sheetLength * 1e6;
+  const { pixelsPerSide, totalVoxels, volumeBytes, xyOk, zOk } = stack;
 
   const naMax = Math.min(1.7, 0.99 * n);
   const naMin = Math.min(0.2, na);
@@ -79,7 +61,7 @@ export default function Reconstruction3DPage() {
   ];
 
   const labels = ["Widefield", "Confocal", "Light sheet"];
-  const all = METHODS.map((m) => resolution(m, lambda, n, na, pinholeAU, sheetNA));
+  const all = RECONSTRUCTION_METHODS.map((m) => methodResolution(m, lambda, n, na, pinholeAU, sheetNA));
   const methodCompare = [
     { x: labels, y: all.map((r) => r.axial * 1e9), type: "bar" as const, name: "Axial FWHM (nm)", marker: { color: "#f87171" } },
     { x: labels, y: all.map((r) => r.lateral * 1e9), type: "bar" as const, name: "Lateral FWHM (nm)", marker: { color: "#60a5fa" } },

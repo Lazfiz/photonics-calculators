@@ -3,20 +3,10 @@
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import {
-  DM_FITTING_COEFFICIENT, dmFittingVariance, nollResidual, strehlRatio, uncorrectedPhaseVariance,
-} from "../../../physics/free-space-comms/turbulence";
+import { nollResidual, strehlRatio } from "../../../physics/free-space-comms/turbulence";
+import { adaptiveOpticsSummary, DM_LABELS, DM_TYPES, MAX_MODES, type DmType } from "../../../physics/imaging/adaptive-optics";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
-
-type DmType = keyof typeof DM_FITTING_COEFFICIENT;
-const DM_TYPES: DmType[] = ["continuous", "segmentedTipTilt", "segmentedPiston"];
-const DM_LABELS: Record<DmType, string> = {
-  continuous: "Continuous facesheet (κ 0.28)",
-  segmentedTipTilt: "Segments, piston + tip-tilt (κ 0.134)",
-  segmentedPiston: "Segments, piston only (κ 1.26)",
-};
-const MAX_MODES = 1000;
 
 const row = (label: string, value: string, color = "") => (
   <div className="flex justify-between gap-4 border-b border-gray-800 pb-2">
@@ -44,17 +34,11 @@ export default function AdaptiveOpticsPage() {
   const dmType: DmType = DM_TYPES.find((t) => t === dmTypeRaw) ?? "continuous";
   const strokeUm = clamp(strokeRaw, 0, 100, 5);
 
-  // σ² in rad², with r₀ = 1 so that D = D/r₀; rms optical path σλ/2π in nm.
-  const rmsNm = (variance: number) => (Math.sqrt(variance) * wavelengthNm) / (2 * Math.PI);
-  const open = uncorrectedPhaseVariance(dr0, 1);
-  const tipTiltRemoved = nollResidual(3) * dr0 ** (5 / 3);
-  const modal = nollResidual(modes) * dr0 ** (5 / 3);
-  const zonal = dmFittingVariance(dr0 / actuators, 1, DM_FITTING_COEFFICIENT[dmType]);
-  const strehlOpen = strehlRatio(open, dr0, 1);
-  const strehlModal = strehlRatio(modal, dr0, 1);
-  const strehlZonal = strehlRatio(zonal, dr0, 1);
-  // A ±3σ span of the tip-tilt-removed wavefront is 6σ of optical path; reflection halves it on the mirror surface.
-  const strokeNeededUm = (3 * rmsNm(tipTiltRemoved)) / 1000;
+  // σ² in rad², with r₀ = 1 so that D = D/r₀; rms optical path σλ/2π in nm. A ±3σ span of the tip-tilt-removed
+  // wavefront is 6σ of optical path; reflection halves it on the mirror surface.
+  const s = adaptiveOpticsSummary({ wavelength: wavelengthNm * 1e-9, dr0, modes, actuators, dmType, stroke: strokeUm * 1e-6 });
+  const { openVariance: open, modalVariance: modal, zonalVariance: zonal, strehlOpen, strehlModal, strehlZonal } = s;
+  const strokeNeededUm = s.strokeNeeded * 1e6;
 
   const curve = (() => {
     const js: number[] = [];
@@ -91,15 +75,15 @@ export default function AdaptiveOpticsPage() {
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
           <h2 className="text-lg font-semibold">Results</h2>
-          {row("Uncorrected σ² = 1.0299 (D/r₀)^(5/3)", `${fmt(open, 3, " rad²")} (${fmt(rmsNm(open), 0, " nm rms")})`)}
+          {row("Uncorrected σ² = 1.0299 (D/r₀)^(5/3)", `${fmt(open, 3, " rad²")} (${fmt(s.openRms * 1e9, 0, " nm rms")})`)}
           {row("Strehl, uncorrected", fmt(strehlOpen, 4), "text-red-400")}
-          {row(`Modal residual Δ${modes} (D/r₀)^(5/3)`, `${fmt(modal, 4, " rad²")} (${fmt(rmsNm(modal), 1, " nm rms")})`)}
+          {row(`Modal residual Δ${modes} (D/r₀)^(5/3)`, `${fmt(modal, 4, " rad²")} (${fmt(s.modalRms * 1e9, 1, " nm rms")})`)}
           {row(`Strehl, ${modes} modes corrected`, fmt(strehlModal, 4), "text-blue-400")}
           {row(`DM pitch d/r₀ = (D/r₀)/${actuators}`, fmt(dr0 / actuators, 4))}
-          {row("Fitting error κ (d/r₀)^(5/3)", `${fmt(zonal, 4, " rad²")} (${fmt(rmsNm(zonal), 1, " nm rms")})`)}
+          {row("Fitting error κ (d/r₀)^(5/3)", `${fmt(zonal, 4, " rad²")} (${fmt(s.zonalRms * 1e9, 1, " nm rms")})`)}
           {row("Strehl, DM fitting limit", fmt(strehlZonal, 4), "text-green-400")}
-          {row("Stroke for ±3σ, tip-tilt removed", fmt(strokeNeededUm, 2, " µm"), strokeUm >= strokeNeededUm ? "text-green-400" : "text-yellow-400")}
-          {strokeUm < strokeNeededUm && <p className="text-sm text-yellow-400">The stroke is short of ±3σ: large excursions will saturate the mirror.</p>}
+          {row("Stroke for ±3σ, tip-tilt removed", fmt(strokeNeededUm, 2, " µm"), !s.strokeShort ? "text-green-400" : "text-yellow-400")}
+          {s.strokeShort && <p className="text-sm text-yellow-400">The stroke is short of ±3σ: large excursions will saturate the mirror.</p>}
           <p className="text-xs text-gray-500">
             The modal and DM rows are two separate estimates of perfect correction, not terms to add: a mirror
             with N actuators across corrects roughly the first (π/4)N² modes. Strehl = e^(−σ²) + (1 − e^(−σ²))/(1 +

@@ -3,6 +3,7 @@
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { contrastMethodsSummary } from "../../../physics/imaging/contrast-methods";
 import {
   dicContrast, dicShearPhase, objectPhase, zernikeContrast, zernikeContrastLinear,
 } from "../../../physics/imaging/phase-contrast";
@@ -41,20 +42,16 @@ export default function ContrastMethodsPage() {
   const lambda = wavelength * 1e-9;
   const delta = ring === "positive" ? -Math.PI / 2 : Math.PI / 2;
   const Gamma = 2 * Math.PI * bias;
-  const phi = objectPhase(dn, thickness * 1e-6, lambda);
-  const pc = zernikeContrast(phi, delta, ringT);
-  const pcLinear = zernikeContrastLinear(phi, delta, ringT);
-  const dPhi = dicShearPhase(phi, shear * 1e-9, edge * 1e-9);
-  const dicPlus = dicContrast(Gamma, dPhi, stray);
-  const dicMinus = dicContrast(Gamma, -dPhi, stray);
-  const resolution = (0.61 * wavelength) / na; // nm
-
-  const warnings: string[] = [];
-  const a = Math.sqrt(ringT);
-  if (phi !== 0 && Math.sign(pc) !== Math.sign(pcLinear)) warnings.push(`Contrast reversal: tan(|φ|/2) = ${Math.tan(Math.abs(phi) / 2).toFixed(3)} exceeds the ring amplitude a = ${a.toFixed(3)}, so the object appears with the opposite sign to the ${ring} phase-contrast rule.`);
-  else if (Math.abs(phi) > a / 2) warnings.push(`|φ| = ${Math.abs(phi).toFixed(3)} rad is not small next to the ring amplitude a = ${a.toFixed(3)}: the contrast is no longer proportional to φ and the small-φ limit is wrong.`);
-  if (shear > resolution) warnings.push(`A shear of ${shear} nm exceeds the resolution ${resolution.toFixed(0)} nm: DIC shows a doubled image.`);
-  if (bias === 0 && stray === 0) warnings.push("With zero bias and no stray light the background is black, so the relative contrast is undefined.");
+  const r = contrastMethodsSummary({
+    lambda, na, thickness: thickness * 1e-6, dn, ring, ringTransmission: ringT, shear: shear * 1e-9, edge: edge * 1e-9, bias, stray,
+  });
+  const { phi, warnings } = r;
+  const pc = r.phaseContrast;
+  const pcLinear = r.phaseContrastLinear;
+  const dPhi = r.shearPhase;
+  const dicPlus = r.dicPlus;
+  const dicMinus = r.dicMinus;
+  const resolution = r.resolution * 1e9; // nm
 
   const tMax = Math.max(20, thickness);
   const ts = Array.from({ length: 201 }, (_, i) => (i * tMax) / 200);

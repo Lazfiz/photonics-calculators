@@ -3,9 +3,8 @@
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import {
-  BINARY_AMPLITUDE_EFFICIENCY, fresnelReconstructionPitch, phaseQuantizationEfficiency, pixelEnvelope, replayField, slmMaxAngle,
-} from "../../../physics/imaging/holography";
+import { BINARY_AMPLITUDE_EFFICIENCY, phaseQuantizationEfficiency, pixelEnvelope } from "../../../physics/imaging/holography";
+import { BIT_DEPTHS, PARAXIAL_SIN_LIMIT, slmReplaySummary } from "../../../physics/imaging/computer-generated-holography";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 
@@ -17,7 +16,6 @@ const row = (label: string, value: string, color = "") => (
 );
 
 const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toPrecision(digits)}${unit}` : "—");
-const BIT_DEPTHS = [1, 2, 3, 4, 6, 8, 10];
 
 export default function CGHPage() {
   const [lambdaRaw, setLambda] = useURLState("wavelengthNm", 633);
@@ -40,17 +38,10 @@ export default function CGHPage() {
   const lambda = lambdaNm * 1e-9;
   const dx = pitchUm * 1e-6;
   const z = zMm * 1e-3;
-  const levels = 2 ** bits;
-  const thetaMax = slmMaxAngle(lambda, dx);
-  const field = replayField(lambda, z, dx);
-  const spotX = fresnelReconstructionPitch(lambda, z, Nx, dx);
-  const spotY = fresnelReconstructionPitch(lambda, z, Ny, dx);
-  const angularRes = lambda / (Nx * dx);
-  const efficiency = amplitude ? BINARY_AMPLITUDE_EFFICIENCY : phaseQuantizationEfficiency(levels);
-  const zAlias = (Nx * dx * dx) / lambda; // quadratic phase of a lensless Fresnel replay aliases below this
-  const sinMax = lambda / (2 * dx);
-  const edge = pixelEnvelope(1 / (2 * dx), dx, fill);
-  const memoryMB = (Nx * Ny * (amplitude ? 1 : bits)) / 8 / 1e6;
+  const summary = slmReplaySummary({ lambda, pitch: dx, nx: Nx, ny: Ny, z, bits, fill, amplitude });
+  const { maxAngle: thetaMax, replayField: field, spotX, spotY, angularResolution: angularRes, efficiency } = summary;
+  const { aliasDistance: zAlias, sinMax, edgeEnvelope: edge } = summary; // below zAlias the lensless Fresnel replay aliases
+  const memoryMB = summary.frameBytes / 1e6;
 
   const effChart = [
     { x: BIT_DEPTHS, y: BIT_DEPTHS.map((b) => phaseQuantizationEfficiency(2 ** b)), type: "scatter" as const, mode: "lines+markers" as const, name: "Phase, 2^bits levels", line: { color: "#34d399" } },
@@ -117,7 +108,7 @@ export default function CGHPage() {
               Fourier lens or a longer distance.
             </p>
           )}
-          {sinMax > 0.2 && (
+          {sinMax > PARAXIAL_SIN_LIMIT && (
             <p className="text-sm text-amber-400">
               λ/(2Δx) = {fmt(sinMax, 3)} is large: the field λz/Δx is paraxial. A lensless field is 2z·tan θ_max; a
               Fourier lens obeying the sine condition gives λf/Δx exactly.

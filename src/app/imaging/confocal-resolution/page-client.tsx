@@ -4,11 +4,8 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import {
-  CONFOCAL_MAX_PINHOLE_AU, confocalAxialFwhm, confocalLateralFwhm, confocalOpticalSectionFwhm,
-} from "../../../physics/imaging/confocal";
-import { airyFwhm, SINC2_HALF_MAX_X } from "../../../physics/imaging/diffraction-psf";
-import { airyUnit } from "../../../physics/imaging/optical-sectioning-thickness";
+import { CONFOCAL_MAX_PINHOLE_AU, confocalAxialFwhm, confocalLateralFwhm } from "../../../physics/imaging/confocal";
+import { confocalResolutionSummary } from "../../../physics/imaging/confocal-resolution";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 
@@ -27,13 +24,13 @@ export default function ConfocalResolutionPage() {
   const valid = na < n;
 
   // FWHMs in nm: confocal from the scalar paraxial confocal model, widefield from the single PSF.
-  const confocalLateral = confocalLateralFwhm(lambda, na, pinholeAU) * 1e9;
-  const widefieldLateral = airyFwhm(lambda, na) * 1e9;
-  const confocalAxial = confocalAxialFwhm(lambda, n, na, pinholeAU) * 1e9;
-  // Exact sinc² half maximum, 2·x½/π = 0.886 (the confocal open-pinhole limit), so the curve cannot cross the widefield line.
-  const widefieldAxial = ((2 * SINC2_HALF_MAX_X) / Math.PI) * (lambda / (n - Math.sqrt(n * n - na * na))) * 1e9;
-  const section = confocalOpticalSectionFwhm(lambda, n, na, pinholeAU) * 1e9;
-  const pinholeUm = (pinholeAU * airyUnit(lambda, na) * magnification) * 1e6; // at the pinhole plane
+  const summary = confocalResolutionSummary(lambda, na, pinholeAU, n, magnification);
+  const confocalLateral = summary.confocalLateral * 1e9;
+  const widefieldLateral = summary.widefieldLateral * 1e9;
+  const confocalAxial = summary.confocalAxial * 1e9;
+  const widefieldAxial = summary.widefieldAxial * 1e9;
+  const section = summary.section * 1e9;
+  const pinholeUm = summary.pinholeDiameter * 1e6; // at the pinhole plane
 
   const aus = Array.from({ length: 51 }, (_, i) => i / 10);
   const chartData = [

@@ -3,11 +3,7 @@
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import {
-  ballisticDepth, ballisticFraction, marginalFocalShift, paraxialFocalShift,
-} from "../../../physics/imaging/cleared-tissue";
-import { axialPsfFwhm } from "../../../physics/imaging/optical-sectioning-thickness";
-import { abbeLateralFwhm } from "../../../physics/imaging/super-resolution";
+import { ballisticDepth, ballisticFraction, clearedTissueSummary } from "../../../physics/imaging/cleared-tissue";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 
@@ -38,17 +34,10 @@ export default function ClearedTissuePage() {
   const muS_m = muS * 1e3;
   const depth = depthUm * 1e-6;
 
-  let problem = "";
-  if (!(na < nImm)) problem = `An NA of ${na} is not possible with an immersion index of ${nImm}.`;
-  else if (!(na < nSample)) problem = `NA ${na} is not possible inside a sample of n = ${nSample}: the marginal rays are totally reflected.`;
-
-  const lateral = abbeLateralFwhm(lambda, na);
-  const axial = axialPsfFwhm(lambda, nSample, na);
-  const ballistic = ballisticFraction(muA_m, muS_m, depth);
-  const depth1e = ballisticDepth(muA_m, muS_m, Math.exp(-1));
-  const depth1pc = ballisticDepth(muA_m, muS_m, 0.01);
-  const fPar = paraxialFocalShift(nImm, nSample);
-  const fMarg = marginalFocalShift(na, nImm, nSample);
+  const summary = clearedTissueSummary(na, lambda, nSample, nImm, depth, muA_m, muS_m);
+  const { problem, lateral, axial, ballistic, depth1e, depth1pc } = summary;
+  const fPar = summary.paraxialShift;
+  const fMarg = summary.marginalShift;
 
   const fmt = (x: number, digits: number, unit: string) => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
   const fmtMm = (x: number) => (Number.isFinite(x) ? `${(x * 1e3).toFixed(2)} mm` : "∞");
@@ -85,8 +74,8 @@ export default function ClearedTissuePage() {
             </>
           )}
           {row("Ballistic fraction at depth", ballistic === 0 ? "< 1e-300 %" : ballistic < 1e-4 ? `${(100 * ballistic).toExponential(2)} %` : fmt(100 * ballistic, ballistic < 0.01 ? 4 : 1, " %"), "text-yellow-400")}
-          {row("Ballistic loss", fmt(10 * Math.LOG10E * (muA_m + muS_m) * depth, 1, " dB"), "text-orange-400")}
-          {row("Scattering length 1/µ_s", fmtMm(1 / muS_m))}
+          {row("Ballistic loss", fmt(summary.lossDb, 1, " dB"), "text-orange-400")}
+          {row("Scattering length 1/µ_s", fmtMm(summary.scatteringLength))}
           {row("Depth to 1/e (1/µ_t)", fmtMm(depth1e), "text-purple-400")}
           {row("Depth to 1 %", fmtMm(depth1pc), "text-purple-400")}
           {!problem && row("Focal shift factor, paraxial n_s/n_imm", fmt(fPar, 3, "×"), "text-cyan-400")}
