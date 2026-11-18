@@ -32,6 +32,7 @@ export const imaging: CalculatorEntry[] = [
     slug: "adaptive-optics",
     title: "Adaptive Optics Calculator",
     description: "Adaptive optics in Kolmogorov turbulence: Noll residual after J Zernike modes, deformable-mirror fitting error, Strehl ratio and stroke needed, from D/r₀.",
+    lede: "Adaptive optics in Kolmogorov turbulence: Noll's residual after J corrected Zernike modes, deformable-mirror fitting error, the Strehl ratio and the stroke needed, from D/r₀.",
     keywords: ["adaptive optics", "deformable mirror", "fitting error", "Fried parameter", "Zernike modes", "Noll"],
     tier: "textbook",
     modelNote: "Kolmogorov turbulence (infinite outer scale) with perfect correction of the chosen modes or by the mirror; servo lag, wavefront-sensor noise and anisoplanatism are left out. The Strehl ratio adds the Parenti–Sasiela seeing halo to the Maréchal core. Aberrations from a sample in microscopy do not follow Kolmogorov statistics.",
@@ -59,6 +60,7 @@ export const imaging: CalculatorEntry[] = [
     slug: "afocal",
     title: "Afocal System Calculator",
     description: "Afocal two-lens systems (telescope, beam expander), Keplerian or Galilean: spacing, angular magnification, beam size, ABCD matrix, focus when spacing is off.",
+    lede: "Two-lens afocal (telescope and beam expander) systems: afocal spacing, angular magnification, beam size and the ray-transfer matrix, Keplerian or Galilean, and the focal distances when the spacing is off.",
     tier: "textbook",
     modelNote: "Paraxial thin lenses in air, from the two-lens ray-transfer matrix. Aberrations, lens thickness and apertures (vignetting) are not included.",
     references: [
@@ -243,6 +245,7 @@ export const imaging: CalculatorEntry[] = [
     slug: "deconvolution",
     title: "Image Deconvolution",
     description: "Wiener deconvolution of a diffraction-limited image: restored transfer H²/(H² + NSR), largest filter gain and finest period restored, vs the limit λ/(2NA).",
+    lede: "Wiener deconvolution of a diffraction-limited image: the restored transfer H²/(H² + NSR), the largest filter gain and the finest period restored, against the passband limit λ/(2NA).",
     tier: "textbook",
     modelNote: "Linear Wiener filter for white noise and a flat object spectrum, applied to the in-focus diffraction-limited MTF of a circular pupil. Iterative methods (Richardson–Lucy, blind) are not modelled; no linear method restores frequencies above 2NA/λ, and positivity-constrained maximum-likelihood extrapolation beyond it is small and noise-limited.",
     references: [
@@ -282,6 +285,7 @@ export const imaging: CalculatorEntry[] = [
     slug: "digital-holography",
     title: "Digital Holography",
     description: "Digital holography: Fresnel grid λz/(NΔx), sensor NA and pixel limit λ/(2Δx), resolution, depth of focus, reference angle, in-line sampling distance.",
+    lede: "Fresnel reconstruction grid λz/(NΔx), sensor NA and its pixel-pitch limit λ/(2Δx), resolution, depth of focus, largest reference angle and the in-line sampling distance for a digital hologram.",
     tier: "textbook",
     modelNote: "Scalar paraxial Fresnel diffraction with a plane reference wave and an N × N sensor of square pixels, 100 % fill factor assumed. The NA is sin(atan(NΔx/2z)), capped at λ/(2Δx) where the pixel pitch, not the sensor width, limits the recorded fringes (below z ≈ NΔx²/λ). The reconstructed point is the sinc transform of the effective aperture. Twin-image separation in off-axis holograms, noise and speckle are not included.",
     references: [
@@ -436,6 +440,7 @@ export const imaging: CalculatorEntry[] = [
     slug: "illumination",
     title: "Köhler Illumination Calculator",
     description: "Köhler illumination: field of view FN/M for the field diaphragm, condenser aperture vs the objective's back aperture, and the resolution λ/(NA_obj + NA_c).",
+    lede: "Köhler illumination settings: field of view FN/M for the field diaphragm, condenser aperture against the objective's back aperture, and the resolution λ/(NA_obj + NA_c).",
     tier: "textbook",
     modelNote: "First-order Köhler layout with aberration-free optics. Pupil diameters follow the Abbe sine condition (2·f·NA). The resolution uses min(NA_c, NA_obj): Abbe's grating period, and 1.22× it as a rule of thumb that is Rayleigh's only at NA_c = NA_obj.",
     references: [
@@ -471,6 +476,7 @@ export const imaging: CalculatorEntry[] = [
     slug: "light-field",
     title: "Light Field Microscopy",
     description: "Light-field microscope design: lateral sample, spots per lenslet, matched microlens f-number, depth of field of refocused slices and single views (Levoy 2006).",
+    lede: "Light-field microscope design: lateral sample, resolvable spots per lenslet, matched microlens f-number and the depth of field of refocused slices and single views (Levoy 2006).",
     keywords: ["light field microscopy", "microlens array", "plenoptic microscope", "spatial-angular tradeoff", "synthetic refocusing"],
     tier: "textbook",
     modelNote: "Levoy's design equations: Sparrow limit 0.47λM/NA in the image, N_u = W/R_obj (capped at two pixels per spot) and depth of field (2 + W/R_obj)λn/(2NA²) refocused or (2 + N_u²)λn/(2NA²) per view, for N_u ≥ 1. Aberration-free objective; no 3D deconvolution.",
@@ -547,6 +553,7 @@ export const imaging: CalculatorEntry[] = [
     slug: "mtf",
     title: "Modulation Transfer Function",
     description: "Diffraction-limited incoherent MTF, cutoff 2NA/λ, circular pupil; defocused OTF and Strehl with contrast reversal, paraxial (Hopkins) or exact high-NA defocus.",
+    lede: "Diffraction-limited incoherent MTF and cutoff 2NA/λ, and the defocused OTF and Strehl ratio with contrast reversal, paraxial (Hopkins) and with the exact high-NA defocus phase, for a circular pupil.",
     tier: "textbook",
     modelNote: "Scalar incoherent imaging with a uniform circular pupil (no aplanatic apodization, no polarization). The paraxial OTF uses W₀₂₀ = Δz·NA²/(2n) in Hopkins' pupil-overlap integral. The exact-phase OTF uses the Debye defocus phase 2π(nΔz/λ)√(1 − (NAρ/n)²), integrated over the pupil overlap in 2D; its Strehl ratio is in closed form. At NA 0.95, Δz 0.5 µm and 550 nm the Strehl ratio is 0.27 against a paraxial 0.56. An aplanatic lens would weight the pupil by (1 − (NAρ/n)²)^(−1/4); leaving it out over-states the high-NA defocused OTF (0.043 against 0.028 at ν = 0.5 in that example).",
     references: [
@@ -624,6 +631,7 @@ export const imaging: CalculatorEntry[] = [
     slug: "optical-power",
     title: "Optical Power (Diopters)",
     description: "Optical power in dioptres from focal length, and a two-element eye: Gullstrand's equation, refractive error from axial length, spectacle and contact lens power.",
+    lede: "Optical power in dioptres from focal length, and a two-element eye: total power by Gullstrand's equation, refractive error from the axial length, and contact-lens and spectacle corrections.",
     tier: "textbook",
     modelNote: "Paraxial, unaccommodated eye of two thin elements in one medium, with Gullstrand's exact-eye powers as defaults. Thin elements shift the rear focal point about 0.1 mm forward of the thick-lens eye's, about 0.2 D of refraction.",
     references: [
@@ -663,6 +671,7 @@ export const imaging: CalculatorEntry[] = [
     slug: "palm-storm",
     title: "PALM/STORM Localization Calculator",
     description: "Localization precision from photons, background and pixel size, and resolution with label density, for single-molecule localization microscopy (PALM/STORM).",
+    lede: "Localization precision from photons, background and pixel size, and effective resolution with label density, for single-molecule localization microscopy (PALM/STORM).",
     tier: "textbook",
     modelNote: "Gaussian fit to the PSF (σ = 0.21 λ/NA), with Mortensen's pixelation and background terms, one localization per label, and the effective resolution as the localization FWHM and the Nyquist term in quadrature. Lateral precision only; drift, label size, repeated blinking and sCMOS read noise are not included.",
     references: [
@@ -781,6 +790,7 @@ export const imaging: CalculatorEntry[] = [
     slug: "registration",
     title: "Image Registration",
     description: "Rigid, similarity and affine image registration: transform matrix, RMS displacement, target registration error (Fitzpatrick), Cramér–Rao alignment bound.",
+    lede: "Rigid, similarity and affine registration: the transform matrix, RMS displacement over the image, control-point target registration error (Fitzpatrick) and the Cramér–Rao bound for intensity-based alignment.",
     keywords: ["image registration", "target registration error", "fiducial localization error", "Cramér-Rao bound", "affine transform"],
     tier: "textbook",
     modelNote: "First-order least squares: 2-D TRE² = (FLE²/N)(1 + m·d²/(2f²)) and FRE² = FLE²(1 − p/(2N)) for isotropic, independent fiducial errors and fiducials on a regular layout over the image (random placement raises the affine TRE ≈ 20 %). The translation bound assumes a noise-free reference and a Gaussian-correlated random texture. Elastic registration is not modelled.",
@@ -922,6 +932,7 @@ export const imaging: CalculatorEntry[] = [
     slug: "speckle-imaging",
     title: "Speckle Imaging",
     description: "Laser speckle: objective and subjective speckle size, contrast vs rms roughness of a Gaussian surface, reduction by averaging uncorrelated patterns.",
+    lede: "Laser speckle: objective and subjective speckle size, contrast from the rms roughness of a Gaussian surface, and contrast reduction by averaging uncorrelated patterns.",
     keywords: ["laser speckle", "speckle size", "speckle contrast", "surface roughness", "despeckle"],
     tier: "textbook",
     modelNote: "Uniformly lit circular spot or pupil (|2J₁(v)/v|² correlation). Rician contrast of a Gaussian surface phase (normal incidence, specular direction) with N_c correlation cells per resolution cell, valid for σ_φ ≳ 1 rad; averaged patterns uncorrelated, equal mean.",
@@ -1024,6 +1035,7 @@ export const imaging: CalculatorEntry[] = [
     slug: "stitching",
     title: "Image Stitching",
     description: "Tiled-mosaic stitching: mosaic size and efficiency from overlap, blend weights and seam gradient, and tile position error chained vs after global optimisation.",
+    lede: "Tiled-mosaic stitching: mosaic size and efficiency from the overlap, blend weights and seam gradient, and how tile position errors grow when chained versus after global optimisation.",
     keywords: ["image stitching", "tile mosaic", "overlap", "global optimization", "blending"],
     tier: "textbook",
     modelNote: "Mosaic geometry is exact. Neighbouring tiles are registered with independent errors σ per axis; a chain adds them as √(i + j), the global least-squares fit has variance σ²·R_eff, the effective resistance of the unit tile grid (computed exactly). Linear and cos² blends; multiband blending is not modelled.",
@@ -1045,6 +1057,7 @@ export const imaging: CalculatorEntry[] = [
     slug: "strehl-ratio",
     title: "Strehl Ratio and Wavefront Error",
     description: "Strehl ratio from RMS or peak-to-valley wavefront error: Maréchal approximation vs exact for defocus, astigmatism, coma or spherical aberration; λ/14, S = 0.8.",
+    lede: "Strehl ratio from an RMS or peak-to-valley wavefront error: the Maréchal approximation against the exact value for defocus, astigmatism, coma or spherical aberration, with the λ/14 and S = 0.8 tolerances.",
     keywords: ["Wavefront Error Analysis", "Maréchal criterion"],
     tier: "exact",
     modelNote: "Exact Strehl ratio for one Noll-normalised Zernike term on a uniform circular pupil (radial integral, numerical), shown with the extended Maréchal approximation exp(−(2πσ/λ)²). PV/RMS is the ratio of that single term.",
@@ -1130,6 +1143,7 @@ export const imaging: CalculatorEntry[] = [
     slug: "telecentricity",
     title: "Telecentric Lens Design",
     description: "Magnification change Δm/m = −Δz/(s_EP + Δz) of an ordinary vs a telecentric lens with residual chief-ray slope, and depth of field λ/NA² + e/(m·NA).",
+    lede: "Magnification change Δm/m = −Δz/(s_EP + Δz) of an ordinary lens against a telecentric lens with a residual chief-ray slope, and the depth of field λ/NA² + e/(m·NA).",
     tier: "textbook",
     modelNote: "Paraxial chief ray with the sensor fixed: the blur centroid follows the chief ray. A residual telecentric slope is treated as a distant entrance pupil. The depth of field is Inoué's sum of a wave and a geometric term in air.",
     references: [

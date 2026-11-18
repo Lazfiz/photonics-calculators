@@ -5,6 +5,7 @@ export const spectroscopy: CalculatorEntry[] = [
     slug: "absorption-cross-section",
     title: "Absorption Cross-Section Calculator",
     description: "Convert the molar absorption (extinction) coefficient to the cross-section per molecule and back, σ = 1000 ln(10) ε/N_A, with number density and α.",
+    lede: "σ = ε · 1000 · ln(10) / N_A — convert the molar absorption (extinction) coefficient to the cross-section per molecule and back, with number density and Napierian absorption coefficient.",
     related: [
       { href: "/spectroscopy/lambert-beer-law" },
       { href: "/spectroscopy/optical-density" },
@@ -33,6 +34,7 @@ export const spectroscopy: CalculatorEntry[] = [
     slug: "absorption-depth",
     title: "Absorption Depth Calculator",
     description: "Absorption depth δ = 1/α, the 90 % absorption depth and the fraction absorbed in a layer, from measured α(λ) of silicon (Green 2008), water or your own α.",
+    lede: "Absorption depth δ = 1/α, the depth for 90 % absorption and the fraction absorbed in a layer, from measured α(λ) of silicon (Green 2008) and water (Pope & Fry, Segelstein) or your own α.",
     tier: "exact",
     modelNote: "Exact Beer–Lambert decay on measured absorption data, interpolated log-linearly between tabulated points: intrinsic silicon at 300 K (band-to-band only) and pure water at room temperature; surface reflection excluded.",
     references: [
@@ -105,6 +107,7 @@ export const spectroscopy: CalculatorEntry[] = [
     slug: "conc-mirror",
     title: "Concave Mirror Throughput",
     description: "Solid angle, f-number and slit étendue of a spherical-mirror spectrometer, slit-limited resolving power and the Jacquinot advantage of an equal-aperture FTIR.",
+    lede: "Solid angle, f-number and slit étendue of a spherical-mirror spectrometer, with its slit-limited resolving power and the Jacquinot advantage of an FTIR of the same aperture.",
     tier: "textbook",
     modelNote: "Geometric optics: exact cone to the mirror rim including the sag, Lambertian slit filling the mirror, Littrow grating limited by the slit width, not by diffraction or aberrations.",
     references: [
@@ -149,6 +152,7 @@ export const spectroscopy: CalculatorEntry[] = [
     slug: "electron-spectroscopy",
     title: "Electron Spectroscopy (XPS/UPS)",
     description: "XPS and UPS: kinetic energy E_k = hν − E_B − φ_sp, inelastic mean free path (TPP-2M), sampling depth 3λ cos θ, and energies from common X-ray and UV sources.",
+    lede: "XPS and UPS photoelectrons: kinetic energy E_k = hν − E_B − φ_sp, inelastic mean free path from the TPP-2M equation, sampling depth 3λ cos θ and the kinetic energies from common X-ray and UV sources.",
     tier: "textbook",
     modelNote: "Fermi-level-referenced binding energy with the spectrometer work function; TPP-2M IMFP at the Fermi-referenced energy hν − E_B (fitted for 50–2000 eV, about 11 % RMS; not given below 50 eV, so not for UPS) and straight-line exponential attenuation, which ignores elastic scattering and so overestimates the sampling depth by 10–30 %.",
     references: [
@@ -190,6 +194,7 @@ export const spectroscopy: CalculatorEntry[] = [
     slug: "fluorescence-quantum-yield",
     title: "Fluorescence Quantum Yield",
     description: "Relative fluorescence quantum yield against a reference standard, Φ = Φ_ref (F_s/F_ref)(f_ref/f_s)(n_s/n_ref)², with absorbed fractions f = 1 − 10^−A.",
+    lede: "Relative fluorescence quantum yield against a reference standard: Φ = Φ_ref (F_s/F_ref)(f_ref/f_s)(n_s/n_ref)² with absorbed fractions f = 1 − 10^−A, compared with the absorbance-ratio approximation.",
     tier: "textbook",
     modelNote: "Comparative method for dilute solutions measured under identical conditions: same excitation wavelength, geometry and detection, isotropic emission, no inner-filter effects or reabsorption.",
     references: [
@@ -263,6 +268,7 @@ export const spectroscopy: CalculatorEntry[] = [
     slug: "infrared-spectroscopy",
     title: "Infrared (IR) Spectroscopy",
     description: "Vibration–rotation band of HCl or CO: anharmonic band origin, P and R branch lines, Boltzmann intensities, force constant and the H³⁷Cl or ¹³CO isotope shift.",
+    lede: "Vibration–rotation band of HCl or CO: anharmonic band origin, P and R branch lines, Boltzmann intensities at the instrument resolution, force constant and the isotope shift of H³⁷Cl or ¹³CO.",
     tier: "textbook",
     modelNote: "Anharmonic oscillator to (v + ½)⁴ plus vibrating rotor (B_v = B_e − α_e(v + ½), one distortion constant) with NIST constants (including ω_e y_e and ω_e z_e); relative line strengths from Hönl–London, Boltzmann and stimulated-emission factors, without Herman–Wallis factors, pressure broadening or absolute band strengths. With one D term, HCl is limited to 1200 K.",
     references: [
@@ -357,6 +363,7 @@ export const spectroscopy: CalculatorEntry[] = [
     slug: "microwave-spectroscopy",
     title: "Microwave / Rotational Spectroscopy",
     description: "Pure rotational spectrum of a diatomic: B from masses and bond length, B_v, lines 2B(J+1) − 4D(J+1)³, Boltzmann populations, HITRAN intensities, CO and HCl.",
+    lede: "Pure rotational spectrum of a diatomic molecule: B from the masses and bond length, B_v with α_e, line frequencies 2B(J+1) − 4D(J+1)³, Boltzmann populations and absolute line intensities S in HITRAN units, with CO and HCl presets.",
     tier: "textbook",
     modelNote: "Linear ¹Σ rotor with first-order centrifugal distortion; intensities from the permanent dipole with exact Boltzmann and stimulated-emission factors. Intensities are per molecule in the chosen level v, not weighted by vibrational population or isotopic abundance. No hyperfine structure or nuclear-spin statistics. CO matches the JPL catalogue to 0.2 ppm in frequency and 0.001 in log intensity.",
     references: [
@@ -370,6 +377,7 @@ export const spectroscopy: CalculatorEntry[] = [
     slug: "near-infrared",
     title: "Near-Infrared (NIR) Spectroscopy",
     description: "NIR spectroscopy, 780–2500 nm: measured water bands and transmittance, Morse overtone positions, haemoglobin changes by the modified Beer–Lambert law with DPF.",
+    lede: "NIR spectroscopy: measured water absorption bands and transmittance from 780 to 2500 nm, Morse overtone positions, and haemoglobin changes from the two-wavelength modified Beer–Lambert law with an age-dependent DPF.",
     tier: "textbook",
     modelNote: "Water spectrum is measured data (no scattering); overtones use the Morse oscillator, which drifts at high v; the modified Beer–Lambert law assumes homogeneous changes and a fixed DPF fitted for the adult frontal head (690–832 nm, 0–70 years).",
     references: [
@@ -416,6 +424,7 @@ export const spectroscopy: CalculatorEntry[] = [
     slug: "penetration-depth",
     title: "Optical Penetration Depth",
     description: "Optical penetration depth from the complex index n + ik at any incidence angle, for absorbing media, metals (skin depth) and total internal reflection.",
+    lede: "Optical penetration depth from the complex index n + ik at any angle of incidence: d_p = λ₀/(4π Im √(N² − n₀² sin²θ)), covering absorbing media, metals (skin depth) and total internal reflection.",
     heading: "Penetration Depth Calculator",
     tier: "exact",
     modelNote: "Exact plane-wave result for one planar interface from a lossless medium: the depth is that of the transmitted (or evanescent) field; reflection at the surface is not included.",
@@ -428,6 +437,7 @@ export const spectroscopy: CalculatorEntry[] = [
     slug: "phase-correction",
     title: "Phase Correction Methods",
     description: "Mertz and Forman phase correction of a simulated single-sided FTIR interferogram with ZPD and phase offset, dispersion and noise, vs the magnitude spectrum.",
+    lede: "Mertz and Forman phase correction run on a simulated single-sided FTIR interferogram with ZPD offset, phase offset, dispersion and noise, compared with the magnitude spectrum.",
     tier: "exact",
     modelNote: "The algorithms run on a synthetic interferogram of a known spectrum, so the error against the truth is computed, not modelled; the instrument is ideal apart from the phase error and white noise.",
     references: [
@@ -440,6 +450,7 @@ export const spectroscopy: CalculatorEntry[] = [
     slug: "pump-probe",
     title: "Pump-Probe Spectroscopy",
     description: "Pump-probe transient absorption, A → B → ground kinetics: ΔA traces and spectra in mOD with bleach, stimulated emission and excited-state absorption bands.",
+    lede: "Pump-probe and transient absorption with sequential A → B → ground-state kinetics: ΔA kinetic traces and spectra in mOD from the pump fluence and ε, with bleach, stimulated emission and excited-state absorption bands and the pump-probe cross-correlation.",
     keywords: ["Transient Absorption Spectroscopy"],
     tier: "textbook",
     modelNote: "First-order sequential kinetics with Gaussian bands you choose and a Gaussian cross-correlation (closed form); excited fraction in the linear regime. No coherent artefact, anisotropy (magic angle assumed) or pump saturation.",
@@ -593,6 +604,7 @@ export const spectroscopy: CalculatorEntry[] = [
     slug: "sum-frequency-gen",
     title: "Sum Frequency Generation Spectroscopy",
     description: "Vibrational SFG spectrum of an interface: SFG wavelength and |χ⁽²⁾|² of Lorentzian CH or OH resonances interfering with a non-resonant background.",
+    lede: "SFG vibrational spectrum of an interface: the SFG wavelength and |χ⁽²⁾|² of Lorentzian CH or OH resonances interfering with a non-resonant background of chosen amplitude and phase.",
     keywords: ["SFG Spectroscopy", "Vibrational Sum Frequency", "Second-Order Susceptibility", "Interface Spectroscopy"],
     related: [{ href: "/spectroscopy/raman-shift" }, { href: "/spectroscopy/infrared-spectroscopy" }, { href: "/spectroscopy/wavenumber-converter" }],
     tier: "textbook",
@@ -636,6 +648,7 @@ export const spectroscopy: CalculatorEntry[] = [
     slug: "terahertz-spectroscopy",
     title: "Terahertz (THz) Spectroscopy",
     description: "THz time-domain transmission of a slab: n and α of water (double Debye), a phonon (Lorentz) or constant medium, Fresnel losses, delay, dynamic-range limit on α.",
+    lede: "THz time-domain transmission of a slab: n and α of liquid water (double Debye), a phonon mode (Lorentz) or a constant medium, Fresnel losses, time delay, the extraction n = 1 + cφ/(ωd) and the dynamic-range limit on α.",
     tier: "textbook",
     modelNote: "Free-standing slab at normal incidence with the Fabry–Pérot echoes windowed out; extraction with a real Fresnel factor. The water model is the Liebe–Hufford–Manabe double Debye fit, fitted up to 1 THz to data from −4 to 40 °C (the page allows −5 to 40 °C); the dynamic range is taken as flat in frequency.",
     references: [
@@ -649,6 +662,7 @@ export const spectroscopy: CalculatorEntry[] = [
     slug: "time-resolved",
     title: "Time-Resolved Spectroscopy",
     description: "Time-correlated single photon counting (TCSPC): exponential decays convolved with a Gaussian IRF, earlier-pulse decay, centroid shift and laser bandwidth.",
+    lede: "Time-correlated single photon counting: one- or two-exponential decays convolved with a Gaussian IRF in closed form, the decay left over from earlier pulses at the repetition rate, the centroid shift and the laser's transform-limited bandwidth.",
     tier: "textbook",
     modelNote: "Gaussian IRF and exponential decays, convolved exactly; noiseless histogram without background or count-rate pile-up.",
     references: [
@@ -661,6 +675,7 @@ export const spectroscopy: CalculatorEntry[] = [
     slug: "two-dimensional",
     title: "Two-Dimensional (2D) Spectroscopy",
     description: "2D electronic spectrum of a coupled dimer: exciton splitting √(Δ² + 4J²), bleach, SE and ESA peaks, energy transfer, homogeneous vs inhomogeneous lines.",
+    lede: "Absorptive 2D electronic spectrum of a coupled dimer: exciton splitting √(Δ² + 4J²), bleach, stimulated-emission and excited-state-absorption peaks, energy transfer during the waiting time and homogeneous vs inhomogeneous lineshapes.",
     tier: "textbook",
     modelNote: "Excitonic dimer of two-level chromophores, population pathways only (coherences dephased), isotropic parallel polarisations, Lorentzian homogeneous and static correlated Gaussian inhomogeneous broadening.",
     references: [

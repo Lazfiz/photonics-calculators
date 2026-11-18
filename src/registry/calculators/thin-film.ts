@@ -89,6 +89,7 @@ export const thinFilm: CalculatorEntry[] = [
     slug: "adhesion-testing",
     title: "Adhesion Testing",
     description: "Thin-film adhesion tests: Benjamin–Weaver shear stress from scratch critical load, Kendall peel energy, ASTM D3359 tape classes, bend-test film stress.",
+    lede: "Thin-film adhesion tests: Benjamin–Weaver shear stress from a scratch critical load, Kendall peel energy, ASTM D3359 tape classes, and bend-test film stress with crack and delamination driving forces.",
     tier: "textbook",
     modelNote: "Benjamin–Weaver shear stress for a plastic substrate (ranks coatings; not a work of adhesion); Kendall elastic peel; ASTM D3359 B classes; bend-test G for a thin film, matched moduli (Hutchinson–Suo).",
     references: [
@@ -164,6 +165,7 @@ export const thinFilm: CalculatorEntry[] = [
     slug: "bragg-reflector",
     title: "Bragg Reflector",
     description: "Distributed Bragg reflector (DBR): reflectance spectrum, stop band and period, and the 1D photonic crystal band structure with gap/midgap ratio and Bloch decay.",
+    lede: "Dielectric distributed Bragg reflector: reflectance spectrum, stop band and period, and the band structure of the 1D photonic crystal with its gap/midgap ratio and Bloch decay per period.",
     keywords: ["Photonic Bandgap"],
     tier: "exact",
     modelNote: "Transfer matrix of an (HL)^N quarter-wave stack at normal incidence with constant, lossless indices; back surface ignored. Peak R, the stop-band edges, the gap/midgap ratio and the Bloch decay ln(n_H/n_L) are closed forms for the infinite stack; the band diagram is its exact Bloch dispersion.",
@@ -344,6 +346,7 @@ export const thinFilm: CalculatorEntry[] = [
     slug: "hard-coating",
     title: "Hard Coating Design",
     description: "Hard coating on a lens or window: reflectance, absentee (half-wave) thickness, Stoney substrate bow from film stress, critical delamination thickness.",
+    lede: "Single hard coating on a lens or window: reflectance and the absentee (half-wave) thickness, substrate bow from film stress (Stoney), and the thickness below which the film cannot delaminate.",
     tier: "textbook",
     modelNote: "Optics: exact one-layer transfer matrix, lossless. Stress: Stoney (film ≪ substrate, small bow) and the energy bound (1 − ν)σ²t/E < Γ against delamination. Hardness and scratch resistance not modelled.",
     references: [macleod("ch. 4 (single-layer coatings)"), stoney1909, hutchinsonSuo],
@@ -369,6 +372,7 @@ export const thinFilm: CalculatorEntry[] = [
     slug: "ion-assisted-deposition",
     title: "Ion-Assisted Deposition (IAD)",
     description: "Ion-assisted deposition: ion and molecule arrival rates, ions per deposited molecule, and ion energy and momentum per molecule from current density and rate.",
+    lede: "Ion-assisted deposition: ion and molecule arrival rates, ions per deposited molecule, and ion energy and momentum per molecule from the ion current density, ion energy and deposition rate.",
     tier: "exact",
     modelNote: "Arrival-rate bookkeeping: singly charged ions, current density measured at the substrate, sticking 1, mass rate = rate × monitor density. Packing density, index and stress depend on the process and are not predicted.",
     references: [martinIad, ohring("ch. 5 (ion-beam-assisted deposition)", "10.1016/b978-012524975-1/50008-2")],
@@ -427,6 +431,7 @@ export const thinFilm: CalculatorEntry[] = [
     slug: "plasma-deposition",
     title: "Plasma Deposition",
     description: "Argon discharge for plasma-assisted deposition: electron temperature, plasma density from power balance, ion flux and energy at the substrate, Debye length.",
+    lede: "Argon discharge for plasma-assisted deposition: electron temperature from particle balance, plasma density from power balance, ion flux and ion energy at the substrate, Debye length.",
     tier: "textbook",
     modelNote: "Argon global model in a cylinder: Maxwellian electrons, ground-state ionisation, floating walls, collisionless sheath, h-factors from low pressure to ambipolar diffusion. No deposition chemistry; P is absorbed power.",
     references: [
@@ -498,6 +503,7 @@ export const thinFilm: CalculatorEntry[] = [
     slug: "sputtering-deposition",
     title: "Sputtering Deposition",
     description: "DC magnetron sputtering in argon: ion current, sputtered atom rate from yields, deposition rate, atom energy, thermalisation distance and structure zone.",
+    lede: "DC magnetron sputtering of a metal target in argon: ion current, sputtered atom rate from measured yields, on-axis deposition rate, sputtered-atom energy, gas thermalisation distance and structure zone.",
     tier: "textbook",
     modelNote: "Measured 500 eV Ar⁺ yields, ion current P/(V(1+γ)), cosine disk on axis, sticking 1, bulk density. The rate ignores gas scattering; Westwood's thermalisation distance and the Thompson spectrum give the share that diffuses. Not reactive.",
     references: [
@@ -550,6 +556,7 @@ export const thinFilm: CalculatorEntry[] = [
     slug: "thermal-evaporation",
     title: "Thermal Evaporation",
     description: "Thermal evaporation of metals: vapour pressure (Alcock), Hertz–Knudsen flux, rate and thickness profile of a cosine source, mean free path, structure zone.",
+    lede: "Thermal evaporation of metals: vapour pressure from the Alcock et al. fits, Hertz–Knudsen flux, growth rate and thickness profile from a small cosine source, mean free path and structure zone.",
     tier: "textbook",
     modelNote: "Alcock fits (±5 %). Free-evaporation flux (α ≤ 1) from a small cosine source onto a flat, parallel substrate; sticking 1, bulk density. No vapour cloud, gas scattering or source depletion. Metal zones.",
     references: [
