@@ -3,17 +3,8 @@
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import {
-  TRANSFORM_DOF,
-  type TransformModel,
-  displacementMax,
-  displacementRms,
-  fiducialRegistrationError,
-  minControlPoints,
-  targetRegistrationError,
-  transformMatrix,
-  translationCrlb,
-} from "../../../physics/imaging/registration";
+import { TRANSFORM_DOF, type TransformModel, minControlPoints, targetRegistrationError } from "../../../physics/imaging/registration";
+import { registrationSummary, uniformFiducialRms } from "../../../physics/imaging/registration-summary";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const deg = Math.PI / 180;
@@ -65,19 +56,10 @@ export default function RegistrationPage() {
   const snr = clamp(snrRaw, 0.01, 1e4, 10);
   const feature = clamp(featureRaw, 1, 1000, 2);
 
-  const a = transformMatrix(model, rotationDeg * deg, scale, shearDeg * deg);
-  const rms = displacementRms(a, tx, ty, size);
-  const max = displacementMax(a, tx, ty, size);
-
-  // Fiducials spread uniformly over the image: mean squared radius L²/6, as for targets averaged over the image.
-  const fiducialRms = size / Math.sqrt(6);
+  const s = registrationSummary({ model, size, theta: rotationDeg * deg, tx, ty, scale, shear: shearDeg * deg, points, fle, snr, feature });
+  const { matrix: a, rms, max, treRms, treCentre, treCorner, fre, tooFew, crlb } = s;
+  const fiducialRms = uniformFiducialRms(size);
   const tre = (m: TransformModel, n: number, d: number) => targetRegistrationError({ model: m, n, fle, fiducialRms, targetDistance: d });
-  const treRms = tre(model, points, fiducialRms);
-  const treCentre = tre(model, points, 0);
-  const treCorner = tre(model, points, size / Math.SQRT2);
-  const fre = fiducialRegistrationError(model, points, fle);
-  const tooFew = points < minControlPoints(model);
-  const crlb = translationCrlb(snr, feature, size * size);
 
   const counts = Array.from({ length: 61 }, (_, k) => Math.round(2 * 500 ** (k / 60))).filter((n, k, all) => k === 0 || n !== all[k - 1]);
   const chart = [

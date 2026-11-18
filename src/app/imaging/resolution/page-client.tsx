@@ -3,15 +3,8 @@
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { airyFwhm } from "../../../physics/imaging/diffraction-psf";
-import { abbeLateralFwhm, axialPsfFwhm, rayleighDistance } from "../../../physics/imaging/super-resolution";
-
-const media = [
-  { label: "Air", n: 1.0 },
-  { label: "Water", n: 1.33 },
-  { label: "Oil", n: 1.518 },
-  { label: "Custom", n: NaN },
-];
+import { CUSTOM_MEDIUM_INDEX, IMMERSION_MEDIA as media, immersionIndex, resolutionSummary } from "../../../physics/imaging/resolution";
+import { abbeLateralFwhm, rayleighDistance } from "../../../physics/imaging/super-resolution";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmtNm = (x: number) => (Number.isFinite(x) ? `${(x * 1e9).toFixed(1)} nm` : "—");
@@ -26,15 +19,10 @@ export default function ResolutionPage() {
   const mediumIdx = Math.round(clamp(mediumIdxRaw, 0, media.length - 1, 2));
   const customN = clamp(customNRaw, 1, 2, 1.5);
 
-  const n = mediumIdx === 3 ? customN : media[mediumIdx].n;
+  const n = immersionIndex(mediumIdx, customN);
   const naValid = na < n;
   const lambda = wavelength * 1e-9;
-  const results = {
-    abbe: naValid ? abbeLateralFwhm(lambda, na) : NaN,
-    rayleigh: naValid ? rayleighDistance(lambda, na) : NaN,
-    fwhm: naValid ? airyFwhm(lambda, na) : NaN,
-    axial: axialPsfFwhm(lambda, n, na),
-  };
+  const results = resolutionSummary(lambda, n, na);
 
   // Curves run up to just below min(n, 1.8): the formulas need NA < n.
   const wavelengths = [400, 500, 550, 600, 700];
@@ -74,7 +62,7 @@ export default function ResolutionPage() {
               {media.map((m, i) => <option key={m.label} value={i}>{m.label} (n = {Number.isFinite(m.n) ? m.n : customN})</option>)}
             </select>
           </div>
-          {mediumIdx === 3 && (
+          {mediumIdx === CUSTOM_MEDIUM_INDEX && (
             <div>
               <ValidatedNumberInput label="Custom refractive index" value={customNRaw} onChange={setCustomN} min={1} max={2} />
             </div>

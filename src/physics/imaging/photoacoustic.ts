@@ -87,3 +87,80 @@ export function skinLongExposureIrradianceLimit(lambda: number): number {
   const limit = skinLimit(lambda);
   return limit ? exposureLimit(limit, T_MAX) / T_MAX : NaN;
 }
+
+/** Diffusion theory needs μ_s′ ≫ μ_a: the page warns when μ_s′ < DIFFUSION_MIN_RATIO · μ_a (background). */
+export const DIFFUSION_MIN_RATIO = 10;
+
+export interface PhotoacousticInputs {
+  /** Excitation wavelength, m (400–1400 nm skin-limit range). */
+  lambda: number;
+  /** Pulse width, s. */
+  pulseWidth: number;
+  /** Radiant exposure on the skin, J/m². */
+  fluence: number;
+  /** Repetition rate, Hz. */
+  repRate: number;
+  /** Target absorption coefficient, 1/m. */
+  mua: number;
+  /** Background absorption and reduced scattering coefficients, 1/m. */
+  muaBackground: number;
+  musPrime: number;
+  gruneisen: number;
+  /** Target depth, m. */
+  depth: number;
+  soundSpeed: number;
+  /** Detector centre frequency, Hz. */
+  centerFrequency: number;
+  /** Bandwidth as a fraction of the centre frequency. */
+  bandwidthFraction: number;
+  /** Acoustic numerical aperture. */
+  na: number;
+  /** Acoustic attenuation α₀, dB/(m·Hz). */
+  acousticAttenuation: number;
+}
+
+/** The page's results in SI units (m, 1/m, J/m², Pa, W/m², s, dB). */
+export interface PhotoacousticResult {
+  muEff: number;
+  penetrationDepth: number;
+  transportMfp: number;
+  p0Surface: number;
+  fluenceAtTarget: number;
+  p0Target: number;
+  acousticLossDb: number;
+  axialResolution: number;
+  lateralResolution: number;
+  stressConfinementTime: number;
+  pulseLimit: number;
+  pulseRatio: number;
+  averageIrradiance: number;
+  irradianceLimit: number;
+  averageRatio: number;
+}
+
+/** Everything the page and the API report, from the functions above (SI in, SI out). */
+export function photoacousticSummary(p: PhotoacousticInputs): PhotoacousticResult {
+  const muEff = effectiveAttenuation(p.muaBackground, p.musPrime);
+  const fluenceAtTarget = fluenceAtDepth(p.fluence, muEff, p.depth);
+  const axial = paAxialResolution(p.soundSpeed, p.bandwidthFraction * p.centerFrequency);
+  const pulseLimit = skinPulseLimit(p.lambda, p.pulseWidth);
+  const irradianceLimit = skinLongExposureIrradianceLimit(p.lambda);
+  const averageIrradiance = p.fluence * p.repRate;
+  return {
+    muEff,
+    penetrationDepth: 1 / muEff,
+    transportMfp: transportMeanFreePath(p.muaBackground, p.musPrime),
+    p0Surface: initialPressure(p.gruneisen, p.mua, p.fluence),
+    fluenceAtTarget,
+    p0Target: initialPressure(p.gruneisen, p.mua, fluenceAtTarget),
+    acousticLossDb: acousticLossDb(p.acousticAttenuation, p.centerFrequency, p.depth),
+    axialResolution: axial,
+    lateralResolution: paLateralResolution(p.soundSpeed, p.na, p.centerFrequency),
+    stressConfinementTime: stressConfinementTime(axial, p.soundSpeed),
+    pulseLimit,
+    pulseRatio: p.fluence / pulseLimit,
+    averageIrradiance,
+    irradianceLimit,
+    averageRatio: averageIrradiance / irradianceLimit,
+  };
+}

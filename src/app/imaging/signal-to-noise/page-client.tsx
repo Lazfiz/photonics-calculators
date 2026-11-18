@@ -4,11 +4,10 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { binnedReadNoise, cameraNoise, framesForSnr } from "../../../physics/detectors/camera-snr";
+import { ROSE_SNR, signalToNoiseSummary } from "../../../physics/imaging/signal-to-noise";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits: number) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
-const ROSE_SNR = 5;
 
 export default function SignalToNoisePage() {
   const [signalRaw, setSignalPhotons] = useURLState("signalPhotons", 5000);
@@ -33,29 +32,13 @@ export default function SignalToNoisePage() {
   const frames = Math.round(clamp(framesRaw, 1, 1e4, 1));
   const targetSnr = clamp(targetRaw, 1, 1e5, 100);
 
-  // Per super-pixel and frame: b² pixels add their photoelectrons and dark charge.
-  const pixels = binning ** 2;
-  const readBinned = binnedReadNoise(read, binning, binMode);
-  const dark = ((darkRate * exposureMs) / 1000) * pixels;
-  const evaluate = (photons: number, bgPhotons: number) => {
-    const signal = qe * photons * pixels;
-    const noise = cameraNoise({ signal, background: qe * bgPhotons * pixels, dark, read: readBinned });
-    return { signal, noise, snr: noise > 0 ? signal / noise : NaN };
-  };
-  const r = evaluate(signalPhotons, backgroundPhotons);
-  const snrAveraged = r.snr * Math.sqrt(frames);
-  const background = qe * backgroundPhotons * pixels;
-  const framesNeeded = framesForSnr(r.snr, targetSnr);
-
-  // Variance budget of one frame: each Poisson term adds its mean, the read noise its square.
-  const budget = [
-    { name: "Signal shot noise", variance: r.signal },
-    { name: "Background shot noise", variance: background },
-    { name: "Dark-charge shot noise", variance: dark },
-    { name: "Read noise", variance: readBinned ** 2 },
-  ];
-  const totalVariance = r.noise ** 2;
-  const dominant = budget.reduce((a, b) => (b.variance > a.variance ? b : a));
+  const summarize = (bgPhotons: number) =>
+    signalToNoiseSummary({
+      signalPhotons, backgroundPhotons: bgPhotons, quantumEfficiency: qe, read, darkRate, exposure: exposureMs / 1000,
+      binning, binningMode: binMode, frames, targetSnr,
+    });
+  const r = summarize(backgroundPhotons);
+  const { readBinned, dark, background, snrAveraged, framesNeeded, budget, totalVariance, dominant } = r;
 
   // SNR against the number of averaged frames, 1 to 10⁴ on a log grid.
   const frameAxis = Array.from({ length: 41 }, (_, i) => 10 ** (i / 10));
@@ -79,7 +62,7 @@ export default function SignalToNoisePage() {
   const bgAxis = Array.from({ length: 201 }, (_, i) => (bgMax * i) / 200);
   const chartData = [
     {
-      x: bgAxis, y: bgAxis.map(bg => evaluate(signalPhotons, bg).snr * Math.sqrt(frames)),
+      x: bgAxis, y: bgAxis.map(bg => summarize(bg).snr * Math.sqrt(frames)),
       type: "scatter" as const, mode: "lines" as const, name: "SNR", line: { color: "#60a5fa", width: 2 },
     },
     {
@@ -127,9 +110,9 @@ export default function SignalToNoisePage() {
         <ResultCard label={`SNR (${frames} frame${frames > 1 ? "s" : ""} averaged)`} value={fmt(snrAveraged, 3)} subtext="SNR·√N" tone="blue" />
         <ResultCard
           label="Rose Criterion"
-          value={snrAveraged >= ROSE_SNR ? "Detectable" : "Below SNR 5"}
+          value={r.detectable ? "Detectable" : "Below SNR 5"}
           subtext="SNR ≥ 5 to see a feature reliably"
-          tone={snrAveraged >= ROSE_SNR ? "green" : "red"}
+          tone={r.detectable ? "green" : "red"}
         />
         <ResultCard
           label={`Frames for SNR ${fmt(targetSnr, 0)}`}

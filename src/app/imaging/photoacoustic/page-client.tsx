@@ -1,12 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  acousticLossDb, effectiveAttenuation, fluenceAtDepth, initialPressure, paAxialResolution, paLateralResolution,
-  skinLongExposureIrradianceLimit, skinPulseLimit, stressConfinementTime, transportMeanFreePath,
+  DIFFUSION_MIN_RATIO, fluenceAtDepth, initialPressure, paAxialResolution, paLateralResolution, photoacousticSummary,
 } from "../../../physics/imaging/photoacoustic";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -43,52 +41,44 @@ export default function PhotoacousticPage() {
   const na = clamp(naRaw, 0.05, 1, 0.5);
   const alpha = clamp(alphaRaw, 0, 5, 0.5);
 
-  const results = useMemo(() => {
-    const F0 = fluence * 10; // mJ/cm² → J/m²
-    const muEff = effectiveAttenuation(muaBg * 100, musp * 100); // 1/m
-    const Fz = fluenceAtDepth(F0, muEff, depthMm * 1e-3);
-    const axial = paAxialResolution(v, (bwPct / 100) * f0 * 1e6);
-    const tauS = stressConfinementTime(axial, v);
-    const pulseLimit = skinPulseLimit(lambdaNm * 1e-9, pulseNs * 1e-9) / 10; // mJ/cm²
-    const irradianceLimit = skinLongExposureIrradianceLimit(lambdaNm * 1e-9) / 10; // mW/cm²
-    return {
-      muEff: muEff / 100, // cm⁻¹
-      penetrationMm: 1e3 / muEff,
-      transportMfpMm: transportMeanFreePath(muaBg * 100, musp * 100) * 1e3,
-      p0Surface: initialPressure(gamma, mua * 100, F0) / 1e3, // kPa
-      fluenceAtTarget: Fz / 10, // mJ/cm²
-      p0Target: initialPressure(gamma, mua * 100, Fz) / 1e3,
-      lossDb: acousticLossDb(alpha / (1e-2 * 1e6), f0 * 1e6, depthMm * 1e-3),
-      axialUm: axial * 1e6,
-      lateralUm: paLateralResolution(v, na, f0 * 1e6) * 1e6,
-      tauSns: tauS * 1e9,
-      pulseLimit,
-      pulseRatio: fluence / pulseLimit,
-      averageIrradiance: fluence * frep, // mW/cm²
-      irradianceLimit,
-      averageRatio: (fluence * frep) / irradianceLimit,
-    };
-  }, [lambdaNm, pulseNs, fluence, frep, mua, muaBg, musp, gamma, depthMm, v, f0, bwPct, na, alpha]);
+  const s = photoacousticSummary({
+    lambda: lambdaNm * 1e-9, pulseWidth: pulseNs * 1e-9, fluence: fluence * 10, repRate: frep, // mJ/cm² → J/m²
+    mua: mua * 100, muaBackground: muaBg * 100, musPrime: musp * 100, gruneisen: gamma, depth: depthMm * 1e-3,
+    soundSpeed: v, centerFrequency: f0 * 1e6, bandwidthFraction: bwPct / 100, na, acousticAttenuation: alpha / (1e-2 * 1e6),
+  });
+  const results = {
+    muEff: s.muEff / 100, // cm⁻¹
+    penetrationMm: s.penetrationDepth * 1e3,
+    transportMfpMm: s.transportMfp * 1e3,
+    p0Surface: s.p0Surface / 1e3, // kPa
+    fluenceAtTarget: s.fluenceAtTarget / 10, // mJ/cm²
+    p0Target: s.p0Target / 1e3,
+    lossDb: s.acousticLossDb,
+    axialUm: s.axialResolution * 1e6,
+    lateralUm: s.lateralResolution * 1e6,
+    tauSns: s.stressConfinementTime * 1e9,
+    pulseLimit: s.pulseLimit / 10, // mJ/cm²
+    pulseRatio: s.pulseRatio,
+    averageIrradiance: fluence * frep, // mW/cm²
+    irradianceLimit: s.irradianceLimit / 10, // mW/cm²
+    averageRatio: s.averageRatio,
+  };
 
-  const depthPlot = useMemo(() => {
-    const maxMm = results.muEff > 0 ? Math.min(100, Math.max(5 * results.penetrationMm, depthMm)) : Math.max(20, depthMm);
-    const depths = Array.from({ length: 101 }, (_, i) => (maxMm * i) / 100);
-    const p = (z: number) => initialPressure(gamma, mua * 100, fluenceAtDepth(fluence * 10, results.muEff * 100, z * 1e-3)) / 1e3;
-    return [
-      { x: depths, y: depths.map(p), name: "p₀ = Γ μ_a F(z)", line: { color: "#f87171" }, type: "scatter", mode: "lines" },
-      { x: [depthMm], y: [results.p0Target], name: "Target", marker: { color: "#fbbf24", size: 11 }, type: "scatter", mode: "markers" },
-    ];
-  }, [gamma, mua, fluence, depthMm, results.muEff, results.penetrationMm, results.p0Target]);
+  const maxMm = results.muEff > 0 ? Math.min(100, Math.max(5 * results.penetrationMm, depthMm)) : Math.max(20, depthMm);
+  const depths = Array.from({ length: 101 }, (_, i) => (maxMm * i) / 100);
+  const pAt = (z: number) => initialPressure(gamma, mua * 100, fluenceAtDepth(fluence * 10, results.muEff * 100, z * 1e-3)) / 1e3;
+  const depthPlot = [
+    { x: depths, y: depths.map(pAt), name: "p₀ = Γ μ_a F(z)", line: { color: "#f87171" }, type: "scatter", mode: "lines" },
+    { x: [depthMm], y: [results.p0Target], name: "Target", marker: { color: "#fbbf24", size: 11 }, type: "scatter", mode: "markers" },
+  ];
 
-  const resPlot = useMemo(() => {
-    const logFmax = Math.log10(Math.max(100, 2 * f0));
-    const freqs = Array.from({ length: 61 }, (_, i) => 10 ** (-1 + (i * (logFmax + 1)) / 60)); // 0.1 … max(100, 2 f₀) MHz
-    return [
-      { x: freqs, y: freqs.map((f) => paAxialResolution(v, (bwPct / 100) * f * 1e6) * 1e6), name: "Axial 0.88 v/Δf", line: { color: "#4ade80" }, type: "scatter", mode: "lines" },
-      { x: freqs, y: freqs.map((f) => paLateralResolution(v, na, f * 1e6) * 1e6), name: "Lateral 0.71 v/(NA f₀)", line: { color: "#c084fc" }, type: "scatter", mode: "lines" },
-      { x: [f0, f0], y: [results.axialUm, results.lateralUm], name: "Current", marker: { color: "#fbbf24", size: 10 }, type: "scatter", mode: "markers" },
-    ];
-  }, [v, bwPct, na, f0, results.axialUm, results.lateralUm]);
+  const logFmax = Math.log10(Math.max(100, 2 * f0));
+  const freqs = Array.from({ length: 61 }, (_, i) => 10 ** (-1 + (i * (logFmax + 1)) / 60)); // 0.1 … max(100, 2 f₀) MHz
+  const resPlot = [
+    { x: freqs, y: freqs.map((f) => paAxialResolution(v, (bwPct / 100) * f * 1e6) * 1e6), name: "Axial 0.88 v/Δf", line: { color: "#4ade80" }, type: "scatter", mode: "lines" },
+    { x: freqs, y: freqs.map((f) => paLateralResolution(v, na, f * 1e6) * 1e6), name: "Lateral 0.71 v/(NA f₀)", line: { color: "#c084fc" }, type: "scatter", mode: "lines" },
+    { x: [f0, f0], y: [results.axialUm, results.lateralUm], name: "Current", marker: { color: "#fbbf24", size: 10 }, type: "scatter", mode: "markers" },
+  ];
 
   const flag = (ratio: number) => (ratio > 1 ? "text-red-400" : "text-green-400");
 
@@ -130,7 +120,7 @@ export default function PhotoacousticPage() {
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Stress confinement time (axial resolution)</span><span className={`font-mono ${pulseNs < results.tauSns ? "text-green-400" : "text-red-400"}`}>{fmt(results.tauSns, 0, "ns")} vs {pulseNs} ns pulse</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Skin limit, one pulse (ICNIRP)</span><span className={`font-mono ${flag(results.pulseRatio)}`}>{fmt(results.pulseLimit, 2, "mJ/cm²")} ({fmt(100 * results.pulseRatio, 0, "%")})</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Average irradiance vs ≥ 10 s limit</span><span className={`font-mono ${flag(results.averageRatio)}`}>{fmt(results.averageIrradiance, 0, "")}/ {fmt(results.irradianceLimit, 0, "mW/cm²")}</span></div>
-          {musp < 10 * muaBg && <p className="text-sm text-yellow-300">Diffusion theory needs μ_s′ ≫ μ_a; here the attenuation is closer to Beer–Lambert e^(−μ_a z).</p>}
+          {musp < DIFFUSION_MIN_RATIO * muaBg && <p className="text-sm text-yellow-300">Diffusion theory needs μ_s′ ≫ μ_a; here the attenuation is closer to Beer–Lambert e^(−μ_a z).</p>}
           <div className="text-xs text-gray-500 mt-2 space-y-1">
             <p>p₀ = Γ μ_a F, valid when the pulse is shorter than the stress relaxation time d_c/v_s (Xu &amp; Wang, Rev. Sci. Instrum. 77, 041101, 2006). Wang &amp; Hu (2012) give about 800 Pa per mK of heating; over ρC ≈ 4.2 MJ m⁻³ K⁻¹ that is Γ ≈ 0.19.</p>
             <p>F(z) = F₀ exp(−μ_eff z), μ_eff = √(3μ_a(μ_a + μ_s′)) in the background. Below a broad beam the fluence is k·F₀·e^(−μ_eff z) with a build-up factor k = 3 + 5.1R_d − 2e^(−9.7R_d) ≈ 2.8–6 for a diffuse reflectance R_d = 0.1–0.6 at a tissue/air surface (Jacques 1998, eq. 12, for depths beyond about 1/μ_eff); this page sets k = 1, so the fluence and p₀ at depth are underestimated by that factor.</p>

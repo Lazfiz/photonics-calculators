@@ -4,9 +4,8 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import {
-  SINC2_HALF_MAX_X, airyFirstZeroRadius, airyFwhm, airyIntensity, axialFirstZero, axialIntensity, lateralOpticalCoordinate,
-} from "../../../physics/imaging/diffraction-psf";
+import { airyIntensity, axialIntensity, lateralOpticalCoordinate } from "../../../physics/imaging/diffraction-psf";
+import { psfSummary } from "../../../physics/imaging/psf-calculator";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 
@@ -23,11 +22,12 @@ export default function PSFCalculatorPage() {
   const valid = na < n;
 
   // Lengths in nm for display and plots.
-  const airyRadiusNm = airyFirstZeroRadius(lambda, na) * 1e9;
-  const fwhm = airyFwhm(lambda, na) * 1e9;
-  // Half maximum of the plotted sinc² curve: 2·x½/π = 0.886 (x½ = 1.3916), times λ/(n − √(n² − NA²)).
-  const axialFWHM = ((2 * SINC2_HALF_MAX_X) / Math.PI) * (lambda / (n - Math.sqrt(n * n - na * na))) * 1e9;
-  const axialZeroNm = axialFirstZero(lambda, n, na) * 1e9;
+  // The axial FWHM is the half maximum of the plotted sinc² curve: 2·x½/π = 0.886 (x½ = 1.3916), times λ/(n − √(n² − NA²)).
+  const summary = psfSummary(lambda, n, na);
+  const airyRadiusNm = summary.airyRadius * 1e9;
+  const fwhm = summary.lateralFwhm * 1e9;
+  const axialFWHM = summary.axialFwhm * 1e9;
+  const axialZeroNm = summary.axialZero * 1e9;
   const vOf = (rNm: number) => lateralOpticalCoordinate(rNm * 1e-9, lambda, na);
 
   // 2D Airy PSF, 101 × 101 grid (the React Compiler memoizes it).

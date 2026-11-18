@@ -6,8 +6,8 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  type LensletShape, centroidPrecision, dynamicRangeAngle, dynamicRangeOverPupil, fresnelNumber, lensletsInPupil,
-  spotFirstZeroRadius, spotFwhm, wavefrontPerPixel,
+  type LensletShape, MARECHAL_VALID_STREHL, PIXEL_LOCKING_FWHM_PIXELS, centroidPrecision, centroidWavefrontNoise,
+  dynamicRangeAngle, dynamicRangeOverPupil, fresnelNumber, lensletsInPupil, spotFirstZeroRadius, spotFwhm, wavefrontPerPixel,
 } from "../../../physics/imaging/shack-hartmann";
 import { marechalStrehl } from "../../../physics/imaging/wavefront";
 
@@ -38,7 +38,7 @@ export default function ShackHartmannPage() {
   const nF = fresnelNumber(lambda, f, d);
   const perPixel = wavefrontPerPixel(p, f, d);
   const sigmaC = centroidPrecision(lambda, f, d, shape, photons);
-  const sigmaW = (sigmaC * d) / f; // wavefront step across a lenslet from centroid noise
+  const sigmaW = centroidWavefrontNoise(sigmaC, f, d); // wavefront step across a lenslet from centroid noise
   const strehl = marechalStrehl(rmsWavefrontNm * 1e-9, lambda);
   const layout = useMemo(() => {
     const across = Math.ceil(apertureDiameterMm * 1e-3 / (lensletPitchUm * 1e-6) / 2 + 1) * 2;
@@ -135,11 +135,11 @@ export default function ShackHartmannPage() {
         </div>
       </div>
 
-      {Number.isFinite(strehl) && strehl < 0.3 && (
+      {Number.isFinite(strehl) && strehl < MARECHAL_VALID_STREHL && (
         <p className="mb-6 text-sm text-yellow-300" role="status">Maréchal&apos;s exp(−(2πσ/λ)²) is good to ≈ 10 % only down to S ≈ 0.3.</p>
       )}
 
-      {fits && fwhm < 2 * p && (
+      {fits && fwhm < PIXEL_LOCKING_FWHM_PIXELS * p && (
         <p className="mb-6 text-sm text-yellow-300" role="status">The spot FWHM is under 2 pixels: centroiding is biased toward pixel centres (pixel locking).</p>
       )}
 

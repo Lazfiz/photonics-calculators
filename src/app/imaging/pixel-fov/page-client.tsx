@@ -3,7 +3,8 @@
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { nyquistFrequency, pixelIfov, subtendedAngle } from "../../../physics/imaging/field-of-view";
+import { pixelIfov } from "../../../physics/imaging/field-of-view";
+import { pixelFovSummary } from "../../../physics/imaging/pixel-fov";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const mm = 1e-3;
@@ -30,11 +31,12 @@ export default function PixelFovPage() {
   const binning = Math.round(clamp(binningRaw, 1, 4, 1));
   const pixels = Math.round(clamp(pixelsRaw, 1, 20000, 2048));
 
-  const ifov = pixelIfov(pixelUm * um, focalMm * mm, binning);
-  const effectiveUm = pixelUm * binning;
-  const sensorLpMm = nyquistFrequency(effectiveUm * um) * mm;
-  const angularNyquist = nyquistFrequency(ifov) / 1000; // cycles per mrad
-  const fullFieldDeg = subtendedAngle(pixels * pixelUm * um, focalMm * mm) / deg;
+  const summary = pixelFovSummary(pixelUm * um, focalMm * mm, binning, pixels);
+  const ifov = summary.ifov;
+  const effectiveUm = summary.effectivePixel / um;
+  const sensorLpMm = summary.sensorNyquist * mm;
+  const angularNyquist = summary.angularNyquist / 1000; // cycles per mrad
+  const fullFieldDeg = summary.fullField / deg;
 
   const fls = Array.from({ length: 101 }, (_, k) => 10 ** (k / 25));
   const chart = [
