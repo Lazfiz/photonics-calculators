@@ -4,7 +4,7 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "attenuation",
     title: "Fiber Attenuation Calculator",
-    description: "Spectral attenuation of silica single-mode fiber: Rayleigh scattering, infrared and ultraviolet absorption tails and the 1383 nm water peak, with the minimum-loss wavelength and span loss.",
+    description: "Spectral attenuation of silica single-mode fiber: Rayleigh scattering, IR and UV absorption tails, the 1383 nm water peak, minimum-loss wavelength, span loss.",
     heading: "Wavelength-Dependent Attenuation",
     lede: "Fiber loss versus wavelength from Rayleigh scattering, the infrared and ultraviolet absorption tails and the OH water peak, and the loss of a span at your wavelength.",
     tier: "textbook",
@@ -259,7 +259,7 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "fiber-amplifier",
     title: "Fiber Amplifier Calculator",
-    description: "EDFA, YDFA, TDFA and HDFA signal gain, output power, residual pump and noise figure from pump power, fiber length, doping and cross-sections, with gain against pump and length.",
+    description: "EDFA, YDFA, TDFA and HDFA signal gain, output power, residual pump and noise figure from pump power, fiber length, doping and cross-sections.",
     tier: "textbook",
     modelNote: "Two-level rate equations solved exactly: co-propagating pump, no ASE self-saturation (it matters above about 20–25 dB), ESA or clustering. Preset cross-sections are measured (Er³⁺: Barnes et al. 1991, GeO₂–Al₂O₃–SiO₂; Yb³⁺: Melkumov et al. 2004, aluminosilicate; Tm³⁺: Agger & Povlsen 2006, Al/La silica, pumped in band at 1600 nm; Ho³⁺: Le Gouët et al. 2020, silica, pumped in band at 1908 nm, 2120 nm read from their Fig. 1 to ±0.1e-25 m²); edit them for a fibre.",
     references: [
@@ -390,7 +390,7 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "fiber-characterization",
     title: "Fiber Characterization Calculator",
-    description: "Step-index fiber parameters from the core and cladding indices and core radius: V, cutoff, MFD, effective area and index, nonlinear γ, core confinement and datasheet dispersion.",
+    description: "Step-index fiber parameters from core and cladding indices and core radius: V, cutoff, MFD, effective area and index, γ, confinement and datasheet dispersion.",
     heading: "Fiber Characterization",
     tier: "textbook",
     modelNote: "Step-index LP01 (Gloge): V, cutoff, b, n_eff, core power, Petermann II and Marcuse-fit MFD, A_eff and γ. Weak guidance (Δ ≪ 1); Marcuse fit for 1.2 < V < 2.4; cutoff is the theoretical LP11 value. D uses the G.652 λ₀/S₀ form you enter, not the geometry.",
@@ -475,7 +475,7 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "fiber-laser",
     title: "Fiber Laser Output Power",
-    description: "Fiber laser output power, optical and Stokes efficiency, efficiency beyond the quantum defect, the Rigrod optimum output coupling from gain and cavity loss, and the signal core's V number, mode count and mode-field diameter.",
+    description: "Fiber laser output power, optical and Stokes efficiency, Rigrod optimum output coupling from gain and cavity loss, and the core's V number, mode count and MFD.",
     keywords: ["Fiber Laser Resonator", "fiber laser V number", "single-mode fiber laser", "mode field diameter"],
     tier: "textbook",
     modelNote: "Output from your slope and threshold. Optimum coupler from Rigrod's standing-wave model (four-level saturation, g₀ fixed), internal loss lumped into the rear mirror; output relative to the optimum. Core: weakly guiding step-index LP modes (Gloge), exact LP01 Petermann II diameter.",
@@ -514,7 +514,7 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "fiber-optic-sensor",
     title: "Fiber Optic Sensors",
-    description: "Calculate the strain and temperature response of FBG and Mach-Zehnder fiber sensors, the fringes of an air-gap Fabry-Pérot cavity, and the evanescent penetration depth.",
+    description: "Strain and temperature response of FBG and Mach-Zehnder fiber sensors, fringes of an air-gap Fabry-Pérot cavity, and the evanescent penetration depth.",
     tier: "textbook",
     modelNote: "FBG, MZI: linear (1 − p_e)ε + K_T·ΔT, free fibre. EFPI: lossless plane-wave Airy cavity, no gap diffraction loss (d ≤ 50 µm), gap carries ε. Evanescent: planar decay; water dn/dT −1e-4/K near 25 °C.",
     references: [
@@ -590,7 +590,7 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "low-water-peak",
     title: "Low Water Peak Fiber",
-    description: "Compare low-water-peak (G.652.D) and older single-mode fiber: loss at the 1383 nm OH peak, OH content, E-band average, the span loss of each CWDM channel, and the OH absorption bands of silica at 943, 1383 and 2722 nm.",
+    description: "Low-water-peak (G.652.D) vs older single-mode fiber: loss at the 1383 nm OH peak, OH content, E-band average, CWDM channel span loss and silica's OH bands.",
     keywords: ["OH absorption", "water peak", "hydroxyl absorption in silica", "zero water peak fiber", "OH Absorption in Silica"],
     tier: "illustrative",
     modelNote: "Shared silica loss model (Rayleigh, Keiser IR/UV tails) plus Gaussian OH bands at 943, 1383 and 2722 nm scaled by the OH content (62.7, 1.2 and 1.0e4 dB/km per ppm); widths are assumed (30 nm FWHM at 1383 nm, the same in wavenumber elsewhere), the 1246 and 2212 nm bands are not modelled, and the OH peak heights are inputs, not data for a particular fibre.",
@@ -671,7 +671,7 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "mode-coupling",
     title: "Coupled-Mode Power Transfer",
-    description: "Coupled-mode power transfer between two waveguides: coupled and through power, maximum transfer κ²/ψ² and the length that reaches it, power along the coupler and the response to the mismatch Δβ.",
+    description: "Coupled-mode power transfer between two waveguides: coupled and through power, maximum transfer κ²/ψ², the length that reaches it, response to mismatch Δβ.",
     keywords: ["Coupled Mode Theory", "directional coupler", "coupling length", "phase mismatch"],
     tier: "textbook",
     modelNote: "Lossless co-directional coupled-mode theory for two modes with constant κ and mismatch Δβ: P₂ = (κ/ψ)² sin²(ψL), ψ = √(κ² + (Δβ/2)²). Not modelled: taper profile, κ(λ), polarization, excess loss.",
@@ -778,7 +778,7 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "otdr-analysis",
     title: "OTDR Analysis",
-    description: "Model an OTDR on single-mode fiber: two-point resolution, Rayleigh backscatter coefficient, one-way dynamic range versus pulse width and averaging, cumulative splice steps and Fresnel peaks.",
+    description: "OTDR on single-mode fiber: two-point resolution, Rayleigh backscatter, one-way dynamic range vs pulse width and averaging, splice steps, Fresnel peaks.",
     tier: "textbook",
     modelNote: "Barnoski–Jensen backscatter with Brinkmeyer's Gaussian-mode capture fraction; ideal matched receiver, SNR = 1 noise. Receiver recovery, fading noise and the 98 % DR convention not included.",
     references: [
@@ -799,7 +799,7 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "photonic-crystal",
     title: "Photonic Crystal Fiber",
-    description: "Effective V-number, single-mode cutoff, effective index, mode-field diameter and chromatic dispersion of a solid-core photonic crystal fiber from hole pitch Λ and diameter d (Saitoh–Koshiba relations).",
+    description: "Solid-core photonic crystal fiber from hole pitch Λ and diameter d: effective V, single-mode cutoff, effective index, MFD and dispersion (Saitoh–Koshiba).",
     tier: "textbook",
     modelNote: "Saitoh–Koshiba empirical V and W (FEM fits, 0.2 ≤ d/Λ ≤ 0.8, λ/Λ ≤ 2), a_eff = Λ/√3, silica Sellmeier core; V < 2.405 single-mode; Nielsen et al. PCF spot size from V_PCF = √3 W (V_PCF ≥ 0.5). Blank where the fit gives W ≤ 0. No confinement loss.",
     references: [
@@ -832,7 +832,7 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "polarization-controller",
     title: "Fiber Polarization Controller",
-    description: "Retardance per paddle from bend-induced birefringence, quarter- and half-wave loop diameters and the output polarization state of a three-paddle fiber polarization controller.",
+    description: "Three-paddle fiber polarization controller: retardance per paddle from bend birefringence, quarter- and half-wave loop diameters and the output polarization.",
     tier: "textbook",
     modelNote: "Lefèvre loop paddles: bend birefringence 0.133(d/D)², retardance 2π²·0.133·Nd²/(λD) per paddle, chained as rotated linear retarders (Mueller). Not modelled: twist between paddles, tension, bend loss.",
     references: [
@@ -896,7 +896,7 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "rare-earth-doped",
     title: "Rare-Earth-Doped Fiber Amplifier",
-    description: "Ion density from wt-ppm, LP01 overlap, pump and signal absorption, 90 % absorption length, saturation power, gain and noise figure of an Er-, Yb-, Tm- or Ho-doped fiber.",
+    description: "Er-, Yb-, Tm- or Ho-doped fiber: ion density from wt-ppm, LP01 overlap, pump and signal absorption, 90 % absorption length, saturation power, gain and NF.",
     keywords: ["Rare-Earth Fiber Dopants"],
     tier: "textbook",
     modelNote: "Two-level Er, Yb, Tm pumped in band at 1600 nm, or Ho pumped in band at 1908 nm; Γ from the exact LP01 field for a core doped to its edge (an upper bound). Preset cross-sections are measured (Er³⁺: Barnes et al. 1991; Yb³⁺: Melkumov et al. 2004; Tm³⁺: Agger & Povlsen 2006; Ho³⁺: Le Gouët et al. 2020). No ASE self-saturation (gains above ≈ 30 dB are overstated) and no Ho ion pairs. Tm pumped at 790 nm (cross-relaxation), Nd and Er/Yb co-doping are not covered.",
@@ -984,7 +984,7 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "specialty-fiber",
     title: "Specialty Fiber Types",
-    description: "Compare data-sheet properties of specialty optical fibers (PM, erbium-, ytterbium- and thulium-doped, ZBLAN, chalcogenide): V-number, cutoff, mode-field diameter and loss.",
+    description: "Data-sheet properties of specialty optical fibers (PM, Er-, Yb- and Tm-doped, ZBLAN, chalcogenide) compared: V-number, cutoff, mode-field diameter and loss.",
     tier: "illustrative",
     modelNote: "Typical data-sheet values for one commercial fibre per class (linked). V = 2πa·NA/λ, step-index cutoff and Marcuse MFD from the sheet's core and NA. Losses are single-wavelength figures, not spectra.",
     references: [
@@ -1065,7 +1065,7 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "wdm-coupler",
     title: "WDM Channel Plan",
-    description: "WDM channel wavelengths, frequency spacing, ITU-T grid type (CWDM or DWDM), total bandwidth, insertion loss and Gaussian-passband isolation from channel count and spacing.",
+    description: "WDM channel wavelengths, frequency spacing, ITU-T grid (CWDM or DWDM), bandwidth, insertion loss and Gaussian-passband isolation from channel count and spacing.",
     tier: "illustrative",
     modelNote: "Channel plan on equal frequency steps for the G.694.1 DWDM spacings (Δν = cΔλ/λ² at the centre) and equal wavelength steps otherwise (G.694.2 CWDM). Gaussian passbands give the adjacent-channel isolation 12.04(Δλ/FWHM)² dB; real filters (flat-top thin film, sin² interleavers) differ. Not modelled: anchoring to 193.1 THz.",
     references: [
