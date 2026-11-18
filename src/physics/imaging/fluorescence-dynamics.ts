@@ -124,3 +124,80 @@ export function frapHalfTimeRatio(model: "disk" | "gaussian", K = 1): number {
 export function frapDiffusionCoefficient(w: number, tHalf: number, gamma: number): number {
   return positive(w) && positive(tHalf) && positive(gamma) ? (gamma * w * w) / (4 * tHalf) : NaN;
 }
+
+// ---- Page summaries (the FCS and FRAP pages and their API schemas call these; SI in, SI out) ----
+
+/** N below this: number fluctuations dominate and the shot-noise SNR is optimistic. */
+export const FCS_MIN_MOLECULES = 0.5;
+/** N above this: G(0) = 1/N is buried under background and afterpulsing in practice. */
+export const FCS_MAX_MOLECULES = 1000;
+/** Koppel's shot-noise limit assumes ε Δτ and ε² Δτ τ_D well below this. */
+export const FCS_SHOT_LIMIT = 0.1;
+/** A lag channel wider than τ_D divided by this has G decayed within it. */
+export const FCS_CHANNEL_FRACTION = 10;
+
+export interface FcsSummaryInputs {
+  /** Lateral and axial 1/e² radii, m. */
+  w0: number;
+  z0: number;
+  /** Lateral diffusion time, s. */
+  tauD: number;
+  /** Brightness per molecule ε, counts per second. */
+  brightness: number;
+  /** Concentration, mol/m³. */
+  concentration: number;
+  /** Mean triplet fraction. */
+  T: number;
+  /** Triplet relaxation time, s. */
+  tauT: number;
+  /** Shortest lag channel width Δτ, s. */
+  binWidth: number;
+  /** Measurement time, s. */
+  time: number;
+}
+
+/** The FCS page's results: V_eff (m³), N, G(0), G(0⁺), D (m²/s), count rate N·ε (1/s), Koppel SNR, plus the page's warnings. */
+export function fcsSummary(i: FcsSummaryInputs) {
+  const kappa = i.z0 / i.w0;
+  const volume = fcsEffectiveVolume(i.w0, i.z0);
+  const N = fcsMeanNumber(i.concentration, volume);
+  const D = fcsDiffusionCoefficient(i.w0, i.tauD);
+  const p: FcsParams = { N, tauD: i.tauD, kappa, T: i.T, tauT: i.tauT };
+  const g0 = fcsDiffusionCorrelation(0, p);
+  const g0Triplet = fcsAutocorrelation(0, p);
+  const countRate = N * i.brightness;
+  const snr = koppelSnr(i.brightness, i.binWidth, i.time, N);
+  const countsPerBin = i.brightness * i.binWidth;
+  const fluctuationRatio = i.brightness * countsPerBin * i.tauD; // ε²Δτ τ_D: number-fluctuation vs shot-noise variance
+  const warnings: string[] = [];
+  if (N < FCS_MIN_MOLECULES) warnings.push(`N = ${N.toFixed(2)} is below one molecule: number fluctuations dominate the noise and the shot-noise SNR is optimistic.`);
+  if (N > FCS_MAX_MOLECULES) warnings.push(`N = ${N.toFixed(0)}: G(0) = ${g0.toExponential(1)} is buried under background and detector afterpulsing in practice.`);
+  if (countsPerBin > FCS_SHOT_LIMIT) warnings.push(`ε·Δτ = ${countsPerBin.toFixed(2)} counts per molecule per channel: Koppel's shot-noise limit assumes ≪ 1.`);
+  if (fluctuationRatio > FCS_SHOT_LIMIT) warnings.push(`ε²·Δτ·τ_D = ${fluctuationRatio.toPrecision(2)}: number fluctuations add to the shot noise, so the SNR shown is an upper bound.`);
+  if (i.binWidth > i.tauD / FCS_CHANNEL_FRACTION) warnings.push("The lag channel is not much shorter than τ_D, so G has already decayed within it.");
+  return { kappa, volume, N, D, g0, g0Triplet, countRate, snr, countsPerBin, fluctuationRatio, params: p, warnings };
+}
+
+export interface FrapSummaryInputs {
+  model: "disk" | "gaussian";
+  /** Disk radius or 1/e² beam radius, m. */
+  w: number;
+  /** Half-recovery time, s. */
+  tHalf: number;
+  /** Mobile fraction M. */
+  mobile: number;
+  /** Disk: post-bleach F(0)/F_i. */
+  postBleach: number;
+  /** Gaussian: bleach depth K. */
+  bleachK: number;
+}
+
+/** The FRAP page's results: γ = τ½/τ_D, τ_D (s), D (m²/s), F(0)/F_i, F(∞)/F_i and the immobile fraction. */
+export function frapSummary(i: FrapSummaryInputs) {
+  const F0 = i.model === "gaussian" ? axelrodPostBleach(i.bleachK) : i.postBleach;
+  const gamma = frapHalfTimeRatio(i.model, i.bleachK);
+  const tauD = i.tHalf / gamma;
+  const D = frapDiffusionCoefficient(i.w, i.tHalf, gamma);
+  const plateau = F0 + i.mobile * (1 - F0);
+  return { F0, gamma, tauD, D, plateau, immobile: 1 - i.mobile };
+}

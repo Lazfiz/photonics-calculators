@@ -4,7 +4,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  axelrodPostBleach, axelrodRecovery, frapDiffusionCoefficient, frapHalfTimeRatio, soumpasisRecovery,
+  axelrodRecovery, frapSummary, soumpasisRecovery,
 } from "../../../physics/imaging/fluorescence-dynamics";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -28,12 +28,9 @@ export default function FRAPPage() {
   const tHalf = clamp(tHalfRaw, 0.001, 10000, 2);
   const mobile = clamp(mobileRaw, 0, 1, 0.7);
   const K = clamp(kRaw, 0.01, 20, 1);
-  const F0 = model === "gaussian" ? axelrodPostBleach(K) : clamp(f0Raw, 0, 0.99, 0.3);
-
-  const gamma = frapHalfTimeRatio(model, K);
-  const tauD = tHalf / gamma;
-  const D = frapDiffusionCoefficient(w * 1e-6, tHalf, gamma);
-  const Finf = F0 + mobile * (1 - F0);
+  const { F0, gamma, tauD, D, plateau: Finf } = frapSummary({
+    model, w: w * 1e-6, tHalf, mobile, postBleach: clamp(f0Raw, 0, 0.99, 0.3), bleachK: K,
+  });
   const recovery = (t: number) => (model === "gaussian" ? axelrodRecovery(t / tauD, K) : soumpasisRecovery(t / tauD));
 
   const tMax = 10 * tHalf;

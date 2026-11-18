@@ -6,13 +6,11 @@ import { useURLState } from "../../../hooks/use-url-state";
 import {
   boxNoiseRatio,
   boxTransfer,
-  gaussianNoiseRatio,
+  cachedMedianNoiseRatio,
+  denoisingSummary,
   gaussianRadius,
   gaussianTransfer,
-  halfResponseFrequency,
-  medianNoiseRatio,
   snrGainDb,
-  visuShrinkThreshold,
 } from "../../../physics/imaging/denoising";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -36,14 +34,6 @@ const FILTER_LABELS: Record<Filter, string> = { box: "Box (mean)", gaussian: "Ga
 const WINDOWS = [3, 5, 7, 9, 11, 13, 15];
 const CHART_WINDOWS = [1, ...WINDOWS];
 
-// The median quadrature costs a few ms per window size: cache it.
-const medianCache = new Map<number, number>();
-const cachedMedianRatio = (k: number) => {
-  let r = medianCache.get(k);
-  if (r === undefined) medianCache.set(k, (r = medianNoiseRatio(k)));
-  return r;
-};
-
 export default function DenoisingAlgorithmsPage() {
   const [filterRaw, setFilter] = useURLState("filter", "box");
   const [noiseRaw, setInputNoise] = useURLState("inputNoise", 20);
@@ -56,18 +46,13 @@ export default function DenoisingAlgorithmsPage() {
   const sigmaS = clamp(sigmaRaw, 0.5, 10, 2);
   const side = Math.round(clamp(sideRaw, 16, 16384, 512));
 
-  const ratio = filter === "box" ? boxNoiseRatio(k) : filter === "gaussian" ? gaussianNoiseRatio(sigmaS) : cachedMedianRatio(k);
-  const gainDb = snrGainDb(ratio);
-  const transfer = filter === "box" ? (f: number) => boxTransfer(k, f) : filter === "gaussian" ? (f: number) => gaussianTransfer(sigmaS, f) : null;
-  const f50 = transfer ? halfResponseFrequency(transfer) : NaN;
-  const hQuarter = transfer ? transfer(0.25) : NaN;
-  const threshold = visuShrinkThreshold(sigmaIn, side * side);
+  const { ratio, gainDb, f50, hQuarter, threshold } = denoisingSummary(filter, k, sigmaS, sigmaIn, side);
   const r = gaussianRadius(sigmaS);
   const windowLabel = filter === "gaussian" ? `σ_s = ${sigmaS} px, ${2 * r + 1} × ${2 * r + 1} taps` : `${k} × ${k} window`;
 
   const gainChart = [
     { x: CHART_WINDOWS, y: CHART_WINDOWS.map((w) => snrGainDb(boxNoiseRatio(w))), type: "scatter" as const, mode: "lines+markers" as const, name: "Box", line: { color: "#60a5fa", width: 2 } },
-    { x: CHART_WINDOWS, y: CHART_WINDOWS.map((w) => snrGainDb(cachedMedianRatio(w))), type: "scatter" as const, mode: "lines+markers" as const, name: "Median", line: { color: "#f87171", width: 2 } },
+    { x: CHART_WINDOWS, y: CHART_WINDOWS.map((w) => snrGainDb(cachedMedianNoiseRatio(w))), type: "scatter" as const, mode: "lines+markers" as const, name: "Median", line: { color: "#f87171", width: 2 } },
     ...(filter !== "gaussian"
       ? [{ x: [k], y: [gainDb], type: "scatter" as const, mode: "markers" as const, name: "Current", line: { color: "#facc15" }, marker: { color: "#facc15", size: 10 } }]
       : []),
@@ -84,7 +69,7 @@ export default function DenoisingAlgorithmsPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
         {card("Output noise σ", fmt(sigmaIn * ratio, 3), `${fmt(ratio, 4)} × the input σ (${windowLabel})`, "text-green-400")}
         {card("SNR gain", fmt(gainDb, 2, " dB"), filter === "median" ? `Box of the same size: ${fmt(snrGainDb(boxNoiseRatio(k)), 2, " dB")}` : "20 log₁₀(σ_in / σ_out) on white noise", "text-blue-400")}
-        {transfer
+        {filter !== "median"
           ? card("Half-response frequency f₅₀", Number.isFinite(f50) ? fmt(f50, 4, " cy/px") : "> 0.5 cy/px", `H(0.25 cy/px) = ${fmt(hQuarter, 3)} along one axis`, "text-yellow-400")
           : card("Detail cost", "Nonlinear", "No transfer function: a median keeps step edges but removes features smaller than about half the window", "text-yellow-400")}
         {card("VisuShrink threshold", fmt(threshold, 3), `σ√(2 ln N) for N = ${side} × ${side} coefficients`, "text-purple-400")}

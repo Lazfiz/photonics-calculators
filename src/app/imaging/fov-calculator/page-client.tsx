@@ -3,7 +3,8 @@
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { nyquistPixel, objectFieldDiameter, objectFov, pixelFootprint } from "../../../physics/imaging/field-of-view";
+import { objectFov } from "../../../physics/imaging/field-of-view";
+import { fovCalculatorSummary } from "../../../physics/imaging/fov-calculator";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const mm = 1e-3;
@@ -35,15 +36,16 @@ export default function FOVCalculatorPage() {
   const wavelengthNm = clamp(wavelengthRaw, 200, 2000, 550);
   const fieldNumber = clamp(fieldNumberRaw, 1, 30, 22);
 
-  const fov = objectFov(sensorW * mm, sensorH * mm, mag);
-  const footprintNm = pixelFootprint(pixelUm * um, mag) / nm;
-  const nyquistNm = nyquistPixel(wavelengthNm * nm, na) / nm;
-  const ratio = footprintNm / nyquistNm;
-  const nyquistMag = (pixelUm * um) / (nyquistNm * nm);
-  const eyepieceFieldMm = objectFieldDiameter(fieldNumber * mm, mag) / mm;
-  const verdict = ratio > 1
-    ? `undersampled by ${ratio.toFixed(2)}×: the camera loses detail the objective passes`
-    : `sampled at ${(1 / ratio).toFixed(2)}× Nyquist`;
+  const s = fovCalculatorSummary({
+    sensorWidth: sensorW * mm, sensorHeight: sensorH * mm, magnification: mag, pixelSize: pixelUm * um,
+    na, wavelength: wavelengthNm * nm, fieldNumber: fieldNumber * mm,
+  });
+  const fov = { width: s.fovWidth, height: s.fovHeight, diagonal: s.fovDiagonal };
+  const footprintNm = s.footprint / nm;
+  const nyquistNm = s.nyquist / nm;
+  const nyquistMag = s.nyquistMag;
+  const eyepieceFieldMm = s.eyepieceField / mm;
+  const verdict = s.verdict;
 
   const mags = Array.from({ length: 101 }, (_, k) => 10 ** (-1 + (3 * k) / 100));
   const chart = [

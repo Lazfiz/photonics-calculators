@@ -4,7 +4,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  fcsAutocorrelation, fcsDiffusionCoefficient, fcsDiffusionCorrelation, fcsEffectiveVolume, fcsMeanNumber, koppelSnr,
+  fcsAutocorrelation, fcsDiffusionCorrelation, fcsSummary,
 } from "../../../physics/imaging/fluorescence-dynamics";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -37,24 +37,10 @@ export default function FCSPage() {
   const time = clamp(timeRaw, 0.1, 10000, 10);
 
   const tauD = tauD_ms * 1e-3;
-  const kappa = z0 / w0;
-  const V = fcsEffectiveVolume(w0 * 1e-6, z0 * 1e-6);
-  const N = fcsMeanNumber(conc_nM * 1e-6, V);
-  const D = fcsDiffusionCoefficient(w0 * 1e-6, tauD);
-  const p = { N, tauD, kappa, T, tauT: tauT_us * 1e-6 };
-  const G0 = fcsDiffusionCorrelation(0, p);
-  const G0plus = fcsAutocorrelation(0, p);
-  const countRate = N * brightness_kHz; // kHz
-  const snr = koppelSnr(brightness_kHz * 1e3, bin_us * 1e-6, time, N);
-  const countsPerBin = brightness_kHz * 1e3 * bin_us * 1e-6;
-  const fluctuationRatio = brightness_kHz * 1e3 * countsPerBin * tauD; // ε²Δτ τ_D: number-fluctuation vs shot-noise variance
-
-  const warnings: string[] = [];
-  if (N < 0.5) warnings.push(`N = ${N.toFixed(2)} is below one molecule: number fluctuations dominate the noise and the shot-noise SNR is optimistic.`);
-  if (N > 1000) warnings.push(`N = ${N.toFixed(0)}: G(0) = ${G0.toExponential(1)} is buried under background and detector afterpulsing in practice.`);
-  if (countsPerBin > 0.1) warnings.push(`ε·Δτ = ${countsPerBin.toFixed(2)} counts per molecule per channel: Koppel's shot-noise limit assumes ≪ 1.`);
-  if (fluctuationRatio > 0.1) warnings.push(`ε²·Δτ·τ_D = ${fluctuationRatio.toPrecision(2)}: number fluctuations add to the shot noise, so the SNR shown is an upper bound.`);
-  if (bin_us * 1e-6 > tauD / 10) warnings.push("The lag channel is not much shorter than τ_D, so G has already decayed within it.");
+  const { kappa, volume: V, N, D, g0: G0, g0Triplet: G0plus, countRate, snr, params: p, warnings } = fcsSummary({
+    w0: w0 * 1e-6, z0: z0 * 1e-6, tauD, brightness: brightness_kHz * 1e3, concentration: conc_nM * 1e-6, T, tauT: tauT_us * 1e-6,
+    binWidth: bin_us * 1e-6, time,
+  });
 
   // Lag grid log-spaced from min(0.1 µs, τ_T/10) to max(1 s, 1000 κ² τ_D) so the whole decay is shown; in ms on the chart.
   const lagLo = Math.min(1e-7, (tauT_us * 1e-6) / 10);
@@ -92,7 +78,7 @@ export default function FCSPage() {
           {row("G(0) = 1/N (diffusion)", sig(G0, 4), "text-yellow-400")}
           {row("G(0⁺) with triplet", sig(G0plus, 4), "text-yellow-400")}
           {row("Diffusion coefficient D", sig(D * 1e12, 4, " µm²/s"), "text-purple-400")}
-          {row("Mean count rate N·ε", fmt(countRate, 0, " kHz"))}
+          {row("Mean count rate N·ε", fmt(countRate / 1e3, 0, " kHz"))}
           {row("SNR of G at the shortest lag", fmt(snr, 1), "text-red-400")}
           {warnings.map((w) => (
             <p key={w} className="text-yellow-400 text-sm">{w}</p>

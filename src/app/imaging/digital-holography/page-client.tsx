@@ -3,9 +3,8 @@
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import {
-  depthOfFocus, fresnelNumber, fresnelReconstructionPitch, hologramEffectiveNA, hologramNA, inlineMinDistance, maxInterferenceAngle, replayField,
-} from "../../../physics/imaging/holography";
+import { hologramSummary } from "../../../physics/imaging/digital-holography";
+import { fresnelReconstructionPitch } from "../../../physics/imaging/holography";
 import { sinc } from "../../../physics/math";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -34,18 +33,10 @@ export default function DigitalHolographyPage() {
   const lambda = lambdaNm * 1e-9;
   const dx = pitchUm * 1e-6;
   const z = zMm * 1e-3;
-  const L = N * dx;
-  const NA = hologramNA(N, dx, z);
-  const pitch = fresnelReconstructionPitch(lambda, z, N, dx);
-  const field = replayField(lambda, z, dx);
-  const NAeff = hologramEffectiveNA(lambda, N, dx, z);
-  const res = lambda / (2 * NAeff);
-  const dof = depthOfFocus(lambda, NAeff);
-  const thetaMax = maxInterferenceAngle(lambda, dx);
-  const zMin = inlineMinDistance(lambda, N, dx, objUm * 1e-6);
-  const zMatched = inlineMinDistance(lambda, N, dx, 0); // λz/(NΔx) = Δx here
-  const NF = fresnelNumber(objUm * 0.5e-6, lambda, z);
-  const sampled = z >= zMin;
+  const {
+    sensorSize: L, na: NA, naEff: NAeff, pitch, resolution: res, field, depthOfFocus: dof, maxAngle: thetaMax,
+    fresnelNumber: NF, inlineMinDistance: zMin, matchedDistance: zMatched, sampled,
+  } = hologramSummary(lambda, N, dx, z, objUm * 1e-6);
 
   const zAxis = Array.from({ length: 121 }, (_, i) => (i + 1) * (Math.max(2 * zMin, 1.2 * z) * 1e3) / 121);
   const pitchChart = [

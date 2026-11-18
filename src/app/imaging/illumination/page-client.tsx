@@ -3,8 +3,8 @@
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { objectFieldDiameter } from "../../../physics/imaging/field-of-view";
-import { abbePeriodLimit, apertureDiameter, rayleighCondenserResolution } from "../../../physics/imaging/microscope";
+import { illuminationSummary } from "../../../physics/imaging/illumination";
+import { abbePeriodLimit, rayleighCondenserResolution } from "../../../physics/imaging/microscope";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const mm = 1e-3;
@@ -35,21 +35,19 @@ export default function IlluminationPage() {
   const fnMm = clamp(fieldNumberRaw, 1, 30, 20);
   const lambdaNm = clamp(wavelengthRaw, 200, 2000, 550);
 
-  const fObjMm = fTubeMm / Mobj;
-  const fovUm = objectFieldDiameter(fnMm * mm, Mobj) / 1e-6;
-  const backApertureMm = apertureDiameter(fObjMm * mm, naObj) / mm;
-  const ratio = naCond / naObj;
-  const irisImageMm = backApertureMm * Math.min(ratio, 1);
-  const irisMm = apertureDiameter(fCondMm * mm, naCond) / mm;
-  const abbeNm = abbePeriodLimit(lambdaNm * nm, naObj, naCond) / nm;
-  const rayleighNm = rayleighCondenserResolution(lambdaNm * nm, naObj, naCond) / nm;
-  const advice = ratio > 1
-    ? "The condenser cone is wider than the objective accepts: the excess adds glare, not resolution."
-    : ratio > 0.8
-      ? "Above the usual 0.7–0.8: close to full resolution, but low contrast and more glare."
-      : ratio >= 0.7
-        ? "Within the usual 0.7–0.8 setting."
-        : "Below 0.7: more contrast and depth of field, lower resolution and visible diffraction fringes.";
+  const s = illuminationSummary({
+    objectiveMag: Mobj, objectiveNa: naObj, tubeFocal: fTubeMm * mm, condenserNa: naCond,
+    condenserFocal: fCondMm * mm, fieldNumber: fnMm * mm, wavelength: lambdaNm * nm,
+  });
+  const fObjMm = s.objectiveFocal / mm;
+  const fovUm = s.fieldOfView / 1e-6;
+  const backApertureMm = s.backAperture / mm;
+  const ratio = s.ratio;
+  const irisImageMm = s.irisImage / mm;
+  const irisMm = s.irisDiameter / mm;
+  const abbeNm = s.abbePeriod / nm;
+  const rayleighNm = s.rayleigh / nm;
+  const advice = s.advice;
 
   const ratios = Array.from({ length: 151 }, (_, k) => (k * Math.max(1.5, 1.1 * ratio)) / 150);
   const chart = [
@@ -75,9 +73,9 @@ export default function IlluminationPage() {
           {row("Field of view FN/M (field diaphragm to open to)", fmt(fovUm, 0, " µm"), "text-blue-400")}
           {row("Objective focal length f_TL/M", fmt(fObjMm, 2, " mm"))}
           {row("Objective back aperture 2·f_obj·NA", fmt(backApertureMm, 2, " mm"))}
-          {row("Condenser iris image in it", `${fmt(irisImageMm, 2, " mm")} (${fmt(100 * Math.min(ratio, 1), 0, " %")})`, "text-yellow-400")}
+          {row("Condenser iris image in it", `${fmt(irisImageMm, 2, " mm")} (${fmt(100 * s.irisFill, 0, " %")})`, "text-yellow-400")}
           {row("Condenser iris diameter 2·f_c·NA_c", fmt(irisMm, 1, " mm"))}
-          {row("Usual condenser NA, 0.7–0.8 × NA_obj", `${fmt(0.7 * naObj, 2)}–${fmt(0.8 * naObj, 2)}`, "text-green-400")}
+          {row("Usual condenser NA, 0.7–0.8 × NA_obj", `${fmt(s.usualNaLow, 2)}–${fmt(s.usualNaHigh, 2)}`, "text-green-400")}
           {row("Abbe period limit λ/(NA_obj + NA_c)", fmt(abbeNm, 1, " nm"), "text-purple-400")}
           {row("Rayleigh rule of thumb 1.22λ/(NA_obj + NA_c)", fmt(rayleighNm, 1, " nm"), "text-purple-400")}
           <p className="text-sm text-gray-300">{advice}</p>
