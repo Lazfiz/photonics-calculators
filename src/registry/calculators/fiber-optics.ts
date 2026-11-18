@@ -4,7 +4,7 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "attenuation",
     title: "Fiber Attenuation Calculator",
-    description: "Spectral attenuation of silica single-mode fiber: Rayleigh scattering, IR and UV absorption tails, the 1383 nm water peak, minimum-loss wavelength, span loss.",
+    description: "Silica single-mode fiber attenuation: Rayleigh scattering, infrared and ultraviolet absorption tails, 1383 nm water peak, minimum-loss wavelength, span loss.",
     heading: "Wavelength-Dependent Attenuation",
     lede: "Fiber loss versus wavelength from Rayleigh scattering, the infrared and ultraviolet absorption tails and the OH water peak, and the loss of a span at your wavelength.",
     tier: "textbook",
@@ -984,7 +984,7 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "specialty-fiber",
     title: "Specialty Fiber Types",
-    description: "Data-sheet properties of specialty optical fibers (PM, Er-, Yb- and Tm-doped, ZBLAN, chalcogenide) compared: V-number, cutoff, mode-field diameter and loss.",
+    description: "Compare specialty optical fibers (PM, erbium-, ytterbium- and thulium-doped, ZBLAN, chalcogenide): V-number, cutoff, mode-field diameter and loss.",
     tier: "illustrative",
     modelNote: "Typical data-sheet values for one commercial fibre per class (linked). V = 2πa·NA/λ, step-index cutoff and Marcuse MFD from the sheet's core and NA. Losses are single-wavelength figures, not spectra.",
     references: [

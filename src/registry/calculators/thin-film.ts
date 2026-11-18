@@ -290,7 +290,7 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "environmental-stability",
     title: "Environmental Stability",
-    description: "Coating stability: quarter-wave stack shift from water in pores and temperature, IEST-STD-CC1246 particle obscuration, Arrhenius–Peck ageing factor.",
+    description: "Coating stability: quarter-wave stack shift from water in porous layers and temperature, IEST-STD-CC1246 particle obscuration, Arrhenius–Peck ageing factor.",
     lede: "Water filling the pores of a film of packing density p raises its index (n = p·n_s + (1 − p)·n_v, n_v = 1 + 0.333 f), temperature moves it by dn/dT and the thickness by α, corrected for the substrate's hold on the film; a level-L surface carries N(≥x) = 10^(0.926(log²L − log²x)) particles per 0.1 m²; an ageing test at T_test stands for AF = (RH_test/RH_use)ⁿ·exp[(Eₐ/k_B)(1/T_use − 1/T_test)] times as long in use.",
     keywords: ["Packing Density", "Vacuum-to-Air Shift", "CC1246 Cleanliness Level", "Percent Area Coverage", "Arrhenius Acceleration Factor", "Aging of Optical Materials", "Contamination Effects", "Humidity Effects on Optics"],
     tier: "textbook",

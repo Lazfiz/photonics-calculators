@@ -405,7 +405,7 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "optical-frequency-comb",
     title: "Optical Frequency Comb",
-    description: "Optical frequency comb: teeth ν_n = n f_rep + f_ceo, carrier-envelope phase slip per pulse, teeth in the spectrum, and the field of consecutive pulses.",
+    description: "Optical frequency comb: tooth frequencies ν_n = n f_rep + f_ceo, carrier-envelope phase slip per pulse, teeth in the spectrum, field of consecutive pulses.",
     keywords: ["frequency comb", "carrier-envelope phase", "CEP", "carrier-envelope offset frequency", "f-to-2f", "comb equation", "repetition rate", "Carrier-Envelope Phase (CEP)"],
     tier: "exact",
     modelNote: "Comb equation ν_n = n f_rep + f_ceo with Δφ_CE = 2π f_ceo/f_rep, f_ceo taken in [0, f_rep). The tooth count assumes a transform-limited Gaussian pulse. Linewidths and comb stabilization loops are not modelled.",
@@ -606,7 +606,7 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "sum-frequency",
     title: "Sum Frequency Generation (SFG)",
-    description: "Sum-frequency generation (ω1 + ω2 → ω3): output power, wavelength and QPM period from the input powers, beam radius, d_eff, indices and phase mismatch.",
+    description: "Sum-frequency generation and upconversion (ω1 + ω2 → ω3): output power, wavelength, QPM period from input powers, beam radius, d_eff, indices, phase mismatch.",
     tier: "textbook",
     modelNote: "Plane waves over two Gaussian beams of equal radius, both inputs undepleted, no focusing, walk-off or absorption. d_eff is an input: 12.4 pm/V is 2d₃₃/π of congruent PPLN, d₃₃ for SHG of 1.313 µm (Shoji et al. 1997); Miller's rule moves it by 1 % for 1064 + 1550 nm.",
     references: [
@@ -645,7 +645,7 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "thin-disk-laser",
     title: "Yb Thin-Disk Laser",
-    description: "Yb:YAG thin-disk laser: quasi-three-level threshold, multipass pump absorption with bleaching, threshold pump, slope efficiency, output power, temperature rise.",
+    description: "Yb:YAG thin-disk laser: quasi-three-level threshold inversion, multipass pump absorption, bleaching, threshold pump, slope efficiency, output, temperature rise.",
     keywords: ["Yb:YAG", "thin disk laser", "quasi-three-level laser", "multipass pumping", "reabsorption", "pump bleaching"],
     tier: "textbook",
     modelNote: "Quasi-three-level rate equations with a top-hat pump and mode of equal area, inversion uniform through the disk and clamped above threshold; reabsorption and pump bleaching included, ASE and temperature-dependent cross-sections not. One-dimensional heat flow to the back face. Defaults: 300 K Yb:YAG cross sections (Chanteloup 2014 Table 1), τ 0.951 ms (Sumida & Fan), heat fraction 1 − λ_p/λ (lasing), κ 6.3 W/(m K) for 10 at.% Yb:YAG, between 7 at 8 at.% (Chénais 2006) and 5.7 at 12 at.% (Körner 2012); check them against your crystal.",

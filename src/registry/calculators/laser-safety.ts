@@ -308,7 +308,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "green-laser-pointer",
     title: "Green Laser Pointer Safety",
-    description: "Laser pointer class (IEC 60825-1:2014), NOHD on the ICNIRP 2013 limits, and the distances for flash-blindness, glare and distraction (ICAO levels).",
+    description: "Laser pointer class (IEC 60825-1:2014), NOHD on the ICNIRP 2013 limits, and dazzle distances for flash-blindness, glare and distraction (ICAO levels).",
     tier: "textbook",
     modelNote: "Class: IEC 60825-1:2014 CW AELs. NOHD: ICNIRP 2013, 0.25 s if visible (else 10 s), beam √(d² + (rφ)²). Dazzle: peak irradiance vs the ICAO levels, not weighted by eye sensitivity. Not modelled: IR leakage, atmosphere.",
     references: [
@@ -379,7 +379,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "lidar-safety",
     title: "LiDAR Laser Safety Calculator",
-    description: "Eye safety of a 905 or 1550 nm lidar beam, stationary or scanned, on the ICNIRP 2013 limits: the binding pulse rule, NOHD, exposure at a distance, eyewear OD.",
+    description: "Eye safety of a 905 or 1550 nm lidar beam, stationary or scanned, on the ICNIRP 2013 limits: repetitive-pulse rule, NOHD, exposure at a distance, eyewear OD.",
     tier: "textbook",
     modelNote: "ICNIRP 2013 repetitive-pulse rules on the eye limits; round Gaussian beam widening as √(a² + (rφ)²), averaged over each aperture (its peak if under 1 mm (1/e) on the cornea below 0.35 s, ICNIRP Table 5 note c). Stationary beam (the worst case, a scanner failure), or scanned: the pulses within a pass (centred), each pass as one pulse of the average power times a worst-phase bound, and C_P over the pulses within T₂ whose 1/e² beam overlaps the pupil; never below the stationary beam's limit; eye on the scan line's centre with a still retinal image. Conservative by 1.0–1.6× against a sum over every window of the pulse energies (up to 2×; more for a narrow beam on the cornea). Not modelled: several beams or raster lines, turning points.",
     references: [
@@ -416,7 +416,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "mpe",
     title: "Maximum Permissible Exposure (MPE)",
-    description: "Maximum permissible exposure (MPE) of the eye, 180 nm–1 mm and 1 ns–30 000 s, on the ICNIRP 2013 limits: radiant exposure, irradiance and power per aperture.",
+    description: "Maximum permissible exposure (MPE) of the eye, 180 nm–1 mm, 1 ns–30 000 s, on the ICNIRP 2013 limits: radiant exposure, irradiance, power in each aperture.",
     lede: "Every eye exposure limit in force at a wavelength and exposure time, with the aperture it is averaged over. The lowest is the MPE.",
     keywords: ["maximum permissible exposure"],
     priority: 92,
@@ -611,7 +611,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "scanning-mpe",
     title: "Scanned Beam MPE",
-    description: "Eye safety of a CW beam scanned across the eye (ICNIRP 2013): pupil passes as pulses, binding pulse rule, gain over a static beam, scan-failure safeguard time.",
+    description: "Eye safety of a CW beam scanned across the eye (ICNIRP 2013): pupil passes as pulses, repetitive-pulse rule, gain vs a static beam, scan-failure safeguard time.",
     lede: "Largest power of a scanned laser beam within the eye limits, 180 nm to 1 mm, and how soon a stopped beam exceeds them.",
     keywords: ["Scan Failure Analysis", "scanning laser MPE", "scanned laser eye safety", "scan failure safeguard"],
     tier: "textbook",

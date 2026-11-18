@@ -31,7 +31,7 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "birefringent-crystals",
     title: "Birefringent Crystals",
-    description: "Birefringence Δn and indices nₒ, nₑ vs wavelength of nine uniaxial crystals (quartz, calcite, YVO₄, BBO and more) from Sellmeier fits, with plate retardance.",
+    description: "Birefringence Δn and indices nₒ, nₑ vs wavelength of quartz, calcite, MgF₂, sapphire, YVO₄, LiNbO₃, rutile and BBO from Sellmeier fits, with plate retardance.",
     lede: "nₒ(λ) and nₑ(λ) from each crystal's published Sellmeier formula; Δn = nₑ − nₒ, and a plate of thickness d with the optic axis in its face retards by |Δn|·d/λ waves.",
     keywords: ["Ordinary and Extraordinary Index", "Birefringence Δn", "BBO and KDP Refractive Index", "Crystal Birefringence Data"],
     tier: "exact",
@@ -332,7 +332,7 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "infrared-glass",
     title: "Infrared Optical Materials",
-    description: "Compare IR materials (Ge, Si, ZnSe, ZnS, fluorides, KRS-5, chalcogenides, ZBLAN): index vs wavelength and temperature, transmission band, dn/dT, conductivity.",
+    description: "Compare IR materials (Ge, Si, ZnSe, ZnS, fluorides, alkali halides, KRS-5, chalcogenides, ZBLAN): index vs wavelength and temperature, transmission band, dn/dT.",
     lede: "Compare IR transmitting materials and glasses. n(λ, T) = n(λ, T₀) + (dn/dT)(T − T₀), with n(λ, T₀) from each material's published Sellmeier formula.",
     keywords: ["Infrared Materials", "Chalcogenide Glass Properties", "Fluoride Glass (ZBLAN)"],
     tier: "textbook",
@@ -808,7 +808,7 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "transparency-range",
     title: "Window Materials Transparency Range",
-    description: "Transmission bands of UV, visible and IR windows (LiF, CaF₂, fused silica, sapphire, ZnSe, Si, Ge and more), with index and Fresnel-limited transmission.",
+    description: "Transmission bands of UV, visible and IR windows (LiF, CaF₂, fused silica, sapphire, alkali halides, ZnSe, Si, Ge), with index and Fresnel-limited transmission.",
     keywords: ["UV Optical Materials"],
     tier: "textbook",
     modelNote: "An uncoated, non-absorbing window at normal incidence, its two surfaces' multiple reflections added in intensity: T = 2n/(n² + 1), an upper bound inside the band. n from published Sellmeier fits (the ordinary ray for uniaxial crystals); the bands are Crystran data-sheet ranges, whose edges depend on thickness and grade.",
@@ -842,7 +842,7 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "two-photon-absorption",
     title: "Two-Photon Absorption",
-    description: "Two-photon absorption β of semiconductors, fused silica, sapphire, BBO, LiNbO₃, KTP and more across the 2PA window: induced absorption, slab transmission.",
+    description: "Two-photon absorption β of semiconductors (GaAs, CdTe), silica, sapphire, BaF₂, BBO, LiNbO₃, KTP across the 2PA window: induced absorption, transmission.",
     keywords: ["Two-Photon Absorption Coefficient", "Nonlinear Absorption", "Optical Limiting", "Band-Gap Scaling"],
     tier: "textbook",
     modelNote: "Degenerate 2PA between two parabolic bands, valid for E_g/2 < ħω < E_g. A measured β is moved to another wavelength by the ratio of F₂(x) = (x − 1)^(3/2)/x⁵, with n held constant. Wide-gap solids use DeSalvo's fitted effective gap E′_g; away from their measured wavelength the scaling is order-of-magnitude (the two-band model diverges near the 2PA edge). Indirect-gap silicon uses Bristow's phonon-assisted fit β = Σₙ 2C F₂⁽ⁿ⁾(ħω/E_gi), C = 43 cm/GW, 850–2214 nm. Transmission is for a plane wave of constant intensity, without linear, free-carrier or reflection losses. Measured β carry about ±20–40 % error.",
