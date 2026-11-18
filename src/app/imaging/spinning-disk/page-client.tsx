@@ -4,24 +4,20 @@ import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import {
-  CONFOCAL_MAX_PINHOLE_AU, SPINNING_DISK_MAX_PITCH_AU, confocalAxialCoordinate, confocalLateralFwhm,
-  confocalOpticalSectionFwhm, pinholeAiryUnits, pinholeFillFactor, pinholeSectionFourier, pinholeThroughput,
-  spinningDiskFrameRate, spinningDiskSection,
+  CONFOCAL_MAX_PINHOLE_AU, SPINNING_DISK_MAX_PITCH_AU, confocalOpticalSectionFwhm, pinholeSectionFourier,
+  pinholeThroughput, type SpinningDiskSection,
 } from "../../../physics/imaging/confocal";
-import { airyUnit, confocalSectionFwhm } from "../../../physics/imaging/optical-sectioning-thickness";
+import { SPINNING_DISK_FLOOR_WARN, spinningDiskSummary } from "../../../physics/imaging/spinning-disk";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 
-/** Disk section with crosstalk, its floor and FWHM (m), and the thin-plane response curves against defocus (µm). */
-function crosstalkSection(pinholeAU: number, pitchAU: number, zPerU: number) {
-  const model = spinningDiskSection(pinholeAU, pitchAU);
+/** Thin-plane response curves of a disk model against defocus (µm). */
+function crosstalkSection(model: SpinningDiskSection, pinholeAU: number, zPerU: number) {
   const single0 = pinholeSectionFourier(0, pinholeAU);
   const uMax = Number.isFinite(model.halfWidthU) ? 6 * model.halfWidthU : 30;
   const us = Array.from({ length: 61 }, (_, i) => (i / 60) * uMax);
   const zs = us.map((u) => u * zPerU * 1e6);
   return {
-    floor: model.floor,
-    fwhm: 2 * model.halfWidthU * zPerU,
     chart: [
       { x: zs, y: us.map((u) => pinholeSectionFourier(u, pinholeAU) / single0), name: "Single pinhole", line: { color: "#60a5fa", dash: "dash" }, type: "scatter", mode: "lines" },
       { x: zs, y: us.map(model.response), name: "Disk (with crosstalk)", line: { color: "#f87171" }, type: "scatter", mode: "lines" },
@@ -52,24 +48,17 @@ export default function SpinningDiskPage() {
   const lambda = wavelength * 1e-9;
   const valid = na < n;
 
-  const airyNm = airyUnit(lambda, na) * 1e9;
-  const pinholeAU = pinholeAiryUnits(pinholeDiam * 1e-6, magnification, lambda, na);
-  const pitchAU = pinholeAiryUnits(pitch * 1e-6, magnification, lambda, na);
+  const sd = spinningDiskSummary({
+    lambda, NA: na, n, magnification, pinholeDiameter: pinholeDiam * 1e-6, pitch: pitch * 1e-6,
+    revPerSecond: diskRPM / 60, scansPerRevolution: scans, exposure: exposureMs / 1000,
+  });
+  const { pinholeAU, pitchAU, throughput, frameRate, fill, scansPerExposure, bandingDepth, banding, pinholeTooBig, widePitch } = sd;
+  const airyNm = sd.airyObject * 1e9;
   const inTable = pinholeAU <= CONFOCAL_MAX_PINHOLE_AU;
-  const lateralNm = confocalLateralFwhm(lambda, na, pinholeAU) * 1e9;
-  const sectionNm = confocalOpticalSectionFwhm(lambda, n, na, pinholeAU) * 1e9;
-  const wilhelmNm = confocalSectionFwhm(lambda, n, na, pinholeAU) * 1e9;
-  const throughput = pinholeThroughput(pinholeAU);
-  const frameRate = spinningDiskFrameRate(diskRPM, scans);
-  const fill = pinholeFillFactor(pinholeDiam, pitch);
-  const scansPerExposure = (exposureMs / 1000) * frameRate;
-  const bandingDepth = scansPerExposure > 0 ? Math.abs(scansPerExposure - Math.round(scansPerExposure)) / scansPerExposure : 1;
-  const banding = !(bandingDepth <= 0.01);
-  const pinholeTooBig = pinholeDiam > pitch;
-  // Defocus z (m) per unit of the optical coordinate u.
-  const zPerU = 1 / confocalAxialCoordinate(1, lambda, n, na);
-  const crosstalk = crosstalkSection(pinholeAU, pitchAU, zPerU);
-  const widePitch = pitchAU > SPINNING_DISK_MAX_PITCH_AU;
+  const lateralNm = sd.lateral * 1e9;
+  const sectionNm = sd.section * 1e9;
+  const wilhelmNm = sd.wilhelm * 1e9;
+  const crosstalk = { ...crosstalkSection(sd.model, pinholeAU, sd.zPerU), floor: sd.floor, fwhm: sd.diskSection };
   const fmt = (x: number, digits: number, unit: string) => (Number.isFinite(x) ? `${x.toFixed(digits)} ${unit}` : "—");
 
   const auMax = Math.max(5, 1.1 * pinholeAU);
@@ -111,9 +100,9 @@ export default function SpinningDiskPage() {
               {row("Pinhole throughput (in focus)", fmt(100 * throughput, 1, "%"))}
               {row("Lateral FWHM", inTable ? fmt(lateralNm, 1, "nm") : "> 5 AU", "text-green-400")}
               {row("Optical section FWHM", inTable ? fmt(sectionNm, 0, "nm") : "> 5 AU", "text-purple-400")}
-              {row("Wilhelm geometric (≥ 1 AU)", pinholeAU >= 1 ? fmt(wilhelmNm, 0, "nm") : "—")}
+              {row("Wilhelm geometric (≥ 1 AU)", fmt(wilhelmNm, 0, "nm"))}
               {row("Optical section FWHM, disk with crosstalk", widePitch ? "≈ single pinhole" : fmt(crosstalk.fwhm * 1e9, 0, "nm"), "text-purple-400")}
-              {row("Crosstalk floor (plane far out of focus)", fmt(100 * crosstalk.floor, 2, "%"), crosstalk.floor > 0.05 ? "text-yellow-400" : "")}
+              {row("Crosstalk floor (plane far out of focus)", fmt(100 * crosstalk.floor, 2, "%"), crosstalk.floor > SPINNING_DISK_FLOOR_WARN ? "text-yellow-400" : "")}
               {Number.isFinite(crosstalk.floor) && Number.isFinite(crosstalk.fwhm) && (
                 <p className="text-sm text-gray-400">
                   In a thick, uniformly labelled sample the floor is collected from every depth: about{" "}

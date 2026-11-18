@@ -5,9 +5,8 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import {
-  ballisticFraction, focalIntensityRadius, focalPeakIntensity, gaussianPulsePeakPower, multiphotonFwhm, pulseEnergy,
-} from "../../../physics/imaging/multiphoton-focus";
+import { ballisticFraction } from "../../../physics/imaging/multiphoton-focus";
+import { thgSummary } from "../../../physics/imaging/third-harmonic-microscopy";
 
 const fmt = (x: number, digits: number, unit: string) => (Number.isFinite(x) ? `${x.toFixed(digits)} ${unit}` : "—");
 /** The log axis can't show values below 1e-10; drop them (NaN points are skipped). */
@@ -23,13 +22,10 @@ export default function ThirdHarmonicMicroscopyPage() {
   const [scatteringCoeff, setScatteringCoeff] = useURLState("scatteringCoeff", 40, { min: 0, max: 500 }); // cm⁻¹
 
   const lambda = wavelength * 1e-9;
-  const energy = pulseEnergy(power * 1e-3, repRate * 1e6);
-  const peakPower = gaussianPulsePeakPower(power * 1e-3, repRate * 1e6, pulseWidth * 1e-15);
-  const peakIntensity = focalPeakIntensity(peakPower, lambda, na); // W/m²
-  const w = focalIntensityRadius(lambda, na); // 1/e² radius of the fundamental
-  const fundamental = multiphotonFwhm(lambda, refractiveIndex, na, 1);
-  const thg = multiphotonFwhm(lambda, refractiveIndex, na, 3);
-  const valid = Number.isFinite(thg.axial) && Number.isFinite(peakPower);
+  const r = thgSummary({ lambda, n: refractiveIndex, na, avgPower: power * 1e-3, pulseWidth: pulseWidth * 1e-15, repRate: repRate * 1e6 });
+  const { pulseEnergy: energy, peakPower, peakIntensity, w, valid } = r; // peakIntensity in W/m², w the 1/e² radius of the fundamental
+  const fundamental = { lateral: r.fundamentalLateral, axial: r.fundamentalAxial };
+  const thg = { lateral: r.thgLateral, axial: r.thgAxial };
 
   const depthChart = useMemo(() => {
     const depths = Array.from({ length: 81 }, (_, i) => i * 25);

@@ -171,6 +171,19 @@ import secondHarmonicGeneration from "./imaging/second-harmonic-generation";
 import sensorCmos from "./imaging/sensor-cmos";
 import shackHartmann from "./imaging/shack-hartmann";
 import signalToNoise from "./imaging/signal-to-noise";
+import simultaneousMulticolor from "./imaging/simultaneous-multicolor";
+import speckleImaging from "./imaging/speckle-imaging";
+import spectralUnmixing from "./imaging/spectral-unmixing";
+import spinningDisk from "./imaging/spinning-disk";
+import stimulatedRamanMicroscopy from "./imaging/stimulated-raman-microscopy";
+import stitching from "./imaging/stitching";
+import strehlRatio from "./imaging/strehl-ratio";
+import structuredIllumination from "./imaging/structured-illumination";
+import sumFrequencyMicroscopy from "./imaging/sum-frequency-microscopy";
+import superResolution from "./imaging/super-resolution";
+import telecentricity from "./imaging/telecentricity";
+import thirdHarmonicMicroscopy from "./imaging/third-harmonic-microscopy";
+import threePhotonMicroscopy from "./imaging/three-photon-microscopy";
 import lowCoherence from "./imaging/low-coherence";
 import tirf from "./imaging/tirf";
 import aelLimits from "./laser-safety/ael-limits";
@@ -464,7 +477,9 @@ export const schemas: readonly CalculatorSchema[] = [
   fovCalculator, frap, hyperspectralMicroscopy, illumination, imageDistance, lightField, lightSheet,
   magnification, mtf, multiphotonDepth, naFNumber, opticalCoherence, opticalPower, opticalSectioningThickness,
   palmStorm, photoacoustic, pixelFov, plenopticCamera, psfCalculator, pupilMatching, registration, resolution,
-  secondHarmonicGeneration, sensorCmos, shackHartmann, signalToNoise,
+  secondHarmonicGeneration, sensorCmos, shackHartmann, signalToNoise, simultaneousMulticolor, speckleImaging,
+  spectralUnmixing, spinningDisk, stimulatedRamanMicroscopy, stitching, strehlRatio, structuredIllumination,
+  sumFrequencyMicroscopy, superResolution, telecentricity, thirdHarmonicMicroscopy, threePhotonMicroscopy,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));

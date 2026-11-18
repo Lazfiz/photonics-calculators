@@ -3,9 +3,8 @@
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import {
-  SPECKLE_FIRST_ZERO, averagedContrast, objectiveSpeckleSize, speckleContrast, subjectiveSpeckleSize, surfacePhaseRms,
-} from "../../../physics/imaging/speckle";
+import { averagedContrast, speckleContrast, surfacePhaseRms } from "../../../physics/imaging/speckle";
+import { speckleSummary } from "../../../physics/imaging/speckle-imaging";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const nm = 1e-9;
@@ -41,12 +40,10 @@ export default function SpeckleImagingPage() {
   const averages = clamp(averagesRaw, 1, 10000, 10);
 
   const lambda = wavelengthNm * nm;
-  const objective = objectiveSpeckleSize(lambda, distanceMm * mm, spotMm * mm);
-  const subjective = subjectiveSpeckleSize(lambda, fNumber, magnification);
-  const phaseRms = surfacePhaseRms(roughnessUm * um, lambda);
-  const contrast = speckleContrast(phaseRms, cells);
-  const wideAngle = spotMm / distanceMm > 0.3; // λz/D is paraxial
-  const averaged = averagedContrast(contrast, averages);
+  const {
+    objective, objectiveFirstZero, subjective, subjectiveFirstZero, phaseRms, contrast, averagedContrast: averaged,
+    spotRatio, wideAngle, lowPhase,
+  } = speckleSummary(lambda, spotMm * mm, distanceMm * mm, fNumber, magnification, roughnessUm * um, cells, averages);
 
   const curves = (() => {
     const hs = Array.from({ length: 121 }, (_, k) => 10 ** (k / 30)); // σ_h from 1 nm to 10 µm
@@ -67,8 +64,8 @@ export default function SpeckleImagingPage() {
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-        {card("Objective speckle λz/D", fmt(objective / um, 2, " µm"), `first zero ${fmt((SPECKLE_FIRST_ZERO * objective) / um, 2, " µm")}`, "text-blue-400")}
-        {card("Subjective speckle λ(1 + M)N", fmt(subjective / um, 2, " µm"), `first zero ${fmt((SPECKLE_FIRST_ZERO * subjective) / um, 2, " µm")}`, "text-purple-400")}
+        {card("Objective speckle λz/D", fmt(objective / um, 2, " µm"), `first zero ${fmt(objectiveFirstZero / um, 2, " µm")}`, "text-blue-400")}
+        {card("Subjective speckle λ(1 + M)N", fmt(subjective / um, 2, " µm"), `first zero ${fmt(subjectiveFirstZero / um, 2, " µm")}`, "text-purple-400")}
         {card("Contrast, one pattern", fmt(contrast, 3), `σ_φ = 4πσ_h/λ = ${fmt(phaseRms, 2, " rad")}, N_c = ${fmt(cells, 0)}`, "text-green-400")}
         {card(`Contrast, ${averages} patterns`, fmt(averaged, 3), "C/√N, uncorrelated patterns", "text-yellow-400")}
       </div>
@@ -84,10 +81,10 @@ export default function SpeckleImagingPage() {
         <ValidatedNumberInput label="Uncorrelated patterns averaged N" value={averagesRaw} onChange={setAverages} min={1} max={10000} step="1" />
       </div>
 
-      {(wideAngle || phaseRms < 1) && (
+      {(wideAngle || lowPhase) && (
         <div className="space-y-1 mb-6 text-sm text-yellow-300" role="status">
-          {wideAngle && <p>D/z = {fmt(spotMm / distanceMm, 2)} is above 0.3: λz/D is a paraxial estimate and loses accuracy at this angle.</p>}
-          {phaseRms < 1 && phaseRms > 0 && <p>σ_φ is below 1 rad: the diffuse part isn&apos;t circular Gaussian yet, and the Rician form overestimates the contrast.</p>}
+          {wideAngle && <p>D/z = {fmt(spotRatio, 2)} is above 0.3: λz/D is a paraxial estimate and loses accuracy at this angle.</p>}
+          {lowPhase && <p>σ_φ is below 1 rad: the diffuse part isn&apos;t circular Gaussian yet, and the Rician form overestimates the contrast.</p>}
         </div>
       )}
 

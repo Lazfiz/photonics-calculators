@@ -173,13 +173,18 @@ export function conditionNumber(E: Matrix): number {
   return lo > 1e-14 * hi ? Math.sqrt(hi / lo) : Infinity;
 }
 
+/** Variance m + σ_r² of a band of mean m photoelectrons: shot noise (Gaussian limit of Poisson) plus read noise, e⁻². */
+export function bandVariance(mean: number, readNoise: number): number {
+  return Math.max(0, mean) + readNoise * readNoise;
+}
+
 /**
  * One noisy measurement of y = E·x: band b has mean m_b = (E·x)_b photoelectrons and variance m_b + σ_r² (shot noise
  * in the Gaussian limit of Poisson, plus read noise), drawn from `rng`.
  */
 export function simulateMixture(E: Matrix, x: readonly number[], readNoise: number, rng: Rng): { mean: number[]; variance: number[]; y: number[] } {
   const mean = reconstruct(E, x);
-  const variance = mean.map((m) => Math.max(0, m) + readNoise * readNoise);
+  const variance = mean.map((m) => bandVariance(m, readNoise));
   const y = mean.map((m, b) => m + Math.sqrt(variance[b]) * gaussian(rng));
   return { mean, variance, y };
 }

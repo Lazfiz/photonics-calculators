@@ -5,9 +5,8 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import {
-  ballisticFraction, focalPeakIntensity, gaussianPulsePeakPower, multiphotonFwhm, multiphotonVolume, pulseEnergy,
-} from "../../../physics/imaging/multiphoton-focus";
+import { ballisticFraction, multiphotonFwhm } from "../../../physics/imaging/multiphoton-focus";
+import { threePhotonSummary } from "../../../physics/imaging/three-photon-microscopy";
 
 const fmt = (x: number, digits: number, unit: string) => (Number.isFinite(x) ? `${x.toFixed(digits)} ${unit}` : "—");
 /** The log axis can't show values below 1e-10; drop them (NaN points are skipped). */
@@ -24,14 +23,13 @@ export default function ThreePhotonMicroscopyPage() {
   const [depth, setDepth] = useURLState("depth", 500, { min: 0, max: 3000 }); // µm
 
   const lambda = wavelength * 1e-9;
-  const fwhm3 = multiphotonFwhm(lambda, refractiveIndex, na, 3);
-  const fwhm2 = multiphotonFwhm(lambda, refractiveIndex, na, 2);
-  const volume = multiphotonVolume(lambda, refractiveIndex, na, 3);
-  const energy = pulseEnergy(avgPower * 1e-3, repRate * 1e6);
-  const peakPower = gaussianPulsePeakPower(avgPower * 1e-3, repRate * 1e6, pulseWidth * 1e-15);
-  const peakIntensity = focalPeakIntensity(peakPower, lambda, na); // W/m², at the surface
-  const fraction = ballisticFraction(depth * 1e-6, scatteringCoeff * 100);
-  const valid = Number.isFinite(fwhm3.axial) && Number.isFinite(peakPower);
+  const r = threePhotonSummary({
+    lambda, n: refractiveIndex, na, pulseWidth: pulseWidth * 1e-15, repRate: repRate * 1e6, avgPower: avgPower * 1e-3,
+    scattering: scatteringCoeff * 100, depth: depth * 1e-6,
+  });
+  const { volume, pulseEnergy: energy, peakPower, peakIntensity, fraction, valid } = r; // peakIntensity at the surface, W/m²
+  const fwhm3 = { lateral: r.lateral3, axial: r.axial3 };
+  const fwhm2 = { lateral: r.lateral2, axial: r.axial2 };
 
   const depthChart = useMemo(() => {
     const maxDepth = Math.max(2000, 1.2 * depth);
@@ -89,14 +87,14 @@ export default function ThreePhotonMicroscopyPage() {
         <ResultCard label="3P lateral FWHM" value={valid ? fmt(fwhm3.lateral * 1e9, 0, "nm") : "—"} tone="green" subtext={`2P at the same λ: ${valid ? fmt(fwhm2.lateral * 1e9, 0, "nm") : "—"}`} />
         <ResultCard label="3P axial FWHM" value={fmt(fwhm3.axial * 1e6, 2, "µm")} tone="yellow" subtext={`2P at the same λ: ${fmt(fwhm2.axial * 1e6, 2, "µm")}`} />
         <ResultCard label="Excitation volume (I³)" value={fmt(volume * 1e18, 3, "fL")} tone="blue" subtext="(π/6)^(3/2) w² w_z (1 fL = 1 µm³)" />
-        <ResultCard label="Peak intensity at focus" value={valid ? fmt((peakIntensity * fraction) / 1e16, 1, "TW/cm²") : "—"} tone="green" subtext={`At the focus depth, I_surface·e^(−µz); surface: ${valid ? fmt(peakIntensity / 1e16, 1, "TW/cm²") : "—"}`} />
+        <ResultCard label="Peak intensity at focus" value={valid ? fmt(r.intensityAtDepth / 1e16, 1, "TW/cm²") : "—"} tone="green" subtext={`At the focus depth, I_surface·e^(−µz); surface: ${valid ? fmt(peakIntensity / 1e16, 1, "TW/cm²") : "—"}`} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ResultCard label="1P / 2P equivalent λ" value={`${(wavelength / 3).toFixed(0)} / ${(wavelength / 2).toFixed(0)} nm`} tone="purple" />
+        <ResultCard label="1P / 2P equivalent λ" value={`${(r.equivalent1p * 1e9).toFixed(0)} / ${(wavelength / 2).toFixed(0)} nm`} tone="purple" />
         <ResultCard label="Pulse energy" value={fmt(energy * 1e9, 1, "nJ")} tone="cyan" subtext={`Peak power ${fmt(peakPower / 1e3, 1, "kW")}`} />
-        <ResultCard label="Ballistic power at depth" value={fmt(avgPower * fraction, 2, "mW")} tone="blue" subtext={scatteringCoeff > 0 ? `Scattering length ${(1e4 / scatteringCoeff).toFixed(0)} µm` : "No scattering"} />
-        <ResultCard label="Relative 3P signal at depth" value={Number.isFinite(fraction) ? (fraction ** 3).toExponential(2) : "—"} tone="yellow" subtext="exp(−3µz), constant surface power" />
+        <ResultCard label="Ballistic power at depth" value={fmt(r.ballisticPower * 1e3, 2, "mW")} tone="blue" subtext={scatteringCoeff > 0 ? `Scattering length ${(1e4 / scatteringCoeff).toFixed(0)} µm` : "No scattering"} />
+        <ResultCard label="Relative 3P signal at depth" value={Number.isFinite(fraction) ? r.relativeSignal.toExponential(2) : "—"} tone="yellow" subtext="exp(−3µz), constant surface power" />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">

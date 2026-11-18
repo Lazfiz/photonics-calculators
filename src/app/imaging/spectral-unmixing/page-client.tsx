@@ -3,9 +3,10 @@
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { FLUOROPHORES, fluorophoreByName, integrateSpectrum, spectrumAt } from "../../../physics/imaging/fluorophores";
-import { conditionNumber, fcls, nnls, ols, olsCovariance, reconstruct, shareStdDev, simulateMixture } from "../../../physics/imaging/linear-unmixing";
-import { createRng } from "../../../physics/random";
+import { FLUOROPHORES, fluorophoreByName } from "../../../physics/imaging/fluorophores";
+import {
+  DUPLICATE_MESSAGE, lowPhotonsMessage, missingEmissionMessage, rangeRewrittenMessage, relativeError, unmixingSummary,
+} from "../../../physics/imaging/spectral-unmixing";
 
 const COLORS = ["#34d399", "#fbbf24", "#f87171", "#a78bfa"];
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
@@ -45,34 +46,16 @@ export default function SpectralUnmixingPage() {
   const active = slots.filter((s, i) => i < 2 || s.name !== "none");
   const dyes = active.map((s) => fluorophoreByName(s.name));
   const aIn = active.map((s) => clamp(s.aRaw, 0, 1, 0));
-  const aSum = aIn.reduce((s, v) => s + v, 0);
-  const aTrue = aSum > 0 ? aIn.map((v) => v / aSum) : aIn.map(() => 1 / aIn.length);
   const bands = Math.round(clamp(bandsRaw, 4, 128, 32));
-  const start = Math.min(clamp(startRaw, 350, 950, 480), 1000 - bands);
-  const end = Math.max(start + bands, clamp(endRaw, 360, 1000, 720));
   const photons = clamp(photonsRaw, 1, 1e8, 2000);
   const readNoise = clamp(readRaw, 0, 100, 1);
   const seed = Math.round(clamp(seedRaw, 0, 1e6, 1));
-
-  // E[b][j]: fraction of dye j's detected photons that fall in band b (columns sum to 1).
-  const step = (end - start) / bands;
-  const centres = Array.from({ length: bands }, (_, b) => start + (b + 0.5) * step);
-  const shapes = dyes.map((f) => (l: number) => spectrumAt(f.em, l));
-  const inRange = shapes.map((s) => integrateSpectrum(s, start * 1e-9, end * 1e-9));
-  const E = centres.map((c) => shapes.map((s, j) => integrateSpectrum(s, (c - step / 2) * 1e-9, (c + step / 2) * 1e-9) / inRange[j]));
-
-  const xTrue = aTrue.map((a) => a * photons);
-  const { variance, y } = simulateMixture(E, xTrue, readNoise, createRng(seed));
-  const xHat = method === "ols" ? ols(E, y) : method === "fcls" ? fcls(E, y, y.reduce((s, v) => s + v, 0)) : nnls(E, y);
-  const xSum = xHat.reduce((s, v) => s + v, 0);
-  const fit = reconstruct(E, xHat);
-  const cov = olsCovariance(E, variance);
-  const shareSigma = shareStdDev(xTrue, cov);
-  const kappa = conditionNumber(E);
-  const resid = y.map((v, b) => v - fit[b]);
-  const rms = Math.sqrt(resid.reduce((s, r) => s + r * r, 0) / bands);
-  const chi2 = resid.reduce((s, r, b) => s + (r * r) / variance[b], 0) / Math.max(1, bands - dyes.length);
-  const solved = xHat.every(Number.isFinite);
+  const {
+    start, end, rewritten, E, centres, step, shares: aTrue, y, xHat, estimate, fit, shareSigma, kappa, residualRms: rms, chi2, solved,
+    missing, duplicate, lowPhotons,
+  } = unmixingSummary({
+    dyes, abundances: aIn, bands, start: clamp(startRaw, 350, 950, 480), end: clamp(endRaw, 360, 1000, 720), photons, readNoise, method, seed,
+  });
 
   const spectrum = [
     { x: centres, y, type: "scatter" as const, mode: "markers" as const, name: "Measured", marker: { color: "#e5e7eb", size: 5 } },
@@ -81,13 +64,8 @@ export default function SpectralUnmixingPage() {
       x: centres, y: E.map((r) => r[j] * (solved ? xHat[j] : 0)), type: "scatter" as const, mode: "lines" as const, name: f.name, line: { color: COLORS[j], width: 2 },
     })),
   ];
-  // Relative error σ_j/x_j against the photon budget: band variance (E·x)_b + σ_r² with x ∝ N.
-  const relError = (j: number, N: number) => {
-    if (!(aTrue[j] > 0)) return NaN;
-    const m = reconstruct(E, aTrue.map((a) => a * N));
-    const c = olsCovariance(E, m.map((v) => v + readNoise * readNoise));
-    return (100 * Math.sqrt(c[j][j])) / (aTrue[j] * N);
-  };
+  // Relative error σ_j/x_j (%) against the photon budget: band variance (E·x)_b + σ_r² with x ∝ N.
+  const relError = (j: number, N: number) => 100 * relativeError(E, aTrue, j, N, readNoise);
   // 1 to 1e8 photons: the whole input range, so the current point is always on the axis.
   const budgets = Array.from({ length: 41 }, (_, i) => 10 ** ((8 * i) / 40));
   const errorCurves = dyes.map((f, j) => ({
@@ -99,12 +77,6 @@ export default function SpectralUnmixingPage() {
     x: dyes.map(() => photons), y: dyes.map((_, j) => relError(j, photons)), type: "scatter" as const, mode: "markers" as const, name: "Current",
     marker: { color: dyes.map((_, j) => COLORS[j]), size: 10, line: { color: "#ffffff", width: 1.5 } },
   };
-  const rewritten = start !== clamp(startRaw, 350, 950, 480) || end !== clamp(endRaw, 360, 1000, 720);
-  const lowPhotons = photons / bands < 20;
-
-  const missing = dyes.filter((_, j) => !(inRange[j] > 0)).map((f) => f.name);
-  const duplicate = new Set(dyes.map((f) => f.name)).size < dyes.length;
-
   return (
     <>
       <div className="grid gap-6 md:grid-cols-2 mb-8">
@@ -142,10 +114,10 @@ export default function SpectralUnmixingPage() {
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
           <h2 className="text-lg font-semibold">Results</h2>
-          {missing.length > 0 && <p className="text-sm text-amber-400">{`No emission of ${missing.join(", ")} falls in the detected range: widen the range or drop the dye.`}</p>}
-          {duplicate && <p className="text-sm text-amber-400">Two endmembers are the same dye: E is rank deficient and the abundances are not identifiable.</p>}
-          {rewritten && <p className="text-sm text-yellow-300" role="status">{`The range was adjusted to ${fmt(start, 0)}–${fmt(end, 0)} nm (the end must be at least one nm per band above the start); this range is used.`}</p>}
-          {lowPhotons && <p className="text-sm text-yellow-300" role="status">{`Only ${fmt(photons / bands, 1)} photons per band: below about 20 the Gaussian shot-noise approximation is crude (Poisson counts are skewed), so the ±σ and the simulated noise are unreliable.`}</p>}
+          {missing.length > 0 && <p className="text-sm text-amber-400">{missingEmissionMessage(missing)}</p>}
+          {duplicate && <p className="text-sm text-amber-400">{DUPLICATE_MESSAGE}</p>}
+          {rewritten && <p className="text-sm text-yellow-300" role="status">{rangeRewrittenMessage(start, end)}</p>}
+          {lowPhotons && <p className="text-sm text-yellow-300" role="status">{lowPhotonsMessage(photons / bands)}</p>}
           <table className="w-full text-sm font-mono">
             <thead>
               <tr className="text-gray-400"><th className="text-left font-normal">Dye</th><th className="text-right font-normal">True</th><th className="text-right font-normal">Estimate</th><th className="text-right font-normal">±σ</th></tr>
@@ -155,7 +127,7 @@ export default function SpectralUnmixingPage() {
                 <tr key={j}>
                   <td style={{ color: COLORS[j] }}>{f.name}</td>
                   <td className="text-right">{fmt(aTrue[j] * 100, 1, " %")}</td>
-                  <td className="text-right text-green-400">{fmt((xHat[j] / xSum) * 100, 1, " %")}</td>
+                  <td className="text-right text-green-400">{fmt(estimate[j] * 100, 1, " %")}</td>
                   <td className="text-right text-yellow-400">{fmt(shareSigma[j] * 100, 1, " %")}</td>
                 </tr>
               ))}

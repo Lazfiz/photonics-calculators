@@ -3,8 +3,8 @@
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { inoueDepthOfField } from "../../../physics/imaging/optical-sectioning-thickness";
-import { chiefRayAngle, magnificationChange, pupilDistanceFromSlope } from "../../../physics/imaging/telecentric";
+import { magnificationChange } from "../../../physics/imaging/telecentric";
+import { telecentricitySummary } from "../../../physics/imaging/telecentricity";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const mm = 1e-3;
@@ -39,14 +39,16 @@ export default function TelecentricityPage() {
   const dzMm = clamp(dzRaw, -50, 50, 0.5);
   const slopeDeg = clamp(slopeRaw, -2, 2, 0.1);
 
-  const teleSMm = pupilDistanceFromSlope(hMm * mm, slopeDeg * deg) / mm;
-  const ordinary = magnificationChange(dzMm * mm, sEPMm * mm);
-  const telecentric = magnificationChange(dzMm * mm, teleSMm * mm);
-  // Image-side shift of the field edge, m·h·Δm/m.
-  const ordinaryShiftUm = (m * hMm * mm * ordinary) / um;
-  const teleShiftUm = (m * hMm * mm * telecentric) / um;
-  const chiefDeg = chiefRayAngle(hMm * mm, sEPMm * mm) / deg;
-  const dof = inoueDepthOfField(wavelengthNm * nm, 1, na, blurUm * um, m);
+  const t = telecentricitySummary({
+    magnification: m, NA: na, lambda: wavelengthNm * nm, blur: blurUm * um, fieldHeight: hMm * mm,
+    pupilDistance: sEPMm * mm, dz: dzMm * mm, slope: slopeDeg * deg,
+  });
+  const teleSMm = t.teleDistance / mm;
+  const { ordinary, telecentric } = t;
+  const ordinaryShiftUm = t.ordinaryShift / um;
+  const teleShiftUm = t.teleShift / um;
+  const chiefDeg = t.chiefAngle / deg;
+  const dof = { wave: t.dofWave, detector: t.dofDetector, total: t.dofTotal };
 
   // ±span, widened toward the current Δz but never across a pupil pole at Δz = −s (s_EP > 0; the telecentric s has
   // the sign of the residual angle, so its pole can lie on either side).
@@ -86,7 +88,7 @@ export default function TelecentricityPage() {
           {(Number.isNaN(ordinary) || Number.isNaN(telecentric)) && (
             <p className="text-sm text-yellow-400">— : the displacement would move the object through the entrance pupil.</p>
           )}
-          {Math.abs(dzMm * mm) > dof.total / 2 && (
+          {t.outOfFocus && (
             <p className="text-sm text-yellow-300" role="status">
               |Δz| exceeds half the depth of field ({fmt(dof.total / 2 / mm, 3, " mm")}): the image is out of focus; the edge shift is the blur centroid.
             </p>

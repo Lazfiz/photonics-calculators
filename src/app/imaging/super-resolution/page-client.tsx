@@ -5,8 +5,9 @@ import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import {
-  GAUSSIAN_FWHM_PER_SIGMA, abbeLateralFwhm, axialPsfFwhm, localizationPrecision, rayleighDistance, stedLateralFwhm,
+  GAUSSIAN_FWHM_PER_SIGMA, localizationPrecision, stedLateralFwhm,
 } from "../../../physics/imaging/super-resolution";
+import { superResolutionSummary } from "../../../physics/imaging/super-resolution-summary";
 
 const fmtNm = (x: number) => (Number.isFinite(x) ? `${(x * 1e9).toFixed(1)} nm` : "—");
 
@@ -18,18 +19,7 @@ export default function SuperResolutionPage() {
   const [stedWavelength, setStedWavelength] = useURLState("stedWavelength", 660, { min: 300, max: 1200 }); // nm, depletion beam (660 nm for orange dyes)
   const [palmPhotons, setPalmPhotons] = useURLState("palmPhotons", 5000, { min: 1, max: 1000000 });
 
-  const results = useMemo(() => {
-    const lam = wavelength * 1e-9;
-    const palm = localizationPrecision(lam, na, palmPhotons);
-    return {
-      abbe: abbeLateralFwhm(lam, na),
-      rayleigh: rayleighDistance(lam, na),
-      axial: axialPsfFwhm(lam, n, na),
-      sted: stedLateralFwhm(lam, na, stedDepletion, stedWavelength * 1e-9),
-      palm,
-      palmFwhm: palm * GAUSSIAN_FWHM_PER_SIGMA,
-    };
-  }, [na, wavelength, n, stedDepletion, stedWavelength, palmPhotons]);
+  const results = superResolutionSummary(wavelength * 1e-9, na, n, stedDepletion, stedWavelength * 1e-9, palmPhotons);
 
   const stedPlot = useMemo(() => {
     const lam = wavelength * 1e-9, lamSted = stedWavelength * 1e-9;

@@ -7,9 +7,8 @@ import {
   type BlendProfile,
   blendWeight,
   globalStitchError,
-  sequentialStitchError,
-  tileGrid,
 } from "../../../physics/imaging/registration";
+import { stitchingSummary } from "../../../physics/imaging/stitching";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 
@@ -59,16 +58,11 @@ export default function StitchingPage() {
   const sigma = clamp(sigmaRaw, 0, 100, 0.5);
   const gain = clamp(gainRaw, 0, 100, 5);
 
-  const g = tileGrid({ cols, rows, tileWidth, tileHeight, overlap: overlapPercent / 100 });
-  const blend = Math.min(clamp(blendRaw, 0, 16384, 50), g.overlapX);
-  const chain = sequentialStitchError(cols, rows);
-  const globalErr = cachedGlobal(cols, rows);
-  // Worst-tile error in σ units for square grids: chained √(2n − 2) against the global least-squares solution.
-  const noOverlap = overlapPercent === 0 || g.overlapX === 0 || g.overlapY === 0; // tiles can't be registered
+  const { grid: g, noOverlap, blend, seamSlope, chain, global: globalErr } = stitchingSummary(
+    { cols, rows, tileWidth, tileHeight, overlapPercent, blendWidth: clamp(blendRaw, 0, 16384, 50), profile, gain },
+    cachedGlobal,
+  );
   const squares = SQUARE_GRIDS.map((n) => cachedGlobal(n, n).max);
-
-  // A gain step Δ blended over w: the slope is Δ/w for the ramp and peaks at (π/2)·Δ/w mid-seam for cos².
-  const seamSlope = ((profile === "cosine" ? Math.PI / 2 : 1) * gain) / blend;
 
   const ts = Array.from({ length: 101 }, (_, k) => k / 100);
   const xs = ts.map((t) => (t - 0.5) * blend);

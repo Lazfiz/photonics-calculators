@@ -4,18 +4,14 @@ import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { c, h, hc_eV_nm } from "../../../physics/constants";
-import { focalIntensityRadius, mixedFocusFwhm } from "../../../physics/imaging/multiphoton-focus";
-import {
-  averageSfgPower, sfgCoefficient, sfgCoherenceLengths, sumFrequencyWavelength,
-} from "../../../physics/imaging/second-harmonic-generation";
+import { hc_eV_nm } from "../../../physics/constants";
+import { focalIntensityRadius } from "../../../physics/imaging/multiphoton-focus";
+import { averageSfgPower, sfgCoefficient, sumFrequencyWavelength } from "../../../physics/imaging/second-harmonic-generation";
+import { SFG_XI_MAX, SFG_XI_WARN, sfgSummary } from "../../../physics/imaging/sum-frequency-microscopy";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits: number, unit: string) => (Number.isFinite(x) ? `${x.toFixed(digits)} ${unit}` : "—");
 const sci = (x: number, unit: string) => (Number.isFinite(x) ? `${x.toExponential(2)} ${unit}` : "—");
-
-/** Above this L/b the thin-slab result is shown with a warning; above 1 it is withheld. */
-const XI_WARN = 0.1;
 
 export default function SumFrequencyMicroscopyPage() {
   const [l1Raw, setL1] = useURLState("lambda1", 1040); // nm
@@ -44,39 +40,36 @@ export default function SumFrequencyMicroscopyPage() {
 
   const focusOk = na < n; // the axial FWHM and the focus-derived power need NA < n
 
-  const results = useMemo(() => {
-    const lam1 = l1 * 1e-9, lam2 = l2 * 1e-9;
-    const w1 = focalIntensityRadius(lam1, na), w2 = focalIntensityRadius(lam2, na);
-    const sfg = sfgCoefficient({ lambda1: lam1, lambda2: lam2, length: thick * 1e-6, deff: deff * 1e-12, n, deltaN: dn, w1, w2 });
-    const lc = sfgCoherenceLengths(sfg.lambda3, n, dn);
-    const fwhm = mixedFocusFwhm([{ lambda: lam1, order: 1 }, { lambda: lam2, order: 1 }], n, na);
-    const power = averageSfgPower(sfg.K, p1 * 1e-3, p2 * 1e-3, frep * 1e6, tau * 1e-15);
-    return {
-      sfgNm: sumFrequencyWavelength(lam1, lam2) * 1e9,
-      w1: w1 * 1e6,
-      w2: w2 * 1e6,
-      lateralNm: focusOk ? fwhm.lateral * 1e9 : NaN,
-      axialUm: focusOk ? fwhm.axial * 1e6 : NaN,
-      xi: sfg.xi,
-      bMinUm: thick / sfg.xi,
-      forwardUm: lc.forward * 1e6,
-      backwardNm: lc.backward * 1e9,
-      power: sfg.xi <= 1 && focusOk ? power : NaN,
-    };
-  }, [l1, l2, na, n, focusOk, p1, p2, tau, frep, deff, thick, dn]);
+  const sfg = sfgSummary({
+    lambda1: l1 * 1e-9, lambda2: l2 * 1e-9, na, n, power1: p1 * 1e-3, power2: p2 * 1e-3, pulseWidth: tau * 1e-15,
+    repRate: frep * 1e6, deff: deff * 1e-12, thickness: thick * 1e-6, deltaN: dn,
+  });
+  const results = {
+    sfgNm: sfg.sfgWavelength * 1e9,
+    w1: sfg.w1 * 1e6,
+    w2: sfg.w2 * 1e6,
+    lateralNm: sfg.lateralFwhm * 1e9,
+    axialUm: sfg.axialFwhm * 1e6,
+    xi: sfg.xi,
+    bMinUm: sfg.bMin * 1e6,
+    forwardUm: sfg.forwardCoherenceLength * 1e6,
+    backwardNm: sfg.backwardCoherenceLength * 1e9,
+    power: sfg.power,
+    photonRate: sfg.photonRate,
+  };
 
   const wavelengthPlot = useMemo(() => {
     const lams2 = Array.from({ length: 161 }, (_, i) => 400 + i * 10);
     return [
       { x: lams2, y: lams2.map((l) => sumFrequencyWavelength(l1, l)), name: "SFG λ", line: { color: "#f472b6" }, type: "scatter", mode: "lines" },
-      { x: [l2], y: [results.sfgNm], name: "Current", marker: { color: "#fbbf24", size: 11 }, type: "scatter", mode: "markers" },
+      { x: [l2], y: [sumFrequencyWavelength(l1, l2)], name: "Current", marker: { color: "#fbbf24", size: 11 }, type: "scatter", mode: "markers" },
     ];
-  }, [l1, l2, results.sfgNm]);
+  }, [l1, l2]);
 
-  const thicknessPlot = useMemo(() => {
+  const thicknessPlot = (() => {
     const lam1 = l1 * 1e-9, lam2 = l2 * 1e-9;
     const w1 = focalIntensityRadius(lam1, na), w2 = focalIntensityRadius(lam2, na);
-    const bMin = results.bMinUm;
+    const bMin = sfg.bMin * 1e6;
     // Thin-slab law only: from b/1000 up to b.
     const start = Math.min(thick, bMin / 1000);
     const lengths = Array.from({ length: 61 }, (_, i) => start * (bMin / start) ** (i / 60));
@@ -87,9 +80,9 @@ export default function SumFrequencyMicroscopyPage() {
     };
     return [
       { x: lengths, y: lengths.map(at), name: "Thin slab, L² sinc²(ΔkL/2)", line: { color: "#60a5fa" }, type: "scatter", mode: "lines" },
-      ...(results.xi <= 1 && focusOk ? [{ x: [thick], y: [at(thick)], name: "Current", marker: { color: "#fbbf24", size: 11 }, type: "scatter", mode: "markers" }] : []),
+      ...(sfg.xi <= SFG_XI_MAX && focusOk ? [{ x: [thick], y: [at(thick)], name: "Current", marker: { color: "#fbbf24", size: 11 }, type: "scatter", mode: "markers" }] : []),
     ];
-  }, [l1, l2, na, n, p1, p2, tau, frep, deff, dn, thick, results.bMinUm, results.xi, focusOk]);
+  })();
 
   return (
     <>
@@ -110,10 +103,10 @@ export default function SumFrequencyMicroscopyPage() {
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
           <h2 className="text-lg font-semibold">Results</h2>
-          {results.xi > 1 && (
+          {results.xi > SFG_XI_MAX && (
             <p className="text-sm text-yellow-300" role="status">The layer is thicker than the focus (L/b = {results.xi.toFixed(2)}): the thin-slab power doesn&apos;t apply, so it isn&apos;t shown.</p>
           )}
-          {results.xi > XI_WARN && results.xi <= 1 && (
+          {focusOk && results.xi > SFG_XI_WARN && results.xi <= SFG_XI_MAX && (
             <p className="text-sm text-yellow-300" role="status">L/b = {results.xi.toFixed(2)}: the thin-slab power overestimates the signal as L approaches the confocal parameter.</p>
           )}
           {!focusOk && (
@@ -126,7 +119,7 @@ export default function SumFrequencyMicroscopyPage() {
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Smaller confocal parameter b</span><span className="font-mono">{fmt(results.bMinUm, 2, "µm")} (L/b = {results.xi.toFixed(3)})</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Coherence length, forward / backward</span><span className="font-mono text-blue-400">{fmt(results.forwardUm, 2, "µm")} / {fmt(results.backwardNm, 1, "nm")}</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Forward SFG power (thin layer)</span><span className="font-mono text-yellow-400">{sci(results.power * 1e12, "pW")}</span></div>
-          <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">SFG photons per second</span><span className="font-mono">{sci((results.power * results.sfgNm * 1e-9) / (h * c), "/s")}</span></div>
+          <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">SFG photons per second</span><span className="font-mono">{sci(results.photonRate, "/s")}</span></div>
           <div className="text-xs text-gray-500 mt-2 space-y-1">
             <p>ω₃ = ω₁ + ω₂, so 1/λ₃ = 1/λ₁ + 1/λ₂ (energy conservation).</p>
             <p>I₃ = 8π² d_eff² I₁ I₂ L² sinc²(ΔkL/2)/(ε₀ c n² n₃ λ₃²), Δk = −2πΔn/λ₃ (Boyd, Nonlinear Optics, eq. 2.2.10 integrated), over the overlap ∫I₁I₂ dA = 2P₁P₂/(π(w₁² + w₂²)).</p>
