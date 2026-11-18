@@ -10,6 +10,17 @@ import junctionCapacitance from "./detectors/capacitance";
 import ccdVsCmos from "./detectors/ccd-vs-cmos";
 import channelPhotomultiplier from "./detectors/channel-photomultiplier";
 import coolingBenefit from "./detectors/cooling-benefit";
+import cosmicRays from "./detectors/cosmic-rays";
+import darkCurrent from "./detectors/dark-current";
+import darkNoiseTemperature from "./detectors/dark-noise-temperature";
+import detectivity from "./detectors/detectivity";
+import electronMultiplying from "./detectors/electron-multiplying";
+import emGain from "./detectors/em-gain";
+import excessNoise from "./detectors/excess-noise";
+import flickerNoise from "./detectors/flicker-noise";
+import gainBandwidth from "./detectors/gain-bandwidth";
+import gainTemperature from "./detectors/gain-temperature";
+import geigerModeAvalanche from "./detectors/geiger-mode-avalanche";
 import attenuation from "./fiber-optics/attenuation";
 import bendInsensitive from "./fiber-optics/bend-insensitive";
 import birefringenceFiber from "./fiber-optics/birefringence-fiber";
@@ -363,6 +374,8 @@ export const schemas: readonly CalculatorSchema[] = [
   specialtyFiber, spliceLoss, srsThreshold, vNumber, wdmCoupler,
   afterpulsing, amplifierNoise, antiblooming, avalancheGain, backIllumination, detectorBandwidth,
   boxcarIntegrator, junctionCapacitance, ccdVsCmos, channelPhotomultiplier, coolingBenefit,
+  cosmicRays, darkCurrent, darkNoiseTemperature, detectivity, electronMultiplying, emGain,
+  excessNoise, flickerNoise, gainBandwidth, gainTemperature, geigerModeAvalanche,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));

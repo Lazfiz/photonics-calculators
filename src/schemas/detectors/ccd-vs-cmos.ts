@@ -2,7 +2,7 @@ import { evaluateSensor, SENSORS } from "../../physics/detectors/ccd-vs-cmos";
 import { defineSchema } from "../types";
 
 const JANESICK = "Janesick J. R. (2007). Photon Transfer: DN → λ. SPIE Press, doi:10.1117/3.725073: pixel SNR = S/√(S + D·t + σ_read²) " +
-  "and dynamic range 20·log₁₀(S_max/σ_read) (chapter and equation numbers not checked); sensor parameters are the representative values listed on the page.";
+  "and dynamic range 20·log₁₀(S_max/σ_read); sensor parameters are the representative values listed on the page.";
 const ROBBINS = "Robbins M. S., Hadwen B. J. (2003). The noise performance of electron multiplying charge-coupled devices. IEEE Trans. Electron Devices " +
   "50(5), 1227–1232, doi:10.1109/TED.2003.813462: F² = 2(G − 1)·G^(−(N+1)/N) + 1/G with N = 536 elements (Teledyne e2v CCD97-00 data sheet), " +
   "SNR = S/√(F²(S + D·t) + (σ_read/G)²); Andor iXon Ultra 897 specifications for the EMCCD wells and read noise.";

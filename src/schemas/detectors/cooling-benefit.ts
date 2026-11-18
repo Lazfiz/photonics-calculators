@@ -2,8 +2,8 @@ import { coolingSummary } from "../../physics/detectors/cooling-benefit";
 import { defineSchema } from "../types";
 
 const SZE = "Sze S. M., Ng K. K. (2007). Physics of Semiconductor Devices, 3rd ed. Wiley, doi:10.1002/0470068329: n_i ∝ T^(3/2)·exp(−E_g/2k_BT), " +
-  "depletion generation current ∝ n_i and diffusion current ∝ n_i² (ch. 1–2; equation numbers not checked); Varshni Y. P. (1967), Physica 34, 149–154, " +
-  "doi:10.1016/0031-8914(67)90062-6 for the E_g(T) form, with Sze's Si coefficients E_g(0) = 1.17 eV, α = 4.73e-4 eV/K, β = 636 K (Sze 2nd ed. 1981, ch. 1); Vurgaftman I., Meyer J. R., Ram-Mohan L. R. (2001), " +
+  "depletion generation current ∝ n_i and diffusion current ∝ n_i² (ch. 1–2); Varshni Y. P. (1967), Physica 34, 149–154, " +
+  "doi:10.1016/0031-8914(67)90062-6 for the E_g(T) form, with the Si coefficients E_g(0) = 1.17 eV, α = 4.73e-4 eV/K, β = 636 K of Thurmond C. D. (1975), J. Electrochem. Soc. 122, 1133–1141, doi:10.1149/1.2134410; Vurgaftman I., Meyer J. R., Ram-Mohan L. R. (2001), " +
   "J. Appl. Phys. 89, 5815–5875, doi:10.1063/1.1368156 (Tables I, III, XIII) for the In₀.₅₃Ga₀.₄₇As gap.";
 
 export default defineSchema({
