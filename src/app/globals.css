@@ -46,6 +46,12 @@ input[type="range"]::-moz-range-track {
   background: #374151;
 }
 
+/* Preflight sets sub/sup to 75 %, which is 9–10.5 px in the text-xs/text-sm formulas: keep them legible on phones. */
+sub,
+sup {
+  font-size: max(0.75em, 11px);
+}
+
 /* Home-page chip hero */
 @keyframes hero-photon-flow {
   from { stroke-dashoffset: 240; }
@@ -77,6 +83,20 @@ input[type="range"]::-moz-range-track {
   background-image:
     repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.012) 0, rgba(255, 255, 255, 0.012) 1px, transparent 1px, transparent 3px),
     radial-gradient(circle at var(--hero-sx, 50%) var(--hero-sy, 50%), rgba(0, 242, 255, 0.065) 0%, rgba(15, 23, 42, 0.02) 45%, transparent 75%);
+}
+/* Phones: crop the art to the chip and the three bays (viewBox x 520–1590, y 90–790) so they render 1.5× larger. */
+@media (width < 48rem) {
+  .hero-crop {
+    aspect-ratio: 1070 / 700;
+    overflow: hidden;
+  }
+  .hero-crop-art {
+    position: absolute;
+    left: calc(-520 / 1070 * 100%);
+    top: calc(-90 / 700 * 100%);
+    width: calc(1600 / 1070 * 100%);
+    height: calc(900 / 700 * 100%);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-photon,
