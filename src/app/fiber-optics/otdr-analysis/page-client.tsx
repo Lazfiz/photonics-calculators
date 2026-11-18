@@ -6,10 +6,8 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { c } from "../../../physics/constants";
-import { rayleighScatteringDbPerKm } from "../../../physics/fiber-optics/silica-attenuation";
 import {
-  backscatterRatio, captureFraction, dbPerKmToPerM, dynamicRangeDb, fresnelReflectance, noisePower, otdrTrace,
-  reflectivePeakDb, twoPointResolution,
+  backscatterRatio, dbPerKmToPerM, dynamicRangeDb, noisePower, otdrSummary, otdrTrace,
 } from "../../../physics/fiber-optics/otdr";
 
 const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
@@ -47,28 +45,11 @@ export default function OTDRAnalysisPage() {
   const nep = clamp(nepIn, 0.001, 1000);
   const averages = Math.round(clamp(averagesIn, 1, 1e8));
 
-  const calc = useMemo(() => {
-    const tau = pulse * 1e-9;
-    const resolution = twoPointResolution(tau, nGroup);
-    const alphaS_dBkm = rayleighScatteringDbPerKm(rayleighA, wavelength * 1e-9);
-    const S = captureFraction(wavelength * 1e-9, (mfd * 1e-6) / 2, nPhase);
-    const alpha = dbPerKmToPerM(loss);
-    const eta1 = backscatterRatio(S, dbPerKmToPerM(alphaS_dBkm), 1e-9, nGroup, alpha);
-    const eta = backscatterRatio(S, dbPerKmToPerM(alphaS_dBkm), tau, nGroup, alpha);
-    const pbs = 10 ** (peakPower / 10) * 1e-3 * eta; // W
-    const pn = noisePower(nep * 1e-12, tau, averages);
-    const dr = dynamicRangeDb(pbs, pn);
-    const spanLoss = loss * length + splices * spliceLoss;
-    const endR = fresnelReflectance(nPhase, 1);
-    return {
-      resolution, alphaS_dBkm, S, eta1, eta, pbs, pn, dr, spanLoss, endR,
-      farEndMargin: dr - spanLoss,
-      maxLength: dr > 0 ? dr / loss : NaN,
-      endPeak: reflectivePeakDb(endR, eta),
-      launchPeak: reflectivePeakDb(10 ** (launchR / 10), eta),
-      acquisition: (averages * 2 * nGroup * length * 1e3) / c,
-    };
-  }, [pulse, nGroup, rayleighA, wavelength, mfd, nPhase, peakPower, nep, averages, loss, length, splices, spliceLoss, launchR]);
+  const calc = otdrSummary({
+    wavelength: wavelength * 1e-9, modeFieldDiameter: mfd * 1e-6, rayleighA, lossDbPerKm: loss, nPhase, nGroup,
+    pulseWidth: pulse * 1e-9, length: length * 1e3, splices, spliceLossDb: spliceLoss, launchReflectanceDb: launchR,
+    peakPowerDbm: peakPower, nep: nep * 1e-12, averages,
+  });
 
   const traceData = useMemo(() => {
     const L = length * 1e3;

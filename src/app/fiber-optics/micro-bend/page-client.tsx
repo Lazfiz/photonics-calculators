@@ -5,14 +5,12 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { DB_PER_E_FOLD, MIN_V, lp01Mode, modeFieldRadius, vNumber } from "../../../physics/fiber-optics/macro-bending-loss";
+import { DB_PER_E_FOLD, MIN_V, lp01Mode, vNumber } from "../../../physics/fiber-optics/macro-bending-loss";
 import {
-  criticalPeriod, gaussianMicrobendLoss, peakTiltLoss, sinusoidalMicrobendLoss,
+  FIRST_ORDER_LIMIT, criticalPeriod, gaussianMicrobendLoss, microbendSummary, sinusoidalMicrobendLoss,
 } from "../../../physics/fiber-optics/microbend";
 
 const MIN_PLOTTED_DB = 1e-6;
-/** First-order coupled-mode theory needs both the peak tilt loss and the loss per period well below 1. */
-const FIRST_ORDER_LIMIT = 0.1;
 
 const fmtDb = (x: number) =>
   !Number.isFinite(x) ? "—" : x === 0 ? "0" : x >= 0.01 && x < 1e4 ? x.toPrecision(3) : x.toExponential(2);
@@ -29,25 +27,8 @@ export default function MicroBendPage() {
 
   const fiber = useMemo(() => ({ a: coreRadius * 1e-6, n1: coreIndex, NA: na }), [coreRadius, coreIndex, na]);
 
-  const calc = useMemo(() => {
-    const lambda = wavelength * 1e-9;
-    const V = vNumber(fiber, lambda);
-    const mode = lp01Mode(V);
-    const A = amplitudeNm * 1e-9;
-    const P = period * 1e-3;
-    const alpha = sinusoidalMicrobendLoss(fiber, lambda, A, P, mode);
-    const curvature = A * ((2 * Math.PI) / P) ** 2;
-    return {
-      V,
-      gaussian: DB_PER_E_FOLD * gaussianMicrobendLoss(fiber, lambda, A, P, mode),
-      firstOrder: Math.max(peakTiltLoss(fiber, lambda, A, P), alpha * P),
-      dBPerMetre: DB_PER_E_FOLD * alpha,
-      total: DB_PER_E_FOLD * alpha * length,
-      Lc_mm: criticalPeriod(fiber, lambda, mode) * 1e3,
-      minBendRadius_mm: curvature > 0 ? 1e3 / curvature : Infinity,
-      mfd_um: 2e6 * modeFieldRadius(fiber, lambda),
-    };
-  }, [fiber, wavelength, amplitudeNm, period, length]);
+  const summary = microbendSummary(fiber, wavelength * 1e-9, amplitudeNm * 1e-9, period * 1e-3, length);
+  const calc = { ...summary, Lc_mm: summary.Lc * 1e3, minBendRadius_mm: summary.minBendRadius * 1e3, mfd_um: summary.mfd * 1e6 };
 
   const chartData = useMemo(() => {
     const lambda = wavelength * 1e-9;

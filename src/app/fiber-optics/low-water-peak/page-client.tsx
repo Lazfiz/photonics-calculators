@@ -5,16 +5,12 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { intervalStats } from "../../../physics/math";
 import {
-  CWDM_CHANNELS, OH_BANDS, ohContentPpm, silicaLossDbPerKm, type SilicaLossParams,
+  CWDM_CHANNELS, OH_BANDS, ohContentPpm, silicaLossDbPerKm,
 } from "../../../physics/fiber-optics/silica-attenuation";
+import { G652D_MAX, lowWaterPeakSummary } from "../../../physics/fiber-optics/low-water-peak";
 
 const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
-/** E-band, ITU-T G-series band plan (Supplement 39): 1360–1460 nm. */
-const E_BAND: [number, number] = [1360e-9, 1460e-9];
-/** ITU-T G.652.D cable: maximum attenuation over 1310–1625 nm, which also bounds 1383 nm after hydrogen ageing, dB/km. */
-const G652D_MAX = 0.4;
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmtPpb = (dbPerKm: number) => {
   const ppb = ohContentPpm(dbPerKm) * 1000;
@@ -22,20 +18,6 @@ const fmtPpb = (dbPerKm: number) => {
 };
 /** Plotted values rounded to 6 decimals (the chart axis starts at the data minimum). */
 const r6 = (x: number) => Math.round(x * 1e6) / 1e6;
-
-function summarize(p: SilicaLossParams, length: number) {
-  const at = (l: number) => silicaLossDbPerKm(p, l).total;
-  const channels = CWDM_CHANNELS.map((l) => at(l) * length);
-  let worst = 0;
-  for (let i = 1; i < channels.length; i++) if (channels[i] > channels[worst]) worst = i;
-  return {
-    at1310: at(1310e-9),
-    at1383: at(1383e-9),
-    eBandMean: intervalStats(at, E_BAND[0], E_BAND[1], 200).mean,
-    channels,
-    worst,
-  };
-}
 
 export default function LowWaterPeakPage() {
   const [lengthRaw, setLength] = useURLState("length", 40); // km
@@ -49,14 +31,8 @@ export default function LowWaterPeakPage() {
   const rayleighA = clamp(rayleighARaw, 0.5, 1.5, 0.85);
   const geO2 = clamp(geO2Raw, 0, 30, 4);
 
-  const lwp = useMemo(
-    () => summarize({ rayleighA, geO2Fraction: geO2 / 100, ohPeakDbPerKm: ohLwp }, length),
-    [rayleighA, geO2, ohLwp, length],
-  );
-  const legacy = useMemo(
-    () => summarize({ rayleighA, geO2Fraction: geO2 / 100, ohPeakDbPerKm: ohLegacy }, length),
-    [rayleighA, geO2, ohLegacy, length],
-  );
+  const lwp = lowWaterPeakSummary({ rayleighA, geO2Fraction: geO2 / 100, ohPeakDbPerKm: ohLwp }, length);
+  const legacy = lowWaterPeakSummary({ rayleighA, geO2Fraction: geO2 / 100, ohPeakDbPerKm: ohLegacy }, length);
 
   const spectrumData = useMemo(() => {
     const wls: number[] = [];

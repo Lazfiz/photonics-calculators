@@ -20,6 +20,7 @@
  */
 import { c } from "../constants";
 import { normalIncidenceReflectance } from "../polarization/fresnel";
+import { rayleighScatteringDbPerKm } from "./silica-attenuation";
 
 /** dB/km → power attenuation coefficient in 1/m. */
 export const dbPerKmToPerM = (dbPerKm: number) => (dbPerKm * Math.LN10) / 10 / 1000;
@@ -127,4 +128,86 @@ export function otdrTrace(p: OtdrTraceParams): { z: number[]; level: number[]; n
   // Under the end peak the local backscatter stays (the peak height is 5 log₁₀(1 + R/η) above it).
   const level = z.map((x) => toDb((x < L + dz ? backscatter(Math.min(x, L)) : 0) + reflection(x)));
   return { z, level, noiseDb: 5 * Math.log10(p.noiseRatio) };
+}
+
+export interface OtdrSummaryParams {
+  /** Vacuum wavelength, m; mode field diameter, m. */
+  wavelength: number;
+  modeFieldDiameter: number;
+  /** Rayleigh coefficient A, dB·km⁻¹·µm⁴ (α_s = A/λ⁴). */
+  rayleighA: number;
+  /** Total fibre loss, dB/km. */
+  lossDbPerKm: number;
+  /** Phase index (capture fraction, far-end Fresnel reflectance) and group index (resolution, backscatter). */
+  nPhase: number;
+  nGroup: number;
+  /** Pulse width, s. */
+  pulseWidth: number;
+  /** Fibre length, m. */
+  length: number;
+  /** Number of splices and loss of each, dB. */
+  splices: number;
+  spliceLossDb: number;
+  /** Launch connector reflectance, dB (negative). */
+  launchReflectanceDb: number;
+  /** Peak launch power, dBm. */
+  peakPowerDbm: number;
+  /** Receiver NEP, W/√Hz, and number of averaged traces. */
+  nep: number;
+  averages: number;
+}
+
+export interface OtdrSummary {
+  /** Two-point resolution, m. */
+  resolution: number;
+  /** Rayleigh scattering loss A/λ⁴, dB/km. */
+  alphaS_dBkm: number;
+  /** Capture fraction S. */
+  S: number;
+  /** Backscatter coefficient at 1 ns and at the pulse width (ratios). */
+  eta1: number;
+  eta: number;
+  /** Near-end backscatter power (W) and noise level (W). */
+  pbs: number;
+  pn: number;
+  /** One-way dynamic range, dB. */
+  dr: number;
+  /** Span loss of fibre plus splices, dB. */
+  spanLoss: number;
+  /** Fresnel reflectance of a cleaved far end (power ratio). */
+  endR: number;
+  /** Dynamic range minus span loss, dB. */
+  farEndMargin: number;
+  /** Clean-fibre reach DR/α, km; NaN unless the dynamic range is positive. */
+  maxLength: number;
+  /** Peak heights of the far-end and launch reflections above the backscatter, one-way dB. */
+  endPeak: number;
+  launchPeak: number;
+  /** Time for the averages to be taken, s. */
+  acquisition: number;
+}
+
+/** Everything the OTDR page shows as a number, from SI inputs (dB where named). */
+export function otdrSummary(p: OtdrSummaryParams): OtdrSummary {
+  const tau = p.pulseWidth;
+  const lengthKm = p.length / 1e3;
+  const resolution = twoPointResolution(tau, p.nGroup);
+  const alphaS_dBkm = rayleighScatteringDbPerKm(p.rayleighA, p.wavelength);
+  const S = captureFraction(p.wavelength, p.modeFieldDiameter / 2, p.nPhase);
+  const alpha = dbPerKmToPerM(p.lossDbPerKm);
+  const eta1 = backscatterRatio(S, dbPerKmToPerM(alphaS_dBkm), 1e-9, p.nGroup, alpha);
+  const eta = backscatterRatio(S, dbPerKmToPerM(alphaS_dBkm), tau, p.nGroup, alpha);
+  const pbs = 10 ** (p.peakPowerDbm / 10) * 1e-3 * eta; // W
+  const pn = noisePower(p.nep, tau, p.averages);
+  const dr = dynamicRangeDb(pbs, pn);
+  const spanLoss = p.lossDbPerKm * lengthKm + p.splices * p.spliceLossDb;
+  const endR = fresnelReflectance(p.nPhase, 1);
+  return {
+    resolution, alphaS_dBkm, S, eta1, eta, pbs, pn, dr, spanLoss, endR,
+    farEndMargin: dr - spanLoss,
+    maxLength: dr > 0 ? dr / p.lossDbPerKm : NaN,
+    endPeak: reflectivePeakDb(endR, eta),
+    launchPeak: reflectivePeakDb(10 ** (p.launchReflectanceDb / 10), eta),
+    acquisition: (p.averages * 2 * p.nGroup * p.length) / c,
+  };
 }

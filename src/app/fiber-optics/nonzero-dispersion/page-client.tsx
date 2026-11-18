@@ -5,17 +5,11 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { wavelengthWidth } from "../../../physics/spectroscopy/wavenumber";
-import { fwmPhaseMismatch } from "../../../physics/fiber-optics/fiber-nonlinear";
-import {
-  beta2FromD, beta3FromDS, linearDispersion, linearZeroDispersionWavelength, presetDispersion,
-} from "../../../physics/fiber-optics/chromatic-dispersion";
+import { C_BAND_NM as C_BAND, NZDSF_BAND_MAX_NM as BAND_MAX, NZDSF_BAND_MIN_NM as BAND_MIN, nonzeroDispersionSummary } from "../../../physics/fiber-optics/nonzero-dispersion";
+import { linearDispersion, presetDispersion } from "../../../physics/fiber-optics/chromatic-dispersion";
 
 const nm = 1e-9, km = 1e3;
 const PS_NM_KM = 1e-6, PS_NM2_KM = 1e3;
-// The linear model about 1550 nm holds across the S, C and L bands only.
-const BAND_MIN = 1460, BAND_MAX = 1625;
-const C_BAND = [1530, 1565] as const; // nm
 
 export default function NonzeroDispersionPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: BAND_MIN, max: BAND_MAX }); // nm
@@ -26,29 +20,10 @@ export default function NonzeroDispersionPage() {
 
   const valid = wavelength >= BAND_MIN && wavelength <= BAND_MAX && length > 0 && channelSpacing > 0;
 
-  const calc = useMemo(() => {
-    const lam = wavelength * nm;
-    const fiber = { D: dispAt1550 * PS_NM_KM, S: dispSlope * PS_NM2_KM };
-    const D = linearDispersion(fiber, lam);
-    const lambda0 = linearZeroDispersionWavelength(fiber);
-    // Channel spacing in wavelength Δλ = λ²Δν/c; FWM phase mismatch between adjacent channels (degenerate, equal spacing),
-    // Δβ = −(2πΔν)²[β₂ + β₃·2πΔν], including β₃; the smaller of the ± offsets (stronger FWM) is shown.
-    const dnu = channelSpacing * 1e9;
-    const deltaLambda = wavelengthWidth(lam, dnu);
-    const beta2 = beta2FromD(D, lam);
-    const beta3 = beta3FromDS(D, fiber.S, lam);
-    const deltaBeta = Math.min(
-      Math.abs(fwmPhaseMismatch(beta2, dnu, dnu, beta3)),
-      Math.abs(fwmPhaseMismatch(beta2, -dnu, -dnu, beta3)),
-    );
-    const lambda0InBand = Number.isFinite(lambda0) && dispSlope !== 0 && lambda0 / nm >= BAND_MIN && lambda0 / nm <= BAND_MAX;
-    // Linear D(λ) is monotonic, so the C-band extremes are at its ends.
-    const dC1 = linearDispersion(fiber, C_BAND[0] * nm), dC2 = linearDispersion(fiber, C_BAND[1] * nm);
-    const dCMin = Math.min(dC1, dC2), dCMax = Math.max(dC1, dC2);
-    const dSMF = presetDispersion("G652", lam);
-    const dDSF = presetDispersion("DSF", lam);
-    return { D, lambda0, lambda0InBand, dCMin, dCMax, totalDisp: D * length * km, deltaLambda, deltaBeta, dSMF, dDSF };
-  }, [wavelength, length, dispSlope, dispAt1550, channelSpacing]);
+  const calc = nonzeroDispersionSummary({
+    wavelength: wavelength * nm, length: length * km, dispAt1550: dispAt1550 * PS_NM_KM, dispSlope: dispSlope * PS_NM2_KM,
+    channelSpacing: channelSpacing * 1e9,
+  });
 
   const dispCurveData = useMemo(() => {
     const wls = Array.from({ length: (BAND_MAX - BAND_MIN) / 5 + 1 }, (_, i) => BAND_MIN + i * 5);
@@ -74,10 +49,9 @@ export default function NonzeroDispersionPage() {
 
   const show = (v: number, digits: number, unit = "") =>
     !valid ? "—" : Number.isFinite(v) ? `${v.toFixed(digits)}${unit}` : "—";
-  // |D| below 1e-3 ps/(nm·km) counts as zero: λ − 1550 nm in floating point leaves ~1e-22 s/m² at λ₀.
-  const nzZero = Math.abs(calc.D) < 1e-3 * PS_NM_KM;
-  const fwmRisk = valid && (Math.min(Math.abs(calc.dCMin), Math.abs(calc.dCMax)) < 1 * PS_NM_KM || calc.dCMin * calc.dCMax < 0);
-  const ratio = Math.abs(calc.dSMF) / Math.abs(calc.D);
+  const { nzZero } = calc;
+  const fwmRisk = valid && calc.fwmRisk;
+  const ratio = calc.smfRatio;
 
   return (
     <>

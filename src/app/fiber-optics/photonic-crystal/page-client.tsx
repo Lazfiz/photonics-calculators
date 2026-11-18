@@ -6,7 +6,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  FIT_D_OVER_PITCH, FIT_MAX_LAMBDA_OVER_PITCH, NIELSEN_V_RANGE, V_CUTOFF, cutoffWavelength, endlesslySingleModeLimit, inDRange, pcfDispersion, pcfMode, saitohKoshibaV,
+  FIT_D_OVER_PITCH, FIT_MAX_LAMBDA_OVER_PITCH, NIELSEN_V_RANGE, V_CUTOFF, cutoffWavelength, endlesslySingleModeLimit, pcfDispersion, pcfGuidance, pcfInputStatus, pcfMode, saitohKoshibaV,
 } from "../../../physics/fiber-optics/photonic-crystal";
 
 const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
@@ -21,10 +21,8 @@ export default function PhotonicCrystalFiberCalculator() {
   const [holeDiameter, setHoleDiameter] = useURLState("holeDiameter", 2.7, { min: 0.05 }); // µm, d
   const [wavelength, setWavelength] = useURLState("wavelength", 1550, { min: 300, max: 3000 }); // nm
 
-  const geometryBad = !(pitch > 0 && holeDiameter > 0 && holeDiameter < pitch);
+  const { geometryBad, lambdaBad, dOutOfFit } = pcfInputStatus(pitch * 1e-6, holeDiameter * 1e-6, wavelength * 1e-9);
   const r = holeDiameter / pitch;
-  const dOutOfFit = !geometryBad && !inDRange(r);
-  const lambdaBad = !(wavelength >= 300 && wavelength <= 3000);
 
   const mode = useMemo(
     () => (geometryBad || lambdaBad ? null : pcfMode(pitch * 1e-6, holeDiameter * 1e-6, wavelength * 1e-9)),
@@ -82,6 +80,7 @@ export default function PhotonicCrystalFiberCalculator() {
     return out;
   }, [pitch, holeDiameter, geometryBad, plotLo, plotHi]);
 
+  const guidance = pcfGuidance(mode);
   const D_ps = mode ? mode.dispersion / PS_NM_KM : NaN;
   const cutoff_nm = mode ? mode.cutoffWavelength * 1e9 : NaN;
 
@@ -124,12 +123,12 @@ export default function PhotonicCrystalFiberCalculator() {
         />
         <ResultCard
           label="Guidance"
-          value={!mode || !Number.isFinite(mode.V) ? "—" : mode.endlesslySingleMode ? "Endlessly single-mode" : mode.singleMode ? "Single-mode" : "Multimode"}
-          tone={!mode || !Number.isFinite(mode.V) ? "gray" : mode.singleMode ? "green" : "orange"}
+          value={guidance === "none" ? "—" : guidance === "endlessly-single-mode" ? "Endlessly single-mode" : guidance === "single-mode" ? "Single-mode" : "Multimode"}
+          tone={!mode || guidance === "none" ? "gray" : mode.singleMode ? "green" : "orange"}
           subtext={
-            !mode || !Number.isFinite(mode.V)
+            !mode || guidance === "none"
               ? undefined
-              : mode.endlesslySingleMode
+              : guidance === "endlessly-single-mode"
                 ? `d/Λ below ${ESM_LIMIT.toFixed(3)}: V < 2.405 at every λ`
                 : `second-mode cutoff λ_c = ${Number.isFinite(cutoff_nm) ? `${cutoff_nm.toFixed(0)} nm` : "beyond the fit"}`
           }

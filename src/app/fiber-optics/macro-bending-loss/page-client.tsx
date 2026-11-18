@@ -6,10 +6,9 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  DB_PER_E_FOLD, LP11_CUTOFF_V, MFD_FIT_V_RANGE, MIN_V, bendLossCoefficient, bendLossPerTurnDb, elastoOpticBendRadius, lp01Mode,
-  lp11CutoffWavelength, modeFieldRadius, vNumber,
+  LP11_CUTOFF_V, MFD_FIT_V_RANGE, MIN_V, bendLossPerTurnDb, elastoOpticBendRadius, lp01Mode, vNumber,
 } from "../../../physics/fiber-optics/macro-bending-loss";
-import { claddingIndex } from "../../../physics/fiber-optics/step-index-modes";
+import { macroBendSummary } from "../../../physics/fiber-optics/macro-bending-loss-summary";
 
 const CHART_WAVELENGTHS_NM = [1310, 1550, 1625];
 // Log-axis floor for the charts: smaller losses are below any measurement and would only stretch the axis.
@@ -40,22 +39,8 @@ export default function MacrobendingLossPage() {
 
   const fiber = useMemo(() => ({ a: coreRadius * 1e-6, n1: coreIndex, NA: coreNA }), [coreRadius, coreIndex, coreNA]);
 
-  const calc = useMemo(() => {
-    const lambda = wavelength * 1e-9;
-    const R = bendRadius * 1e-3;
-    const V = vNumber(fiber, lambda);
-    const mode = lp01Mode(V);
-    const perTurn = bendLossPerTurnDb(fiber, lambda, R, mode, eo);
-    return {
-      V,
-      n2: claddingIndex(fiber),
-      dBPerMetre: DB_PER_E_FOLD * bendLossCoefficient(fiber, lambda, eo ? elastoOpticBendRadius(R, fiber.n1) : R, mode),
-      perTurn,
-      total: perTurn * numBends,
-      mfd_um: 2 * modeFieldRadius(fiber, lambda) * 1e6,
-      cutoff_nm: lp11CutoffWavelength(fiber) * 1e9,
-    };
-  }, [fiber, wavelength, bendRadius, numBends, eo]);
+  const summary = macroBendSummary(fiber, wavelength * 1e-9, bendRadius * 1e-3, numBends, eo);
+  const calc = { ...summary, mfd_um: summary.mfd * 1e6, cutoff_nm: summary.cutoff * 1e9 };
 
   const radiusData = useMemo(() => {
     // 5–30 mm, widened to keep the input radius on the chart.
