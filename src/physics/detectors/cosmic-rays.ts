@@ -10,6 +10,7 @@
  */
 
 import { N_A, a_0, alpha, c, eV, m_e } from "../constants";
+import { poissonQuantile } from "../math";
 
 /** Mean energy loss of a minimum-ionizing particle in Si, eV/m (1.664 MeV g⁻¹ cm² × 2.329 g/cm³). */
 export const SI_DEDX_MIN = 1.664e6 * 2.329 * 100;
@@ -68,4 +69,37 @@ export function pixelsPerTrack(projected: number, pitch: number): number {
 /** Fraction of pixels hit when μ tracks of n pixels each land at random among N pixels: 1 − exp(−μ n/N). */
 export function hitPixelFraction(hits: number, pixelsPerHit: number, pixels: number): number {
   return pixels > 0 && hits >= 0 && pixelsPerHit >= 0 ? -Math.expm1((-hits * pixelsPerHit) / pixels) : NaN;
+}
+
+export interface CosmicRayInputs {
+  /** Muon flux through the sensor plane, m⁻² s⁻¹. */
+  flux: number;
+  /** Sensor area, m². */
+  area: number;
+  /** Exposure time per frame, s. */
+  exposure: number;
+  /** Pixel pitch, m. */
+  pitch: number;
+  /** Sensitive layer thickness, m. */
+  thickness: number;
+  /** Zenith angle, rad. */
+  zenith: number;
+  /** Frames in the series (rounded to an integer). */
+  frames: number;
+}
+
+/** Everything the cosmic-rays page and its API schema show, in SI (charge in e⁻, lengths in m). */
+export function cosmicRaySummary(p: CosmicRayInputs) {
+  const hits = p.flux * p.area * p.exposure;
+  const hits99 = poissonQuantile(0.99, hits);
+  const path = pathLength(p.thickness, p.zenith);
+  const meanCharge = path * SI_MEAN_PAIRS_PER_M;
+  const mpvCharge = mostProbableLoss(path) / SI_PAIR_ENERGY;
+  const projected = projectedLength(p.thickness, p.zenith);
+  const pixelsHit = pixelsPerTrack(projected, p.pitch);
+  const hitFraction = hitPixelFraction(hits, pixelsHit, p.area / p.pitch ** 2);
+  return {
+    hits, hits99, path, meanCharge, mpvCharge, projected, pixelsHit,
+    pixelsHitPerFrame: hits * pixelsHit, hitFraction, hitsInFrames: hits * Math.round(p.frames),
+  };
 }

@@ -4,7 +4,8 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { cameraSnr, EM_REGISTER_STAGES, emExcessNoiseFactorSq } from "../../../physics/detectors/camera-snr";
+import { EM_REGISTER_STAGES } from "../../../physics/detectors/camera-snr";
+import { emccdSnrAt, emVsScmosSummary, scmosSnrAt } from "../../../physics/detectors/electron-multiplying";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fix = (x: number, digits = 2) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
@@ -24,13 +25,10 @@ export default function ElectronMultiplyingPage() {
   const emGain = clamp(emGainRaw, 1, 1e4, 1000);
   const stages = Math.round(clamp(stagesRaw, 1, 2000, EM_REGISTER_STAGES));
 
-  const emccdAt = (signal: number, gain: number) =>
-    cameraSnr({ signal, dark: darkCurrent, read: emccdReadNoise, gain, excessNoiseFactorSq: emExcessNoiseFactorSq(gain, stages) });
-  const scmosAt = (signal: number) => cameraSnr({ signal, dark: darkCurrent, read: scmosReadNoise });
-  const enf2 = emExcessNoiseFactorSq(emGain, stages);
-  const emccdSNR = emccdAt(signalElectrons, emGain);
-  const scmosSNR = scmosAt(signalElectrons);
-  const winner = !Number.isFinite(emccdSNR) || !Number.isFinite(scmosSNR) ? "—" : Math.abs(emccdSNR - scmosSNR) < 1e-9 ? "tie" : emccdSNR > scmosSNR ? "EMCCD" : "sCMOS";
+  const params = { signal: signalElectrons, dark: darkCurrent, emccdRead: emccdReadNoise, scmosRead: scmosReadNoise, gain: emGain, stages };
+  const emccdAt = (signal: number, gain: number) => emccdSnrAt(params, signal, gain);
+  const scmosAt = (signal: number) => scmosSnrAt(params, signal);
+  const { enf2, emccdSnr: emccdSNR, scmosSnr: scmosSNR, winner } = emVsScmosSummary(params);
 
   const signals = Array.from({ length: 201 }, (_, i) => 10 ** (-1 + i / 50));
   const snrVsSignal = [

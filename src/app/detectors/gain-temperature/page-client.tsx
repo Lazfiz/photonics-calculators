@@ -4,7 +4,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { driftExponent, gainAtTemperature, gainTemperatureCoefficient } from "../../../physics/detectors/apd";
+import { gainTemperatureSummary } from "../../../physics/detectors/gain-temperature";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 // Breakdown (Infinity) and invalid points become gaps.
@@ -32,18 +32,9 @@ export default function GainTemperaturePage() {
   const tempMin = clamp(tempMinRaw, -100, 150, 0);
   const tempMax = Math.max(tempMin + 1, clamp(tempMaxRaw, -100, 150, 60));
 
-  const apd = { gainRef, breakdownRef: breakdown, marginRef: margin, breakdownCoeff: vbrCoeff };
-  const n = driftExponent(apd);
-  // PMT: constant relative coefficient β (1/°C), M = M_ref·exp(β·ΔT).
-  const gainAt = (T: number) =>
-    detector === "apd" ? gainAtTemperature(apd, T - tempRef) : gainRef * Math.exp((pmtCoeff / 100) * (T - tempRef));
-  const coeffPercent = detector === "apd" ? 100 * gainTemperatureCoefficient(apd) : pmtCoeff;
-  // V_br(T) reaches the bias V_br,ref − margin at ΔT = −margin/γ.
-  const breakdownTemp = detector === "apd" && vbrCoeff > 0 ? tempRef - margin / vbrCoeff : NaN;
-
-  const gainAtMin = gainAt(tempMin);
-  const gainAtMax = gainAt(tempMax);
-  const ratio = gainAtMin / gainAtMax;
+  const { gainAt, coeffPercent, exponent: n, breakdownTemp, gainAtMin, gainAtMax, ratio } = gainTemperatureSummary(
+    { detector, gainRef, tempRef, breakdown, margin, vbrCoeff, pmtCoeff }, tempMin, tempMax,
+  );
 
   const temps = Array.from({ length: 300 }, (_, i) => tempMin + (i * (tempMax - tempMin)) / 299);
   const chartData = [

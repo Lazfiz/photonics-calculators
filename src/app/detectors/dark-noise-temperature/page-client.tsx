@@ -4,9 +4,11 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { darkCurrentRatio, type DarkCurrentMechanism } from "../../../physics/detectors/dark-current";
-import { VARSHNI, varshniBandGap } from "../../../physics/materials/bandgap";
-import { shotNoiseCurrent } from "../../../physics/detectors/noise";
+import type { DarkCurrentMechanism } from "../../../physics/detectors/dark-current";
+import {
+  COLD_TEMPERATURE_C, darkCurrentAtTemperature, darkNoiseAtTemperature, darkNoiseSummary, GAP_MODELS, HOT_TEMPERATURE_C,
+  type DarkNoiseParams, type GapModel,
+} from "../../../physics/detectors/dark-noise-temperature";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 /** Current in A with an SI prefix (fA … mA). */
@@ -16,10 +18,6 @@ const fmtA = (i: number) => {
   for (const [scale, unit] of units) if (Math.abs(i) >= scale) return `${(i / scale).toPrecision(3)} ${unit}`;
   return `${(i / 1e-15).toExponential(2)} fA`;
 };
-const KELVIN = 273.15;
-const T_REF = 25 + KELVIN;
-const GAP_MODELS = ["fixed", "si", "ge"] as const;
-type GapModel = (typeof GAP_MODELS)[number];
 
 export default function DarkNoiseTemperaturePage() {
   const [darkCurrent25Raw, setDarkCurrent25] = useURLState("darkCurrent25", 0.5); // nA
@@ -33,12 +31,13 @@ export default function DarkNoiseTemperaturePage() {
   const gapModel: GapModel = GAP_MODELS.find(m => m === gapModelRaw) ?? "si";
   const mechanism: DarkCurrentMechanism = mechanismRaw === "diffusion" ? "diffusion" : "generation";
 
-  const gapAt = (T: number) => (gapModel === "fixed" ? eg : varshniBandGap(T, VARSHNI[gapModel]));
-  const darkCurrentAtT = (Tc: number) => darkCurrent25 * darkCurrentRatio(Tc + KELVIN, T_REF, gapAt(Tc + KELVIN), mechanism, gapAt(T_REF));
-  const darkNoiseAtT = (Tc: number) => shotNoiseCurrent(darkCurrentAtT(Tc), bandwidth);
+  const params: DarkNoiseParams = { darkCurrent25, eg, bandwidth, gapModel, mechanism };
+  const { dark25, noise25, darkCold, ratio, gap25, gapCold } = darkNoiseSummary(params);
+  const darkCurrentAtT = (Tc: number) => darkCurrentAtTemperature(params, Tc);
+  const darkNoiseAtT = (Tc: number) => darkNoiseAtTemperature(params, Tc);
 
   const n = 121;
-  const temps = Array.from({ length: n }, (_, i) => -40 + (i * 120) / (n - 1));
+  const temps = Array.from({ length: n }, (_, i) => COLD_TEMPERATURE_C + (i * (HOT_TEMPERATURE_C - COLD_TEMPERATURE_C)) / (n - 1));
   const chartData = [
     { x: temps, y: temps.map(T => darkCurrentAtT(T) * 1e9), type: "scatter", mode: "lines", name: "Dark current (nA)", line: { color: "#f87171", width: 2 }, yaxis: "y" },
     { x: temps, y: temps.map(T => darkNoiseAtT(T) * 1e15), type: "scatter", mode: "lines", name: "Shot noise (fA rms)", line: { color: "#60a5fa", width: 2 }, yaxis: "y2" },
@@ -67,14 +66,14 @@ export default function DarkNoiseTemperaturePage() {
         {gapModel === "fixed" ? (
           <ValidatedNumberInput label="Band Gap E_g (eV)" value={egRaw} onChange={setEg} min={0.1} max={6} step="0.01" />
         ) : (
-          <p className="text-sm text-gray-400 self-end pb-2">E_g(25 °C) = {gapAt(T_REF).toFixed(4)} eV, E_g(−40 °C) = {gapAt(-40 + KELVIN).toFixed(4)} eV</p>
+          <p className="text-sm text-gray-400 self-end pb-2">E_g(25 °C) = {gap25.toFixed(4)} eV, E_g(−40 °C) = {gapCold.toFixed(4)} eV</p>
         )}
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ResultCard label="Dark @ 25 °C" value={fmtA(darkCurrentAtT(25))} tone="blue" />
-        <ResultCard label="Shot noise @ 25 °C" value={`${fmtA(darkNoiseAtT(25))} rms`} tone="yellow" subtext={`in ${bandwidth} Hz`} />
-        <ResultCard label="Dark @ −40 °C" value={fmtA(darkCurrentAtT(-40))} tone="green" />
-        <ResultCard label="Ratio (80 / −40 °C)" value={`×${(darkCurrentAtT(80) / darkCurrentAtT(-40)).toExponential(1)}`} tone="red" />
+        <ResultCard label="Dark @ 25 °C" value={fmtA(dark25)} tone="blue" />
+        <ResultCard label="Shot noise @ 25 °C" value={`${fmtA(noise25)} rms`} tone="yellow" subtext={`in ${bandwidth} Hz`} />
+        <ResultCard label="Dark @ −40 °C" value={fmtA(darkCold)} tone="green" />
+        <ResultCard label="Ratio (80 / −40 °C)" value={`×${ratio.toExponential(1)}`} tone="red" />
       </div>
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1">
         <p>n_i ∝ T^(3/2) · exp(−E_g(T) / 2k_BT); &nbsp;I_dark ∝ n_i (generation) or n_i² (diffusion)</p>

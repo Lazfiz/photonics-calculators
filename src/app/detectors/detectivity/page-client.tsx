@@ -4,9 +4,10 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { hc_eV_nm, k_B, q } from "../../../physics/constants";
 import { darkCurrentRatio, type DarkCurrentMechanism } from "../../../physics/detectors/dark-current";
-import { detectorDetectivity, johnsonNoise, noiseEquivalentPower, responsivity as responsivityOf, shotNoiseCurrent, specificDetectivity } from "../../../physics/detectors/noise";
+import {
+  detectivitySummary, detectorDStarAt, responsivityAt, systemDStar, systemNoiseCurrent, type DetectivityParams,
+} from "../../../physics/detectors/detectivity";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 3) => (Number.isFinite(x) && x > 0 ? x.toExponential(digits) : "—");
@@ -37,36 +38,24 @@ export default function DetectivityPage() {
   const r0a = clamp(r0aRaw, 1e-6, 1e15, 1e7); // Ω·cm²
   const gain = clamp(gainRaw, 1, 1e4, 1);
   const excessNoiseFactor = clamp(excessNoiseFactorRaw, 1, 1e4, 1);
-  const bandGap_eV = hc_eV_nm / cutoff_nm;
-
-  // ℛ = η·q·λ/(h·c) below the cutoff λ_c = h·c/E_g, zero above it (η held constant up to λ_c).
-  const responsivityAt = (lambda_nm: number) => (lambda_nm <= cutoff_nm ? responsivityOf(qe, lambda_nm * 1e-9) : 0);
-  // Multiplied dark-current shot noise 2q·I_d·M²·F·B and load Johnson noise 4kTB/R_L; the signal current is ℛ·M·P.
-  const noiseCurrent = (Id: number, T: number) =>
-    Math.hypot(shotNoiseCurrent(Id, bandwidth) * gain * Math.sqrt(excessNoiseFactor), johnsonNoise(loadResistance, T, bandwidth).i);
-  const dStar = (R: number, iNoise: number) => (R > 0 ? specificDetectivity(area_cm2, bandwidth, noiseEquivalentPower(iNoise, R, gain)) : NaN);
-  // The detector's own D* from J_d = I_d/A and R₀A: independent of area, bandwidth and the load.
-  const dStarDetector = (R: number, Id: number, rA: number, T: number) =>
-    detectorDetectivity({ responsivity: R, darkCurrentDensity: Id / area_cm2, r0a: rA, temperature: T, gain, excessNoiseFactor });
-
-  const responsivity = responsivityAt(wavelength_nm);
-  const shotNoise = shotNoiseCurrent(darkCurrent, bandwidth) * gain * Math.sqrt(excessNoiseFactor);
-  const thermalNoise = johnsonNoise(loadResistance, temperature, bandwidth).i;
-  const totalNoise = noiseCurrent(darkCurrent, temperature);
-  const nepSpectral = responsivity > 0 ? noiseEquivalentPower(totalNoise, responsivity, gain) / Math.sqrt(bandwidth) : NaN; // W/√Hz
-  const detectivity = dStar(responsivity, totalNoise);
-  const detectorDStar = dStarDetector(responsivity, darkCurrent, r0a, temperature);
-  const jd = darkCurrent / area_cm2; // A/cm²
-  const shotVariance = 2 * q * jd * gain * gain * excessNoiseFactor;
-  const johnsonVariance = (4 * k_B * temperature) / r0a;
+  const params: DetectivityParams = {
+    wavelength_nm, cutoff_nm, qe, darkCurrent, area_cm2, bandwidth, temperature, loadResistance, r0a, gain, excessNoiseFactor,
+  };
+  const {
+    bandGap_eV, responsivity, detectorDStar, systemDStar: detectivity, nepSpectral, shotNoise, thermalNoise, totalNoise, jd,
+    shotVariance, johnsonVariance,
+  } = detectivitySummary(params);
+  const responsivityAtWl = (lambda_nm: number) => responsivityAt(params, lambda_nm);
+  const dStar = (R: number, iNoise: number) => systemDStar(params, R, iNoise);
+  const dStarDetector = (R: number, Id: number, rA: number, T: number) => detectorDStarAt(params, R, Id, rA, T);
 
   const spectralChart = (() => {
     const wlMax = Math.max(1.2 * cutoff_nm, wavelength_nm);
     const wl = Array.from({ length: 300 }, (_, i) => 200 + (i * (wlMax - 200)) / 299);
     const finite = (d: number) => (Number.isFinite(d) ? d : 0);
     return [
-      { x: wl, y: wl.map(w => finite(dStarDetector(responsivityAt(w), darkCurrent, r0a, temperature))), type: "scatter", mode: "lines", name: "Detector D*", line: { color: "#60a5fa", width: 2 } },
-      { x: wl, y: wl.map(w => finite(dStar(responsivityAt(w), totalNoise))), type: "scatter", mode: "lines", name: "System D* (incl. R_L)", line: { color: "#a78bfa", width: 2, dash: "dash" } },
+      { x: wl, y: wl.map(w => finite(dStarDetector(responsivityAtWl(w), darkCurrent, r0a, temperature))), type: "scatter", mode: "lines", name: "Detector D*", line: { color: "#60a5fa", width: 2 } },
+      { x: wl, y: wl.map(w => finite(dStar(responsivityAtWl(w), totalNoise))), type: "scatter", mode: "lines", name: "System D* (incl. R_L)", line: { color: "#a78bfa", width: 2, dash: "dash" } },
     ];
   })();
 
@@ -76,7 +65,7 @@ export default function DetectivityPage() {
     // the load stays at the entered temperature.
     const ratio = temps.map(T => darkCurrentRatio(T, temperature, bandGap_eV, darkLaw));
     const det = temps.map((T, i) => dStarDetector(responsivity, darkCurrent * ratio[i], r0a / ratio[i], T));
-    const sys = ratio.map(r => dStar(responsivity, noiseCurrent(darkCurrent * r, temperature)));
+    const sys = ratio.map(r => dStar(responsivity, systemNoiseCurrent(params, darkCurrent * r, temperature)));
     const pos = (d: number) => (Number.isFinite(d) && d > 0 ? d : null);
     return [
       { x: temps, y: det.map(pos), type: "scatter", mode: "lines", name: "Detector D*", line: { color: "#f87171", width: 2 } },

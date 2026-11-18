@@ -4,7 +4,8 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { APD_K_TABLE, excessNoiseFactor, excessNoiseIndex } from "../../../physics/detectors/apd";
+import { APD_K_TABLE, excessNoiseFactor } from "../../../physics/detectors/apd";
+import { excessNoiseSummary } from "../../../physics/detectors/excess-noise";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const COLORS = ["#60a5fa", "#f87171", "#fbbf24"];
@@ -18,9 +19,7 @@ export default function ExcessNoisePage() {
   const k = clamp(kRaw, 0, 1, 0.02);
   const qe = clamp(qeRaw, 0.01, 1, 0.8);
 
-  const F = excessNoiseFactor(gain, k);
-  const x = excessNoiseIndex(gain, k);
-  const noiseFigure = 10 * Math.log10(F);
+  const { factor: F, index: x, noiseFigureDb: noiseFigure, snrRatio } = excessNoiseSummary(gain, k);
 
   // 300 gains from 1 to 1000 on a log grid.
   const M = Array.from({ length: 300 }, (_, i) => 10 ** ((3 * i) / 299));
@@ -50,7 +49,7 @@ export default function ExcessNoisePage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="Excess Noise F" value={F.toFixed(4)} tone="red" />
         <ResultCard label="Noise Figure 10·log₁₀F" value={`${noiseFigure.toFixed(2)} dB`} tone="yellow" />
-        <ResultCard label="Shot-Limited SNR vs p-i-n" value={`×${(1 / Math.sqrt(F)).toFixed(3)}`} tone="blue" subtext="amplitude ratio 1/√F" />
+        <ResultCard label="Shot-Limited SNR vs p-i-n" value={`×${snrRatio.toFixed(3)}`} tone="blue" subtext="amplitude ratio 1/√F" />
         <ResultCard label="Excess Noise Index x" value={gain > 1 ? x.toFixed(3) : "—"} tone="purple" subtext="datasheet form F = M^x" />
       </div>
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1">

@@ -8,11 +8,9 @@ import {
   MEAN_SEC_ZENITH,
   SI_MEAN_PAIRS_PER_M,
   SI_PAIR_ENERGY,
-  hitPixelFraction,
+  cosmicRaySummary,
   mostProbableLoss,
   pathLength,
-  pixelsPerTrack,
-  projectedLength,
 } from "../../../physics/detectors/cosmic-rays";
 import { poissonQuantile } from "../../../physics/math";
 
@@ -43,14 +41,9 @@ export default function CosmicRaysPage() {
   const thickness = thicknessUm * 1e-6;
   const zenith = (zenithDeg * Math.PI) / 180;
 
-  const hits = fluxSi * area * exposureTime;
-  const hits99 = poissonQuantile(0.99, hits);
-  const path = pathLength(thickness, zenith);
-  const meanCharge = path * SI_MEAN_PAIRS_PER_M;
-  const mpvCharge = mostProbableLoss(path) / SI_PAIR_ENERGY;
-  const projected = projectedLength(thickness, zenith);
-  const pixelsHit = pixelsPerTrack(projected, pitch);
-  const hitFraction = hitPixelFraction(hits, pixelsHit, area / pitch ** 2);
+  const { hits, hits99, path, meanCharge, mpvCharge, projected, pixelsHit, hitFraction } = cosmicRaySummary({
+    flux: fluxSi, area, exposure: exposureTime, pitch, thickness, zenith, frames: numFrames,
+  });
 
   const times = Array.from({ length: 201 }, (_, i) => (i / 200) * 10 * exposureTime);
   // 51 quantile points: each call sums Poisson tails, ≈ 15 ms at a mean of 1e9 hits.
