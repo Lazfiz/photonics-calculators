@@ -126,7 +126,18 @@ import scintillation from "./free-space-comms/scintillation";
 import security from "./free-space-comms/security";
 import snowAttenuation from "./free-space-comms/snow-attenuation";
 import wavelengthSelection from "./free-space-comms/wavelength-selection";
+import threeDReconstruction from "./imaging/3d-reconstruction";
+import imagingAdaptiveOptics from "./imaging/adaptive-optics";
+import afocal from "./imaging/afocal";
 import airyDisk from "./imaging/airy-disk";
+import clearedTissue from "./imaging/cleared-tissue";
+import coherentRaman from "./imaging/coherent-raman";
+import computationalImaging from "./imaging/computational-imaging";
+import computerGeneratedHolography from "./imaging/computer-generated-holography";
+import confocalPinHole from "./imaging/confocal-pin-hole";
+import confocalResolution from "./imaging/confocal-resolution";
+import contrastMethods from "./imaging/contrast-methods";
+import deconvolution from "./imaging/deconvolution";
 import lowCoherence from "./imaging/low-coherence";
 import tirf from "./imaging/tirf";
 import aelLimits from "./laser-safety/ael-limits";
@@ -414,6 +425,8 @@ export const schemas: readonly CalculatorSchema[] = [
   saturation, shotNoise, siVsIngaas, siliconPhotodiode, singlePhotonCountingModule,
   sndr, spad, spadDeadTime, spectralResponse, streakCamera,
   temporalNoise, thermalNoise, uniformity, vacuumPhotodiode, wellCapacity,
+  threeDReconstruction, imagingAdaptiveOptics, afocal, clearedTissue, coherentRaman, computationalImaging,
+  computerGeneratedHolography, confocalPinHole, confocalResolution, contrastMethods, deconvolution,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));
