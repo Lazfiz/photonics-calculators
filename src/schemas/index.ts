@@ -43,6 +43,16 @@ import shotNoise from "./detectors/shot-noise";
 import siVsIngaas from "./detectors/si-vs-ingaas";
 import siliconPhotodiode from "./detectors/silicon-photodiode";
 import singlePhotonCountingModule from "./detectors/single-photon-counting-module";
+import sndr from "./detectors/sndr";
+import spad from "./detectors/spad";
+import spadDeadTime from "./detectors/spad-dead-time";
+import spectralResponse from "./detectors/spectral-response";
+import streakCamera from "./detectors/streak-camera";
+import temporalNoise from "./detectors/temporal-noise";
+import thermalNoise from "./detectors/thermal-noise";
+import uniformity from "./detectors/uniformity";
+import vacuumPhotodiode from "./detectors/vacuum-photodiode";
+import wellCapacity from "./detectors/well-capacity";
 import attenuation from "./fiber-optics/attenuation";
 import bendInsensitive from "./fiber-optics/bend-insensitive";
 import birefringenceFiber from "./fiber-optics/birefringence-fiber";
@@ -402,6 +412,8 @@ export const schemas: readonly CalculatorSchema[] = [
   nep, photodiodeSpeed, photodiodeTiaNoise, photonCounting, photonTransfer,
   pixelCrosstalk, pmt, quantumEfficiency, readoutNoise, resetNoise, responsivity,
   saturation, shotNoise, siVsIngaas, siliconPhotodiode, singlePhotonCountingModule,
+  sndr, spad, spadDeadTime, spectralResponse, streakCamera,
+  temporalNoise, thermalNoise, uniformity, vacuumPhotodiode, wellCapacity,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));
