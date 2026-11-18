@@ -63,6 +63,16 @@ test("the text has no HTML entities, line breaks or code", () => {
   }
 });
 
+// Bing reports a meta description over 160 characters as too long. Categories join the list as they are rewritten.
+const SHORT_DESCRIPTIONS = new Set<string>(["laser-safety", "detectors", "polarization"]);
+
+test("meta descriptions are at most 160 characters", () => {
+  for (const c of calculators.filter((c) => SHORT_DESCRIPTIONS.has(c.category))) {
+    assert.ok(c.description.length <= 160, `${c.href}: ${c.description.length}`);
+  }
+  for (const category of categories) assert.ok(category.description.length <= 160, category.id);
+});
+
 test("a known issue: one or two plain sentences, on a page without a tier (the fix sets the tier)", () => {
   for (const c of calculators) {
     if (c.knownIssue === undefined) continue;

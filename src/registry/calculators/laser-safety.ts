@@ -4,7 +4,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "ael-limits",
     title: "Accessible Emission Limits (AEL)",
-    description: "IEC 60825-1:2014 accessible emission limits of Classes 1, 2, 3R and 3B from 180 nm to 1 mm: for one emission of a given duration, and for a CW laser over the class time base.",
+    description: "IEC 60825-1:2014 accessible emission limits (AEL) of Classes 1, 2, 3R and 3B from 180 nm to 1 mm, for one emission or a CW laser over the class time base.",
     tier: "textbook",
     modelNote: "AELs rebuilt from the limits they come from (ICNIRP 2013 from 400 nm, IEC's UV values over 1 mm), so within IEC's two-figure rounding; Class 3B cap at 1250–1400 nm, EU A11 skin AEL for Classes 1 and 3R (1×, the cautious reading) through the corneal stop per Schulmeister 2022 (A11 text not read). Not modelled: pulse trains, Class 1C, below 1 ns.",
     references: [
@@ -32,7 +32,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "ansi-iec-comparison",
     title: "Exposure Limit (MPE) vs Emission Limit (AEL)",
-    description: "The eye exposure limit (MPE, ICNIRP 2013) against the Class 1 accessible emission limit (AEL, IEC 60825-1:2014) from 180 nm to 1 mm: where they agree, where they part, and how ANSI Z136.1 differs.",
+    description: "Eye MPE (ICNIRP 2013) against the Class 1 AEL (IEC 60825-1:2014) from 180 nm to 1 mm: where they agree, where they part, and how ANSI Z136.1 differs.",
     keywords: ["ANSI vs IEC", "MPE vs AEL", "ANSI IEC comparison"],
     tier: "textbook",
     modelNote: "MPE: least ICNIRP 2013 eye limit over its aperture. AEL: IEC 60825-1:2014 Class 1 rebuilt from it (IEC's own UV values, Class 3B cap at 1250–1400 nm). ANSI Z136.1 values not computed (tables not public).",
@@ -54,7 +54,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "atmospheric-attenuation",
     title: "Atmospheric Attenuation",
-    description: "Beam attenuation along an outdoor path from Rayleigh scattering and visibility-based aerosol extinction (Beer-Lambert). Molecular absorption is left out, the conservative side for laser safety NOHD estimates.",
+    description: "Laser beam attenuation outdoors from Rayleigh scattering and visibility-based aerosol extinction (Beer-Lambert), absorption left out: conservative for NOHD.",
     tier: "textbook",
     modelNote: "Rayleigh plus an empirical aerosol law from the visibility, only a rough guide beyond 1.55 µm. Molecular absorption, rain and snow are not modelled, so transmission is overestimated (conservative for hazard distances).",
     references: [
@@ -138,7 +138,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "classification",
     title: "Laser Classification — IEC 60825-1:2014",
-    description: "Class of a CW laser under IEC 60825-1:2014 (1, 1M, 2, 2M, 3R, 3B or 4) from its power, wavelength, beam diameter and divergence, with the naked-eye and binocular measurement conditions.",
+    description: "CW laser class under IEC 60825-1:2014 (1, 1M, 2, 2M, 3R, 3B or 4) from power, wavelength, beam diameter and divergence, with naked-eye and binocular conditions.",
     heading: "Laser Classification (IEC 60825-1:2014)",
     lede: "Class of a CW laser product from 180 nm to 1 mm: the accessible emission limits rebuilt from the eye limits, with the beam measured through the naked-eye and binocular stops.",
     keywords: ["laser class calculator", "IEC 60825-1 classification"],
@@ -169,7 +169,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "corneal-vs-retinal",
     title: "Corneal vs Retinal Limits",
-    description: "Which part of the eye limits a laser exposure from 180 nm to 1 mm: the largest safe power under the ICNIRP 2013 retinal and corneal limits, the retinal image size and the cornea-to-retina gain.",
+    description: "Which part of the eye limits a laser exposure (180 nm–1 mm): largest safe power on the ICNIRP 2013 retinal and corneal limits, retinal image size and gain.",
     tier: "textbook",
     modelNote: "Limits: ICNIRP 2013, point source (exact). Retinal image: a 17 mm eye focusing a TEM₀₀ beam to 4λf/(πd), at least 25.5 µm (α_min); no absorption in the eye. Pulse trains not covered.",
     references: [
@@ -186,7 +186,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "diffuse-reflection",
     title: "Diffuse Reflection Hazard",
-    description: "Eye hazard of viewing a laser spot on a matte (Lambertian) surface: corneal irradiance, extended-source limit, diffuse hazard distance and OD, on the ICNIRP 2013 limits.",
+    description: "Eye hazard of a laser spot on a matte (Lambertian) surface: corneal irradiance, extended-source limit, diffuse hazard distance and OD on the ICNIRP 2013 limits.",
     tier: "textbook",
     modelNote: "Lambertian Gaussian spot: exact on-axis irradiance ρP/(πr²) · x(1 − x eˣE₁(x)), x = 8r²/d², tending to ρP/(πr²) far off; an extended source of α = d₆₃/r with ICNIRP 2013 C_E (open field of view, eqn 5), the retinal limits assessed no nearer than 10 cm (the eye's near point, ICNIRP p. 275); one exposure up to t. Errs high for blue light from spots over 11 mrad.",
     references: [
@@ -224,7 +224,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "enclosure-class",
     title: "Enclosure Classification",
-    description: "Class of a product that encloses a stronger laser, from the beam escaping through an opening and the window over it (IEC 60825-1:2014), and the optical density the opening needs for Class 1.",
+    description: "Class of a product enclosing a stronger laser, from the beam through an opening and its window (IEC 60825-1:2014), and the OD the opening needs for Class 1.",
     tier: "textbook",
     modelNote: "Accessible emission: the centred Gaussian's share through the opening × 10^−OD, in a beam no wider than the opening, classed with the IEC 60825-1:2014 CW AELs (classification page). Not modelled: scattered leakage, several openings, pulses, guard damage.",
     references: [
@@ -261,7 +261,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "extended-source",
     title: "Extended Source Correction (C_E)",
-    description: "ICNIRP 2013 extended-source correction C_E (C₆ in IEC 60825-1), α_max and T₂, and the retinal thermal limit of a source larger than 1.5 mrad against a point source.",
+    description: "ICNIRP 2013 extended-source factor C_E (C₆ in IEC 60825-1), α_max and T₂, and the retinal thermal limit of a source over 1.5 mrad against a point source.",
     keywords: ["Extended Source Correction (C₆)"],
     tier: "exact",
     modelNote: "ICNIRP 2013 C_E with γ = α_max, the time-dependent α_max and T₂, on the retinal thermal limit (400–1400 nm). Not modelled: the photochemical field of view and the radiance limits.",
@@ -275,7 +275,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "eye-safe-wavelength",
     title: "Eye-Safe Wavelength",
-    description: "Largest energy per pulse within the ICNIRP 2013 eye limits across the spectrum for your pulse width, repetition rate and beam: why 1.4–2.6 µm lasers are called eye-safe, and how a pulse train narrows the margin.",
+    description: "Largest pulse energy within the ICNIRP 2013 eye limits across the spectrum for your pulse width, rate and beam: why 1.4–2.6 µm lasers are called eye-safe.",
     heading: "Eye-Safe Wavelength Region",
     tier: "exact",
     modelNote: "ICNIRP 2013 point-source eye limits with the repetitive-pulse rules (single pulse, pulse groups, C_P) and the sub-ns rows; round Gaussian beam averaged over each aperture (its peak if under 1 mm (1/e) on the cornea below 0.35 s, ICNIRP Table 5 note c).",
@@ -308,7 +308,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "green-laser-pointer",
     title: "Green Laser Pointer Safety",
-    description: "Class, NOHD and dazzle distances of a laser pointer: its IEC 60825-1:2014 class, the nominal ocular hazard distance on the ICNIRP 2013 limits, and how far it causes flash-blindness, glare and distraction (ICAO levels).",
+    description: "Laser pointer class (IEC 60825-1:2014), NOHD on the ICNIRP 2013 limits, and the distances for flash-blindness, glare and distraction (ICAO levels).",
     tier: "textbook",
     modelNote: "Class: IEC 60825-1:2014 CW AELs. NOHD: ICNIRP 2013, 0.25 s if visible (else 10 s), beam √(d² + (rφ)²). Dazzle: peak irradiance vs the ICAO levels, not weighted by eye sensitivity. Not modelled: IR leakage, atmosphere.",
     references: [
@@ -347,7 +347,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "infrared-hazard",
     title: "Infrared and Corneal Eye Limits",
-    description: "ICNIRP 2013 eye exposure limits at any wavelength from 180 nm to 1 mm: corneal, anterior-eye and retinal limits with their apertures, and the largest safe power for an exposure time.",
+    description: "ICNIRP 2013 eye exposure limits from 180 nm to 1 mm: corneal, anterior-eye and retinal limits with their apertures, and the largest safe power for a time.",
     keywords: ["Corneal Exposure Limits", "IR Corneal Exposure", "Infrared Thermal Limits", "Infrared Hazard Calculator"],
     tier: "exact",
     modelNote: "ICNIRP 2013 point-source eye limits (180 nm – 1 mm, 1 ns – 30 ks) for a round TEM₀₀ beam centred on each averaging aperture (its peak if under 1 mm (1/e) on the cornea below 0.35 s, ICNIRP Table 5 note c). Not modelled: pulse trains, extended sources.",
@@ -361,7 +361,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "interlock-design",
     title: "Laser Interlock Timing",
-    description: "Whether a laser guard's interlock stops the emission before an eye can be in the beam longer than the ICNIRP 2013 limits allow: time to reach the beam, the beam's limit time, the longest stopping time and the shortest guard distance.",
+    description: "Does a laser guard's interlock stop the beam before an eye exceeds the ICNIRP 2013 limits? Reach time, longest stopping time and shortest guard distance.",
     lede: "Interlock stopping time against the time to reach the beam (ISO 13855 approach speeds) and the time the beam takes to exceed the eye limits.",
     keywords: ["Interlock Time Calculation", "laser interlock response time", "safety distance ISO 13855"],
     tier: "textbook",
@@ -379,7 +379,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "lidar-safety",
     title: "LiDAR Laser Safety Calculator",
-    description: "Eye safety of a lidar beam (905 or 1550 nm), stationary or scanned across the eye, on the ICNIRP 2013 limits: the repetitive-pulse rule that binds, NOHD, exposure at a viewing distance and eyewear OD.",
+    description: "Eye safety of a 905 or 1550 nm lidar beam, stationary or scanned, on the ICNIRP 2013 limits: the binding pulse rule, NOHD, exposure at a distance, eyewear OD.",
     tier: "textbook",
     modelNote: "ICNIRP 2013 repetitive-pulse rules on the eye limits; round Gaussian beam widening as √(a² + (rφ)²), averaged over each aperture (its peak if under 1 mm (1/e) on the cornea below 0.35 s, ICNIRP Table 5 note c). Stationary beam (the worst case, a scanner failure), or scanned: the pulses within a pass (centred), each pass as one pulse of the average power times a worst-phase bound, and C_P over the pulses within T₂ whose 1/e² beam overlaps the pupil; never below the stationary beam's limit; eye on the scan line's centre with a still retinal image. Conservative by 1.0–1.6× against a sum over every window of the pulse energies (up to 2×; more for a narrow beam on the cornea). Not modelled: several beams or raster lines, turning points.",
     references: [
@@ -396,7 +396,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "medical-laser-safety",
     title: "Medical Laser Safety Calculator",
-    description: "Surgical laser with a focusing handpiece: NOHD beyond the focus and eyewear OD on the ICNIRP 2013 eye limits, with the spot's power density, fluence and the target's thermal relaxation time.",
+    description: "Surgical laser with a focusing handpiece: NOHD beyond the focus and eyewear OD (ICNIRP 2013), spot power density, fluence and thermal relaxation time.",
     tier: "textbook",
     modelNote: "Lens-on-laser beam spreading at b₀/f from the focus; ICNIRP 2013 point-source eye limits over each aperture, exposures up to t; focus under 1 mm and 0.35 s by its peak (Table 5 note c); TRT: a Gaussian centre temperature (1/e diameter d) halves, A&P d²/(16κ) for a vessel, sphere and layer by the same rule. Not modelled: bare fibres, pulses, skin.",
     references: [
@@ -416,7 +416,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "mpe",
     title: "Maximum Permissible Exposure (MPE)",
-    description: "Maximum permissible exposure of the eye at any wavelength from 180 nm to 1 mm and exposure time from 1 ns to 30 000 s, on the ICNIRP 2013 limits: radiant exposure, irradiance and the power through each aperture.",
+    description: "Maximum permissible exposure (MPE) of the eye, 180 nm–1 mm and 1 ns–30 000 s, on the ICNIRP 2013 limits: radiant exposure, irradiance and power per aperture.",
     lede: "Every eye exposure limit in force at a wavelength and exposure time, with the aperture it is averaged over. The lowest is the MPE.",
     keywords: ["maximum permissible exposure"],
     priority: 92,
@@ -435,7 +435,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "multiple-wavelength",
     title: "Multiple Wavelength MPE",
-    description: "Eye exposure to a beam with several wavelengths on the ICNIRP 2013 limits: lines absorbed in the same tissue add, while the retina and the cornea count independently.",
+    description: "Eye exposure to a multi-wavelength beam on the ICNIRP 2013 limits: lines absorbed in the same tissue add, while the retina and cornea count independently.",
     tier: "exact",
     modelNote: "ICNIRP 2013 eye limits per line (point source, averaged over each aperture or, under 1 mm (1/e) on the cornea below 0.35 s, the peak (Table 5 note c), exposures up to t); shares add per tissue (retina; cornea and lens) as on p. 279. Not modelled: skin, pulses, lines of different beam size.",
     references: [
@@ -448,7 +448,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "nohd",
     title: "Nominal Ocular Hazard Distance (NOHD)",
-    description: "Nominal ocular hazard distance of a direct laser beam at any wavelength from 180 nm to 1 mm, on the ICNIRP 2013 eye limits, with Gaussian (default) or linear beam spread.",
+    description: "Nominal ocular hazard distance (NOHD) of a direct laser beam from 180 nm to 1 mm on the ICNIRP 2013 eye limits, with Gaussian or linear beam spread.",
     lede: "Distance beyond which a direct beam is within every eye exposure limit for an exposure of up to t, from the beam's power, diameter and divergence.",
     keywords: ["nominal ocular hazard distance", "Beam Divergence Hazards", "Safe Viewing Distance"],
     priority: 90,
@@ -470,7 +470,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "od-requirements",
     title: "Optical Density from a Known Exposure Limit",
-    description: "Optical density a filter needs to bring a Gaussian laser beam within an exposure limit you supply, with the beam averaged over the limit's aperture and an optional safety factor.",
+    description: "Optical density a filter needs to bring a Gaussian laser beam within an exposure limit you supply, averaged over its aperture, with an optional safety factor.",
     lede: "For when you already have the exposure limit: the beam's irradiance over its aperture, the target and the optical density that reaches it.",
     priority: 86,
     tier: "exact",
@@ -488,7 +488,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "optical-density",
     title: "Laser Eyewear Optical Density",
-    description: "Optical density laser eyewear needs for a CW beam at any wavelength from 180 nm to 1 mm, on the ICNIRP 2013 eye limits, with the beam averaged over each limit's aperture and an optional safety factor.",
+    description: "Laser eyewear optical density (OD) for a CW beam from 180 nm to 1 mm on the ICNIRP 2013 limits, averaged over each aperture, with an optional safety factor.",
     lede: "Filter OD that keeps a CW beam within every eye exposure limit for exposures up to t, from its power, wavelength and diameter.",
     keywords: ["laser eyewear", "od calculator"],
     priority: 88,
@@ -536,7 +536,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "pulsed-mpe",
     title: "Pulsed Laser MPE",
-    description: "Largest energy per pulse of a repetitively pulsed laser within the ICNIRP 2013 eye limits: single pulse, average power over every pulse group, and the C_P = N^−0.25 rule, from 100 fs pulses to CW-like trains.",
+    description: "Pulsed laser MPE: largest energy per pulse within the ICNIRP 2013 eye limits by the single-pulse, average-power and C_P = N^−0.25 rules, 100 fs to CW-like.",
     lede: "Eye exposure limit of a pulse train, 180 nm to 1 mm: the three repetitive-pulse rules, which one binds, and the eyewear OD needed.",
     keywords: ["Multiple Pulse Correction", "PRF Correction Factor", "repetitive pulse MPE", "C_P correction factor"],
     tier: "exact",
@@ -555,7 +555,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "research-lab-safety",
     title: "Research Lab Laser Safety Calculator",
-    description: "Class, NOHD, eyewear OD and diffuse-reflection hazard of a CW laser in a lab, and whether the direct beam is still hazardous at the walls (IEC 60825-1:2014 class, ICNIRP 2013 eye limits).",
+    description: "Lab CW laser: class (IEC 60825-1:2014), NOHD, eyewear OD and diffuse-reflection hazard on the ICNIRP 2013 limits, and if the beam is hazardous at the walls.",
     tier: "textbook",
     modelNote: "Class: IEC 60825-1:2014 CW AELs. NOHD (beam √(d² + (rφ)²)), eyewear OD and white-wall diffuse reflection on the ICNIRP 2013 eye limits for the exposure time. Not modelled: pulses, specular paths, skin, several beams.",
     references: [
@@ -575,7 +575,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "retinal-hazard",
     title: "Retinal Hazard Calculator",
-    description: "Retinal image size and irradiance of a laser beam viewed directly, from its wavelength, power, diameter and the pupil, compared with the ICNIRP 2013 retinal limits.",
+    description: "Retinal image size and irradiance of a directly viewed laser beam from its wavelength, power, diameter and the pupil, against the ICNIRP 2013 retinal limits.",
     tier: "textbook",
     modelNote: "A 17 mm eye focusing a TEM₀₀ beam to 4λf/(πd), at least 25.5 µm (α_min); retinal irradiance before absorption. Limits: ICNIRP 2013 retinal and anterior-segment, point source, 400–1400 nm.",
     references: [
@@ -592,7 +592,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "retinal-image-size",
     title: "Retinal Image Size",
-    description: "Apparent source of a laser beam: retinal image diameter and angular subtense α with the eye accommodating from 100 mm to infinity, for any waist size and beam quality M².",
+    description: "Apparent source of a laser beam: retinal image diameter and angular subtense α, eye accommodated from 100 mm to infinity, for any waist and beam quality M².",
     tier: "textbook",
     modelNote: "Embedded-Gaussian beam (M²) from its waist; 17 mm air-equivalent eye accommodating 0–10 D; 7 mm pupil diffraction; α from the 63 % image diameter. Not modelled: aberrations of the eye, beams converging behind it.",
     references: [
@@ -611,7 +611,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "scanning-mpe",
     title: "Scanned Beam MPE",
-    description: "Eye safety of a CW beam scanned across the eye on the ICNIRP 2013 limits: each pass over the pupil as a pulse, the repetitive-pulse rule that binds, the gain over a stationary beam, and how fast a scan-failure safeguard must act.",
+    description: "Eye safety of a CW beam scanned across the eye (ICNIRP 2013): pupil passes as pulses, binding pulse rule, gain over a static beam, scan-failure safeguard time.",
     lede: "Largest power of a scanned laser beam within the eye limits, 180 nm to 1 mm, and how soon a stopped beam exceeds them.",
     keywords: ["Scan Failure Analysis", "scanning laser MPE", "scanned laser eye safety", "scan failure safeguard"],
     tier: "textbook",
@@ -664,7 +664,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "thermal-vs-photochemical",
     title: "Thermal vs Photochemical Retinal Limits",
-    description: "The two ICNIRP 2013 retinal limits at 400–600 nm against exposure time, for a point or an extended source, and the time from which the blue-light (photochemical) limit governs.",
+    description: "ICNIRP 2013 retinal thermal and blue-light (photochemical) limits at 400–600 nm against exposure time, point or extended source, and when blue light governs.",
     keywords: ["Thermal vs Photochemical MPE"],
     tier: "exact",
     modelNote: "ICNIRP 2013 retinal thermal (with C_E and T₂) and photochemical limits, 400–600 nm, as corneal exposure over 7 mm. The photochemical field of view of an extended source is not applied.",
@@ -678,7 +678,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "ultrafast-laser-safety",
     title: "Ultrafast Laser Safety Calculator",
-    description: "Eye safety of femtosecond and picosecond lasers on the ICNIRP 2013 limits: sub-ns single-pulse limits, the average-power rule that governs MHz trains, eyewear OD and NOHD.",
+    description: "Eye safety of femtosecond and picosecond lasers (ICNIRP 2013): sub-ns single-pulse limits, the average-power rule for MHz trains, eyewear OD and NOHD.",
     tier: "textbook",
     modelNote: "ICNIRP 2013 repetitive-pulse rules with the sub-ns rows (1 mJ/m² from 100 fs to 10 ps; the cornea and the 700–1400 nm anterior segment below 10 % of their 1 ns limits, p. 287); round Gaussian beam over each aperture, NOHD with √(a² + (rφ)²). Not modelled: bursts, harmonics, eyewear saturation.",
     references: [
@@ -691,7 +691,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "uv-exposure",
     title: "UV Exposure Limits",
-    description: "Exposure limit of a monochromatic UV source at 180–400 nm: the ICNIRP S(λ)-weighted limit and the UVA eye limit as irradiance, dose and the largest source power for an exposure time.",
+    description: "Exposure limit of a monochromatic UV source at 180–400 nm: the ICNIRP S(λ)-weighted and UVA eye limits as irradiance, dose and largest power for a time.",
     tier: "exact",
     modelNote: "Monochromatic source: S(λ)-weighted limit of 30 J/m² plus ICNIRP's unweighted UVA limit of 10⁴ J/m² (315–400 nm), within 8 h. ACGIH and IEC relax the UVA limit after 1000 s; ICNIRP, used here, does not.",
     references: [

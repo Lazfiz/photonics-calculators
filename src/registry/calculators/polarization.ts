@@ -214,7 +214,7 @@ export const polarization: CalculatorEntry[] = [
   {
     slug: "brewster-polarizer",
     title: "Brewster-Angle Polarizer",
-    description: "Design pile-of-plates polarizers at Brewster's angle: transmittance and degree of polarization of m glass plates, with the multiple reflections between surfaces.",
+    description: "Pile-of-plates polarizers at Brewster's angle: transmittance and degree of polarization of m glass plates, with the multiple reflections between surfaces.",
     heading: "Brewster Polarizer Design",
     tier: "exact",
     modelNote: "Lossless plane-parallel plates in air, Fresnel reflectance per surface, multiple reflections added in power: T = (1 − r)/(1 + (2m − 1)r). Not modelled: absorption, interference, beam offset.",
@@ -271,7 +271,7 @@ export const polarization: CalculatorEntry[] = [
   {
     slug: "fresnel-polarization",
     title: "Fresnel Polarization Calculator",
-    description: "Compute Fresnel reflection and transmission coefficients, their phases, and the Brewster and critical angles at an interface, including absorbing media and total internal reflection.",
+    description: "Fresnel reflection and transmission coefficients, their phases, and the Brewster and critical angles, for absorbing media and total internal reflection.",
     lede: "Fresnel reflection and transmission coefficients, their phases, and the Brewster and critical angles at an interface, including absorbing media and total internal reflection. r_p = −r_s at normal incidence (Born & Wolf; the thin-film pages use Macleod's opposite sign).",
     keywords: ["Fresnel Equations", "Brewster Angle & Total Internal Reflection"],
     tier: "exact",
@@ -281,7 +281,7 @@ export const polarization: CalculatorEntry[] = [
   {
     slug: "glans-prism",
     title: "Glan Prism Polarizer Design",
-    description: "Design Glan-Taylor, Glan-Foucault and Glan-Thompson prism polarizers: the field of view from total internal reflection of the o and e rays, with crystal dispersion.",
+    description: "Glan-Taylor, Glan-Foucault and Glan-Thompson prism polarizers: field of view from total internal reflection of the o and e rays, with crystal dispersion.",
     tier: "exact",
     modelNote: "Plane waves in the hypotenuse's plane of incidence; tangential wave vector kept, total reflection when k_t ≥ n_gap; Sellmeier indices. Not modelled: out-of-plane rays, gap interference, losses.",
     references: [bornWolfCrystals, bornWolfTir, archardTaylor1948, shurcliffBirefringence, ...crystalData],
@@ -385,7 +385,7 @@ export const polarization: CalculatorEntry[] = [
   {
     slug: "polarizer-types",
     title: "Polarizer Types Comparison",
-    description: "Compare Glan-Taylor, Glan-Thompson, Wollaston, Rochon, wire-grid, film, thin-film plate and PBS cube polarizers on catalogue extinction ratio, wavelength range, transmission, aperture and damage threshold, with output and leakage power.",
+    description: "Compare Glan, Wollaston, Rochon, wire-grid, film, thin-film plate and PBS cube polarizers: extinction ratio, range, transmission, aperture, damage threshold.",
     tier: "exact",
     modelNote: "Thorlabs catalogue minima for one product family per type (read 2026-10-23), and the ideal-diattenuator algebra: k₁ passes along the pass axis, k₂ = k₁/ER across it, (k₁ + k₂)/2 for unpolarized light. Not modelled: ER and transmission against wavelength or angle, other vendors' parts, damage scaling with wavelength and pulse length.",
     references: [
@@ -400,7 +400,7 @@ export const polarization: CalculatorEntry[] = [
   {
     slug: "polarizing-beamsplitter",
     title: "Polarizing Beamsplitter (PBS) Design",
-    description: "Design a MacNeille polarizing beamsplitter cube: a quarter-wave high/low-index stack at Brewster's angle between glass prisms, with its extinction against wavelength and angle.",
+    description: "MacNeille polarizing beamsplitter cube design: a quarter-wave high/low-index stack at Brewster's angle between glass prisms, extinction vs wavelength and angle.",
     tier: "exact",
     modelNote: "(HL)ᴺH quarter-wave stack between glass by the characteristic-matrix method: coherent, lossless, constant indices. Not modelled: the cube's outer faces, dispersion, absorption.",
     references: [macNeille1946, macleodTilted, macleodBasic],
@@ -408,7 +408,7 @@ export const polarization: CalculatorEntry[] = [
   {
     slug: "polymer-polarizer",
     title: "Polymer (Sheet) Polarizer",
-    description: "Model iodine-PVA sheet polarizers (H-sheet type): principal transmittances k₁ and k₂, extinction ratio and efficiency from the film's absorption, dichroic ratio and thickness.",
+    description: "Iodine-PVA sheet polarizers (H-sheet type): principal transmittances k₁ and k₂, extinction ratio and efficiency from absorption, dichroic ratio and thickness.",
     tier: "exact",
     modelNote: "Homogeneous film at one wavelength: Beer–Lambert absorption per axis (α∥ = R_d α⊥), face reflections, multiple reflections added in power. Not modelled: spectra, scattering, protective layers.",
     references: [shurcliffParameters, shurcliffDichroic, macleodBasic],
@@ -466,7 +466,7 @@ export const polarization: CalculatorEntry[] = [
   {
     slug: "wire-grid",
     title: "Wire Grid Polarizer Calculator",
-    description: "Model wire-grid polarizers as a grating of metal strips much finer than the wavelength: transmission for E across and along the strips, reflection, ohmic loss and extinction ratio.",
+    description: "Wire-grid polarizers as a grating of metal strips finer than the wavelength: transmission for E across and along the strips, reflection, ohmic loss, extinction.",
     tier: "textbook",
     modelNote: "Quasi-static shunt sheet for p ≪ λ: Marcuvitz strip reactances (capacitive by Babinet), normal incidence, free-standing; loss from DC conductivity. Not modelled: strip height, substrate.",
     references: [marcuvitz, ulrich1967],
