@@ -4,8 +4,9 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  MAX_STREHL_RMS_WAVES, type ZernikeMode, marechalRms, marechalStrehl, pvFromRms, rmsFromPv, zernikeStrehl,
+  MAX_STREHL_RMS_WAVES, type ZernikeMode, marechalStrehl, pvFromRms, zernikeStrehl,
 } from "../../../physics/imaging/wavefront";
+import { strehlSummary } from "../../../physics/imaging/strehl-ratio";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const nm = 1e-9;
@@ -42,13 +43,12 @@ export default function StrehlRatioPage() {
   const input: InputKind = INPUTS.find((k) => k === inputRaw) ?? "rms";
   const mode: ZernikeMode = MODES.find((m) => m === modeRaw) ?? "defocus";
 
-  const rmsNm = input === "rms" ? wfeNm : rmsFromPv(wfeNm, mode);
-  const pvNm = pvFromRms(rmsNm, mode);
-  const waves = rmsNm / wavelengthNm;
-  const marechal = marechalStrehl(rmsNm * nm, wavelengthNm * nm);
-  const exact = zernikeStrehl(mode, waves);
-  const sigma08Nm = marechalRms(0.8, wavelengthNm * nm) / nm;
-  const lambda14Nm = wavelengthNm / 14;
+  const s = strehlSummary(wavelengthNm * nm, wfeNm * nm, input, mode);
+  const { waves, marechal, exact } = s;
+  const rmsNm = s.rms / nm;
+  const pvNm = s.pv / nm;
+  const sigma08Nm = s.sigma08 / nm;
+  const lambda14Nm = s.lambda14 / nm;
 
   const ws = Array.from({ length: 61 }, (_, k) => (0.3 * k) / 60);
   const curves = [

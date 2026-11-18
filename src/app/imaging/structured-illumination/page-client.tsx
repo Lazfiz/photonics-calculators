@@ -4,7 +4,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { diffractionMtf } from "../../../physics/imaging/diffraction-mtf";
-import { abbeLateralFwhm, simCutoff, simLateralFwhm, simRawImageCount, simSupportHasGap } from "../../../physics/imaging/super-resolution";
+import { simSummary } from "../../../physics/imaging/structured-illumination";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const nm = 1e-9;
@@ -35,20 +35,9 @@ export default function StructuredIlluminationPage() {
   const angles = Math.round(clamp(anglesRaw, 1, 12, 3));
   const p = pattern / 100;
 
-  const kc = (2 * na) / (em * nm); // widefield cut-off, cycles/m
-  const k0 = p * (2 * na) / (ex * nm); // pattern frequency
-  const kSim = simCutoff(ex * nm, em * nm, na, p, orders);
-  const dWide = abbeLateralFwhm(em * nm, na);
-  const dSim = simLateralFwhm(ex * nm, em * nm, na, p, orders);
-  const images = simRawImageCount(orders, angles);
+  const sim = simSummary(ex * nm, em * nm, na, p, orders, angles);
+  const { cutoff: kc, patternFrequency: k0, simCutoff: kSim, widefieldResolution: dWide, simResolution: dSim, rawImages: images, notes } = sim;
   const perUm = 1e-6;
-
-  const notes: string[] = [];
-  if (em < ex) notes.push(`The emission (${em} nm) is shorter than the excitation (${ex} nm); fluorescence is Stokes-shifted to longer wavelengths.`);
-  if (simSupportHasGap(ex * nm, em * nm, na, p)) notes.push("The pattern frequency exceeds twice the detection cut-off, so the shifted passbands no longer overlap the central one and the support has gaps.");
-  else if (k0 > kc) notes.push("The pattern frequency lies beyond the detection cut-off: the stripes are not visible in the raw images, so the pattern phase and frequency are estimated from the overlap of the shifted passbands.");
-  if (orders > 1) notes.push("Harmonics beyond the first need a nonlinear (saturated or photoswitched) fluorescence response; their strength depends on the saturation level, not modelled here.");
-  if (angles < 3) notes.push(`${angles} pattern angle${angles > 1 ? "s" : ""} extend the support in that direction only; three or more are needed for near-isotropic resolution.`);
 
   // Frequency support along one pattern direction: the widefield OTF and the copies shifted by ±j k₀.
   const kMax = 1.05 * kSim;

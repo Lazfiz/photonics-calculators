@@ -3,36 +3,37 @@
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { cameraNoise } from "../../../physics/detectors/camera-snr";
-import { FLUOROPHORES, fluorophoreByName, spectrumAt, spilloverMatrix } from "../../../physics/imaging/fluorophores";
+import { FLUOROPHORES, fluorophoreByName, spectrumAt } from "../../../physics/imaging/fluorophores";
+import { type Channel, multicolorSummary } from "../../../physics/imaging/simultaneous-multicolor";
 
 const COLORS = ["#60a5fa", "#4ade80", "#f87171", "#a78bfa"];
+const DEFAULT_CHANNELS: readonly Channel[] = [
+  { dye: "EGFP", laser: 488, center: 525, width: 50 },
+  { dye: "mCherry", laser: 561, center: 610, width: 40 },
+  { dye: "miRFP670", laser: 640, center: 700, width: 75 },
+  { dye: "mTagBFP2", laser: 405, center: 450, width: 50 },
+];
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
 
-interface Channel { dye: string; laser: number; center: number; width: number }
-const DEFAULT_CHANNELS = ["EGFP,488,525,50", "mCherry,561,610,40", "miRFP670,640,700,75", "mTagBFP2,405,450,50"];
-
-/** "dye,laser nm,filter centre nm,filter width nm" from the URL, with each field clamped. */
-function parseChannel(raw: string, fallback: string): Channel {
-  const [dye, laser, center, width] = raw.split(",");
-  const [fd, fl, fc, fw] = fallback.split(",");
-  const num = (s: string | undefined) => (s?.trim() ? Number(s) : NaN);
-  return {
-    dye: fluorophoreByName(dye ?? fd).name,
-    laser: clamp(num(laser), 350, 800, Number(fl)),
-    center: clamp(num(center), 350, 900, Number(fc)),
-    width: clamp(num(width), 1, 300, Number(fw)),
-  };
-}
-const formatChannel = (c: Channel) => `${c.dye},${c.laser},${c.center},${c.width}`;
-
 export default function SimultaneousMulticolorPage() {
   const [numRaw, setNum] = useURLState("numChannels", 3);
-  const [ch1, setCh1] = useURLState("ch1", DEFAULT_CHANNELS[0]);
-  const [ch2, setCh2] = useURLState("ch2", DEFAULT_CHANNELS[1]);
-  const [ch3, setCh3] = useURLState("ch3", DEFAULT_CHANNELS[2]);
-  const [ch4, setCh4] = useURLState("ch4", DEFAULT_CHANNELS[3]);
+  const [dye1, setDye1] = useURLState("dye1", "EGFP");
+  const [laser1, setLaser1] = useURLState("laser1", 488);
+  const [center1, setCenter1] = useURLState("center1", 525);
+  const [width1, setWidth1] = useURLState("width1", 50);
+  const [dye2, setDye2] = useURLState("dye2", "mCherry");
+  const [laser2, setLaser2] = useURLState("laser2", 561);
+  const [center2, setCenter2] = useURLState("center2", 610);
+  const [width2, setWidth2] = useURLState("width2", 40);
+  const [dye3, setDye3] = useURLState("dye3", "miRFP670");
+  const [laser3, setLaser3] = useURLState("laser3", 640);
+  const [center3, setCenter3] = useURLState("center3", 700);
+  const [width3, setWidth3] = useURLState("width3", 75);
+  const [dye4, setDye4] = useURLState("dye4", "mTagBFP2");
+  const [laser4, setLaser4] = useURLState("laser4", 405);
+  const [center4, setCenter4] = useURLState("center4", 450);
+  const [width4, setWidth4] = useURLState("width4", 50);
   const [acqRaw, setAcq] = useURLState("acquisition", "simultaneous"); // simultaneous | sequential
   const [fluxRaw, setFlux] = useURLState("photonFlux", 25000); // photons/pixel/s at the camera, own dye
   const [exposureRaw, setExposure] = useURLState("exposureMs", 20);
@@ -45,9 +46,19 @@ export default function SimultaneousMulticolorPage() {
   const [qeRaw, setQe] = useURLState("quantumEff", 90); // %
 
   const num = Math.round(clamp(numRaw, 1, 4, 3));
-  const raws = [ch1, ch2, ch3, ch4];
-  const setters = [setCh1, setCh2, setCh3, setCh4];
-  const channels = raws.slice(0, num).map((r, i) => parseChannel(r, DEFAULT_CHANNELS[i]));
+  // One channel per slot: the dye (unknown names fall back to the first catalogue entry) and the clamped laser and filter.
+  const slots = [
+    { dye: dye1, laser: laser1, center: center1, width: width1, set: [setDye1, setLaser1, setCenter1, setWidth1] as const, fallback: DEFAULT_CHANNELS[0] },
+    { dye: dye2, laser: laser2, center: center2, width: width2, set: [setDye2, setLaser2, setCenter2, setWidth2] as const, fallback: DEFAULT_CHANNELS[1] },
+    { dye: dye3, laser: laser3, center: center3, width: width3, set: [setDye3, setLaser3, setCenter3, setWidth3] as const, fallback: DEFAULT_CHANNELS[2] },
+    { dye: dye4, laser: laser4, center: center4, width: width4, set: [setDye4, setLaser4, setCenter4, setWidth4] as const, fallback: DEFAULT_CHANNELS[3] },
+  ];
+  const channels: Channel[] = slots.slice(0, num).map((c) => ({
+    dye: fluorophoreByName(c.dye).name,
+    laser: clamp(c.laser, 350, 800, c.fallback.laser),
+    center: clamp(c.center, 350, 900, c.fallback.center),
+    width: clamp(c.width, 1, 300, c.fallback.width),
+  }));
   const mode: "simultaneous" | "sequential" = acqRaw === "sequential" ? "sequential" : "simultaneous";
   const flux = clamp(fluxRaw, 0, 1e9, 25000);
   const exposure = clamp(exposureRaw, 0.01, 10000, 20) * 1e-3;
@@ -58,35 +69,8 @@ export default function SimultaneousMulticolorPage() {
   const dark = clamp(darkRaw, 0, 1e4, 0.01);
   const qe = clamp(qeRaw, 1, 100, 90) / 100;
 
-  // Spillover L[i][j]: signal of dye j in channel i over its signal in its own channel j (NaN where dye j gives none).
-  const lasers = channels.map((c) => c.laser * 1e-9);
-  const bands = channels.map((c) => [(c.center - c.width / 2) * 1e-9, (c.center + c.width / 2) * 1e-9] as const);
-  const L = spilloverMatrix(channels.map((c) => fluorophoreByName(c.dye)), lasers, bands, mode);
-
-  // Per-channel SNR: own-dye signal S, bleed-through from the other dyes as background.
-  const pixels = binning * binning;
-  const S = flux * exposure * qe * pixels;
-  const D = dark * exposure * pixels;
-  const sigmaRead = binMode === "digital" ? readNoise * binning : readNoise;
-  const snrOwn = S / cameraNoise({ signal: S, read: sigmaRead, dark: D });
-  const snr = L.map((rowI, i) => {
-    const background = rowI.reduce((s, l, j) => (j === i ? s : s + l * S), 0);
-    return S / cameraNoise({ signal: S, read: sigmaRead, dark: D + background });
-  });
-
-  const fpsSimultaneous = 1 / (exposure + readout);
-  const fpsSequential = 1 / (num * (exposure + readout));
-
-  const warnings: string[] = [];
-  channels.forEach((c, i) => {
-    if (!Number.isFinite(L[i][i])) warnings.push(`Channel ${i + 1} detects none of its own dye ${c.dye}: ${mode === "sequential" ? `laser ${i + 1} doesn't excite it` : "no laser excites it"} or the filter misses its emission.`);
-    channels.forEach((d, j) => {
-      if (j > i && Math.abs(c.center - d.center) < (c.width + d.width) / 2) warnings.push(`Filters ${i + 1} and ${j + 1} overlap: a dichroic can't split the same band twice.`);
-    });
-    channels.forEach((d, k) => {
-      // Sequential: frame i has only laser i, so only that laser reaches filter i.
-      if ((mode === "simultaneous" || k === i) && Math.abs(d.laser - c.center) <= c.width / 2) warnings.push(`Laser ${k + 1} (${d.laser} nm) lies inside filter ${i + 1}: it needs a notch filter.`);
-    });
+  const { spill: L, snr, snrOwn, fpsSimultaneous, fpsSequential, warnings } = multicolorSummary({
+    channels, mode, flux, exposure, readout, binning, binMode: binMode === "digital" ? "digital" : "charge", readNoise, dark, qe,
   });
 
   const wlMax = Math.ceil(Math.max(830, ...channels.map((c) => c.center + c.width / 2 + 20)));
@@ -107,7 +91,13 @@ export default function SimultaneousMulticolorPage() {
     { x: [exposure * 1e3], y: [fpsSimultaneous], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#facc15", size: 10 } },
   ];
 
-  const update = (i: number, patch: Partial<Channel>) => setters[i](formatChannel({ ...channels[i], ...patch }));
+  const update = (i: number, patch: Partial<Channel>) => {
+    const [setDye, setLaser, setCenter, setWidth] = slots[i].set;
+    if (patch.dye !== undefined) setDye(patch.dye);
+    if (patch.laser !== undefined) setLaser(patch.laser);
+    if (patch.center !== undefined) setCenter(patch.center);
+    if (patch.width !== undefined) setWidth(patch.width);
+  };
   const field = "mt-1 w-full bg-gray-900 border border-gray-700 rounded px-2 py-1 text-white text-sm";
 
   return (
