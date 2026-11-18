@@ -348,7 +348,7 @@ export const spectroscopy: CalculatorEntry[] = [
   {
     slug: "michelson-interferometer",
     title: "Michelson Interferometer",
-    description: "Michelson or Mach-Zehnder fringes and an FTIR interferogram: spectrum by cosine transform, resolution 1/L, resolving power, aliasing and visibility.",
+    description: "Michelson or Mach-Zehnder fringes and an interferogram of Gaussian lines: spectrum by cosine transform, resolution 1/L, resolving power, aliasing, visibility.",
     lede: "Interferogram → spectrum via Fourier transform. Core of FTIR spectroscopy.",
     keywords: ["Interferometer Visibility"],
     tier: "exact",

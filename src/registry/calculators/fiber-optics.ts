@@ -994,7 +994,7 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "specialty-fiber",
     title: "Specialty Fiber Types",
-    description: "Compare specialty optical fibers (PM, erbium-, ytterbium- and thulium-doped, ZBLAN, chalcogenide): V-number, cutoff, mode-field diameter and loss.",
+    description: "Data-sheet properties of specialty fibers (PM, erbium-, ytterbium- and thulium-doped, ZBLAN, chalcogenide) compared: V-number, cutoff, MFD, loss.",
     lede: "Compare data-sheet properties of specialty optical fibers (PM, erbium-, ytterbium- and thulium-doped, ZBLAN, chalcogenide): V-number, cutoff, mode-field diameter and loss.",
     tier: "illustrative",
     modelNote: "Typical data-sheet values for one commercial fibre per class (linked). V = 2πa·NA/λ, step-index cutoff and Marcuse MFD from the sheet's core and NA. Losses are single-wavelength figures, not spectra.",

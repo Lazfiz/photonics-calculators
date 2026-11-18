@@ -56,7 +56,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "atmospheric-attenuation",
     title: "Atmospheric Attenuation",
-    description: "Laser beam attenuation outdoors from Rayleigh scattering and visibility-based aerosol extinction (Beer-Lambert), absorption left out: conservative for NOHD.",
+    description: "Outdoor laser attenuation from Rayleigh scattering and visibility-based aerosol extinction (Beer-Lambert), molecular absorption left out: conservative for NOHD.",
     lede: "Beam attenuation along an outdoor path from Rayleigh scattering and visibility-based aerosol extinction (Beer-Lambert). Molecular absorption is left out, the conservative side for laser safety NOHD estimates.",
     tier: "textbook",
     modelNote: "Rayleigh plus an empirical aerosol law from the visibility, only a rough guide beyond 1.55 µm. Molecular absorption, rain and snow are not modelled, so transmission is overestimated (conservative for hazard distances).",
@@ -172,7 +172,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "corneal-vs-retinal",
     title: "Corneal vs Retinal Limits",
-    description: "Which part of the eye limits a laser exposure (180 nm–1 mm): largest safe power on the ICNIRP 2013 retinal and corneal limits, retinal image size and gain.",
+    description: "Which part of the eye limits a laser exposure (180 nm–1 mm): largest safe power on ICNIRP 2013 retinal and corneal limits, image size, cornea-to-retina gain.",
     lede: "Which part of the eye limits a laser exposure from 180 nm to 1 mm: the largest safe power under the ICNIRP 2013 retinal and corneal limits, the retinal image size and the cornea-to-retina gain.",
     tier: "textbook",
     modelNote: "Limits: ICNIRP 2013, point source (exact). Retinal image: a 17 mm eye focusing a TEM₀₀ beam to 4λf/(πd), at least 25.5 µm (α_min); no absorption in the eye. Pulse trains not covered.",

@@ -4,7 +4,7 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "acousto-optic",
     title: "Acousto-Optic Bragg Cell",
-    description: "Acousto-optic Bragg cell design: Bragg and deflection angles, scan range, Klein–Cook Q, diffraction efficiency, access time, resolvable spots, TeO₂ to silica.",
+    description: "Acousto-optic Bragg cell: Bragg and deflection angles, scan range, Klein–Cook Q, efficiency, access time, resolvable spots (TeO₂, LiNbO₃, PbMoO₄, silica).",
     lede: "Acousto-optic Bragg cell design: Bragg and deflection angles, scan range, Klein–Cook Q, first-order diffraction efficiency from the figure of merit M₂ and acoustic power, access time and resolvable spots, for TeO₂, LiNbO₃, PbMoO₄ and fused silica.",
     keywords: ["Acousto-Optic Materials", "AOM", "Acousto-Optic Deflector", "Figure of Merit M₂"],
     tier: "textbook",
