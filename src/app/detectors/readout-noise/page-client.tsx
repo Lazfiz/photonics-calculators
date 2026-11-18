@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
@@ -18,15 +17,14 @@ export default function ReadoutNoisePage() {
   const exposureTime = clamp(exposureTimeRaw, 0, 1e6, 0.01);
   const { darkElectrons, noiseFloor, readNoiseLimitedSignal } = readoutNoiseSummary({ readNoise, darkCurrent, exposureTime });
 
-  const chartData = useMemo(() => {
-    const signals = Array.from({ length: 200 }, (_, i) => Math.pow(1e5, i / 199)); // 1 to 1e5 e⁻
-    const total = signals.map(s => sensorNoiseElectrons({ signal: s, read: readNoise, dark: darkElectrons }));
-    return [
-      { x: signals, y: signals.map(s => Math.sqrt(s)), type: "scatter" as const, mode: "lines" as const, name: "Shot noise only", line: { color: "#60a5fa" } },
-      { x: signals, y: total, type: "scatter" as const, mode: "lines" as const, name: "Total (shot + read + dark)", line: { color: "#f87171" } },
-      { x: signals, y: signals.map((s, i) => s / total[i]), type: "scatter" as const, mode: "lines" as const, name: "SNR", line: { color: "#34d399" }, yaxis: "y2" },
-    ];
-  }, [readNoise, darkElectrons]);
+  // Plain computation: the React compiler memoises it (a manual useMemo over the destructured summary trips preserve-manual-memoization).
+  const signals = Array.from({ length: 200 }, (_, i) => Math.pow(1e5, i / 199)); // 1 to 1e5 e⁻
+  const total = signals.map(s => sensorNoiseElectrons({ signal: s, read: readNoise, dark: darkElectrons }));
+  const chartData = [
+    { x: signals, y: signals.map(s => Math.sqrt(s)), type: "scatter" as const, mode: "lines" as const, name: "Shot noise only", line: { color: "#60a5fa" } },
+    { x: signals, y: total, type: "scatter" as const, mode: "lines" as const, name: "Total (shot + read + dark)", line: { color: "#f87171" } },
+    { x: signals, y: signals.map((s, i) => s / total[i]), type: "scatter" as const, mode: "lines" as const, name: "SNR", line: { color: "#34d399" }, yaxis: "y2" },
+  ];
 
   return (
     <>
