@@ -34,6 +34,18 @@ import nonlinearEffects from "./fiber-optics/nonlinear-effects";
 import nonzeroDispersion from "./fiber-optics/nonzero-dispersion";
 import otdrAnalysis from "./fiber-optics/otdr-analysis";
 import photonicCrystal from "./fiber-optics/photonic-crystal";
+import polarizationController from "./fiber-optics/polarization-controller";
+import polarizationMaintaining from "./fiber-optics/polarization-maintaining";
+import polarizationModeDispersion from "./fiber-optics/polarization-mode-dispersion";
+import pumpCombiner from "./fiber-optics/pump-combiner";
+import rareEarthDoped from "./fiber-optics/rare-earth-doped";
+import sbsThreshold from "./fiber-optics/sbs-threshold";
+import sidePolished from "./fiber-optics/side-polished";
+import specialtyFiber from "./fiber-optics/specialty-fiber";
+import spliceLoss from "./fiber-optics/splice-loss";
+import srsThreshold from "./fiber-optics/srs-threshold";
+import vNumber from "./fiber-optics/v-number";
+import wdmCoupler from "./fiber-optics/wdm-coupler";
 import acquisitionTracking from "./free-space-comms/acquisition-tracking";
 import adaptiveOptics from "./free-space-comms/adaptive-optics";
 import apertureAveraging from "./free-space-comms/aperture-averaging";
@@ -336,6 +348,8 @@ export const schemas: readonly CalculatorSchema[] = [
   fiberGyroscope, fiberLaser, fiberLoopMirror, fiberOpticSensor, fiberTaper,
   fiberLinkBudget, lowWaterPeak, macroBendingLoss, microBend, modeCoupling, modeFieldDiameter, multiCore, nonlinearEffects,
   nonzeroDispersion, otdrAnalysis, photonicCrystal,
+  polarizationController, polarizationMaintaining, polarizationModeDispersion, pumpCombiner, rareEarthDoped, sbsThreshold, sidePolished,
+  specialtyFiber, spliceLoss, srsThreshold, vNumber, wdmCoupler,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));
