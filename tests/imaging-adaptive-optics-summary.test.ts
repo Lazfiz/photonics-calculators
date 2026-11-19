@@ -35,3 +35,19 @@ test("adaptiveOpticsSummary: a short stroke is flagged; fractional J rounds", ()
   assertRel(b.modalVariance, 1.354009762733977, 1e-8, "J = 3");
   assertRel(b.zonalVariance, 0.1250078328424957, 1e-9, "piston-only segments");
 });
+
+test("adaptiveOpticsSummary: piston-only fitting error is capped at the open-loop variance below ≈ 1.13 segments", () => {
+  // Noll 1976: one segment corrects only piston, so the residual is Δ₁ = 1.0299 (D/r₀)^(5/3) = 1.0299·4^(5/3) = 10.3807415,
+  // not 1.26·4^(5/3) = 12.7000042. The crossover is (1.26/1.0299)^(3/5) = 1.1286136 segments across. Δ₁ is the physical floor:
+  // κ = 1.26 is the piston-removed variance of a square segment, and 1.26/(4/π)^(5/6) = 1.030 ≈ 1.0299 for the circle.
+  const one = adaptiveOpticsSummary({ wavelength: 1000e-9, dr0: 4, modes: 1, actuators: 1, dmType: "segmentedPiston", stroke: 5e-6 });
+  assertRel(one.zonalVariance, 10.38074151429384, 1e-12, "capped");
+  assert.equal(one.zonalCapped, true);
+  assert.equal(one.strehlZonal, one.strehlOpen);
+  // N = 1.2 is past the crossover: 1.26·(4/1.2)^(5/3) = 9.3720613, uncapped.
+  const past = adaptiveOpticsSummary({ wavelength: 1000e-9, dr0: 4, modes: 1, actuators: 1.2, dmType: "segmentedPiston", stroke: 5e-6 });
+  assertRel(past.zonalVariance, 9.372061301150374, 1e-12, "uncapped");
+  assert.equal(past.zonalCapped, false);
+  // Piston + tip-tilt segments never cross: κ 0.134 < 1.0299.
+  assert.equal(adaptiveOpticsSummary({ wavelength: 1000e-9, dr0: 4, modes: 1, actuators: 1, dmType: "segmentedTipTilt", stroke: 5e-6 }).zonalCapped, false);
+});

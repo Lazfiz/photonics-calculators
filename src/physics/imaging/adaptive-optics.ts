@@ -35,6 +35,8 @@ export interface AdaptiveOpticsSummary {
   strehlOpen: number;
   strehlModal: number;
   strehlZonal: number;
+  /** True when κ(d/r₀)^(5/3) exceeded the open-loop variance and the fitting row was capped at it. */
+  zonalCapped: boolean;
   /** Actuator pitch over r₀, (D/r₀)/N. */
   pitchOverR0: number;
   /** Mirror surface stroke for ±3σ of the tip-tilt-removed wavefront, m. */
@@ -56,7 +58,10 @@ export function adaptiveOpticsSummary(p: {
   const open = uncorrectedPhaseVariance(dr0, 1);
   const tipTiltRemoved = nollResidual(TIP_TILT_REMOVED_MODES) * dr0 ** (5 / 3);
   const modal = nollResidual(modes) * dr0 ** (5 / 3);
-  const zonal = dmFittingVariance(dr0 / actuators, 1, DM_FITTING_COEFFICIENT[dmType]);
+  // κ(d/r₀)^(5/3) is the many-actuator asymptote. With fewer than (1.26/1.0299)^(3/5) ≈ 1.13 piston-only segments across
+  // it exceeds the piston-removed open-loop variance; one segment corrects only piston, so the residual is Noll's Δ₁.
+  const fitting = dmFittingVariance(dr0 / actuators, 1, DM_FITTING_COEFFICIENT[dmType]);
+  const zonal = Math.min(fitting, open);
   const strokeNeeded = STROKE_SIGMAS * rms(tipTiltRemoved);
   return {
     openVariance: open,
@@ -69,6 +74,7 @@ export function adaptiveOpticsSummary(p: {
     strehlOpen: strehlRatio(open, dr0, 1),
     strehlModal: strehlRatio(modal, dr0, 1),
     strehlZonal: strehlRatio(zonal, dr0, 1),
+    zonalCapped: fitting > open,
     pitchOverR0: dr0 / actuators,
     strokeNeeded,
     strokeShort: stroke < strokeNeeded,
