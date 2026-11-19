@@ -259,7 +259,7 @@ export const detectors: CalculatorEntry[] = [
     title: "Detectivity (D*)",
     description: "Specific detectivity from NEP, area, and bandwidth. D* = √(A·Δf) / NEP",
     tier: "textbook",
-    modelNote: "Constant quantum efficiency up to the cutoff λ_c = hc/E_g. Detector D* from the dark-current density J_d = I_d/A (multiplied shot noise 2q·J_d·M²·F) and the zero-bias R₀A (Johnson 4kT/R₀A): area-independent. System D* adds the load's Johnson noise instead of R₀A; with I_d fixed and load noise dominant it grows as √A. The default R₀A is illustrative. The temperature chart scales I_d as n_i or n_i² and R₀A inversely, with a fixed band gap and constant responsivity, the load held at the entered temperature.",
+    modelNote: "Constant quantum efficiency up to the cutoff λ_c = hc/E_g. Detector D* from the dark-current density J_d = I_d/A (multiplied shot noise 2q·J_d·M²·F) and the zero-bias R₀A (Johnson 4kT/R₀A): area-independent. At zero bias the R₀A Johnson term already holds the junction's diffusion shot noise, so adding 2q·J_d counts it twice and detector D* reads low (an ideal diode with I_d = I_s: √1.5 ≈ 1.22× low); I_d = 0 gives the R₀A-limited value. Rogalski's shot term is the background photocurrent, not the dark current. System D* adds the load's Johnson noise instead of R₀A; with I_d fixed and load noise dominant it grows as √A. The default R₀A is illustrative. The temperature chart scales I_d as n_i or n_i² and R₀A inversely, with a fixed band gap and constant responsivity, the load held at the entered temperature.",
     references: [
       {
         citation: "Dereniak E. L., Boreman G. D. (1996). Infrared Detectors and Systems. Wiley. Ch. 5: responsivity, noise-equivalent power and specific detectivity D* = √(A·Δf)/NEP.",
