@@ -80,8 +80,14 @@ export default function AdaptiveOpticsPage() {
           {row(`Modal residual Δ${modes} (D/r₀)^(5/3)`, `${fmt(modal, 4, " rad²")} (${fmt(s.modalRms * 1e9, 1, " nm rms")})`)}
           {row(`Strehl, ${modes} modes corrected`, fmt(strehlModal, 4), "text-blue-400")}
           {row(`DM pitch d/r₀ = (D/r₀)/${actuators}`, fmt(dr0 / actuators, 4))}
-          {row("Fitting error κ (d/r₀)^(5/3)", `${fmt(zonal, 4, " rad²")} (${fmt(s.zonalRms * 1e9, 1, " nm rms")})`)}
+          {row(s.zonalCapped ? "Fitting error (capped at open loop)" : "Fitting error κ (d/r₀)^(5/3)", `${fmt(zonal, 4, " rad²")} (${fmt(s.zonalRms * 1e9, 1, " nm rms")})`)}
           {row("Strehl, DM fitting limit", fmt(strehlZonal, 4), "text-green-400")}
+          {s.zonalCapped && (
+            <p className="text-sm text-yellow-400">
+              Piston-only segments below ≈ 1.13 across: κ (d/r₀)^(5/3) exceeds the uncorrected variance, so the fitting
+              error is capped at the open-loop value.
+            </p>
+          )}
           {row("Stroke for ±3σ, tip-tilt removed", fmt(strokeNeededUm, 2, " µm"), !s.strokeShort ? "text-green-400" : "text-yellow-400")}
           {s.strokeShort && <p className="text-sm text-yellow-400">The stroke is short of ±3σ: large excursions will saturate the mirror.</p>}
           <p className="text-xs text-gray-500">

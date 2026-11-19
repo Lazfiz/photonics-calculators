@@ -35,7 +35,7 @@ export const imaging: CalculatorEntry[] = [
     lede: "Adaptive optics in Kolmogorov turbulence: Noll's residual after J corrected Zernike modes, deformable-mirror fitting error, the Strehl ratio and the stroke needed, from D/r₀.",
     keywords: ["adaptive optics", "deformable mirror", "fitting error", "Fried parameter", "Zernike modes", "Noll"],
     tier: "textbook",
-    modelNote: "Kolmogorov turbulence (infinite outer scale) with perfect correction of the chosen modes or by the mirror; servo lag, wavefront-sensor noise and anisoplanatism are left out. The Strehl ratio adds the Parenti–Sasiela seeing halo to the Maréchal core. Aberrations from a sample in microscopy do not follow Kolmogorov statistics.",
+    modelNote: "Kolmogorov turbulence (infinite outer scale) with perfect correction of the chosen modes or by the mirror; servo lag, wavefront-sensor noise and anisoplanatism are left out. The Strehl ratio adds the Parenti–Sasiela seeing halo to the Maréchal core. The mirror fitting error κ (d/r₀)^(5/3) is a many-actuator asymptote, capped at the uncorrected variance (piston-only segments reach it below ≈ 1.13 across). Aberrations from a sample in microscopy do not follow Kolmogorov statistics.",
     references: [
       {
         citation: "Noll R. J. (1976). Zernike polynomials and atmospheric turbulence. J. Opt. Soc. Am. 66, 207–211. Residual variance Δ_J after J corrected modes (Table IV).",

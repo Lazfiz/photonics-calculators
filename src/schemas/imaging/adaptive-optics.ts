@@ -55,7 +55,10 @@ export default defineSchema({
         strehlZonal: r.strehlZonal,
         strokeNeeded: r.strokeNeeded,
       },
-      warnings: r.strokeShort ? ["The stroke is short of ±3σ: large excursions will saturate the mirror."] : [],
+      warnings: [
+        ...(r.zonalCapped ? ["Piston-only segments below ≈ 1.13 across: κ (d/r₀)^(5/3) exceeds the uncorrected variance, so the fitting error is capped at the open-loop value."] : []),
+        ...(r.strokeShort ? ["The stroke is short of ±3σ: large excursions will saturate the mirror."] : []),
+      ],
     };
   },
   checks: [
