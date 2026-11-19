@@ -86,5 +86,24 @@ export default defineSchema({
       expect: { channelLoss: 21.4, receivedPower: -18.4, availableMargin: 1.6, excessMargin: -4.4, maxLength: 62.4 },
       tolerance: 1e-8,
     },
+    {
+      // FOA's worked example, typical losses: 0.2 km multimode at 850 nm × 3 dB/km = 0.6 dB, 3 connections × 0.3 = 0.9 dB,
+      // 1 splice 0.3 dB → link loss 1.8 dB; Tx −13 dBm, Rx −21 dBm (8 dB range) → link loss margin 6.2 dB.
+      source: "The Fiber Optic Association. Calculating a loss budget: cable plant passive component loss example (steps " +
+        "1–6, typical column). https://www.thefoa.org/tech/lossbudg.htm",
+      basis: "printed",
+      inputs: { txPower: -13, rxSensitivity: -21, fiberLength: 0.2, fiberAttenuation: 3, spliceCount: 1, spliceLoss: 0.3, connectorCount: 3, connectorLoss: 0.3, margin: 3 },
+      expect: { fiberLoss: 0.6, connectorLossTotal: 0.9, channelLoss: 1.8, availableMargin: 6.2 },
+      tolerance: 1e-8,
+    },
+    {
+      // The same link at the TIA-568 maxima: 3.5 dB/km → 0.7 dB, 3 × 0.75 = 2.25 dB, splice 0.3 dB → 3.25 dB; margin 4.75 dB.
+      source: "The Fiber Optic Association. Calculating a loss budget: cable plant passive component loss example (steps " +
+        "1–6, TIA 568 maximum column). https://www.thefoa.org/tech/lossbudg.htm",
+      basis: "printed",
+      inputs: { txPower: -13, rxSensitivity: -21, fiberLength: 0.2, fiberAttenuation: 3.5, spliceCount: 1, spliceLoss: 0.3, connectorCount: 3, connectorLoss: 0.75, margin: 3 },
+      expect: { fiberLoss: 0.7, connectorLossTotal: 2.25, channelLoss: 3.25, availableMargin: 4.75 },
+      tolerance: 1e-8,
+    },
   ],
 });

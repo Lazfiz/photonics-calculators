@@ -76,5 +76,16 @@ export default defineSchema({
       expect: { wavelength: 2941.1764705882356, rangeWavenumberLow: 2500, rangeWavenumberHigh: 25000 },
       tolerance: 1e-8,
     },
+    {
+      // NIST prints the electron volt–inverse metre relationship 8.065 543 937… × 10⁵ m⁻¹ and the electron volt–hertz
+      // relationship 2.417 989 242… × 10¹⁴ Hz: 8065.543937 cm⁻¹ is 1 eV and 241.7989242 THz.
+      source: "NIST CODATA Values of the Fundamental Constants (2022): electron volt-inverse meter relationship and " +
+        "electron volt-hertz relationship. https://physics.nist.gov/cgi-bin/cuu/Value?evminv, " +
+        "https://physics.nist.gov/cgi-bin/cuu/Value?evhz",
+      basis: "printed",
+      inputs: { mode: "wn-to-wl", singleValue: 8065.543937 },
+      expect: { energy: 1, frequency: 241.7989242 },
+      tolerance: 1e-9,
+    },
   ],
 });
