@@ -20,7 +20,7 @@ test("spinning disk summary, defaults (Wilhelm et al. 2003 Airy unit; Tanaami et
   close(s.frameRate, 1000, 1e-12, "frame rate");
   close(s.fill, Math.PI / 100, 1e-12, "fill");
   close(s.throughput, 0.8399959040187801, 1e-8, "throughput");
-  close(s.wilhelm, 2539.9253094246606e-9, 1e-9, "Wilhelm");
+  close(s.wilhelm, 2539.8010294006313e-9, 1e-9, "Wilhelm");
   assert.equal(s.banding, false);
   assert.ok(s.floor > 0 && s.floor < 0.5);
 });

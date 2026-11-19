@@ -13,7 +13,7 @@
  *   S. Wilhelm, B. Gröbler, M. Gluch, H. Heinz, "Confocal Laser Scanning Microscopy: Principles"
  *   (Carl Zeiss, 2003). λ is the emission wavelength (the geometric term) or the mean wavelength. Wilhelm et al. write
  *   0.88 for the diffraction term; it is the FWHM 2 · 1.391557/π = 0.8859 of the sinc² axial PSF (Born & Wolf §8.8),
- *   so 0.886 is used here, as in confocal.ts and diffraction-psf.ts (review 2026-11 P2-M2).
+ *   so its exact value AXIAL_FWHM_FACTOR is used here, as in confocal.ts and diffraction-psf.ts (review 2026-11 P2-M2).
  * - Two-photon excitation: the axial 1/e radius of the squared illumination intensity is
  *     ω_z = (0.532 λ/√2) / (n − √(n² − NA²)),
  *   W. R. Zipfel, R. M. Williams, W. W. Webb, Nat. Biotechnol. 21, 1369 (2003); FWHM = 2√(ln 2) ω_z.
@@ -27,6 +27,12 @@
 
 const valid = (lambda: number, n: number, NA: number) =>
   lambda > 0 && NA > 0 && n >= 1 && NA < n && Number.isFinite(lambda * n * NA);
+
+/**
+ * Axial FWHM of the sinc² PSF in units of λ/(n − √(n² − NA²)): 2·x½/π with x½ = SINC2_HALF_MAX_X (diffraction-psf;
+ * the test checks it). A literal, so the pages importing this module don't bundle diffraction-psf.
+ */
+export const AXIAL_FWHM_FACTOR = 0.8858929413789047;
 
 /** n − √(n² − NA²), computed as NA²/(n + √(n² − NA²)) to avoid cancellation at low NA. */
 function axialDenominator(n: number, NA: number): number {
@@ -51,9 +57,9 @@ export function widefieldAxialFirstZero(lambda: number, n: number, NA: number): 
   return valid(lambda, n, NA) ? lambda / axialDenominator(n, NA) : NaN;
 }
 
-/** Axial FWHM of the one-photon detection PSF, 0.886 λ/(n − √(n² − NA²)) (the sinc² half width), m. */
+/** Axial FWHM of the one-photon detection PSF, 0.8859 λ/(n − √(n² − NA²)) (the sinc² half width), m. */
 export function axialPsfFwhm(lambda: number, n: number, NA: number): number {
-  return valid(lambda, n, NA) ? (0.886 * lambda) / axialDenominator(n, NA) : NaN;
+  return valid(lambda, n, NA) ? (AXIAL_FWHM_FACTOR * lambda) / axialDenominator(n, NA) : NaN;
 }
 
 /** Confocal optical-section FWHM for a pinhole of `pinholeAU` Airy units (geometric regime, ≥ 1 AU), m. */

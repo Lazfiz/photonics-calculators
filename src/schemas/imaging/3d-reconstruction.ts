@@ -70,21 +70,21 @@ export default defineSchema({
   },
   checks: [
     {
-      // Widefield, 600 nm, NA 0.8, n 1.33: lateral (v½/π) λ/NA = 385.8727387 nm; axial (2·1.39156/π) λ/(n − √(n² − NA²)) = 1987.2678695 nm.
+      // Widefield, 600 nm, NA 0.8, n 1.33: lateral (v½/π) λ/NA = 385.8727387 nm; axial (2·1.391557/π = 0.88589) λ/(n − √(n² − NA²)) = 1987.0277406 nm.
       // Stack: FOV 100 µm / 0.1 µm = 1000 px per side; 50 slices → 50e6 voxels, 2 bytes each = 100 MB.
       source: BORN_WOLF,
       basis: "computed",
       inputs: { method: "widefield", wavelengthNm: 600, na: 0.8, refractiveIndex: 1.33, numSlices: 50, sliceSpacing: 0.5, xyResolution: 0.1, fovUm: 100 },
-      expect: { lateral: 385.8727387358205, axial: 1987.267869481913, pixelsPerSide: 1000, totalVoxels: 50e6, volumeSize: 100 },
+      expect: { lateral: 385.8727387358205, axial: 1987.027740635577, pixelsPerSide: 1000, totalVoxels: 50e6, volumeSize: 100 },
       tolerance: 1e-8,
     },
     {
-      // Light sheet, 600 nm, sheet NA 0.1, same detection (axial 1987.2678695 nm): w₀ = λ/(π NA) = 1909.859 nm, sheet FWHM
-      // √(2 ln 2) w₀ = 2248.6875016 nm; (1/2248.69² + 1/1987.27²)^(−1/2) = 1489.0993262 nm; 2 z_R = 2π n w₀²/λ = 50.8022578 µm.
+      // Light sheet, 600 nm, sheet NA 0.1, same detection (axial 1987.0277406 nm): w₀ = λ/(π NA) = 1909.859 nm, sheet FWHM
+      // √(2 ln 2) w₀ = 2248.6875016 nm; (1/2248.69² + 1/1987.03²)^(−1/2) = 1488.9982891 nm; 2 z_R = 2π n w₀²/λ = 50.8022578 µm.
       source: ENGELBRECHT,
       basis: "computed",
       inputs: { method: "lightsheet", wavelengthNm: 600, na: 0.8, refractiveIndex: 1.33, excitationNA: 0.1, sliceSpacing: 0.5, xyResolution: 0.1, fovUm: 40 },
-      expect: { axial: 1489.099326150459, sheetLength: 50.802257834933 },
+      expect: { axial: 1488.998289108732, sheetLength: 50.802257834933 },
       tolerance: 1e-8,
     },
   ],

@@ -11,7 +11,7 @@ test("superResolutionSummary: defaults", () => {
   const r = superResolutionSummary(580e-9, 1.4, 1.52, 30, 660e-9, 5000);
   rel(r.abbe * 1e9, 207.1428571);
   rel(r.rayleigh * 1e9, 252.7142857);
-  rel(r.axial * 1e9, 553.7177456);
+  rel(r.axial * 1e9, 553.6508379);
   rel(r.sted * 1e9, 42.13560267);
   rel(r.palm * 1e9, 1.230365799);
   rel(r.palmFwhm * 1e9, 2.897290047);

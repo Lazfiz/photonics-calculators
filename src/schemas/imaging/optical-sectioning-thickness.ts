@@ -39,13 +39,13 @@ export default defineSchema({
   checks: [
     {
       // 600 nm, n 1.33, NA 1.0, 2 AU: D = n − √(n² − NA²) = 1.33 − √0.7689 = 0.4531306; PH = 2·1.22·0.6/1.0 = 1.464 µm;
-      // confocal = √[(0.886·0.6/D)² + (√2·1.33·1.464/1.0)²] = 2.993140 µm; point pinhole 0.64·0.6/D = 0.847438 µm.
+      // confocal = √[(0.88589·0.6/D)² + (√2·1.33·1.464/1.0)²] = 2.993084 µm; point pinhole 0.64·0.6/D = 0.847438 µm.
       // The wave-optical output (Wilson T. (2011) Resolution and optical sectioning in the confocal microscope,
       // J. Microsc. 244, 113–121, https://doi.org/10.1111/j.1365-2818.2011.03549.x) is not asserted here.
       source: WILHELM,
       basis: "computed",
       inputs: { wavelength: 600, na: 1.0, refractiveIndex: 1.33, pinholeAU: 2 },
-      expect: { confocal: 2.9931395953446644, pointPinhole: 0.8474378617180859, pinholeDiameter: 1.464 },
+      expect: { confocal: 2.993084035379417, pointPinhole: 0.8474378617180859, pinholeDiameter: 1.464 },
       tolerance: 1e-8,
     },
     {

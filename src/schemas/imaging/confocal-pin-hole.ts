@@ -67,12 +67,12 @@ export default defineSchema({
       tolerance: 1e-8,
     },
     {
-      // 488 nm, NA 1.4, n 1.515, 2 AU: Δ = n − √(n² − NA²); diffraction term 0.886 λ/Δ (0.886 = 2·1.39156/π, in place of Wilhelm's printed 0.88),
-      // geometric term √2 n PH/NA with PH = 2 · 425.257 nm; FWHM = hypot of the two = 1381.1465168616 nm.
+      // 488 nm, NA 1.4, n 1.515, 2 AU: Δ = n − √(n² − NA²); diffraction term 0.88589 λ/Δ (0.88589 = 2·1.391557/π, in place of Wilhelm's printed 0.88),
+      // geometric term √2 n PH/NA with PH = 2 · 425.257 nm; FWHM = hypot of the two = 1381.1278501664 nm.
       source: WILHELM,
       basis: "computed",
       inputs: { wavelength: 488, na: 1.4, nImmersion: 1.515, pinholeAU: 2 },
-      expect: { wilhelm: 1381.1465168615516 },
+      expect: { wilhelm: 1381.1278501664094 },
       tolerance: 1e-8,
     },
   ],

@@ -59,11 +59,11 @@ export default defineSchema({
       tolerance: 1e-8,
     },
     {
-      // λ = 488 nm, NA 1.2, n = 1.33: n − √(n² − NA²) = 1.33 − √(1.7689 − 1.44) = 0.7565; 0.886 · 488 nm/0.7565 = 571.5358610 nm.
+      // λ = 488 nm, NA 1.2, n = 1.33: n − √(n² − NA²) = 1.33 − √(1.7689 − 1.44) = 0.7565; 0.88589 · 488 nm/0.7565 = 571.4668002 nm.
       source: WILHELM,
       basis: "computed",
       inputs: { na: 1.2, wavelength: 488, n: 1.33 },
-      expect: { axial: 571.535861 },
+      expect: { axial: 571.4668002 },
       tolerance: 1e-8,
     },
   ],
