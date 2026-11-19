@@ -36,6 +36,8 @@ const GUARDS: Guard[] = [
   { name: "hc in eV·nm", value: K.hc_eV_nm, tol: 1e-3, dividend: true },
   { name: "hc in eV·µm", value: K.hc_eV_nm * 1e-3, tol: 1e-3, dividend: true },
   { name: "hc/e in V·m", value: K.hc_eV_nm * 1e-9, tol: 1e-3, dividend: true },
+  // Replaced by scripts/codemods/2026-11-19-t0-celsius.ts. Exact spelling only: 273 K is an ordinary temperature.
+  { name: "T0_CELSIUS", value: K.T0_CELSIUS, tol: 1e-9 },
 ];
 
 const srcDir = path.join(process.cwd(), "src");

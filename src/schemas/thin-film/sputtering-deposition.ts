@@ -1,4 +1,4 @@
-import { TORR, q } from "../../physics/constants";
+import { TORR, q, T0_CELSIUS } from "../../physics/constants";
 import { SPUTTER_TARGETS, sputterYield, sputteringDeposition, type SputterTargetId } from "../../physics/thin-film/sputtering";
 import { defineSchema } from "../types";
 
@@ -26,7 +26,7 @@ export default defineSchema({
     { key: "targetRadius", label: "Erosion-zone radius of the target", unit: "cm", toSI: 1e-2, siUnit: "m", default: 2, min: 0, max: 50 },
     { key: "distance", label: "Target–substrate distance", unit: "cm", toSI: 1e-2, siUnit: "m", default: 10, min: 0.1, max: 100 },
     { key: "pressure", label: "Argon pressure", unit: "mTorr", toSI: 1e-3 * TORR, siUnit: "Pa", default: 3, min: 0.01, max: 1000 },
-    { key: "substrateTemp", label: "Substrate temperature", unit: "°C", toSI: 1, siUnit: "°C", default: 200, min: -273.15, max: 2000 },
+    { key: "substrateTemp", label: "Substrate temperature", unit: "°C", toSI: 1, siUnit: "°C", default: 200, min: -T0_CELSIUS, max: 2000 },
   ],
   outputs: [
     { key: "rate", label: "On-axis deposition rate (collisionless)", unit: "nm/s", toSI: 1e-9, siUnit: "m/s" },
@@ -42,7 +42,7 @@ export default defineSchema({
     const Y = sputterYield(t, i.yield);
     const r = sputteringDeposition(t, {
       power: i.power, voltage: i.voltage, gamma: i.gamma, Y, targetRadius: i.targetRadius, distance: i.distance,
-      pressure: i.pressure, substrateTemp: i.substrateTemp + 273.15,
+      pressure: i.pressure, substrateTemp: i.substrateTemp + T0_CELSIUS,
     });
     const warnings: string[] = [];
     if (i.yield === 0 && Math.abs(i.voltage - 500) > 100) {

@@ -9,6 +9,7 @@ import {
   scaledHeatCapacity,
   type HeatCapacityMaterialId,
 } from "../../../physics/materials/heat-capacity";
+import { T0_CELSIUS } from "../../../physics/constants";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const show = (x: number, text: () => string) => (Number.isFinite(x) ? text() : "—");
@@ -105,7 +106,7 @@ export default function HeatCapacityPage() {
         <Card label="Heat T₁ → T₂" value={show(q, () => (Math.abs(q) >= 1e4 ? `${(q / 1000).toFixed(3)} kJ` : `${q.toFixed(1)} J`))}
           sub={q < 0 ? "negative: heat released on cooling" : "m ∫ c_p dT"} tone="text-green-400" />
         <Card label="Mean c_p over T₁–T₂" value={show(meanCp, () => `${(meanCp / 1000).toFixed(4)} J/(g·K)`)}
-          sub={T1 === T2 ? "T₁ = T₂" : `${(T1 - 273.15).toFixed(1)} °C → ${(T2 - 273.15).toFixed(1)} °C`} tone="text-yellow-400" />
+          sub={T1 === T2 ? "T₁ = T₂" : `${(T1 - T0_CELSIUS).toFixed(1)} °C → ${(T2 - T0_CELSIUS).toFixed(1)} °C`} tone="text-yellow-400" />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">

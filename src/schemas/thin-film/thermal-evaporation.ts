@@ -1,4 +1,4 @@
-import { TORR } from "../../physics/constants";
+import { TORR, T0_CELSIUS } from "../../physics/constants";
 import { EVAPORANTS, thermalEvaporation, type EvaporantId } from "../../physics/thin-film/thermal-evaporation";
 import { defineSchema } from "../types";
 
@@ -26,7 +26,7 @@ export default defineSchema({
     { key: "substrateRadius", label: "Substrate radius", unit: "cm", toSI: 1e-2, siUnit: "m", default: 5, min: 0, max: 500 },
     { key: "alpha", label: "Evaporation coefficient α", unit: "", toSI: 1, siUnit: "", default: 1, min: 0.001, max: 1 },
     { key: "chamberPressure", label: "Chamber pressure", unit: "Torr", toSI: TORR, siUnit: "Pa", default: 1e-6, min: 1e-12, max: 1000 },
-    { key: "substrateTemp", label: "Substrate temperature", unit: "°C", toSI: 1, siUnit: "°C", default: 100, min: -273.15, max: 3000 },
+    { key: "substrateTemp", label: "Substrate temperature", unit: "°C", toSI: 1, siUnit: "°C", default: 100, min: -T0_CELSIUS, max: 3000 },
   ],
   outputs: [
     { key: "vapourPressure", label: "Vapour pressure", unit: "Pa", toSI: 1, siUnit: "Pa" },
@@ -40,7 +40,7 @@ export default defineSchema({
   ],
   compute(i) {
     const ev = EVAPORANTS[i.material as EvaporantId];
-    const T = i.sourceTemp + 273.15;
+    const T = i.sourceTemp + T0_CELSIUS;
     const r = thermalEvaporation(ev, {
       T,
       h: i.sourceSubstrateDist,
@@ -48,7 +48,7 @@ export default defineSchema({
       substrateRadius: i.substrateRadius,
       alpha: i.alpha,
       chamberPressure: i.chamberPressure,
-      substrateTemp: i.substrateTemp + 273.15,
+      substrateTemp: i.substrateTemp + T0_CELSIUS,
     });
     const warnings: string[] = [];
     if (!(T > 0 && T <= 2500)) warnings.push("The source temperature must lie between 0 K and 2500 K (the range of the vapour-pressure fits).");

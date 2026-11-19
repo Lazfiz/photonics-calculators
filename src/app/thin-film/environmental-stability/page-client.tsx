@@ -8,13 +8,13 @@ import {
   type CoatingMaterial, type MixingLaw,
 } from "../../../physics/thin-film/environmental-stability";
 import { reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
+import { T0_CELSIUS } from "../../../physics/constants";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const show = (x: number, text: () => string) => (Number.isFinite(x) ? text() : "—");
 const round6 = (x: number) => Math.round(x * 1e6) / 1e6;
 const PPM = 1e-6; // the dn/dT and expansion input unit, 1/K
 const T0_C = 25; // reference temperature of the entered indices, °C
-const KELVIN = 273.15;
 const LAWS: { id: MixingLaw; name: string }[] = [
   { id: "linear", name: "Linear (eq. 3)" },
   { id: "bragg-pippard", name: "Bragg–Pippard columns (eq. 4)" },
@@ -145,7 +145,7 @@ export default function EnvironmentalStabilityPage() {
   const rhTest = clamp(rhTestRaw, 1, 100, 85);
   const rhExp = clamp(rhExpRaw, 0, 10, 0);
   const hours = clamp(hoursRaw, 0, 1e7, 1000);
-  const af = accelerationFactor(ea, tUse + KELVIN, tTest + KELVIN, rhUse, rhTest, rhExp);
+  const af = accelerationFactor(ea, tUse + T0_CELSIUS, tTest + T0_CELSIUS, rhUse, rhTest, rhExp);
 
   return (
     <>

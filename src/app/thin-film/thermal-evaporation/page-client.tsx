@@ -5,7 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { TORR } from "../../../physics/constants";
+import { TORR, T0_CELSIUS } from "../../../physics/constants";
 import {
   EVAPORANTS, FIT_T_MAX, evaporationMassFlux,
   surfaceSourceRate, thermalEvaporation, vapourPressure, type EvaporantId,
@@ -21,7 +21,7 @@ const fmtSci = (x: number, unit: string) => (Number.isFinite(x) && x >= 0.01 && 
 const fmtRate = (x: number) => (!Number.isFinite(x) ? "—" : x >= 0.1 ? `${x.toFixed(2)} nm/s` : `${x.toPrecision(2)} nm/s`);
 const ZONE_TEXT = ["", "zone 1: tapered columns with voids", "zone 2: dense columnar grains", "zone 3: recrystallised, equiaxed grains"];
 /** Highest source temperature the fits allow (2500 K) in °C. */
-const T_MAX_C = FIT_T_MAX - 273.15;
+const T_MAX_C = FIT_T_MAX - T0_CELSIUS;
 /** End of the rate sweep (Pa), ten times the vapour-cloud onset. */
 const SWEEP_P_MAX = 10;
 
@@ -37,7 +37,7 @@ export default function ThermalEvaporationPage() {
 
   const id: EvaporantId = isId(materialParam) ? materialParam : "Al";
   const ev = EVAPORANTS[id];
-  const T = sourceTemp + 273.15;
+  const T = sourceTemp + T0_CELSIUS;
   const errors = [
     !(T > 0 && T <= FIT_T_MAX) && `the source temperature must lie between −273.15 and ${T_MAX_C} °C`,
     !(sourceSubstrateDist > 0) && "the source–substrate distance must be positive",
@@ -45,7 +45,7 @@ export default function ThermalEvaporationPage() {
     !(substrateRadius >= 0) && "the substrate radius can't be negative",
     !(alpha > 0 && alpha <= 1) && "the evaporation coefficient must lie in (0, 1]",
     !(chamberPressure > 0) && "the chamber pressure must be positive",
-    !(substrateTemp >= -273.15) && "the substrate temperature must be above absolute zero",
+    !(substrateTemp >= -T0_CELSIUS) && "the substrate temperature must be above absolute zero",
   ].filter((e): e is string => typeof e === "string");
   const valid = errors.length === 0;
 
@@ -53,7 +53,7 @@ export default function ThermalEvaporationPage() {
     if (!valid) return null;
     const res = thermalEvaporation(ev, {
       T, h: sourceSubstrateDist * 1e-2, sourceRadius: (sourceDiameter / 2) * 1e-2, substrateRadius: substrateRadius * 1e-2,
-      alpha, chamberPressure: chamberPressure * TORR, substrateTemp: substrateTemp + 273.15,
+      alpha, chamberPressure: chamberPressure * TORR, substrateTemp: substrateTemp + T0_CELSIUS,
     });
     return { ...res, rate: res.rate * 1e9 }; // nm/s
   }, [valid, ev, T, sourceSubstrateDist, sourceDiameter, substrateRadius, alpha, chamberPressure, substrateTemp]);
@@ -70,7 +70,7 @@ export default function ThermalEvaporationPage() {
       const p = vapourPressure(ev, Tk);
       if (p < 1e-6) continue;
       if (p > SWEEP_P_MAX && Tk > T + 15) break; // continue past 10 Pa only up to the input temperature
-      temps.push(Tk - 273.15);
+      temps.push(Tk - T0_CELSIUS);
       rates.push(surfaceSourceRate(evaporationMassFlux(p, ev.M, Tk, alpha), Math.PI * rs * rs, ev.rho, h) * 1e9);
     }
     const pIn = vapourPressure(ev, T);

@@ -6,10 +6,10 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { arrheniusFactor } from "../../../physics/detectors/spad";
 import { SPAD_LOSS_WARNING, SPAD_MIN_GATE_COUNTS, spadSnrAtPower, spadSummary } from "../../../physics/detectors/spad-summary";
+import { T0_CELSIUS } from "../../../physics/constants";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 2) => (Number.isFinite(x) ? x.toExponential(digits) : "—");
-const K = 273.15;
 
 // Defaults: free-running InGaAs/InP NFAD of Korzh et al., Appl. Phys. Lett. 104, 081108 (2014): at −110 °C,
 // 11.5 % efficiency at 1550 nm with 1.19 cps dark counts, 2.2 % afterpulsing and a 20 µs hold-off.
@@ -49,7 +49,7 @@ export default function SPADPage() {
   const tHi = Math.max(refTemp_C + 60, temp_C + 10);
   const temps = Array.from({ length: 121 }, (_, i) => tLo + (i * (tHi - tLo)) / 120);
   const dcrChart = [
-    { x: temps, y: temps.map((t) => dcrRef * arrheniusFactor(ea, t + K, refTemp_C + K)), type: "scatter" as const, mode: "lines" as const, name: "DCR", line: { color: "#f87171" } },
+    { x: temps, y: temps.map((t) => dcrRef * arrheniusFactor(ea, t + T0_CELSIUS, refTemp_C + T0_CELSIUS)), type: "scatter" as const, mode: "lines" as const, name: "DCR", line: { color: "#f87171" } },
     { x: [temp_C], y: [dcr], type: "scatter" as const, mode: "markers" as const, name: "Operating point", marker: { color: "#fbbf24", size: 8 } },
   ];
   // Power from 40 dB below to 30 dB above the input.

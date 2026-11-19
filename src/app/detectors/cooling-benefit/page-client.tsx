@@ -4,7 +4,8 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { coolingModel, coolingSummary, KELVIN, REFERENCE_TEMPERATURE_C } from "../../../physics/detectors/cooling-benefit";
+import { coolingModel, coolingSummary, REFERENCE_TEMPERATURE_C } from "../../../physics/detectors/cooling-benefit";
+import { T0_CELSIUS } from "../../../physics/constants";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmtE = (x: number, digits = 2) => (Number.isFinite(x) ? x.toExponential(digits) : "—");
@@ -57,7 +58,7 @@ export default function CoolingBenefitPage() {
           </select>
         </label>
         {siVarshni ? (
-          <p className="text-sm text-gray-400 self-end pb-2">Si E_g: {siGapAt(REFERENCE_TEMPERATURE_C + KELVIN).toFixed(3)} eV at 25 °C, {siGapAt(coolTemp + KELVIN).toFixed(3)} eV at {coolTemp} °C</p>
+          <p className="text-sm text-gray-400 self-end pb-2">Si E_g: {siGapAt(REFERENCE_TEMPERATURE_C + T0_CELSIUS).toFixed(3)} eV at 25 °C, {siGapAt(coolTemp + T0_CELSIUS).toFixed(3)} eV at {coolTemp} °C</p>
         ) : (
           <ValidatedNumberInput label="Si Band Gap (eV)" value={egSiRaw} onChange={setEgSi} min={0.1} max={6} step="0.01" />
         )}
@@ -69,7 +70,7 @@ export default function CoolingBenefitPage() {
           </select>
         </label>
         {inGaAsVurgaftman ? (
-          <p className="text-sm text-gray-400 self-end pb-2">InGaAs E_g: {inGaAsGapAt(REFERENCE_TEMPERATURE_C + KELVIN).toFixed(3)} eV at 25 °C, {inGaAsGapAt(coolTemp + KELVIN).toFixed(3)} eV at {coolTemp} °C</p>
+          <p className="text-sm text-gray-400 self-end pb-2">InGaAs E_g: {inGaAsGapAt(REFERENCE_TEMPERATURE_C + T0_CELSIUS).toFixed(3)} eV at 25 °C, {inGaAsGapAt(coolTemp + T0_CELSIUS).toFixed(3)} eV at {coolTemp} °C</p>
         ) : (
           <ValidatedNumberInput label="InGaAs Band Gap (eV)" value={egInGaAsRaw} onChange={setEgInGaAs} min={0.1} max={6} step="0.01" />
         )}

@@ -1,5 +1,6 @@
 import { FA_PER_CM2, vacuumPhotodiodeSummary } from "../../physics/detectors/vacuum-photodiode";
 import { defineSchema } from "../types";
+import { T0_CELSIUS } from "../../physics/constants";
 
 const REFS =
   "Dushman S. (1923). Electron emission from metals as a function of temperature. Phys. Rev. 21, 623–636, doi:10.1103/PhysRev.21.623: J = A₀·T²·exp(−ψ/k_B·T), A₀ = 4π·m_e·k_B²·q/h³, " +
@@ -45,7 +46,7 @@ export default defineSchema({
   }) {
     const r = vacuumPhotodiodeSummary({
       qe: quantumEff, wavelength, power: incidentPower, phi: workFunction, voltage: anodeVoltage, gap, area: cathodeArea,
-      load: loadResistance, temperature: temperature + 273.15, darkEmission25: darkEmission, strayCapacitance,
+      load: loadResistance, temperature: temperature + T0_CELSIUS, darkEmission25: darkEmission, strayCapacitance,
     });
     const warnings: string[] = [];
     const reasons: Record<string, string> = {};

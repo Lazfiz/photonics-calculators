@@ -3,6 +3,7 @@ import {
   type CoatingMaterial, type MixingLaw,
 } from "../../physics/thin-film/environmental-stability";
 import { defineSchema } from "../types";
+import { T0_CELSIUS } from "../../physics/constants";
 
 const MACLEOD = "Macleod H. A. (1988). Moisture adsorption in optical coatings, NASA Conference Publication, NTRS 19890003956, " +
   "eq. 3 (linear mixing), eq. 4 (Bragg–Pippard columns) and eq. 5 (n_v = 1 + f (n_w − 1)); a quarter-wave stack's band " +
@@ -15,7 +16,6 @@ const PECK = "Peck D. S. (1986). Comprehensive model for humidity testing correl
   "44–50, doi:10.1109/IRPS.1986.362110: AF = (RH_test/RH_use)^n exp[(E_a/k_B)(1/T_use − 1/T_test)] (n = 0: Arrhenius). Equation number not quoted.";
 
 const T0_C = 25; // reference temperature of the entered indices, °C
-const KELVIN = 273.15;
 const HOURS_PER_YEAR = 8766;
 const LAWS = [
   { value: "linear", label: "Linear (eq. 3)" },
@@ -83,7 +83,7 @@ export default defineSchema({
     const solidH = solidIndex(H.n, H.p, H.law), solidL = solidIndex(L.n, L.p, L.law);
     const surfaces = Math.round(si.surfaces);
     const obscuration = cc1246Obscuration(si.level * 1e6);
-    const af = accelerationFactor(si.ea, si.tUse + KELVIN, si.tTest + KELVIN, si.rhUse, si.rhTest, si.rhExp);
+    const af = accelerationFactor(si.ea, si.tUse + T0_CELSIUS, si.tTest + T0_CELSIUS, si.rhUse, si.rhTest, si.rhExp);
     const warnings: string[] = [];
     for (const [name, m, sol] of [["H", H, solidH], ["L", L, solidL]] as const) {
       if (m.law === "bragg-pippard" && !Number.isFinite(sol)) {

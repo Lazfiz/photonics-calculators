@@ -2,9 +2,8 @@ import {
   SI_ALPHA_T_MAX, SI_ALPHA_T_MIN, expansionWaves, siliconAlpha, siliconExpansion, siliconMeanAlpha, thermalExpansion,
 } from "../../physics/materials/thermal-expansion";
 import { defineSchema } from "../types";
+import { T0_CELSIUS } from "../../physics/constants";
 
-// 0 °C in kelvin, as the page's K0.
-const K0 = 273.15;
 // The page's reference wavelength for ΔL/λ.
 const HENE_NM = 633e-9;
 
@@ -20,7 +19,7 @@ export default defineSchema({
     { key: "alpha", label: "CTE α", unit: "×10⁻⁶/K", toSI: 1e-6, siUnit: "1/K", default: 7.1, min: -50, max: 100 },
     { key: "dT", label: "Temperature change ΔT", unit: "°C", toSI: 1, siUnit: "K", default: 100, min: -273, max: 3000 },
     { key: "length", label: "Length L", unit: "mm", toSI: 1e-3, siUnit: "m", default: 100, min: 0, max: 1e6 },
-    { key: "t0", label: "Start temperature T₀ (silicon section)", unit: "°C", toSI: 1, siUnit: "°C", default: 20, min: -273.15, max: 3000 },
+    { key: "t0", label: "Start temperature T₀ (silicon section)", unit: "°C", toSI: 1, siUnit: "°C", default: 20, min: -T0_CELSIUS, max: 3000 },
   ],
   outputs: [
     { key: "dL", label: "ΔL (constant α)", unit: "mm", toSI: 1e-3, siUnit: "m" },
@@ -34,7 +33,7 @@ export default defineSchema({
   ],
   compute({ alpha, dT, length, t0 }) {
     const dL = thermalExpansion(alpha, length, dT);
-    const T1 = t0 + K0;
+    const T1 = t0 + T0_CELSIUS;
     const T2 = T1 + dT;
     const warnings: string[] = [];
     if (Math.abs(dT) > 50) {

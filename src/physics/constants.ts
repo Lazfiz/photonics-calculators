@@ -50,6 +50,11 @@ export const hc_eV_nm = ((h * c) / q) * 1e9;
 /** Boltzmann constant in eV/K (≈ 8.617e-5), so k_B_eV·T is the thermal energy in eV. */
 export const k_B_eV = k_B / q;
 
+// ── Exact: unit definitions ─────────────────────────────────────────────────────────────────
+
+/** 0 °C in kelvin: T[K] = t[°C] + T0_CELSIUS (the Celsius scale's definition, SI Brochure 2019 §2.3.1). */
+export const T0_CELSIUS = 273.15;
+
 // ── Measured: CODATA 2022 ───────────────────────────────────────────────────────────────────
 
 /** Fine-structure constant α (dimensionless), (11)e-13. */

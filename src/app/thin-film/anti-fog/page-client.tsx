@@ -7,6 +7,7 @@ import { useURLState } from "../../../hooks/use-url-state";
 import { luminousWeightedMean } from "../../../physics/cie-photometry";
 import { dropletTirFraction, N_WATER, tirOnsetAngle, waterFilmResponse, waterSurfaceTension, wetting } from "../../../physics/thin-film/anti-fog";
 import { stackResponse } from "../../../physics/thin-film/transfer-matrix";
+import { T0_CELSIUS } from "../../../physics/constants";
 
 const NM = 1e-9;
 const DEG = Math.PI / 180;
@@ -37,7 +38,7 @@ export default function AntiFogPage() {
     };
   }, [valid, coating, nSub]);
 
-  const gamma = waterSurfaceTension(waterTemp + 273.15);
+  const gamma = waterSurfaceTension(waterTemp + T0_CELSIUS);
   const wet = wetting(gamma, contactAngle * DEG);
   const tir = dropletTirFraction(contactAngle * DEG);
   const onset = tirOnsetAngle() / DEG;
