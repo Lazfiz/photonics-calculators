@@ -44,8 +44,12 @@ export function slmReplaySummary(i: SlmInputs) {
     apertureY: ny * dx,
     /** Hologram frame size, bytes (one bit per pixel for binary amplitude). */
     frameBytes: (nx * ny * (i.amplitude ? 1 : i.bits)) / 8,
-    /** A lensless Fresnel replay aliases on the SLM below Nx·Δx²/λ, m. */
-    aliasDistance: (nx * dx * dx) / lambda,
+    /**
+     * A lensless Fresnel replay aliases on the SLM below max(Nx, Ny)·Δx²/λ, m: the chirp's local frequency
+     * x/(λz) at the edge x = NΔx/2 must stay below 1/(2Δx) along both axes (Voelz & Roggemann 2009,
+     * Appl. Opt. 48, 6132, critical sampling Δx = λz/L).
+     */
+    aliasDistance: (Math.max(nx, ny) * dx * dx) / lambda,
     /** λ/(2Δx), the sine of the largest angle. */
     sinMax: lambda / (2 * dx),
   };
