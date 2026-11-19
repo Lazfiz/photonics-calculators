@@ -118,12 +118,12 @@ export default defineSchema({
       tolerance: 1e-8,
     },
     {
-      // n 1.33, NA 0.8: Δ = n − √(n² − NA²); hypot(0.886 λ/Δ, √2 n PH/NA) with PH = 1.119770670966586 · 744.2 nm = 833.3333333 nm → FWHM 2539.9253094246606 nm
-      // (0.886 = 2·1.39156/π in place of Wilhelm's printed 0.88).
+      // n 1.33, NA 0.8: Δ = n − √(n² − NA²); hypot(0.88589 λ/Δ, √2 n PH/NA) with PH = 1.119770670966586 · 744.2 nm = 833.3333333 nm → FWHM 2539.8010294 nm
+      // (0.88589 = 2·1.391557/π in place of Wilhelm's printed 0.88).
       source: WILHELM,
       basis: "computed",
       inputs: {},
-      expect: { wilhelm: 2539.9253094246606 },
+      expect: { wilhelm: 2539.8010294006313 },
       tolerance: 1e-8,
     },
   ],

@@ -74,11 +74,11 @@ export default defineSchema({
       tolerance: 1e-8,
     },
     {
-      // 700 nm, NA 0.8, n_s 1.45: lateral λ/(2NA) = 437.5 nm; axial (2·1.39156/π) λ/(n_s − √(n_s² − NA²)) = 2.5770653724 µm.
+      // 700 nm, NA 0.8, n_s 1.45: lateral λ/(2NA) = 437.5 nm; axial (2·1.391557/π = 0.88589) λ/(n_s − √(n_s² − NA²)) = 2.5767539761 µm.
       source: BORN_WOLF,
       basis: "computed",
       inputs: { na: 0.8, wavelength: 700, nMedium: 1.45, nImm: 1.33 },
-      expect: { lateral: 437.5, axial: 2.5770653723815844 },
+      expect: { lateral: 437.5, axial: 2.5767539761454223 },
       tolerance: 1e-8,
     },
   ],

@@ -23,12 +23,12 @@ const deg = Math.PI / 180;
 
 test("light sheet: selective-plane defaults and the Gaussian beam profile (Siegman, Lasers, ch. 17)", () => {
   // λ 488 nm, NA_ill 0.05, n 1.45, NA_det 1.0. Hand: w₀ = 488/(π·0.05) = 3106.7 nm, FWHM √(2 ln 2) w₀ = 3657.9 nm;
-  // detection 0.886·488/(1.45 − √(1.45² − 1)) = 1080.92 nm; (3657.9⁻² + 1080.92⁻²)^(−1/2) = 1036.61 nm.
+  // detection 0.88589·488/(1.45 − √(1.45² − 1)) = 1080.79 nm; (3657.9⁻² + 1080.79⁻²)^(−1/2) = 1036.49 nm.
   const sheet = gaussianSheetFwhm(488 * nm, 0.05);
   assertRel(sheet, 3657.87 * nm, 1e-5, "sheet FWHM");
   const det = axialPsfFwhm(488 * nm, 1.45, 1.0);
-  assertRel(det, 1080.92 * nm, 1e-5, "detection axial");
-  assertRel(effectiveAxialFwhm(sheet, det), 1036.607 * nm, 1e-5, "effective axial");
+  assertRel(det, 1080.789 * nm, 1e-5, "detection axial");
+  assertRel(effectiveAxialFwhm(sheet, det), 1036.492 * nm, 1e-5, "effective axial");
   // The sheet is √2 thicker one Rayleigh range from the waist; divergence half-angle NA/n = λ/(π n w₀).
   const zR = gaussianSheetRayleighRange(488 * nm, 0.1, 1.33);
   assertRel(gaussianSheetHalfThicknessAt(zR, 488 * nm, 0.1, 1.33), Math.SQRT2 * gaussianSheetWaist(488 * nm, 0.1), 1e-12, "w(z_R)");
@@ -59,8 +59,8 @@ test("TIRF penetration depth and interface intensity (Axelrod, Traffic 2, 764 (2
 });
 
 test("cleared tissue: resolution, ballistic light (Jacques 2013) and focal shift (Hell 1993, Diel 2020)", () => {
-  // Defaults: 680 nm, NA 1.2, n 1.52. Axial 0.886·680/(1.52 − √(1.52² − 1.2²)) = 1026.29 nm; Abbe 680/2.4 = 283.33 nm.
-  assertRel(axialPsfFwhm(680 * nm, 1.52, 1.2), 1026.288 * nm, 1e-5, "axial");
+  // Defaults: 680 nm, NA 1.2, n 1.52. Axial 0.88589·680/(1.52 − √(1.52² − 1.2²)) = 1026.16 nm; Abbe 680/2.4 = 283.33 nm.
+  assertRel(axialPsfFwhm(680 * nm, 1.52, 1.2), 1026.164 * nm, 1e-5, "axial");
   assertRel(abbeLateralFwhm(680 * nm, 1.2), 283.333 * nm, 1e-5, "lateral");
   // µ_a 0.01 + µ_s 0.5 mm⁻¹ over 1 mm: exp(−0.51) = 0.600496.
   assertRel(ballisticFraction(10, 500, 1e-3), 0.600496, 1e-6, "ballistic");

@@ -68,8 +68,8 @@ test("shot-noise localization precision (Thompson et al. 2002, no pixelation or 
 });
 
 test("axial diffraction limit and domain guards", () => {
-  // 0.886 · 580/(1.52 − √(1.52² − 1.4²)) = 513.88/0.928054 = 553.718 nm.
-  assertRel(axialPsfFwhm(580 * nm, 1.52, 1.4), 553.718 * nm, 1e-5, "axial");
+  // 0.88589 · 580/(1.52 − √(1.52² − 1.4²)) = 513.8162/0.928054 = 553.651 nm.
+  assertRel(axialPsfFwhm(580 * nm, 1.52, 1.4), 553.651 * nm, 1e-5, "axial");
   assert.ok(Number.isNaN(axialPsfFwhm(580 * nm, 1.33, 1.4)), "NA > n");
   assert.ok(Number.isNaN(stedLateralFwhm(580 * nm, 1.4, -1)));
   assert.ok(Number.isNaN(localizationPrecision(580 * nm, 1.4, 0)));

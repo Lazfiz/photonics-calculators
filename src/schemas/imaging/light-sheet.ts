@@ -67,21 +67,21 @@ export default defineSchema({
       tolerance: 1e-8,
     },
     {
-      // λ_em = 510 nm, NA_det 0.8, n 1.33: n − √(n² − NA²) = 0.2675; FWHM_det = 0.886 λ/(n − √(n² − NA²)) = 1.689178 µm;
-      // 1/FWHM_eff² = 1/1.828933² + 1/1.689178² → 1.240898 µm; at ±z_R the sheet is √2 thicker → 1.414290 µm;
+      // λ_em = 510 nm, NA_det 0.8, n 1.33: n − √(n² − NA²) = 0.2675; FWHM_det = 0.88589 λ/(n − √(n² − NA²)) = 1.688974 µm;
+      // 1/FWHM_eff² = 1/1.828933² + 1/1.688974² → 1.240817 µm; at ±z_R the sheet is √2 thicker → 1.414170 µm;
       // lateral Airy FWHM = (1.6163399483/π) λ/NA = 327.9918 nm (v½ root of [2J₁(v)/v]² = ½ by bisection).
       source: BORN_WOLF,
       basis: "computed",
       inputs: { naIll: 0.1, naDet: 0.8, wavelength: 488, emission: 510, n: 1.33 },
-      expect: { detectionAxialFwhm: 1.689177689059626, lateralFwhm: 327.99182792544735 },
+      expect: { detectionAxialFwhm: 1.6889735795402403, lateralFwhm: 327.99182792544735 },
       tolerance: 1e-8,
     },
     {
-      // Product of the two Gaussian profiles: 1/FWHM_eff² = 1/FWHM_sheet² + 1/FWHM_det² (sheet 1.828933 µm, detection 1.689178 µm).
+      // Product of the two Gaussian profiles: 1/FWHM_eff² = 1/FWHM_sheet² + 1/FWHM_det² (sheet 1.828933 µm, detection 1.688974 µm).
       source: ENGELBRECHT,
       basis: "computed",
       inputs: { naIll: 0.1, naDet: 0.8, wavelength: 488, emission: 510, n: 1.33 },
-      expect: { effectiveAxialFwhm: 1.2408982723627726, effectiveAxialFwhmEdge: 1.4142901241792818 },
+      expect: { effectiveAxialFwhm: 1.2408173474897617, effectiveAxialFwhmEdge: 1.4141703188018813 },
       tolerance: 1e-8,
     },
   ],
