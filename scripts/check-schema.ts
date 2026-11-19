@@ -42,7 +42,9 @@ async function check(schema: CalculatorSchema) {
     if (!(input.toSI > 0)) fail(`${h} ${input.key} toSI`);
   }
   for (const output of schema.outputs) if (!(output.toSI > 0)) fail(`${h} ${output.key} toSI`);
-  if (!(schema.checks.length >= 1 && schema.checks.length <= 3)) fail(`${h}: 1–3 checks`);
+  // 1–3 cases worked from the equations, plus up to 2 whose values an independent source prints (ROADMAP 10f).
+  const computed = schema.checks.filter((c) => c.basis === "computed").length;
+  if (!(schema.checks.length >= 1 && computed <= 3 && schema.checks.length - computed <= 2)) fail(`${h}: 1–3 computed and ≤ 2 printed checks`);
 
   const defaults = await pageDefaults(h);
   const inputs = [...choices, ...schema.inputs];
