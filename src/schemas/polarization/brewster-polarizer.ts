@@ -7,6 +7,9 @@ const SHURCLIFF = "Shurcliff W. A. (1962). Polarized Light: Production and Use, 
   "incoherent sum T_m = (1 − r)/(1 + (2m − 1) r)), Harvard University Press; Born M., Wolf E. (1999). Principles of " +
   "Optics, 7th ed., §1.5.2 (Fresnel equations, Brewster angle tan θ_B = n), Cambridge University Press. " +
   "https://doi.org/10.1017/CBO9781139644181";
+const OPENSTAX_POLARIZATION = "Urone P. P., Hinrichs R. et al. (2022). College Physics 2e, OpenStax, §27.8 " +
+  "Polarization, Example: Calculating Polarization by Reflection. " +
+  "https://openstax.org/books/college-physics-2e/pages/27-8-polarization";
 
 export default defineSchema({
   href: "/polarization/brewster-polarizer",
@@ -60,6 +63,22 @@ export default defineSchema({
       inputs: { n2: 2.42, plates: 10 },
       expect: { thetaB: 67.548453544, dop: 0.909648488 },
       tolerance: 1e-8,
+    },
+    {
+      // OpenStax: light in air reflected from water, n₂ = 1.333: θ_b = tan⁻¹ 1.333 = 53.1° (atan gives 53.1232°).
+      source: OPENSTAX_POLARIZATION,
+      basis: "printed",
+      inputs: { n2: 1.333, plates: 1 },
+      expect: { thetaB: 53.1 },
+      tolerance: 1e-3,
+    },
+    {
+      // The same example for crown glass, n₂ = 1.520: θ′_b = tan⁻¹ 1.52 = 56.7° (atan gives 56.6593°).
+      source: OPENSTAX_POLARIZATION,
+      basis: "printed",
+      inputs: { n2: 1.52, plates: 1 },
+      expect: { thetaB: 56.7 },
+      tolerance: 1e-3,
     },
   ],
 });

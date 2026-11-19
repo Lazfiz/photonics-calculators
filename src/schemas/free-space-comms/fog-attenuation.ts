@@ -7,6 +7,9 @@ import { defineSchema } from "../types";
 const KIM = "Kim I. I., McArthur B., Korevaar E. (2001). Comparison of laser beam propagation at 785 nm and 1550 nm in " +
   "fog and haze for optical wireless communications. Proc. SPIE 4214, 26–37: σ = σ_R + [3.912/V − σ_R(550 nm)](λ/550 nm)^(−q), " +
   "Rayleigh part from Bucholtz A. (1995). Appl. Opt. 34(15), 2765–2773, eqs. (2)–(4).";
+const KIM_TABLE = (n: 2 | 4) => "Kim I. I., McArthur B., Korevaar E. (2001). Comparison of laser beam propagation " +
+  `at 785 nm and 1550 nm in fog and haze for optical wireless communications. Proc. SPIE 4214, 26–37, Table ${n}. ` +
+  "https://doi.org/10.1117/12.417512";
 const KRUSE = "Kruse P. W., McGlauchlin L. D., McQuistan R. B. (1962). Elements of Infrared Technology. Wiley, as " +
   "reproduced in Nadeem F., Leitgeb E. (2010). Radioengineering 19(2), 223–227, eqs. (1)–(3): q = 0.585 V^(1/3) for V < 6 km.";
 const AL_NABOULSI = "Al Naboulsi M., Sizun H., de Fornel F. (2004). Fog attenuation prediction for optical and infrared " +
@@ -98,6 +101,23 @@ export default defineSchema({
       inputs: { model: "kruse", visibility: 0.5, wavelength: 1550, range: 1 },
       expect: { extinction: 4.829279725410907, specificAttenuation: 20.973295363132078, pathLoss: 20.973295363132078, exponentQ: 0.46431480770069833 },
       tolerance: 1e-6,
+    },
+    {
+      // Kim et al. Table 2 (Kruse's q = 0.585 V^(1/3)), V = 0.05 km: 315 dB/km at 785 nm, 272 dB/km at 1550 nm. The
+      // formula gives 271.75 dB/km at 1550 nm, inside the printed rounding.
+      source: KIM_TABLE(2),
+      basis: "printed",
+      inputs: { model: "kruse", visibility: 0.05, wavelength: 1550, range: 1 },
+      expect: { specificAttenuation: 272 },
+      tolerance: 2e-3,
+    },
+    {
+      // Table 4 (Kim's q = 0 for V < 0.5 km), V = 0.05 km: 340 dB/km at both wavelengths; the formula gives 339.74 dB/km.
+      source: KIM_TABLE(4),
+      basis: "printed",
+      inputs: { model: "kim", visibility: 0.05, wavelength: 1550, range: 1 },
+      expect: { specificAttenuation: 340 },
+      tolerance: 2e-3,
     },
   ],
 });

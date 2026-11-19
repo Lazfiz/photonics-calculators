@@ -87,5 +87,15 @@ export default defineSchema({
       expect: { imageDistance: -33.333333333333336, magnification: 1 / 3 },
       tolerance: 1e-8,
     },
+    {
+      // OpenStax Example 25.6: a bulb 0.750 m from a convex lens of 0.500 m focal length images at d_i = 1.50 m with
+      // m = −1.50 m/0.750 m = −2.00 (the arithmetic is exact).
+      source: "Urone P. P., Hinrichs R. et al. (2022). College Physics 2e, OpenStax, §25.6 Image Formation by Lenses, " +
+        "Example 25.6. https://openstax.org/books/college-physics-2e/pages/25-6-image-formation-by-lenses",
+      basis: "printed",
+      inputs: { focalLengthMm: 500, solve: "object", objectDistMm: 750 },
+      expect: { imageDistance: 1500, magnification: -2 },
+      tolerance: 1e-8,
+    },
   ],
 });

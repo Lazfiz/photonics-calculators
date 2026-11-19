@@ -56,5 +56,15 @@ export default defineSchema({
       expect: { absDn: 0.0092, zeroOrderThickness: 14.94565217, orderThickness: 612.7717391, wholeWaveThickness: 597.8260870 },
       tolerance: 1e-8,
     },
+    {
+      // Ansys prints quartz nₒ = 1.5487281, nₑ = 1.5579932 at 0.5 µm (Δn = 0.0092651) and a minimum quarter-wave
+      // thickness t = 13.491 µm; 0.25 · 500e-9/0.0092651 = 13.49149 µm, inside the printed rounding.
+      source: "Ansys Optics knowledge base (2025). How to model and design real waveplate in OpticStudio: modeling " +
+        "monochromatic quarter waveplate. https://optics.ansys.com/hc/en-us/articles/42661762693779",
+      basis: "printed",
+      inputs: { crystal: "custom", birefringence: 0.0092651, wavelengthNm: 500, customRetardance: 0.25, order: 0 },
+      expect: { zeroOrderThickness: 13.491 },
+      tolerance: 1e-4,
+    },
   ],
 });

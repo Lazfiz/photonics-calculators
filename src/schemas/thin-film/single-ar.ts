@@ -57,5 +57,16 @@ export default defineSchema({
       expect: { optimalNFilm: 1.232882801 },
       tolerance: 1e-8,
     },
+    {
+      // Willey prints "around 1.26 %" for MgF₂ (≈ 1.38) on NBK7 (1.52) and an ideal index 1.233 = √1.52; the formulas give
+      // 1.26008 % and 1.232883, both inside the printed rounding.
+      source: "Willey R. (2016). Thin-film coatings: Understanding key design principles of antireflection coatings. " +
+        "Laser Focus World 52(10). https://www.laserfocusworld.com/optics/article/16547029/thin-film-coatings-" +
+        "understanding-key-design-principles-of-antireflection-coatings",
+      basis: "printed",
+      inputs: { nIncident: 1, nFilm: 1.38, nSubstrate: 1.52, designWavelength: 550, angle: 0 },
+      expect: { reflectance: 1.26, optimalNFilm: 1.233 },
+      tolerance: 4e-3,
+    },
   ],
 });
