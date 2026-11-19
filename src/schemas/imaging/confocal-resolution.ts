@@ -4,7 +4,7 @@ import { defineSchema } from "../types";
 const BORN_WOLF = "Born M., Wolf E. (2019). Principles of Optics, 7th ed., Cambridge University Press, https://doi.org/10.1017/9781108769914, §8.5.2 (Airy pattern) " +
   "and §8.8 (axial intensity sinc²(u/4) of the defocused PSF); the half maxima follow from solving them (v½ = 1.61634, x½ = 1.39156).";
 
-const WILHELM = "Wilhelm R., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. " +
+const WILHELM = "Wilhelm S., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. " +
   "Carl Zeiss (geometric optical-section formula for pinholes of at least 1 Airy unit; its Airy unit 1.22 λ/NA, the diameter of the first dark ring, is the convention used for the pinhole size here).";
 
 export default defineSchema({

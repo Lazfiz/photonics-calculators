@@ -6,7 +6,7 @@
  * T. Wilson, C. J. R. Sheppard, Theory and Practice of Scanning Optical Microscopy (Academic Press, 1984);
  * T. Wilson, J. Microsc. 244, 113 (2011), doi:10.1111/j.1365-2818.2011.03549.x.
  * - Optical coordinates: v = 2π NA r/λ and u = 4π (n − √(n² − NA²)) z/λ, which is 2π NA² z/(nλ) at low NA. The
- *   high-NA axial scale is the one R. Wilhelm et al. use (Confocal Laser Scanning Microscopy: Principles, Carl Zeiss
+ *   high-NA axial scale is the one S. Wilhelm et al. use (Confocal Laser Scanning Microscopy: Principles, Carl Zeiss
  *   2003); it makes the widefield axial FWHM 0.886 λ/(n − √(n² − NA²)) (diffraction-psf module).
  * - Defocused amplitude PSF (Born & Wolf, Principles of Optics, §8.8):
  *     h(u, v) = 2 ∫₀¹ J₀(vρ) exp(−i u ρ²/2) ρ dρ,  |h(0, v)|² = [2J₁(v)/v]²,  |h(u, 0)|² = sinc²(u/4).
