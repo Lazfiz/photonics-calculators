@@ -38,7 +38,7 @@ export default defineSchema({
     { key: "sigmaLoc", label: "Localization precision σ_loc", unit: "nm", toSI: 1e-9, siUnit: "m" },
     { key: "shotLimit", label: "Shot-noise limit σ/√N", unit: "nm", toSI: 1e-9, siUnit: "m" },
     { key: "localizationFwhm", label: "Localization FWHM 2.355 σ_loc", unit: "nm", toSI: 1e-9, siUnit: "m" },
-    { key: "labelSpacing", label: "Mean label spacing", unit: "nm", toSI: 1e-9, siUnit: "m" },
+    { key: "labelSpacing", label: "Label spacing ρ^(−1/D) (Nyquist convention, not the nearest-neighbour distance)", unit: "nm", toSI: 1e-9, siUnit: "m" },
     { key: "nyquist", label: "Nyquist resolution 2/ρ^(1/D)", unit: "nm", toSI: 1e-9, siUnit: "m" },
     { key: "effective", label: "Effective resolution", unit: "nm", toSI: 1e-9, siUnit: "m" },
     { key: "diffraction", label: "Diffraction limit λ/(2NA)", unit: "nm", toSI: 1e-9, siUnit: "m" },
