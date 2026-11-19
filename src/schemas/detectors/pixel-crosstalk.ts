@@ -43,14 +43,13 @@ export default defineSchema({
       // pixel |sinc(π/2)| = 2/π = 0.63661977; L_f = L₀/√(1 + (2π f_N L₀)²), η(f_N)/η(0) = 0.99928841;
       // kernel 1 − 2X = 0.94: MTF = 0.63661977·0.99928841·0.94 = 59.799675 %.
       // Diffusion shares: the Seib column integral evaluated independently by composite Simpson on u ∈ [0, 4000] plus the analytic
-      // 1/u³ tail (converged to ≈ 1e-11). The page integrates to u = 100 only (sensor-mtf.ts U_MAX), which leaves the diffusion
-      // crosstalk 1.2e-5 relative low: hence the 2e-5 tolerance on this check (ROADMAP finding).
+      // 1/u³ tail (converged to ≈ 1e-11). The page integrates to u = 100 (sensor-mtf.ts U_MAX) and adds the tail beyond in v = 1/u.
       source: SEIB,
       basis: "computed",
       inputs: {},
       expect: { absorptionDepth: 1.5649173823752582, belowDepletion: 0.16780653993152286, collected: 99.98782265813688, nyquist: 100, mtfNyquist: 59.79967540134521,
         diffusionCrosstalk: 0.037062171384463, beyondNeighbours: 0.01257896782699, totalCrosstalk: 3.0345652450493 },
-      tolerance: 2e-5,
+      tolerance: 1e-8,
     },
     {
       // p = 4 µm, W = 5 µm, L₀ = 30 µm, 650 nm (k = 0.014431), X = 0.1: α = 2.7899276e5 /m, 1/α = 3.5843224 µm; e^(−αW) = 24.784201 %;

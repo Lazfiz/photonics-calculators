@@ -53,23 +53,32 @@ export function seibDiffusionFloor(alpha: number, depletion: number, diffusionLe
   return -Math.expm1(-alpha * depletion) / seibCollection(0, alpha, depletion, diffusionLength);
 }
 
-/** Integration limit in u = f·p; the spread part of the integrand falls as 1/u³ or faster, so the tail is < 1e-5. */
+/** Integration limit in u = f·p; the spread part of the integrand falls as 1/u³ or faster, and `columnShares` adds the tail beyond it in v = 1/u. */
 const U_MAX = 100;
 
 /** 8-point Gauss–Legendre nodes and weights on [−1, 1] (Abramowitz & Stegun Table 25.4). */
 const GL_X = [0.1834346424956498, 0.525532409916329, 0.7966664774136267, 0.9602898564975363];
 const GL_W = [0.362683783378362, 0.3137066458778873, 0.2223810344533745, 0.1012285362903763];
 
-/** Cell edges in u: doubling from 1e-6 to 1 (H may be a narrow peak at u = 0), then unit cells to U_MAX. */
+/** Cell edges in u: doubling from 1e-6 to 1 (H may be a narrow peak at u = 0), then half-unit cells to U_MAX (unit cells left the shares ≈ 3e-8 relative off). */
 const EDGES: number[] = [0];
 for (let u = 2 ** -20; u < 1; u *= 2) EDGES.push(u);
-for (let k = 1; k <= U_MAX; k++) EDGES.push(k);
+for (let k = 2; k <= 2 * U_MAX; k++) EDGES.push(k / 2);
+
+/** Tail cell edges in v = 1/u on [0, 1/U_MAX]: halving 30 times toward v = 0 (the Seib knee u ≈ αp/2π may sit far beyond U_MAX). */
+const TAIL_EDGES: number[] = [0];
+for (let k = 30; k >= 0; k--) TAIL_EDGES.push(2 ** -k / U_MAX);
 
 /**
  * Charge shares [C₀, C₁, C₂] of the lit column and its first and second neighbours on one side, when one column of
  * pixels (pitch p, 100 % fill) is lit uniformly and the charge spreads with the line-spread MTF H(f) (H(0) = 1):
  * Cₙ = 2∫₀^∞ H(u/p) sinc²(π u) cos(2π n u) du. The floor H(∞) is a delta in the line spread and only adds to C₀.
- * Quadrature: 8-point Gauss–Legendre on each cell of EDGES; it matches the exponential-spread closed form to 1e-8.
+ * Quadrature: 8-point Gauss–Legendre on each cell of EDGES; with the tail it matches the exponential-spread closed form
+ * and a fine Simpson integral of the Seib MTF to ≈ 2e-9.
+ * Tail u > U = U_MAX, g(u) = H(u/p) − floor: g varies slowly there (the Seib g falls as 1/u once 2πu/p ≫ α, but stays near
+ * 1 up to u ≈ αp/2π for UV light and W ≈ 0), while sin²(πu) averages 1/2, sin²(πu)·cos(2πu) −1/4 and sin²(πu)·cos(4πu) 0.
+ * So C₀ += T, C₁ −= T/2, C₂ += 0 with T = (1/π²)∫_U^∞ g(u)/u² du = (1/π²)∫₀^{1/U} g(1/v) dv, integrated by Gauss–Legendre on
+ * TAIL_EDGES (error O(U⁻³) relative to T).
  */
 export function columnShares(mtf: (f: number) => number, pitch: number, floor = 0): [number, number, number] {
   if (!(pitch > 0)) return [NaN, NaN, NaN];
@@ -86,7 +95,16 @@ export function columnShares(mtf: (f: number) => number, pitch: number, floor = 
       s2 += w * (2 * c1 * c1 - 1);
     }
   }
-  return [2 * s0 + floor, 2 * s1, 2 * s2];
+  let tail = 0;
+  for (let i = 0; i + 1 < TAIL_EDGES.length; i++) {
+    const mid = (TAIL_EDGES[i] + TAIL_EDGES[i + 1]) / 2;
+    const half = (TAIL_EDGES[i + 1] - TAIL_EDGES[i]) / 2;
+    for (let j = 0; j < 8; j++) {
+      const v = mid + (j < 4 ? -GL_X[j] : GL_X[j - 4]) * half;
+      tail += (GL_W[j % 4] * half * (mtf(1 / (v * pitch)) - floor)) / Math.PI ** 2;
+    }
+  }
+  return [2 * s0 + floor + tail, 2 * s1 - tail / 2, 2 * s2];
 }
 
 /**
