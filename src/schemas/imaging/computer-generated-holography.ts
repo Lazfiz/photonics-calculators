@@ -8,6 +8,9 @@ const SWANSON = "Swanson G. J. (1989). Binary optics technology: the theory and 
 const GOODMAN = "Goodman J. W. (2005). Introduction to Fourier Optics, 3rd ed., Roberts & Company (sinc aperture " +
   "envelope of a rectangular pixel of open width a: sinc²(a f); grating equation sin θ = λ/(2Δx) for the finest period 2Δx; " +
   "first-order efficiency |c₁|² = 1/π² of a 50 % square-wave amplitude grating).";
+const VOELZ = "Voelz D. G., Roggemann M. C. (2009). Digital simulation of scalar optical diffraction: revisiting chirp " +
+  "function sampling criteria and consequences. Appl. Opt. 48, 6132–6142 (the Fresnel chirp is sampled without aliasing " +
+  "for Δx ≤ λz/L, L = NΔx, so z ≥ NΔx²/λ along each axis). https://doi.org/10.1364/AO.48.006132";
 const DEG = Math.PI / 180;
 
 export default defineSchema({
@@ -38,7 +41,7 @@ export default defineSchema({
     { key: "apertureX", label: "SLM aperture N_xΔx", unit: "mm", toSI: 1e-3, siUnit: "m" },
     { key: "apertureY", label: "SLM aperture N_yΔx", unit: "mm", toSI: 1e-3, siUnit: "m" },
     { key: "frameBytes", label: "Hologram frame size", unit: "MB", toSI: 1e6, siUnit: "B" },
-    { key: "aliasDistance", label: "Shortest lensless Fresnel distance N_xΔx²/λ", unit: "mm", toSI: 1e-3, siUnit: "m" },
+    { key: "aliasDistance", label: "Shortest lensless Fresnel distance max(N_x, N_y)Δx²/λ", unit: "mm", toSI: 1e-3, siUnit: "m" },
   ],
   validate({ slmWidth, slmHeight, bitDepth, modulation }) {
     if (!Number.isInteger(slmWidth) || !Number.isInteger(slmHeight)) return "The SLM width and height are whole numbers of pixels.";
@@ -52,7 +55,7 @@ export default defineSchema({
     });
     const warnings: string[] = [];
     if (reconstructionDistMm < s.aliasDistance) {
-      warnings.push("Lensless Fresnel replay: the quadratic phase aliases on the SLM below z = N_xΔx²/λ; use a Fourier lens or a longer distance.");
+      warnings.push("Lensless Fresnel replay: the quadratic phase aliases on the SLM below z = max(N_x, N_y)Δx²/λ; use a Fourier lens or a longer distance.");
     }
     if (sinMax > PARAXIAL_SIN_LIMIT) {
       warnings.push(`λ/(2Δx) is above ${PARAXIAL_SIN_LIMIT}: the field λz/Δx is paraxial and only approximate. A lensless field is 2z·tan θ_max; a Fourier lens obeying the sine condition gives λf/Δx exactly.`);
@@ -62,11 +65,12 @@ export default defineSchema({
   checks: [
     {
       // Defaults: θ_max = asin(633e-9/(2·8e-6)) = asin(0.0395625) = 2.267356°; λz/Δx = 633e-9·0.5/8e-6 = 39.5625 mm;
-      // λz/(N_xΔx) = 633e-9·0.5/(1920·8e-6) = 20.60547 µm.
-      source: SCHNARS + "; " + GOODMAN,
+      // λz/(N_xΔx) = 633e-9·0.5/(1920·8e-6) = 20.60547 µm. A taller-than-wide SLM, 1920 × 2160: the longer side sets the
+      // lensless limit, max(1920, 2160)·(8e-6)²/633e-9 = 1.3824e-7/6.33e-7 = 218.38863 mm.
+      source: SCHNARS + "; " + GOODMAN + "; " + VOELZ,
       basis: "computed",
-      inputs: { wavelengthNm: 633, pixelPitchUm: 8, slmWidth: 1920, reconstructionDistMm: 500 },
-      expect: { maxAngle: 2.2673560139, replayField: 39.5625, spotX: 20.60546875 },
+      inputs: { wavelengthNm: 633, pixelPitchUm: 8, slmWidth: 1920, slmHeight: 2160, reconstructionDistMm: 500 },
+      expect: { maxAngle: 2.2673560139, replayField: 39.5625, spotX: 20.60546875, aliasDistance: 218.38862559 },
       tolerance: 1e-8,
     },
     {

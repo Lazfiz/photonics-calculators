@@ -13,9 +13,15 @@ test("CGH summary: geometry at the page defaults", () => {
   close(s.replayField, 39.5625e-3);
   close(s.spotX, 20.60546875e-6);
   close(s.angularResolution, 633e-9 / (1920 * 8e-6));
-  // N_xΔx²/λ = 1920·64e-12/633e-9 = 0.194123 m; frame 1920·1080·8/8 = 2.0736e6 bytes.
+  // max(N_x, N_y)Δx²/λ = 1920·64e-12/633e-9 = 0.194123 m; frame 1920·1080·8/8 = 2.0736e6 bytes.
   close(s.aliasDistance, 0.1941232227);
   close(s.frameBytes, 2073600);
+});
+
+test("CGH summary: the longer SLM side sets the lensless alias distance", () => {
+  // Voelz & Roggemann 2009: z ≥ NΔx²/λ along each axis. Portrait 1080 × 2160: 2160·64e-12/633e-9 = 0.2183886 m.
+  close(slmReplaySummary({ ...base, nx: 1080, ny: 2160 }).aliasDistance, 0.21838862559);
+  close(slmReplaySummary({ ...base, nx: 2160, ny: 1080 }).aliasDistance, 0.21838862559);
 });
 
 test("CGH summary: efficiencies and pixel envelope", () => {

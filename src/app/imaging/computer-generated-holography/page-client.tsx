@@ -40,7 +40,7 @@ export default function CGHPage() {
   const z = zMm * 1e-3;
   const summary = slmReplaySummary({ lambda, pitch: dx, nx: Nx, ny: Ny, z, bits, fill, amplitude });
   const { maxAngle: thetaMax, replayField: field, spotX, spotY, angularResolution: angularRes, efficiency } = summary;
-  const { aliasDistance: zAlias, sinMax, edgeEnvelope: edge } = summary; // below zAlias the lensless Fresnel replay aliases
+  const { aliasDistance: zAlias, sinMax, edgeEnvelope: edge } = summary; // below zAlias = max(Nx, Ny)·Δx²/λ the lensless Fresnel replay aliases
   const memoryMB = summary.frameBytes / 1e6;
 
   const effChart = [

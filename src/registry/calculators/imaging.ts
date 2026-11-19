@@ -165,7 +165,7 @@ export const imaging: CalculatorEntry[] = [
     title: "Computer-Generated Holography",
     description: "Replay field λz/Δx, diffraction angle, replay spot and first-order efficiency of a phase-quantised hologram on a pixelated SLM.",
     tier: "textbook",
-    modelNote: "Scalar paraxial replay of a pixelated SLM at distance z, or in the focal plane of a lens of focal length z. The efficiency is the first-order efficiency of an L-level phase staircase with ideal levels; fringing fields, phase flicker, the dead-space zero order and algorithm error are not included.",
+    modelNote: "Scalar paraxial replay of a pixelated SLM at distance z, or in the focal plane of a lens of focal length z. The efficiency is the first-order efficiency of an L-level phase staircase with ideal levels; fringing fields, phase flicker, the dead-space zero order and algorithm error are not included. The lensless alias limit max(N_x, N_y)Δx²/λ is for an on-axis point object; an object of width W needs roughly Δx(NΔx + W)/λ.",
     references: [
       {
         citation: "Swanson G. J. (1989). Binary optics technology: the theory and design of multi-level diffractive optical elements. MIT Lincoln Laboratory Technical Report 854. First-order efficiency sinc²(π/L) of an L-level phase profile.",
@@ -174,6 +174,10 @@ export const imaging: CalculatorEntry[] = [
       {
         citation: "Schnars U., Jüptner W. P. O. (2002). Digital recording and numerical reconstruction of holograms. Meas. Sci. Technol. 13, R85–R101. Fresnel pixel λz/(NΔx) and the pitch-limited diffraction angle.",
         url: "https://doi.org/10.1088/0957-0233/13/9/201",
+      },
+      {
+        citation: "Voelz D. G., Roggemann M. C. (2009). Digital simulation of scalar optical diffraction: revisiting chirp function sampling criteria and consequences. Appl. Opt. 48, 6132–6142. The Fresnel chirp is sampled without aliasing for Δx ≤ λz/L, L = NΔx, along each axis.",
+        url: "https://doi.org/10.1364/AO.48.006132",
       },
     ],
   },
