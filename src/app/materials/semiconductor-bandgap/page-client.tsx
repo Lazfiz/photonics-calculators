@@ -5,6 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 import { cutoffWavelength } from "../../../physics/detectors/ingaas";
 import { SEMICONDUCTOR_GAPS, type SemiconductorGap, type SemiconductorId } from "../../../physics/materials/bandgap";
+import { T0_CELSIUS } from "../../../physics/constants";
 
 const COLORS: Record<SemiconductorId, string> = {
   GaAs: "#f87171", InP: "#60a5fa", GaP: "#34d399", Si: "#f59e0b", Ge: "#a78bfa",
@@ -70,7 +71,7 @@ export default function SemiconductorBandgapPage() {
       </div>
 
       <div className="mb-8">
-        <label className="block text-sm text-gray-400 mb-1">Temperature: {temperature} K ({(temperature - 273.15).toFixed(0)} °C)</label>
+        <label className="block text-sm text-gray-400 mb-1">Temperature: {temperature} K ({(temperature - T0_CELSIUS).toFixed(0)} °C)</label>
         <input type="range" aria-label="Temperature (K)" min={T_MIN} max={T_MAX} step={5} value={temperature} onChange={e => setTemperature(+e.target.value)} />
       </div>
 

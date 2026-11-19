@@ -7,8 +7,8 @@
 import { darkCurrentRatio, type DarkCurrentMechanism } from "./dark-current";
 import { shotNoiseCurrent } from "./noise";
 import { VARSHNI, varshniBandGap } from "../materials/bandgap";
+import { T0_CELSIUS } from "../constants";
 
-export const KELVIN = 273.15;
 export const REFERENCE_TEMPERATURE_C = 25;
 /** Temperatures of the cold and hot result cards, °C. */
 export const COLD_TEMPERATURE_C = -40;
@@ -34,8 +34,8 @@ export function gapAt(p: DarkNoiseParams, T: number): number {
 
 /** Dark current at tempC in °C, A. */
 export function darkCurrentAtTemperature(p: DarkNoiseParams, tempC: number): number {
-  const Tref = REFERENCE_TEMPERATURE_C + KELVIN;
-  return p.darkCurrent25 * darkCurrentRatio(tempC + KELVIN, Tref, gapAt(p, tempC + KELVIN), p.mechanism, gapAt(p, Tref));
+  const Tref = REFERENCE_TEMPERATURE_C + T0_CELSIUS;
+  return p.darkCurrent25 * darkCurrentRatio(tempC + T0_CELSIUS, Tref, gapAt(p, tempC + T0_CELSIUS), p.mechanism, gapAt(p, Tref));
 }
 
 /** RMS shot noise of the dark current at tempC, A. */
@@ -63,7 +63,7 @@ export function darkNoiseSummary(p: DarkNoiseParams): DarkNoiseSummary {
     darkCold,
     darkHot,
     ratio: darkHot / darkCold,
-    gap25: gapAt(p, REFERENCE_TEMPERATURE_C + KELVIN),
-    gapCold: gapAt(p, COLD_TEMPERATURE_C + KELVIN),
+    gap25: gapAt(p, REFERENCE_TEMPERATURE_C + T0_CELSIUS),
+    gapCold: gapAt(p, COLD_TEMPERATURE_C + T0_CELSIUS),
   };
 }

@@ -5,7 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { TORR } from "../../../physics/constants";
+import { TORR, T0_CELSIUS } from "../../../physics/constants";
 import {
   SPUTTER_TARGETS,
   diskOnAxisFlux,
@@ -31,7 +31,7 @@ export default function SputteringDepositionPage() {
   const [targetRadius, setTargetRadius] = useURLState("targetRadius", 2, { min: 0 }); // cm
   const [distance, setDistance] = useURLState("distance", 10, { min: 0.1 }); // cm
   const [pressure, setPressure] = useURLState("pressure", 3, { min: 0.01 }); // mTorr
-  const [substrateTemp, setSubstrateTemp] = useURLState("substrateTemp", 200, { min: -273.15 }); // °C
+  const [substrateTemp, setSubstrateTemp] = useURLState("substrateTemp", 200, { min: -T0_CELSIUS }); // °C
 
   const id: SputterTargetId = isId(targetParam) ? targetParam : "Al";
   const t = SPUTTER_TARGETS[id];
@@ -46,7 +46,7 @@ export default function SputteringDepositionPage() {
     !(targetRadius >= 0) && "the target radius can't be negative",
     !(distance > 0) && "the distance must be positive",
     !(pressure > 0) && "the pressure must be positive",
-    !(substrateTemp >= -273.15) && "the substrate temperature is below absolute zero",
+    !(substrateTemp >= -T0_CELSIUS) && "the substrate temperature is below absolute zero",
   ].filter((e): e is string => typeof e === "string");
   const valid = errors.length === 0;
 
@@ -54,7 +54,7 @@ export default function SputteringDepositionPage() {
     if (!valid) return null;
     return sputteringDeposition(t, {
       power, voltage, gamma, Y, targetRadius: targetRadius * 1e-2, distance: distance * 1e-2,
-      pressure: pressure * 1e-3 * TORR, substrateTemp: substrateTemp + 273.15,
+      pressure: pressure * 1e-3 * TORR, substrateTemp: substrateTemp + T0_CELSIUS,
     });
   }, [valid, targetRadius, distance, power, voltage, gamma, Y, t, pressure, substrateTemp]);
 
@@ -97,7 +97,7 @@ export default function SputteringDepositionPage() {
         <ValidatedNumberInput label="Erosion-zone radius of the target (cm)" value={targetRadius} onChange={setTargetRadius} min={0} step="0.5" />
         <ValidatedNumberInput label="Target–substrate distance (cm)" value={distance} onChange={setDistance} min={0.1} step="0.5" />
         <ValidatedNumberInput label="Argon pressure (mTorr)" value={pressure} onChange={setPressure} min={0.01} step="0.5" />
-        <ValidatedNumberInput label="Substrate temperature (°C)" value={substrateTemp} onChange={setSubstrateTemp} min={-273.15} step="10" />
+        <ValidatedNumberInput label="Substrate temperature (°C)" value={substrateTemp} onChange={setSubstrateTemp} min={-T0_CELSIUS} step="10" />
       </div>
 
       <p className="text-gray-500 mb-6 text-xs">

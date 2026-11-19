@@ -8,9 +8,7 @@ import { afterpulseProbability } from "./dead-time";
 import {
   darkCountRate, doublingInterval, overbiasAtTemperature, trapEfficiencyAtOverbias, triggerProbability,
 } from "./spad";
-
-/** Celsius-to-kelvin offset. */
-const KELVIN_OFFSET = 273.15;
+import { T0_CELSIUS } from "../constants";
 
 /** Temperature (°C) at which the reference excess bias and dark count rate are specified. */
 export const GEIGER_REF_TEMPERATURE_C = 25;
@@ -43,7 +41,7 @@ export interface GeigerInput {
 /** Dark count rate at excess bias `dv` (V) and temperature `tC` (°C); NaN when the exponential overflows. */
 export function geigerDarkCountRate(p: GeigerInput, dv: number, tC: number): number {
   return darkCountRate({
-    dcrRef: p.dcrRef, temperature: tC + KELVIN_OFFSET, refTemperature: GEIGER_REF_TEMPERATURE_C + KELVIN_OFFSET,
+    dcrRef: p.dcrRef, temperature: tC + T0_CELSIUS, refTemperature: GEIGER_REF_TEMPERATURE_C + T0_CELSIUS,
     activationEnergy: p.activationEnergy, overbias: dv, overbiasRef: p.overbiasRef, voltageScale: p.vc, fieldSlope: p.fieldSlope,
   });
 }
@@ -92,7 +90,7 @@ export function geigerSummary(p: GeigerInput): GeigerSummary {
     afterpulseProbability: pap,
     afterpulseRate: pap * dcr,
     maxRate: 1 / p.deadTime,
-    doubling: doublingInterval(p.activationEnergy, p.temperature + KELVIN_OFFSET),
+    doubling: doublingInterval(p.activationEnergy, p.temperature + T0_CELSIUS),
     belowBreakdown: overbias <= 0,
   };
 }

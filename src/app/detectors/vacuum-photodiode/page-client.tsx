@@ -8,6 +8,7 @@ import { PHOTOCATHODE_DARK_EMISSION, planarTransitTime, vacuumTransitBandwidth }
 import { combinedBandwidth } from "../../../physics/detectors/photodiode-rc";
 import { shotNoiseCurrent } from "../../../physics/detectors/noise";
 import { FA_PER_CM2, vacuumPhotodiodeSummary } from "../../../physics/detectors/vacuum-photodiode";
+import { T0_CELSIUS } from "../../../physics/constants";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 2) => (Number.isFinite(x) ? x.toExponential(digits) : "—");
@@ -35,7 +36,7 @@ export default function VacuumPhotodiodePage() {
   const gap_mm = clamp(gapRaw, 0.1, 50, 2);
   const area_mm2 = clamp(areaRaw, 0.1, 1e4, 100);
   const load = clamp(loadRaw, 1, 1e9, 50);
-  const T = clamp(tempRaw, -200, 300, 25) + 273.15;
+  const T = clamp(tempRaw, -200, 300, 25) + T0_CELSIUS;
   const dark_fA = clamp(darkRaw, 1e-6, 1e6, 0.02);
   const stray_pF = clamp(strayRaw, 0, 1000, 0);
 

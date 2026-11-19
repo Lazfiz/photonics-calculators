@@ -7,9 +7,7 @@
 
 import { countLoss, measuredRate } from "./dead-time";
 import { arrheniusFactor, countingSnr, dbmToWatts, doublingInterval, photonRate } from "./spad";
-
-/** Celsius-to-kelvin offset. */
-const KELVIN_OFFSET = 273.15;
+import { T0_CELSIUS } from "../constants";
 
 /** Fewer recorded counts than this in the gate make the SNR formula (asymptotic Fano factor) only indicative. */
 export const SPAD_MIN_GATE_COUNTS = 10;
@@ -62,7 +60,7 @@ export interface SpadSummary {
 
 /** Dark count rate at `temperatureC` from the rate at `refTemperatureC`. */
 export function spadDarkRate(dcrRef: number, activationEnergy: number, temperatureC: number, refTemperatureC: number): number {
-  return dcrRef * arrheniusFactor(activationEnergy, temperatureC + KELVIN_OFFSET, refTemperatureC + KELVIN_OFFSET);
+  return dcrRef * arrheniusFactor(activationEnergy, temperatureC + T0_CELSIUS, refTemperatureC + T0_CELSIUS);
 }
 
 /** Counting SNR at `powerDbm` for the operating point `p` (the page's SNR-versus-power chart varies only the power). */
@@ -87,6 +85,6 @@ export function spadSummary(p: SpadInput): SpadSummary {
   const snr = countingSnr({ signalRate: signal, darkRate: dcr, afterpulseProb: p.afterpulseProb, deadTime: p.deadTime, gateTime: p.gate });
   return {
     photons, signal, dcr, rate, measured, loss, afterpulseRate: measured * p.afterpulseProb, snr,
-    doubling: doublingInterval(p.activationEnergy, p.temperatureC + KELVIN_OFFSET),
+    doubling: doublingInterval(p.activationEnergy, p.temperatureC + T0_CELSIUS),
   };
 }

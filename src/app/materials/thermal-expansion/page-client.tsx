@@ -9,13 +9,13 @@ import {
   alphaPpm, CTE_TABLE, expansionWaves, SI_ALPHA_T_MAX, SI_ALPHA_T_MIN, siliconAlpha, siliconExpansion, siliconMeanAlpha,
   thermalExpansion,
 } from "../../../physics/materials/thermal-expansion";
+import { T0_CELSIUS } from "../../../physics/constants";
 
 const DT_MIN = -273;
 const DT_MAX = 3000;
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 // The table in the page unit, 10⁻⁶/K.
 const materials = CTE_TABLE.map((m) => ({ ...m, ppm: alphaPpm(m.alpha) }));
-const K0 = 273.15;
 // Silicon α(T) over the fit's whole range, 10⁻⁶/K, every 10 K.
 const siCurve = Array.from({ length: (SI_ALPHA_T_MAX - SI_ALPHA_T_MIN) / 10 + 1 }, (_, i) => {
   const T = SI_ALPHA_T_MIN + 10 * i;
@@ -32,13 +32,13 @@ export default function ThermalExpansionPage() {
   const alpha = clamp(alphaRaw, -50, 100, 7.1);
   const dT = clamp(dTRaw, DT_MIN, DT_MAX, 100);
   const length = clamp(lengthRaw, 0, 1e6, 100);
-  const t0 = clamp(t0Raw, -273.15, 3000, 20);
+  const t0 = clamp(t0Raw, -T0_CELSIUS, 3000, 20);
 
   const dL = thermalExpansion(alpha * 1e-6, length, dT); // mm, since L is in mm
   const strain = alpha * 1e-6 * dT;
 
   // Silicon with α(T) from T₀ to T₀ + ΔT (Okada & Tokumaru 1984); NaN when either end leaves 120–1500 K.
-  const T1 = t0 + K0;
+  const T1 = t0 + T0_CELSIUS;
   const T2 = T1 + dT;
   const siInRange = T1 >= SI_ALPHA_T_MIN && T1 <= SI_ALPHA_T_MAX && T2 >= SI_ALPHA_T_MIN && T2 <= SI_ALPHA_T_MAX;
   const siDL = siliconExpansion(length, T1, T2); // mm, since L is in mm
@@ -85,7 +85,7 @@ export default function ThermalExpansionPage() {
       <h2 className="text-xl font-bold mb-4">Silicon: α(T) integrated from T₀ to T₀ + ΔT</h2>
       <div className="grid gap-4 sm:grid-cols-3 mb-4">
         <div>
-          <ValidatedNumberInput label="Start temperature T₀ (°C)" value={t0Raw} onChange={setT0} min={-273.15} max={3000} step="any" />
+          <ValidatedNumberInput label="Start temperature T₀ (°C)" value={t0Raw} onChange={setT0} min={-T0_CELSIUS} max={3000} step="any" />
         </div>
       </div>
       {siInRange ? (
@@ -113,7 +113,7 @@ export default function ThermalExpansionPage() {
         </div>
       ) : (
         <p className="text-sm mb-4 text-yellow-400">
-          The fit holds from {SI_ALPHA_T_MIN} to {SI_ALPHA_T_MAX} K ({(SI_ALPHA_T_MIN - K0).toFixed(2)} to {(SI_ALPHA_T_MAX - K0).toFixed(2)} °C);
+          The fit holds from {SI_ALPHA_T_MIN} to {SI_ALPHA_T_MAX} K ({(SI_ALPHA_T_MIN - T0_CELSIUS).toFixed(2)} to {(SI_ALPHA_T_MAX - T0_CELSIUS).toFixed(2)} °C);
           T₀ = {T1.toFixed(1)} K and T₀ + ΔT = {T2.toFixed(1)} K must both lie in it.
         </p>
       )}

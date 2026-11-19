@@ -7,8 +7,8 @@
 
 import { darkReadCrossoverTemperature, doublingLawRatio, localDoublingTemperature } from "./dark-current";
 import { VARSHNI } from "../materials/bandgap";
+import { T0_CELSIUS } from "../constants";
 
-export const KELVIN = 273.15;
 export const REFERENCE_TEMPERATURE_C = 25;
 
 /** The plotted range [min, max] in °C: ordered, and one degree wide when both ends are equal. */
@@ -18,7 +18,7 @@ export function orderTemperatureRange(a: number, b: number): { tempMin: number; 
 
 /** Dark current D₂₅·2^((T − 25 °C)/T_d) at T in °C (D₂₅ in any unit; same unit out). */
 export function darkCurrentAtTemperature(darkCurrent25: number, doublingT: number, tempC: number): number {
-  return darkCurrent25 * doublingLawRatio(tempC + KELVIN, REFERENCE_TEMPERATURE_C + KELVIN, doublingT);
+  return darkCurrent25 * doublingLawRatio(tempC + T0_CELSIUS, REFERENCE_TEMPERATURE_C + T0_CELSIUS, doublingT);
 }
 
 export interface DarkCurrentParams {
@@ -60,7 +60,7 @@ export function darkCurrentSummary(p: DarkCurrentParams): DarkCurrentSummary {
     dcAtMax,
     ratio: dcAtMax / dcAtMin,
     crossoverTemp: darkReadCrossoverTemperature(p.readNoise, p.darkCurrent25 * p.exposureTime, REFERENCE_TEMPERATURE_C, p.doublingT),
-    siGenTd: localDoublingTemperature(REFERENCE_TEMPERATURE_C + KELVIN, VARSHNI.si, "generation"),
-    siDiffTd: localDoublingTemperature(REFERENCE_TEMPERATURE_C + KELVIN, VARSHNI.si, "diffusion"),
+    siGenTd: localDoublingTemperature(REFERENCE_TEMPERATURE_C + T0_CELSIUS, VARSHNI.si, "generation"),
+    siDiffTd: localDoublingTemperature(REFERENCE_TEMPERATURE_C + T0_CELSIUS, VARSHNI.si, "diffusion"),
   };
 }

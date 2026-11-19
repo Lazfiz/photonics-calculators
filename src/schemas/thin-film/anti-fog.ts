@@ -3,6 +3,7 @@ import { normalIncidenceReflectance } from "../../physics/polarization/fresnel";
 import { dropletTirFraction, tirOnsetAngle, waterFilmResponse, waterSurfaceTension, wetting } from "../../physics/thin-film/anti-fog";
 import { stackResponse } from "../../physics/thin-film/transfer-matrix";
 import { defineSchema } from "../types";
+import { T0_CELSIUS } from "../../physics/constants";
 
 const DEG = Math.PI / 180;
 const pure = { unit: "", toSI: 1, siUnit: "" } as const;
@@ -32,7 +33,7 @@ export default defineSchema({
     const coating = [{ n: nCoat, thickness }];
     const dry = (lam: number) => stackResponse({ incident: 1, layers: coating, substrate: { n: nSub } }, lam).T;
     const wet = (lam: number) => waterFilmResponse(coating, nSub, lam).T;
-    const gamma = waterSurfaceTension(waterTemp + 273.15);
+    const gamma = waterSurfaceTension(waterTemp + T0_CELSIUS);
     const w = wetting(gamma, contactAngle);
     return {
       values: {
