@@ -87,6 +87,13 @@ export const HERO_BRANCH_VISUALS: Record<
 
 const BRANCH_KEYS: HeroBranchKey[] = ["spectral", "imaging", "interference"];
 const BADGE_Y: Record<HeroBranchKey, number> = { spectral: 110, imaging: 356, interference: 578 };
+/**
+ * SVG label size. At xl (≥ 1280 px) the art renders at 0.80–0.96 of the viewBox, so 14 units stay ≥ 11 px on screen.
+ * Badges are as wide as their text (monospace, about 0.61 em per character with tracking-wider), so the spectral one
+ * clears the detector arc at x ≈ 1425.
+ */
+const LABEL_SIZE = 14;
+const badgeWidth = (text: string) => Math.ceil(18 + text.length * 0.61 * LABEL_SIZE);
 
 interface Pad {
   id: string;
@@ -955,9 +962,9 @@ export default function PhotonicChipArt({
           <path d="M 1378 504 L 1378 514 L 1388 514" />
           <path d="M 1492 514 L 1502 514 L 1502 504" />
         </g>
-        <g fill="#64748b" fillOpacity="0.75" className="hidden font-mono text-[9px] tracking-wider xl:block">
-          <text x="1432" y="371">detector array</text>
-          <text x="1302" y="528">focal point</text>
+        <g fill="#64748b" fillOpacity="0.75" fontSize={LABEL_SIZE} className="hidden font-mono tracking-wider xl:block">
+          <text x="1440" y="541" textAnchor="middle">detector array</text>
+          <text x="1290" y="541" textAnchor="end">focal point</text>
         </g>
 
         {/* Translucent Cyan Gaussian Beam Caustic Envelopes Between Lenses */}
@@ -1207,6 +1214,7 @@ export default function PhotonicChipArt({
         const visual = HERO_BRANCH_VISUALS[key];
         const active = hoveredBranch === key;
         const badgeY = BADGE_Y[key];
+        const text = `${visual.index} · ${visual.shortName}`;
         return (
           <g
             key={`label-${key}`}
@@ -1217,9 +1225,9 @@ export default function PhotonicChipArt({
           >
             <rect
               x="1175"
-              y={badgeY - 3}
-              width="245"
-              height="20"
+              y={badgeY - 5}
+              width={badgeWidth(text)}
+              height="24"
               rx="4"
               fill={active ? "#082f49" : "#0b0f17"}
               fillOpacity={active ? "0.9" : "0.65"}
@@ -1228,11 +1236,12 @@ export default function PhotonicChipArt({
             />
             <text
               x="1184"
-              y={badgeY + 10}
+              y={badgeY + 12}
               fill={active ? "#7dd3fc" : "#94a3b8"}
-              className="font-mono text-[10px] font-semibold uppercase tracking-widest"
+              fontSize={LABEL_SIZE}
+              className="font-mono font-semibold uppercase tracking-wider"
             >
-              {visual.index} · {visual.shortName}
+              {text}
             </text>
           </g>
         );
