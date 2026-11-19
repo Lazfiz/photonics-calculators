@@ -5,6 +5,9 @@ import { stopBandEdges } from "../../physics/thin-film/quarter-wave-stack";
 import { quarterWaveStackReflectance } from "../../physics/thin-film/transfer-matrix";
 import { defineSchema } from "../types";
 
+const WYANT = "Wyant J. C. Multilayer Films (MultilayerFilms.nb), Optics 505 course notes, University of Arizona, §8.3 " +
+  "High-reflectance coatings. https://wp.optics.arizona.edu/jcwyant/wp-content/uploads/sites/13/2016/08/multilayerfilms.pdf";
+
 export default defineSchema({
   href: "/thin-film/bragg-reflector",
   inputs: [
@@ -55,6 +58,22 @@ export default defineSchema({
       inputs: { nH: 2.35, nL: 1.45, designWavelength: 1550 },
       expect: { bandShort: 1345.223586, bandLong: 1828.3149, gapMidgap: 30.44496331, period: 432.1349963, decayPerPeriod: 0.4828517717 },
       tolerance: 1e-8,
+    },
+    {
+      // Wyant evaluates R_2p for the stack s(n₂ n₁)^p a with n₁ = 2.3 next to air, n₂ = 1.35, n_s = 1.5: 0.963128 at p = 4.
+      source: WYANT,
+      basis: "printed",
+      inputs: { nInc: 1, nH: 2.3, nL: 1.35, nSub: 1.5, designWavelength: 550, pairs: 4 },
+      expect: { peakReflectance: 96.3128 },
+      tolerance: 1e-6,
+    },
+    {
+      // The same stack with p = 8 (16 layers): 0.999471.
+      source: WYANT,
+      basis: "printed",
+      inputs: { nInc: 1, nH: 2.3, nL: 1.35, nSub: 1.5, designWavelength: 550, pairs: 8 },
+      expect: { peakReflectance: 99.9471 },
+      tolerance: 1e-6,
     },
   ],
 });

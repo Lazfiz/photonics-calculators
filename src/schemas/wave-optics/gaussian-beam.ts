@@ -60,5 +60,15 @@ export default defineSchema({
       expect: { gouyPhase: 7.715044350, beamRadius: 504.5673516, wavefrontRadius: 5548.745293 },
       tolerance: 1e-8,
     },
+    {
+      // RP Photonics prints the minimum beam parameter product λ/π of a 1064 nm beam as ≈ 0.339 mm mrad (λ/π =
+      // 0.338682 mm mrad, inside the printed rounding); w₀ cancels.
+      source: "Paschotta R. RP Photonics Encyclopedia: Beam parameter product. " +
+        "https://www.rp-photonics.com/beam_parameter_product.html",
+      basis: "printed",
+      inputs: { wavelength: 1064, waist: 500, z: 100 },
+      expect: { beamParameterProduct: 0.339 },
+      tolerance: 1.5e-3,
+    },
   ],
 });
