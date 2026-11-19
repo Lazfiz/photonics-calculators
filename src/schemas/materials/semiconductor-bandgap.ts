@@ -69,5 +69,17 @@ export default defineSchema({
       expect: { egInGaAs: 0.7372566705016357, edgeInGaAs: 1681.6965297694812 },
       tolerance: 1e-8,
     },
+    {
+      // Ioffe's 300 K gaps: GaAs 1.424, Si 1.12, Ge 0.661, InAs 0.354, GaSb 0.726 eV. The page's Varshni fits give 1.4225,
+      // 1.1245, 0.6634, 0.3538, 0.7267 eV: Si is 0.40 % high (inside the 1.12's rounding), GaAs 0.11 % low (Ioffe's own
+      // fit on the same page, 1.519 − 5.405·10⁻⁴ T²/(T + 204), also gives 1.4225 eV at 300 K).
+      source: "Ioffe Institute, NSM Archive: Physical properties of semiconductors, Band structure and carrier " +
+        "concentration, Basic Parameters (energy gap) for GaAs, Si, Ge, InAs and GaSb. " +
+        "http://www.ioffe.ru/SVA/NSM/Semicond/GaAs/bandstr.html (and …/Si/, …/Ge/, …/InAs/, …/GaSb/)",
+      basis: "printed",
+      inputs: { temperature: 300 },
+      expect: { egGaAs: 1.424, egSi: 1.12, egGe: 0.661, egInAs: 0.354, egGaSb: 0.726 },
+      tolerance: 5e-3,
+    },
   ],
 });
