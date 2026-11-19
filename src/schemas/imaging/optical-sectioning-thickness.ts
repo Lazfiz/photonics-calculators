@@ -1,7 +1,7 @@
 import { WILHELM_MIN_PINHOLE_AU, opticalSectioningSummary } from "../../physics/imaging/optical-sectioning-thickness-summary";
 import { defineSchema } from "../types";
 
-const WILHELM = "Wilhelm R., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. " +
+const WILHELM = "Wilhelm S., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. " +
   "Carl Zeiss (geometric optical-section formula for pinholes of at least 1 Airy unit, 0.64 λ/(n − √(n² − NA²)) for a point-like pinhole; Airy unit 1.22 λ/NA).";
 const ZIPFEL = "Zipfel W. R., Williams R. M., Webb W. W. (2003). Nonlinear magic: multiphoton microscopy in the biosciences. " +
   "Nature Biotechnology 21, 1369–1377. https://doi.org/10.1038/nbt899 (axial 1/e radius of the squared PSF, ω_z = 0.532 λ/(√2 (n − √(n² − NA²))); FWHM = 2√(ln 2) ω_z).";

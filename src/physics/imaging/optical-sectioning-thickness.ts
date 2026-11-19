@@ -10,7 +10,7 @@
  *     FWHM = √[(0.886 λ/(n − √(n² − NA²)))² + (√2 · n · PH/NA)²],
  *   PH = object-side pinhole diameter, 1 AU = 1.22 λ/NA. Point-like pinhole (PH < 0.25 AU), wave-optical:
  *     FWHM = 0.64 λ/(n − √(n² − NA²)).
- *   R. Wilhelm, B. Gröbler, M. Gluch, H. Heinz, "Confocal Laser Scanning Microscopy: Principles"
+ *   S. Wilhelm, B. Gröbler, M. Gluch, H. Heinz, "Confocal Laser Scanning Microscopy: Principles"
  *   (Carl Zeiss, 2003). λ is the emission wavelength (the geometric term) or the mean wavelength. Wilhelm et al. write
  *   0.88 for the diffraction term; it is the FWHM 2 · 1.391557/π = 0.8859 of the sinc² axial PSF (Born & Wolf §8.8),
  *   so 0.886 is used here, as in confocal.ts and diffraction-psf.ts (review 2026-11 P2-M2).

@@ -2,7 +2,7 @@
  * Confocal pinhole page: Airy unit at the sample and at the pinhole, throughput and FWHMs for one pinhole size.
  * SI units in and out. Model tier: textbook approximation; the physics is in the confocal and
  * optical-sectioning-thickness modules (scalar paraxial theory, equal excitation and emission wavelengths).
- * Wilhelm's geometric optical-section formula holds for pinholes of at least 1 AU (R. Wilhelm, B. Gröbler,
+ * Wilhelm's geometric optical-section formula holds for pinholes of at least 1 AU (S. Wilhelm, B. Gröbler,
  * M. Gluch, H. Heinz, Confocal Laser Scanning Microscopy: Principles, Carl Zeiss, 2003).
  */
 import { confocalLateralFwhm, confocalOpticalSectionFwhm, pinholeThroughput } from "./confocal";

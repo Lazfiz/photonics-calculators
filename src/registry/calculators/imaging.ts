@@ -16,7 +16,7 @@ export const imaging: CalculatorEntry[] = [
         url: "https://doi.org/10.1111/j.1365-2818.2011.03549.x",
       },
       {
-        citation: "Wilhelm R., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Airy units, the 0.37/0.51 λ/NA and 0.64 limits, and the geometric section formula.",
+        citation: "Wilhelm S., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Airy units, the 0.37/0.51 λ/NA and 0.64 limits, and the geometric section formula.",
       },
       {
         citation: "Engelbrecht C. J., Stelzer E. H. K. (2006). Resolution enhancement in a light-sheet-based microscope (SPIM). Opt. Lett. 31, 1477–1479. Axial resolution of sheet × detection PSF.",
@@ -193,7 +193,7 @@ export const imaging: CalculatorEntry[] = [
         url: "https://doi.org/10.1111/j.1365-2818.2011.03549.x",
       },
       {
-        citation: "Wilhelm R., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Airy units, the 0.37/0.51 λ/NA and 0.64 limits, and the geometric section formula.",
+        citation: "Wilhelm S., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Airy units, the 0.37/0.51 λ/NA and 0.64 limits, and the geometric section formula.",
       },
       {
         citation: "Born M., Wolf E. (2019). Principles of Optics, 7th ed., §8.5.2 and §8.8. Cambridge University Press. Airy pattern, encircled energy and the defocused PSF.",
@@ -216,7 +216,7 @@ export const imaging: CalculatorEntry[] = [
         url: "https://doi.org/10.1111/j.1365-2818.2011.03549.x",
       },
       {
-        citation: "Wilhelm R., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Airy units, the 0.37/0.51 λ/NA and 0.64 limits, and the geometric section formula.",
+        citation: "Wilhelm S., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Airy units, the 0.37/0.51 λ/NA and 0.64 limits, and the geometric section formula.",
       },
       {
         citation: "Born M., Wolf E. (2019). Principles of Optics, 7th ed., §8.5.2 and §8.8. Cambridge University Press. Airy pattern, encircled energy and the defocused PSF.",
@@ -656,7 +656,7 @@ export const imaging: CalculatorEntry[] = [
         url: "https://doi.org/10.1111/j.1365-2818.2011.03549.x",
       },
       {
-        citation: "Wilhelm R., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Optical-section FWHM for a finite and a point-like pinhole.",
+        citation: "Wilhelm S., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Optical-section FWHM for a finite and a point-like pinhole.",
       },
       {
         citation: "Zipfel W. R., Williams R. M., Webb W. W. (2003). Nonlinear magic: multiphoton microscopy in the biosciences. Nat. Biotechnol. 21, 1369–1377. Axial radius of the two-photon excitation.",
@@ -760,7 +760,7 @@ export const imaging: CalculatorEntry[] = [
         url: "https://doi.org/10.1017/9781108769914",
       },
       {
-        citation: "Wilhelm R., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Axial FWHM 0.88 λ/(n − √(n² − NA²)), used here with the unrounded sinc² value 0.886.",
+        citation: "Wilhelm S., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Axial FWHM 0.88 λ/(n − √(n² − NA²)), used here with the unrounded sinc² value 0.886.",
       },
       {
         citation: "Richards B., Wolf E. (1959). Electromagnetic diffraction in optical systems, II. Structure of the image field in an aplanatic system. Proc. R. Soc. Lond. A 253, 358–379. Vector focus behind the polarization note.",
@@ -820,7 +820,7 @@ export const imaging: CalculatorEntry[] = [
         url: "https://doi.org/10.1017/9781108769914",
       },
       {
-        citation: "Wilhelm R., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Axial FWHM 0.88 λ/(n − √(n² − NA²)), used here with the unrounded sinc² value 0.886.",
+        citation: "Wilhelm S., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Axial FWHM 0.88 λ/(n − √(n² − NA²)), used here with the unrounded sinc² value 0.886.",
       },
     ],
   },
@@ -998,7 +998,7 @@ export const imaging: CalculatorEntry[] = [
         url: "https://doi.org/10.1111/j.1365-2818.2011.03549.x",
       },
       {
-        citation: "Wilhelm R., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Airy units, the 0.37/0.51 λ/NA and 0.64 limits, and the geometric section formula.",
+        citation: "Wilhelm S., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Airy units, the 0.37/0.51 λ/NA and 0.64 limits, and the geometric section formula.",
       },
     ],
   },

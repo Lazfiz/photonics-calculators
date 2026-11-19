@@ -1,7 +1,7 @@
 import { confocalPinholeSummary, WILHELM_MIN_PINHOLE_AU } from "../../physics/imaging/confocal-pin-hole";
 import { defineSchema } from "../types";
 
-const WILHELM = "Wilhelm R., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. " +
+const WILHELM = "Wilhelm S., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. " +
   "Carl Zeiss (geometric optical-section formula for pinholes of at least 1 Airy unit; its Airy unit 1.22 λ/NA, the diameter of the first dark ring, is the convention used for the pinhole size here).";
 const BORN_WOLF = "Born M., Wolf E. (2019). Principles of Optics, 7th ed., Cambridge University Press, https://doi.org/10.1017/9781108769914, §8.5.2 (Airy pattern " +
   "and its encircled energy 1 − J₀²(v) − J₁²(v)); first zero of J₁ j₁,₁ = 3.8317 from Abramowitz M., Stegun I. A. (1964), " +
