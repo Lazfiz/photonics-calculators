@@ -89,7 +89,8 @@ export function mortensenPrecision(
 }
 
 /**
- * Nyquist label-density resolution 2/ρ^(1/D): twice the mean label spacing, for ρ labels per m^D in D dimensions
+ * Nyquist label-density resolution 2/ρ^(1/D): twice the label spacing ρ^(−1/D), for ρ labels per m^D in D dimensions. That
+ * spacing is the Nyquist convention, not the mean nearest-neighbour distance (0.5ρ^(−1/2) for random labels in 2D)
  * (H. Shroff, C. G. Galbraith, J. A. Galbraith, E. Betzig, Nat. Methods 5, 417 (2008), doi:10.1038/nmeth.1202). Returns m.
  */
 export function nyquistResolution(density: number, dimensions: 1 | 2 | 3): number {

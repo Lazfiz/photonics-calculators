@@ -120,7 +120,7 @@ export default function PALMSTORMPage() {
           {row(dim === 3 ? "Lateral localization precision σ_loc" : "Localization precision σ_loc", fmt(sigmaLoc / nm, 2, " nm"), "text-blue-400")}
           {row("Shot-noise limit σ/√N", fmt(shotLimit / nm, 2, " nm"))}
           {row("Localization FWHM 2.355 σ_loc", fmt((GAUSSIAN_FWHM_PER_SIGMA * sigmaLoc) / nm, 1, " nm"))}
-          {row("Mean label spacing", fmt(nyquist / 2 / nm, 1, " nm"))}
+          {row("Label spacing ρ^(−1/D)", fmt(nyquist / 2 / nm, 1, " nm"))}
           {row("Nyquist resolution 2/ρ^(1/D)", fmt(nyquist / nm, 1, " nm"), "text-yellow-400")}
           {row("Effective resolution", fmt(effective / nm, 1, " nm"), "text-green-400")}
           {row("Diffraction limit λ/(2NA)", fmt(diffraction / nm, 0, " nm"))}
