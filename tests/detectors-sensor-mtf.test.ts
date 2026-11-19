@@ -68,9 +68,9 @@ test("column shares match the exponential line-spread closed form", () => {
     const l = ratio * p;
     const e = Math.exp(-1 / ratio);
     const [c0, c1, c2] = columnShares(f => exponentialSpreadMtf(f, l), p);
-    close(c0, 1 - ratio * (1 - e), 1e-6, `C0 ℓ/p=${ratio}`);
-    close(c1, (ratio / 2) * (1 - e) ** 2, 1e-6, `C1 ℓ/p=${ratio}`);
-    if (ratio >= 1) close(c2, (ratio / 2) * (1 - e) ** 2 * e, 1e-6, `C2 ℓ/p=${ratio}`);
+    close(c0, 1 - ratio * (1 - e), 1e-10, `C0 ℓ/p=${ratio}`);
+    close(c1, (ratio / 2) * (1 - e) ** 2, 1e-10, `C1 ℓ/p=${ratio}`);
+    if (ratio >= 1) close(c2, (ratio / 2) * (1 - e) ** 2 * e, 1e-9, `C2 ℓ/p=${ratio}`);
   }
   // ℓ = p: C₁ = (1 − e⁻¹)²/2 = 0.1997882.
   close(columnShares(f => exponentialSpreadMtf(f, p), p)[1], 0.1997882, 1e-6, "C1 digits");

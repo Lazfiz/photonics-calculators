@@ -21,9 +21,13 @@ test("pixelCrosstalkSummary: closed-form terms at 550 nm, p = 5 µm, W = 10 µm,
   assertRel(r.atNyquist.pixel, 2 / Math.PI, 1e-8, "pixel");
   assertRel(r.atNyquist.seib, 0.9992884091910659, 1e-8, "seib");
   assertRel(r.atNyquist.total, 0.5979967540134521, 1e-8, "MTF");
-  // The two lit-column shares and the lost-to-farther-out charge are consistent: C0 + 2 C1 + 2 C2 + ... = 1.
-  assert.ok(r.diffusionCrosstalk > 0 && r.diffusionCrosstalk < 0.01);
-  assert.ok(r.total >= r.diffusionCrosstalk * (1 - 0.03));
+  // Diffusion shares: the Seib column integral Cₙ = 2∫₀^∞ (H(u/p) − H(∞)) sinc²(πu) cos(2πnu) du (+ H(∞) in C₀), evaluated
+  // independently by composite Simpson on u ∈ [0, 4000] plus the analytic 1/u³ tail (converged to ≈ 1e-11; a second
+  // Simpson run to u = 2000 agrees to 1.4e-9). Without its analytic tail and half-unit cells, the module's 2C₁ ran 1.2e-5 high.
+  assertRel(r.diffusionCrosstalk, 3.7062171384463e-4, 1e-8, "2 C1");
+  assertRel(r.beyond, 1.257896782699e-4, 1e-8, "beyond");
+  // Total 2·(C₁(1 − X) + (C₀ + C₂)·X/2), from the same shares.
+  assertRel(r.total, 0.030345652450493, 1e-8, "total");
 });
 
 test("crosstalkAtWavelength: a thick depletion layer leaves only the kernel crosstalk X (shares [1, 0, 0])", () => {
@@ -31,6 +35,14 @@ test("crosstalkAtWavelength: a thick depletion layer leaves only the kernel cros
   const r = crosstalkAtWavelength(550e-9, { pitch: 5e-6, depletion: 90e-6, diffusionLength: 20e-6, kernel: 0.03 });
   assertRel(r.total, 0.03, 1e-8, "total");
   assert.ok(r.diffusionCrosstalk < 1e-9);
+});
+
+test("crosstalkAtWavelength: W = 0 in the UV keeps H near 1 far beyond u = 100 (the column-integral tail matters)", () => {
+  // 300 nm, p = 50 µm, W = 0, L₀ = 20 µm: the Seib knee sits at u ≈ αp/2π ≈ 1.4e3. Independent integrals of the same Seib
+  // column integral: composite Simpson to u = 2e4 plus a log-u Simpson tail gives 2C₁ = 5.6301431e-4; a Gauss–Legendre run
+  // with v = 1/u to u = 2e4 gives 5.63014e-4. Integrating to u = 100 and dropping the tail gave +145 %.
+  const r = crosstalkAtWavelength(300e-9, { pitch: 50e-6, depletion: 0, diffusionLength: 20e-6, kernel: 0.03 });
+  assertRel(r.diffusionCrosstalk, 5.6301431e-4, 5e-5, "2 C1");
 });
 
 test("crosstalkMtfAt: f = 0 gives 1 for every term", () => {
