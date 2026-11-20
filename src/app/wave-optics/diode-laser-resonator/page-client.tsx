@@ -147,7 +147,7 @@ export default function DiodeLaserResonatorPage() {
 
       {!Number.isFinite(nTh) && Number.isFinite(gTh) && (
         <p className="mb-6 rounded-lg border border-yellow-700 bg-yellow-950/40 p-3 text-sm text-yellow-200">
-          The material gain needed, {fmt(gTh / gamma / 100)} 1/cm, is more than {MAX_LOG_GAIN_RATIO} g₀ (N above e³ N_tr): beyond the logarithmic gain fit, so this cavity can&apos;t reach threshold. Lengthen it, raise the facet reflectance or add wells.
+          The material gain needed, {fmt(gTh / gamma / 100)} 1/cm, is more than {MAX_LOG_GAIN_RATIO} g₀ (N above e² N_tr): beyond the range where the logarithmic gain fit was checked (McIlroy et al. 1985), so no threshold is computed. Lengthen it, raise the facet reflectance or add wells.
         </p>
       )}
 

@@ -45,12 +45,13 @@ test("diode laser: threshold carrier density and current, logarithmic gain and A
   assertRel(recombinationRate(nTh, 1e8, 1e-16, 3.5e-42), 1.14591e33, 1e-4, "R(N_th) (1/(m³ s))");
   // V = 3 µm × 24 nm × 300 µm = 2.16e-17 m³: I_th = qVR/η_i = 1.602177e-19·2.16e-17·1.14591e33/0.8 = 4.957 mA.
   assertRel(thresholdCurrent(2.16e-17, nTh, 1e8, 1e-16, 3.5e-42, 0.8), 4.9571e-3, 1e-4, "I_th (A)");
-  // At transparency gain the density is N_tr; beyond g/g₀ = 20 the fit is refused.
+  // At transparency gain the density is N_tr; beyond g/g₀ = 2 the fit is refused.
   assert.equal(logGainCarrierDensity(0, 1800e2, 1.8e24), 1.8e24);
   assert.ok(Number.isNaN(logGainCarrierDensity(21 * 1800e2, 1800e2, 1.8e24)));
-  // Edge: the cap g/g₀ = 3 (N = e³ N_tr = 3.615e25 m⁻³) is kept; just above it is NaN.
-  assert.ok(Math.abs(logGainCarrierDensity(3 * 1800e2, 1800e2, 1.8e24) / (1.8e24 * Math.exp(3)) - 1) < 1e-12);
-  assert.ok(Number.isNaN(logGainCarrierDensity(3.01 * 1800e2, 1800e2, 1.8e24)));
+  // Edge: the cap g/g₀ = 2 (McIlroy et al. 1985, eq. (6) within ≈ 2 % up to G ≈ 2G₀, Fig. 1; N = e² N_tr = 1.330e25 m⁻³)
+  // is kept; just above it is NaN.
+  assert.ok(Math.abs(logGainCarrierDensity(2 * 1800e2, 1800e2, 1.8e24) / 1.33003e25 - 1) < 1e-5);
+  assert.ok(Number.isNaN(logGainCarrierDensity(2.01 * 1800e2, 1800e2, 1.8e24)));
 });
 
 test("diode laser: sourced defaults (De Koninck et al. 2025 Table S1, Wenzel et al. 2021 Table I) and radiative share", () => {

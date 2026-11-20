@@ -54,11 +54,16 @@ export default defineSchema({
     const iTh = thresholdCurrent(p.stripeWidth * p.activeThickness * L, nTh, p.A, p.B, p.C, p.etaI);
     const etaD = differentialEfficiency(p.etaI, p.alpha_i, alphaM);
     const warnings: string[] = [];
+    let reasons = {};
     if (!Number.isFinite(nTh) && Number.isFinite(gTh)) {
-      warnings.push(
-        `The material gain needed, ${(gTh / p.gamma / 100).toPrecision(4)} 1/cm, is more than ${MAX_LOG_GAIN_RATIO} g₀ (N above e³ N_tr): ` +
-        "beyond the logarithmic gain fit, so this cavity can't reach threshold.",
-      );
+      const beyondFit =
+        `The material gain needed, ${(gTh / p.gamma / 100).toPrecision(4)} 1/cm, is more than ${MAX_LOG_GAIN_RATIO} g₀ (N above e² N_tr): ` +
+        "beyond the range where the logarithmic gain fit was checked (McIlroy et al. 1985), so no threshold is computed.";
+      warnings.push(beyondFit);
+      reasons = {
+        thresholdCarrierDensity: beyondFit, thresholdCurrent: beyondFit, thresholdCurrentDensity: beyondFit,
+        carrierLifetime: beyondFit, radiativeShare: beyondFit,
+      };
     }
     return {
       values: {
@@ -77,6 +82,7 @@ export default defineSchema({
         modeSpacing: modeSpacing(p.wavelength, p.ng, L),
       },
       warnings,
+      reasons,
     };
   },
   checks: [

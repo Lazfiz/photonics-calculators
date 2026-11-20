@@ -156,6 +156,10 @@ export const waveOptics: CalculatorEntry[] = [
     references: [
       { citation: "Coldren L. A., Corzine S. W., Mašanović M. L. (2012). Diode Lasers and Photonic Integrated Circuits, 2nd ed., ch. 2 and 4. Wiley.", url: "https://doi.org/10.1002/9781118148167" },
       {
+        citation: "McIlroy P. W. A., Kurobe A., Uematsu Y. (1985). Analysis and application of theoretical gain curves to the design of multi-quantum-well lasers. IEEE J. Quantum Electron. 21, 1958–1963. Eq. (6), G/G₀ ≈ ln(J/J₀) + 1, within about 2 % of the computed gain up to G ≈ 2G₀, where Fig. 1 ends (no upper bound is stated): the page computes no threshold above g = 2g₀.",
+        url: "https://doi.org/10.1109/JQE.1985.1072606",
+      },
+      {
         citation: "De Koninck Y. et al. (2025). GaAs nano-ridge laser diodes fully fabricated in a 300-mm CMOS pilot line. Nature 637, 63–69. Supplementary Table 1 (arXiv:2309.04473): g₀ 1200 cm⁻¹, N_tr 1.8 × 10¹⁸ cm⁻³, B 10⁻¹⁰ cm³/s, C 3.5 × 10⁻³⁰ cm⁶/s.",
         url: "https://doi.org/10.1038/s41586-024-08364-2",
       },
