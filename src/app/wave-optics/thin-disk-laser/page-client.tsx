@@ -30,7 +30,7 @@ export default function ThinDiskLaserPage() {
   const [sigmaEPRaw, setSigmaEP] = useURLState("sigmaEP", 0.22); // at λ_p
   const [tauRaw, setTau] = useURLState("tau", 0.951); // ms, Sumida & Fan 1994
   const [heatRaw, setHeat] = useURLState("heatFraction", 0.087); // 1 − 940/1030 (lasing, Chénais 2006 Eq. V.1)
-  const [kappaRaw, setKappa] = useURLState("kappa", 6.3); // W/(m K), 10 at.% Yb:YAG: between 7 at 8 at.% (Chénais 2006 §II) and 5.7 at 12 at.% (Körner 2012 Table 4)
+  const [kappaRaw, setKappa] = useURLState("kappa", 6.3); // W/(m K), 10 at.% Yb:YAG: between 7 at 8 at.% (Chénais 2006 §II) and 5.7 at 12 at.% (Körner 2012 Table 4); Patel 2001 Fig. 8 ≈ 7.6–7.7
 
   const d = clamp(thicknessRaw, 10, 5000, 200) * 1e-6;
   const diskD = clamp(diameterRaw, 0.1, 1000, 10) * 1e-3;
@@ -140,7 +140,9 @@ export default function ThinDiskLaserPage() {
           τ = 0.951 ms (Sumida &amp; Fan 1994, radiation trapping suppressed); heat fraction 1 − λ_p/λ = 0.087, Fan&apos;s thermal load
           with every excited ion extracted by the laser (Chénais et al. 2006, Eq. V.1; without lasing it is 1 − η_r λ_p/λ_f with λ_f 1007 nm, higher only when quenching makes the
           radiative efficiency η_r &lt; 0.98); κ ≈ 6.3 W/(m K) for the 10 at.% default, between 7 W/(m K) measured on 8 at.% Yb:YAG
-          (11 W/(m K) undoped; Chénais et al. 2006, §II) and 5.7 W/(m K) at 12 at.% (Körner et al. 2012, Table 4).</p>
+          (11 W/(m K) undoped; Chénais et al. 2006, §II) and 5.7 W/(m K) at 12 at.% (Körner et al. 2012, Table 4). Published values near
+          10 at.% span 5.7–7.7 W/(m K): Patel et al. (2001, Fig. 8) measured 7.8 at 5 at.% and 7.5 at 15 at.%, which interpolates to
+          ≈ 7.6–7.7 at 10 at.%, and note up to 30 % scatter in published data. The temperature rise scales as 1/κ.</p>
       </div>
 
       <div className="space-y-6">
