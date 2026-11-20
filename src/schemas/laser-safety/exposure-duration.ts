@@ -31,10 +31,14 @@ export default defineSchema({
     }
     const warnings: string[] = [];
     const reasons: Partial<Record<"maxTime", string>> = {};
-    if (!Number.isFinite(r.tMax)) {
+    if (Number.isNaN(r.tMax)) {
       const exceeded = "The beam exceeds a limit already at 1 ns, the shortest time the limits cover: no maximum duration.";
       warnings.push(exceeded);
-      if (Number.isNaN(r.tMax)) reasons.maxTime = exceeded;
+      reasons.maxTime = exceeded;
+    } else if (r.tMax === Infinity) {
+      const noLimit = "The beam reaches no limit in 30 000 s, the longest time the limits cover: no maximum duration.";
+      warnings.push(noLimit);
+      reasons.maxTime = noLimit;
     }
     return { values: { maxTime: r.tMax, aperture: l.aperture, irradiance: l.irradiance, limit: l.limit }, warnings, reasons };
   },
