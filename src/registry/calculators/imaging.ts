@@ -1215,10 +1215,10 @@ export const imaging: CalculatorEntry[] = [
     description: "Calculate resolution, excitation volume, peak intensity, and depth penetration for two-photon fluorescence microscopy.",
     keywords: ["Two-Photon Excitation"],
     tier: "textbook",
-    modelNote: "Gaussian fit to the diffraction-limited focus of a filled pupil, with Gaussian pulses. The depth model counts only ballistic excitation photons; aberrations and out-of-focus background are not included.",
+    modelNote: "Gaussian fit to the diffraction-limited focus of a filled pupil, with Gaussian pulses. Its volume is 68 % of the vectorial one (Zipfel's single ratio, no NA range given), so V/0.68 is shown too. The depth model counts only ballistic excitation photons; aberrations and out-of-focus background are not included.",
     references: [
       {
-        citation: "Zipfel W. R., Williams R. M., Webb W. W. (2003). Nonlinear magic: multiphoton microscopy in the biosciences. Nat. Biotechnol. 21, 1369–1377. Gaussian fit to the squared illumination PSF. Fig. 4c (p. 1372); eq. (2), p. 1371.",
+        citation: "Zipfel W. R., Williams R. M., Webb W. W. (2003). Nonlinear magic: multiphoton microscopy in the biosciences. Nat. Biotechnol. 21, 1369–1377. Gaussian fit to the squared illumination PSF. Fig. 4c (p. 1372); eq. (2), p. 1371; the Gaussian volume is 68 % of the vectorial integral (p. 1371).",
         url: "https://doi.org/10.1038/nbt899",
       },
       {

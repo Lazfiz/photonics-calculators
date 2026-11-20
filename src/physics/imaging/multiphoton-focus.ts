@@ -84,6 +84,17 @@ export function multiphotonVolume(lambda: number, n: number, NA: number, order: 
   return (Math.PI / (2 * order)) ** 1.5 * w * w * wz;
 }
 
+/**
+ * Ratio of Zipfel's Gaussian two-photon volume to the full vectorial (Richards–Wolf) integral: "68 %" (Zipfel 2003, p. 1371).
+ * The paper gives one ratio without an NA range; its worked example (NA 1.2, 900 nm, p. 1372) divides by it.
+ */
+export const ZIPFEL_GAUSSIAN_VOLUME_FRACTION = 0.68;
+
+/** Two-photon volume scaled to the vectorial integral, π^(3/2) ω_xy² ω_z / 0.68, m³. */
+export function twoPhotonVectorialVolume(lambda: number, n: number, NA: number): number {
+  return multiphotonVolume(lambda, n, NA, 2) / ZIPFEL_GAUSSIAN_VOLUME_FRACTION;
+}
+
 /** Peak focal intensity 2P/(π w²) = P/(2π ω_xy²) for a peak power P, W/m². */
 export function focalPeakIntensity(peakPower: number, lambda: number, NA: number): number {
   if (!(Number.isFinite(peakPower) && peakPower >= 0)) return NaN;
