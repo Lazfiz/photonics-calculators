@@ -44,11 +44,19 @@ export function niceTicks(min: number, max: number, count: number, log: boolean)
   const rough = range / count;
   if (rough <= 0 || !isFinite(rough)) return [];
   const mag = Math.pow(10, Math.floor(Math.log10(rough)));
-  const step = ([1, 2, 5, 10].find(n => n * mag >= rough) ?? 10) * mag;
-  const ticks: number[] = [];
-  // 1e-9 of a step absorbs rounding at the ends (3 × 1e-15 > 3e-15).
-  const tol = step * 1e-9;
-  for (let k = Math.ceil((min - tol) / step); k * step <= max + tol && ticks.length < 100; k++) ticks.push(k * step || 0); // || 0: no −0
+  const steps = [1, 2, 5, 10];
+  let i = steps.findIndex(n => n * mag >= rough);
+  if (i < 0) i = steps.length - 1;
+  let ticks: number[] = [];
+  // Rounding the step up can leave one tick (−66 … 89 in 3 → step 100 → only 0): then take the next smaller step.
+  // Step 1 × mag ≤ rough always gives at least `count` ticks, so the loop ends.
+  for (; i >= 0 && ticks.length < 2; i--) {
+    const step = steps[i] * mag;
+    // 1e-9 of a step absorbs rounding at the ends (3 × 1e-15 > 3e-15).
+    const tol = step * 1e-9;
+    ticks = [];
+    for (let k = Math.ceil((min - tol) / step); k * step <= max + tol && ticks.length < 100; k++) ticks.push(k * step || 0); // || 0: no −0
+  }
   return ticks;
 }
 
