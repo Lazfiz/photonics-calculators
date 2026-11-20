@@ -33,6 +33,8 @@ function Toggle<T extends string>({ label, value, options, onChange }: { label: 
 }
 
 const PAD = { left: 52, right: 16, top: 16, bottom: 44 };
+/** Incidence range of the power sweep, in degrees. */
+const SWEEP_DEG = 75;
 
 /** Orders around the mirror reflection, plotted by output angle (x) and angle out of the tilt plane (y). */
 function OrderMap({ orders, onAngle, nearest, fill }: { orders: DmdOrder[]; onAngle: number; nearest: DmdOrder | null; fill: number }) {
@@ -127,7 +129,8 @@ export default function DmdDiffractionPage() {
   const best = nearestBlazedIncidence(blazed, incidence);
   const sweep = useMemo(() => {
     const points: { x: number; y: number | null }[] = [];
-    for (let t = -89; t <= 89.0001; t += 0.25) {
+    // ±75°: beyond 60° the power estimate is unreliable anyway, and a span ≤ 150° keeps several ticks on a phone axis.
+    for (let t = -SWEEP_DEG; t <= SWEEP_DEG + 1e-4; t += 0.25) {
       const r = dmdDiffraction({ pitch, tilt, lambda, incidence: t * DEG, fillFactor: fill, state });
       points.push({ x: t, y: r.nearest ? r.nearest.efficiency * 100 : null });
     }
@@ -191,10 +194,12 @@ export default function DmdDiffractionPage() {
           <SimpleLineChart bare title="Power in the order nearest the mirror reflection" xLabel="Incidence angle θi (°)" yLabel="Power (%)"
             series={[
               { name: "Nearest order", color: "#34d399", points: sweep },
-              { name: "Your incidence", color: "#fbbf24", dashed: true, points: [{ x: incidence / DEG, y: 0 }, { x: incidence / DEG, y: fill * fill * 100 }] },
+              ...(Math.abs(incidence / DEG) <= SWEEP_DEG
+                ? [{ name: "Your incidence", color: "#fbbf24", dashed: true, points: [{ x: incidence / DEG, y: 0 }, { x: incidence / DEG, y: fill * fill * 100 }] }]
+                : []),
             ]} />
           <p className="text-xs text-gray-500 mt-2">Peaks reach F² (the normal-incidence array value) where an order is blazed exactly; the dips between them are the
-            anti-blaze angles. Far off normal the absolute power is uncertain by about ±10 %.</p>
+            anti-blaze angles. Far off normal the absolute power is uncertain by about ±10 %. Incidence shown within ±{SWEEP_DEG}°.</p>
         </div>
       </div>
 
