@@ -42,18 +42,21 @@ const retina = (lambda: number, d: number, train: PulseTrain, alpha = 0) => {
 test("T_i and the pulse count", () => {
   assert.equal(timeTi(nm(532)), 5e-6);
   assert.equal(timeTi(nm(1049)), 5e-6);
-  // ICNIRP 2013 Table 4: 5 µs for 400–1,050 nm, 13 µs for 1,051–1,400 nm (verification 2026-11 follow-up).
-  assert.equal(timeTi(nm(1050)), 5e-6);
-  assert.equal(timeTi(nm(1050.999)), 5e-6);
+  // ICNIRP 2013 Table 4: 5 µs below, 13 µs from 1050 nm, the edge the Table 5 limits switch at (Fable review 2026-11-20 M1).
+  assert.equal(timeTi(nm(1049.999)), 5e-6);
+  assert.equal(timeTi(nm(1050)), 13e-6);
   assert.equal(timeTi(nm(1051)), 13e-6);
   assert.equal(timeTi(nm(1399.999)), 13e-6);
   assert.ok(Number.isNaN(timeTi(nm(1400))));
   assert.ok(Number.isNaN(timeTi(nm(399.999))));
   assert.ok(Number.isNaN(timeTi(nm(1550))));
-  // An 8 µs pulse from a 10 mrad source, 25 pulses in 0.25 s: longer than T_i at 1050 nm (rule 3b, n^−0.25 = 0.447),
-  // within it at 1051 nm (rule 3c, 1 up to 0.25 s).
-  assertRel(correctionCP(nm(1050), 0.01, 25, 8e-6, 0.25), Math.pow(25, -0.25), 1e-12, "1050 nm, 8 µs");
-  assert.equal(correctionCP(nm(1051), 0.01, 25, 8e-6, 0.25), 1);
+  // An 8 µs pulse from a 10 mrad source, 25 pulses in 0.25 s: longer than T_i at 1049.999 nm (rule 3b, n^−0.25 = 0.447),
+  // within it at exactly 1050 nm (rule 3c, 1 up to 0.25 s).
+  assertRel(correctionCP(nm(1049.999), 0.01, 25, 8e-6, 0.25), Math.pow(25, -0.25), 1e-12, "1049.999 nm, 8 µs");
+  assert.equal(correctionCP(nm(1050), 0.01, 25, 8e-6, 0.25), 1);
+  // At exactly 1050 nm T_i and the single-pulse limit switch together: Table 5's flat piece also ends at 13 µs (C_C, not C_A).
+  const edge = pulseLimits(nm(1050)).find((l) => l.kind === "retinalThermal");
+  assert.equal(edge?.pieces.find((p) => p.p === 0.75)?.t0, timeTi(nm(1050)));
   // 10 ns pulses at 1 kHz from t = 0: the 10 000th starts at 9.999 s and ends within 10 s; the next would not.
   assert.equal(pulseCount({ duration: 1e-8, prf: 1e3, exposure: 10 }), 10000);
   assert.equal(pulseCount({ duration: 1e-8, prf: 1e3, exposure: 10 + 1e-8 }), 10001);

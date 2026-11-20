@@ -32,8 +32,8 @@
  *    (the T_i limit has C_A, the femtosecond one doesn't), so the lower of the two readings is used. For a regular
  *    point-source train rule 2 is lower whenever grouping applies; it binds for large sources, whose average limit C_E
  *    raises more than the single-pulse one.
- * T_i (Table 4) is 5 µs for 400–1050 nm and 13 µs for 1051–1400 nm (Table 4's own rows; Table 5's flat short-pulse
- * piece ends at T_i, the 13 µs one from 1050 nm in eye-exposure-limits.ts).
+ * T_i (Table 4) is 5 µs for 400 ≤ λ < 1050 nm and 13 µs for 1050 ≤ λ < 1400 nm. Table 4 prints the upper row from 1,051 nm, Table 5
+ * from 1,050 nm; both switch at RETINAL_NIR_EDGE_NM (1050 nm), so T_i ends where Table 5's flat short-pulse piece does.
  *
  * Below 1 ns (Table 5): the retinal thermal limit is 1.0 C_E mJ/m² (× C_C from 1050 nm, no C_A) from 100 fs to 10 ps
  * and its 1 ns value from 10 ps. Below 100 fs, and below 1 ns for the cornea and anterior segment, ICNIRP holds the
@@ -52,7 +52,7 @@
  */
 
 import {
-  alphaMax, correctionCC, correctionCE, eyeLimits, exposureLimit, limitIrradiance, limitMaxPower, timeT2,
+  alphaMax, correctionCC, correctionCE, eyeLimits, RETINAL_NIR_EDGE_NM, exposureLimit, limitIrradiance, limitMaxPower, timeT2,
   T_MAX, T_MIN, type EyeLimit, type EyeLimitKind, type Piece, type TabulatedLimit,
 } from "./eye-exposure-limits";
 
@@ -65,12 +65,12 @@ const T_10PS = 1e-11;
 const toNm = (lambda: number) => Math.round(lambda * 1e15) / 1e6;
 
 /**
- * T_i, s: 5 µs for 400 ≤ λ < 1051 nm, 13 µs for 1051 ≤ λ < 1400 nm (ICNIRP 2013 Table 4, whose rows are 400–1,050 and
- * 1,051–1,400 nm); NaN outside 400–1400 nm.
+ * T_i, s: 5 µs for 400 ≤ λ < 1050 nm, 13 µs for 1050 ≤ λ < 1400 nm (ICNIRP 2013 Table 4, switched at the retinal
+ * limits' edge RETINAL_NIR_EDGE_NM); NaN outside 400–1400 nm.
  */
 export function timeTi(lambda: number): number {
   const nm = toNm(lambda);
-  return nm >= 400 && nm < 1051 ? 5e-6 : nm >= 1051 && nm < 1400 ? 13e-6 : NaN;
+  return nm >= 400 && nm < RETINAL_NIR_EDGE_NM ? 5e-6 : nm >= RETINAL_NIR_EDGE_NM && nm < 1400 ? 13e-6 : NaN;
 }
 
 /**
@@ -84,7 +84,7 @@ export function pulseLimits(lambda: number, alpha = 0): EyeLimit[] {
     const h1 = first.a * Math.pow(T_MIN, first.p);
     let short: Piece[];
     if (limit.kind === "retinalThermal") {
-      const h = 1e-3 * correctionCE(alpha, T_MIN) * (toNm(lambda) >= 1050 ? correctionCC(lambda) : 1);
+      const h = 1e-3 * correctionCE(alpha, T_MIN) * (toNm(lambda) >= RETINAL_NIR_EDGE_NM ? correctionCC(lambda) : 1);
       short = [
         { t0: 0, t1: T_ULTRASHORT, a: h / T_ULTRASHORT, p: 1 },
         { t0: T_ULTRASHORT, t1: T_10PS, a: h, p: 0 },

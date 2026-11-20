@@ -121,10 +121,16 @@ const UVB_STEPS: readonly (readonly [number, number])[] = [
   [311, 2.5e3], [312, 4.0e3], [313, 6.3e3],
 ];
 
+/**
+ * 1050 nm, where the retinal rows change from C_A with a 5 µs joint to C_C with a 13 µs joint, and T_i from 5 to 13 µs.
+ * ICNIRP 2013 Table 5 starts the upper row at 1,050 nm, Table 4 at 1,051 nm; one edge keeps the limits and T_i in step.
+ */
+export const RETINAL_NIR_EDGE_NM = 1050;
+
 /** C_A (C₄ in IEC 60825-1), 400–1400 nm: 1 below 700 nm, 10^(0.002(λ − 700)) to 1050 nm, then 5. */
 export function correctionCA(lambda: number): number {
   const nm = toNm(lambda);
-  return nm < 700 ? 1 : nm < 1050 ? Math.pow(10, 0.002 * (nm - 700)) : 5;
+  return nm < 700 ? 1 : nm < RETINAL_NIR_EDGE_NM ? Math.pow(10, 0.002 * (nm - 700)) : 5;
 }
 
 /** C_B (C₃ in IEC 60825-1), 400–600 nm: 1 below 450 nm, then 10^(0.02(λ − 450)). */
@@ -178,7 +184,7 @@ export function timeT2(alpha: number): number {
  * so H ∝ t^0.25).
  */
 function retinalThermalPieces(nm: number, ca: number, cc: number, alpha: number, fieldOfView: FieldOfView): Piece[] {
-  const [ts, hs, k] = nm < 1050 ? [5e-6, 2e-3 * ca, 18 * ca] : [13e-6, 2e-2 * cc, 90 * cc];
+  const [ts, hs, k] = nm < RETINAL_NIR_EDGE_NM ? [5e-6, 2e-3 * ca, 18 * ca] : [13e-6, 2e-2 * cc, 90 * cc];
   if (!(alpha > ALPHA_MIN)) return pieces([T_MIN, ts, 10, T_MAX], [[hs, 0], [k, 0.75], [10 * ca * cc, 1]]);
   const T2 = timeT2(alpha);
   const tAlpha = Math.min(Math.max(Math.pow(alpha / 0.2, 2), 625e-6), 0.25);
