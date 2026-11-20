@@ -88,6 +88,21 @@ test("Conoscopy: the largest retardance is the rim value, not the outermost pixe
   assert.ok(Math.abs(maxR / rim - 1) < 1e-9, `maxR ${maxR} vs rim ${rim}`);
 });
 
+test("Conoscopy: the rim maximum is found exactly, not at the nearest of 720 samples (review 2026-11 P3-M6)", () => {
+  // Calcite tilted 60°, rotated 37°, NA 0.85: the rim maximum falls between 0.5° samples, which read ≈ 2e-7 low.
+  // Reference: a brute-force scan of the rim at 0.5° steps, then at 1e-7 rad steps within ±0.5° of the best.
+  const orientation = { tilt: 60 * deg, rotation: 37 * deg }, NA = 0.85, t = 100e-6;
+  const T = impermeability(calcite, orientation);
+  const rimR = (phi: number) => Math.abs(conoscopicPoint(T, NA * Math.cos(phi), NA * Math.sin(phi), t, lambda).R);
+  let coarse = 0, best = 0;
+  for (let m = 0; m < 720; m++) if (rimR(m * 0.5 * deg) > coarse) { coarse = rimR(m * 0.5 * deg); best = m * 0.5 * deg; }
+  let fine = 0;
+  for (let phi = best - 0.5 * deg; phi <= best + 0.5 * deg; phi += 1e-7) fine = Math.max(fine, rimR(phi));
+  assert.ok(fine / coarse - 1 > 1e-7, `the samples alone read ${coarse}, the rim maximum is ${fine}`);
+  const { maxR } = conoscopicFigure({ indices: calcite, orientation, d: t, lambda, NA, P: 0, A: Math.PI / 2, mode: "mono" }, 41);
+  assert.ok(Math.abs(maxR / fine - 1) < 1e-12, `maxR ${maxR} vs brute force ${fine}`);
+});
+
 test("Conoscopy: tilted uniaxial plate — the melatope sits at ν = n_o sin(tilt), on the side of the tilt", () => {
   // A wave along the optic axis travels at n_o, so its transverse wave vector is n_o sin 25° = 0.65261.
   const T = impermeability(quartz, { tilt: 25 * deg, rotation: 0 });
