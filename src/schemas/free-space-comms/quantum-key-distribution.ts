@@ -51,7 +51,7 @@ export default defineSchema({
     const maxLossOpt = maxChannelLossDbOptimalMu(sys, etaBob, 300);
     const maxRange = !Number.isFinite(maxLoss) ? NaN
       : fiberLoss > 0 ? Math.max(0, (maxLoss - fixedLoss) / fiberLoss)
-        : maxLoss >= fixedLoss ? NaN : 0;
+        : maxLoss > 0 && maxLoss >= fixedLoss ? NaN : 0; // maxLoss = 0: no key even at zero loss, so no distance
     const muOpt = optimalMu({ ...sys, eta });
     const optKey = decoyBb84({ ...sys, mu: muOpt, eta }).keyPerPulse;
     const plob = plobBound(etaCh);

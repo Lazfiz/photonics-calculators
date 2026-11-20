@@ -10,6 +10,8 @@ import { capturedPower, linkSecurity, nepLimitedSnr } from "../src/physics/free-
 import { secrecyCapacity } from "../src/physics/free-space-comms/channel-capacity";
 import { gaussianDiscFraction } from "../src/physics/free-space-comms/pointing-loss";
 import { c } from "../src/physics/constants";
+import qkdSchema from "../src/schemas/free-space-comms/quantum-key-distribution";
+import { runSchema } from "../src/schemas/run";
 
 const close = (actual: number, expected: number, rel: number, msg = "") =>
   assert.ok(Math.abs(actual - expected) <= rel * Math.abs(expected), `${msg} ${actual} vs ${expected}`);
@@ -169,4 +171,19 @@ test("point-ahead, LEO 500 km at the zenith of an equatorial station: orbital ve
   const vOrbit = Math.sqrt(GM_EARTH / (R_EARTH_EQ + 500e3));
   close(pointAheadAngle(vOrbit) - pointAheadAngle(zenithPassVelocity(500e3, 0)), 3.103e-6, 1e-3);
   assert.ok(Number.isNaN(zenithPassVelocity(-1, 0)));
+});
+
+test("QKD schema: no key even at 0 dB gives maxRange 0, also on a lossless link (no unlimited-range null)", () => {
+  // e_d = 0.5: E_μ = e₁ = 50 %, H₂ = 1, so R = ½[−fQ_μ + 0] < 0 at any η (Ma et al. 2005 eq. (1)): maxLoss = 0, no distance.
+  const defaults = Object.fromEntries(qkdSchema.inputs.map((input) => [input.key, input.default]));
+  for (const fiberLoss of [0, 0.21]) {
+    const r = runSchema(qkdSchema, { ...defaults, eDetector: 0.5, fiberLoss, fixedLoss: 0 });
+    assert.equal(r.outputs.maxLoss, 0);
+    assert.equal(r.outputs.maxRange, 0);
+    assert.ok(r.warnings.includes("No key even at zero channel loss: maxRange is 0."), r.warnings.join(" | "));
+  }
+  // A key on a lossless channel is distance-independent: maxRange stays null with the loss-budget reason.
+  const lossless = runSchema(qkdSchema, { ...defaults, fiberLoss: 0, fixedLoss: 0 });
+  assert.equal(lossless.outputs.maxRange, null);
+  assert.ok(lossless.reasons.maxRange?.startsWith("No attenuation"), JSON.stringify(lossless.reasons));
 });
