@@ -177,3 +177,13 @@ optimum is confirmed.
 - No reference was opened: formulas were re-derived or recalled, so a misprint shared by my memory and the code
   would not show. Material data (Si, InGaAs absorption; Er cross-sections) were not checked against tables.
 - No page was rendered: labels and units were read in the source, not in a browser.
+
+## 8. Status (2026-11-20)
+
+- **M5** closed as documented: the connector page states the convention (fibre index at contact, gap index for any gap
+  > 0); the tilt loss is unchanged.
+- **M7** answered with a measured value: the SBS page now says ν_B uses bulk silica (v_A 5960 m/s, 11.15 GHz at
+  1550 nm) and quotes Nikles et al. 1997 (J. Lightwave Technol. 15, 1842, doi 10.1109/50.633570): standard 3 wt %
+  GeO₂ fibre 12.8138 GHz at 1.32 µm (≈ 10.9 GHz at 1.55 µm), −94 MHz per wt % GeO₂. The default v_A stays: it is the
+  bulk-silica value (Nikles' extrapolation to pure silica agrees), shared with the bulk-silica preset of
+  materials/brillouin-scattering, and ν_B does not enter the threshold.
