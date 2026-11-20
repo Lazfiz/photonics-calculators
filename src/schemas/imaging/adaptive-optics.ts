@@ -5,7 +5,8 @@ const NOLL = "Noll R. J. (1976). Zernike polynomials and atmospheric turbulence.
   "Table IV (residual variance Δ_J). https://doi.org/10.1364/JOSA.66.000207";
 const HUDGIN = "Hudgin R. H. (1977). Wave-front compensation error due to finite corrector-element size. J. Opt. Soc. Am. " +
   "67, 393–395 (eq. (27), fitting error α(r_s/r₀)^(5/3); α is printed only as the Fig. 1 lines, p. 395, so 0.28 pyramid and 1.26 pillbox are read from the graph; " +
-  "0.134 for piston + tip-tilt segments is Noll R. J. (1976), J. Opt. Soc. Am. 66, 207, Table IV Δ₃, not Hudgin). https://doi.org/10.1364/JOSA.67.000393";
+  "0.18 for piston + tip-tilt square segments is not in Hudgin: Max C. (2016), UCSC AY289 lecture 8, Deformable mirrors, slide 46, " +
+  "https://www.ucolick.org/~max/AY289/Lectures%202016/Lecture%208%20Deformable%20Mirrors/Lecture8_2016.v1.pdf). https://doi.org/10.1364/JOSA.67.000393";
 const PARENTI = "Parenti R. R., Sasiela R. J. (1994). Laser-guide-star systems for astronomical applications. J. Opt. Soc. " +
   "Am. A 11, 288–309 (Strehl ratio of a partially corrected wavefront). https://doi.org/10.1364/JOSAA.11.000288";
 
@@ -57,7 +58,7 @@ export default defineSchema({
         strokeNeeded: r.strokeNeeded,
       },
       warnings: [
-        ...(r.zonalCapped ? ["Piston-only segments below ≈ 1.13 across: κ (d/r₀)^(5/3) exceeds the uncorrected variance, so the fitting error is capped at the open-loop value."] : []),
+        ...(r.zonalCapped ? ["Fewer than ≈ 1.13 piston-only (≈ 1.19 piston + tip-tilt) segments across: κ (d/r₀)^(5/3) exceeds what one segment leaves, Noll's Δ₁ (D/r₀)^(5/3) (Δ₃ with tip-tilt), so the fitting error is capped there."] : []),
         ...(r.strokeShort ? ["The stroke is short of ±3σ: large excursions will saturate the mirror."] : []),
       ],
     };

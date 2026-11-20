@@ -96,7 +96,7 @@ export default function PulsedMPEPage() {
           number of pulses within T₂ (10 s for a small source).
         </p>
         <p>
-          C_P: pulses longer than T_i ({Number.isNaN(Ti) ? "5 µs to 1050 nm, 13 µs from 1051 nm" : `${fmtNum(Ti * 1e6)} µs here`}) from a source
+          C_P: pulses longer than T_i ({Number.isNaN(Ti) ? "5 µs below 1050 nm, 13 µs from 1050 nm" : `${fmtNum(Ti * 1e6)} µs here`}) from a source
           up to 5 mrad get no reduction (C_P = 1); larger sources get n^−0.25, but not below 0.4 (α ≤ α_max) or 0.2
           (α_max &lt; α &lt; 100 mrad), and none from 100 mrad. Pulses of T_i or shorter get C_P = 1 up to 0.25 s and
           5 n^−0.25 beyond (more than 600 pulses); in the visible ICNIRP applies that only to intentional viewing, so

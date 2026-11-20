@@ -41,6 +41,8 @@ test("deformable-mirror fitting error κ(d/r₀)^(5/3) (Hudgin, JOSA 67, 393 (19
   // Hand value: 0.28 · 0.5^(5/3) = 0.088195.
   assertRel(dmFittingVariance(0.05, 0.1), 0.0881945, 1e-6, "d/r₀ = 0.5");
   assertRel(dmFittingVariance(0.1, 0.1, DM_FITTING_COEFFICIENT.segmentedPiston), 1.26, 1e-12, "piston segments");
+  // Piston + tip-tilt square segments, μ = 0.18 (C. Max, UCSC AY289 lecture 8 (2016), slide 46): 0.18 · 0.25^(5/3) = 0.017858.
+  assertRel(dmFittingVariance(0.25, 1, DM_FITTING_COEFFICIENT.segmentedTipTilt), 0.0178582618, 1e-8, "tip-tilt segments");
   assert.equal(dmFittingVariance(0, 0.1), 0);
   assert.ok(Number.isNaN(dmFittingVariance(0.1, 0)));
   // Page default: D/r₀ = 10, 32 actuators across → σ² = 0.28 · (10/32)^(5/3) = 0.040294 rad², S = 0.9605 + halo.

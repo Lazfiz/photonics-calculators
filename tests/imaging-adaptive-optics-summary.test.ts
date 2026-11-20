@@ -48,6 +48,13 @@ test("adaptiveOpticsSummary: piston-only fitting error is capped at the open-loo
   const past = adaptiveOpticsSummary({ wavelength: 1000e-9, dr0: 4, modes: 1, actuators: 1.2, dmType: "segmentedPiston", stroke: 5e-6 });
   assertRel(past.zonalVariance, 9.372061301150374, 1e-12, "uncapped");
   assert.equal(past.zonalCapped, false);
-  // Piston + tip-tilt segments never cross: κ 0.134 < 1.0299.
-  assert.equal(adaptiveOpticsSummary({ wavelength: 1000e-9, dr0: 4, modes: 1, actuators: 1, dmType: "segmentedTipTilt", stroke: 5e-6 }).zonalCapped, false);
+  // Piston + tip-tilt segments (κ 0.18, C. Max, UCSC AY289 lecture 8 (2016), slide 46): one segment leaves Noll's
+  // Δ₃ = 0.13433478 → 0.13433478·4^(5/3) = 1.3540098, not 0.18·4^(5/3) = 1.8142863; crossover (0.18/Δ₃)^(3/5) = 1.1919291.
+  const tt = adaptiveOpticsSummary({ wavelength: 1000e-9, dr0: 4, modes: 1, actuators: 1, dmType: "segmentedTipTilt", stroke: 5e-6 });
+  assertRel(tt.zonalVariance, 1.3540097627288386, 1e-12, "tip-tilt capped at Δ₃");
+  assert.equal(tt.zonalCapped, true);
+  // N = 1.2 is past the crossover: 0.18·(4/1.2)^(5/3) = 1.3388659, uncapped.
+  const ttPast = adaptiveOpticsSummary({ wavelength: 1000e-9, dr0: 4, modes: 1, actuators: 1.2, dmType: "segmentedTipTilt", stroke: 5e-6 });
+  assertRel(ttPast.zonalVariance, 1.3388659001643393, 1e-12, "tip-tilt uncapped");
+  assert.equal(ttPast.zonalCapped, false);
 });
