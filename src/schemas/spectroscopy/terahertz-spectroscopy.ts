@@ -78,6 +78,12 @@ export default defineSchema({
     if (model === "water" && si.freqEnd > 1e12) {
       warnings.push("The water model is fitted below 1 THz; above about 2 THz the intermolecular modes (5.3 THz) take over, so values there are extrapolated.");
     }
+    const reasons: Partial<Record<"extractedAlpha", string>> = {};
+    if (Number.isFinite(fit.n) && !(fit.n > 0)) {
+      const noIndex = "The index extracted from the transmission phase is not positive, so extractedAlpha is null.";
+      warnings.push(noIndex);
+      reasons.extractedAlpha = noIndex;
+    }
     return {
       values: {
         n: p.nk.re,
@@ -95,6 +101,7 @@ export default defineSchema({
         thermalWavenumber: (k_B * si.temperature) / (h * c),
       },
       warnings,
+      reasons,
     };
   },
   checks: [

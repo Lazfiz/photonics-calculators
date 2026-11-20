@@ -201,8 +201,9 @@ const RIM_SAMPLES = 720;
 
 /**
  * Figure as N×N RGBA bytes (row 0 at +y, the top of the field), transparent outside the NA circle and where a wave is
- * evanescent; also returns the largest retardance in the field, m, over the pixel centres and RIM_SAMPLES points on the
- * rim |ν| = NA (pixel centres stop short of the rim, where the retardance usually peaks). Each pixel's visibility is
+ * evanescent; also returns the largest retardance in the field, m, over the pixel centres and the rim |ν| = NA (pixel
+ * centres stop short of the rim, where the retardance usually peaks): RIM_SAMPLES points, the best refined by a
+ * golden-section search. Each pixel's visibility is
  * reduced by the change of retardance across it (central difference to its neighbours, one-sided at the rim).
  */
 export function conoscopicFigure(s: FigureSettings, N: number): { rgba: Uint8ClampedArray; maxR: number } {
@@ -224,11 +225,25 @@ export function conoscopicFigure(s: FigureSettings, N: number): { rgba: Uint8Cla
       maxR = Math.max(maxR, Math.abs(p.R));
     }
   }
+  const rimR = (phi: number) => {
+    const r = Math.abs(conoscopicPoint(T, s.NA * Math.cos(phi), s.NA * Math.sin(phi), s.d, s.lambda).R);
+    return Number.isFinite(r) ? r : 0;
+  };
+  const step = (2 * Math.PI) / RIM_SAMPLES;
+  let best = 0, bestR = -1;
   for (let m = 0; m < RIM_SAMPLES; m++) {
-    const phi = (2 * Math.PI * m) / RIM_SAMPLES;
-    const r = conoscopicPoint(T, s.NA * Math.cos(phi), s.NA * Math.sin(phi), s.d, s.lambda).R;
-    if (Number.isFinite(r)) maxR = Math.max(maxR, Math.abs(r));
+    const r = rimR(m * step);
+    if (r > bestR) { bestR = r; best = m; }
   }
+  // Golden-section search between the best sample's neighbours: the rim maximum to ≈ 1e-12 rad in azimuth.
+  let a = (best - 1) * step, b = (best + 1) * step;
+  const g = (Math.sqrt(5) - 1) / 2;
+  let x1 = b - g * (b - a), x2 = a + g * (b - a), f1 = rimR(x1), f2 = rimR(x2);
+  for (let it = 0; it < 60; it++) {
+    if (f1 < f2) { a = x1; x1 = x2; f1 = f2; x2 = a + g * (b - a); f2 = rimR(x2); }
+    else { b = x2; x2 = x1; f2 = f1; x1 = b - g * (b - a); f1 = rimR(x1); }
+  }
+  maxR = Math.max(maxR, bestR, f1, f2);
   /** Retardance change across one pixel along a row (step 1) or a column (step N). */
   const delta = (k: number, step: number, before: boolean, after: boolean) => {
     const b = before ? R[k - step] : NaN, a = after ? R[k + step] : NaN;

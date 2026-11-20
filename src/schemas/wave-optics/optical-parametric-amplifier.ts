@@ -37,12 +37,43 @@ export default defineSchema({
     const valid = Number.isFinite(r.lambdaIdler);
     const fraction = peakPower > 0 ? r.pumpDrawn / peakPower : NaN;
     const warnings: string[] = [];
-    if (!valid) warnings.push("The signal wavelength must be longer than the pump wavelength: the idler is at 1/λ_i = 1/λ_p − 1/λ_s.");
-    if (valid && !(peakPower > 0)) warnings.push("With no pump power the fraction of the pump drawn is undefined.");
+    const reasons: Partial<
+      Record<
+        | "gain" | "gainCoefficient" | "gainLength" | "signalOut" | "idlerOut" | "idlerWavelength" | "bandwidth"
+        | "bandwidthWavelength" | "qpmPeriod" | "pumpFractionDrawn",
+        string
+      >
+    > = {};
+    if (!valid) {
+      const noIdler = "The signal wavelength must be longer than the pump wavelength: the idler is at 1/λ_i = 1/λ_p − 1/λ_s.";
+      warnings.push(noIdler);
+      reasons.gain = noIdler;
+      reasons.gainCoefficient = noIdler;
+      reasons.gainLength = noIdler;
+      reasons.signalOut = noIdler;
+      reasons.idlerOut = noIdler;
+      reasons.idlerWavelength = noIdler;
+      reasons.bandwidth = noIdler;
+      reasons.bandwidthWavelength = noIdler;
+      reasons.qpmPeriod = noIdler;
+      reasons.pumpFractionDrawn = noIdler;
+    }
+    if (valid && !(peakPower > 0)) {
+      const noPump = "With no pump power the fraction of the pump drawn is undefined.";
+      warnings.push(noPump);
+      reasons.pumpFractionDrawn = noPump;
+    }
     if (valid && Number.isFinite(fraction) && r.pumpDrawn > 0.1 * peakPower) {
       warnings.push(`The amplified signal and idler take ${(100 * fraction).toPrecision(3)} % of the pump power (more than 10 %): the pump depletes and the gain saturates below this value.`);
     }
-    if (valid && !Number.isFinite(r.gain)) warnings.push("The gain overflows: the pump would be depleted long before this.");
+    if (valid && !Number.isFinite(r.gain)) {
+      const overflow = "The gain overflows: the pump would be depleted long before this.";
+      warnings.push(overflow);
+      reasons.gain = overflow;
+      reasons.signalOut = overflow;
+      reasons.idlerOut = overflow;
+      reasons.pumpFractionDrawn = overflow;
+    }
     if (valid && gvm === 0) warnings.push("With zero group-velocity mismatch the bandwidth is set by group-velocity dispersion, which this model omits.");
     return {
       values: {
@@ -58,6 +89,7 @@ export default defineSchema({
         pumpFractionDrawn: fraction,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

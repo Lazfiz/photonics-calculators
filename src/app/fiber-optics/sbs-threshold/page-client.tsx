@@ -117,6 +117,11 @@ export default function SBSThresholdPage() {
             modulation or dithering of the source that spreads the spectrum over GHz raises the threshold much further, whereas
             on–off keying keeps about half the power in the carrier and so only roughly doubles it.
           </p>
+          <p className="text-xs text-gray-500 mt-2">
+            ν_B = 2n·v_A/λ uses bulk silica (v_A = 5960 m/s, n = 1.45): 11.15 GHz at 1550 nm. GeO₂ in the core slows the
+            acoustic wave: a standard matched-cladding fibre (3 wt % GeO₂) measures 12.81 GHz at 1.32 µm, ≈ 10.9 GHz scaled to
+            1.55 µm, and the shift falls by 94 MHz per wt % GeO₂ (Nikles et al. 1997). The shift does not enter the threshold.
+          </p>
         </div>
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">

@@ -38,8 +38,10 @@ export default defineSchema({
       };
     }
     const train1 = !(prf > 0 && result.pulses > 1);
+    const singlePulse = "The exposure holds a single pulse, so no average-power limit applies; the maximum pulse energy is the limit for that one pulse.";
     return {
-      warnings: train1 ? ["The exposure holds a single pulse, so no average-power limit applies; the maximum pulse energy is the limit for that one pulse."] : [],
+      warnings: train1 ? [singlePulse] : [],
+      reasons: train1 ? { maxAveragePower: singlePulse } : {},
       values: {
         maxPulseEnergy: result.qMax,
         pulseOverMax: pulseEnergy / result.qMax,

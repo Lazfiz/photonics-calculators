@@ -79,11 +79,20 @@ export default defineSchema({
     const dn = schottDeltaN(g.model, g.thermal, wavelength, T1) - schottDeltaN(g.model, g.thermal, wavelength, baseTemp);
     const warnings: string[] = [];
     if (T1 !== baseTemp + deltaT) warnings.push(`T₀ + ΔT is held at ${T1} °C, the end of the TIE-19 range (${T_MIN_C} to +${T_MAX_C} °C).`);
-    if (T1 === baseTemp) warnings.push("ΔT is zero after clamping: no mean dn/dT.");
+    const reasons: Partial<Record<"catalogAbbe" | "meanDnDt", string>> = {};
+    if (T1 === baseTemp) {
+      const zeroDelta = "ΔT is zero after clamping: no mean dn/dT.";
+      warnings.push(zeroDelta);
+      reasons.meanDnDt = zeroDelta;
+    }
     if (wavelength < SCHOTT_DNDT_RANGE_NM[0] * 1e-9 || wavelength > SCHOTT_DNDT_RANGE_NM[1] * 1e-9) {
       warnings.push(`The wavelength is outside ${SCHOTT_DNDT_RANGE_NM[0]}–${SCHOTT_DNDT_RANGE_NM[1]} nm, where SCHOTT states the dn/dT constants valid: the formula is extrapolated.`);
     }
-    if (!(material in SCHOTT_GLASSES)) warnings.push("No catalog Abbe number: the material is not a SCHOTT glass.");
+    if (!(material in SCHOTT_GLASSES)) {
+      const notSchott = "No catalog Abbe number: the material is not a SCHOTT glass.";
+      warnings.push(notSchott);
+      reasons.catalogAbbe = notSchott;
+    }
     return {
       values: {
         nF: refractiveIndex(m.model, LAMBDA_F),
@@ -97,6 +106,7 @@ export default defineSchema({
         meanDnDt: T1 === baseTemp ? NaN : dn / (T1 - baseTemp),
       },
       warnings,
+      reasons,
     };
   },
   checks: [

@@ -38,8 +38,17 @@ export default defineSchema({
     const warnings: string[] = [
       "Convention: time factor e^{i(ωt − kz)}, N = n − iκ, r_p = −r_s at normal incidence (Born & Wolf, Hecht; Δ = 180° there).",
     ];
-    if (f.tir) warnings.push("Total internal reflection: no wave propagates into medium 2 (θ₂ is null); |r_s| = |r_p| = 1.");
-    else if (!lossless) warnings.push("Absorbing medium 2: the refraction angle is complex (null) and the Brewster angle is not defined.");
+    const reasons: Partial<Record<"thetaT" | "brewster", string>> = {};
+    if (f.tir) {
+      const tir = "Total internal reflection: no wave propagates into medium 2 (θ₂ is null); |r_s| = |r_p| = 1.";
+      warnings.push(tir);
+      reasons.thetaT = tir;
+    } else if (!lossless) {
+      const absorbing = "Absorbing medium 2: the refraction angle is complex (null) and the Brewster angle is not defined.";
+      warnings.push(absorbing);
+      reasons.thetaT = absorbing;
+      reasons.brewster = absorbing;
+    }
     return {
       values: {
         thetaT: f.thetaT,
@@ -58,6 +67,7 @@ export default defineSchema({
         psi: Math.atan2(abs(f.rp), abs(f.rs)),
       },
       warnings,
+      reasons,
     };
   },
   checks: [

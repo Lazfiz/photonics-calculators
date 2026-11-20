@@ -20,7 +20,12 @@ export default defineSchema({
   compute({ wavelength, spectralIrr }) {
     const h = uvHazard(wavelength, spectralIrr);
     const warnings: string[] = [];
-    if (h.tMax === Infinity) warnings.push("No UV exposure limit is reached at this irradiance and wavelength.");
+    const reasons: Partial<Record<"maxExposure", string>> = {};
+    if (h.tMax === Infinity) {
+      const noLimit = "No UV exposure limit is reached at this irradiance and wavelength.";
+      warnings.push(noLimit);
+      reasons.maxExposure = noLimit;
+    }
     return {
       values: {
         weight: actinicUvWeight(wavelength),
@@ -28,6 +33,7 @@ export default defineSchema({
         maxExposure: h.tMax === Infinity ? NaN : h.tMax,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

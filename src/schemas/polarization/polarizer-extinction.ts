@@ -30,10 +30,16 @@ export default defineSchema({
     const contrast = contrastDb(tPar, transmitted);
     const casc = cascade(tPar, extinctionRatioDb, Math.round(numPolarizers));
     const warnings: string[] = [];
-    if (!Number.isFinite(contrast)) warnings.push("No transmission (T∥ = 0): the contrast is undefined.");
+    const reasons: Partial<Record<"contrastDb", string>> = {};
+    if (!Number.isFinite(contrast)) {
+      const noTransmission = "No transmission (T∥ = 0): the contrast is undefined.";
+      warnings.push(noTransmission);
+      reasons.contrastDb = noTransmission;
+    }
     return {
       values: { tParallel: tPar, tPerp, transmitted, contrastDb: contrast, cascadedErDb: casc.erDb, cascadedT: casc.tPar },
       warnings,
+      reasons,
     };
   },
   checks: [

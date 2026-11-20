@@ -39,7 +39,12 @@ export default defineSchema({
     const adler = lockingRange(couplingRate, rho, 0);
     const warnings: string[] = [];
     if (rho > 0.1) warnings.push("Strong injection (ρ > −10 dB): the weak-injection locking range and its asymmetry are only estimates.");
-    if (!(rho > 0)) warnings.push("No injected power: ρ = 0, so the locking range is zero and ρ in dB is undefined.");
+    const reasons: Partial<Record<"injectionRatioDb", string>> = {};
+    if (!(rho > 0)) {
+      const noInjection = "No injected power: ρ = 0, so the locking range is zero and ρ in dB is undefined.";
+      warnings.push(noInjection);
+      reasons.injectionRatioDb = noInjection;
+    }
     return {
       values: {
         lowerEdge: lower,
@@ -52,6 +57,7 @@ export default defineSchema({
         facetCoupling: facetCouplingRate(facetR, cavityLength, ng) / (2 * Math.PI),
       },
       warnings,
+      reasons,
     };
   },
   checks: [

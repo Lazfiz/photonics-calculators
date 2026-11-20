@@ -24,6 +24,18 @@ export default defineSchema({
     const indices = Array.from({ length: pairs * 2 }, (_, j) => (j % 2 === 0 ? nH : nL));
     const c30 = stopBandCentreAtAngle(designWl, nH, nL, (30 * Math.PI) / 180, nInc);
     const c45 = stopBandCentreAtAngle(designWl, nH, nL, (45 * Math.PI) / 180, nInc);
+    const warnings: string[] = [];
+    const reasons: Partial<Record<"centre30" | "centre45", string>> = {};
+    if (!Number.isFinite(c30)) {
+      const noCentre30 = "At 30° light does not propagate in one of the layers (n_inc sin 30° ≥ nH or nL): centre30 is null.";
+      warnings.push(noCentre30);
+      reasons.centre30 = noCentre30;
+    }
+    if (!Number.isFinite(c45)) {
+      const noCentre45 = "Light does not propagate in both layers at 45°: no stop-band centre there.";
+      warnings.push(noCentre45);
+      reasons.centre45 = noCentre45;
+    }
     return {
       values: {
         totalLayers: pairs * 2,
@@ -32,7 +44,8 @@ export default defineSchema({
         centre30: c30,
         centre45: c45,
       },
-      warnings: Number.isFinite(c45) ? [] : ["Light does not propagate in both layers at 45°: no stop-band centre there."],
+      warnings,
+      reasons,
     };
   },
   checks: [

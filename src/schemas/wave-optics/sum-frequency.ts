@@ -33,7 +33,13 @@ export default defineSchema({
     if (r.photonFraction > 0.1) {
       warnings.push(`${(r.photonFraction * 100).toPrecision(3)} % of the weaker beam's photons are converted: the inputs deplete and the undepleted-input result no longer holds.`);
     }
-    if (!(power1 > 0 && power2 > 0)) warnings.push("A zero input power gives no SFG and no normalized efficiency or photon share.");
+    const reasons: Partial<Record<"normalizedEfficiency" | "photonConversion", string>> = {};
+    if (!(power1 > 0 && power2 > 0)) {
+      const noPower = "A zero input power gives no SFG and no normalized efficiency or photon share.";
+      warnings.push(noPower);
+      reasons.normalizedEfficiency = noPower;
+      reasons.photonConversion = noPower;
+    }
     return {
       values: {
         sfgPower: r.power3,
@@ -44,6 +50,7 @@ export default defineSchema({
         photonConversion: r.photonFraction,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

@@ -36,7 +36,13 @@ export default defineSchema({
     const fsrNu = fsrFrequency(n, d, cosT);
     const peak = airyPeakNear(n * d * cosT, wavelength, F);
     const warnings: string[] = [];
-    if (!(F >= 1)) warnings.push("F < 1 (R below about 0.17): the transmission never falls to one half, so the FWHM is undefined.");
+    const reasons: Partial<Record<"fwhmFrequency" | "peakFwhm", string>> = {};
+    if (!(F >= 1)) {
+      const noFwhm = "F < 1 (R below about 0.17): the transmission never falls to one half, so the FWHM is undefined.";
+      warnings.push(noFwhm);
+      reasons.fwhmFrequency = noFwhm;
+      reasons.peakFwhm = noFwhm;
+    }
     return {
       values: {
         fsrWavelength: fsrWavelength(wavelength, n, d, cosT),
@@ -51,6 +57,7 @@ export default defineSchema({
         gapAngle: thetaGap,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

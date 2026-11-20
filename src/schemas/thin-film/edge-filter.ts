@@ -46,8 +46,16 @@ export default defineSchema({
     const half = valid ? halfTransmissionEdge(stack, type, lambda0) : NaN;
     const zone = stopBandEdges(lambda0, nH, nL);
     const warnings: string[] = [];
-    if (!valid) warnings.push("Set nH above nL: the edge needs an index contrast.");
-    else if (!Number.isFinite(half)) warnings.push("No 50 % crossing: add periods or contrast.");
+    const reasons: Partial<Record<"halfPoint" | "designWavelength" | "reflectanceAtDesign" | "zoneShort" | "zoneLong", string>> = {};
+    if (!valid) {
+      const noContrast = "Set nH above nL: the edge needs an index contrast.";
+      warnings.push(noContrast);
+      for (const k of ["halfPoint", "designWavelength", "reflectanceAtDesign", "zoneShort", "zoneLong"] as const) reasons[k] = noContrast;
+    } else if (!Number.isFinite(half)) {
+      const noCrossing = "No 50 % crossing: add periods or contrast.";
+      warnings.push(noCrossing);
+      reasons.halfPoint = noCrossing;
+    }
     return {
       values: {
         halfPoint: half,
@@ -59,6 +67,7 @@ export default defineSchema({
         layerCount: 2 * periods + 1,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

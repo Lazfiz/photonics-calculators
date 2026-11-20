@@ -43,10 +43,27 @@ export default defineSchema({
     const warnings: string[] = [];
     if (cls.laserClass === null || Number.isNaN(nohd)) warnings.push("The limits cover 180 nm to 1 mm.");
     if (outsideRule) warnings.push("Outside 400–1400 nm ICNIRP 2013 uses the longest exposure expected; 10 s is assumed.");
-    if (!visible) warnings.push("Dazzle levels apply to visible beams only.");
+    const reasons: Partial<Record<"nohd" | "flashBlindRange" | "glareRange" | "distractionRange", string>> = {};
+    if (!visible) {
+      const visibleOnly = "Dazzle levels apply to visible beams only.";
+      warnings.push(visibleOnly);
+      reasons.flashBlindRange = visibleOnly;
+      reasons.glareRange = visibleOnly;
+      reasons.distractionRange = visibleOnly;
+    }
     const dazzle = visible ? [rangeToIrradiance(power, beam, ICAO_LEVELS.sensitive), rangeToIrradiance(power, beam, ICAO_LEVELS.critical), rangeToIrradiance(power, beam, ICAO_LEVELS.laserFree)] : [];
-    if (nohd === Infinity) warnings.push("The beam doesn't spread (φ = 0): the eye hazard extends to any range.");
-    if (dazzle.includes(Infinity)) warnings.push("The beam doesn't spread (φ = 0): each dazzle level it exceeds extends to any range.");
+    if (nohd === Infinity) {
+      const eyeAnyRange = "The beam doesn't spread (φ = 0): the eye hazard extends to any range.";
+      warnings.push(eyeAnyRange);
+      reasons.nohd = eyeAnyRange;
+    }
+    if (dazzle.includes(Infinity)) {
+      const dazzleAnyRange = "The beam doesn't spread (φ = 0): each dazzle level it exceeds extends to any range.";
+      warnings.push(dazzleAnyRange);
+      if (dazzle[0] === Infinity) reasons.flashBlindRange = dazzleAnyRange;
+      if (dazzle[1] === Infinity) reasons.glareRange = dazzleAnyRange;
+      if (dazzle[2] === Infinity) reasons.distractionRange = dazzleAnyRange;
+    }
     return {
       values: {
         classRank: cls.laserClass === null ? NaN : RANK[cls.laserClass],
@@ -59,6 +76,7 @@ export default defineSchema({
         distractionRange: visible ? dazzle[2] : NaN,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

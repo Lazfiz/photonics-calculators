@@ -46,7 +46,14 @@ export default defineSchema({
     const total = grid.map((s) => sfgIntensity(s * CM, resonances, nrAmplitude, nrPhaseDeg));
     const peaks = localMaxima(grid, total);
     const strongest = peaks.reduce<{ x: number; y: number } | null>((best, p) => (best && best.y >= p.y ? best : p), null);
-    if (!strongest) warnings.push("The spectrum has no local maximum in this IR range, so the strongest peak is null.");
+    const reasons: Partial<Record<"strongestPeak" | "strongestPeakIntensity" | "strongestPeakWavelength", string>> = {};
+    if (!strongest) {
+      const noPeak = "The spectrum has no local maximum in this IR range, so the strongest peak is null.";
+      warnings.push(noPeak);
+      reasons.strongestPeak = noPeak;
+      reasons.strongestPeakIntensity = noPeak;
+      reasons.strongestPeakWavelength = noPeak;
+    }
     return {
       values: {
         sfgWavelengthMin: sfgWavelength(visWavelength, hi),
@@ -57,6 +64,7 @@ export default defineSchema({
         peakCount: peaks.length,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

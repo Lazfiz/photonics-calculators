@@ -26,8 +26,12 @@ export default defineSchema({
     const possible = repRate < fsr;
     const duty = tRT * repRate;
     const warnings: string[] = [];
+    const reasons: Partial<Record<"averagePower" | "dutyCycle", string>> = {};
     if (!possible) {
-      warnings.push("The dump rate is at or above the round-trip rate c/2L: a dump empties the cavity, so it cannot repeat faster than once per round trip.");
+      const tooFast = "The dump rate is at or above the round-trip rate c/2L: a dump empties the cavity, so it cannot repeat faster than once per round trip.";
+      warnings.push(tooFast);
+      reasons.averagePower = tooFast;
+      reasons.dutyCycle = tooFast;
     } else if (duty > 0.1) {
       warnings.push("The dump rate is above 10 % of c/2L: fewer than 10 round trips between dumps, so the cavity can't rebuild the full circulating power; the real pulse energy is lower.");
     }
@@ -40,6 +44,7 @@ export default defineSchema({
         dutyCycle: possible ? duty : NaN,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

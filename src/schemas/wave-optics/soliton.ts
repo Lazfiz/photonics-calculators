@@ -29,9 +29,28 @@ export default defineSchema({
     const anomalous = beta2 < 0;
     const content = solitonContent(N);
     const warnings: string[] = [];
-    if (!Number.isFinite(dispersionLength(t0, beta2))) warnings.push("β₂ = 0: no dispersion length, so the pulse only gains SPM phase and keeps its intensity shape.");
-    else if (!anomalous) warnings.push("Normal dispersion (β₂ > 0): no bright soliton, the pulse broadens; the soliton count and strongest-soliton power have no value.");
-    else if (content.count === 0) warnings.push("N < 1/2: no soliton, the pulse disperses.");
+    const reasons: Partial<
+      Record<"dispersionLength" | "nonlinearLength" | "solitonCount" | "strongestSolitonPower", string>
+    > = {};
+    if (!Number.isFinite(dispersionLength(t0, beta2))) {
+      const noDispersion = "β₂ = 0: no dispersion length, so the pulse only gains SPM phase and keeps its intensity shape.";
+      warnings.push(noDispersion);
+      reasons.dispersionLength = noDispersion;
+    } else if (!anomalous) {
+      const normal = "Normal dispersion (β₂ > 0): no bright soliton, the pulse broadens; the soliton count and strongest-soliton power have no value.";
+      warnings.push(normal);
+      reasons.solitonCount = normal;
+      reasons.strongestSolitonPower = normal;
+    } else if (content.count === 0) {
+      const noSoliton = "N < 1/2: no soliton, the pulse disperses.";
+      warnings.push(noSoliton);
+      reasons.strongestSolitonPower = noSoliton;
+    }
+    if (nonlinearLength(gamma, peakPower) === Infinity) {
+      const noNonlinearity = "γP₀ = 0 (no peak power or no nonlinearity): the nonlinear length is infinite.";
+      warnings.push(noNonlinearity);
+      reasons.nonlinearLength = noNonlinearity;
+    }
     return {
       values: {
         halfWidth: t0,
@@ -44,6 +63,7 @@ export default defineSchema({
         strongestSolitonPower: anomalous && content.count > 0 ? content.amplitude ** 2 * P1 : NaN,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

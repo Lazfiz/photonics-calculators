@@ -34,7 +34,12 @@ export default defineSchema({
     const e = microscopeExtinction(ER, glassIndex, m, NAeff);
     const sheetsOnly = microscopeExtinction(ER, glassIndex, 0, 0);
     const warnings: string[] = [];
-    if (e.ERsurfaces === Infinity) warnings.push("The surfaces alone leak nothing (no surfaces or no cone): the surfaces-alone ratio is infinite.");
+    const reasons: Partial<Record<"surfacesER", string>> = {};
+    if (e.ERsurfaces === Infinity) {
+      const noLeak = "The surfaces alone leak nothing (no surfaces or no cone): the surfaces-alone ratio is infinite.";
+      warnings.push(noLeak);
+      reasons.surfacesER = noLeak;
+    }
     return {
       values: {
         systemER: e.ER,
@@ -47,6 +52,7 @@ export default defineSchema({
         atAngle: analyzerTransmission(e, Math.PI / 2 - analyzer),
       },
       warnings,
+      reasons,
     };
   },
   checks: [

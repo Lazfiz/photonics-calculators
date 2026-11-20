@@ -1,5 +1,5 @@
 import {
-  classifyCw, condition1MayRaiseClass, type ClassCheck, type ClassOptions, type LaserClass,
+  classAels, classifyCw, condition1MayRaiseClass, type ClassCheck, type ClassOptions, type LaserClass,
 } from "../../physics/laser-safety/laser-classes";
 import { defineSchema } from "../types";
 import { WAVELENGTH } from "./common";
@@ -58,6 +58,9 @@ export default defineSchema({
     const [c1, , c3R, c3B] = r.checks;
     const warnings: string[] = [];
     if (opts.condition1 && condition1MayRaiseClass(wavelength, r.diameter3, opts)) warnings.push(CONDITION1_WARNING);
+    const no3R = "No Class 3R below 302.5 nm in this model (the Class 3R AELs start there): class3RMax is null.";
+    const has3R = classAels("3R", wavelength, opts).length > 0;
+    if (!has3R) warnings.push(no3R);
     if (eu.laserClass !== r.laserClass) {
       warnings.push(`In the EU (EN 60825-1:2014/A11:2021) this laser is Class ${eu.laserClass}, not ${r.laserClass}: the skin AEL ` +
         "caps Classes 1 and 3R at about 0.1 W at 1250–1400 nm, as Schulmeister's 2022 white paper describes A11 (unverified: " +
@@ -74,6 +77,7 @@ export default defineSchema({
         diameter3: r.diameter3,
       },
       warnings,
+      reasons: has3R ? {} : { class3RMax: no3R },
     };
   },
   checks: [

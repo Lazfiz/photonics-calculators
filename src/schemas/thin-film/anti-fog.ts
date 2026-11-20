@@ -35,6 +35,13 @@ export default defineSchema({
     const wet = (lam: number) => waterFilmResponse(coating, nSub, lam).T;
     const gamma = waterSurfaceTension(waterTemp + T0_CELSIUS);
     const w = wetting(gamma, contactAngle);
+    const warnings: string[] = [];
+    const reasons: Partial<Record<"tirFraction", string>> = {};
+    if (contactAngle > Math.PI / 2 + 1e-12) {
+      const notModelled = "Contact angle above 90°: the droplet TIR fraction is not modelled.";
+      warnings.push(notModelled);
+      reasons.tirFraction = notModelled;
+    }
     return {
       values: {
         tauDry: luminousWeightedMean(dry),
@@ -46,7 +53,8 @@ export default defineSchema({
         adhesionTension: w.adhesionTension,
         workOfAdhesion: w.workOfAdhesion,
       },
-      warnings: contactAngle > Math.PI / 2 + 1e-12 ? ["Contact angle above 90°: the droplet TIR fraction is not modelled."] : [],
+      warnings,
+      reasons,
     };
   },
   checks: [

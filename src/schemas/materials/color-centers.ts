@@ -63,16 +63,31 @@ export default defineSchema({
     const r = dopantAbsorption(sigma, concentration, thickness);
     const od = absorbanceFromNapierian(r.alpha, thickness);
     if (s.energyEv < 0) warnings.push("The emission peak is below the absorption peak: an anti-Stokes shift, which band maxima of a single centre do not show");
-    if (!Number.isFinite(sigma)) warnings.push("No cross-section is cited for this centre: enter one to get the absorption");
+    const reasons: Partial<Record<"zeroPhononLine" | "alpha" | "opticalDensity" | "transmitted", string>> = {};
+    if (!Number.isFinite(sigma)) {
+      const noSigma = "No cross-section is cited for this centre: enter one to get the absorption";
+      warnings.push(noSigma);
+      reasons.alpha = noSigma;
+      reasons.opticalDensity = noSigma;
+      reasons.transmitted = noSigma;
+    }
     const edited = absRaw > 0 || emRaw > 0;
-    if (edited) warnings.push("Preset peaks edited: the zero-phonon line is not shown");
-    else if (!Number.isFinite(center.zpl)) warnings.push("No zero-phonon line is listed for this centre");
+    if (edited) {
+      const peaksEdited = "Preset peaks edited: the zero-phonon line is not shown";
+      warnings.push(peaksEdited);
+      reasons.zeroPhononLine = peaksEdited;
+    } else if (!Number.isFinite(center.zpl)) {
+      const noZpl = "No zero-phonon line is listed for this centre";
+      warnings.push(noZpl);
+      reasons.zeroPhononLine = noZpl;
+    }
     return {
       values: {
         stokesShift: s.energyEv * eV, stokesWavenumber: s.wavenumber, quantumDefect: s.quantumDefect,
         zeroPhononLine: edited ? NaN : center.zpl, alpha: r.alpha, opticalDensity: od, transmitted: r.transmission,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

@@ -25,8 +25,24 @@ export default defineSchema({
   compute({ nCore, nClad, wavelength, coreWidth }) {
     const s = slabSummary(nCore, nClad, coreWidth, wavelength);
     const warnings: string[] = [];
+    const reasons: Partial<
+      Record<
+        | "vNumber" | "numericalAperture" | "neffTE0" | "neffTM0" | "confinementTE0" | "criticalAngle" | "acceptanceAngle"
+        | "singleModeThickness",
+        string
+      >
+    > = {};
     if (!Number.isFinite(s.V)) {
-      warnings.push("No guided modes: the core index must be higher than the cladding index (total internal reflection needs n₁ > n₂).");
+      const noGuide = "No guided modes: the core index must be higher than the cladding index (total internal reflection needs n₁ > n₂).";
+      warnings.push(noGuide);
+      reasons.vNumber = noGuide;
+      reasons.numericalAperture = noGuide;
+      reasons.neffTE0 = noGuide;
+      reasons.neffTM0 = noGuide;
+      reasons.confinementTE0 = noGuide;
+      reasons.criticalAngle = noGuide;
+      reasons.acceptanceAngle = noGuide;
+      reasons.singleModeThickness = noGuide;
     }
     return {
       values: {
@@ -41,6 +57,7 @@ export default defineSchema({
         singleModeThickness: s.singleModeThickness,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

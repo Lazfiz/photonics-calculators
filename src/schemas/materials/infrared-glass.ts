@@ -52,15 +52,38 @@ export default defineSchema({
     const tRef = hasFormula(d) ? (d.temperature_C ?? 20) : null;
     const n = mat.dnDT !== null && tRef !== null ? nRef + mat.dnDT * (temperature - tRef) : nRef;
     const warnings: string[] = [];
-    if (!hasFormula(d)) warnings.push(`No dispersion formula for ${mat.name}: n is not available.`);
-    else if (!Number.isFinite(nRef)) warnings.push("The wavelength is outside the material's Sellmeier formula range: no index.");
-    else if (mat.dnDT === null) warnings.push("No sourced dn/dT: n is at the formula's temperature.");
-    if (mat.dnDT === null) warnings.push("No sourced dn/dT for this material.");
-    else {
+    const reasons: Partial<Record<"n" | "transmission" | "dnDT" | "dnDTAbsolute" | "dnDTWavelength" | "conductivity", string>> = {};
+    if (!hasFormula(d)) {
+      const noFormula = `No dispersion formula for ${mat.name}: n is not available.`;
+      warnings.push(noFormula);
+      reasons.n = noFormula;
+      reasons.transmission = noFormula;
+    } else if (!Number.isFinite(nRef)) {
+      const outsideRange = "The wavelength is outside the material's Sellmeier formula range: no index.";
+      warnings.push(outsideRange);
+      reasons.n = outsideRange;
+      reasons.transmission = outsideRange;
+    } else if (mat.dnDT === null) warnings.push("No sourced dn/dT: n is at the formula's temperature.");
+    if (mat.dnDT === null) {
+      const noDnDT = "No sourced dn/dT for this material.";
+      warnings.push(noDnDT);
+      reasons.dnDT = noDnDT;
+      reasons.dnDTAbsolute = noDnDT;
+      reasons.dnDTWavelength = noDnDT;
+    } else {
       warnings.push(`dn/dT: ${dnDTConvention(mat)}${mat.dnDTAbsolute ? "" : " (the two differ by about n · 0.92 × 10⁻⁶/K)"}. ` +
         "It is one value, applied at every wavelength and temperature, so n(T) is an estimate away from that wavelength.");
+      if (!mat.dnDTAbsolute) {
+        const noLambda = "No wavelength is stored for this dn/dT value: dnDTWavelength is null.";
+        warnings.push(noLambda);
+        reasons.dnDTWavelength = noLambda;
+      }
     }
-    if (mat.conductivity === null) warnings.push("No sourced thermal conductivity for this material.");
+    if (mat.conductivity === null) {
+      const noConductivity = "No sourced thermal conductivity for this material.";
+      warnings.push(noConductivity);
+      reasons.conductivity = noConductivity;
+    }
     return {
       values: {
         n,
@@ -72,6 +95,7 @@ export default defineSchema({
         knoop: mat.knoop === null ? NaN : mat.knoop * 9.80665e6,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

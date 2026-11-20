@@ -46,8 +46,17 @@ export default defineSchema({
     const dT = filterTemperatureRise(pAbs, beamDiameter, thickness, exposureTime, m, kind);
     const tSoft = timeToTemperatureRise(dTAllowed, pAbs, beamDiameter, thickness, m, kind);
     const warnings: string[] = [];
-    if (tSoft === Infinity) warnings.push("The filter stays below its glass transition for 30 000 s: no softening time.");
-    if (!(dT > 0)) warnings.push("No power is absorbed: the filter does not heat and any absorbed power is allowed.");
+    const reasons: Partial<Record<"timeToTg" | "maxAbsorbedPower", string>> = {};
+    if (tSoft === Infinity) {
+      const noSoftening = "The filter stays below its glass transition for 30 000 s: no softening time.";
+      warnings.push(noSoftening);
+      reasons.timeToTg = noSoftening;
+    }
+    if (!(dT > 0)) {
+      const noHeating = "No power is absorbed: the filter does not heat and any absorbed power is allowed.";
+      warnings.push(noHeating);
+      reasons.maxAbsorbedPower = noHeating;
+    }
     return {
       values: {
         temperatureRise: dT,
@@ -56,6 +65,7 @@ export default defineSchema({
         meanIrradiance: power / ((Math.PI * beamDiameter * beamDiameter) / 4),
       },
       warnings,
+      reasons,
     };
   },
   checks: [

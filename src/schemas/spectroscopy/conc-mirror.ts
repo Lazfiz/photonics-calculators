@@ -31,7 +31,14 @@ export default defineSchema({
     const f = radius / 2;
     const alpha = mirrorRimHalfAngle(radius, mirrorDiam);
     const warnings: string[] = [];
-    if (!Number.isFinite(alpha)) warnings.push("The rim reaches the focal plane: the diameter must be below √3 R.");
+    const reasons: Partial<Record<"halfAngle" | "solidAngle" | "etendue", string>> = {};
+    if (!Number.isFinite(alpha)) {
+      const rimWarn = "The rim reaches the focal plane: the diameter must be below √3 R.";
+      warnings.push(rimWarn);
+      reasons.halfAngle = rimWarn;
+      reasons.solidAngle = rimWarn;
+      reasons.etendue = rimWarn;
+    }
     return {
       values: {
         focalLength: f,
@@ -43,6 +50,7 @@ export default defineSchema({
         jacquinotAdvantage: jacquinotRatio(f, slitHeight, littrowAngle, littrowAngle),
       },
       warnings,
+      reasons,
     };
   },
   checks: [

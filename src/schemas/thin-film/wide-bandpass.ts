@@ -29,8 +29,17 @@ export default defineSchema({
     const design = wideBandpassDesign({ nH, nL, nSub, cutOn, cutOff, periods: clampInt(pairs, 1, 40) });
     const { on, off, pass } = wideBandpassPassBand(design);
     const warnings: string[] = [];
-    if (!design.valid) warnings.push("Set nH above nL and the cut-on below the cut-off.");
-    else if (!Number.isFinite(on)) warnings.push("No pass band above 50 %: the edges are too close or the stacks too weak.");
+    const reasons: Partial<Record<"passbandShort" | "passbandLong" | "width" | "peakTransmittance" | "meanTransmittance", string>> = {};
+    const keys = ["passbandShort", "passbandLong", "width", "peakTransmittance", "meanTransmittance"] as const;
+    if (!design.valid) {
+      const invalid = "Set nH above nL and the cut-on below the cut-off.";
+      warnings.push(invalid);
+      for (const k of keys) reasons[k] = invalid;
+    } else if (!Number.isFinite(on)) {
+      const noBand = "No pass band above 50 %: the edges are too close or the stacks too weak.";
+      warnings.push(noBand);
+      for (const k of keys) reasons[k] = noBand;
+    }
     return {
       values: {
         passbandShort: on,
@@ -42,6 +51,7 @@ export default defineSchema({
         backLambda0: design.spLambda0,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

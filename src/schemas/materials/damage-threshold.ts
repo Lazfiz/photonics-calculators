@@ -33,10 +33,16 @@ export default defineSchema({
     if (tau > LONG_PULSE || tauRef > LONG_PULSE) {
       warnings.push("Beyond about 1 µs heating approaches the long-pulse/CW regime; the √τ law is not validated there.");
     }
-    if (!(fPeak > 0)) warnings.push("Zero pulse energy: no peak fluence and no threshold ratio (the page shows an infinite ratio).");
+    const reasons: Partial<Record<"margin", string>> = {};
+    if (!(fPeak > 0)) {
+      const zeroEnergy = "Zero pulse energy: no peak fluence and no threshold ratio (the page shows an infinite ratio).";
+      warnings.push(zeroEnergy);
+      reasons.margin = zeroEnergy;
+    }
     return {
       values: { lidt: fTh, peakFluence: fPeak, margin: fTh / fPeak, energyAtThreshold: energyAtFluence(fTh, w) },
       warnings,
+      reasons,
     };
   },
   checks: [

@@ -4,7 +4,8 @@ import { isCrystalId } from "../../physics/polarization/uniaxial";
 import { defineSchema } from "../types";
 
 const DEG = Math.PI / 180;
-// The page draws its figure on a 121 × 121 grid; the largest retardance in the field is read from the same grid.
+// The page draws its figure on a 121 × 121 grid. The largest retardance in the field is the maximum over that grid and
+// the rim |ν| = NA, found exactly (conoscopicFigure), not the outermost pixel's value.
 const SIZE = 121;
 const BORN_WOLF = "Born M., Wolf E. (1999). Principles of Optics, 7th ed., Cambridge University Press, ch. 15 'Optics of crystals' " +
   "(cos²V_z = (n_β⁻² − n_γ⁻²)/(n_α⁻² − n_γ⁻²); 2V the acute optic axial angle; optic sign + when V_z < 45°). " +
@@ -59,12 +60,22 @@ export default defineSchema({
       const [lo, hi] = crystalRange(id);
       if (wavelength < lo || wavelength > hi) warnings.push(`Indices held at the data-range edge: the Sellmeier fit does not cover ${Math.round(wavelength * 1e9)} nm.`);
     }
-    if (!valid) warnings.push("No index data at this wavelength.");
-    else {
+    const reasons: Partial<Record<"maxRetardance" | "orders" | "melatope", string>> = {};
+    if (!valid) {
+      const noData = "No index data at this wavelength.";
+      warnings.push(noData);
+      reasons.maxRetardance = noData;
+      reasons.orders = noData;
+      reasons.melatope = noData;
+    } else {
       if (NA < na) warnings.push(`The NA is limited to 0.98 nα = ${NA.toFixed(3)}, the largest cone the plate accepts.`);
       if (NA > 1) warnings.push("An NA above 1 needs immersion of index ≥ NA (oil, n ≈ 1.52) between the lenses and the plate.");
     }
-    if (id) warnings.push("Uniaxial crystal: the two optic axes coincide, so there is no melatope position.");
+    if (id) {
+      const uniaxial = "Uniaxial crystal: the two optic axes coincide, so there is no melatope position.";
+      warnings.push(uniaxial);
+      reasons.melatope = uniaxial;
+    }
     const figure = valid
       ? conoscopicFigure({
         indices, orientation: { tilt, rotation }, d: thickness, lambda: wavelength, NA, P: 0, A: Math.PI / 2, mode: "mono",
@@ -81,6 +92,7 @@ export default defineSchema({
         melatope: valid && !id ? n2 * Math.sin(axial.twoV / 2) : NaN,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

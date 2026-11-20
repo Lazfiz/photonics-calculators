@@ -77,8 +77,22 @@ export default defineSchema({
       };
     }
     const warnings: string[] = [];
-    if (mode !== "scanned") warnings.push("The scanned-beam NOHD is given only in scanned mode.");
-    if (mode === "scanned" && r.prf === 0) warnings.push("A scanned lidar needs a repetition rate: one pulse is the stationary case.");
+    const reasons: Partial<Record<"nohdStationary" | "nohdScanned", string>> = {};
+    if (mode !== "scanned") {
+      const scannedOnly = "The scanned-beam NOHD is given only in scanned mode.";
+      warnings.push(scannedOnly);
+      reasons.nohdScanned = scannedOnly;
+    }
+    if (mode === "scanned" && r.prf === 0) {
+      const needsRate = "A scanned lidar needs a repetition rate: one pulse is the stationary case.";
+      warnings.push(needsRate);
+      reasons.nohdScanned = needsRate;
+    }
+    if (r.nohd === Infinity) {
+      const anyRange = "The beam doesn't spread (φ = 0): nohdStationary is null (the hazard extends to any range).";
+      warnings.push(anyRange);
+      reasons.nohdStationary = anyRange;
+    }
     if (r.scanOn && !r.scanEyeOk) {
       warnings.push(
         r.range === 0
@@ -99,6 +113,7 @@ export default defineSchema({
         eyewearOD: r.ratioOut > 1 ? Math.log10(r.ratioOut) : 0,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

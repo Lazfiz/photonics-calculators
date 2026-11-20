@@ -35,9 +35,31 @@ export default defineSchema({
     const process = { lambdaPump: pumpWavelength, lambdaSignal: signalWavelength, dEff, nPump, nSignal, nIdler };
     const r = sroModel(process, crystalLength, pumpPower, beamRadius, walkOff, cavityLoss);
     const warnings: string[] = [];
-    if (!(Number.isFinite(r.g) && Number.isFinite(r.Pth))) warnings.push("No result: the signal wavelength must be longer than the pump wavelength.");
+    const reasons: Partial<
+      Record<
+        | "idlerWavelength" | "gainCoefficient" | "apertureLength" | "gainLength" | "singlePassGain" | "thresholdPower"
+        | "thresholdRatio" | "phaseMismatch" | "qpmPeriod",
+        string
+      >
+    > = {};
+    if (!(Number.isFinite(r.g) && Number.isFinite(r.Pth))) {
+      const noResult = "No result: the signal wavelength must be longer than the pump wavelength.";
+      warnings.push(noResult);
+      reasons.idlerWavelength = noResult;
+      reasons.gainCoefficient = noResult;
+      reasons.gainLength = noResult;
+      reasons.singlePassGain = noResult;
+      reasons.thresholdPower = noResult;
+      reasons.thresholdRatio = noResult;
+      reasons.phaseMismatch = noResult;
+      reasons.qpmPeriod = noResult;
+    }
     const aperture = walkOffApertureLength(beamRadius, walkOff);
-    if (aperture === Infinity) warnings.push("With no walk-off (ρ = 0) the beams never separate: the aperture length is infinite.");
+    if (aperture === Infinity) {
+      const noWalkOff = "With no walk-off (ρ = 0) the beams never separate: the aperture length is infinite.";
+      warnings.push(noWalkOff);
+      reasons.apertureLength = noWalkOff;
+    }
     return {
       values: {
         idlerWavelength: r.lambdaIdler,
@@ -54,6 +76,7 @@ export default defineSchema({
         qpmPeriod: qpmPeriod(r.dk),
       },
       warnings,
+      reasons,
     };
   },
   checks: [

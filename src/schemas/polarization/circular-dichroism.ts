@@ -30,7 +30,13 @@ export default defineSchema({
   compute({ AL, AR, concentration, pathLength, residues }) {
     const dEps = deltaEpsilon(AL, AR, concentration, pathLength);
     const warnings: string[] = [];
-    if (!(concentration > 0 && pathLength > 0)) warnings.push("Δε and [θ] need a concentration and a path length above 0.");
+    const reasons: Partial<Record<"deltaEps" | "molarEllipticity", string>> = {};
+    if (!(concentration > 0 && pathLength > 0)) {
+      const needsCL = "Δε and [θ] need a concentration and a path length above 0.";
+      warnings.push(needsCL);
+      reasons.deltaEps = needsCL;
+      reasons.molarEllipticity = needsCL;
+    }
     if (residues > 0) warnings.push("Mean-residue ellipticity is not an API output; divide [θ] by (N − 1).");
     return {
       values: {
@@ -44,6 +50,7 @@ export default defineSchema({
         snr: relativeCdSnr((AL + AR) / 2),
       },
       warnings,
+      reasons,
     };
   },
   checks: [

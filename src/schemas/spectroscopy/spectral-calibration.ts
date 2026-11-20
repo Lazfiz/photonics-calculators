@@ -60,13 +60,25 @@ export default defineSchema({
     const reachable = Number.isFinite(sp.incidence);
     const c = (pixels - 1) / 2;
     const warnings: string[] = [];
+    const reasons: Partial<Record<
+      "lambdaLow" | "lambdaHigh" | "incidence" | "beta0" | "theorySlope" | "linearSlope" | "linearIntercept"
+      | "rms1" | "rms2" | "rms3" | "maxError1" | "maxError2" | "maxError3", string>> = {};
     if (!reachable) {
-      warnings.push(`Order ${m} cannot reach ${centerWl * 1e9} nm at this deviation (needs mλ < d(1 + cos D_v) = ${d * (1 + Math.cos(deviation)) * 1e9} nm).`);
+      const unreachable = `Order ${m} cannot reach ${centerWl * 1e9} nm at this deviation (needs mλ < d(1 + cos D_v) = ${d * (1 + Math.cos(deviation)) * 1e9} nm).`;
+      warnings.push(unreachable);
+      reasons.lambdaLow = unreachable;
+      reasons.lambdaHigh = unreachable;
+      reasons.incidence = unreachable;
+      reasons.beta0 = unreachable;
+      reasons.theorySlope = unreachable;
     }
     const lambdaLow = reachable ? pixelToWavelength(0, sp) : NaN;
     const lambdaHigh = reachable ? pixelToWavelength(pixels - 1, sp) : NaN;
     if (reachable && !(Number.isFinite(lambdaLow) && Number.isFinite(lambdaHigh))) {
-      warnings.push("The detector reaches past grazing diffraction or the zero order at one edge, so that end of the wavelength range is undefined and the fit errors cover the defined pixels only.");
+      const edgeUndefined = "The detector reaches past grazing diffraction or the zero order at one edge, so that end of the wavelength range is undefined and the fit errors cover the defined pixels only.";
+      warnings.push(edgeUndefined);
+      if (!Number.isFinite(lambdaLow)) reasons.lambdaLow = edgeUndefined;
+      if (!Number.isFinite(lambdaHigh)) reasons.lambdaHigh = edgeUndefined;
     }
     const rng = createRng(Math.round(seed));
     const onDetector = lineList
@@ -78,7 +90,25 @@ export default defineSchema({
     }
     const fits = DEGREES.map((k) => fitPolynomial(onDetector.map((l) => l.px), onDetector.map((l) => l.nm * 1e-9), k, c, c));
     fits.forEach((fit, j) => {
-      if (!fit) warnings.push(`Degree ${DEGREES[j]} needs ${DEGREES[j] + 1} lines on the detector; its outputs are left out.`);
+      if (!fit) {
+        const noFit = onDetector.length < DEGREES[j] + 1
+          ? `Degree ${DEGREES[j]} needs ${DEGREES[j] + 1} lines on the detector; its outputs are left out.`
+          : `Degree ${DEGREES[j]}: the least-squares fit is singular (the lines cover too little of the detector, or too ` +
+            "few distinct pixels); its outputs are left out.";
+        warnings.push(noFit);
+        if (j === 0) {
+          reasons.linearSlope = noFit;
+          reasons.linearIntercept = noFit;
+          reasons.rms1 = noFit;
+          reasons.maxError1 = noFit;
+        } else if (j === 1) {
+          reasons.rms2 = noFit;
+          reasons.maxError2 = noFit;
+        } else {
+          reasons.rms3 = noFit;
+          reasons.maxError3 = noFit;
+        }
+      }
     });
     const linear = fits[0];
     return {
@@ -99,6 +129,7 @@ export default defineSchema({
         maxError3: fits[2] ? maxCalibrationError(fits[2], sp) : NaN,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

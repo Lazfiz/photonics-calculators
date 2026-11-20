@@ -33,8 +33,19 @@ export default defineSchema({
     const b1 = dualBandWidth(problem, fit.thicknesses, wl1, LEVEL);
     const b2 = dualBandWidth(problem, fit.thicknesses, wl2, LEVEL);
     const warnings: string[] = [];
-    if (!b1) warnings.push("R ≥ 1 % at λ₁: no band is reported around it.");
-    if (!b2) warnings.push("R ≥ 1 % at λ₂: no band is reported around it.");
+    const reasons: Partial<Record<"band1Low" | "band1High" | "band2Low" | "band2High", string>> = {};
+    if (!b1) {
+      const noBand1 = "R ≥ 1 % at λ₁: no band is reported around it.";
+      warnings.push(noBand1);
+      reasons.band1Low = noBand1;
+      reasons.band1High = noBand1;
+    }
+    if (!b2) {
+      const noBand2 = "R ≥ 1 % at λ₂: no band is reported around it.";
+      warnings.push(noBand2);
+      reasons.band2Low = noBand2;
+      reasons.band2High = noBand2;
+    }
     // One warning per band, naming it (the two used to read the same; verification 2026-11 M12).
     for (const [b, name] of [[b1, "λ₁"], [b2, "λ₂"]] as const) {
       if (b?.open.some(Boolean)) {
@@ -55,6 +66,7 @@ export default defineSchema({
         band2High: b2?.hi ?? NaN,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

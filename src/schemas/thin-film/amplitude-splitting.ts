@@ -20,9 +20,17 @@ export default defineSchema({
   ],
   compute({ n1, nFilm, n2 }) {
     const { r01, r12, F, finesse } = filmFaceSummary(n1, nFilm, n2);
+    const warnings: string[] = [];
+    const reasons: Partial<Record<"finesse", string>> = {};
+    if (!Number.isFinite(finesse)) {
+      const noFinesse = "F < 1: the transmittance never falls to half its peak, so the finesse is undefined.";
+      warnings.push(noFinesse);
+      reasons.finesse = noFinesse;
+    }
     return {
       values: { r01, r12, coefficientOfFinesse: F, finesse },
-      warnings: Number.isFinite(finesse) ? [] : ["F < 1: the transmittance never falls to half its peak, so the finesse is undefined."],
+      warnings,
+      reasons,
     };
   },
   checks: [

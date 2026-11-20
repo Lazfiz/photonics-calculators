@@ -67,13 +67,28 @@ export default defineSchema({
       shearStress: NaN, contactRadius: NaN, peelEnergy: NaN, peelStretchShare: NaN, tapeClass: NaN,
       bendStrain: NaN, bendStress: NaN, channelG: NaN, delaminationG: NaN,
     };
-    const warnings = ["Only the outputs of the chosen method are filled; the others are null."];
+    const otherMethods = "Only the outputs of the chosen method are filled; the others are null.";
+    const warnings = [otherMethods];
+    type Key = keyof typeof values;
+    const reasons: Partial<Record<Key, string>> = {};
+    const owned: Record<string, readonly Key[]> = {
+      scratch: ["shearStress", "contactRadius"],
+      peel: ["peelEnergy", "peelStretchShare"],
+      tape: ["tapeClass"],
+      bend: ["bendStrain", "bendStress", "channelG", "delaminationG"],
+    };
+    for (const [m, keys] of Object.entries(owned)) {
+      if (m !== method) for (const k of keys) reasons[k] = otherMethods;
+    }
     if (method === "scratch") {
       const s = benjaminWeaver(criticalLoad, tipRadius, hardness);
       values.shearStress = s.shearStress;
       values.contactRadius = s.contactRadius;
       if (!Number.isFinite(s.shearStress)) {
-        warnings.push("The contact radius would reach the tip radius (L ≥ πR²H): the stylus is buried, no result.");
+        const buried = "The contact radius would reach the tip radius (L ≥ πR²H): the stylus is buried, no result.";
+        warnings.push(buried);
+        reasons.shearStress = buried;
+        reasons.contactRadius = buried;
       }
     } else if (method === "peel") {
       values.peelEnergy = kendallPeelEnergy(peelForce, peelAngle, armModulus, armThickness);
@@ -87,9 +102,14 @@ export default defineSchema({
       values.bendStress = b.stress;
       values.channelG = b.channelG;
       values.delaminationG = b.delaminationG;
-      if (b.stress < 0) warnings.push("The film is in net compression, so it fails by buckling, which isn't modelled: no crack or delamination G.");
+      if (b.stress < 0) {
+        const compression = "The film is in net compression, so it fails by buckling, which isn't modelled: no crack or delamination G.";
+        warnings.push(compression);
+        reasons.channelG = compression;
+        reasons.delaminationG = compression;
+      }
     }
-    return { values, warnings };
+    return { values, warnings, reasons };
   },
   checks: [
     {

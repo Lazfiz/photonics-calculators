@@ -960,6 +960,10 @@ export const fiberOptics: CalculatorEntry[] = [
         citation: "Agrawal G. P. (2019). Nonlinear Fiber Optics, 6th ed., §9.1 (Brillouin shift, gain g_B, linewidth). Academic Press.",
         url: "https://doi.org/10.1016/C2018-0-01168-8",
       },
+      {
+        citation: "Nikles M., Thévenaz L., Robert P. A. (1997). Brillouin gain spectrum characterization in single-mode optical fibers. J. Lightwave Technol. 15, 1842. Standard fibre (3 wt % GeO₂ core): ν_B 12.8138 GHz at 1.32 µm, 25 °C; −94 MHz per wt % GeO₂ (Table I, Fig. 7).",
+        url: "https://doi.org/10.1109/50.633570",
+      },
     ],
   },
   {

@@ -29,11 +29,16 @@ export default defineSchema({
     const radiusN = 1 / Math.abs(curvatureN);
     const thicknessRatio = (n * dFilm) / tSub;
     const warnings: string[] = [];
-    if (!Number.isFinite(radiusN)) warnings.push("Zero curvature (no film stress or thickness): the substrate stays flat, so the radius is infinite.");
+    const reasons: Partial<Record<"radiusN", string>> = {};
+    if (!Number.isFinite(radiusN)) {
+      const flat = "Zero curvature (no film stress or thickness): the substrate stays flat, so the radius is infinite.";
+      warnings.push(flat);
+      reasons.radiusN = flat;
+    }
     if (thicknessRatio > 0.05) {
       warnings.push("The coating is more than 5 % as thick as the substrate; Stoney's equation assumes t_f ≪ t_s, so treat the curvature as an estimate.");
     }
-    return { values: { curvature1, curvatureN, radiusN, thicknessRatio }, warnings };
+    return { values: { curvature1, curvatureN, radiusN, thicknessRatio }, warnings, reasons };
   },
   checks: [
     {
