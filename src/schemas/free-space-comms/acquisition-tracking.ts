@@ -2,7 +2,7 @@ import { quadCellNea, rasterScan, squareCoverage, stareProbability } from "../..
 import { defineSchema } from "../types";
 
 const TYLER_FRIED = "Tyler G. A., Fried D. L. (1982). Image-position error associated with a quadrant detector. " +
-  "J. Opt. Soc. Am. 72(6), 804–808: rms error (3π/16)(λ/D)/SNR for a point source.";
+  "J. Opt. Soc. Am. 72(6), 804–808: rms one-axis error (3π/16)(λ/D)/SNR for a point source (eqs. (35), (37), (41); Fig. 2 caption, p. 807).";
 
 export default defineSchema({
   href: "/free-space-comms/acquisition-tracking",

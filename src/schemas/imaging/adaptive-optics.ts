@@ -4,7 +4,8 @@ import { defineSchema } from "../types";
 const NOLL = "Noll R. J. (1976). Zernike polynomials and atmospheric turbulence. J. Opt. Soc. Am. 66, 207–211, " +
   "Table IV (residual variance Δ_J). https://doi.org/10.1364/JOSA.66.000207";
 const HUDGIN = "Hudgin R. H. (1977). Wave-front compensation error due to finite corrector-element size. J. Opt. Soc. Am. " +
-  "67, 393–395 (fitting error κ(d/r₀)^(5/3)). https://doi.org/10.1364/JOSA.67.000393";
+  "67, 393–395 (eq. (27), fitting error α(r_s/r₀)^(5/3); α is printed only as the Fig. 1 lines, p. 395, so 0.28 pyramid and 1.26 pillbox are read from the graph; " +
+  "0.134 for piston + tip-tilt segments is Noll R. J. (1976), J. Opt. Soc. Am. 66, 207, Table IV Δ₃, not Hudgin). https://doi.org/10.1364/JOSA.67.000393";
 const PARENTI = "Parenti R. R., Sasiela R. J. (1994). Laser-guide-star systems for astronomical applications. J. Opt. Soc. " +
   "Am. A 11, 288–309 (Strehl ratio of a partially corrected wavefront). https://doi.org/10.1364/JOSAA.11.000288";
 

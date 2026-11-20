@@ -31,7 +31,7 @@ export const freeSpaceComms: CalculatorEntry[] = [
         url: "https://doi.org/10.1364/josa.66.000207",
       },
       {
-        citation: "Hudgin R. H. (1977). Wave-front compensation error due to finite corrector-element size. J. Opt. Soc. Am. 67, 393–395. Fitting error 0.28 (d/r₀)^(5/3) for a continuous mirror of actuator pitch d.",
+        citation: "Hudgin R. H. (1977). Wave-front compensation error due to finite corrector-element size. J. Opt. Soc. Am. 67, 393–395. Fitting error 0.28 (d/r₀)^(5/3) for the pyramid actuator response of pitch d (eq. (27); α is printed only as Fig. 1 lines, p. 395, read from the graph).",
         url: "https://doi.org/10.1364/josa.67.000393",
       },
       {

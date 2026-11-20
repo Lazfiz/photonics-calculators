@@ -42,7 +42,7 @@ export const imaging: CalculatorEntry[] = [
         url: "https://doi.org/10.1364/JOSA.66.000207",
       },
       {
-        citation: "Hudgin R. H. (1977). Wave-front compensation error due to finite corrector-element size. J. Opt. Soc. Am. 67, 393–395. Fitting error κ(d/r₀)^(5/3).",
+        citation: "Hudgin R. H. (1977). Wave-front compensation error due to finite corrector-element size. J. Opt. Soc. Am. 67, 393–395. Fitting error α(r_s/r₀)^(5/3), eq. (27); α is printed only as Fig. 1 lines (p. 395), read from the graph. 0.134 (piston + tip-tilt segments) is Noll (1976) Table IV Δ₃, not Hudgin.",
         url: "https://doi.org/10.1364/JOSA.67.000393",
       },
       {

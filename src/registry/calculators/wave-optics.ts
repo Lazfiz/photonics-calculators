@@ -342,7 +342,7 @@ export const waveOptics: CalculatorEntry[] = [
         url: "https://doi.org/10.1063/1.104925",
       },
       {
-        citation: "Henry C. H., Olsson N. A., Dutta N. K. (1985). Locking range and stability of injection locked 1.54 µm InGaAsP semiconductor lasers. IEEE J. Quantum Electron. 21, 1152. Range −ω₁√(1 + α²) to ω₁, unstable at the high-frequency end; α 6 ± 1.",
+        citation: "Henry C. H., Olsson N. A., Dutta N. K. (1985). Locking range and stability of injection locked 1.54 µm InGaAsP semiconductor lasers. IEEE J. Quantum Electron. 21, 1152. ω₁ = √(I₁/I)/τ (eq. 3); range −ω₁√(1 + α²) to ω₁ from eqs. (5)–(7), p. 1154; unstable at the high-frequency end; α 6 ± 1.",
         url: "https://doi.org/10.1109/JQE.1985.1072787",
       },
       {
