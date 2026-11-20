@@ -410,6 +410,7 @@ import spatialFilter from "./wave-optics/spatial-filter";
 import sumFrequency from "./wave-optics/sum-frequency";
 import supercontinuum from "./wave-optics/supercontinuum";
 import thinDiskLaser from "./wave-optics/thin-disk-laser";
+import dmdDiffraction from "./spatial-light-modulators/dmd-diffraction";
 
 export const schemas: readonly CalculatorSchema[] = [
   couplingEfficiency, airyDisk, mpe, nohd, odRequirements, laserOpticalDensity, stokes, blackbody, ftirResolution,
@@ -480,6 +481,7 @@ export const schemas: readonly CalculatorSchema[] = [
   secondHarmonicGeneration, sensorCmos, shackHartmann, signalToNoise, simultaneousMulticolor, speckleImaging,
   spectralUnmixing, spinningDisk, stimulatedRamanMicroscopy, stitching, strehlRatio, structuredIllumination,
   sumFrequencyMicroscopy, superResolution, telecentricity, thirdHarmonicMicroscopy, threePhotonMicroscopy,
+  dmdDiffraction,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));

@@ -170,6 +170,9 @@ export const imaging: CalculatorEntry[] = [
     description: "Replay field λz/Δx, diffraction angle, replay spot and first-order efficiency of a phase-quantised hologram on a pixelated SLM.",
     tier: "textbook",
     modelNote: "Scalar paraxial replay of a pixelated SLM at distance z, or in the focal plane of a lens of focal length z. The efficiency is the first-order efficiency of an L-level phase staircase with ideal levels; fringing fields, phase flicker, the dead-space zero order and algorithm error are not included. The lensless alias limit max(N_x, N_y)Δx²/λ is for an on-axis point object; an object of width W needs roughly Δx(NΔx + W)/λ.",
+    related: [
+      { href: "/spatial-light-modulators/dmd-diffraction", note: "Diffraction orders and blaze of a micromirror (DMD) array" },
+    ],
     references: [
       {
         citation: "Swanson G. J. (1989). Binary optics technology: the theory and design of multi-level diffractive optical elements. MIT Lincoln Laboratory Technical Report 854. First-order efficiency sinc²(π/L) of an L-level phase profile.",
