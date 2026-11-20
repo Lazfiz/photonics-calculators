@@ -153,24 +153,21 @@ export default function LowWaterPeakPage() {
               </tr>
             </thead>
             <tbody>
-              {OH_BANDS.map((b) => {
-                const known = Number.isFinite(b.dbPerKmPerPpm);
-                return (
-                  <tr key={b.wavelength} className="border-b border-gray-800/50">
-                    <td className="py-2 pr-3">{Math.round(b.wavelength * 1e9)}</td>
-                    <td className="py-2 pr-3">{b.assignment}</td>
-                    <td className="py-2 pr-3 text-right">{known ? b.dbPerKmPerPpm.toPrecision(3) : "—"}</td>
-                    <td className="py-2 pr-3 text-right">{known ? (ohContentPpm(ohLwp) * b.dbPerKmPerPpm).toPrecision(3) : "—"}</td>
-                    <td className="py-2 pr-3 text-right">{known ? (ohContentPpm(ohLegacy) * b.dbPerKmPerPpm).toPrecision(3) : "—"}</td>
-                    <td className="py-2">{known ? b.source : "not modelled: no open source for the strength"}</td>
-                  </tr>
-                );
-              })}
+              {OH_BANDS.map((b) => (
+                <tr key={b.wavelength} className="border-b border-gray-800/50">
+                  <td className="py-2 pr-3">{Math.round(b.wavelength * 1e9)}</td>
+                  <td className="py-2 pr-3">{b.assignment}</td>
+                  <td className="py-2 pr-3 text-right">{b.dbPerKmPerPpm.toPrecision(3)}</td>
+                  <td className="py-2 pr-3 text-right">{(ohContentPpm(ohLwp) * b.dbPerKmPerPpm).toPrecision(3)}</td>
+                  <td className="py-2 pr-3 text-right">{(ohContentPpm(ohLegacy) * b.dbPerKmPerPpm).toPrecision(3)}</td>
+                  <td className="py-2">{b.source}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
         <p className="mt-2 text-sm text-gray-400">
-          Peak OH excess of each band, scaled from the 1383 nm input by the OH content. Band positions from Humbach et al. (1996).
+          Peak OH excess of each band, scaled from the 1383 nm input by the OH content. Band positions and strengths from Humbach et al. (1996), Table 3; bands weaker than 1 dB/km per ppm are left out.
           Beyond about 2 µm the multiphonon absorption of silica itself dominates, so fibres do not transmit at the 2.72 µm fundamental.
         </p>
       </div>
@@ -191,12 +188,12 @@ export default function LowWaterPeakPage() {
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h3 className="text-lg font-semibold mb-2">Model</h3>
         <div className="text-sm text-gray-300 space-y-2">
-          <p className="font-mono">α = A/λ⁴ + α_IR + α_UV + Σ C_OH · S_i · exp(−(λ − λ_i)²/2σ_i²),  C_OH = α_OH(1383)/62.7 dB/km per ppm</p>
+          <p className="font-mono">α = A/λ⁴ + α_IR + α_UV + Σ C_OH · S_i · f_i(λ),  C_OH = α_OH(1383)/62.7 dB/km per ppm, f_i(λ_i) = 1</p>
           <p>
             Both fibres share the intrinsic silica loss (Rayleigh scattering, infrared and ultraviolet tails; see the attenuation
             calculator) and differ only in the OH absorption, from residual water in the glass. 1 ppm of OH by weight adds 62.7
             dB/km at the 1383 nm first overtone, so a low-water-peak fibre holds its OH content to a few ppb; the same OH adds
-            1.2 dB/km per ppm at the 943 nm second overtone and about 10⁴ dB/km per ppm at the 2.72 µm fundamental, which follows
+            1.6 dB/km per ppm at the 943 nm second overtone, 2.7 and 201 dB/km per ppm at the 1246 and 2212 nm combination bands, and about 10⁴ dB/km per ppm at the 2.72 µm fundamental, which follows
             from its molar absorption coefficient, 77.5 L·mol⁻¹·cm⁻¹. G.652.D requires the 1383 nm loss
             (after hydrogen ageing) to stay at or below the maximum specified for 1310–1625 nm, 0.40 dB/km for cable; many
             &quot;zero-water-peak&quot; data sheets promise the stricter α(1383) ≤ α(1310), shown alongside. The limits are cable values
@@ -204,9 +201,9 @@ export default function LowWaterPeakPage() {
             E-band and the CWDM channels around 1371–1411 nm unusable over long spans.
           </p>
           <p className="text-gray-400">
-            Illustrative: each OH band is a Gaussian, 30 nm FWHM at 1383 nm and the same width in wavenumber elsewhere (an
-            assumption), and the 1383 nm peak heights are inputs, not data for a particular fibre. Not included: splices, connectors,
-            bends, and the 1246 and 2212 nm combination bands, whose strengths we have no open source for.
+            Illustrative: the 1383 nm band f(λ) is Humbach&apos;s four-Gaussian fit to a wet fibre, 24 nm FWHM with a longer tail toward
+            long wavelengths; the other bands are Gaussians exp(−(λ − λ_i)²/2σ_i²) of the same width in wavenumber (an assumption),
+            and the 1383 nm peak heights are inputs, not data for a particular fibre. Not included: splices, connectors, bends, and OH bands weaker than 1 dB/km per ppm.
           </p>
         </div>
       </div>
