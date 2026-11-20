@@ -50,7 +50,8 @@ export default defineSchema({
     const n = Math.max(1, Math.round(numConnectors));
     const grade = IEC_IL_GRADES[ilGrade];
     const warnings: string[] = [];
-    if (r.jointReturnLoss === Infinity) warnings.push("No gap (physical contact) or an index-matched gap: the gap reflects nothing, so its return loss is infinite.");
+    const noGap = "No gap (physical contact) or an index-matched gap: the gap reflects nothing, so its return loss is infinite.";
+    if (r.jointReturnLoss === Infinity) warnings.push(noGap);
     return {
       values: {
         lateralLoss: r.lateral,
@@ -64,6 +65,7 @@ export default defineSchema({
         rlGradeMin: IEC_RL_GRADES[rlGrade].rl,
       },
       warnings,
+      reasons: r.jointReturnLoss === Infinity ? { jointReturnLoss: noGap } : {},
     };
   },
   checks: [

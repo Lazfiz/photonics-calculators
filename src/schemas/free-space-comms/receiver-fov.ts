@@ -88,9 +88,22 @@ export default defineSchema({
     });
     const warnings: string[] = [];
     if (stop < 0.9) warnings.push("The field stop passes less than 90 % of the signal spot (diffraction and turbulence); the SNR includes this loss.");
-    if (!Number.isFinite(r0)) warnings.push("No turbulence (Cn² = 0): friedParameter is null (infinite).");
-    if (!Number.isFinite(fovEqual)) warnings.push("Background noise never equals amplifier noise for this scene: fovEqualNoise is null.");
-    if (!(noise.snr > 0)) warnings.push("SNR is 0 or undefined (no signal, or invalid receiver parameters): snrDb is null.");
+    const reasons: Partial<Record<"friedParameter" | "fovEqualNoise" | "snrDb", string>> = {};
+    if (!Number.isFinite(r0)) {
+      const noTurbulence = "No turbulence (Cn² = 0): friedParameter is null (infinite).";
+      warnings.push(noTurbulence);
+      reasons.friedParameter = noTurbulence;
+    }
+    if (!Number.isFinite(fovEqual)) {
+      const noEqual = "Background noise never equals amplifier noise for this scene: fovEqualNoise is null.";
+      warnings.push(noEqual);
+      reasons.fovEqualNoise = noEqual;
+    }
+    if (!(noise.snr > 0)) {
+      const noSnr = "SNR is 0 or undefined (no signal, or invalid receiver parameters): snrDb is null.";
+      warnings.push(noSnr);
+      reasons.snrDb = noSnr;
+    }
     return {
       values: {
         snrDb: noise.snr > 0 ? 10 * Math.log10(noise.snr) : NaN,
@@ -107,6 +120,7 @@ export default defineSchema({
         diffractionHalfAngle: (1.22 * lambda) / diameter,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

@@ -39,7 +39,8 @@ export default defineSchema({
     const warnings: string[] = [];
     // Visibility whose Koschmieder extinction 3.912/V equals this (wavelength-flat) extinction, m.
     const visibility = specific > 0 ? KOSCHMIEDER / (specific / DB_PER_E_FOLD) : Infinity;
-    if (!(specific > 0)) warnings.push("No snow, no attenuation: the equivalent visibility is infinite and goes out as null.");
+    const noSnow = "No snow, no attenuation: the equivalent visibility is infinite and goes out as null.";
+    if (!(specific > 0)) warnings.push(noSnow);
     return {
       values: {
         specificAttenuation: specific,
@@ -49,6 +50,7 @@ export default defineSchema({
         exponentB: snowPowerLaw(wavelength, snowType).b,
       },
       warnings,
+      reasons: specific > 0 ? {} : { visibility: noSnow },
     };
   },
   checks: [

@@ -53,8 +53,9 @@ export default defineSchema({
     const alpha = beta * DB_PER_E_FOLD; // dB/m
     const loss = alpha * range;
     const warnings: string[] = [];
+    const noQ = "Al Naboulsi's laws give no size-distribution exponent q: exponentQ is null.";
     if (fog) {
-      warnings.push("Al Naboulsi's laws give no size-distribution exponent q: exponentQ is null.");
+      warnings.push(noQ);
       if (wavelength < AL_NABOULSI_LAMBDA[0] || wavelength > AL_NABOULSI_LAMBDA[1]
         || visibility < AL_NABOULSI_VISIBILITY[0] || visibility > AL_NABOULSI_VISIBILITY[1]) {
         warnings.push("Outside the fitted range of Al Naboulsi's law (690–1550 nm, V = 50–1000 m): an extrapolation.");
@@ -72,6 +73,7 @@ export default defineSchema({
         exponentQ: fog ? NaN : aerosolExponent(visibility, model as AerosolLaw),
       },
       warnings,
+      reasons: fog ? { exponentQ: noQ } : {},
     };
   },
   checks: [

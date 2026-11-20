@@ -26,10 +26,12 @@ export default defineSchema({
     const R = angledFaceReflectance(n1, n2, angle, mfd / 2, wavelength);
     const Rflat = angledFaceReflectance(n1, n2, 0, mfd / 2, wavelength);
     const warnings: string[] = [];
-    if (n1 === n2) warnings.push("No index step: nothing is reflected, so the return loss is infinite.");
+    const noStep = "No index step: nothing is reflected, so the return loss is infinite.";
+    if (n1 === n2) warnings.push(noStep);
     return {
       values: { returnLoss: returnLossDb(R), flatReturnLoss: returnLossDb(Rflat), reflectance: R, reflectedPower: R },
       warnings,
+      reasons: n1 === n2 ? { returnLoss: noStep, flatReturnLoss: noStep } : {},
     };
   },
   checks: [

@@ -33,8 +33,12 @@ export default defineSchema({
     const smfLoss = bendLossPerTurnDb(smf, wavelength, radius, undefined, eo);
     const designLoss = bendLossPerTurnDb(design, wavelength, radius, undefined, eo);
     const warnings: string[] = [];
+    const reasons: Partial<Record<"smfLoss" | "designLoss", string>> = {};
     if (!Number.isFinite(smfLoss) || !Number.isFinite(designLoss)) {
-      warnings.push("No result: the model needs V ≥ 0.5 for both fibres and NA < n₁.");
+      const noResult = "No result: the model needs V ≥ 0.5 for both fibres and NA < n₁.";
+      warnings.push(noResult);
+      reasons.smfLoss = noResult;
+      reasons.designLoss = noResult;
     }
     return {
       values: {
@@ -49,6 +53,7 @@ export default defineSchema({
         designMfd1550: 2 * modeFieldRadius(design, 1550e-9),
       },
       warnings,
+      reasons,
     };
   },
   checks: [

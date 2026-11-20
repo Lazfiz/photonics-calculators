@@ -36,17 +36,28 @@ export default defineSchema({
     let values = {
       V: r.V, nEff: r.nEff, eta: r.eta, surface: r.surface, mfd: 2 * r.mfdRadius, dNeff: r.dNeff, sensitivity: r.sensitivity,
     };
+    const flatOutputs = ["eta", "surface", "dNeff", "sensitivity"] as const;
+    const reasons: Partial<Record<"nEff" | "mfd" | (typeof flatOutputs)[number], string>> = {};
     if (noFlat) {
-      warnings.push("The flat lies at or beyond the cladding radius: the fibre is round and nothing is computed.");
+      const round = "The flat lies at or beyond the cladding radius: the fibre is round and nothing is computed.";
+      warnings.push(round);
+      for (const key of flatOutputs) reasons[key] = round;
       values = { ...values, eta: NaN, surface: NaN, dNeff: NaN, sensitivity: NaN };
     } else if (cutsCore) {
-      warnings.push("The flat cuts into the core (distance < core radius): the round-fibre mode no longer applies and nothing is computed.");
+      const inCore = "The flat cuts into the core (distance < core radius): the round-fibre mode no longer applies and nothing is computed.";
+      warnings.push(inCore);
+      for (const key of flatOutputs) reasons[key] = inCore;
     } else if (!Number.isFinite(r.eta)) {
-      warnings.push("No result: the model needs n₁ > n₂ and V ≥ 0.5.");
+      const noResult = "No result: the model needs n₁ > n₂ and V ≥ 0.5.";
+      warnings.push(noResult);
+      for (const key of [...flatOutputs, "nEff", "mfd"] as const) reasons[key] = noResult;
     } else {
       if (r.V > LP11_CUTOFF_V) warnings.push("V > 2.405: the fibre is not single-mode; only LP01 is computed.");
       if (leaky) {
-        warnings.push("The external index is at or above n_eff: the mode leaks out through the flat, so the shift and sensitivity do not apply.");
+        const leak = "The external index is at or above n_eff: the mode leaks out through the flat, so the shift and sensitivity do not apply.";
+        warnings.push(leak);
+        reasons.dNeff = leak;
+        reasons.sensitivity = leak;
         values = { ...values, dNeff: NaN, sensitivity: NaN };
       } else {
         const margin = r.nEff - n_clad;
@@ -54,7 +65,7 @@ export default defineSchema({
         if (r.nEff - n_ext < NEAR_LEAK_FRACTION * margin) warnings.push("The external index is close to n_eff: the first-order shift and sensitivity underestimate the true values.");
       }
     }
-    return { values, warnings };
+    return { values, warnings, reasons };
   },
   checks: [
     {

@@ -30,9 +30,17 @@ export default defineSchema({
     const fiber = { a: coreRadius, n1: coreIndex, n2: claddingIndex, ellipticity: 1 - ellipticity };
     const r = fiberBirefringence(fiber, wavelength, stressB);
     const warnings: string[] = [];
-    if (!Number.isFinite(r.geo.B)) warnings.push("Needs n₁ > n₂ and V ≥ 0.5: below that the mode is barely guided and the perturbation result does not apply.");
-    else if (r.geo.multimode) warnings.push("V > 2.405: the fibre also guides LP11. The values are for the fundamental mode only.");
-    if (r.beatLength === Infinity) warnings.push("No birefringence (B = 0): the beat length is infinite.");
+    const reasons: Partial<Record<"delta" | "geometricB" | "totalB" | "beatLength" | "groupB" | "dgd", string>> = {};
+    if (!Number.isFinite(r.geo.B)) {
+      const unguided = "Needs n₁ > n₂ and V ≥ 0.5: below that the mode is barely guided and the perturbation result does not apply.";
+      warnings.push(unguided);
+      for (const key of ["delta", "geometricB", "totalB", "beatLength", "groupB", "dgd"] as const) reasons[key] = unguided;
+    } else if (r.geo.multimode) warnings.push("V > 2.405: the fibre also guides LP11. The values are for the fundamental mode only.");
+    if (r.beatLength === Infinity) {
+      const noB = "No birefringence (B = 0): the beat length is infinite.";
+      warnings.push(noB);
+      reasons.beatLength = noB;
+    }
     if (ellipticity < 0.9) {
       warnings.push(`ε = ${(1 - ellipticity).toFixed(2)}: the model is first order in the ellipticity ε, so it loses accuracy above ε ≈ 0.1.`);
     }
@@ -48,6 +56,7 @@ export default defineSchema({
         dgd: r.dgd,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

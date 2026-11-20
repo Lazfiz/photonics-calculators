@@ -45,7 +45,8 @@ export default defineSchema({
       sigmaAPump: si.sigmaAPump, sigmaEPump: si.sigmaEPump, sigmaASignal: si.sigmaASignal, sigmaESignal: si.sigmaESignal, tau: si.tau,
     });
     const warnings: string[] = [];
-    if (!Number.isFinite(r.gainDb)) warnings.push("The signal is fully absorbed: no finite gain or noise figure.");
+    const absorbed = "The signal is fully absorbed: no finite gain or noise figure.";
+    if (!Number.isFinite(r.gainDb)) warnings.push(absorbed);
     if (r.gainDb > 25) warnings.push("ASE self-saturation is not modelled; the real gain is lower above about 20–25 dB.");
     return {
       values: {
@@ -61,6 +62,7 @@ export default defineSchema({
         n2Out: r.n2Out,
       },
       warnings,
+      reasons: Number.isFinite(r.gainDb) ? {} : { gain: absorbed, outputPower: absorbed, noiseFigure: absorbed },
     };
   },
   checks: [

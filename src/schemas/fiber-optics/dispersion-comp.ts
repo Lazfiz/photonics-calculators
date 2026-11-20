@@ -37,12 +37,27 @@ export default defineSchema({
       bitRate, lambdaRef: refWavelength, lambdaChannel: channelWavelength,
     });
     const warnings: string[] = [];
-    if (!Number.isFinite(r.Lc)) {
-      warnings.push("No DCF length: the DCF dispersion must have the opposite sign of the span's (and the span D must be nonzero) to compensate it; the compensated results are empty.");
+    const noDcf = "No DCF length: the DCF dispersion must have the opposite sign of the span's (and the span D must be nonzero) to compensate it; the compensated results are empty.";
+    const uncClosed = "Uncompensated: 4Bσ_b ≥ 1, the eye is closed and the penalty is unbounded (no result).";
+    const compClosed = "Compensated: 4Bσ_b ≥ 1, the eye is closed and the penalty is unbounded (no result).";
+    const zeroSlope = "The residual slope is zero, so the usable band is unbounded in this linear model (no result).";
+    const noLc = !Number.isFinite(r.Lc);
+    if (noLc) warnings.push(noDcf);
+    if (r.penaltyUnc === Infinity) warnings.push(uncClosed);
+    if (r.penaltyComp === Infinity) warnings.push(compClosed);
+    if (r.halfBand === Infinity) warnings.push(zeroSlope);
+    const reasons: Partial<Record<
+      "penaltyUncompensated" | "penaltyCompensated" | "usableHalfBandwidth" | "dcfLength" | "residualSlope" | "slopeCompensation"
+      | "residualDispersion" | "broadeningCompensated" | "toleratedResidual", string
+    >> = {};
+    if (r.penaltyUnc === Infinity) reasons.penaltyUncompensated = uncClosed;
+    if (noLc) {
+      for (const key of ["dcfLength", "residualSlope", "slopeCompensation", "residualDispersion", "broadeningCompensated",
+        "penaltyCompensated", "usableHalfBandwidth", "toleratedResidual"] as const) reasons[key] = noDcf;
+    } else {
+      if (r.penaltyComp === Infinity) reasons.penaltyCompensated = compClosed;
+      if (r.halfBand === Infinity) reasons.usableHalfBandwidth = zeroSlope;
     }
-    if (r.penaltyUnc === Infinity) warnings.push("Uncompensated: 4Bσ_b ≥ 1, the eye is closed and the penalty is unbounded (no result).");
-    if (r.penaltyComp === Infinity) warnings.push("Compensated: 4Bσ_b ≥ 1, the eye is closed and the penalty is unbounded (no result).");
-    if (r.halfBand === Infinity) warnings.push("The residual slope is zero, so the usable band is unbounded in this linear model (no result).");
     if (Math.abs(channelWavelength - refWavelength) > 100e-9) {
       warnings.push("The channel is more than 100 nm from λ₀: the linear D(λ) model is extrapolated and the results are unreliable.");
     }
@@ -62,6 +77,7 @@ export default defineSchema({
         toleratedResidual: r.tolerance,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

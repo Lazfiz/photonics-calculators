@@ -57,12 +57,34 @@ export default defineSchema({
     const plob = plobBound(etaCh);
     const warnings: string[] = [];
     if (!(res.keyPerPulse > 0)) warnings.push("No secure key at these parameters: the key rate is 0.");
+    const unlimited = "Key still positive at 300 dB channel loss: maxLoss and maxRange are null (unlimited).";
+    const budget = "No attenuation: the limit is a loss budget, independent of distance, so maxRange is null.";
+    const unlimitedOpt = "Key with optimal μ still positive at 300 dB: maxLossOptimalMu is null (unlimited).";
+    const noMu = "No key at any 0.01 ≤ μ ≤ 1: optimalMu is null.";
+    const lossless = "Lossless channel (η_ch = 1): the PLOB bound is unbounded, so plobPerPulse and plobRate are null.";
+    const reasons: Partial<Record<"maxLoss" | "maxRange" | "maxLossOptimalMu" | "optimalMu" | "plobPerPulse" | "plobRate", string>> = {};
     if (maxLoss === 0) warnings.push("No key even at zero channel loss: maxRange is 0.");
-    else if (!Number.isFinite(maxLoss)) warnings.push("Key still positive at 300 dB channel loss: maxLoss and maxRange are null (unlimited).");
-    else if (fiberLoss === 0 && maxLoss >= fixedLoss) warnings.push("No attenuation: the limit is a loss budget, independent of distance, so maxRange is null.");
-    if (!Number.isFinite(maxLossOpt)) warnings.push("Key with optimal μ still positive at 300 dB: maxLossOptimalMu is null (unlimited).");
-    if (!(optKey > 0)) warnings.push("No key at any 0.01 ≤ μ ≤ 1: optimalMu is null.");
-    if (!Number.isFinite(plob)) warnings.push("Lossless channel (η_ch = 1): the PLOB bound is unbounded, so plobPerPulse and plobRate are null.");
+    else if (!Number.isFinite(maxLoss)) {
+      warnings.push(unlimited);
+      reasons.maxLoss = unlimited;
+      reasons.maxRange = unlimited;
+    } else if (fiberLoss === 0 && maxLoss >= fixedLoss) {
+      warnings.push(budget);
+      reasons.maxRange = budget;
+    }
+    if (!Number.isFinite(maxLossOpt)) {
+      warnings.push(unlimitedOpt);
+      reasons.maxLossOptimalMu = unlimitedOpt;
+    }
+    if (!(optKey > 0)) {
+      warnings.push(noMu);
+      reasons.optimalMu = noMu;
+    }
+    if (!Number.isFinite(plob)) {
+      warnings.push(lossless);
+      reasons.plobPerPulse = lossless;
+      reasons.plobRate = lossless;
+    }
     return {
       values: {
         keyPerPulse: res.keyPerPulse,
@@ -84,6 +106,7 @@ export default defineSchema({
         power: (mu * repRate * h * c) / wavelength,
       },
       warnings,
+      reasons,
     };
   },
   checks: [
