@@ -82,3 +82,8 @@ export function m2FromWaistDivergence(lambda: number, w0: number, halfAngle: num
   if (!(lambda > 0 && w0 > 0 && halfAngle > 0) || !Number.isFinite(lambda * w0 * halfAngle)) return NaN;
   return (Math.PI * w0 * halfAngle) / lambda;
 }
+
+/** On-axis peak intensity of a TEM₀₀ beam, I₀ = 2P/(πw²), W/m². NaN for P < 0 or w ≤ 0. */
+export function gaussianPeakIntensity(power: number, w: number): number {
+  return Number.isFinite(power) && power >= 0 && Number.isFinite(w) && w > 0 ? (2 * power) / (Math.PI * w ** 2) : NaN;
+}

@@ -6,7 +6,7 @@
  */
 import { gainBandwidth, idlerPower, parametricGain } from "./three-wave";
 import { idlerWavelength, parametricGainCoefficient, phaseMismatch, qpmPeriod } from "./optical-parametric-oscillator";
-import { gaussianPeakIntensity } from "./kerr";
+import { gaussianPeakIntensity } from "./gaussian-beam";
 import { wavelengthWidth } from "../spectroscopy/wavenumber";
 
 export interface OpaInput {
