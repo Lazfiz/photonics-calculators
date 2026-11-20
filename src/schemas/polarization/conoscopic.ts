@@ -4,7 +4,8 @@ import { isCrystalId } from "../../physics/polarization/uniaxial";
 import { defineSchema } from "../types";
 
 const DEG = Math.PI / 180;
-// The page draws its figure on a 121 × 121 grid; the largest retardance in the field is read from the same grid.
+// The page draws its figure on a 121 × 121 grid. The largest retardance in the field is the maximum over that grid and
+// the rim |ν| = NA, found exactly (conoscopicFigure), not the outermost pixel's value.
 const SIZE = 121;
 const BORN_WOLF = "Born M., Wolf E. (1999). Principles of Optics, 7th ed., Cambridge University Press, ch. 15 'Optics of crystals' " +
   "(cos²V_z = (n_β⁻² − n_γ⁻²)/(n_α⁻² − n_γ⁻²); 2V the acute optic axial angle; optic sign + when V_z < 45°). " +
