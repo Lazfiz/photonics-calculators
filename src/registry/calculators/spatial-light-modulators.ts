@@ -15,6 +15,21 @@ const tiDlpa083: Reference = {
   url: "https://www.ti.com/lit/pdf/dlpa083",
 };
 
+// Read in full as arXiv:1405.3893v2 (the Opt. Express PDF is behind a script check); Crossref checked.
+const goorden2014: Reference = {
+  citation: "Goorden S. A., Bertolotti J., Mosk A. P. (2014). Superpixel-based spatial amplitude and phase modulation using a digital micromirror device. Opt. Express 22(15), 17999–18009: aperture position, field counts (Fig. 2), resolution and efficiency.",
+  url: "https://doi.org/10.1364/OE.22.017999",
+};
+// Read in full as arXiv:2311.16685v1, whose equation numbers are used here (the IOP PDF returned 403); Crossref checked.
+const gutierrez2024: Reference = {
+  citation: "Gutiérrez-Cuevas R., Popoff S. M. (2024). Binary amplitude holograms for shaping complex light fields with digital micromirror devices. J. Phys. Photonics 6, 045022: Lee holograms, Eqs. 11, 15, 16 and 22 (numbering of arXiv:2311.16685v1).",
+  url: "https://doi.org/10.1088/2515-7647/ad8617",
+};
+const tiDlps026: Reference = {
+  citation: "Texas Instruments (2023). DLP7000 DLP 0.7 XGA 2x LVDS Type A DMD, datasheet DLPS026G: 1024 × 768 mirrors, 13.68 µm pitch; Table 8-1: 32 552 binary patterns/s.",
+  url: "https://www.ti.com/lit/ds/symlink/dlp7000.pdf",
+};
+
 export const spatialLightModulators: CalculatorEntry[] = [
   {
     slug: "dmd-diffraction",
@@ -27,6 +42,20 @@ export const spatialLightModulators: CalculatorEntry[] = [
     references: [brown2021, tiDlpa037, tiDlpa083],
     related: [
       { href: "/imaging/computer-generated-holography", note: "Replay field and efficiency of a hologram shown on an SLM" },
+    ],
+  },
+  {
+    slug: "dmd-holography",
+    title: "DMD Binary Holography: Lee and Superpixel Methods",
+    description: "Binary amplitude holograms on a DMD: Lee carrier period or superpixel size to efficiency, Fourier-plane aperture and resolution, and hologram rate.",
+    lede: "A DMD only switches mirrors on and off, yet a binary pattern and a filtered Fourier plane can shape amplitude and phase. Compare Lee holograms and superpixels: where the aperture goes, how big it can be, and how much light gets through.",
+    keywords: ["dmd holography", "lee hologram", "superpixel method", "binary amplitude hologram", "dmd complex modulation", "dmd wavefront shaping", "dmd phase modulation"],
+    tier: "textbook",
+    modelNote: "Scalar paraxial 4f optics, flat square pixels of 100 % fill, plane wave. Efficiency of the best cell with the pixel envelope; Goorden's phasor sum (no envelope) also shown. Aperture radius: Nyquist bound.",
+    references: [goorden2014, gutierrez2024, tiDlps026],
+    related: [
+      { href: "/spatial-light-modulators/dmd-diffraction", note: "Which DMD order is blazed, and the incidence angle that puts it on the blaze" },
+      { href: "/imaging/computer-generated-holography", note: "Replay field and efficiency of a phase hologram on an SLM" },
     ],
   },
 ];

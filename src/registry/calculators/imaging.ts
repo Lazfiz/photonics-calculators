@@ -172,6 +172,7 @@ export const imaging: CalculatorEntry[] = [
     modelNote: "Scalar paraxial replay of a pixelated SLM at distance z, or in the focal plane of a lens of focal length z. The efficiency is the first-order efficiency of an L-level phase staircase with ideal levels; fringing fields, phase flicker, the dead-space zero order and algorithm error are not included. The lensless alias limit max(N_x, N_y)Δx²/λ is for an on-axis point object; an object of width W needs roughly Δx(NΔx + W)/λ.",
     related: [
       { href: "/spatial-light-modulators/dmd-diffraction", note: "Diffraction orders and blaze of a micromirror (DMD) array" },
+      { href: "/spatial-light-modulators/dmd-holography", note: "Binary amplitude holograms on a DMD: Lee and superpixel methods" },
     ],
     references: [
       {
