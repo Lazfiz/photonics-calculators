@@ -7,6 +7,10 @@ const BORN_WOLF = "Born M., Wolf E. (2019). Principles of Optics, 7th ed., Cambr
 const WILHELM = "Wilhelm S., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. " +
   "Carl Zeiss (geometric optical-section formula for pinholes of at least 1 Airy unit; its Airy unit 1.22 λ/NA, the diameter of the first dark ring, is the convention used for the pinhole size here).";
 
+const WILHELM_PRINTED = "Wilhelm S. Confocal Laser Scanning Microscopy. Carl Zeiss Microscopy GmbH, Jena (single-author edition), Part 1, " +
+  "wave-optical confocality (PH < 0.25 AU): FWHM_tot,lateral = 0.37 λ/NA and FWHM_tot,axial = 0.64 λ/(n − √(n² − NA²)), " +
+  "https://bcf.technion.ac.il/wp-content/uploads/2015/10/Confocal-Principles.pdf.";
+
 export default defineSchema({
   href: "/imaging/confocal-resolution",
   inputs: [
@@ -56,6 +60,15 @@ export default defineSchema({
       inputs: { wavelength: 600, na: 1.2, pinholeAU: 1.5, refractiveIndex: 1.33, magnification: 100 },
       expect: { pinholeDiameter: 91.5 },
       tolerance: 1e-8,
+    },
+    {
+      // Wave-optical confocality (PH < 0.25 AU), point object: 0.37 · 600/1.2 = 185 nm and 0.64 · 600/(1.33 − √(1.33² − 1.2²))
+      // = 507.60 nm. The table gives 0.36933 and 0.63784 at 0 AU (184.67 and 505.89 nm, 0.18 % and 0.34 % off).
+      source: WILHELM_PRINTED,
+      basis: "printed",
+      inputs: { wavelength: 600, na: 1.2, pinholeAU: 0, refractiveIndex: 1.33, magnification: 100 },
+      expect: { confocalLateral: 185, confocalAxial: 507.5994768953565 },
+      tolerance: 0.01,
     },
   ],
 });
