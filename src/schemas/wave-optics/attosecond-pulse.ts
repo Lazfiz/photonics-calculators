@@ -54,7 +54,12 @@ export default defineSchema({
     if (intensity > ibs) warnings.push("Above the barrier-suppression intensity: ionization saturates the medium; long drivers cap the cutoff near I_BS, few-cycle drivers reach somewhat beyond it.");
     if (keldysh > 1) warnings.push("Keldysh γ > 1: multiphoton regime, where the three-step cutoff law I_p + 3.17 U_p is only indicative.");
     if (drift > 1) warnings.push("Lorentz drift Γ > 1 (Klaiber et al. 2008): the magnetic force pushes the returning electron past the ion by more than its wave-packet spread, so recombination and the harmonic yield fall.");
-    if (!(band > 0)) warnings.push("The band edge is at or above the cutoff: no Fourier-limited pulse.");
+    const reasons: Partial<Record<"fourierLimit", string>> = {};
+    if (!(band > 0)) {
+      const noBand = "The band edge is at or above the cutoff: no Fourier-limited pulse.";
+      warnings.push(noBand);
+      reasons.fourierLimit = noBand;
+    }
     return {
       values: {
         ponderomotive: up,
@@ -67,6 +72,7 @@ export default defineSchema({
         driverCycles: duration / (wavelength / c),
       },
       warnings,
+      reasons,
     };
   },
   checks: [

@@ -38,9 +38,19 @@ export default defineSchema({
   compute({ elements, inputHeight, inputAngle }) {
     const s = abcdSummary(parseElements(elements), inputHeight, inputAngle);
     const warnings: string[] = [];
-    if (!s.valid) warnings.push("An element has f = 0 or R = 0, which has no ray matrix.");
-    else {
-      if (s.M.C === 0) warnings.push("C = 0: the system is afocal, so it has no focal length.");
+    const reasons: Partial<Record<"rearFocalLength" | "effectiveFocalLength", string>> = {};
+    if (!s.valid) {
+      const noMatrix = "An element has f = 0 or R = 0, which has no ray matrix.";
+      warnings.push(noMatrix);
+      reasons.rearFocalLength = noMatrix;
+      reasons.effectiveFocalLength = noMatrix;
+    } else {
+      if (s.M.C === 0) {
+        const afocal = "C = 0: the system is afocal, so it has no focal length.";
+        warnings.push(afocal);
+        reasons.rearFocalLength = afocal;
+        reasons.effectiveFocalLength = afocal;
+      }
       if (s.isImaging) warnings.push(`Imaging condition (B = 0): the magnification is A = ${s.M.A.toPrecision(4)}.`);
     }
     return {
@@ -54,6 +64,7 @@ export default defineSchema({
         effectiveFocalLength: s.effectiveFocalLength,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

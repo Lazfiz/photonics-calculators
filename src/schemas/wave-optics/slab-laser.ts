@@ -47,10 +47,17 @@ export default defineSchema({
       sigma: p.sigma, tau: p.tau, heatFraction: p.heatFraction, kappa: p.kappa, dndT: p.dndT,
     });
     const warnings: string[] = [];
+    const reasons: Partial<Record<"outputPower" | "thermalLens", string>> = {};
     if (!op.tir) {
-      warnings.push("The face incidence angle is below the critical angle: the beam leaks out of the faces instead of totally reflecting. Use fewer bounces or a longer slab; no output power is given.");
+      const leaks = "The face incidence angle is below the critical angle: the beam leaks out of the faces instead of totally reflecting. Use fewer bounces or a longer slab; no output power is given.";
+      warnings.push(leaks);
+      reasons.outputPower = leaks;
     }
-    if (op.lens === Infinity) warnings.push("No thermal lens forms (no pump, no heat fraction, or dn/dT = 0): its focal length is infinite.");
+    if (op.lens === Infinity) {
+      const noLens = "No thermal lens forms (no pump, no heat fraction, or dn/dT = 0): its focal length is infinite.";
+      warnings.push(noLens);
+      reasons.thermalLens = noLens;
+    }
     return {
       values: {
         zigzagAngle: op.theta,
@@ -66,6 +73,7 @@ export default defineSchema({
         thermalLens: op.lens,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

@@ -49,12 +49,25 @@ export default defineSchema({
       R1: mirrorRadius(p.R1), R2: mirrorRadius(p.R2), R_hr: p.R_hr, R_oc: p.R_oc, alpha: p.alpha_c,
     });
     const warnings: string[] = [];
+    const reasons: Partial<
+      Record<"g1g2" | "waist" | "waistPosition" | "rodSpot" | "spotOnCoupler" | "effectiveLength", string>
+    > = {};
     if (!op.fits) {
-      warnings.push("The crystal is longer than the cavity: shorten it or lengthen the cavity. No cavity mode is computed.");
+      const tooLong = "The crystal is longer than the cavity: shorten it or lengthen the cavity. No cavity mode is computed.";
+      warnings.push(tooLong);
+      reasons.g1g2 = tooLong;
+      reasons.waist = tooLong;
+      reasons.waistPosition = tooLong;
+      reasons.rodSpot = tooLong;
+      reasons.spotOnCoupler = tooLong;
+      reasons.effectiveLength = tooLong;
     } else if (op.stability !== "stable") {
-      warnings.push(
-        `The cavity is ${op.stability === "unstable" ? "unstable" : "on the stability boundary"}: there is no TEM₀₀ mode. The threshold and output still describe a multimode laser only if the cavity confines the light.`,
-      );
+      const noMode = `The cavity is ${op.stability === "unstable" ? "unstable" : "on the stability boundary"}: there is no TEM₀₀ mode. The threshold and output still describe a multimode laser only if the cavity confines the light.`;
+      warnings.push(noMode);
+      reasons.waist = noMode;
+      reasons.waistPosition = noMode;
+      reasons.rodSpot = noMode;
+      reasons.spotOnCoupler = noMode;
     }
     if (op.clipped) warnings.push("TEM₀₀ spot (w) is larger than the rod radius: the mode is clipped and the aperture loss is not modelled.");
     return {
@@ -73,6 +86,7 @@ export default defineSchema({
         slopeEfficiency: op.slope,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

@@ -40,14 +40,30 @@ export default defineSchema({
       R_hr: p.R_hr, R_oc: p.R_oc, lossPerPass: p.loss, g0: p.g0, iSat: p.Isat,
     });
     const warnings: string[] = [];
+    const reasons: Partial<
+      Record<
+        "waist" | "waistPosition" | "powerOutsideBore" | "saturationPower" | "outputPower" | "optimumReflectance" | "optimumOutputPower",
+        string
+      >
+    > = {};
     if (!Number.isFinite(op.mode.w0)) {
-      warnings.push(
-        `The cavity is ${op.stability === "unstable" ? "unstable" : "on the stability boundary"}: there is no TEM₀₀ mode, so no waist or output power.`,
-      );
+      const noMode = `The cavity is ${op.stability === "unstable" ? "unstable" : "on the stability boundary"}: there is no TEM₀₀ mode, so no waist or output power.`;
+      warnings.push(noMode);
+      reasons.waist = noMode;
+      reasons.waistPosition = noMode;
+      reasons.powerOutsideBore = noMode;
+      reasons.saturationPower = noMode;
+      reasons.outputPower = noMode;
+      reasons.optimumOutputPower = noMode;
     } else if (op.clipLoss > 0.01) {
       warnings.push("More than 1 % of the mode power lies outside the bore at the larger mirror spot: expect aperture loss (not in the loss budget).");
     }
-    if (!Number.isFinite(op.best.R2)) warnings.push("No optimum coupler: the gain does not exceed the rear-mirror and internal loss.");
+    if (!Number.isFinite(op.best.R2)) {
+      const noOptimum = "No optimum coupler: the gain does not exceed the rear-mirror and internal loss.";
+      warnings.push(noOptimum);
+      reasons.optimumReflectance = noOptimum;
+      reasons.optimumOutputPower = noOptimum;
+    }
     return {
       values: {
         g1g2: op.g1 * op.g2,
@@ -62,6 +78,7 @@ export default defineSchema({
         optimumOutputPower: op.pBest,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

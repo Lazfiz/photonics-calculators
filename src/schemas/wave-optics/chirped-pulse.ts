@@ -43,7 +43,15 @@ export default defineSchema({
     const residual = perMetre.gdd * compressorOffset;
     const tauOut = chirpedGaussianDuration(tau0, residual);
     const warnings: string[] = [];
-    if (!Number.isFinite(perMetre.beta)) warnings.push("No first diffraction order: λ/d − sin α > 1, so the compressor outputs have no value.");
+    const reasons: Partial<Record<"separation" | "residualGdd" | "recompressed" | "peakOut", string>> = {};
+    if (!Number.isFinite(perMetre.beta)) {
+      const noOrder = "No first diffraction order: λ/d − sin α > 1, so the compressor outputs have no value.";
+      warnings.push(noOrder);
+      reasons.separation = noOrder;
+      reasons.residualGdd = noOrder;
+      reasons.recompressed = noOrder;
+      reasons.peakOut = noOrder;
+    }
     return {
       values: {
         transformLimited: tau0,
@@ -56,6 +64,7 @@ export default defineSchema({
         peakOut: peakPower(pulseEnergy, Number.isFinite(perMetre.gdd) ? tauOut : NaN, "gaussian"),
       },
       warnings,
+      reasons,
     };
   },
   checks: [
