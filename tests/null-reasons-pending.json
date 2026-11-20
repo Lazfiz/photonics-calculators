@@ -1,6 +1,4 @@
 {
-  "/spectroscopy/spectral-calibration maxError3": 1,
-  "/spectroscopy/spectral-calibration rms3": 1,
   "/wave-optics/abcd-matrix effectiveFocalLength": 1,
   "/wave-optics/abcd-matrix rearFocalLength": 1,
   "/wave-optics/attosecond-pulse fourierLimit": 3,

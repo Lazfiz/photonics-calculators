@@ -91,21 +91,22 @@ export default defineSchema({
     const fits = DEGREES.map((k) => fitPolynomial(onDetector.map((l) => l.px), onDetector.map((l) => l.nm * 1e-9), k, c, c));
     fits.forEach((fit, j) => {
       if (!fit) {
-        const tooFew = `Degree ${DEGREES[j]} needs ${DEGREES[j] + 1} lines on the detector; its outputs are left out.`;
-        warnings.push(tooFew);
-        if (onDetector.length < DEGREES[j] + 1) {
-          if (j === 0) {
-            reasons.linearSlope = tooFew;
-            reasons.linearIntercept = tooFew;
-            reasons.rms1 = tooFew;
-            reasons.maxError1 = tooFew;
-          } else if (j === 1) {
-            reasons.rms2 = tooFew;
-            reasons.maxError2 = tooFew;
-          } else {
-            reasons.rms3 = tooFew;
-            reasons.maxError3 = tooFew;
-          }
+        const noFit = onDetector.length < DEGREES[j] + 1
+          ? `Degree ${DEGREES[j]} needs ${DEGREES[j] + 1} lines on the detector; its outputs are left out.`
+          : `Degree ${DEGREES[j]}: the least-squares fit is singular (the lines cover too little of the detector, or too ` +
+            "few distinct pixels); its outputs are left out.";
+        warnings.push(noFit);
+        if (j === 0) {
+          reasons.linearSlope = noFit;
+          reasons.linearIntercept = noFit;
+          reasons.rms1 = noFit;
+          reasons.maxError1 = noFit;
+        } else if (j === 1) {
+          reasons.rms2 = noFit;
+          reasons.maxError2 = noFit;
+        } else {
+          reasons.rms3 = noFit;
+          reasons.maxError3 = noFit;
         }
       }
     });
