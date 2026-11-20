@@ -26,7 +26,18 @@ export default defineSchema({
     const dp = penetrationDepth(lambda, n0, n, k, theta);
     const dNormal = penetrationDepth(lambda, n0, n, k, 0);
     const warnings: string[] = [];
-    if (dp === Infinity) warnings.push("k = 0 below the critical angle: the wave propagates without loss, so the depth is infinite.");
+    const reasons: Partial<Record<"depth" | "fieldDepth" | "normalDepth", string>> = {};
+    if (dp === Infinity) {
+      const lossless = "k = 0 below the critical angle: the wave propagates without loss, so the depth is infinite.";
+      warnings.push(lossless);
+      reasons.depth = lossless;
+      reasons.fieldDepth = lossless;
+      reasons.normalDepth = lossless;
+    } else if (dNormal === Infinity) {
+      const losslessNormal = "k = 0: at normal incidence the wave propagates without loss, so normalDepth is null (infinite).";
+      warnings.push(losslessNormal);
+      reasons.normalDepth = losslessNormal;
+    }
     return {
       values: {
         alpha: absorptionCoefficient(k, lambda),
@@ -35,6 +46,7 @@ export default defineSchema({
         normalDepth: dNormal,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

@@ -53,8 +53,30 @@ export default defineSchema({
     const lines = valid ? rotationalLines(Bv, k.De, k.dipole, temperature) : [];
     const Q = valid ? rotationalPartition(Bv, k.De, temperature) : NaN;
     const strongest = lines.length ? lines.reduce((a, b) => (b.S > a.S ? b : a)) : undefined;
-    if (!valid) warnings.push("α_e(v + ½) ≥ B_e, so B_v is not positive: lower α_e or v.");
-    else if (!Number.isFinite(Q)) warnings.push("The partition sum did not converge before the J cap (distortion turns the levels over, or J = 1000 is reached): lower T or D.");
+    const reasons: Partial<Record<
+      "rotationalConstantBv" | "line10Frequency" | "line10Intensity" | "partitionFunction" | "mostPopulatedJ"
+      | "strongestUpperJ" | "strongestFrequency" | "strongestIntensity", string>> = {};
+    if (!valid) {
+      const noBv = "α_e(v + ½) ≥ B_e, so B_v is not positive: lower α_e or v.";
+      warnings.push(noBv);
+      reasons.rotationalConstantBv = noBv;
+      reasons.line10Frequency = noBv;
+      reasons.line10Intensity = noBv;
+      reasons.partitionFunction = noBv;
+      reasons.mostPopulatedJ = noBv;
+      reasons.strongestUpperJ = noBv;
+      reasons.strongestFrequency = noBv;
+      reasons.strongestIntensity = noBv;
+    } else if (!Number.isFinite(Q)) {
+      const noQ = "The partition sum did not converge before the J cap (distortion turns the levels over, or J = 1000 is reached): lower T or D.";
+      warnings.push(noQ);
+      reasons.line10Frequency = noQ;
+      reasons.line10Intensity = noQ;
+      reasons.partitionFunction = noQ;
+      reasons.strongestUpperJ = noQ;
+      reasons.strongestFrequency = noQ;
+      reasons.strongestIntensity = noQ;
+    }
     if (k.dipole === 0) warnings.push("No permanent dipole: no pure rotational spectrum (intensities are 0).");
     return {
       values: {
@@ -71,6 +93,7 @@ export default defineSchema({
         linesListed: lines.length,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

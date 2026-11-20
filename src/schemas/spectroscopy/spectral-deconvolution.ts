@@ -54,7 +54,13 @@ export default defineSchema({
       bandPeak: NaN, bandHeight: NaN, bandFwhm: NaN, bandCentroid: NaN, totalArea: NaN, fitHeight1: NaN,
       emissionMaxNm: NaN, absorptionMaxNm: NaN, stokesCm: NaN, reorgCm: NaN, emissionFwhmNm: NaN,
     };
+    const bandsEmpty = "The band-model outputs are empty in vibronic mode.";
+    const vibronicEmpty = "The vibronic-model outputs are empty in bands mode.";
+    const bandKeys = ["bandPeak", "bandHeight", "bandFwhm", "bandCentroid", "totalArea", "fitHeight1"] as const;
+    const vibronicKeys = ["emissionMaxNm", "absorptionMaxNm", "stokesCm", "reorgCm", "emissionFwhmNm"] as const;
+    const reasons: Partial<Record<typeof bandKeys[number] | typeof vibronicKeys[number], string>> = {};
     if (mode === "vibronic") {
+      for (const key of bandKeys) reasons[key] = bandsEmpty;
       const v = vibronicModel(lambda00 * 1e9, nuVib / 100, S, lineFwhm / 100);
       return {
         values: {
@@ -65,7 +71,8 @@ export default defineSchema({
           reorgCm: v.reorg * 100,
           emissionFwhmNm: v.emNm.fwhm * 1e-9,
         },
-        warnings: ["The band-model outputs are empty in vibronic mode."],
+        warnings: [bandsEmpty],
+        reasons,
       };
     }
     const warnings: string[] = [];
@@ -76,8 +83,18 @@ export default defineSchema({
     });
     if (m.narrow) warnings.push("A peak is narrower than three sample steps: widen it or narrow the window.");
     if (m.outside) warnings.push("A peak centre lies outside the window, so only its wing is sampled and its height is poorly determined.");
-    if (!m.fit) warnings.push("The heights can't be separated: two peaks share a centre and width, or a peak has no samples under it.");
-    warnings.push("The vibronic-model outputs are empty in bands mode.");
+    if (!m.fit) {
+      const noFit = "The heights can't be separated: two peaks share a centre and width, or a peak has no samples under it.";
+      warnings.push(noFit);
+      reasons.fitHeight1 = noFit;
+    }
+    if (m.stats && Number.isFinite(m.stats.peak) && !Number.isFinite(m.stats.fwhm)) {
+      const noFwhm = "The band has no half-maximum crossing on one side within the window (a peak narrower than the sampling, or cut off by the window edge): bandFwhm is null.";
+      warnings.push(noFwhm);
+      reasons.bandFwhm = noFwhm;
+    }
+    warnings.push(vibronicEmpty);
+    for (const key of vibronicKeys) reasons[key] = vibronicEmpty;
     return {
       values: {
         ...empty,
@@ -89,6 +106,7 @@ export default defineSchema({
         fitHeight1: m.fit ? m.fit.heights[0] : NaN,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

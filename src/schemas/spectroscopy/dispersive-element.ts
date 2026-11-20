@@ -51,8 +51,21 @@ export default defineSchema({
     const warnings: string[] = [];
     if (wavelengthMax > cutoff) warnings.push(`Order ${order} grazes the grating at ${(cutoff * 1e9).toPrecision(4)} nm (β = 90°) and does not propagate above it.`);
     if (wavelengthMax > overlapFree) warnings.push(`Order overlap: the band is clean only up to ${(overlapFree * 1e9).toPrecision(4)} nm (λ_min (m + 1)/m); use an order-sorting filter.`);
-    if (!Number.isFinite(betaC)) warnings.push("Order does not propagate at the band centre.");
-    if (!Number.isFinite(phi)) warnings.push("Blaze wavelength exceeds 2d: no blaze angle.");
+    const reasons: Partial<Record<"betaCentre" | "angularDispersion" | "reciprocalDispersion" | "blazeAngle" | "blazeAtIncidence" | "efficiency", string>> = {};
+    if (!Number.isFinite(betaC)) {
+      const noOrder = "Order does not propagate at the band centre.";
+      warnings.push(noOrder);
+      reasons.betaCentre = noOrder;
+      reasons.angularDispersion = noOrder;
+      reasons.reciprocalDispersion = noOrder;
+    }
+    if (!Number.isFinite(phi)) {
+      const noBlaze = "Blaze wavelength exceeds 2d: no blaze angle.";
+      warnings.push(noBlaze);
+      reasons.blazeAngle = noBlaze;
+      reasons.blazeAtIncidence = noBlaze;
+      reasons.efficiency = noBlaze;
+    }
     if (centre / d >= 0.2) warnings.push("λ/d ≥ 0.2: the scalar efficiency is only an estimate; real efficiency depends on polarization.");
 
     return {
@@ -67,6 +80,7 @@ export default defineSchema({
         resolvingPowerPerMm: (order * grooveDensity) / 1e3,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

@@ -52,12 +52,25 @@ export default defineSchema({
     const depth95 = samplingDepth(lambda, i.angle);
     const top1nm = -Math.expm1(-nm / (lambda * Math.cos(i.angle)));
     const warnings: string[] = [];
-    if (!emitted) warnings.push(`Not emitted: E_B is above hν − φ_sp = ${(hv - phi).toPrecision(5)} eV; use a harder source.`);
-    else if (hv - Eb < 50) warnings.push("Below 50 eV above the Fermi level TPP-2M does not apply: no mean free path.");
+    const reasons: Partial<Record<"imfp" | "depth95" | "top1nm", string>> = {};
+    if (!emitted) {
+      const notEmitted = `Not emitted: E_B is above hν − φ_sp = ${(hv - phi).toPrecision(5)} eV; use a harder source.`;
+      warnings.push(notEmitted);
+      reasons.imfp = notEmitted;
+      reasons.depth95 = notEmitted;
+      reasons.top1nm = notEmitted;
+    } else if (hv - Eb < 50) {
+      const belowFit = "Below 50 eV above the Fermi level TPP-2M does not apply: no mean free path.";
+      warnings.push(belowFit);
+      reasons.imfp = belowFit;
+      reasons.depth95 = belowFit;
+      reasons.top1nm = belowFit;
+    }
     else if (hv - Eb > 2000) warnings.push("Above the 50–2000 eV fit range of TPP-2M: the mean free path is extrapolated.");
     return {
       values: { kineticEnergy: ek * eV, imfp: lambda, depth95, top1nm, plasmonEnergy: plasmonEnergy(mat) * eV },
       warnings,
+      reasons,
     };
   },
   checks: [

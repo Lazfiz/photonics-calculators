@@ -77,12 +77,23 @@ export default defineSchema({
     const mode = dpfMode === "manual" ? "manual" : "age";
     const d1 = mbllDpf(mode, age, lambda1, dpf1);
     const d2 = mbllDpf(mode, age, lambda2, dpf2);
+    const reasons: Partial<Record<"dpfL1" | "dpfL2" | "dHbO2" | "dHbR" | "dHbT", string>> = {};
     if (mode === "age" && !(Number.isFinite(d1) && Number.isFinite(d2))) {
-      warnings.push("The Scholkmann–Wolf equation is fitted for 690–832 nm and 0–70 years: pick wavelengths in that range or use manual DPF values.");
+      const outOfFit = "The Scholkmann–Wolf equation is fitted for 690–832 nm and 0–70 years: pick wavelengths in that range or use manual DPF values.";
+      warnings.push(outOfFit);
+      if (!Number.isFinite(d1)) reasons.dpfL1 = outOfFit;
+      if (!Number.isFinite(d2)) reasons.dpfL2 = outOfFit;
+      reasons.dHbO2 = outOfFit;
+      reasons.dHbR = outOfFit;
+      reasons.dHbT = outOfFit;
     }
     const dc = mbllHaemoglobin(lambda1, lambda2, dOD1, dOD2, distance, d1, d2);
     if (Number.isFinite(d1) && Number.isFinite(d2) && !Number.isFinite(dc.hbo2)) {
-      warnings.push("The two wavelengths give a (nearly) singular system: choose wavelengths on either side of the 800 nm isosbestic point.");
+      const singular = "The two wavelengths give a (nearly) singular system: choose wavelengths on either side of the 800 nm isosbestic point.";
+      warnings.push(singular);
+      reasons.dHbO2 = singular;
+      reasons.dHbR = singular;
+      reasons.dHbT = singular;
     }
     return {
       values: {
@@ -92,6 +103,7 @@ export default defineSchema({
         dHbO2: dc.hbo2, dHbR: dc.hbr, dHbT: dc.hbo2 + dc.hbr, dpfL1: d1, dpfL2: d2,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

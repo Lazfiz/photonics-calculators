@@ -33,8 +33,21 @@ export default defineSchema({
     const dfr = comb2.frep - comb1.frep;
     const map = rfMapping(comb1, comb2, c / centerWavelength, N);
     const warnings: string[] = [];
-    if (dfr === 0) warnings.push("Equal repetition rates: the two combs give no dual-comb interferogram.");
-    else if (!map.aliasFree) warnings.push("Aliased: two or more optical teeth share an RF frequency, so no RF range is reported.");
+    const reasons: Partial<Record<"compression" | "updateTime" | "aliasFreeLimit" | "rfMin" | "rfMax", string>> = {};
+    if (dfr === 0) {
+      const equalRates = "Equal repetition rates: the two combs give no dual-comb interferogram.";
+      warnings.push(equalRates);
+      reasons.compression = equalRates;
+      reasons.updateTime = equalRates;
+      reasons.aliasFreeLimit = equalRates;
+      reasons.rfMin = equalRates;
+      reasons.rfMax = equalRates;
+    } else if (!map.aliasFree) {
+      const aliased = "Aliased: two or more optical teeth share an RF frequency, so no RF range is reported.";
+      warnings.push(aliased);
+      reasons.rfMin = aliased;
+      reasons.rfMax = aliased;
+    }
     return {
       values: {
         deltaFr: dfr,
@@ -47,6 +60,7 @@ export default defineSchema({
         toothSpacing: comb1.frep,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

@@ -87,11 +87,16 @@ export default defineSchema({
     if (aliased.length > 0) {
       warnings.push(`Undersampled: the Nyquist wavenumber ${sigmaNyquist} cm⁻¹ is below ${aliased.map((s) => `${s} (aliases to ${aliasedFrequency(s, 2 * sigmaNyquist)})`).join(", ")} cm⁻¹.`);
     }
+    const reasons: Partial<Record<"halfVisibilityOpd" | "visibility", string>> = {};
     if (halfVisibilityOpd(fwhm) === Infinity) {
-      warnings.push("A zero linewidth is a monochromatic line: the fringes never wash out, so the half-visibility path difference is infinite.");
+      const monochromatic = "A zero linewidth is a monochromatic line: the fringes never wash out, so the half-visibility path difference is infinite.";
+      warnings.push(monochromatic);
+      reasons.halfVisibilityOpd = monochromatic;
     }
     if (!Number.isFinite(twoBeamVisibility(beams))) {
-      warnings.push("No light reaches the detector from either arm (splitter reflectances of 0 or 1, or dark mirrors): there are no fringes, so the visibility is undefined.");
+      const noFringes = "No light reaches the detector from either arm (splitter reflectances of 0 or 1, or dark mirrors): there are no fringes, so the visibility is undefined.";
+      warnings.push(noFringes);
+      reasons.visibility = noFringes;
     }
     return {
       values: {
@@ -109,6 +114,7 @@ export default defineSchema({
         intensity: twoBeamIntensity(beams, 2 * Math.PI * order, gamma),
       },
       warnings,
+      reasons,
     };
   },
   checks: [

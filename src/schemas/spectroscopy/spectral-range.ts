@@ -43,11 +43,36 @@ export default defineSchema({
     const { cov } = s;
     const nm = (m: number) => (m * 1e9).toPrecision(4);
     const warnings: string[] = [];
+    const reasons: Partial<Record<
+      "lambdaLow" | "lambdaHigh" | "range" | "reciprocalDispersion" | "incidence" | "diffraction" | "anamorphic"
+      | "resolution" | "resolvingPower" | "slitLimit" | "pixelLimit", string>> = {};
     if (!Number.isFinite(cov.incidence)) {
-      warnings.push("The grating cannot send the centre wavelength to the detector centre in this order (mλ must stay below d(1 + cos D_v)); use fewer lines/mm, a lower order or a smaller deviation angle.");
+      const unreachable = "The grating cannot send the centre wavelength to the detector centre in this order (mλ must stay below d(1 + cos D_v)); use fewer lines/mm, a lower order or a smaller deviation angle.";
+      warnings.push(unreachable);
+      reasons.lambdaLow = unreachable;
+      reasons.lambdaHigh = unreachable;
+      reasons.range = unreachable;
+      reasons.reciprocalDispersion = unreachable;
+      reasons.incidence = unreachable;
+      reasons.diffraction = unreachable;
+      reasons.anamorphic = unreachable;
+      reasons.resolution = unreachable;
+      reasons.resolvingPower = unreachable;
+      reasons.slitLimit = unreachable;
+      reasons.pixelLimit = unreachable;
     } else {
-      if (!Number.isFinite(cov.lambdaLow)) warnings.push(`The short-wavelength edge lies beyond the zero order: the zero order and order ${order + 1} fall on the detector.`);
-      if (!Number.isFinite(cov.lambdaHigh)) warnings.push("The long-wavelength edge lies past grazing diffraction (β ≥ 90°).");
+      if (!Number.isFinite(cov.lambdaLow)) {
+        const shortEdge = `The short-wavelength edge lies beyond the zero order: the zero order and order ${order + 1} fall on the detector.`;
+        warnings.push(shortEdge);
+        reasons.lambdaLow = shortEdge;
+        reasons.range = shortEdge;
+      }
+      if (!Number.isFinite(cov.lambdaHigh)) {
+        const longEdge = "The long-wavelength edge lies past grazing diffraction (β ≥ 90°).";
+        warnings.push(longEdge);
+        reasons.lambdaHigh = longEdge;
+        reasons.range ??= longEdge;
+      }
       if (order >= 2 && Number.isFinite(cov.lambdaLow) && Number.isFinite(cov.lambdaHigh)) {
         warnings.push(`Order ${order - 1} also lands on the detector (${nm((cov.lambdaLow * order) / (order - 1))}–${nm((cov.lambdaHigh * order) / (order - 1))} nm); block it with a short-pass filter.`);
       }
@@ -63,6 +88,7 @@ export default defineSchema({
         slitLimit: s.slitLimit, pixelLimit: s.pixelLimit, diffractionLimit: s.diffLimit,
       },
       warnings,
+      reasons,
     };
   },
   checks: [
