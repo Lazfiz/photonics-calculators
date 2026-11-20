@@ -8,7 +8,8 @@
  * geometry, so they come from experiment and are not modelled here.
  *
  * References: P. J. Martin, H. A. Macleod, R. P. Netterfield, C. G. Pacey, W. G. Sainty, Appl. Opt. 22,
- * 178 (1983), doi:10.1364/AO.22.000178 (ion/molecule arrival ratio of IAD oxide films).
+ * 178 (1983), doi:10.1364/AO.22.000178 (first IAD of oxide films; the process is given as ion current density J,
+ * ion energy E and rate, Tables I–III, pp. 181–183; the ion/molecule ratio is computed from them, not printed there).
  * M. Ohring, Materials Science of Thin Films, 2nd ed. (Academic Press, 2002), ch. 5 (ion-beam assisted
  * deposition, energy per deposited atom).
  */

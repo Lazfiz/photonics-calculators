@@ -1,9 +1,10 @@
 import { IAD_MATERIALS, atMonitorDensity, iadParameters, type IadMaterialId } from "../../physics/thin-film/ion-assisted-deposition";
 import { defineSchema } from "../types";
 
-const MARTIN = "Martin P. J., Macleod H. A., Netterfield R. P., Pacey C. G., Sainty W. G. (1983). Ion-assisted deposition of " +
-  "thin films. Appl. Opt. 22, 178–184, doi:10.1364/AO.22.000178 (ion-to-molecule arrival ratio as the IAD parameter): " +
-  "Φ_i = J/e, Φ_m = r ρ N_A/M, ratio = Φ_i/Φ_m, energy per molecule = ratio × E_ion.";
+const MARTIN = "Martin P. J., Macleod H. A., Netterfield R. P., Pacey C. G., Sainty W. G. (1983). Ion-beam-assisted deposition of " +
+  "thin films. Appl. Opt. 22, 178–184, doi:10.1364/AO.22.000178 (first IAD of oxide films; the process is given as ion current " +
+  "density J, ion energy E and rate, Tables I–III, pp. 181–183, with packing density inferred from the moisture shift; " +
+  "the paper uses no ion/molecule ratio, which is computed here from those): Φ_i = J/e, Φ_m = r ρ N_A/M, ratio = Φ_i/Φ_m, energy per molecule = ratio × E_ion.";
 
 const IDS = Object.keys(IAD_MATERIALS) as IadMaterialId[];
 const isId = (s: string): s is IadMaterialId => Object.hasOwn(IAD_MATERIALS, s);
