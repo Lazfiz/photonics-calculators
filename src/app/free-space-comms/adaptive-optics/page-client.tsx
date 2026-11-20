@@ -113,7 +113,7 @@ export default function AdaptiveOpticsPage() {
           Plane-wave r₀ and θ₀ for a horizontal path with constant Cn² (Andrews &amp; Phillips, <em>Laser Beam
           Propagation through Random Media</em>, 2nd ed., 2005). The uncorrected variance 1.03 (D/r₀)^(5/3) is Noll&apos;s (JOSA 66, 207, 1976). The N actuators of a
           continuous-facesheet mirror fill the pupil on a square grid of pitch d, and its fitting error is 0.28 (d/r₀)^(5/3)
-          (Hudgin, JOSA 67, 393, 1977; Hardy, <em>Adaptive Optics for Astronomical Telescopes</em>, 1998). κ = 0.28 is for
+          (Hudgin, JOSA 67, 393, 1977, eq. 27, read from the Fig. 1 graph; Hardy, <em>Adaptive Optics for Astronomical Telescopes</em>, 1998). κ = 0.28 is for
           pyramid-shaped influence functions; Gaussian ones give ≈ 0.23 (Tyson&apos;s table in Berdeu et al., A&amp;A 674,
           A112, 2023). The zonal law sits about 10 % below Noll&apos;s residual after the first N Zernike modes and needs
           many actuators (N ≥ 10 here); a hexagonal grid has a 7.5 % larger pitch. The servo-lag variance of a first-order loop depends only on f_G/f₃dB (Greenwood,
