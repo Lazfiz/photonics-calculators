@@ -49,6 +49,7 @@ export default function SiteSearch({ total }: { total: number }) {
     "materials": "text-amber-400",
     "polarization": "text-pink-400",
     "free-space-comms": "text-teal-400",
+    "spatial-light-modulators": "text-lime-400",
   };
 
   return (

@@ -10,6 +10,7 @@ export const CATEGORY_IDS = [
   "laser-safety",
   "materials",
   "polarization",
+  "spatial-light-modulators",
   "spectroscopy",
   "thin-film",
   "wave-optics",

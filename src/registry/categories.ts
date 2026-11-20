@@ -181,4 +181,22 @@ export const categories: Category[] = [
       examples: ["Link budget", "Pointing loss", "Scintillation"],
     },
   },
+  {
+    id: "spatial-light-modulators",
+    label: "DMD & SLM",
+    title: "DMD and Spatial Light Modulator Calculators",
+    description: "DMD and SLM calculators for micromirror diffraction and blaze, binary holograms, LCoS phase beam steering, and DLP pattern timing.",
+    heading: "DMD & Spatial Light Modulators",
+    intro: "Calculators for digital micromirror devices (DMDs) and liquid-crystal phase modulators.",
+    keywords: ["dmd", "slm", "lcos", "dlp", "micromirror", "spatial light modulator"],
+    priority: 60,
+    home: {
+      eyebrow: "Programmable light",
+      description: "DMD diffraction, binary holograms, LCoS beam steering, DLP timing.",
+      hoverDescription: "Find the blaze condition of a micromirror array, design Lee and superpixel holograms, steer beams with an LCoS phase grating, and time DLP pattern sequences.",
+      accentFrom: "#a3e635",
+      accentTo: "#facc15",
+      examples: ["DMD blaze", "Lee hologram", "Beam steering"],
+    },
+  },
 ];
