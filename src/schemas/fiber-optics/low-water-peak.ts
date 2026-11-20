@@ -6,7 +6,7 @@ const MODEL = "Keiser G. (2010). Optical Fiber Communications, 4th ed., McGraw-H
   "α_IR = 7.81×10¹¹ exp(−48.48/λ) dB/km and ultraviolet tail (λ in µm), after Osanai H., Shioda T., Moriyama T. et al. (1976). " +
   "Effect of dopants on transmission loss of low-OH-content optical fibres. Electron. Lett. 12(21), 549–550, " +
   "doi:10.1049/el:19760418; Rayleigh scattering α_R = A/λ⁴ (Agrawal G. P. (2010). Fiber-Optic Communication Systems, 4th ed., " +
-  "Wiley, §2.5); OH band positions and the 62.7 dB/km per ppm first-overtone strength: Humbach O., Fabian H., Grzesik U. et al. (1996). " +
+  "Wiley, §2.5); OH band positions and strengths (Table 3: 1.6, 2.7, 62.7 and 201 dB/km per ppm at 943, 1246, 1383 and 2212 nm) and the four-Gaussian fit of the 1383 nm band (Table 2): Humbach O., Fabian H., Grzesik U. et al. (1996). " +
   "Analysis of OH absorption bands in synthetic silica. J. Non-Cryst. Solids 203, 19–26, doi:10.1016/0022-3093(96)00329-8; " +
   "E-band 1360–1460 nm and the CWDM grid, ITU-T G.694.2.";
 
@@ -63,34 +63,35 @@ export default defineSchema({
   },
   checks: [
     {
-      // Independent scratch model (A = 0.85, x = 0.04, OH bands at 943/1383/2722 nm, FWHM 30 nm (λ/1383 nm)², 62.7 dB/km/ppm).
-      // Low-water-peak, α_OH = 0.05: α(1310) = 0.3228618383, α(1383) = 0.3111651205, E-band trapezoid mean (200 intervals) 0.2591840852,
-      // worst of the 18 CWDM channels over 40 km: 1271 nm, 14.5528214084 dB. Older (α_OH = 1): α(1383) = 1.2611651205,
-      // E-band mean 0.5517792058, worst channel 1391 nm, 43.0594866070 dB. OH content 0.05/62.7 ppm = 7.9745e-4 ppm = 0.79745 ppb.
+      // Independent scratch model (A = 0.85, x = 0.04, OH bands at 943/1246/1383/2212/2722 nm with Humbach Table 3 strengths
+      // 1.6/2.7/62.7/201/1.0e4 dB/km/ppm; 1383 nm band = Table 2 four-Gaussian fit ÷ 1.01357, others FWHM 24 nm (λ/1383 nm)²).
+      // Low-water-peak, α_OH = 0.05: α(1310) = 0.3231848467, α(1383) = 0.3111651205, E-band trapezoid mean (200 intervals) 0.2591309732,
+      // worst of the 18 CWDM channels over 40 km: 1271 nm, 14.5537521265 dB. Older (α_OH = 1): α(1383) = 1.2611651205,
+      // E-band mean 0.5507169656, worst channel 1391 nm, 40.4526845867 dB. OH content 0.05/62.7 ppm = 7.9745e-4 ppm = 0.79745 ppb.
       source: MODEL,
       basis: "computed",
       inputs: {},
       expect: {
-        ohContent: 0.7974481658692185, at1310: 0.3228618383256277, at1383: 0.3111651205402913, eBandMean: 0.259184085156988,
-        worstChannelLoss: 14.55282140843249, worstChannelWavelength: 1271,
-        legacyAt1383: 1.2611651205402912, legacyEBandMean: 0.5517792057540689,
-        legacyWorstChannelLoss: 43.05948660701691, legacyWorstChannelWavelength: 1391,
+        ohContent: 0.7974481658692185, at1310: 0.3231848466946394, at1383: 0.3111651205402913, eBandMean: 0.25913097315081524,
+        worstChannelLoss: 14.553752126463198, worstChannelWavelength: 1271,
+        legacyAt1383: 1.2611651205402912, legacyEBandMean: 0.5507169656306147,
+        legacyWorstChannelLoss: 40.452684586711314, legacyWorstChannelWavelength: 1391,
         meetsG652D: 1, meetsZwp: 1,
       },
       tolerance: 1e-8,
     },
     {
-      // A = 0.8, x = 0.03, 10 km; low-water-peak α_OH = 0.5: α(1310) = 0.2975357431, α(1383) = 0.7405704360 (fails the G.652.D limit, meetsG652D = 0 and meetsZwp = 0, which a relative check cannot assert),
-      // E-band mean 0.3785575346, worst channel 1391 nm, 6.4580743815 dB. Older α_OH = 2: α(1383) = 2.2405704360,
-      // E-band mean 0.8405498302, worst channel 1391 nm, 18.7739402152 dB.
+      // A = 0.8, x = 0.03, 10 km; low-water-peak α_OH = 0.5: α(1310) = 0.3007658268, α(1383) = 0.7405704360 (fails the G.652.D limit, meetsG652D = 0 and meetsZwp = 0, which a relative check cannot assert),
+      // E-band mean 0.3780264145, worst channel 1391 nm, 6.1322241290 dB. Older α_OH = 2: α(1383) = 2.2405704360,
+      // E-band mean 0.8384253500, worst channel 1391 nm, 17.4705392058 dB.
       source: MODEL,
       basis: "computed",
       inputs: { length: 10, rayleighA: 0.8, geO2: 3, ohLwp: 0.5, ohLegacy: 2 },
       expect: {
-        at1310: 0.2975357431334621, at1383: 0.7405704359805835, eBandMean: 0.37855753456802055,
-        worstChannelLoss: 6.458074381491228, worstChannelWavelength: 1391,
-        legacyAt1383: 2.2405704359805836, legacyEBandMean: 0.8405498302476218,
-        legacyWorstChannelLoss: 18.773940215995854, legacyWorstChannelWavelength: 1391,
+        at1310: 0.3007658268235795, at1383: 0.7405704359805835, eBandMean: 0.3780264145062935,
+        worstChannelLoss: 6.132224128953029, worstChannelWavelength: 1391,
+        legacyAt1383: 2.2405704359805836, legacyEBandMean: 0.8384253500007127,
+        legacyWorstChannelLoss: 17.47053920584306, legacyWorstChannelWavelength: 1391,
       },
       tolerance: 1e-8,
     },

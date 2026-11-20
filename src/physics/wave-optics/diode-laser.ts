@@ -34,11 +34,14 @@ export function differentialEfficiency(etaI: number, alphaI: number, alphaM: num
 
 /**
  * Carrier density N_tr e^{g/g₀} at which the logarithmic gain g₀ ln(N/N_tr) reaches the material gain g, 1/m³.
- * NaN when g/g₀ > MAX_LOG_GAIN_RATIO: N above e³ N_tr ≈ 20 N_tr (≈ 4e19 cm⁻³ for N_tr = 1.8e18). The cap is a
- * model-validity judgement, not a sourced limit: the logarithmic fit (Coldren & Corzine §4.3) is made over a few N_tr,
- * and real gain saturates well before 20 N_tr.
+ * NaN when g/g₀ > MAX_LOG_GAIN_RATIO: N above e² N_tr ≈ 7.4 N_tr (≈ 1.3e19 cm⁻³ for N_tr = 1.8e18). The cap is where
+ * McIlroy et al. checked the logarithmic fit: their eq. (6), G/G₀ ≈ ln(J/J₀) + 1, stays within ≈ 2 % of the computed gain
+ * curve of a 25 Å well up to G ≈ 2G₀ (IEEE J. Quantum Electron. 21, 1958 (1985), Fig. 1, doi 10.1109/JQE.1985.1072606). The 2 % is our reading of
+ * Fig. 1, one computed GaAs/AlGaAs well; the figure ends there and the paper states no upper bound.
+ * Their fit is in current density, so the bound reads directly for a g₀ per ln J (like the page default); with J ∝ N^k
+ * the carrier-density coefficient is k times larger and the same range is g/g₀ ≤ 2/k.
  */
-export const MAX_LOG_GAIN_RATIO = 3;
+export const MAX_LOG_GAIN_RATIO = 2;
 export function logGainCarrierDensity(gain: number, g0: number, nTr: number): number {
   if (!(g0 > 0 && nTr > 0 && Number.isFinite(gain)) || gain / g0 > MAX_LOG_GAIN_RATIO) return NaN;
   return nTr * Math.exp(gain / g0);

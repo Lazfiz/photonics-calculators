@@ -117,12 +117,12 @@ export default function AttenuationPage() {
             Scattering and the infrared tail cross near 1550 nm, which sets the minimum-loss window.
           </p>
           <p>
-            The OH band is drawn as a Gaussian of the given height at 1383 nm and an illustrative 30 nm FWHM. 1 ppm of OH by weight
+            The 1383 nm OH band is Humbach et al.&apos;s (1996) four-Gaussian fit (24 nm FWHM, with a longer tail toward long wavelengths), scaled to the given height at 1383 nm. 1 ppm of OH by weight
             gives about 63 dB/km at the peak, so 0.5 dB/km means ≈ 8 ppb. G.652.D (low water peak) caps the 1383 nm loss after hydrogen
             ageing at the 1310–1625 nm maximum, 0.40 dB/km for cable.
           </p>
           <p className="text-gray-400">
-            Not included: waveguide imperfections and bending, the weak 1246 nm OH combination band (the 943 nm OH band is modelled, scaled from the 1383 nm peak), hydrogen ageing, and other
+            Not included: waveguide imperfections and bending, OH bands weaker than 1 dB/km per ppm (the 943 and 1246 nm bands are modelled, scaled from the 1383 nm peak), hydrogen ageing, and other
             impurities. The defaults (A 0.85, 4 mol % GeO₂) give 0.32 dB/km at 1310 nm and 0.19 dB/km at 1550 nm, typical of
             standard single-mode fibre.
           </p>

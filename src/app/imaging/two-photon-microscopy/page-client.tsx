@@ -6,7 +6,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  ballisticFraction, focalPeakIntensity, gaussianPulsePeakPower, multiphotonFwhm, multiphotonVolume, pulseEnergy,
+  ballisticFraction, focalPeakIntensity, gaussianPulsePeakPower, multiphotonFwhm, multiphotonVolume, pulseEnergy, twoPhotonVectorialVolume,
 } from "../../../physics/imaging/multiphoton-focus";
 
 const fmt = (x: number, digits: number, unit: string) => (Number.isFinite(x) ? `${x.toFixed(digits)} ${unit}` : "—");
@@ -27,6 +27,7 @@ export default function TwoPhotonMicroscopyPage() {
   const mu = scatteringCoeff * 100; // 1/m
   const fwhm = multiphotonFwhm(lambda, refractiveIndex, na, 2);
   const volume = multiphotonVolume(lambda, refractiveIndex, na, 2);
+  const vectorialVolume = twoPhotonVectorialVolume(lambda, refractiveIndex, na);
   const energy = pulseEnergy(avgPower * 1e-3, repRate * 1e6);
   const peakPower = gaussianPulsePeakPower(avgPower * 1e-3, repRate * 1e6, pulseWidth * 1e-15);
   const peakIntensity = focalPeakIntensity(peakPower, lambda, na); // W/m², at the surface
@@ -83,14 +84,12 @@ export default function TwoPhotonMicroscopyPage() {
         </p>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ResultCard label="Lateral FWHM (2P)" value={valid ? fmt(fwhm.lateral * 1e9, 0, "nm") : "—"} tone="blue" subtext={`1P equivalent λ ${(wavelength / 2).toFixed(0)} nm; ${na <= 0.7 ? "Zipfel fit, NA ≤ 0.7 branch" : "Zipfel fit, NA > 0.7 branch"}`} />
         <ResultCard label="Axial FWHM (2P)" value={fmt(fwhm.axial * 1e6, 2, "µm")} tone="yellow" subtext="Zipfel fit" />
-        <ResultCard label="Excitation volume" value={fmt(volume * 1e18, 3, "fL")} tone="purple" subtext="π^(3/2) ω_xy² ω_z (1 fL = 1 µm³)" />
+        <ResultCard label="Excitation volume" value={fmt(volume * 1e18, 3, "fL")} tone="purple" subtext="Gaussian fit, π^(3/2) ω_xy² ω_z (1 fL = 1 µm³)" />
+        <ResultCard label="Excitation volume (vectorial)" value={fmt(vectorialVolume * 1e18, 3, "fL")} tone="purple" subtext="V/0.68: the Gaussian misses the PSF wings (Zipfel)" />
         <ResultCard label="Peak intensity at focus" value={valid ? fmt((peakIntensity * fractionAtDepth) / 1e16, 2, "TW/cm²") : "—"} tone="green" subtext={`At the focus depth, I_surface·e^(−µz); surface: ${valid ? fmt(peakIntensity / 1e16, 2, "TW/cm²") : "—"}`} />
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="Pulse energy" value={fmt(energy * 1e9, 3, "nJ")} tone="cyan" />
         <ResultCard label="Peak power" value={fmt(peakPower / 1e3, 2, "kW")} tone="orange" subtext="0.94 E/τ (Gaussian pulse)" />
         <ResultCard label="Ballistic power at depth" value={fmt(avgPower * fractionAtDepth, 2, "mW")} tone="yellow" subtext={`2P signal × ${Number.isFinite(fractionAtDepth) ? (fractionAtDepth ** 2).toExponential(2) : "—"}`} />
@@ -102,7 +101,7 @@ export default function TwoPhotonMicroscopyPage() {
         <div className="space-y-2 text-gray-300 text-sm">
           <p className="font-mono">I²(r, z) ≈ exp(−r²/ω_xy² − z²/ω_z²), FWHM = 2√(ln 2)·ω</p>
           <p className="font-mono">ω_xy = 0.320λ/(√2 NA) (NA ≤ 0.7), 0.325λ/(√2 NA^0.91) (NA &gt; 0.7)</p>
-          <p className="font-mono">ω_z = 0.532λ/(√2 (n − √(n² − NA²))), V = π^(3/2) ω_xy² ω_z</p>
+          <p className="font-mono">ω_z = 0.532λ/(√2 (n − √(n² − NA²))), V = π^(3/2) ω_xy² ω_z, V_vectorial ≈ V/0.68</p>
           <p className="font-mono">I_peak = P_peak/(2π ω_xy²), P_peak = 2√(ln 2/π)·E/τ</p>
           <p className="font-mono">P(z) = P₀ exp(−µz), 2P signal ∝ P(z)²</p>
           <p>Gaussian fit to the squared focal intensity of a filled objective pupil: Zipfel, Williams &amp; Webb, Nat. Biotechnol. 21, 1369 (2003). The peak intensity is within about 1 % of the Airy peak πNA²P/λ² (NA ≤ 0.8; the high-NA fit is 4–10 % lower at NA 1.0–1.4). The depth model counts only ballistic excitation photons; aberrations and out-of-focus background are not included.</p>

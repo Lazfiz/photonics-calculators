@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { besselJ } from "../src/physics/math";
 import {
   GAUSSIAN_PULSE_PEAK_FACTOR, ballisticFraction, focalIntensityRadius, focalPeakIntensity, gaussianPulsePeakPower,
-  multiphotonFwhm, multiphotonVolume, pulseEnergy, zipfelAxialRadius, zipfelLateralRadius,
+  multiphotonFwhm, multiphotonVolume, pulseEnergy, twoPhotonVectorialVolume, zipfelAxialRadius, zipfelLateralRadius,
 } from "../src/physics/imaging/multiphoton-focus";
 import { twoPhotonAxialFwhm } from "../src/physics/imaging/optical-sectioning-thickness";
 
@@ -99,4 +99,16 @@ test("domain guards and limits", () => {
   assert.equal(ballisticFraction(0, 1e4), 1);
   assertRel(ballisticFraction(100e-6, 1e4), Math.exp(-1), 1e-12, "one attenuation length");
   assert.ok(Number.isNaN(ballisticFraction(-1, 1e4)));
+});
+
+test("vectorial 2P volume: Zipfel's worked example, (5.57)(0.175 µm)²(0.451 µm)/0.68 = 0.113 µm³", () => {
+  // Zipfel, Williams & Webb, Nat. Biotechnol. 21, 1369 (2003), p. 1372: 1.2 NA at 900 nm. The paper's ω_z = 0.451 µm implies
+  // n ≈ 1.334. By hand: ω_xy = 0.325 · 0.9/(√2 · 1.2^0.91) = 0.175208 µm; n − √(n² − NA²) = 1.334 − 0.582714 = 0.751286,
+  // ω_z = 0.532 · 0.9/(√2 · 0.751286) = 0.450644 µm; V = 5.568328 · 0.175208² · 0.450646 = 0.077031 µm³; /0.68 = 0.113281 µm³.
+  const V = twoPhotonVectorialVolume(900e-9, 1.334, 1.2);
+  assertRel(V, 0.113281 * um ** 3, 1e-4, "V/0.68");
+  assert.equal(Number((V / um ** 3).toFixed(3)), 0.113);
+  assertRel(V * 0.68, multiphotonVolume(900e-9, 1.334, 1.2, 2), 1e-12, "Gaussian volume");
+  // Edge: NA ≥ n has no focus.
+  assert.ok(Number.isNaN(twoPhotonVectorialVolume(900e-9, 1.33, 1.4)));
 });

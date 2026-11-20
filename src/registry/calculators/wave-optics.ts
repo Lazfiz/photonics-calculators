@@ -156,6 +156,10 @@ export const waveOptics: CalculatorEntry[] = [
     references: [
       { citation: "Coldren L. A., Corzine S. W., Mašanović M. L. (2012). Diode Lasers and Photonic Integrated Circuits, 2nd ed., ch. 2 and 4. Wiley.", url: "https://doi.org/10.1002/9781118148167" },
       {
+        citation: "McIlroy P. W. A., Kurobe A., Uematsu Y. (1985). Analysis and application of theoretical gain curves to the design of multi-quantum-well lasers. IEEE J. Quantum Electron. 21, 1958–1963. Eq. (6), G/G₀ ≈ ln(J/J₀) + 1, within about 2 % of the computed gain up to G ≈ 2G₀, where Fig. 1 ends (no upper bound is stated): the page computes no threshold above g = 2g₀.",
+        url: "https://doi.org/10.1109/JQE.1985.1072606",
+      },
+      {
         citation: "De Koninck Y. et al. (2025). GaAs nano-ridge laser diodes fully fabricated in a 300-mm CMOS pilot line. Nature 637, 63–69. Supplementary Table 1 (arXiv:2309.04473): g₀ 1200 cm⁻¹, N_tr 1.8 × 10¹⁸ cm⁻³, B 10⁻¹⁰ cm³/s, C 3.5 × 10⁻³⁰ cm⁶/s.",
         url: "https://doi.org/10.1038/s41586-024-08364-2",
       },
@@ -672,7 +676,7 @@ export const waveOptics: CalculatorEntry[] = [
     lede: "Yb:YAG thin-disk laser: quasi-three-level threshold inversion, multipass pump absorption with bleaching, threshold pump power, slope efficiency, output power and temperature rise through the disk.",
     keywords: ["Yb:YAG", "thin disk laser", "quasi-three-level laser", "multipass pumping", "reabsorption", "pump bleaching"],
     tier: "textbook",
-    modelNote: "Quasi-three-level rate equations with a top-hat pump and mode of equal area, inversion uniform through the disk and clamped above threshold; reabsorption and pump bleaching included, ASE and temperature-dependent cross-sections not. One-dimensional heat flow to the back face. Defaults: 300 K Yb:YAG cross sections (Chanteloup 2014 Table 1), τ 0.951 ms (Sumida & Fan), heat fraction 1 − λ_p/λ (lasing), κ 6.3 W/(m K) for 10 at.% Yb:YAG, between 7 at 8 at.% (Chénais 2006) and 5.7 at 12 at.% (Körner 2012); check them against your crystal.",
+    modelNote: "Quasi-three-level rate equations with a top-hat pump and mode of equal area, inversion uniform through the disk and clamped above threshold; reabsorption and pump bleaching included, ASE and temperature-dependent cross-sections not. One-dimensional heat flow to the back face. Defaults: 300 K Yb:YAG cross sections (Chanteloup 2014 Table 1), τ 0.951 ms (Sumida & Fan), heat fraction 1 − λ_p/λ (lasing), κ 6.3 W/(m K) for 10 at.% Yb:YAG, between 7 at 8 at.% (Chénais 2006) and 5.7 at 12 at.% (Körner 2012), within a published 5.7–7.7 spread (Patel 2001: 7.8 at 5 at.%, 7.5 at 15 at.%); check them against your crystal.",
     references: [
       { citation: "Giesen A., Hügel H., Voss A., Wittig K., Brauch U., Opower H. (1994). Scalable concept for diode-pumped high-power solid-state lasers. Appl. Phys. B 58, 365–372.", url: "https://doi.org/10.1007/BF01081875" },
       { citation: "Fan T. Y., Byer R. L. (1987). Modeling and CW operation of a quasi-three-level 946 nm Nd:YAG laser. IEEE J. Quantum Electron. 23, 605–612.", url: "https://doi.org/10.1109/JQE.1987.1073371" },
@@ -683,6 +687,7 @@ export const waveOptics: CalculatorEntry[] = [
       { citation: "Chénais S., Druon F., Forget S., Balembois F., Georges P. (2006). On thermal effects in solid-state lasers: the case of ytterbium-doped materials. Prog. Quantum Electron. 30, 89–153. Thermal load (Eq. V.1); κ 7 W/(m K) at 8 at.% Yb, 11 undoped (§II).", url: "https://arxiv.org/abs/0704.0701" },
       { citation: "Chanteloup J.-C., Arzakantsyan M., Marrazzo S. (2014). Defining the optimal gradient doped Yb:YAG disk for room and low temperature diode pumped solid-state laser operations. High Power Laser Sci. Eng. 2, e35, Table 1. Cross sections at 940 and 1030 nm, 300 K.", url: "https://doi.org/10.1017/hpl.2014.38" },
       { citation: "Körner J., Vorholt C., Liebetrau H. et al. (2012). Measurement of temperature-dependent absorption and emission spectra of Yb:YAG, Yb:LuAG, and Yb:CaF₂ between 20 °C and 200 °C and predictions on their influence on laser performance. J. Opt. Soc. Am. B 29, 2493, Table 4: κ 5.7 W/(m K) at 12 at.% Yb.", url: "https://doi.org/10.1364/JOSAB.29.002493" },
+      { citation: "Patel F. D., Honea E. C., Speth J. et al. (2001). Laser demonstration of Yb₃Al₅O₁₂ (YbAG) and materials properties of highly doped Yb:YAG. IEEE J. Quantum Electron. 37, 135–144. Fig. 8: κ 7.8 W/(m K) at 5 at.% and 7.5 at 15 at.% Yb (from diffusivity and specific heat); up to 30 % scatter in published data (p. 141).", url: "https://doi.org/10.1109/3.892735" },
     ],
   },
 ];
