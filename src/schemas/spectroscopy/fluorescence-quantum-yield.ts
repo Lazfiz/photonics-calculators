@@ -31,9 +31,18 @@ export default defineSchema({
     };
     const phi = relativeQuantumYield(q);
     const warnings: string[] = [];
-    if (q.referenceEmission === 0) warnings.push("Undefined: the reference emission is 0.");
-    else if (q.sampleAbsorbance === 0 || q.referenceAbsorbance === 0) warnings.push("Undefined: an absorbance is 0.");
-    else if (phi > 1) warnings.push("Φ_s > 1: the inputs are inconsistent (check the standard, the absorbances and the detector).");
+    const reasons: Partial<Record<"quantumYield" | "quantumYieldLinear", string>> = {};
+    if (q.referenceEmission === 0) {
+      const noRef = "Undefined: the reference emission is 0.";
+      warnings.push(noRef);
+      reasons.quantumYield = noRef;
+      reasons.quantumYieldLinear = noRef;
+    } else if (q.sampleAbsorbance === 0 || q.referenceAbsorbance === 0) {
+      const noAbs = "Undefined: an absorbance is 0.";
+      warnings.push(noAbs);
+      reasons.quantumYield = noAbs;
+      reasons.quantumYieldLinear = noAbs;
+    } else if (phi > 1) warnings.push("Φ_s > 1: the inputs are inconsistent (check the standard, the absorbances and the detector).");
     if (Math.max(q.sampleAbsorbance, q.referenceAbsorbance) > 0.1) {
       warnings.push("A > 0.1: inner-filter effects are likely; dilute the samples.");
     }
@@ -46,6 +55,7 @@ export default defineSchema({
         indexFactor: (q.sampleIndex / q.referenceIndex) ** 2,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

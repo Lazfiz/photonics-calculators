@@ -51,21 +51,49 @@ export default defineSchema({
       incidence: si.centralAngle, gratingWidth: si.gratingWidth, angularDispersion: si.dispersion, beamWidth: si.beamWidth, fsr: si.fsrNm, finesse: si.finesse,
     });
     const warnings: string[] = [];
+    const reasons: Partial<Record<
+      "resolution" | "resolvingPower" | "wavenumberResolution" | "slitLimit" | "diffractionLimit" | "reciprocalDispersion"
+      | "diffractionAngle" | "airyFwhm", string>> = {};
     if (r.kind === "unreachable") {
-      warnings.push(r.maxOrder >= 1
+      const noOrder = r.maxOrder >= 1
         ? `Order ${order} does not propagate at this incidence angle; the highest order is ${r.maxOrder}.`
-        : "No diffracted order propagates at this wavelength; use fewer lines/mm.");
+        : "No diffracted order propagates at this wavelength; use fewer lines/mm.";
+      warnings.push(noOrder);
+      reasons.resolution = noOrder;
+      reasons.resolvingPower = noOrder;
+      reasons.wavenumberResolution = noOrder;
+      reasons.slitLimit = noOrder;
+      reasons.diffractionLimit = noOrder;
+      reasons.reciprocalDispersion = noOrder;
+      reasons.diffractionAngle = noOrder;
     }
-    if (r.kind === "fp") warnings.push("Fabry-Pérot: the slit limit, diffraction limit, dispersion and grating angle do not apply.");
+    if (r.kind === "fp") {
+      const fpOnly = "Fabry-Pérot: the slit limit, diffraction limit, dispersion and grating angle do not apply.";
+      warnings.push(fpOnly);
+      reasons.slitLimit = fpOnly;
+      reasons.diffractionLimit = fpOnly;
+      reasons.reciprocalDispersion = fpOnly;
+      reasons.diffractionAngle = fpOnly;
+    }
+    if (si.mode === "prism") {
+      const noAngle = "Prism: the grating diffraction angle does not apply, so diffractionAngle is null.";
+      warnings.push(noAngle);
+      reasons.diffractionAngle = noAngle;
+    }
     // Exact Airy FWHM = (2 FSR/π) asin(π/(2ℱ)); no half maximum exists for ℱ < π/2 (the input range starts at 2).
     const airyFwhm = si.mode === "fabry-perot" ? ((2 * si.fsrNm) / Math.PI) * Math.asin(Math.PI / (2 * si.finesse)) : NaN;
-    if (si.mode !== "fabry-perot") warnings.push("The Airy FWHM applies to the Fabry-Pérot mode only.");
+    if (si.mode !== "fabry-perot") {
+      const airyOnly = "The Airy FWHM applies to the Fabry-Pérot mode only.";
+      warnings.push(airyOnly);
+      reasons.airyFwhm = airyOnly;
+    }
     return {
       values: {
         resolution: r.res, resolvingPower: si.gratingWL / r.res, wavenumberResolution: r.res / si.gratingWL ** 2,
         slitLimit: r.slit, diffractionLimit: r.diff, reciprocalDispersion: r.recipLinear, diffractionAngle: r.beta, airyFwhm,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

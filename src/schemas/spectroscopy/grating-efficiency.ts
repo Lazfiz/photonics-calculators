@@ -34,8 +34,15 @@ export default defineSchema({
     const orders = propagates ? gratingOrderRange(wavelength, d, theta) : null;
     const lambdaOverD = wavelength / d;
     const warnings: string[] = [];
-    if (!propagates) warnings.push(`Order ${order} does not propagate in Littrow above 2d/m = ${((2 * d * 1e9) / order).toFixed(0)} nm.`);
-    else if (lambdaOverD >= 0.2) warnings.push("λ/d ≥ 0.2: the scalar efficiency is only an estimate; real efficiency depends on polarization.");
+    const reasons: Partial<Record<"efficiency" | "littrowAngle" | "orderMin" | "orderMax", string>> = {};
+    if (!propagates) {
+      const noLittrow = `Order ${order} does not propagate in Littrow above 2d/m = ${((2 * d * 1e9) / order).toFixed(0)} nm.`;
+      warnings.push(noLittrow);
+      reasons.efficiency = noLittrow;
+      reasons.littrowAngle = noLittrow;
+      reasons.orderMin = noLittrow;
+      reasons.orderMax = noLittrow;
+    } else if (lambdaOverD >= 0.2) warnings.push("λ/d ≥ 0.2: the scalar efficiency is only an estimate; real efficiency depends on polarization.");
     return {
       values: {
         blazeWavelength: blazeWavelength(d, order, blazeAngle, blazeAngle), // Littrow
@@ -47,6 +54,7 @@ export default defineSchema({
         orderMax: orders ? orders.max : NaN,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

@@ -46,10 +46,28 @@ export default defineSchema({
     const band = orderSortingWindow(si.centralWavelength, order);
     const clean = overlapFreeBand(lo, hi, order);
     const warnings: string[] = [];
-    if (!Number.isFinite(aMax)) warnings.push("s·T_s = 0: no stray light reaches the detector, so there is no absorbance ceiling.");
-    if (!Number.isFinite(sMax)) warnings.push("T_s ≤ T: stray light does not lower the reading, so there is no largest s.");
-    if (!Number.isFinite(band.high)) warnings.push("First order: a long-pass filter above mλ/(m + 1) is enough, there is no upper edge.");
-    if (!Number.isFinite(clean.low)) warnings.push("Every λ of this order shares its angle with another order inside the range; narrow the range with filters.");
+    const reasons: Partial<Record<"maxAbsorbance" | "maxStrayRatio" | "filterHigh" | "cleanLow" | "cleanHigh", string>> = {};
+    if (!Number.isFinite(aMax)) {
+      const noCeiling = "s·T_s = 0: no stray light reaches the detector, so there is no absorbance ceiling.";
+      warnings.push(noCeiling);
+      reasons.maxAbsorbance = noCeiling;
+    }
+    if (!Number.isFinite(sMax)) {
+      const noLargestS = "T_s ≤ T: stray light does not lower the reading, so there is no largest s.";
+      warnings.push(noLargestS);
+      reasons.maxStrayRatio = noLargestS;
+    }
+    if (!Number.isFinite(band.high)) {
+      const noUpperEdge = "First order: a long-pass filter above mλ/(m + 1) is enough, there is no upper edge.";
+      warnings.push(noUpperEdge);
+      reasons.filterHigh = noUpperEdge;
+    }
+    if (!Number.isFinite(clean.low)) {
+      const noCleanBand = "Every λ of this order shares its angle with another order inside the range; narrow the range with filters.";
+      warnings.push(noCleanBand);
+      reasons.cleanLow = noCleanBand;
+      reasons.cleanHigh = noCleanBand;
+    }
     return {
       values: {
         measuredTransmittance: measuredTransmittance(10 ** -A, s, Ts), measuredAbsorbance: measuredAbsorbance(A, s, Ts),
@@ -58,6 +76,7 @@ export default defineSchema({
         overlapCount: overlappingOrders(si.centralWavelength, order, lo, hi).length,
       },
       warnings,
+      reasons,
     };
   },
   checks: [
