@@ -6,8 +6,8 @@ const FITZPATRICK = "Fitzpatrick J. M., West J. B., Maurer C. R. (1998). Predict
   "IEEE Trans. Med. Imaging 17, 694–702, doi:10.1109/42.736021: ⟨TRE²⟩ ≈ (⟨FLE²⟩/N)(1 + ⅓Σd_k²/f_k²) and ⟨FRE²⟩ ≈ (1 − 2/N)⟨FLE²⟩ in 3-D; " +
   "the same linearised least-squares derivation in 2-D gives TRE² = (FLE²/N)(1 + m·d²/(2f²)) with m = 1, 2, 4 and FRE² = FLE²(1 − p/(2N)) for p = 3, 4, 6 parameters.";
 const ROBINSON = "Robinson D., Milanfar P. (2004). Fundamental performance limits in image registration. " +
-  "IEEE Trans. Image Process. 13, 1185–1199, doi:10.1109/TIP.2004.832923, §II-A: Fisher information J = (1/σ²)Σ∇f∇fᵀ; " +
-  "with ⟨f_x²⟩ = σ_s²/ℓ² this gives ℓ/(SNR·√N_px) per axis.";
+  "IEEE Trans. Image Process. 13, 1185–1199, doi:10.1109/TIP.2004.832923, §II-A, Fisher matrix below eq. (7) (unnumbered), with eqs. (5)–(6): J = (1/σ²)Σ∇f∇fᵀ; " +
+  "our evaluation (not in the paper): for a texture with C(r) = σ_s² exp(−r²/2ℓ²), ⟨f_x²⟩ = σ_s²/ℓ², which gives ℓ/(SNR·√N_px) per axis.";
 const DISPLACEMENT = "Mean squared displacement of x' = A·x + t over a centred L × L image: the cross term vanishes and ⟨x²⟩ = ⟨y²⟩ = L²/12, so " +
   "⟨|d|²⟩ = |t|² + (L²/12)·‖A − I‖²_F (an exact identity, worked here by hand; the largest displacement is at one of the four corners).";
 

@@ -11,10 +11,11 @@
  *   TRE² = (FLE²/N)(1 + m·d²/(2f²)), with m = 1 (rigid), 2 (similarity) or 4 (affine) linear parameters, and
  *   FRE² = FLE²(1 − p/(2N)) for p = m + 2 parameters fitted to 2N coordinates.
  * - Intensity-based translation: D. Robinson, P. Milanfar, "Fundamental performance limits in image registration",
- *   IEEE Trans. Image Process. 13, 1185 (2004), https://doi.org/10.1109/TIP.2004.832923, §II-A: the Fisher information
- *   is J = (1/σ²)Σ∇f∇fᵀ for a noise-free reference and white Gaussian noise σ on the moving image. For a random
- *   texture of rms contrast σ_s and Gaussian correlation length ℓ, ⟨f_x²⟩ = σ_s²/ℓ², so the bound per axis over
- *   N_px pixels is ℓ/(SNR·√N_px) with SNR = σ_s/σ.
+ *   IEEE Trans. Image Process. 13, 1185 (2004), https://doi.org/10.1109/TIP.2004.832923, §II-A, Fisher matrix below eq. (7)
+ *   (unnumbered, with eqs. (5)–(6)): J = (1/σ²)Σ∇f∇fᵀ for a noise-free reference and white Gaussian noise σ on the
+ *   moving image. The texture step is our evaluation, not in Robinson & Milanfar: for a random texture of rms
+ *   contrast σ_s and Gaussian correlation C(r) = σ_s² exp(−r²/2ℓ²), ⟨f_x²⟩ = −C″(0) = σ_s²/ℓ², so the bound per axis
+ *   over N_px pixels is ℓ/(SNR·√N_px) with SNR = σ_s/σ.
  * - Stitching: tile positions from pairwise offsets with independent errors σ per axis. A chain sums k offsets
  *   (σ√k); the global least-squares solution (S. Preibisch, S. Saalfeld, P. Tomancak, Bioinformatics 25, 1463 (2009),
  *   https://doi.org/10.1093/bioinformatics/btp184) has variance σ²·R_eff, the effective resistance between the anchor

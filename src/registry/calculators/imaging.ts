@@ -138,7 +138,7 @@ export const imaging: CalculatorEntry[] = [
         url: "https://doi.org/10.1126/science.1165758",
       },
       {
-        citation: "Zipfel W. R., Williams R. M., Webb W. W. (2003). Nonlinear magic: multiphoton microscopy in the biosciences. Nat. Biotechnol. 21, 1369–1377. Focal radius ω_xy at each beam's wavelength.",
+        citation: "Zipfel W. R., Williams R. M., Webb W. W. (2003). Nonlinear magic: multiphoton microscopy in the biosciences. Nat. Biotechnol. 21, 1369–1377. Focal radius ω_xy at each beam's wavelength. Fig. 4c (p. 1372); eq. (2), p. 1371.",
         url: "https://doi.org/10.1038/nbt899",
       },
     ],
@@ -586,7 +586,7 @@ export const imaging: CalculatorEntry[] = [
     modelNote: "Zipfel's Gaussian focus fit plus exp(−µz) attenuation with one extinction coefficient, counting ballistic photons only. The default µ_s = 6 mm⁻¹ is a typical cortex value near 800 nm; µ does not follow the wavelength.",
     references: [
       {
-        citation: "Zipfel W. R., Williams R. M., Webb W. W. (2003). Nonlinear magic: multiphoton microscopy in the biosciences. Nat. Biotechnol. 21, 1369–1377. Gaussian fit to the squared illumination PSF.",
+        citation: "Zipfel W. R., Williams R. M., Webb W. W. (2003). Nonlinear magic: multiphoton microscopy in the biosciences. Nat. Biotechnol. 21, 1369–1377. Gaussian fit to the squared illumination PSF. Fig. 4c (p. 1372); eq. (2), p. 1371.",
         url: "https://doi.org/10.1038/nbt899",
       },
       {
@@ -663,7 +663,7 @@ export const imaging: CalculatorEntry[] = [
         citation: "Wilhelm S., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Optical-section FWHM for a finite and a point-like pinhole.",
       },
       {
-        citation: "Zipfel W. R., Williams R. M., Webb W. W. (2003). Nonlinear magic: multiphoton microscopy in the biosciences. Nat. Biotechnol. 21, 1369–1377. Axial radius of the two-photon excitation.",
+        citation: "Zipfel W. R., Williams R. M., Webb W. W. (2003). Nonlinear magic: multiphoton microscopy in the biosciences. Nat. Biotechnol. 21, 1369–1377. Axial radius of the two-photon excitation. Fig. 4c (p. 1372); eq. (2), p. 1371.",
         url: "https://doi.org/10.1038/nbt899",
       },
       {
@@ -804,7 +804,7 @@ export const imaging: CalculatorEntry[] = [
         url: "https://doi.org/10.1109/42.736021",
       },
       {
-        citation: "Robinson D., Milanfar P. (2004). Fundamental performance limits in image registration. IEEE Trans. Image Process. 13(9), 1185–1199. Section II-A: Fisher information of a translation.",
+        citation: "Robinson D., Milanfar P. (2004). Fundamental performance limits in image registration. IEEE Trans. Image Process. 13(9), 1185–1199. Section II-A: Fisher matrix below eq. (7) (unnumbered), with eqs. (5)–(6). The Gaussian-texture step ⟨f_x²⟩ = σ_s²/ℓ² is our evaluation, not in the paper.",
         url: "https://doi.org/10.1109/TIP.2004.832923",
       },
     ],
@@ -848,7 +848,7 @@ export const imaging: CalculatorEntry[] = [
         url: "https://doi.org/10.1364/josab.13.000481",
       },
       {
-        citation: "Zipfel W. R., Williams R. M., Webb W. W. (2003). Nonlinear magic: multiphoton microscopy in the biosciences. Nat. Biotechnol. 21, 1369–1377. Gaussian focus w₀ = 2ω_xy.",
+        citation: "Zipfel W. R., Williams R. M., Webb W. W. (2003). Nonlinear magic: multiphoton microscopy in the biosciences. Nat. Biotechnol. 21, 1369–1377. Gaussian focus w₀ = 2ω_xy. Fig. 4c (p. 1372); eq. (2), p. 1371.",
         url: "https://doi.org/10.1038/nbt899",
       },
     ],
@@ -1030,7 +1030,7 @@ export const imaging: CalculatorEntry[] = [
         url: "https://doi.org/10.1126/science.1165758",
       },
       {
-        citation: "Zipfel W. R., Williams R. M., Webb W. W. (2003). Nonlinear magic: multiphoton microscopy in the biosciences. Nat. Biotechnol. 21, 1369–1377. Gaussian fit to the focus at each wavelength.",
+        citation: "Zipfel W. R., Williams R. M., Webb W. W. (2003). Nonlinear magic: multiphoton microscopy in the biosciences. Nat. Biotechnol. 21, 1369–1377. Gaussian fit to the focus at each wavelength. Fig. 4c (p. 1372); eq. (2), p. 1371.",
         url: "https://doi.org/10.1038/nbt899",
       },
     ],
@@ -1108,7 +1108,7 @@ export const imaging: CalculatorEntry[] = [
         citation: "Boyd R. W. (2008). Nonlinear Optics, 3rd ed., §2.2, eq. 2.2.10. Academic Press. Coupled-amplitude equation of sum-frequency generation.",
       },
       {
-        citation: "Zipfel W. R., Williams R. M., Webb W. W. (2003). Nonlinear magic: multiphoton microscopy in the biosciences. Nat. Biotechnol. 21, 1369–1377. Gaussian fit to the focus at each wavelength.",
+        citation: "Zipfel W. R., Williams R. M., Webb W. W. (2003). Nonlinear magic: multiphoton microscopy in the biosciences. Nat. Biotechnol. 21, 1369–1377. Gaussian fit to the focus at each wavelength. Fig. 4c (p. 1372); eq. (2), p. 1371.",
         url: "https://doi.org/10.1038/nbt899",
       },
     ],
@@ -1170,7 +1170,7 @@ export const imaging: CalculatorEntry[] = [
     modelNote: "Focal size from Zipfel's Gaussian fit (I³ source). The signal is not predicted: in a homogeneous medium the Gouy phase cancels THG, so it appears only at interfaces, and the charts show scaling only. An interface responds over ≈ the confocal parameter (Barad 1997), wider than the I³ source.",
     references: [
       {
-        citation: "Zipfel W. R., Williams R. M., Webb W. W. (2003). Nonlinear magic: multiphoton microscopy in the biosciences. Nat. Biotechnol. 21, 1369–1377. Gaussian fit to the squared illumination PSF.",
+        citation: "Zipfel W. R., Williams R. M., Webb W. W. (2003). Nonlinear magic: multiphoton microscopy in the biosciences. Nat. Biotechnol. 21, 1369–1377. Gaussian fit to the squared illumination PSF. Fig. 4c (p. 1372); eq. (2), p. 1371.",
         url: "https://doi.org/10.1038/nbt899",
       },
       { citation: "Boyd R. W. (2008). Nonlinear Optics, 3rd ed., §2.10. Academic Press. Gouy-phase cancellation of the third harmonic." },
@@ -1185,10 +1185,10 @@ export const imaging: CalculatorEntry[] = [
     title: "Three-Photon Microscopy Calculator",
     description: "Calculate resolution, excitation volume, and depth penetration for three-photon excitation microscopy at 1300+ nm.",
     tier: "textbook",
-    modelNote: "Zipfel's Gaussian fit extended to the cubed intensity; its lateral FWHM is about 1.5 % wide against the Airy pattern. Ballistic depth model only; aberrations and out-of-focus background are not included.",
+    modelNote: "The I³ profile is extended from Zipfel's I² Gaussian fit (Fig. 4c); its lateral FWHM is about 1.5 % wide against the Airy pattern. Ballistic depth model only; aberrations and out-of-focus background are not included.",
     references: [
       {
-        citation: "Zipfel W. R., Williams R. M., Webb W. W. (2003). Nonlinear magic: multiphoton microscopy in the biosciences. Nat. Biotechnol. 21, 1369–1377. Gaussian fit to the squared illumination PSF, extended here to I³.",
+        citation: "Zipfel W. R., Williams R. M., Webb W. W. (2003). Nonlinear magic: multiphoton microscopy in the biosciences. Nat. Biotechnol. 21, 1369–1377. Gaussian fit to the squared illumination PSF (Fig. 4c, p. 1372; eq. (2), p. 1371); the I³ profile is extended here from that I² fit, Zipfel gives no I³ fit.",
         url: "https://doi.org/10.1038/nbt899",
       },
       {
@@ -1218,7 +1218,7 @@ export const imaging: CalculatorEntry[] = [
     modelNote: "Gaussian fit to the diffraction-limited focus of a filled pupil, with Gaussian pulses. The depth model counts only ballistic excitation photons; aberrations and out-of-focus background are not included.",
     references: [
       {
-        citation: "Zipfel W. R., Williams R. M., Webb W. W. (2003). Nonlinear magic: multiphoton microscopy in the biosciences. Nat. Biotechnol. 21, 1369–1377. Gaussian fit to the squared illumination PSF.",
+        citation: "Zipfel W. R., Williams R. M., Webb W. W. (2003). Nonlinear magic: multiphoton microscopy in the biosciences. Nat. Biotechnol. 21, 1369–1377. Gaussian fit to the squared illumination PSF. Fig. 4c (p. 1372); eq. (2), p. 1371.",
         url: "https://doi.org/10.1038/nbt899",
       },
       {

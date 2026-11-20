@@ -39,7 +39,7 @@ const thornton: Reference = {
   url: "https://doi.org/10.1146/annurev.ms.07.080177.001323",
 };
 const martinIad: Reference = {
-  citation: "Martin P. J., Macleod H. A., Netterfield R. P., Pacey C. G., Sainty W. G. (1983). Ion-beam-assisted deposition of thin films. Appl. Opt. 22, 178.",
+  citation: "Martin P. J., Macleod H. A., Netterfield R. P., Pacey C. G., Sainty W. G. (1983). Ion-beam-assisted deposition of thin films. Appl. Opt. 22, 178–184.",
   url: "https://doi.org/10.1364/AO.22.000178",
 };
 

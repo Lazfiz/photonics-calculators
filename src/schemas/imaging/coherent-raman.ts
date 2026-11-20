@@ -7,7 +7,7 @@ const DIELS = "Diels J.-C., Rudolph W. (2006). Ultrashort Laser Pulse Phenomena,
   "(Gaussian pulse: E = P_peak·τ_FWHM·√(π/(4 ln 2)); time-bandwidth product 2 ln 2/π).";
 const ZIPFEL = "Zipfel W. R., Williams R. M., Webb W. W. (2003). Nonlinear magic: multiphoton microscopy in the biosciences. " +
   "Nat. Biotechnol. 21, 1369–1377. https://doi.org/10.1038/nbt899 (focal 1/e radius ω_xy = 0.325 λ/(√2 NA^0.91) for NA > 0.7, " +
-  "0.320 λ/(√2 NA) below; peak intensity I = P_pk/(2π ω_xy²)); CARS maximum of |χ_NR + χ_R|² with χ_R = Γ/(Δ − iΓ) " +
+  "0.320 λ/(√2 NA) below, Fig. 4c, p. 1372); peak intensity I = P_pk/(2π ω_xy²) (Gaussian I with w = 2ω_xy, derived); CARS maximum of |χ_NR + χ_R|² with χ_R = Γ/(Δ − iΓ) " +
   "(Im χ_R peak 1) and χ_NR real, as in Cheng & Xie (2004), https://doi.org/10.1021/jp035693v.";
 const CM = 100; // 1 cm⁻¹ = 100 m⁻¹
 
