@@ -143,7 +143,8 @@ export default function ScintillationPage() {
           Plane wave, Kolmogorov spectrum with zero inner scale (Andrews &amp; Phillips, <em>Laser Beam Propagation
           through Random Media</em>, 2nd ed., 2005). The expression covers weak to strong fluctuations: σ_I² ≈ σ_R²
           when weak, peaks above 1 in the focusing regime and saturates at 1. A receiver larger than the Fresnel zone
-          averages the scintillation down.
+          averages the scintillation down. The label under σ_R² follows Andrews &amp; Phillips&apos; convention, weak for
+          σ_R² &lt; 1 and moderate to strong from 1; the change is gradual, and the σ_I² and gamma-gamma values hold on both sides.
         </p>
         <p>
           Both fade models are shown. The log-normal one assumes σ_ln² = ln(1 + σ_I²), P(I &lt; F⟨I⟩) =
