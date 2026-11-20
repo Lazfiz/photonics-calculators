@@ -8,6 +8,7 @@ import { imaging } from "./calculators/imaging";
 import { laserSafety } from "./calculators/laser-safety";
 import { materials } from "./calculators/materials";
 import { polarization } from "./calculators/polarization";
+import { spatialLightModulators } from "./calculators/spatial-light-modulators";
 import { spectroscopy } from "./calculators/spectroscopy";
 import { thinFilm } from "./calculators/thin-film";
 import { waveOptics } from "./calculators/wave-optics";
@@ -24,6 +25,7 @@ const entriesByCategory: Record<CategoryId, CalculatorEntry[]> = {
   "laser-safety": laserSafety,
   materials,
   polarization,
+  "spatial-light-modulators": spatialLightModulators,
   spectroscopy,
   "thin-film": thinFilm,
   "wave-optics": waveOptics,
