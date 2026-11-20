@@ -45,9 +45,20 @@ export default defineSchema({
     const governing = eyeLimits(wavelength).find((limit) => limit.kind === result.limiting);
     const nohd = result.distance;
     const warnings: string[] = [];
-    if (Number.isNaN(nohd)) warnings.push("No ICNIRP limit applies at this wavelength and time.");
-    else if (nohd === Infinity) warnings.push("The beam doesn't spread (φ = 0): the hazard extends to any range.");
-    else if (nohd === 0) warnings.push("Within the limits at the aperture: no hazard distance.");
+    const reasons: Partial<Record<"diameterAtNohd", string>> = {};
+    if (Number.isNaN(nohd)) {
+      const noLimit = "No ICNIRP limit applies at this wavelength and time.";
+      warnings.push(noLimit);
+      reasons.diameterAtNohd = noLimit;
+    } else if (nohd === Infinity) {
+      const noSpread = "The beam doesn't spread (φ = 0): the hazard extends to any range.";
+      warnings.push(noSpread);
+      reasons.diameterAtNohd = noSpread;
+    } else if (nohd === 0) {
+      const within = "Within the limits at the aperture: no hazard distance.";
+      warnings.push(within);
+      reasons.diameterAtNohd = within;
+    }
     const hazard = Number.isFinite(nohd) && nohd > 0 && governing !== undefined;
     return {
       values: {
@@ -56,6 +67,7 @@ export default defineSchema({
         rayleighRange: d / phi,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

@@ -45,8 +45,12 @@ export default defineSchema({
         warnings,
       };
     }
-    if (direct.distance === Infinity) warnings.push("The beam doesn't spread (φ = 0): the direct hazard extends to any range.");
-    else if (direct.distance === 0) warnings.push("Within the limits at the exit: no direct hazard distance.");
+    const reasons: Partial<Record<"nohdDirect", string>> = {};
+    if (direct.distance === Infinity) {
+      const anyRange = "The beam doesn't spread (φ = 0): the direct hazard extends to any range.";
+      warnings.push(anyRange);
+      reasons.nohdDirect = anyRange;
+    } else if (direct.distance === 0) warnings.push("Within the limits at the exit: no direct hazard distance.");
     const diffuseRatio = Math.max(...diffuse.limits.map((l) => l.ratio));
     return {
       values: {
@@ -59,6 +63,7 @@ export default defineSchema({
         odDiffuse: Math.max(0, Math.log10(diffuseRatio)),
       },
       warnings,
+      reasons,
     };
   },
   checks: [

@@ -43,10 +43,27 @@ export default defineSchema({
     const n = windowIndex(m, wavelength);
     const inBand = transmits(m, wavelength);
     const warnings: string[] = [];
-    if (!hasFormula(d)) warnings.push(`No dispersion formula for ${m.name}: n is not available.`);
-    else if (!Number.isFinite(n)) warnings.push("The wavelength is outside the material's dispersion formula range: no index.");
-    if (!inBand) warnings.push("Outside the transmission band: the material absorbs, so no transmission is given.");
-    else if (!Number.isFinite(n)) warnings.push("Inside the band, but the index is needed for the Fresnel limit.");
+    const reasons: Partial<Record<"n" | "reflectance" | "transmission", string>> = {};
+    if (!hasFormula(d)) {
+      const noFormula = `No dispersion formula for ${m.name}: n is not available.`;
+      warnings.push(noFormula);
+      reasons.n = noFormula;
+      reasons.reflectance = noFormula;
+    } else if (!Number.isFinite(n)) {
+      const outsideRange = "The wavelength is outside the material's dispersion formula range: no index.";
+      warnings.push(outsideRange);
+      reasons.n = outsideRange;
+      reasons.reflectance = outsideRange;
+    }
+    if (!inBand) {
+      const absorbs = "Outside the transmission band: the material absorbs, so no transmission is given.";
+      warnings.push(absorbs);
+      reasons.transmission = absorbs;
+    } else if (!Number.isFinite(n)) {
+      const needsIndex = "Inside the band, but the index is needed for the Fresnel limit.";
+      warnings.push(needsIndex);
+      reasons.transmission = needsIndex;
+    }
     return {
       values: {
         n,
@@ -55,6 +72,7 @@ export default defineSchema({
         inBand: inBand ? 1 : 0,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

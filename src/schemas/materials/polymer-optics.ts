@@ -46,18 +46,36 @@ export default defineSchema({
     const d = POLYMERS[polymer as PolymerId].dispersion;
     const n = polymerIndex(d, wavelength);
     const warnings: string[] = [];
+    const reasons: Partial<Record<"n" | "groupIndex" | "dndlambda" | "reflectance" | "claddingIndex" | "na", string>> = {};
+    let coreRange: string | undefined;
     if (!Number.isFinite(n)) {
       const [lo, hi] = polymerRange(d);
-      warnings.push(`${POLYMERS[polymer as PolymerId].name}: the fit covers ${Math.round(lo * 1e9)}–${Math.round(hi * 1e9)} nm only.`);
+      coreRange = `${POLYMERS[polymer as PolymerId].name}: the fit covers ${Math.round(lo * 1e9)}–${Math.round(hi * 1e9)} nm only.`;
+      warnings.push(coreRange);
+      reasons.n = coreRange;
+      reasons.groupIndex = coreRange;
+      reasons.dndlambda = coreRange;
+      reasons.reflectance = coreRange;
     }
     const clad = cladding !== polymer && cladding in POLYMERS ? POLYMERS[cladding as PolymerId] : undefined;
     const n2 = clad ? polymerIndex(clad.dispersion, wavelength) : NaN;
     const na = corecladNA(n, n2);
-    if (!clad) warnings.push("No cladding chosen (or the cladding is the core polymer): no numerical aperture.");
-    else if (!Number.isFinite(n2)) {
+    if (!clad) {
+      const noCladding = "No cladding chosen (or the cladding is the core polymer): no numerical aperture.";
+      warnings.push(noCladding);
+      reasons.claddingIndex = noCladding;
+      reasons.na = noCladding;
+    } else if (!Number.isFinite(n2)) {
       const [lo, hi] = polymerRange(clad.dispersion);
-      warnings.push(`${clad.name} cladding: the fit covers ${Math.round(lo * 1e9)}–${Math.round(hi * 1e9)} nm only.`);
-    } else if (!(na > 0) && Number.isFinite(n)) warnings.push("Cladding index ≥ core index: no guiding.");
+      const cladRange = `${clad.name} cladding: the fit covers ${Math.round(lo * 1e9)}–${Math.round(hi * 1e9)} nm only.`;
+      warnings.push(cladRange);
+      reasons.claddingIndex = cladRange;
+      reasons.na = cladRange;
+    } else if (!(na > 0) && Number.isFinite(n)) {
+      const noGuiding = "Cladding index ≥ core index: no guiding.";
+      warnings.push(noGuiding);
+      reasons.na = noGuiding;
+    } else if (coreRange !== undefined) reasons.na = coreRange;
     return {
       values: {
         n,
@@ -69,6 +87,7 @@ export default defineSchema({
         na,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

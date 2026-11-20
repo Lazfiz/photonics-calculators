@@ -23,14 +23,26 @@ export default defineSchema({
   compute({ wavelength, exposureTime, alpha }) {
     const r = thermalVsPhotochemical(wavelength, alpha, exposureTime);
     const warnings: string[] = [];
-    if (!Number.isFinite(r.hPh)) warnings.push("The photochemical limit applies from 10 s only (none from 600 nm).");
-    if (!Number.isFinite(r.crossover)) warnings.push("The thermal limit stays lower up to 30 000 s: no crossover.");
+    const reasons: Partial<Record<"photochemicalLimit" | "photochemicalPower" | "crossover", string>> = {};
+    if (!Number.isFinite(r.hPh)) {
+      const noPhotochemical = "The photochemical limit applies from 10 s only (none from 600 nm).";
+      warnings.push(noPhotochemical);
+      reasons.photochemicalLimit = noPhotochemical;
+      reasons.photochemicalPower = noPhotochemical;
+      if (!Number.isFinite(r.crossover)) reasons.crossover = noPhotochemical;
+    }
+    if (!Number.isFinite(r.crossover)) {
+      const noCrossover = "The thermal limit stays lower up to 30 000 s: no crossover.";
+      warnings.push(noCrossover);
+      if (Number.isFinite(r.hPh)) reasons.crossover = noCrossover;
+    }
     return {
       values: {
         thermalLimit: r.hTh, photochemicalLimit: r.hPh, thermalPower: r.pTh, photochemicalPower: r.pPh,
         photochemicalGoverns: r.governing === "retinalPhotochemical" ? 1 : 0, crossover: r.crossover,
       },
       warnings: warnings.length ? warnings : undefined,
+      reasons,
     };
   },
   checks: [
