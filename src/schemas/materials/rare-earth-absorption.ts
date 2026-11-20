@@ -29,12 +29,18 @@ export default defineSchema({
     // sigmaA arrives in m² (0 = preset); the physics function takes the page's 1e-25 m² unit.
     const r = dopantLineAbsorption(line, sigmaA / SIGMA_UNIT, dopantConcentration / 1e-6, overlap, length);
     const warnings: string[] = [];
-    if (r.alpha === 0) warnings.push("No absorption at zero concentration or overlap: the absorption length is unbounded.");
+    const reasons: Partial<Record<"absorptionLength", string>> = {};
+    if (r.alpha === 0) {
+      const unbounded = "No absorption at zero concentration or overlap: the absorption length is unbounded.";
+      warnings.push(unbounded);
+      reasons.absorptionLength = unbounded;
+    }
     return {
       values: {
         ionDensity: r.N, alpha: r.alpha, absorption: r.dbPerM, absorptionLength: r.absorptionLength, loss: r.lossDb, transmission: r.transmission,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

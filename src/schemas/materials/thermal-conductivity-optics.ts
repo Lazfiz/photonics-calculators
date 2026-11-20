@@ -53,9 +53,22 @@ export default defineSchema({
     const faceRise = slabConductionRise(power, thickness, k, area);
     const f = rodThermalLens(power, k, area, dndT);
     const warnings: string[] = [];
-    if (!Number.isFinite(dndT)) warnings.push("No dn/dT on the data sheet for this material: enter dndT to get a thermal lens.");
-    if (!usePreset) warnings.push("dndT entered, not the material's preset: its convention (dndTAbsolute) is yours.");
-    else if (f === Infinity) warnings.push("No thermal lens: zero absorbed power or dn/dT = 0.");
+    const reasons: Partial<Record<"dndTAbsolute" | "focalLength", string>> = {};
+    if (!Number.isFinite(dndT)) {
+      const noDnDT = "No dn/dT on the data sheet for this material: enter dndT to get a thermal lens.";
+      warnings.push(noDnDT);
+      reasons.focalLength = noDnDT;
+      if (usePreset && mat.dnDT === null) reasons.dndTAbsolute = noDnDT;
+    }
+    if (!usePreset) {
+      const entered = "dndT entered, not the material's preset: its convention (dndTAbsolute) is yours.";
+      warnings.push(entered);
+      reasons.dndTAbsolute = entered;
+    } else if (f === Infinity) {
+      const noLens = "No thermal lens: zero absorbed power or dn/dT = 0.";
+      warnings.push(noLens);
+      reasons.focalLength = noLens;
+    }
     else if (f < 0) warnings.push("Negative focal length: a diverging lens (dn/dT < 0).");
     return {
       values: {
@@ -63,6 +76,7 @@ export default defineSchema({
         dndTAbsolute: !usePreset || mat.dnDT === null ? NaN : mat.dnDTAbsolute ? 1 : 0,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

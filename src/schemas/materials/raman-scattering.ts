@@ -40,7 +40,12 @@ export default defineSchema({
     const warnings: string[] = [];
     if (basis === "scaled") warnings.push("g_R at this pump wavelength is scaled as 1/λ_p from the nearest measured pump wavelength (an estimate).");
     if (line.absorbsBelow && pumpWl < line.absorbsBelow) warnings.push(`${line.name} absorbs below ${(line.absorbsBelow * 1e9).toPrecision(3)} nm, so this pump is absorbed and g_R does not apply.`);
-    if (!Number.isFinite(line.fwhm)) warnings.push("The glass line is broad and not Lorentzian: no dephasing time.");
+    const reasons: Partial<Record<"dephasing", string>> = {};
+    if (!Number.isFinite(line.fwhm)) {
+      const broad = "The glass line is broad and not Lorentzian: no dephasing time.";
+      warnings.push(broad);
+      reasons.dephasing = broad;
+    }
     return {
       values: {
         stokes: stokesWavelength(pumpWl, line.shift),
@@ -50,6 +55,7 @@ export default defineSchema({
         gainDb: DB_PER_E_FOLD * G,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

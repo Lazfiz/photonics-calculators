@@ -74,13 +74,26 @@ export default defineSchema({
     const ok = result.status === "ok" && Number.isFinite(result.pMax);
     const binding = result.limits.find((l) => l.kind === result.limiting) ?? result.limits[0];
     const warnings: string[] = [];
+    const reasons: Partial<
+      Record<"maxPowerScanned" | "powerOverMax" | "bindingRule" | "passDuration" | "passes" | "scanningGain" | "stopTime", string>
+    > = {};
+    const eyeLimitRange = "The eye limits cover 180 nm to 1 mm.";
+    const setScanReason = (text: string) => {
+      warnings.push(text);
+      reasons.maxPowerScanned = text;
+      reasons.powerOverMax = text;
+      reasons.bindingRule = text;
+      reasons.passDuration = text;
+      reasons.passes = text;
+      reasons.scanningGain = text;
+    };
     if (result.status === "noClearance") {
-      warnings.push("The sweep is shorter than a limit's averaging aperture (7 mm on the retina, 1–3.5 mm on the cornea) plus the beam: " +
+      setScanReason("The sweep is shorter than a limit's averaging aperture (7 mm on the retina, 1–3.5 mm on the cornea) plus the beam: " +
         "the beam never leaves the eye. Treat it as a stationary beam.");
     } else if (!ok) {
-      warnings.push(covered
+      setScanReason(covered
         ? "The passes overlap or the exposure is shorter than one pass: treat the beam as stationary."
-        : "The eye limits cover 180 nm to 1 mm.");
+        : eyeLimitRange);
     } else {
       warnings.push(...SCAN_CAVEATS);
     }
@@ -88,6 +101,16 @@ export default defineSchema({
       warnings.push(`ICNIRP 2013 (p. 286) assesses unintended viewing at this wavelength over ${standardTime} s` +
         (wavelength < 400e-9 || wavelength > 700e-9 ? " (an invisible beam triggers no aversion response)" : "") +
         `; the ${exposureTime} s entered is shorter, so these limits are less conservative.`);
+    }
+    if (!covered) reasons.stopTime = eyeLimitRange;
+    else if (Number.isNaN(stopped.tMax)) {
+      const exceeded = "The stopped beam exceeds a limit already at 1 ns, the shortest time the limits cover: stopTime is null.";
+      warnings.push(exceeded);
+      reasons.stopTime = exceeded;
+    } else if (stopped.tMax === Infinity) {
+      const noLimit = "The stopped beam reaches no limit in 30 000 s, the longest time the limits cover: stopTime is null.";
+      warnings.push(noLimit);
+      reasons.stopTime = noLimit;
     }
     return {
       values: {
@@ -102,6 +125,7 @@ export default defineSchema({
         exposureUsed: T,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

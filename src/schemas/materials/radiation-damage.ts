@@ -24,10 +24,16 @@ export default defineSchema({
     const A = inducedAttenuation(a1, exponent, dose);
     const doseAtBudget = doseForLoss(a1, exponent, length, lossBudget);
     const warnings: string[] = [];
-    if (!Number.isFinite(doseAtBudget)) warnings.push("No dose reaches the loss budget: it needs A₁ > 0.");
+    const reasons: Partial<Record<"doseAtBudget", string>> = {};
+    if (!Number.isFinite(doseAtBudget)) {
+      const noDose = "No dose reaches the loss budget: it needs A₁ > 0.";
+      warnings.push(noDose);
+      if (!(a1 > 0)) reasons.doseAtBudget = noDose;
+    }
     return {
       values: { attenuation: A, loss: A * length, transmission: internalTransmission(A, length), doseAtBudget },
       warnings,
+      reasons,
     };
   },
   checks: [

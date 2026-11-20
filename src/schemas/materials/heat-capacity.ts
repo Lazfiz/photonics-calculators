@@ -50,9 +50,17 @@ export default defineSchema({
     const q = heatInput(c, mat.tRef, theta, mass, t1, t2);
     const meanCp = t1 === t2 ? NaN : q / (mass * (t2 - t1));
     const warnings: string[] = [];
-    if (t1 === t2) warnings.push("T₁ = T₂: no mean specific heat.");
-    else if (!(mass > 0)) warnings.push("Zero mass: no mean specific heat.");
-    return { values: { cp, volumetric: rho * cp, heat: q, meanCp }, warnings };
+    const reasons: Partial<Record<"meanCp", string>> = {};
+    if (t1 === t2) {
+      const sameTemp = "T₁ = T₂: no mean specific heat.";
+      warnings.push(sameTemp);
+      reasons.meanCp = sameTemp;
+    } else if (!(mass > 0)) {
+      const zeroMass = "Zero mass: no mean specific heat.";
+      warnings.push(zeroMass);
+      reasons.meanCp = zeroMass;
+    }
+    return { values: { cp, volumetric: rho * cp, heat: q, meanCp }, warnings, reasons };
   },
   checks: [
     {

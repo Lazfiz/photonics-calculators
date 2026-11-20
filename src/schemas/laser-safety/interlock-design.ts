@@ -27,15 +27,22 @@ export default defineSchema({
   compute({ laserPower, wavelength, beamDiam, shutterTime, accessDistance, approachSpeed }) {
     const r = interlockTiming(wavelength, laserPower, beamDiam, shutterTime, accessDistance, approachSpeed);
     const warnings: string[] = [];
-    if (Number.isNaN(r.accessTime)) warnings.push("The eye limits cover 180 nm to 1 mm.");
-    else if (r.tMax === Infinity) warnings.push("This beam stays within the eye limits for 30 000 s: the eye needs no interlock (skin and reflections aside).");
-    else if (Number.isNaN(r.tMax)) warnings.push("The beam exceeds the eye limit within 1 ns: the shutter has to close before the beam can be reached (T ≤ S/K).");
+    const reasons: Partial<Record<"tMax" | "latestStop", string>> = {};
+    const setReason = (text: string) => {
+      warnings.push(text);
+      reasons.tMax = text;
+      reasons.latestStop = text;
+    };
+    if (Number.isNaN(r.accessTime)) setReason("The eye limits cover 180 nm to 1 mm.");
+    else if (r.tMax === Infinity) setReason("This beam stays within the eye limits for 30 000 s: the eye needs no interlock (skin and reflections aside).");
+    else if (Number.isNaN(r.tMax)) setReason("The beam exceeds the eye limit within 1 ns: the shutter has to close before the beam can be reached (T ≤ S/K).");
     return {
       values: {
         tMax: r.tMax, accessTime: r.accessTime, exposure: r.exposure, latestStop: r.latestStop,
         minDistance: r.minDistance, withinLimit: r.within ? 1 : 0,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

@@ -56,11 +56,20 @@ export default defineSchema({
     const Q = kleinCookQ(wavelength, length, frequency, n, v);
     const tau = accessTime(beam, v);
     const warnings: string[] = [];
-    if (!Number.isFinite(thetaOut)) warnings.push("λf/(2v) > 1: no Bragg angle at this frequency");
+    const reasons: Partial<Record<"braggAngleOutside" | "deflection" | "efficiency" | "powerFor100", string>> = {};
+    if (!Number.isFinite(thetaOut)) {
+      const noBragg = "λf/(2v) > 1: no Bragg angle at this frequency";
+      warnings.push(noBragg);
+      reasons.braggAngleOutside = noBragg;
+      reasons.deflection = noBragg;
+    }
     let efficiency = braggEfficiency(wavelength, M2, length, height, power);
     let p100 = fullEfficiencyPower(wavelength, M2, length, height);
     if (Number.isFinite(Q) && Q < 1) {
-      warnings.push("Q < 1: Raman–Nath regime, the Bragg sin² efficiency and the power for 100 % do not apply");
+      const ramanNath = "Q < 1: Raman–Nath regime, the Bragg sin² efficiency and the power for 100 % do not apply";
+      warnings.push(ramanNath);
+      reasons.efficiency = ramanNath;
+      reasons.powerFor100 = ramanNath;
       efficiency = NaN;
       p100 = NaN;
     } else if (Number.isFinite(Q) && Q < 10) {
@@ -76,6 +85,7 @@ export default defineSchema({
         kleinCookQ: Q, efficiency, powerFor100: p100, accessTime: tau, spots: tau * bandwidth,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

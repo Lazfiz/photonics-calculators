@@ -40,10 +40,15 @@ export default defineSchema({
       warnings.push("α itself changes with temperature; over large ranges use the mean α of the range (the silicon outputs integrate α(T)).");
     }
     const siInRange = T1 >= SI_ALPHA_T_MIN && T1 <= SI_ALPHA_T_MAX && T2 >= SI_ALPHA_T_MIN && T2 <= SI_ALPHA_T_MAX;
+    const reasons: Partial<Record<"siAlphaStart" | "siAlphaEnd" | "siMeanAlpha" | "siDL" | "siConstDL", string>> = {};
     if (!siInRange) {
-      warnings.push(
-        `The silicon fit holds from ${SI_ALPHA_T_MIN} to ${SI_ALPHA_T_MAX} K; T₀ = ${T1.toFixed(1)} K and T₀ + ΔT = ${T2.toFixed(1)} K must both lie in it.`,
-      );
+      const outsideFit = `The silicon fit holds from ${SI_ALPHA_T_MIN} to ${SI_ALPHA_T_MAX} K; T₀ = ${T1.toFixed(1)} K and T₀ + ΔT = ${T2.toFixed(1)} K must both lie in it.`;
+      warnings.push(outsideFit);
+      reasons.siAlphaStart = outsideFit;
+      reasons.siAlphaEnd = outsideFit;
+      reasons.siMeanAlpha = outsideFit;
+      reasons.siDL = outsideFit;
+      reasons.siConstDL = outsideFit;
     }
     return {
       values: {
@@ -57,6 +62,7 @@ export default defineSchema({
         siConstDL: thermalExpansion(siliconAlpha(T1), length, dT),
       },
       warnings,
+      reasons,
     };
   },
   checks: [

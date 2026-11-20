@@ -36,7 +36,12 @@ export default defineSchema({
     const maxRatio = Math.max(...at.limits.map((l) => l.ratio));
     // C_E belongs to the retinal thermal limit, which is only in force from 400 to 1400 nm.
     const retinal = wavelength >= 400e-9 && wavelength <= 1400e-9;
-    if (!retinal) warnings.push("C_E applies from 400 to 1400 nm only.");
+    const reasons: Partial<Record<"correctionCE", string>> = {};
+    if (!retinal) {
+      const ceRange = "C_E applies from 400 to 1400 nm only.";
+      warnings.push(ceRange);
+      reasons.correctionCE = ceRange;
+    }
     if (retinal && viewingDistance < NEAR_POINT) warnings.push("Nearer than 10 cm the eye can't focus the spot, so the retinal limits are assessed at 10 cm.");
     return {
       values: {
@@ -48,6 +53,7 @@ export default defineSchema({
         opticalDensity: Math.max(0, Math.log10(maxRatio)),
       },
       warnings,
+      reasons,
     };
   },
   checks: [

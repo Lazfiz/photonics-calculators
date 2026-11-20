@@ -54,10 +54,37 @@ export default defineSchema({
     const retardation = (Math.PI * voltage) / m.VpiRet;
     const rotationL = m.rotation * length;
     const warnings: string[] = [];
-    if (!Number.isFinite(m.n)) warnings.push("The wavelength is outside the index model's range.");
-    else if (!Number.isFinite(m.VpiPhase)) warnings.push("The wavelength is outside the range where the electro-optic coefficients are tabulated.");
+    const reasons: Partial<
+      Record<
+        "halfWaveRetardation" | "halfWavePhase" | "vpiLength" | "indexChange" | "retardation" | "phase" | "transmission" | "transmissionNoRotation",
+        string
+      >
+    > = {};
+    if (!Number.isFinite(m.n)) {
+      const outsideIndex = "The wavelength is outside the index model's range.";
+      warnings.push(outsideIndex);
+      reasons.halfWaveRetardation = outsideIndex;
+      reasons.halfWavePhase = outsideIndex;
+      reasons.vpiLength = outsideIndex;
+      reasons.indexChange = outsideIndex;
+      reasons.retardation = outsideIndex;
+      reasons.phase = outsideIndex;
+      reasons.transmission = outsideIndex;
+      reasons.transmissionNoRotation = outsideIndex;
+    } else if (!Number.isFinite(m.VpiPhase)) {
+      const outsideCoefficients = "The wavelength is outside the range where the electro-optic coefficients are tabulated.";
+      warnings.push(outsideCoefficients);
+      reasons.halfWavePhase = outsideCoefficients;
+      reasons.vpiLength = outsideCoefficients;
+      reasons.phase = outsideCoefficients;
+    }
     if (!Number.isFinite(m.VpiRet) && Number.isFinite(m.VpiPhase)) {
-      warnings.push(custom ? "A custom transverse modulator needs r₃₃ and r₁₃ for the retardation: pick a table crystal." : "No retardation half-wave voltage at this wavelength.");
+      const noRetardation = custom ? "A custom transverse modulator needs r₃₃ and r₁₃ for the retardation: pick a table crystal." : "No retardation half-wave voltage at this wavelength.";
+      warnings.push(noRetardation);
+      reasons.halfWaveRetardation = noRetardation;
+      reasons.retardation = noRetardation;
+      reasons.transmission = noRetardation;
+      reasons.transmissionNoRotation = noRetardation;
     }
     return {
       values: {
@@ -73,6 +100,7 @@ export default defineSchema({
         rotation: rotationL,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

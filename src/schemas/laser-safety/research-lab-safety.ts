@@ -37,8 +37,13 @@ export default defineSchema({
     const cls = classifyCw(wavelength, power, { d: beamDia, phi: divergence });
     const nohd = nominalOcularHazardDistance(wavelength, power, beam, t);
     const warnings: string[] = [];
+    const reasons: Partial<Record<"nohd", string>> = {};
     if (cls.laserClass === null || Number.isNaN(nohd.distance)) warnings.push("The eye limits cover 180 nm to 1 mm.");
-    else if (nohd.distance > diagonal) warnings.push("The direct beam is hazardous at every wall of the room.");
+    else if (nohd.distance > diagonal) {
+      const everyWall = "The direct beam is hazardous at every wall of the room.";
+      warnings.push(everyWall);
+      reasons.nohd = everyWall;
+    }
     return {
       values: {
         classRank: cls.laserClass === null ? NaN : RANK[cls.laserClass],
@@ -48,6 +53,7 @@ export default defineSchema({
         beamAtWall: effectiveDiameterAt(beam, diagonal),
       },
       warnings,
+      reasons,
     };
   },
   checks: [

@@ -41,11 +41,22 @@ export default defineSchema({
     const warnings: string[] = [];
     const valid = inRange(model, wavelength);
     const at = (f: (lambda: number) => number) => (valid ? f(wavelength) : NaN);
+    const reasons: Partial<Record<"n" | "groupIndex" | "dnDlambda" | "beta2" | "dispersion" | "zeroDispersion", string>> = {};
     if (!valid) {
-      warnings.push(`${wavelength * 1e9} nm is outside the ${+(model.range[0] * 1e9).toPrecision(4)}–${+(model.range[1] * 1e9).toPrecision(4)} nm range of this formula`);
+      const outside = `${wavelength * 1e9} nm is outside the ${+(model.range[0] * 1e9).toPrecision(4)}–${+(model.range[1] * 1e9).toPrecision(4)} nm range of this formula`;
+      warnings.push(outside);
+      reasons.n = outside;
+      reasons.groupIndex = outside;
+      reasons.dnDlambda = outside;
+      reasons.beta2 = outside;
+      reasons.dispersion = outside;
     }
     const zeros = zeroDispersionWavelengths(model);
-    if (zeros.length === 0) warnings.push("No zero-dispersion wavelength in the fit range");
+    if (zeros.length === 0) {
+      const noZero = "No zero-dispersion wavelength in the fit range";
+      warnings.push(noZero);
+      reasons.zeroDispersion = noZero;
+    }
     if (zeros.length > 1) warnings.push(`Zero-dispersion wavelengths: ${zeros.map((z) => `${+(z * 1e9).toPrecision(5)} nm`).join(", ")}`);
     return {
       values: {
@@ -57,6 +68,7 @@ export default defineSchema({
         zeroDispersion: zeros.length ? zeros[0] : NaN,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

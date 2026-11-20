@@ -29,8 +29,14 @@ export default defineSchema({
         warnings: [Number.isNaN(r.tMax) ? "The beam exceeds a limit already at 1 ns." : "No limit is reached in 30 000 s."],
       };
     }
-    const warnings = Number.isFinite(r.tMax) ? [] : ["The beam exceeds a limit already at 1 ns, the shortest time the limits cover: no maximum duration."];
-    return { values: { maxTime: r.tMax, aperture: l.aperture, irradiance: l.irradiance, limit: l.limit }, warnings };
+    const warnings: string[] = [];
+    const reasons: Partial<Record<"maxTime", string>> = {};
+    if (!Number.isFinite(r.tMax)) {
+      const exceeded = "The beam exceeds a limit already at 1 ns, the shortest time the limits cover: no maximum duration.";
+      warnings.push(exceeded);
+      if (Number.isNaN(r.tMax)) reasons.maxTime = exceeded;
+    }
+    return { values: { maxTime: r.tMax, aperture: l.aperture, irradiance: l.irradiance, limit: l.limit }, warnings, reasons };
   },
   checks: [
     {

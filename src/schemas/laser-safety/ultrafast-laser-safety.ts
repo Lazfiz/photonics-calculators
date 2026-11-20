@@ -51,8 +51,10 @@ export default defineSchema({
     const singleOnly = Math.min(...result.limits.map((l) => l.singlePulse));
     const dSafe = pulseTrainSafeDiameter(wavelength, pulseEnergy, train);
     const nohd = rangeToDiameter(roundBeam(beamDia, divergence), dSafe);
+    const anyRange = "The beam doesn't spread (φ = 0): the hazard extends to any range.";
     return {
-      warnings: nohd === Infinity ? ["The beam doesn't spread (φ = 0): the hazard extends to any range."] : [],
+      warnings: nohd === Infinity ? [anyRange] : [],
+      reasons: nohd === Infinity ? { nohd: anyRange } : {},
       values: {
         averagePower: pulseEnergy * repRate,
         peakPower: pulseEnergy / pulseWidth,

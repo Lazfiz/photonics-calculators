@@ -28,7 +28,15 @@ export default defineSchema({
     const retina = tissueMaxPower(limits, true, beamDiam, exposureTime);
     const front = tissueMaxPower(limits, false, beamDiam, exposureTime);
     const warnings: string[] = [];
-    if (!retina) warnings.push("The retina is not reached at this wavelength (absorbed in front); no retinal limit, image or gain.");
+    const reasons: Partial<Record<"retinaMaxPower" | "retinalImageDiameter" | "retinalGain" | "retinalIrradiance", string>> = {};
+    if (!retina) {
+      const noRetina = "The retina is not reached at this wavelength (absorbed in front); no retinal limit, image or gain.";
+      warnings.push(noRetina);
+      reasons.retinaMaxPower = noRetina;
+      reasons.retinalImageDiameter = noRetina;
+      reasons.retinalGain = noRetina;
+      reasons.retinalIrradiance = noRetina;
+    }
     if (!front) warnings.push("No separate limit for the cornea and lens here: the retinal limits protect the front of the eye.");
     if (!retina && !front) warnings.push("The eye limits cover 180 nm to 1 mm.");
     const s = retinalImageDiameter(wavelength, beamDiam);
@@ -41,6 +49,7 @@ export default defineSchema({
         retinalIrradiance: retina ? retinalIrradiance(retina.pMax, beamDiam, s) : NaN,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

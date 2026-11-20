@@ -29,7 +29,12 @@ export default defineSchema({
     const EB = E * B;
     const tMax = blueLightSmallSourceMaxDuration(EB);
     const warnings: string[] = [];
-    if (tMax === Infinity) warnings.push("E_B is at or below 1 W/m²: no exposure-time limit applies.");
+    const reasons: Partial<Record<"maxExposure", string>> = {};
+    if (tMax === Infinity) {
+      const noLimit = "E_B is at or below 1 W/m²: no exposure-time limit applies.";
+      warnings.push(noLimit);
+      reasons.maxExposure = noLimit;
+    }
     if (tMax < 0.25) warnings.push("Below 0.25 s the retinal thermal limit governs, which this calculator doesn't evaluate.");
     return {
       values: {
@@ -40,6 +45,7 @@ export default defineSchema({
         riskGroup: RISK_GROUP_INDEX[blueLightSmallSourceRiskGroup(EB)],
       },
       warnings,
+      reasons,
     };
   },
   checks: [
