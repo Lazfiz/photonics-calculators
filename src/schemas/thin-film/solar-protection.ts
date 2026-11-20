@@ -42,8 +42,16 @@ export default defineSchema({
       irPairs: clampInt(irPairs, 1, 40),
     });
     const warnings: string[] = [];
-    if (!design.valid) warnings.push('Set nH above nL and each band\'s "from" below its "to".');
-    if (design.tooBig) warnings.push("Too many stacks to compute here; narrow the bands or use fewer periods.");
+    const reasons: Partial<Record<"solarTransmittance" | "solarReflected" | "uvTransmittance" | "visibleTransmittance" | "nirTransmittance", string>> = {};
+    const meanKeys = ["solarTransmittance", "solarReflected", "uvTransmittance", "visibleTransmittance", "nirTransmittance"] as const;
+    const invalid = 'Set nH above nL and each band\'s "from" below its "to".';
+    const tooBig = "Too many stacks to compute here; narrow the bands or use fewer periods.";
+    if (!design.valid) warnings.push(invalid);
+    if (design.tooBig) warnings.push(tooBig);
+    if (!design.ready) {
+      if (!design.valid) for (const k of meanKeys) reasons[k] = invalid;
+      else if (design.tooBig) for (const k of meanKeys) reasons[k] = tooBig;
+    }
     for (const z of thirdOrderZones(design.irCentres, nH, nL)) {
       if (z.to > 400 * NM && z.from < 700 * NM) {
         warnings.push(`A third-order zone of the IR reflector, ${(z.from / NM).toFixed(0)}–${(z.to / NM).toFixed(0)} nm, blocks visible light.`);
@@ -62,6 +70,7 @@ export default defineSchema({
         irStacks: design.irCentres.length,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

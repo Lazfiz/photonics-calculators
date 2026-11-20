@@ -28,16 +28,36 @@ export default defineSchema({
     const indices = Array.from({ length: pairs * 2 }, (_, j) => (j % 2 === 0 ? nH : nL));
     const stack = { incident: nInc, layers: quarterWaveLayers(indices, designWl), substrate: { n: nSub } };
     const centre = stopBandCentreAtAngle(designWl, nH, nL, aoi, nInc);
+    const cosH = cosAngleInLayer(nInc, nH, aoi);
+    const cosL = cosAngleInLayer(nInc, nL, aoi);
+    const warnings: string[] = [];
+    const reasons: Partial<Record<"cosH" | "cosL" | "centre", string>> = {};
+    if (!Number.isFinite(centre)) {
+      const noCentre = "Light does not propagate in both layers at this angle: no stop-band centre.";
+      warnings.push(noCentre);
+      reasons.centre = noCentre;
+    }
+    if (!Number.isFinite(cosH)) {
+      const noH = "Light does not propagate in the H layer at this angle (n_inc sin θ ≥ nH): cosH is null.";
+      warnings.push(noH);
+      reasons.cosH = noH;
+    }
+    if (!Number.isFinite(cosL)) {
+      const noL = "Light does not propagate in the L layer at this angle (n_inc sin θ ≥ nL): cosL is null.";
+      warnings.push(noL);
+      reasons.cosL = noL;
+    }
     return {
       values: {
-        cosH: cosAngleInLayer(nInc, nH, aoi),
-        cosL: cosAngleInLayer(nInc, nL, aoi),
+        cosH,
+        cosL,
         totalLayers: pairs * 2,
         centre,
         reflectanceS: stackResponse(stack, designWl, aoi, "s").R,
         reflectanceP: stackResponse(stack, designWl, aoi, "p").R,
       },
-      warnings: Number.isFinite(centre) ? [] : ["Light does not propagate in both layers at this angle: no stop-band centre."],
+      warnings,
+      reasons,
     };
   },
   checks: [

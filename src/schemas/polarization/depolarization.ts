@@ -84,8 +84,19 @@ export default defineSchema({
     const dn = (lam: number) => { const n = crystalIndices(id, lam); return Math.abs(n.ne - n.no); };
     const plate = plateBandModel(thickness, dn, wavelength, bandwidth, shape as SpectrumShape, axis);
     const Sout = applyMueller(retarder ? plate.M : muellerDepolarizer(d), Sin);
-    if (!retarder) warnings.push("The retarder outputs need mode = retarder.");
-    else if (!Number.isFinite(plate.halfThickness)) warnings.push("No thickness for V = 0.5: the plate has no group birefringence.");
+    const reasons: Partial<Record<"phaseRetardance" | "groupRetardance" | "visibility" | "halfThickness", string>> = {};
+    if (!retarder) {
+      const needsRetarder = "The retarder outputs need mode = retarder.";
+      warnings.push(needsRetarder);
+      reasons.phaseRetardance = needsRetarder;
+      reasons.groupRetardance = needsRetarder;
+      reasons.visibility = needsRetarder;
+      reasons.halfThickness = needsRetarder;
+    } else if (!Number.isFinite(plate.halfThickness)) {
+      const noHalf = "No thickness for V = 0.5: the plate has no group birefringence.";
+      warnings.push(noHalf);
+      reasons.halfThickness = noHalf;
+    }
     const spectral = (v: number) => (retarder ? v : NaN);
     return {
       values: {
@@ -98,6 +109,7 @@ export default defineSchema({
         halfThickness: spectral(plate.halfThickness),
       },
       warnings,
+      reasons,
     };
   },
   checks: [

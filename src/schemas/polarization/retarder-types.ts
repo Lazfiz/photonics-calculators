@@ -48,11 +48,24 @@ export default defineSchema({
       } as Record<`${N}Waves` | `${N}BandLow` | `${N}BandHigh` | `${N}Tilt`, number>;
     };
     const warnings: string[] = [];
+    type TypeId = "zero" | "multi" | "compound" | "achromatic" | "rhomb";
+    const reasons: Partial<Record<`${TypeId}Band${"Low" | "High"}` | "achromaticQuartz" | "achromaticMgF2", string>> = {};
     if (!Number.isFinite(achromatic.d[0])) {
-      warnings.push("No achromat for these wavelengths: the two quartz and MgF₂ thicknesses would need opposite signs.");
+      const noAchromat = "No achromat for these wavelengths: the two quartz and MgF₂ thicknesses would need opposite signs.";
+      warnings.push(noAchromat);
+      reasons.achromaticQuartz = noAchromat;
+      reasons.achromaticMgF2 = noAchromat;
     }
-    const bandless = [zero, multi, compound, achromatic, rhomb].filter((t) => !Number.isFinite(retarderRow(t, wavelength, retardance).band[0]));
-    if (bandless.length) warnings.push(`No band within ±1 % of the target at λ₀ for: ${bandless.map((t) => t.name).join(", ")}.`);
+    const typed: [TypeId, typeof zero][] = [["zero", zero], ["multi", multi], ["compound", compound], ["achromatic", achromatic], ["rhomb", rhomb]];
+    const bandless = typed.filter(([, t]) => !Number.isFinite(retarderRow(t, wavelength, retardance).band[0]));
+    if (bandless.length) {
+      const noBand = `No band within ±1 % of the target at λ₀ for: ${bandless.map(([, t]) => t.name).join(", ")}.`;
+      warnings.push(noBand);
+      for (const [id] of bandless) {
+        reasons[`${id}BandLow`] = noBand;
+        reasons[`${id}BandHigh`] = noBand;
+      }
+    }
     return {
       values: {
         zeroThickness: zero.d[0],
@@ -70,6 +83,7 @@ export default defineSchema({
         ...row("rhomb", rhomb),
       },
       warnings,
+      reasons,
     };
   },
   checks: [

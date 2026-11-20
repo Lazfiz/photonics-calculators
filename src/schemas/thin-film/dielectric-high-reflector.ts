@@ -51,8 +51,18 @@ export default defineSchema({
     const zone = stopBandEdges(designWl, nH, nL);
     const delay = valid ? reflectionGroupDelay(stack, designWl) : { groupDelay: NaN };
     const warnings: string[] = [];
-    if (!valid) warnings.push("Set nH above nL, positive indices and λ₀ in 100–20 000 nm.");
-    else if (!Number.isFinite(band.short)) warnings.push("R(λ₀) is below 50 %: there is no stop band.");
+    const reasons: Partial<Record<"reflectance" | "bandWidth" | "bandShort" | "bandLong" | "groupDelay" | "delayLimit", string>> = {};
+    if (!valid) {
+      const invalid = "Set nH above nL, positive indices and λ₀ in 100–20 000 nm.";
+      warnings.push(invalid);
+      for (const k of ["reflectance", "bandWidth", "bandShort", "bandLong", "groupDelay", "delayLimit"] as const) reasons[k] = invalid;
+    } else if (!Number.isFinite(band.short)) {
+      const noBand = "R(λ₀) is below 50 %: there is no stop band.";
+      warnings.push(noBand);
+      reasons.bandWidth = noBand;
+      reasons.bandShort = noBand;
+      reasons.bandLong = noBand;
+    }
     return {
       values: {
         reflectance: valid ? quarterWaveStackReflectance(nInc, indices, nSub) : NaN,
@@ -66,6 +76,7 @@ export default defineSchema({
         layerCount: indices.length,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

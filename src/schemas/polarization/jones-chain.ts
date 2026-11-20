@@ -40,14 +40,24 @@ export default defineSchema({
     const outI = intensity(out);
     const warnings: string[] = [];
     let psi = NaN, chi = NaN, ratio = NaN;
-    if (outI < 1e-12) warnings.push("No light transmitted: the output has no polarization state.");
-    else {
+    const reasons: Partial<Record<"psi" | "chi" | "axisRatio", string>> = {};
+    if (outI < 1e-12) {
+      const noLight = "No light transmitted: the output has no polarization state.";
+      warnings.push(noLight);
+      reasons.psi = noLight;
+      reasons.chi = noLight;
+      reasons.axisRatio = noLight;
+    } else {
       const S = stokesFromJones(out);
       ({ psi, chi } = ellipseAngles(S));
       ratio = axisRatio(S);
-      if (Number.isNaN(psi)) warnings.push("Circular light has no orientation angle.");
+      if (Number.isNaN(psi)) {
+        const circular = "Circular light has no orientation angle.";
+        warnings.push(circular);
+        reasons.psi = circular;
+      }
     }
-    return { values: { transmission: outI / intensity(input), psi, chi, axisRatio: ratio }, warnings };
+    return { values: { transmission: outI / intensity(input), psi, chi, axisRatio: ratio }, warnings, reasons };
   },
   checks: [
     {

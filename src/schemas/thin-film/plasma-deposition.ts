@@ -34,9 +34,15 @@ export default defineSchema({
   compute({ power, pressure, radius, length, gasTemp }) {
     const d = argonDischarge(power, radius, length, pressure, gasTemp);
     const warnings: string[] = ["Argon carrier gas only; floating wall; P_abs is the power absorbed by the electrons, not the generator power."];
+    const reasons: Partial<Record<"debye", string>> = {};
     if (!Number.isFinite(d.Te)) {
       warnings.push(`At this pressure and chamber size particle balance needs Tₑ outside ${TE_MIN}–${TE_MAX} eV, outside this model: no result.`);
     } else {
+      if (d.n0 === 0) {
+        const noPlasma = "No absorbed power: the electron density is zero, so the Debye length is infinite (debye is null).";
+        warnings.push(noPlasma);
+        reasons.debye = noPlasma;
+      }
       if (d.Te <= TE_FIT_MIN || d.Te > TE_FIT_MAX) {
         warnings.push(`Tₑ lies outside the ${TE_FIT_MIN}–${TE_FIT_MAX} eV range of the argon rate-constant fits: extrapolated.`);
       }
@@ -50,6 +56,7 @@ export default defineSchema({
         lambdaI: d.lambdaI, ng: d.ng, hl: d.hl, hR: d.hR, dEff: d.dEff, Da: d.Da,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

@@ -34,9 +34,24 @@ export default defineSchema({
     const lambda0 = notchWl; // SI (m)
     const s = notchFilterSummary({ nH, nL, nSub, nInc, lambda0, pairs });
     const base = { nH, nL, nSub, nInc, lambda0 };
-    const warnings = s.valid ? [] : ["Set nH above nL, positive indices and λ₀ in 100–20 000 nm."];
+    const warnings: string[] = [];
+    const reasons: Partial<Record<
+      "reflectance" | "opticalDensity" | "notchWidth" | "notchShort" | "notchLong" | "pairsOD3" | "pairsOD4" | "pairsOD6",
+      string
+    >> = {};
+    if (!s.valid) {
+      const invalid = "Set nH above nL, positive indices and λ₀ in 100–20 000 nm.";
+      warnings.push(invalid);
+      for (const k of ["reflectance", "opticalDensity", "notchWidth", "notchShort", "notchLong", "pairsOD3", "pairsOD4", "pairsOD6"] as const) {
+        reasons[k] = invalid;
+      }
+    }
     if (s.valid && !(Number.isFinite(s.notch.short) && Number.isFinite(s.notch.long))) {
-      warnings.push("The reflection band has no half-height edges (too few pairs: the peak is not a clear band), so the notch width is undefined.");
+      const noEdges = "The reflection band has no half-height edges (too few pairs: the peak is not a clear band), so the notch width is undefined.";
+      warnings.push(noEdges);
+      reasons.notchWidth = noEdges;
+      reasons.notchShort = noEdges;
+      reasons.notchLong = noEdges;
     }
     return {
       values: {
@@ -53,6 +68,7 @@ export default defineSchema({
         layerCount: s.indices.length,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

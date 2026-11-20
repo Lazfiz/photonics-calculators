@@ -49,8 +49,11 @@ export default defineSchema({
       }
     }
     const res = r.results;
+    const reasons: Partial<Record<"edgeWavelength", string>> = {};
     if (res && !Number.isFinite(res.edge)) {
-      warnings.push("The stack transmits 50 % or more at its design wavelength (too few periods for this nH/nL contrast), so T never crosses 50 %: no edge.");
+      const noEdge = "The stack transmits 50 % or more at its design wavelength (too few periods for this nH/nL contrast), so T never crosses 50 %: no edge.";
+      warnings.push(noEdge);
+      reasons.edgeWavelength = noEdge;
     }
     return {
       values: {
@@ -63,6 +66,7 @@ export default defineSchema({
         layerCount: res ? r.stack.layers.length : NaN,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

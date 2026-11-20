@@ -49,10 +49,38 @@ export default defineSchema({
     const { no, ne } = resolveCrystalIndices(crystal, wavelength, customNo, customNe);
     const { split, glan } = prismPolarizer(type as PolarizerDesign, no, ne, prismAngleDeg);
     const warnings: string[] = [];
-    if (!Number.isFinite(no)) warnings.push("The wavelength is outside this crystal's Sellmeier data range: no indices.");
-    if (type === "glan") warnings.push("Glan-Taylor: the splitter outputs (exit angles, separation) do not apply.");
-    else warnings.push("Splitter: the Glan-Taylor window outputs do not apply.");
+    type Key = "nOrdinary" | "nExtraordinary" | "sExit" | "pExit" | "separation" | "smallAngle" | "windowLower" | "windowUpper" | "halfField";
+    const reasons: Partial<Record<Key, string>> = {};
+    const splitterKeys = ["sExit", "pExit", "separation", "smallAngle"] as const;
+    const windowKeys = ["windowLower", "windowUpper", "halfField"] as const;
+    if (!Number.isFinite(no)) {
+      const noIndices = "The wavelength is outside this crystal's Sellmeier data range: no indices.";
+      warnings.push(noIndices);
+      for (const k of ["nOrdinary", "nExtraordinary", ...splitterKeys, ...windowKeys] as const) reasons[k] = noIndices;
+    }
+    if (type === "glan") {
+      const notSplitter = "Glan-Taylor: the splitter outputs (exit angles, separation) do not apply.";
+      warnings.push(notSplitter);
+      for (const k of splitterKeys) reasons[k] = notSplitter;
+    } else {
+      const notGlan = "Splitter: the Glan-Taylor window outputs do not apply.";
+      warnings.push(notGlan);
+      for (const k of windowKeys) reasons[k] = notGlan;
+      if (split && Number.isFinite(no)) {
+        const reflected = "Splitter: a beam is totally reflected at the wedge interface or the exit face, so it has no exit angle.";
+        if (!Number.isFinite(split.s)) reasons.sExit = reflected;
+        if (!Number.isFinite(split.p)) reasons.pExit = reflected;
+        if (!Number.isFinite(split.separation)) reasons.separation = reflected;
+        if (!Number.isFinite(split.s) || !Number.isFinite(split.p)) warnings.push(reflected);
+      }
+    }
     if (glan && !glan.axialPolarized) warnings.push("The axial ray is not polarized.");
+    if (glan && Number.isFinite(no) && !Number.isFinite(glan.lower)) {
+      const noWindow = "Glan-Taylor: no polarizing window exists for these indices and this hypotenuse angle: windowLower and windowUpper are null.";
+      warnings.push(noWindow);
+      reasons.windowLower = noWindow;
+      reasons.windowUpper = noWindow;
+    }
     return {
       values: {
         nOrdinary: no,
@@ -66,6 +94,7 @@ export default defineSchema({
         halfField: glan?.halfField ?? NaN,
       },
       warnings,
+      reasons,
     };
   },
   checks: [
