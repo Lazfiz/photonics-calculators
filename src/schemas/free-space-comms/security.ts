@@ -44,7 +44,13 @@ export default defineSchema({
     });
     const warnings: string[] = [];
     if (si.eveDistance > si.linkRange) warnings.push("Eve's distance exceeds Bob's range: she is placed at Bob's range, as the page does.");
-    if (!(r.evePower > 0)) warnings.push("Eve is outside the beam (received power 0): powerRatioDb and snrEveDb are null (Eve's SNR is 0).");
+    const reasons: Partial<Record<"powerRatioDb" | "snrEveDb", string>> = {};
+    if (!(r.evePower > 0)) {
+      const outside = "Eve is outside the beam (received power 0): powerRatioDb and snrEveDb are null (Eve's SNR is 0).";
+      warnings.push(outside);
+      reasons.powerRatioDb = outside;
+      reasons.snrEveDb = outside;
+    }
     return {
       values: {
         bobPower: r.bobPower,
@@ -60,6 +66,7 @@ export default defineSchema({
         divergence: 2 * divergenceHalfAngle({ lambda: si.wavelength, w0: waist }),
       },
       warnings,
+      reasons,
     };
   },
   checks: [

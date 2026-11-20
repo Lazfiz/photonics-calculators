@@ -32,12 +32,22 @@ export default defineSchema({
     const pMax = perLimit.length > 0 ? Math.min(...perLimit) : NaN;
     const margin = perLimit.length > 0 && txPower > 0 ? pMax / txPower : Infinity;
     const warnings: string[] = [];
-    if (Number.isNaN(nohd)) warnings.push("No ICNIRP eye limit applies at this wavelength and time.");
-    else if (nohd === Infinity) warnings.push("The beam doesn't spread (φ = 0): the hazard extends to any range.");
-    else if (nohd === 0) warnings.push("Within every limit at the aperture: no hazard distance.");
-    if (margin === Infinity) warnings.push("Zero TX power: no limit is approached, the margin is unbounded.");
-    else if (margin < 1) warnings.push("The exposure at the check distance exceeds an eye limit (margin below 1).");
-    return { values: { nohd, margin, maxPowerAtDistance: pMax, beamDiameterAtDistance: dr }, warnings };
+    const reasons: Partial<Record<"nohd" | "margin", string>> = {};
+    const noLimit = "No ICNIRP eye limit applies at this wavelength and time.";
+    const noSpread = "The beam doesn't spread (φ = 0): the hazard extends to any range.";
+    const zeroPower = "Zero TX power: no limit is approached, the margin is unbounded.";
+    if (Number.isNaN(nohd)) {
+      warnings.push(noLimit);
+      reasons.nohd = noLimit;
+    } else if (nohd === Infinity) {
+      warnings.push(noSpread);
+      reasons.nohd = noSpread;
+    } else if (nohd === 0) warnings.push("Within every limit at the aperture: no hazard distance.");
+    if (margin === Infinity) {
+      warnings.push(zeroPower);
+      reasons.margin = perLimit.length > 0 ? zeroPower : noLimit;
+    } else if (margin < 1) warnings.push("The exposure at the check distance exceeds an eye limit (margin below 1).");
+    return { values: { nohd, margin, maxPowerAtDistance: pMax, beamDiameterAtDistance: dr }, warnings, reasons };
   },
   checks: [
     {

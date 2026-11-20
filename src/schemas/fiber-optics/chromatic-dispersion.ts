@@ -35,7 +35,8 @@ export default defineSchema({
     const warnings: string[] = [];
     if (zeroDispWavelength < 1300e-9 || zeroDispWavelength > 1324e-9) warnings.push("λ₀ is outside the G.652 range 1300–1324 nm.");
     if (r.atZero) warnings.push("D = 0 at this wavelength: the dispersion length and the coherent bit-rate limit are unbounded (no result).");
-    if (r.penalty === Infinity) warnings.push("4Bσ_b ≥ 1: the eye is closed and the dispersion penalty is unbounded (no result).");
+    const closed = "4Bσ_b ≥ 1: the eye is closed and the dispersion penalty is unbounded (no result).";
+    if (r.penalty === Infinity) warnings.push(closed);
     return {
       values: {
         dispersion: r.D,
@@ -50,6 +51,7 @@ export default defineSchema({
         penalty: r.penalty,
       },
       warnings,
+      reasons: r.penalty === Infinity ? { penalty: closed } : {},
     };
   },
   checks: [
