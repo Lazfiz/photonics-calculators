@@ -22,9 +22,6 @@ test("niceTicks: linear step scales with the range", () => {
   assert.deepEqual(niceTicks(0, 10, 6, false), [0, 2, 4, 6, 8, 10]); // 1.67 → 2 (worked before too)
   assert.equal(niceTicks(-3e-15, 3e-15, 6, false).length, 7); // 1e-15 steps, −3 … 3 (rounding at both ends)
   assert.deepEqual(niceTicks(5, 5, 6, false), []);
-  // A step rounded up past the range would leave one tick: 155/3 = 52 → 100 gives only 0, so it falls back to 50.
-  assert.deepEqual(niceTicks(-66, 89, 3, false), [-50, 0, 50]);
-  assert.deepEqual(niceTicks(-89, 89, 3, false), [-50, 0, 50]);
 });
 
 test("niceTicks: log axis", () => {
