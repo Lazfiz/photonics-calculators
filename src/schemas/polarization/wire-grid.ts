@@ -35,8 +35,14 @@ export default defineSchema({
     const grid = { period: wireSpacing, width: stripWidth, thickness: stripThickness, conductivity: wireConductivity };
     const g = wireGridResponse(grid, wavelength);
     const warnings: string[] = [];
+    const reasons: Partial<Record<
+      "tPerp" | "rPerp" | "tPar" | "rPar" | "aPar" | "extinctionDb" | "zParRe" | "zParIm" | "zPerpIm",
+      string
+    >> = {};
     if (wireSpacing >= wavelength) {
-      warnings.push("p ≥ λ: a diffraction order propagates and the quasi-static model does not apply (no result).");
+      const diffraction = "p ≥ λ: a diffraction order propagates and the quasi-static model does not apply (no result).";
+      warnings.push(diffraction);
+      for (const k of ["tPerp", "rPerp", "tPar", "rPar", "aPar", "extinctionDb", "zParRe", "zParIm", "zPerpIm"] as const) reasons[k] = diffraction;
     } else if (g.periodRatio > 0.5) {
       warnings.push(`p/λ = ${g.periodRatio.toFixed(2)}: the formulas are first order in p/λ and lose accuracy well before p reaches λ.`);
     }
@@ -55,6 +61,7 @@ export default defineSchema({
         skinDepth: g.skinDepth,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

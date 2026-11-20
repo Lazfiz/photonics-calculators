@@ -41,10 +41,15 @@ export default defineSchema({
     // The thinned layer is the H layer for m = 0, else the L layer behind the front H.
     const thinned = design ? design.layers[design.m === 0 ? 0 : 1] : undefined;
     const warnings: string[] = [];
+    const reasons: Partial<Record<"designPeriods" | "thinnedFraction" | "thinnedThickness", string>> = {};
     if (!design) {
-      warnings.push(targetR <= bare
+      const noDesign = targetR <= bare
         ? "The target is at or below the bare substrate's reflectance: that is an antireflection task, not a splitter."
-        : "The target is not reachable with up to 20 periods.");
+        : "The target is not reachable with up to 20 periods.";
+      warnings.push(noDesign);
+      reasons.designPeriods = noDesign;
+      reasons.thinnedFraction = noDesign;
+      reasons.thinnedThickness = noDesign;
     }
     return {
       values: {
@@ -60,6 +65,7 @@ export default defineSchema({
         thinnedThickness: thinned ? thinned.thickness : NaN,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

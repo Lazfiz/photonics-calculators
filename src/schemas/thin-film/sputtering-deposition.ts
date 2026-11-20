@@ -49,13 +49,19 @@ export default defineSchema({
       warnings.push(`The table yield is for 500 eV; at ${i.voltage} V enter a measured yield for this voltage.`);
     }
     if (!Number.isFinite(r.thermalised)) warnings.push("No thermalisation result for these inputs.");
-    if (r.Es === Infinity) warnings.push("The threshold energy exceeds the floating-point range: every ejected atom thermalises within this distance.");
+    const reasons: Partial<Record<"thermalisationEnergy", string>> = {};
+    if (r.Es === Infinity) {
+      const overflow = "The threshold energy exceeds the floating-point range: every ejected atom thermalises within this distance.";
+      warnings.push(overflow);
+      reasons.thermalisationEnergy = overflow;
+    }
     return {
       values: {
         rate: r.rate, ionCurrent: r.Ii, atomRate: r.Phi, thermalised: r.thermalised, thermalisationEnergy: r.Es * q,
         thermalisationDistance: r.th.distance, homologous: r.Ts / t.Tm,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

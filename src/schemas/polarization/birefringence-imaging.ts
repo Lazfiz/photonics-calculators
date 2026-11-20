@@ -60,14 +60,28 @@ export default defineSchema({
     const chain = sampleChain(wavelength, retardance, axis, comp);
     const slope = chainTransmissionSlope(polarizer, analyzer, chain, 0);
     const warnings: string[] = [];
+    const reasons: Partial<Record<"senarmontAngle" | "senarmontRetardance", string>> = {};
     let senA = NaN, senR = NaN;
     if (compensator === "qwp") {
       const r = senarmontReading(polarizer, axis, retardance, wavelength);
       senA = r.A;
       senR = r.R;
-      if (!Number.isFinite(senA)) warnings.push("No Sénarmont minimum: the light behind the λ/4 plate is circular.");
-      else if (!Number.isFinite(senR)) warnings.push("Not a Sénarmont setting: it needs the sample axis φ = P ± 45°.");
-    } else warnings.push("The Sénarmont outputs need the λ/4 compensator.");
+      if (!Number.isFinite(senA)) {
+        const noMinimum = "No Sénarmont minimum: the light behind the λ/4 plate is circular.";
+        warnings.push(noMinimum);
+        reasons.senarmontAngle = noMinimum;
+        reasons.senarmontRetardance = noMinimum;
+      } else if (!Number.isFinite(senR)) {
+        const notSenarmont = "Not a Sénarmont setting: it needs the sample axis φ = P ± 45°.";
+        warnings.push(notSenarmont);
+        reasons.senarmontRetardance = notSenarmont;
+      }
+    } else {
+      const needsQwp = "The Sénarmont outputs need the λ/4 compensator.";
+      warnings.push(needsQwp);
+      reasons.senarmontAngle = needsQwp;
+      reasons.senarmontRetardance = needsQwp;
+    }
     return {
       values: {
         transmission: retarderChainTransmission(polarizer, analyzer, chain),
@@ -78,6 +92,7 @@ export default defineSchema({
         kirschMaxRetardance: kirschMaxRetardance(stress, stressOptic, thickness),
       },
       warnings,
+      reasons,
     };
   },
   checks: [

@@ -37,10 +37,17 @@ export default defineSchema({
     const r = macNeilleResponse(design, lambda0);
     const matchedAngle = macNeilleAngle(nH, nL, nGlass);
     const warnings: string[] = [];
+    const reasons: Partial<Record<"Tp" | "Ts" | "Rs" | "Rp" | "transmittedExtinction" | "reflectedExtinction" | "matchedAngle", string>> = {};
     if (!(nGlass * Math.sin(angleDeg) < Math.min(nH, nL))) {
-      warnings.push("ng sin θg exceeds a layer index, so light cannot propagate in that layer: lower the angle or the glass index.");
+      const noPropagation = "ng sin θg exceeds a layer index, so light cannot propagate in that layer: lower the angle or the glass index.";
+      warnings.push(noPropagation);
+      for (const k of ["Tp", "Ts", "Rs", "Rp", "transmittedExtinction", "reflectedExtinction"] as const) reasons[k] = noPropagation;
     }
-    if (!Number.isFinite(matchedAngle)) warnings.push("The glass index is too low to reach Brewster's angle at the H/L interfaces.");
+    if (!Number.isFinite(matchedAngle)) {
+      const noBrewster = "The glass index is too low to reach Brewster's angle at the H/L interfaces.";
+      warnings.push(noBrewster);
+      reasons.matchedAngle = noBrewster;
+    }
     return {
       values: {
         Tp: r.Tp,
@@ -54,6 +61,7 @@ export default defineSchema({
         matchedAngle,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

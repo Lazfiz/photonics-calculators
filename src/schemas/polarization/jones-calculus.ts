@@ -50,12 +50,21 @@ export default defineSchema({
     const outI = intensity(out);
     const warnings: string[] = [];
     let psi = NaN, chi = NaN;
-    if (outI < 1e-12) warnings.push("No light transmitted: the output has no polarization state.");
-    else {
+    const reasons: Partial<Record<"psi" | "chi", string>> = {};
+    if (outI < 1e-12) {
+      const noLight = "No light transmitted: the output has no polarization state.";
+      warnings.push(noLight);
+      reasons.psi = noLight;
+      reasons.chi = noLight;
+    } else {
       ({ psi, chi } = ellipseAngles(stokesFromJones(out)));
-      if (Number.isNaN(psi)) warnings.push("Circular light has no orientation angle.");
+      if (Number.isNaN(psi)) {
+        const circular = "Circular light has no orientation angle.";
+        warnings.push(circular);
+        reasons.psi = circular;
+      }
     }
-    return { values: { outputIntensity: outI, transmission: inI > 0 ? outI / inI : 0, psi, chi }, warnings };
+    return { values: { outputIntensity: outI, transmission: inI > 0 ? outI / inI : 0, psi, chi }, warnings, reasons };
   },
   checks: [
     {

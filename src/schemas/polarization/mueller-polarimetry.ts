@@ -54,7 +54,12 @@ export default defineSchema({
     const out = applyMueller(M, S);
     const lit = out[0] > 1e-12 * s0;
     const warnings: string[] = [];
-    if (!lit) warnings.push("No light is left (for example crossed polarizers): the output has no defined polarization state.");
+    const reasons: Partial<Record<"dop", string>> = {};
+    if (!lit) {
+      const noLight = "No light is left (for example crossed polarizers): the output has no defined polarization state.";
+      warnings.push(noLight);
+      reasons.dop = noLight;
+    }
     return {
       values: {
         out0: out[0], out1: out[1], out2: out[2], out3: out[3],
@@ -63,6 +68,7 @@ export default defineSchema({
         analyzed: analyzerIntensity(out, analyzerAngle),
       },
       warnings,
+      reasons,
     };
   },
   checks: [

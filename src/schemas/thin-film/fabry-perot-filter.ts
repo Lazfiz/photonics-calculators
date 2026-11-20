@@ -25,8 +25,17 @@ export default defineSchema({
   compute({ nCavity, spacing, reflectance, wlCenter }) {
     const s = fabryPerotSummary(nCavity, spacing, reflectance, wlCenter);
     const warnings: string[] = [];
-    if (!Number.isFinite(s.peak.fwhm)) warnings.push("F < 1: the transmittance never falls to half its peak, so there is no FWHM.");
-    if (s.peak.order === 1) warnings.push("First order: there is no lower neighbouring peak.");
+    const reasons: Partial<Record<"fwhm" | "lowerPeak", string>> = {};
+    if (!Number.isFinite(s.peak.fwhm)) {
+      const noFwhm = "F < 1: the transmittance never falls to half its peak, so there is no FWHM.";
+      warnings.push(noFwhm);
+      reasons.fwhm = noFwhm;
+    }
+    if (s.peak.order === 1) {
+      const firstOrder = "First order: there is no lower neighbouring peak.";
+      warnings.push(firstOrder);
+      reasons.lowerPeak = firstOrder;
+    }
     return {
       values: {
         peakWavelength: s.peak.wavelength,
@@ -39,6 +48,7 @@ export default defineSchema({
         finesse: s.finesse,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

@@ -53,9 +53,39 @@ export default defineSchema({
     const w = glanWindow({ no, ne, hypotenuse: cutAngleDeg, gapIndex, axis: t.axis });
     const balanced = glanBalancedHypotenuse({ no, ne, gapIndex, axis: t.axis });
     const warnings: string[] = [];
-    if (!Number.isFinite(no)) warnings.push("The wavelength is outside this crystal's Sellmeier data range: no indices.");
-    else if (!w.axialPolarized) warnings.push("The axial ray is not polarized.");
-    if (!Number.isFinite(balanced)) warnings.push("No balanced hypotenuse angle exists for these indices.");
+    const reasons: Partial<Record<
+      "nOrdinary" | "nExtraordinary" | "criticalO" | "criticalE" | "windowLower" | "windowUpper" | "fullWidth" | "balancedHypotenuse",
+      string
+    >> = {};
+    if (!Number.isFinite(no)) {
+      const noIndices = "The wavelength is outside this crystal's Sellmeier data range: no indices.";
+      warnings.push(noIndices);
+      for (const k of ["nOrdinary", "nExtraordinary", "criticalO", "criticalE", "windowLower", "windowUpper", "fullWidth"] as const) reasons[k] = noIndices;
+    } else {
+      if (!w.axialPolarized) warnings.push("The axial ray is not polarized.");
+      if (!Number.isFinite(w.lower)) {
+        const noWindow = "No polarizing window exists at this hypotenuse angle: windowLower, windowUpper and fullWidth are null.";
+        warnings.push(noWindow);
+        reasons.windowLower = noWindow;
+        reasons.windowUpper = noWindow;
+        reasons.fullWidth = noWindow;
+      }
+      if (gapIndex > no) {
+        const noCriticalO = "The gap index exceeds nₒ, so the ordinary ray is never totally reflected: criticalO is null.";
+        warnings.push(noCriticalO);
+        reasons.criticalO = noCriticalO;
+      }
+      if (gapIndex > ne) {
+        const noCriticalE = "The gap index exceeds nₑ, so the extraordinary ray is never totally reflected: criticalE is null.";
+        warnings.push(noCriticalE);
+        reasons.criticalE = noCriticalE;
+      }
+    }
+    if (!Number.isFinite(balanced)) {
+      const noBalanced = "No balanced hypotenuse angle exists for these indices.";
+      warnings.push(noBalanced);
+      reasons.balancedHypotenuse = noBalanced;
+    }
     if (!t.air) warnings.push("Glan-Thompson: the cement index sets the gap index; air-gap types ignore it.");
     return {
       values: {
@@ -71,6 +101,7 @@ export default defineSchema({
         lengthOverAperture: Math.tan(cutAngleDeg),
       },
       warnings,
+      reasons,
     };
   },
   checks: [

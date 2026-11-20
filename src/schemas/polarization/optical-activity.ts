@@ -55,10 +55,29 @@ export default defineSchema({
     const measured = mode === "measured";
     const molar = molarRotation(measured ? specMeasured : alphaT, molarMass);
     const warnings: string[] = [];
-    if (!sucrose && !Number.isFinite(alpha20)) warnings.push("The Drude form needs λ and λ_ref above λ₀: no rotation can be computed.");
+    const reasons: Partial<Record<"specific20" | "specificT" | "observedRotation" | "outputAzimuth" | "specificFromMeasured", string>> = {};
+    if (!sucrose && !Number.isFinite(alpha20)) {
+      const drude = "The Drude form needs λ and λ_ref above λ₀: no rotation can be computed.";
+      warnings.push(drude);
+      reasons.specific20 = drude;
+      reasons.specificT = drude;
+    }
     if (sucrose && Math.abs(temperature - 20) > 5) warnings.push("The default linear temperature term is fitted within a few degrees of 20 °C; here the corrected [α] is an extrapolation.");
-    if (measured && !Number.isFinite(specMeasured)) warnings.push("The measured-rotation mode needs c > 0 and l > 0.");
-    warnings.push(measured ? "Measured mode: the observed rotation and output azimuth do not apply." : "Predict mode: [α] from the measured rotation does not apply.");
+    if (measured && !Number.isFinite(specMeasured)) {
+      const needsCL = "The measured-rotation mode needs c > 0 and l > 0.";
+      warnings.push(needsCL);
+      reasons.specificFromMeasured = needsCL;
+    }
+    if (measured) {
+      const measuredMode = "Measured mode: the observed rotation and output azimuth do not apply.";
+      warnings.push(measuredMode);
+      reasons.observedRotation = measuredMode;
+      reasons.outputAzimuth = measuredMode;
+    } else {
+      const predictMode = "Predict mode: [α] from the measured rotation does not apply.";
+      warnings.push(predictMode);
+      reasons.specificFromMeasured = predictMode;
+    }
     return {
       values: {
         specific20: alpha20,
@@ -69,6 +88,7 @@ export default defineSchema({
         molarRotation: molar,
       },
       warnings,
+      reasons,
     };
   },
   checks: [
