@@ -8,6 +8,7 @@
  * wavelength, so the specific attenuation is wavelength-independent in the 0.78–0.85 and 1.52–1.60 µm bands:
  *   γ_rain = k R^α  dB/km, R in mm/h                                        (eq. 11)
  * with k, α fitted to Mie theory over a gamma drop-size distribution of shape µ (Table 4; measured µ mostly −2…2).
+ * Tables 4 and 5 and eqs. (11), (14)–(19) checked against the Recommendation's text, every digit (2026-11-20).
  * Path attenuation for L ≤ 5 km (L in km):
  *   A′ = γ_rain L F,  F = 1 / (1 + L (R − 6.2)/2623)                          (eqs. 14, 15)
  *   A = A′ − G_ms,    G_ms = a_ms L^b_ms  dB                                 (eqs. 16, 17)
