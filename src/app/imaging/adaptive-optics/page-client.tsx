@@ -80,21 +80,21 @@ export default function AdaptiveOpticsPage() {
           {row(`Modal residual Δ${modes} (D/r₀)^(5/3)`, `${fmt(modal, 4, " rad²")} (${fmt(s.modalRms * 1e9, 1, " nm rms")})`)}
           {row(`Strehl, ${modes} modes corrected`, fmt(strehlModal, 4), "text-blue-400")}
           {row(`DM pitch d/r₀ = (D/r₀)/${actuators}`, fmt(dr0 / actuators, 4))}
-          {row(s.zonalCapped ? "Fitting error (capped at open loop)" : "Fitting error κ (d/r₀)^(5/3)", `${fmt(zonal, 4, " rad²")} (${fmt(s.zonalRms * 1e9, 1, " nm rms")})`)}
+          {row(s.zonalCapped ? "Fitting error (capped at one segment)" : "Fitting error κ (d/r₀)^(5/3)", `${fmt(zonal, 4, " rad²")} (${fmt(s.zonalRms * 1e9, 1, " nm rms")})`)}
           {row("Strehl, DM fitting limit", fmt(strehlZonal, 4), "text-green-400")}
           {s.zonalCapped && (
             <p className="text-sm text-yellow-400">
-              Piston-only segments below ≈ 1.13 across: κ (d/r₀)^(5/3) exceeds the uncorrected variance, so the fitting
-              error is capped at the open-loop value.
+              Fewer than ≈ 1.13 piston-only (≈ 1.19 piston + tip-tilt) segments across: κ (d/r₀)^(5/3) exceeds what one
+              segment leaves, Noll&apos;s Δ₁ (D/r₀)^(5/3) (Δ₃ with tip-tilt), so the fitting error is capped there.
             </p>
           )}
           {row("Stroke for ±3σ, tip-tilt removed", fmt(strokeNeededUm, 2, " µm"), !s.strokeShort ? "text-green-400" : "text-yellow-400")}
           {s.strokeShort && <p className="text-sm text-yellow-400">The stroke is short of ±3σ: large excursions will saturate the mirror.</p>}
           <p className="text-xs text-gray-500">
             The modal and DM rows are two separate estimates of perfect correction, not terms to add: a mirror
-            with N actuators across corrects roughly the first (π/4)N² modes. Strehl = e^(−σ²) + (1 − e^(−σ²))/(1 +
-            (D/r₀)²), the coherent core plus the seeing halo. The stroke row assumes the tip-tilt (σ² = 0.134
-            (D/r₀)^(5/3)) is taken by a separate mirror. Servo lag, noise and anisoplanatism are left out; the
+            with N actuators across corrects roughly the first (π/4)N² modes (three per piston + tip-tilt segment). Strehl = e^(−σ²) + (1 − e^(−σ²))/(1 +
+            (D/r₀)²), the coherent core plus the seeing halo. The stroke row covers the tip-tilt-removed residual (σ² = 0.134
+            (D/r₀)^(5/3)); the tip-tilt itself (0.896 (D/r₀)^(5/3)) is taken by a separate mirror. Servo lag, noise and anisoplanatism are left out; the
             free-space AO calculator adds the servo lag.
           </p>
         </div>

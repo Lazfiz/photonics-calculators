@@ -35,15 +35,19 @@ export const imaging: CalculatorEntry[] = [
     lede: "Adaptive optics in Kolmogorov turbulence: Noll's residual after J corrected Zernike modes, deformable-mirror fitting error, the Strehl ratio and the stroke needed, from D/r₀.",
     keywords: ["adaptive optics", "deformable mirror", "fitting error", "Fried parameter", "Zernike modes", "Noll"],
     tier: "textbook",
-    modelNote: "Kolmogorov turbulence (infinite outer scale) with perfect correction of the chosen modes or by the mirror; servo lag, wavefront-sensor noise and anisoplanatism are left out. The Strehl ratio adds the Parenti–Sasiela seeing halo to the Maréchal core. The mirror fitting error κ (d/r₀)^(5/3) is a many-actuator asymptote, capped at the uncorrected variance (piston-only segments reach it below ≈ 1.13 across). Aberrations from a sample in microscopy do not follow Kolmogorov statistics.",
+    modelNote: "Kolmogorov turbulence (infinite outer scale) with perfect correction of the chosen modes or by the mirror; servo lag, wavefront-sensor noise and anisoplanatism are left out. The Strehl ratio adds the Parenti–Sasiela seeing halo to the Maréchal core. The mirror fitting error κ (d/r₀)^(5/3) is a many-actuator asymptote, capped at what one segment leaves: the uncorrected variance for piston-only segments (reached below ≈ 1.13 across), Noll's Δ₃ residual for piston + tip-tilt ones (below ≈ 1.19). Aberrations from a sample in microscopy do not follow Kolmogorov statistics.",
     references: [
       {
         citation: "Noll R. J. (1976). Zernike polynomials and atmospheric turbulence. J. Opt. Soc. Am. 66, 207–211. Residual variance Δ_J after J corrected modes (Table IV).",
         url: "https://doi.org/10.1364/JOSA.66.000207",
       },
       {
-        citation: "Hudgin R. H. (1977). Wave-front compensation error due to finite corrector-element size. J. Opt. Soc. Am. 67, 393–395. Fitting error α(r_s/r₀)^(5/3), eq. (27); α is printed only as Fig. 1 lines (p. 395), read from the graph. 0.134 (piston + tip-tilt segments) is Noll (1976) Table IV Δ₃, not Hudgin.",
+        citation: "Hudgin R. H. (1977). Wave-front compensation error due to finite corrector-element size. J. Opt. Soc. Am. 67, 393–395. Fitting error α(r_s/r₀)^(5/3), eq. (27); α is printed only as Fig. 1 lines (p. 395), read from the graph. Piston + tip-tilt segments (0.18) are not in Hudgin.",
         url: "https://doi.org/10.1364/JOSA.67.000393",
+      },
+      {
+        citation: "Max C. (2016). Deformable mirrors, lecture 8 of AY289 Adaptive Optics, University of California, Santa Cruz, slide 46: fitting coefficient 1.26 for piston-only, 0.18 for piston + tilt (square segments) and 0.28 for a continuous mirror.",
+        url: "https://www.ucolick.org/~max/AY289/Lectures%202016/Lecture%208%20Deformable%20Mirrors/Lecture8_2016.v1.pdf",
       },
       {
         citation: "Parenti R. R., Sasiela R. J. (1994). Laser-guide-star systems for astronomical applications. J. Opt. Soc. Am. A 11, 288. Strehl ratio with the seeing halo.",

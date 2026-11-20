@@ -12,7 +12,7 @@ export type DmType = keyof typeof DM_FITTING_COEFFICIENT;
 export const DM_TYPES: readonly DmType[] = ["continuous", "segmentedTipTilt", "segmentedPiston"];
 export const DM_LABELS: Record<DmType, string> = {
   continuous: "Continuous facesheet (κ 0.28)",
-  segmentedTipTilt: "Segments, piston + tip-tilt (κ 0.134)",
+  segmentedTipTilt: "Segments, piston + tip-tilt (κ 0.18)",
   segmentedPiston: "Segments, piston only (κ 1.26)",
 };
 /** Largest number of corrected Zernike modes J the page accepts. */
@@ -35,7 +35,7 @@ export interface AdaptiveOpticsSummary {
   strehlOpen: number;
   strehlModal: number;
   strehlZonal: number;
-  /** True when κ(d/r₀)^(5/3) exceeded the open-loop variance and the fitting row was capped at it. */
+  /** True when κ(d/r₀)^(5/3) exceeded one segment's residual (Δ₁ piston-only, Δ₃ with tip-tilt) and was capped at it. */
   zonalCapped: boolean;
   /** Actuator pitch over r₀, (D/r₀)/N. */
   pitchOverR0: number;
@@ -60,8 +60,10 @@ export function adaptiveOpticsSummary(p: {
   const modal = nollResidual(modes) * dr0 ** (5 / 3);
   // κ(d/r₀)^(5/3) is the many-actuator asymptote. With fewer than (1.26/1.0299)^(3/5) ≈ 1.13 piston-only segments across
   // it exceeds the piston-removed open-loop variance; one segment corrects only piston, so the residual is Noll's Δ₁.
+  // Likewise one piston + tip-tilt segment leaves Noll's Δ₃, reached below (0.18/Δ₃)^(3/5) ≈ 1.19 segments across.
   const fitting = dmFittingVariance(dr0 / actuators, 1, DM_FITTING_COEFFICIENT[dmType]);
-  const zonal = Math.min(fitting, open);
+  const floor = dmType === "segmentedTipTilt" ? tipTiltRemoved : open;
+  const zonal = Math.min(fitting, floor);
   const strokeNeeded = STROKE_SIGMAS * rms(tipTiltRemoved);
   return {
     openVariance: open,
@@ -74,7 +76,7 @@ export function adaptiveOpticsSummary(p: {
     strehlOpen: strehlRatio(open, dr0, 1),
     strehlModal: strehlRatio(modal, dr0, 1),
     strehlZonal: strehlRatio(zonal, dr0, 1),
-    zonalCapped: fitting > open,
+    zonalCapped: fitting > floor,
     pitchOverR0: dr0 / actuators,
     strokeNeeded,
     strokeShort: stroke < strokeNeeded,

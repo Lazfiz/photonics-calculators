@@ -30,9 +30,10 @@
  *   with pyramid (bilinear) influence functions (≈ 0.23 for Gaussian ones; Tyson's values in A. Berdeu et al.,
  *   A&A 674, A112 (2023), Table 1) and 1.26 for piston-only (pillbox) segments. Hudgin (JOSA 67, 393 (1977), eq. (27)
  *   E = α(r_s/r₀)^(5/3)) prints no κ value, only α as the slopes of the Fig. 1 lines (p. 395): pyramid ≈ 0.28,
- *   pillbox ("Piston") ≈ 1.26, Gaussian ≈ 0.23, read from the graph for a square actuator grid. 0.134 (piston and
- *   tip-tilt segments) is not in Hudgin: it is Noll's Table IV Δ₃ for a circular segment of diameter d (Hardy 1998
- *   may tabulate it, unverified). 1.26 is a square cell (1.0299·(4/π)^(5/6)) while 0.134 is a circular segment;
+ *   pillbox ("Piston") ≈ 1.26, Gaussian ≈ 0.23, read from the graph for a square actuator grid. Piston + tip-tilt
+ *   segments take 0.18, not in Hudgin: printed with 1.26 and 0.28 for square segments in C. Max, UCSC AY289 lecture 8
+ *   "Deformable mirrors" (2016), slide 46 (the book table it is usually quoted from, Hardy 1998, is unread). Noll's
+ *   circular Δ₃ 0.134 scaled to a square cell, 0.134·(4/π)^(5/6) ≈ 0.164, is 9 % below 0.18, while 1.26 = 1.0299·(4/π)^(5/6) to 0.03 %;
  * - Greenwood frequency f_G = 0.427 v/r₀, servo-lag variance (f_G/f_3dB)^(5/3) for a first-order loop with
  *   closed-loop bandwidth f_3dB (D. P. Greenwood, JOSA 67, 390 (1977));
  * - Strehl ratio S ≈ e^(−σ²) + (1 − e^(−σ²))/(1 + (D/r₀)²), the Maréchal core plus the seeing halo, semi-empirical
@@ -603,8 +604,8 @@ export function nollResidual(modes: number): number {
   return 1.0299 - removed;
 }
 
-/** Fitting-error coefficients κ of σ² = κ (d/r₀)^(5/3) by deformable-mirror type (Hudgin 1977 Fig. 1 slopes for continuous and piston-only, read from the graph; segmentedTipTilt is Noll 1976 Table IV Δ₃). */
-export const DM_FITTING_COEFFICIENT = { continuous: 0.28, segmentedTipTilt: 0.134, segmentedPiston: 1.26 } as const;
+/** Fitting-error coefficients κ of σ² = κ (d/r₀)^(5/3) by deformable-mirror type (Hudgin 1977 Fig. 1 slopes for continuous and piston-only, read from the graph; segmentedTipTilt from C. Max's UCSC AY289 lecture 8 (2016) slide 46; all three for square cells). */
+export const DM_FITTING_COEFFICIENT = { continuous: 0.28, segmentedTipTilt: 0.18, segmentedPiston: 1.26 } as const;
 
 /** Deformable-mirror fitting error κ (d/r₀)^(5/3), rad², for actuator pitch d (projected on the pupil). */
 export function dmFittingVariance(pitch: number, r0: number, kappa: number = DM_FITTING_COEFFICIENT.continuous): number {
