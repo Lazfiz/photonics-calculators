@@ -3,8 +3,8 @@ import { defineSchema } from "../types";
 
 const SIGMA = 1e-25;
 const GILES = "Giles C. R., Desurvire E. (1991). Modeling erbium-doped fiber amplifiers. J. Lightwave Technol. 9(2), 271–283, " +
-  "doi:10.1109/50.65886, eqs. (6)–(9): dP/dz = Γ(σ_e n₂ − σ_a n₁)P, so an unpumped fibre absorbs Γσ_aN per metre " +
-  "(×10/ln 10 in dB) and a fully inverted one gains Γσ_eN; intrinsic saturation power hνA/(Γ(σ_a + σ_e)τ). " +
+  "doi:10.1109/50.65886, eqs. (11), (19), (20): dP/dz = Γ(σ_e n₂ − σ_a n₁)P (ASE and loss dropped), so an unpumped fibre absorbs Γσ_aN per metre " +
+  "(×10/ln 10 in dB) and a fully inverted one gains Γσ_eN; intrinsic saturation power hνA/(Γ(σ_a + σ_e)τ) from ζ = P_sat(α + g*)/hν (text after eq. (20), p. 276). " +
   "Cross-sections: Barnes W. L., Laming R. I., Tarbox E. J., Morkel P. R. (1991). Absorption and emission cross section of " +
   "Er³⁺ doped silica fibers. IEEE J. Quantum Electron. 27(4), 1004–1010, doi:10.1109/3.83335.";
 

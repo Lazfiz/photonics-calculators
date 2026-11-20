@@ -24,8 +24,10 @@
  *   retardation uses n_z³ r₃₃ − n_y³ r₂₃ (D. Xie & O. Pfister, arXiv:physics/0507123 (2005), eqs. 3–4). r₃₃ = 36.3 and
  *   r₂₃ = 15.7 pm/V at 633 nm are L. K. Cheng et al.'s values (J. Cryst. Growth 137, 107 (1994),
  *   doi:10.1016/0022-0248(94)91256-4) as quoted there; n_y, n_z from Kato & Takaoka 2002 (`biaxial-data.ts`). They are
- *   the low-frequency (unclamped, r^T) values: vendor tables (Laser Components KTP sheet) list them beside high-frequency
- *   r₃₃ 35.0, r₂₃ 13.8 pm/V, and Xie & Pfister's kHz measurements agree with them. LiNbO₃'s Weis & Gaylord r are clamped.
+ *   taken as the low-frequency (unclamped, r^T) values. Cheng 1994 Table 2 (p. 113, 0.633 µm, ±10 %, Mach–Zehnder
+ *   against a reference) states no modulation frequency or clamping; the "unclamped" reading rests on vendor tables
+ *   (Laser Components KTP sheet) listing them beside high-frequency r₃₃ 35.0, r₂₃ 13.8 pm/V, and on Xie & Pfister's
+ *   kHz measurements agreeing with them. LiNbO₃'s Weis & Gaylord r are clamped.
  * - BaTiO₃ (tetragonal 4mm at room temperature, negative uniaxial) in the same z-field geometry: M. Zgonik et al.,
  *   Phys. Rev. B 50, 5941 (1994), doi:10.1103/PhysRevB.50.5941, at 633 nm and 23 °C: stress-free (unclamped, below the
  *   crystal's acoustic resonances, 0.1 to a few MHz for Zgonik's samples) r₁₃ 8 ± 2, r₃₃ 105 ± 10, r₄₂ 1300 ± 100 pm/V

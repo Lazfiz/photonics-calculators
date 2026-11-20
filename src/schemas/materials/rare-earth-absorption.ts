@@ -2,7 +2,7 @@ import { DOPANT_LINES, SIGMA_UNIT, dopantLineAbsorption } from "../../physics/ma
 import { defineSchema } from "../types";
 
 const GILES = "Giles C. R., Desurvire E. (1991). Modeling erbium-doped fiber amplifiers. J. Lightwave Technol. 9, 271, " +
-  "doi:10.1109/50.65886, absorption with no population in the upper level: α = Γσ_aN (unpumped sample), absorption in dB/m = " +
+  "doi:10.1109/50.65886, absorption with no population in the upper level: α = Γσ_aN (unpumped sample; eq. (11) with n₂ = 0), absorption in dB/m = " +
   "10·log₁₀(e)·α, transmission e^(−αL); ion density N = ppm·10⁻⁶·ρ·N_A/M with the silica density ρ = 2201 kg/m³.";
 const lineLabel = (l: (typeof DOPANT_LINES)[number]) => `${l.ion} ${Math.round(l.lambda * 1e9)} nm (${l.role})`;
 

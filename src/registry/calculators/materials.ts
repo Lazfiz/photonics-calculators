@@ -711,7 +711,7 @@ export const materials: CalculatorEntry[] = [
     modelNote: "Small-signal absorption α = Γσ_aN of an unpumped sample (no bleaching or excited-state absorption) and T = e^(−αL) without surface reflections. N from wt-ppm in silica (2201 kg/m³). Preset cross-sections, shared with the fibre amplifier pages, are measured in one fibre each: Er³⁺ in GeO₂–Al₂O₃–SiO₂ (Barnes 1991; 980 nm from Table V, 1480 and 1550 nm read from Fig. 6 to ±0.15e-25 m²), Yb³⁺ in aluminosilicate (Melkumov 2004) and Tm³⁺ in Al/La silica (Agger & Povlsen 2006; ³F₄ band only, 1740 and 1900 nm read from Figs. 3–4) and Ho³⁺ in silica (Le Gouët et al. 2020; ⁵I₇ band only, σ_a(1946) 4.3 ± 0.2e-25 m², 1995 and 2120 nm read from Fig. 1). They vary with the host by tens of percent. Nd is not offered.",
     references: [
       {
-        citation: "Giles C. R., Desurvire E. (1991). Modeling erbium-doped fiber amplifiers. J. Lightwave Technol. 9, 271–283. Absorption α = Γσ_aN, eqs. (6)–(9).",
+        citation: "Giles C. R., Desurvire E. (1991). Modeling erbium-doped fiber amplifiers. J. Lightwave Technol. 9, 271–283. Absorption α = Γσ_aN, eq. (11) with n₂ = 0.",
         url: "https://doi.org/10.1109/50.65886",
       },
       {

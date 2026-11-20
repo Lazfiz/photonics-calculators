@@ -265,7 +265,7 @@ export const fiberOptics: CalculatorEntry[] = [
     modelNote: "Two-level rate equations solved exactly: co-propagating pump, no ASE self-saturation (it matters above about 20–25 dB), ESA or clustering. Preset cross-sections are measured (Er³⁺: Barnes et al. 1991, GeO₂–Al₂O₃–SiO₂; Yb³⁺: Melkumov et al. 2004, aluminosilicate; Tm³⁺: Agger & Povlsen 2006, Al/La silica, pumped in band at 1600 nm; Ho³⁺: Le Gouët et al. 2020, silica, pumped in band at 1908 nm, 2120 nm read from their Fig. 1 to ±0.1e-25 m²); edit them for a fibre.",
     references: [
       {
-        citation: "Giles C. R., Desurvire E. (1991). Modeling erbium-doped fiber amplifiers. J. Lightwave Technol. 9, 271. Two-level rate equations, eqs. (6)–(9), and the saturation power hνA/(Γ(σa + σe)τ).",
+        citation: "Giles C. R., Desurvire E. (1991). Modeling erbium-doped fiber amplifiers. J. Lightwave Technol. 9, 271. Two-level rate equations, eqs. (11), (19), (20), and the saturation power hνA/(Γ(σa + σe)τ) from ζ = P_sat(α + g*)/hν (text after eq. (20), p. 276).",
         url: "https://doi.org/10.1109/50.65886",
       },
       {
@@ -916,7 +916,7 @@ export const fiberOptics: CalculatorEntry[] = [
         url: "https://doi.org/10.1364/AO.10.002252",
       },
       {
-        citation: "Giles C. R., Desurvire E. (1991). Modeling erbium-doped fiber amplifiers. J. Lightwave Technol. 9, 271. Two-level rate equations, eqs. (6)–(9), and the saturation power hνA/(Γ(σa + σe)τ).",
+        citation: "Giles C. R., Desurvire E. (1991). Modeling erbium-doped fiber amplifiers. J. Lightwave Technol. 9, 271. Two-level rate equations, eqs. (11), (19), (20), and the saturation power hνA/(Γ(σa + σe)τ) from ζ = P_sat(α + g*)/hν (text after eq. (20), p. 276).",
         url: "https://doi.org/10.1109/50.65886",
       },
       {

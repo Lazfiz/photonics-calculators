@@ -8,7 +8,7 @@ import {
 import { lp01Mode } from "../src/physics/fiber-optics/macro-bending-loss";
 import { besselJ, besselK } from "../src/physics/math";
 
-// Two-level model: Giles & Desurvire, JLT 9, 271 (1991), doi:10.1109/50.65886, eqs. (6)–(9); closed form: Saleh et
+// Two-level model: Giles & Desurvire, JLT 9, 271 (1991), doi:10.1109/50.65886, eqs. (11), (19), (20); closed form: Saleh et
 // al., IEEE PTL 2, 714 (1990), doi:10.1109/68.60769. Rigrod, J. Appl. Phys. 36, 2487 (1965), doi:10.1063/1.1714517.
 // Golden values for the old pages: PR #43 review (P_sat 0.2711 mW, L₉₀ 12.28 m, η 0.8721).
 

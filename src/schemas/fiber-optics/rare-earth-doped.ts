@@ -3,7 +3,7 @@ import { ASE_WARNING_GAIN_DB, rareEarthSpec, rareEarthSummary } from "../../phys
 import { defineSchema } from "../types";
 
 const GILES = "Giles C. R., Desurvire E. (1991). Modeling erbium-doped fiber amplifiers. Journal of Lightwave Technology 9, 271–283. " +
-  "https://doi.org/10.1109/50.65886 (two-level rate equations, eqs. (6)–(9); intrinsic saturation power hνA/(Γ(σ_a + σ_e)τ)), solved in closed form by " +
+  "https://doi.org/10.1109/50.65886 (two-level rate equations, eqs. (11), (19), (20); intrinsic saturation power hνA/(Γ(σ_a + σ_e)τ) from ζ = P_sat(α + g*)/hν, text after eq. (20), p. 276), solved in closed form by " +
   "Saleh A. A. M., Jopson R. M., Evankow J. D., Aspell J. (1990). Modeling of gain in erbium-doped fiber amplifiers. IEEE Photonics Technology Letters 2, 714–717. https://doi.org/10.1109/68.60769.";
 
 const NOT_GUIDED = "V is below 0.5 at the pump or signal, or n₁ ≤ n₂: the mode is barely guided and the LP01 overlap is not defined.";
