@@ -429,7 +429,7 @@ export const freeSpaceComms: CalculatorEntry[] = [
     modelNote: "ITU-R P.1814-1: γ = k·R^α (Mie, gamma DSD, µ = −2…2), path reduction and multiple-scattering gain for L ≤ 5 km; flat over 780–850 and 1520–1600 nm. Gain fit tapered below 1 mm/h. No rain-rate statistics.",
     references: [
       {
-        citation: "Recommendation ITU-R P.1814-1 (09/2025), Prediction methods required for the design of terrestrial free-space optical links. §4.1.2.2, Table 4 (k, α); §4.2.3, eqs. (14)–(19), Table 5. Tables 4 and 5 as coded are not yet checked against the Recommendation (docs/unverified-sources.md).",
+        citation: "Recommendation ITU-R P.1814-1 (09/2025), Prediction methods required for the design of terrestrial free-space optical links. §4.1.2.2, Table 4 (k, α); §4.2.3, eqs. (14)–(19), Table 5.",
         url: "https://www.itu.int/rec/R-REC-P.1814-1-202509-I/en",
       },
     ],
