@@ -36,8 +36,16 @@ export default defineSchema({
     const zsf = selfFocusingDistance(ratio, zR);
     const zHere = Number.isFinite(f) ? focusedCollapseDistance(zsf, f) : zsf;
     const warnings: string[] = [];
-    if (!Number.isFinite(zsf)) warnings.push("P ≤ P_cr: Kerr focusing only slows diffraction, so there is no collapse distance.");
-    else if (!Number.isFinite(zHere)) warnings.push("The diverging lens outruns the Kerr lens: no collapse.");
+    const reasons: Partial<Record<"collapseDistance", string>> = {};
+    if (!Number.isFinite(zsf)) {
+      const belowCritical = "P ≤ P_cr: Kerr focusing only slows diffraction, so there is no collapse distance.";
+      warnings.push(belowCritical);
+      reasons.collapseDistance = belowCritical;
+    } else if (!Number.isFinite(zHere)) {
+      const diverging = "The diverging lens outruns the Kerr lens: no collapse.";
+      warnings.push(diverging);
+      reasons.collapseDistance = diverging;
+    }
     return {
       values: {
         criticalPower: Pcr,
@@ -48,6 +56,7 @@ export default defineSchema({
         rayleighRange: zR,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

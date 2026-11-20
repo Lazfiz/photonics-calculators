@@ -83,9 +83,24 @@ export default defineSchema({
     if (op.r > 50) {
       warnings.push(`r = ${op.r.toPrecision(4)} is above 50: the pulse shape and its FWHM are not integrated; only the estimate E/P_p is given.`);
     }
-    if (!(op.gammaI > 0)) warnings.push("No optimum without internal loss: the energy keeps rising as R → 0.");
-    else if (!(op.g0l > op.gammaI)) warnings.push("No lasing at any coupling: g₀l must exceed the internal loss γ_i.");
-    else if (op.opt.reflectance < 0.01) {
+    const reasons: Partial<
+      Record<"optimumReflectance" | "optimumEnergy" | "optimumWidthEstimate" | "optimumPeakPower", string>
+    > = {};
+    if (!(op.gammaI > 0)) {
+      const noInternalLoss = "No optimum without internal loss: the energy keeps rising as R → 0.";
+      warnings.push(noInternalLoss);
+      reasons.optimumReflectance = noInternalLoss;
+      reasons.optimumEnergy = noInternalLoss;
+      reasons.optimumWidthEstimate = noInternalLoss;
+      reasons.optimumPeakPower = noInternalLoss;
+    } else if (!(op.g0l > op.gammaI)) {
+      const noLasing = "No lasing at any coupling: g₀l must exceed the internal loss γ_i.";
+      warnings.push(noLasing);
+      reasons.optimumReflectance = noLasing;
+      reasons.optimumEnergy = noLasing;
+      reasons.optimumWidthEstimate = noLasing;
+      reasons.optimumPeakPower = noLasing;
+    } else if (op.opt.reflectance < 0.01) {
       warnings.push("The optimum R is below the 0.01 the input accepts; there the mean-field (uniform-intensity) model is poor anyway.");
     }
     if (1 / p.repRate < 230e-6) {
@@ -111,6 +126,7 @@ export default defineSchema({
         optimumPeakPower: op.optPulse.peak,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

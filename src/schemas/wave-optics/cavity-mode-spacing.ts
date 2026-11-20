@@ -41,10 +41,27 @@ export default defineSchema({
     const mode = twoMirrorMode(wavelength, cavityLength, g1, g2, n);
     const fsr = resonatorFsr(cavityLength, n);
     const warnings: string[] = [];
+    const reasons: Partial<
+      Record<"gouyPhase" | "transverseSpacing" | "waist" | "rayleighRange" | "waistPosition" | "spot1" | "spot2", string>
+    > = {};
     if (stability === "unstable") {
-      warnings.push("Outside 0 ≤ g₁g₂ ≤ 1 rays walk out of the cavity: there is no Gaussian mode and no transverse mode spacing.");
+      const unstable = "Outside 0 ≤ g₁g₂ ≤ 1 rays walk out of the cavity: there is no Gaussian mode and no transverse mode spacing.";
+      warnings.push(unstable);
+      reasons.gouyPhase = unstable;
+      reasons.transverseSpacing = unstable;
+      reasons.waist = unstable;
+      reasons.rayleighRange = unstable;
+      reasons.waistPosition = unstable;
+      reasons.spot1 = unstable;
+      reasons.spot2 = unstable;
     } else if (stability === "marginal" && !(g1 === 0 && g2 === 0)) {
-      warnings.push("On the stability boundary the Gaussian mode is lost and the transverse modes are degenerate.");
+      const boundary = "On the stability boundary the Gaussian mode is lost and the transverse modes are degenerate.";
+      warnings.push(boundary);
+      reasons.waist = boundary;
+      reasons.rayleighRange = boundary;
+      reasons.waistPosition = boundary;
+      reasons.spot1 = boundary;
+      reasons.spot2 = boundary;
     }
     return {
       values: {
@@ -62,6 +79,7 @@ export default defineSchema({
         spot2: mode.w2,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

@@ -43,12 +43,49 @@ export default defineSchema({
     const shiftP0 = dispersiveWaveShiftNonlinear(beta2, beta3, gamma, peak);
     const lambdaDW = dispersiveWaveWavelength(wavelength, beta2, shift);
     const warnings: string[] = [];
-    if (!anomalous) warnings.push("Normal dispersion (β₂ ≥ 0): no soliton fission; SPM and optical wave breaking broaden the spectrum, so the fission length and dispersive wave have no value.");
-    else if (N < 1) warnings.push("N < 1: dispersion dominates, little broadening.");
+    const reasons: Partial<
+      Record<
+        | "fissionLength" | "firstSolitonPower" | "dispersiveWavelength" | "dispersiveWavelengthInputPower"
+        | "dispersiveWavelengthLeadingOrder",
+        string
+      >
+    > = {};
+    if (!anomalous) {
+      const normal = "Normal dispersion (β₂ ≥ 0): no soliton fission; SPM and optical wave breaking broaden the spectrum, so the fission length and dispersive wave have no value.";
+      warnings.push(normal);
+      reasons.fissionLength = normal;
+      reasons.dispersiveWavelength = normal;
+      reasons.dispersiveWavelengthInputPower = normal;
+      reasons.dispersiveWavelengthLeadingOrder = normal;
+    } else if (N < 1) warnings.push("N < 1: dispersion dominates, little broadening.");
     else if (fiberLength < Lfiss) warnings.push(`The fibre ends before the fission point (L/L_fiss = ${(fiberLength / Lfiss).toPrecision(3)}): mainly SPM broadening and compression.`);
     else if (N > MI_ORDER) warnings.push(`N > ${MI_ORDER}: noise-seeded modulation instability breaks the pulse up before clean fission, so the continuum is broad but loses shot-to-shot coherence.`);
+    if (anomalous && !(N > 0)) {
+      const noOrder = "N = 0 (no peak power or no nonlinearity): the fission length L_D/N is undefined.";
+      warnings.push(noOrder);
+      reasons.fissionLength = noOrder;
+    }
+    if (content.count === 0) {
+      const noSoliton = "N ≤ 1/2: no soliton forms, so there is no first-soliton power.";
+      warnings.push(noSoliton);
+      reasons.firstSolitonPower = noSoliton;
+    }
     if (anomalous && !Number.isFinite(lambdaDW)) {
-      warnings.push(beta3 === 0 ? "β₃ = 0: no phase-matched dispersive wave." : N < 0.5 ? "N < 1/2: no soliton forms, so no dispersive wave." : "The phase-matched Ω lies beyond zero frequency.");
+      if (beta3 === 0) {
+        const noBeta3 = "β₃ = 0: no phase-matched dispersive wave.";
+        warnings.push(noBeta3);
+        reasons.dispersiveWavelength = noBeta3;
+        reasons.dispersiveWavelengthInputPower = noBeta3;
+        reasons.dispersiveWavelengthLeadingOrder = noBeta3;
+      } else if (content.count === 0) {
+        const noDw = "N ≤ 1/2: no soliton forms, so no dispersive wave.";
+        warnings.push(noDw);
+        reasons.dispersiveWavelength = noDw;
+      } else {
+        const beyondZero = "The phase-matched Ω lies beyond zero frequency.";
+        warnings.push(beyondZero);
+        reasons.dispersiveWavelength = beyondZero;
+      }
     }
     return {
       values: {
@@ -63,6 +100,7 @@ export default defineSchema({
         dispersiveWavelengthLeadingOrder: dispersiveWaveWavelength(wavelength, beta2, dispersiveWaveShift(beta2, beta3)),
       },
       warnings,
+      reasons,
     };
   },
   checks: [

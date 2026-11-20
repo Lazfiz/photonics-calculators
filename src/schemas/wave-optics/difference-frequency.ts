@@ -30,9 +30,22 @@ export default defineSchema({
     });
     const valid = Number.isFinite(r.lambdaIdler);
     const warnings: string[] = [];
-    if (!valid) warnings.push("The signal wavelength must be longer than the pump wavelength: the idler is at 1/λ_i = 1/λ_p − 1/λ_s.");
+    const reasons: Partial<
+      Record<"idlerPower" | "idlerWavelength" | "normalizedEfficiency" | "qpmPeriod" | "gainLength", string>
+    > = {};
+    if (!valid) {
+      const noIdler = "The signal wavelength must be longer than the pump wavelength: the idler is at 1/λ_i = 1/λ_p − 1/λ_s.";
+      warnings.push(noIdler);
+      reasons.idlerPower = noIdler;
+      reasons.idlerWavelength = noIdler;
+      reasons.normalizedEfficiency = noIdler;
+      reasons.qpmPeriod = noIdler;
+      reasons.gainLength = noIdler;
+    }
     if (valid && !Number.isFinite(r.normalizedEfficiency)) {
-      warnings.push("With no pump or no signal power the normalised efficiency P_i/(P_pP_s) is undefined.");
+      const noPower = "With no pump or no signal power the normalised efficiency P_i/(P_pP_s) is undefined.";
+      warnings.push(noPower);
+      reasons.normalizedEfficiency = noPower;
     }
     if (valid && r.gainLength > 0.5) {
       warnings.push(`On-axis gain ΓL = ${r.gainLength.toPrecision(3)}: the signal is amplified as well (G = cosh²ΓL), so the low-gain law underestimates the idler.`);
@@ -52,6 +65,7 @@ export default defineSchema({
         focusingRatio: r.focusingRatio,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

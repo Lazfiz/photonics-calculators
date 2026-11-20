@@ -47,6 +47,12 @@ export default defineSchema({
         `σ_δ = ${energySpread.toPrecision(4)} exceeds ρ = ${r.rho.toPrecision(4)}: the energy spread is wider than the FEL gain bandwidth, so the gain is strongly suppressed (Huang & Kim require σ_δ < ρ) and Xie's fit, made for small η, loses accuracy.`,
       );
     }
+    const reasons: Partial<Record<"saturationLength", string>> = {};
+    if (!((9 * r.saturationPower) / r.noisePower > 1)) {
+      const noExponential = "P_sat ≤ P_n/9: the degraded gain never lifts the beam above its start-up noise, so there is no exponential regime and saturationLength is null.";
+      warnings.push(noExponential);
+      reasons.saturationLength = noExponential;
+    }
     return {
       values: {
         wavelength: r.wavelength,
@@ -65,6 +71,7 @@ export default defineSchema({
         etaEnergySpread: r.etaG,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

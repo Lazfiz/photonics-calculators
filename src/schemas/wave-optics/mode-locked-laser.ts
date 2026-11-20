@@ -52,11 +52,18 @@ export default defineSchema({
       warnings.push("Pulses this long for the repetition rate overlap or span fewer than two modes: not a mode-locked train, so the peak power and mode count don't apply.");
     }
     if (cycles < 1) warnings.push("Shorter than one optical cycle: the envelope model and the time-bandwidth product no longer hold.");
+    const dLambda = wavelengthWidth(dnu, wavelength);
+    const reasons: Partial<Record<"bandwidthWavelength", string>> = {};
+    if (dLambda === Infinity) {
+      const toZeroFrequency = "The bandwidth reaches zero frequency (Δν ≥ 2c/λ): the wavelength width is unbounded, so bandwidthWavelength is null.";
+      warnings.push(toZeroFrequency);
+      reasons.bandwidthWavelength = toZeroFrequency;
+    }
     return {
       values: {
         cavityLength: cavityLengthForRepRate(repRate, ring),
         bandwidthFrequency: dnu,
-        bandwidthWavelength: wavelengthWidth(dnu, wavelength),
+        bandwidthWavelength: dLambda,
         modes,
         pulseEnergy: energy,
         peakPower: peakPower(energy, pulseDuration, pulseShape),
@@ -64,6 +71,7 @@ export default defineSchema({
         duty: pulseDuration * repRate,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

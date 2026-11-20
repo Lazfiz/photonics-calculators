@@ -50,10 +50,21 @@ export default defineSchema({
       sigmaE: p.sigmaE, sigmaA: p.sigmaA, sigmaAP: p.sigmaAP, sigmaEP: p.sigmaEP, tau: p.tau, heatFraction: p.heatFraction, kappa: p.kappa,
     });
     const warnings: string[] = [];
+    const reasons: Partial<
+      Record<
+        "pumpAbsorbed" | "thresholdPump" | "outputPower" | "slopeEfficiency" | "absorbedIntensity" | "temperatureRise",
+        string
+      >
+    > = {};
     if (!Number.isFinite(op.pTh)) {
-      warnings.push(
-        `Threshold needs an inversion above ${(op.betaBleach * 100).toPrecision(4)} %, where the pump is no longer absorbed: the laser cannot reach threshold. Lower the loss, add laser passes or use a thicker or more heavily doped disk.`,
-      );
+      const noThreshold = `Threshold needs an inversion above ${(op.betaBleach * 100).toPrecision(4)} %, where the pump is no longer absorbed: the laser cannot reach threshold. Lower the loss, add laser passes or use a thicker or more heavily doped disk.`;
+      warnings.push(noThreshold);
+      reasons.pumpAbsorbed = noThreshold;
+      reasons.thresholdPump = noThreshold;
+      reasons.outputPower = noThreshold;
+      reasons.slopeEfficiency = noThreshold;
+      reasons.absorbedIntensity = noThreshold;
+      reasons.temperatureRise = noThreshold;
     }
     if (p.pumpSpotDiameter > p.diskDiameter) warnings.push("The pump spot is larger than the disk.");
     return {
@@ -71,6 +82,7 @@ export default defineSchema({
         temperatureRise: op.dT,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

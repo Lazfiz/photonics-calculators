@@ -48,22 +48,61 @@ export default defineSchema({
     const alphaL = alphaFromDbPerKm(i.fiberLoss) * i.fiberLength;
     const overflow = !(Number.isFinite(r.gain) && Number.isFinite(r.idlerPower) && Number.isFinite(r.converted));
     const warnings: string[] = [];
-    if (!valid) warnings.push("The signal frequency is above twice the pump frequency (λ_s < λ_p/2), so there is no idler: 1/λ_i = 2/λ_p − 1/λ_s.");
-    if (valid && !pumped) {
-      warnings.push("With no pump there is no four-wave mixing: the signal gain is 1, and the gain coefficient, the pump fraction converted and the gain peak are undefined.");
-    } else if (valid && overflow) {
-      warnings.push(alphaL > 700
-        ? `The fiber loss αL = ${alphaL.toPrecision(3)} nepers is beyond floating point: nothing measurable reaches the output.`
-        : "The gain overflows: the pump would be depleted long before this.");
+    const reasons: Partial<
+      Record<
+        "signalGain" | "idlerWavelength" | "idlerPower" | "gainCoefficient" | "peakGain" | "peakWavelengthShift" | "pumpConverted",
+        string
+      >
+    > = {};
+    if (!valid) {
+      const noIdler = "The signal frequency is above twice the pump frequency (λ_s < λ_p/2), so there is no idler: 1/λ_i = 2/λ_p − 1/λ_s.";
+      warnings.push(noIdler);
+      reasons.signalGain = noIdler;
+      reasons.idlerWavelength = noIdler;
+      reasons.idlerPower = noIdler;
+      reasons.gainCoefficient = noIdler;
+      reasons.pumpConverted = noIdler;
     }
-    if (valid && pumped && !overflow && r.peakGain === Infinity) warnings.push("The peak gain overflows: the pump would be depleted long before this.");
+    if (valid && !pumped) {
+      const noPump = "With no pump there is no four-wave mixing: the signal gain is 1, and the gain coefficient, the pump fraction converted and the gain peak are undefined.";
+      warnings.push(noPump);
+      reasons.gainCoefficient = noPump;
+      reasons.pumpConverted = noPump;
+      reasons.peakWavelengthShift = noPump;
+    } else if (valid && overflow) {
+      const overflowText = alphaL > 700
+        ? `The fiber loss αL = ${alphaL.toPrecision(3)} nepers is beyond floating point: nothing measurable reaches the output.`
+        : "The gain overflows: the pump would be depleted long before this.";
+      warnings.push(overflowText);
+      reasons.signalGain = overflowText;
+      reasons.idlerPower = overflowText;
+      reasons.pumpConverted = overflowText;
+      reasons.peakGain = overflowText;
+    }
+    if (valid && pumped && !overflow && r.peakGain === Infinity) {
+      const peakOverflow = "The peak gain overflows: the pump would be depleted long before this.";
+      warnings.push(peakOverflow);
+      reasons.peakGain = peakOverflow;
+    }
     if (valid && Number.isFinite(r.converted) && r.converted > 0.1 * i.pumpPower) {
       warnings.push(`Signal and idler take more than 10 % of the pump (${((100 * r.converted) / i.pumpPower).toPrecision(3)} %): the pump is depleted and the undepleted-pump gain overstates the output.`);
     }
     if (!Number.isFinite(r.peakDetuning) && i.pumpPower > 0) {
-      warnings.push("No detuning phase-matches (κ = 0 needs β₂ < 0 or β₄ < 0, i.e. anomalous dispersion): the gain band collapses to the pump and the idler grows only quadratically.");
+      const noMatch = "No detuning phase-matches (κ = 0 needs β₂ < 0 or β₄ < 0, i.e. anomalous dispersion): the gain band collapses to the pump and the idler grows only quadratically.";
+      warnings.push(noMatch);
+      reasons.peakWavelengthShift = noMatch;
     }
-    if (valid && pumped && !Number.isFinite(r.gainCoefficient) && !lossy) warnings.push("Outside the gain band: the gain coefficient g is undefined and G oscillates with L.");
+    if (valid && pumped && !Number.isFinite(r.gainCoefficient)) {
+      if (!lossy) {
+        const outsideBand = "Outside the gain band: the gain coefficient g is undefined and G oscillates with L.";
+        warnings.push(outsideBand);
+        reasons.gainCoefficient = outsideBand;
+      } else {
+        const outsideBandLossy = "Outside the gain band (g² < 0): the gain coefficient g is undefined.";
+        warnings.push(outsideBandLossy);
+        reasons.gainCoefficient = outsideBandLossy;
+      }
+    }
     return {
       values: {
         signalGain: r.gain,
@@ -78,6 +117,7 @@ export default defineSchema({
         pumpConverted: i.pumpPower > 0 ? r.converted / i.pumpPower : NaN,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

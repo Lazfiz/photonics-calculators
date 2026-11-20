@@ -41,11 +41,21 @@ export default defineSchema({
     const fsr = ringFsr(roundTripLength);
     const fwhm = (fsr * airyPeakWidth(ringCoefficientOfFinesse(rho))) / (2 * Math.PI);
     const warnings: string[] = [];
+    const reasons: Partial<
+      Record<"mirrorSpotTangential" | "mirrorSpotSagittal" | "waistTangential" | "waistSagittal" | "linewidth", string>
+    > = {};
     if (!(Number.isFinite(tan.w) && Number.isFinite(sag.w))) {
-      warnings.push("No Gaussian mode: each plane needs 0 < d/R_eff < 2. The tangential plane fails first, at d = 2R cos α.");
+      const noMode = "No Gaussian mode: each plane needs 0 < d/R_eff < 2. The tangential plane fails first, at d = 2R cos α.";
+      warnings.push(noMode);
+      reasons.mirrorSpotTangential = noMode;
+      reasons.mirrorSpotSagittal = noMode;
+      reasons.waistTangential = noMode;
+      reasons.waistSagittal = noMode;
     }
     if (!Number.isFinite(fwhm)) {
-      warnings.push("The round-trip factor is too low for a resonance peak: the Airy peak never falls to half its maximum, so there is no linewidth.");
+      const noLinewidth = "The round-trip factor is too low for a resonance peak: the Airy peak never falls to half its maximum, so there is no linewidth.";
+      warnings.push(noLinewidth);
+      reasons.linewidth = noLinewidth;
     }
     return {
       values: {
@@ -63,6 +73,7 @@ export default defineSchema({
         waistSagittal: sag.w0,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

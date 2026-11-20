@@ -50,10 +50,30 @@ export default defineSchema({
       R2: mirrorRadius(p.R2), R_oc: p.R_oc, lossPerPass: p.loss, tau: p.tau,
     });
     const warnings: string[] = [];
+    const reasons: Partial<
+      Record<
+        "waist" | "waistPosition" | "tauEff" | "gainLeft" | "thresholdPower" | "gain" | "outputPower" | "slopeEfficiency",
+        string
+      >
+    > = {};
     if (op.stability !== "stable") {
-      warnings.push(`The cavity is ${op.stability === "unstable" ? "unstable" : "on the stability boundary"}: there is no TEM₀₀ mode, so no waist, threshold or output.`);
+      const noMode = `The cavity is ${op.stability === "unstable" ? "unstable" : "on the stability boundary"}: there is no TEM₀₀ mode, so no waist, threshold or output.`;
+      warnings.push(noMode);
+      reasons.waist = noMode;
+      reasons.waistPosition = noMode;
+      reasons.tauEff = noMode;
+      reasons.gainLeft = noMode;
+      reasons.thresholdPower = noMode;
+      reasons.gain = noMode;
+      reasons.outputPower = noMode;
+      reasons.slopeEfficiency = noMode;
     } else if (!(op.factor > 0)) {
-      warnings.push("Triplet absorption exceeds the singlet gain (σ_T k_ST τ_eff ≥ σₑ): the dye cannot lase CW. Flow faster, focus the pump tighter or quench the triplets.");
+      const triplet = "Triplet absorption exceeds the singlet gain (σ_T k_ST τ_eff ≥ σₑ): the dye cannot lase CW. Flow faster, focus the pump tighter or quench the triplets.";
+      warnings.push(triplet);
+      reasons.thresholdPower = triplet;
+      reasons.gain = triplet;
+      reasons.outputPower = triplet;
+      reasons.slopeEfficiency = triplet;
     }
     return {
       values: {
@@ -70,6 +90,7 @@ export default defineSchema({
         slopeEfficiency: op.slope,
       },
       warnings,
+      reasons,
     };
   },
   checks: [

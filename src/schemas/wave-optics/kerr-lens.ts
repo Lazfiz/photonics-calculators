@@ -39,11 +39,17 @@ export default defineSchema({
     if (crystalLength > zR) {
       warnings.push(`L > z_R (${lengthText(zR)}): the beam changes size inside the crystal, so treat f as an estimate. A thick Kerr medium is modelled as a stack of thin Kerr lenses.`);
     }
-    if (f === Infinity) warnings.push("With no pump power or no crystal length there is no Kerr lens: the focal length is infinite.");
+    const reasons: Partial<Record<"focalLength", string>> = {};
+    if (f === Infinity) {
+      const noLens = "With no pump power or no crystal length there is no Kerr lens: the focal length is infinite.";
+      warnings.push(noLens);
+      reasons.focalLength = noLens;
+    }
     if (Number.isFinite(f) && f > 0 && f < 10 * crystalLength) warnings.push("f is less than 10 L: the lens is not thin compared with the crystal.");
     return {
       values: { focalLength: f, nonlinearPhase: phi0, peakIntensity: I0, criticalPower: Pcr, powerRatio: ratio, rayleighRange: zR },
       warnings,
+      reasons,
     };
   },
   checks: [

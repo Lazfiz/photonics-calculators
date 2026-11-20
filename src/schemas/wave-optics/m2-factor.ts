@@ -25,11 +25,13 @@ export default defineSchema({
     const m2 = m2FromWaistDivergence(wavelength, w0, halfAngle);
     const impossible = m2 < 1;
     const warnings: string[] = [];
+    const reasons: Partial<Record<"rayleighRange", string>> = {};
     if (impossible) {
-      warnings.push(
+      const belowOne =
         "M² below 1 is physically impossible: no beam diverges less than a TEM₀₀ Gaussian of the same waist. Check that w₀ is a radius " +
-        "(not a diameter) and θ the full angle, both second-moment (D4σ) widths as ISO 11146 describes. The Rayleigh range is not defined.",
-      );
+        "(not a diameter) and θ the full angle, both second-moment (D4σ) widths as ISO 11146 describes. The Rayleigh range is not defined.";
+      warnings.push(belowOne);
+      reasons.rayleighRange = belowOne;
     }
     return {
       values: {
@@ -39,6 +41,7 @@ export default defineSchema({
         rayleighRange: impossible ? NaN : rayleighRange({ lambda: wavelength, w0, m2: Math.max(m2, 1) }),
       },
       warnings,
+      reasons,
     };
   },
   checks: [

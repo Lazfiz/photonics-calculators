@@ -44,6 +44,7 @@ export default defineSchema({
     const Pcr = criticalPower(wavelength, n0, n2);
     const zsf = selfFocusingDistance(P0 / Pcr, rayleighRangeInMedium(wavelength, n0, beamWaist));
     const warnings: string[] = [];
+    const reasons: Partial<Record<"selfFocusingDistance", string>> = {};
     if (P0 >= Pcr) {
       warnings.push(zsf < mediumLength
         ? `P ≥ P_cr and the beam self-focuses to collapse after about ${(zsf * 1e3).toPrecision(3)} mm, inside the medium: the plane-wave SPM picture fails there.`
@@ -51,7 +52,9 @@ export default defineSchema({
           ? `P₀ > P_cr: the beam already self-focuses inside the medium (L/z_sf = ${(mediumLength / zsf).toPrecision(2)}), so the on-axis intensity grows and φ_max is a lower bound.`
           : `P ≥ P_cr: the beam self-focuses, but the collapse distance ${(zsf * 1e3).toPrecision(3)} mm lies beyond the medium.`);
     } else {
-      warnings.push("P₀ < P_cr: no self-focusing collapse, so the self-focusing distance has no value.");
+      const belowCritical = "P₀ < P_cr: no self-focusing collapse, so the self-focusing distance has no value.";
+      warnings.push(belowCritical);
+      reasons.selfFocusingDistance = belowCritical;
     }
     return {
       values: {
@@ -65,6 +68,7 @@ export default defineSchema({
         selfFocusingDistance: zsf,
       },
       warnings,
+      reasons,
     };
   },
   checks: [
