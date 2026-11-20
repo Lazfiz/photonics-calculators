@@ -7,7 +7,7 @@
  *
  * Sources:
  * - α = Γσ_a N and the dB/m form 10·log₁₀(e)·α: C. R. Giles, E. Desurvire, J. Lightwave Technol. 9, 271 (1991),
- *   doi:10.1109/50.65886 (α_k = Γ_kσ_akN, eqs. (6)–(9) with n₂ = 0).
+ *   doi:10.1109/50.65886 (α_k = Γ_kσ_akN, eq. (11) with n₂ = 0).
  * - Cross-sections: DOPANT_PRESETS (fiber-optics/doped-fiber-gain.ts), Er³⁺ from Barnes et al. 1991, Yb³⁺ from
  *   Melkumov et al. 2004, Tm³⁺ from Agger & Povlsen 2006 and Ho³⁺ from Le Gouët et al. 2020, shared with the fibre
  *   amplifier pages.

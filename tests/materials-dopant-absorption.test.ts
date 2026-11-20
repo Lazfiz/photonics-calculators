@@ -65,7 +65,7 @@ test("Tm presets: Agger & Povlsen 2006, Al/La-silica fibre Tm1", () => {
 });
 
 test("In-band pumping at 1600 nm inverts Tm at most to σ_a/(σ_a + σ_e) = 1/1.1", () => {
-  // Two-level limit of Giles & Desurvire eq. (6) as the pump grows: n₂/N → σ_a/(σ_a + σ_e) = 3.5/3.85 = 0.909091.
+  // Two-level limit of Giles & Desurvire eq. (19) as the pump grows: n₂/N → σ_a/(σ_a + σ_e) = 3.5/3.85 = 0.909091.
   const tm = DOPANT_PRESETS.find((p) => p.id === "Tm");
   assert.ok(tm);
   const fiber = { N: 8.4e25, area: Math.PI * 3.5e-6 ** 2, tau: tm.tau };

@@ -7,8 +7,10 @@
  *
  * Sources:
  * - Two-level rate equations: C. R. Giles, E. Desurvire, J. Lightwave Technol. 9, 271 (1991), doi:10.1109/50.65886,
- *   eqs. (6)–(9): n₂/N = Σ_k Γ_kσ_akP_k/(hν_kA) / (1/τ + Σ_k Γ_k(σ_ak + σ_ek)P_k/(hν_kA)),
- *   dP_k/dz = Γ_k(σ_ek n₂ − σ_ak n₁)P_k. The intrinsic saturation power is hνA/(Γ(σ_a + σ_e)τ).
+ *   α = Γσ_aN and g* = Γσ_eN are eq. (11); steady-state n₂/N (eq. (19)) =
+ *   Σ_k Γ_kσ_akP_k/(hν_kA) / (1/τ + Σ_k Γ_k(σ_ak + σ_ek)P_k/(hν_kA)); dP_k/dz = Γ_k(σ_ek n₂ − σ_ak n₁)P_k is
+ *   eq. (20) with ASE and loss dropped. The intrinsic saturation power hνA/(Γ(σ_a + σ_e)τ) follows from
+ *   ζ = πb²_eff n̄_t/τ = P_sat(α + g*)/hν (unnumbered text after eq. (20), p. 276).
  * - Closed form of those equations: A. A. M. Saleh, R. M. Jopson, J. D. Evankow, J. Aspell, IEEE Photon. Technol.
  *   Lett. 2, 714 (1990), doi:10.1109/68.60769. With photon fluxes Q_k = P_k/(hν_k), α_k = Γ_kσ_akN, g_k = Γ_kσ_ekN
  *   and ζ = NA/τ, every beam obeys Q_k(L) = Q_k(0)·exp((α_k + g_k)(Q_in − Q_out)/ζ − α_kL), a single equation for the
