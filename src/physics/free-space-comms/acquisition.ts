@@ -11,8 +11,8 @@
  *
  * Tracking: the rms angle error of a quadrant detector viewing a point source through an aperture D is
  * σ = (3π/16)(λ/D)/SNR_v, SNR_v the voltage SNR of the four quadrants summed: G. A. Tyler, D. L. Fried, J. Opt. Soc.
- * Am. 72, 804 (1982), abstract (circular object of zero angular size). The abstract says "rms angular measurement error";
- * per axis is our reading (the error of one image coordinate), the full text is unread.
+ * Am. 72, 804 (1982), abstract (circular object of zero angular size): rms one-axis error (Fig. 2 caption, p. 807;
+ * eqs. (35), (37)).
  */
 
 import { erf } from "../math";
