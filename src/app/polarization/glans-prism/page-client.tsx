@@ -126,7 +126,7 @@ export default function GlansPrismPage() {
       <CrystalNote material={material} lambda={lambda} />
 
       <p className="text-xs text-gray-500 mb-4">
-        θ<sub>h</sub> is the axial ray&apos;s angle of incidence on the hypotenuse (the angle between hypotenuse and entrance
+        θ<sub>h</sub>{" "}is the axial ray&apos;s angle of incidence on the hypotenuse (the angle between hypotenuse and entrance
         face). φ is the ray&apos;s angle in air from the entrance-face normal, in the plane of incidence of the hypotenuse;
         φ &gt; 0 meets the hypotenuse more steeply. The optic axis is parallel to the entrance face.
       </p>

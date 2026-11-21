@@ -149,7 +149,7 @@ export default function QuantumKeyDistributionPage() {
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 text-sm text-gray-400 space-y-2">
         <p>
           Key rate (GLLP with infinitely many decoy states, Ma et al. 2005):
-          {"R = ½·{−f·Q_μ·H₂(E_μ) + Q₁[1 − H₂(e₁)]}"} per pulse, where Q_μ = 1 − (1 − Y₀)e^(−ημ),
+          {"R = ½·{−f·Q_μ·H₂(E_μ) + Q₁[1 − H₂(e₁)]}"}{" "}per pulse, where Q_μ = 1 − (1 − Y₀)e^(−ημ),
           E_μQ_μ = ½Y₀e^(−ημ) + e_d(1 − e^(−ημ)), Q₁ = Y₁μe^(−μ) and e₁ = (½Y₀(1 − η) + e_dη)/Y₁ with Y₁ = Y₀ + η − Y₀η.
           A background click alone gives a random bit and a photon click an error e_d; Ma et al.&apos;s eqs. (10)–(11) are
           the same for Y₀ ≪ 1.

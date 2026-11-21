@@ -83,7 +83,7 @@ export default function HeatCapacityPage() {
           {IDS.map((k) => <option key={k} value={k}>{HEAT_CAPACITY_MATERIALS[k].name}</option>)}
         </select>
         <p className="text-xs text-gray-400 mt-2">
-          Choosing a material fills its measured specific heat at {mat.tRef} K, Debye temperature and density. Enter
+          Choosing a material fills its measured specific heat at {mat.tRef}{" "}K, Debye temperature and density. Enter
           another material&apos;s values (its c_p at room temperature) to use the same model for it.
         </p>
       </div>

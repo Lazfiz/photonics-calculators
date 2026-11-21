@@ -76,7 +76,7 @@ export default function PlasmaDepositionPage() {
       )}
       {d && !noRoot && (d.Te <= TE_FIT_MIN || d.Te > TE_FIT_MAX) && (
         <p className="mb-6 text-sm text-yellow-300" role="status">
-          Tₑ = {fmt(d.Te, 2, " eV")} lies outside the {TE_FIT_MIN}–{TE_FIT_MAX} eV range of the argon rate-constant fits
+          Tₑ = {fmt(d.Te, 2, " eV")} lies outside the {TE_FIT_MIN}–{TE_FIT_MAX}{" "}eV range of the argon rate-constant fits
           (Lieberman &amp; Lichtenberg Table 3.3): extrapolated.
         </p>
       )}

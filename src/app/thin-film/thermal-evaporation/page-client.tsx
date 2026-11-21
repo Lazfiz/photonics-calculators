@@ -104,7 +104,7 @@ export default function ThermalEvaporationPage() {
       </div>
 
       <p className="text-gray-500 mb-6 text-xs">
-        {ev.name}: M = {fmt(ev.M * 1e3, 3)} g/mol, ρ = {fmt(ev.rho / 1e3, 2)} g/cm³, T<sub>m</sub> = {ev.Tm} K. Metals only:
+        {ev.name}: M = {fmt(ev.M * 1e3, 3)} g/mol, ρ = {fmt(ev.rho / 1e3, 2)} g/cm³, T<sub>m</sub> = {ev.Tm}{" "}K. Metals only:
         oxides and fluorides evaporate by dissociation or sublimation, which these fits don&apos;t cover.
       </p>
 

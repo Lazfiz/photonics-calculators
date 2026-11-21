@@ -172,7 +172,7 @@ export default function EnvironmentalStabilityPage() {
         <ValidatedNumberInput label={<>Substrate expansion α<sub>s</sub> (10⁻⁶/K)</>} value={cteSubRaw} onChange={setCteSub} min={-100} max={100} step="0.1" />
       </div>
       <p className="text-xs text-gray-400 mb-6">
-        The indices are those of the dry film (empty pores, as in vacuum) at {T0_C} °C, where each layer is a quarter
+        The indices are those of the dry film (empty pores, as in vacuum) at {T0_C}{" "}°C, where each layer is a quarter
         wave at λ₀. Packing densities are most often 0.8–0.9 for evaporated films and near 1 for ion-assisted and
         sputtered ones (Macleod 1988). The L defaults are bulk fused silica (dn/dT 8.86 × 10⁻⁶/K absolute at 0.6 µm, Leviton &amp; Frey 2006; α 0.55 ×
         10⁻⁶/K, Crystran; ν 0.17); the H defaults (ν 0.27 included) are placeholders, so enter your film&apos;s values. The
@@ -191,7 +191,7 @@ export default function EnvironmentalStabilityPage() {
       </p>
       {braggBad.map((x) => (
         <p key={x.name} className="text-sm text-amber-400 mb-2" role="status">
-          {x.name} layer: the packing density p = {x.mat.p} is too low for a film index of {x.mat.n} under Bragg–Pippard (it needs n² &lt; (1 + p)/(1 − p)), so there is no solid-column index and the moisture and shift results are blank. Raise p or use the linear law.
+          {x.name} layer: the packing density p = {x.mat.p} is too low for a film index of {x.mat.n}{" "}under Bragg–Pippard (it needs n² &lt; (1 + p)/(1 − p)), so there is no solid-column index and the moisture and shift results are blank. Raise p or use the linear law.
         </p>
       ))}
       <div className="grid gap-4 sm:grid-cols-3 mb-6 mt-4">

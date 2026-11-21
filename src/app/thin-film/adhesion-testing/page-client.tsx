@@ -268,7 +268,7 @@ export default function AdhesionTestingPage() {
         {method === "bend" && (
           <p>
             A film on the convex side of a wide substrate bent to radius R carries ε = h<sub>s</sub>/(2R) with no strain across
-            the bend (plane strain). G = Z σ²h/Ē<sub>f</sub> from Hutchinson &amp; Suo for a film much thinner than the substrate:
+            the bend (plane strain). G = Z σ²h/Ē<sub>f</sub>{" "}from Hutchinson &amp; Suo for a film much thinner than the substrate:
             Z = 1.976 for a channel crack with matched film and substrate moduli, ½ for steady-state delamination. A substrate
             more compliant than the film (a polymer) raises the channel-crack Z, and a stiffer one lowers it; the delamination G
             doesn&apos;t depend on the substrate. Residual stress from deposition and thermal mismatch, often hundreds of MPa in

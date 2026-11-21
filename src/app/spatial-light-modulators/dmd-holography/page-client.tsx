@@ -226,7 +226,7 @@ export default function DmdHolographyPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 text-sm text-gray-300 space-y-2">
         <p>
-          <strong>Worked example (Goorden et al. 2014).</strong> With 4 × 4 superpixels, 633 nm, f₁ = 300 mm and a 13.68 µm
+          <strong>Worked example (Goorden et al. 2014).</strong>{" "}With 4 × 4 superpixels, 633 nm, f₁ = 300 mm and a 13.68 µm
           pitch (the defaults), the paper puts the aperture at (−0.87, 3.47) mm and finds 6561 distinct fields (343 for
           3 × 3), a calculated efficiency of 10.3 % and a largest aperture of r = 0.9 mm. The calculator gives (−0.868,
           3.470) mm, 6561 (343), a phasor sum of 10.26 % and 0.868 mm. The paper&apos;s measured efficiency was 4 %: 60 % into
@@ -239,7 +239,7 @@ export default function DmdHolographyPage() {
           = 10.1 % for even p and sin²[π(p − 1)/2p]/π² for odd p, 7.60 % at p = 3 (the text after Eq. 22).
         </p>
         <p>
-          <strong>Limits.</strong> Scalar, paraxial Fourier optics in a 4f system with a plane wave on ideal square pixels
+          <strong>Limits.</strong>{" "}Scalar, paraxial Fourier optics in a 4f system with a plane wave on ideal square pixels
           (100 % fill). The efficiency is the best cell; a real field uses dimmer ones too, and the DMD&apos;s own diffraction
           efficiency into the direction used (the blaze, the window and the fill factor; see the DMD diffraction calculator)
           multiplies it. For Lee holograms the largest aperture is the Nyquist bound ‖ν‖/2 of Gutiérrez-Cuevas and Popoff, a

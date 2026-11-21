@@ -100,7 +100,7 @@ export default function IonAssistedDepositionPage() {
         <p>E per molecule = ratio × E<sub>ion</sub>; momentum per molecule = ratio × √(2 m<sub>i</sub> E<sub>ion</sub>)</p>
         <p className="mt-2">
           IAD results (packing density, index, stress) are reported against these numbers, but how a film responds depends on the
-          material, the ion species and the chamber, so the page doesn&apos;t predict them. Φ<sub>m</sub> needs the mass rate: with a
+          material, the ion species and the chamber, so the page doesn&apos;t predict them. Φ<sub>m</sub>{" "}needs the mass rate: with a
           quartz-crystal monitor that is the displayed rate times the density set in it, whatever the film&apos;s porosity. For a
           rate from measured thickness and time, enter the film&apos;s own density, which is below bulk for a porous film.
         </p>

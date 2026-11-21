@@ -120,7 +120,7 @@ export default function CavityModeSpacingPage() {
       )}
 
       <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">
-        <p>g₁ = 1 − L/R₁, g₂ = 1 − L/R₂; stable for 0 ≤ g₁g₂ ≤ 1. ν<sub>qmn</sub> = FSR [q + (m + n + 1) θ/π], θ = arccos(±√(g₁g₂)),
+        <p>g₁ = 1 − L/R₁, g₂ = 1 − L/R₂; stable for 0 ≤ g₁g₂ ≤ 1. ν<sub>qmn</sub>{" "}= FSR [q + (m + n + 1) θ/π], θ = arccos(±√(g₁g₂)),
           + for g &gt; 0 and − for g &lt; 0.</p>
         <p>z<sub>R</sub>² = L² g₁g₂(1 − g₁g₂)/(g₁ + g₂ − 2g₁g₂)², w₀² = λz<sub>R</sub>/(nπ), z₁ = L g₂(1 − g₁)/(g₁ + g₂ − 2g₁g₂),
           w₁² = (λL/nπ)√(g₂/(g₁(1 − g₁g₂))).</p>

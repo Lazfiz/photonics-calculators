@@ -101,7 +101,7 @@ export default function BirefringenceCalculator() {
       )}
       {valid && geo.delta > 0.03 && (
         <p role="alert" className="mb-8 rounded-lg border border-yellow-700 bg-yellow-950 p-3 text-sm text-yellow-200">
-          Δ = {(geo.delta * 100).toFixed(1)} % &gt; 3 %: the weak-guidance formulas lose accuracy.
+          Δ = {(geo.delta * 100).toFixed(1)}{" "}% &gt; 3 %: the weak-guidance formulas lose accuracy.
         </p>
       )}
 

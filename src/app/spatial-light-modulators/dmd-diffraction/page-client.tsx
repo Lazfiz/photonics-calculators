@@ -232,7 +232,7 @@ export default function DmdDiffractionPage() {
           the blaze. The calculator gives the same orders and angles.
         </p>
         <p>
-          <strong>Limits.</strong> The order angles are exact for a plane wave on a regular array. The power is a scalar
+          <strong>Limits.</strong>{" "}The order angles are exact for a plane wave on a regular array. The power is a scalar
           estimate. It uses one flat square mirror (side √F·d) on an infinite array with every mirror in the same state,
           and the light must arrive in the tilt plane. It leaves out polarization, the window and mirror-coating losses
           (TI DLPA083B budgets them for projection), shadowing between mirrors, the hinge and via structure, mirror

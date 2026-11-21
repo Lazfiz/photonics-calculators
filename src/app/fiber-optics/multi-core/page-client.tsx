@@ -110,7 +110,7 @@ export default function MultiCoreFiberCalculator() {
       )}
       {Number.isFinite(delta) && delta > WEAK_GUIDANCE_DELTA && (
         <p className="mb-6 text-sm text-yellow-300" role="status">
-          Δ = {(delta * 100).toFixed(2)} % &gt; 3 %: outside the weakly guiding LP model, so κ and the LP01 field are only approximate.
+          Δ = {(delta * 100).toFixed(2)}{" "}% &gt; 3 %: outside the weakly guiding LP model, so κ and the LP01 field are only approximate.
         </p>
       )}
       {valid && !weakCoupling && (

@@ -173,7 +173,7 @@ export default function FiberTaperPage() {
       {calc.valid && calc.VcladWaist >= SINGLE_MODE_V && (
         <p className="mb-6 text-sm text-gray-400" role="status">
           The waist guide is multimode (V_clad = {calc.VcladWaist.toFixed(1)}); an adiabatic taper still keeps the light in its
-          fundamental mode. It becomes single-mode below Ø {calc.singleModeDia_um.toFixed(2)} µm (V_clad &lt; 2.405).
+          fundamental mode. It becomes single-mode below Ø {calc.singleModeDia_um.toFixed(2)}{" "}µm (V_clad &lt; 2.405).
         </p>
       )}
 

@@ -101,7 +101,7 @@ export default function WavelengthSelectionPage() {
           law (as on the atmospheric-loss calculator).
         </p>
         <p>
-          <strong>Components</strong> and <strong>cost</strong> are fixed editorial ratings. The weights are 0.3 for eye
+          <strong>Components</strong> and <strong>cost</strong>{" "}are fixed editorial ratings. The weights are 0.3 for eye
           safety (0.05 when it isn&apos;t prioritised), 0.35 atmosphere, 0.2 components and 0.15 cost; the total is
           divided by their sum.
         </p>

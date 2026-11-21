@@ -87,7 +87,7 @@ export default function RingCavityPage() {
 
       {!stable && (
         <p className="mb-6 rounded-lg border border-yellow-700 bg-yellow-950/40 p-3 text-sm text-yellow-200">
-          No Gaussian mode: each plane needs 0 &lt; d/R<sub>eff</sub> &lt; 2. The tangential plane fails first, at d = 2R cos α.
+          No Gaussian mode: each plane needs 0 &lt; d/R<sub>eff</sub>{" "}&lt; 2. The tangential plane fails first, at d = 2R cos α.
         </p>
       )}
 

@@ -98,7 +98,7 @@ export default function BoxcarIntegratorPage() {
       </div>
       {bandLimited && (
         <p className="mb-6 text-sm text-yellow-400">
-          B·FWHM = {fmt(inputBandwidth * fwhm)} &lt; 2: a real input this slow would also smear the pulse, which this model does not
+          B·FWHM = {fmt(inputBandwidth * fwhm)}{" "}&lt; 2: a real input this slow would also smear the pulse, which this model does not
           do (only the noise is band-limited), so the SNR and the short optimum gate are optimistic.
         </p>
       )}

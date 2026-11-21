@@ -77,7 +77,7 @@ export default function CoatingStressPage() {
 
       {thicknessRatio > 0.05 && (
         <p className="text-sm text-amber-400 mb-6">
-          The coating is {(thicknessRatio * 100).toPrecision(2)} % as thick as the substrate. Stoney&apos;s equation assumes
+          The coating is {(thicknessRatio * 100).toPrecision(2)}{" "}% as thick as the substrate. Stoney&apos;s equation assumes
           t<sub>f</sub> ≪ t<sub>s</sub>, and its error grows with t<sub>f</sub>/t<sub>s</sub>, so treat the curvature as an
           estimate.
         </p>

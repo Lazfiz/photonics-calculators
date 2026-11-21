@@ -80,7 +80,7 @@ export default function HeatMirrorPage() {
         <p className="text-gray-300 text-xs">
           A heat mirror passes visible light and reflects thermal infrared: a silver film thin enough to see through (≈ 10–15 nm) reflects
           like a metal beyond about 2 µm, and the two high-index layers cancel its visible reflection (an induced-transmission filter).
-          τ<sub>v</sub> and ρ<sub>v</sub> weight the pane&apos;s T and R with D65 × V(λ) (ISO 9050, EN 410), τ<sub>e</sub> with the ASTM G173 AM1.5
+          τ<sub>v</sub> and ρ<sub>v</sub> weight the pane&apos;s T and R with D65 × V(λ) (ISO 9050, EN 410), τ<sub>e</sub>{" "}with the ASTM G173 AM1.5
           global spectrum, 280–4000 nm; the glass&apos;s back face is included, its absorption isn&apos;t. ε<sub>n</sub> is the Planck-weighted
           1 − R of the coated face over 2.5–50 µm (Kirchhoff, glass opaque there), a band that holds 91–98 % of the blackbody emission
           for 200–600 K; glazing standards use the hemispherical value, which for a

@@ -83,7 +83,7 @@ export default function SiVsInGaAsPage() {
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p>SNR = I_s/√((2q·(I_s + I_dark) + i_amp²)·B), I_s = ℛ·P, I_dark = q·n_i·W·A/τ_g (reverse bias)</p>
         <p>
-          <strong className="text-blue-400">Si:</strong> Green&apos;s 300 K absorption, W = 20 µm, L = 100 µm, R = 5 %,
+          <strong className="text-blue-400">Si:</strong>{" "}Green&apos;s 300 K absorption, W = 20 µm, L = 100 µm, R = 5 %,
           τ_g = 1 ms; the absorption edge does not move with temperature.
         </p>
         <p>

@@ -95,7 +95,7 @@ export default function AttosecondPulsePage() {
         <p className="text-sm text-yellow-400 mb-6">Keldysh γ = {fmt(keldysh, 3)} &gt; 1: multiphoton regime, where the three-step cutoff law I_p + 3.17 U_p is only indicative.</p>
       )}
       {drift > 1 && (
-        <p className="text-sm text-yellow-400 mb-6">Lorentz drift Γ = √(2I_p) a₀³ c/(16ω) = {fmt(drift, 3)} &gt; 1 (Klaiber et al. 2008): the
+        <p className="text-sm text-yellow-400 mb-6">Lorentz drift Γ = √(2I_p) a₀³ c/(16ω) = {fmt(drift, 3)}{" "}&gt; 1 (Klaiber et al. 2008): the
           magnetic force pushes the returning electron past the ion by more than its wave-packet spread, so recombination and the
           harmonic yield fall, more steeply as Γ grows (Galloway et al. 2016 measured it at mid-infrared drivers).</p>
       )}

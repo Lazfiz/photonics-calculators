@@ -248,10 +248,10 @@ export default function LcosBeamSteeringPage() {
           2π at longer wavelengths but responds more slowly (response time grows as t²).
         </p>
         <p>
-          <strong>Limits.</strong> Scalar Fraunhofer diffraction of a plane wave at normal incidence, polarised along the
+          <strong>Limits.</strong>{" "}Scalar Fraunhofer diffraction of a plane wave at normal incidence, polarised along the
           liquid-crystal director, on lossless flat square pixels (reflectance 1; multiply by the device&apos;s own
           reflectance and window losses) whose phase is exactly the ramp&apos;s (a lookup table calibrated to
-          2π, enough grey levels). <strong>Fringing fields are left out:</strong> the liquid crystal near a pixel edge
+          2π, enough grey levels). <strong>Fringing fields are left out:</strong>{" "}the liquid crystal near a pixel edge
           follows its neighbours, which Shane et al. describe as a low-pass filter that costs most at short periods. No
           verified closed-form model of that loss was found, so measured efficiencies at small N fall below these. With a
           stroke under 2π the ramp can&apos;t be wrapped at 2π and no efficiencies are given. Unmodulated gaps are drawn

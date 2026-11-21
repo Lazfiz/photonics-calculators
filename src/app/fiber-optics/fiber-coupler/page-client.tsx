@@ -116,7 +116,7 @@ export default function FiberCouplerCalculator() {
 
       {!valid && (
         <p className="mb-6 text-sm text-yellow-300" role="status">
-          No result: the model needs a core spacing D ≥ 2a = {(2 * coreRadius).toFixed(1)} µm (separate cores), 0 &lt; NA &lt; n₁ and
+          No result: the model needs a core spacing D ≥ 2a = {(2 * coreRadius).toFixed(1)}{" "}µm (separate cores), 0 &lt; NA &lt; n₁ and
           V ≥ {MIN_V} (here V = {fmt(calc.V, 3)}).
         </p>
       )}

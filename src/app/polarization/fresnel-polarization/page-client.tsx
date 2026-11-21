@@ -80,7 +80,7 @@ export default function FresnelPolarizationPage() {
       </div>
       <p className="text-xs text-gray-500 mb-4">
         Convention: time factor e<sup>i(ωt − kz)</sup>, so absorption is N = n − iκ and a positive phase is an advance;
-        r<sub>p</sub> = −r<sub>s</sub> at normal incidence (Born &amp; Wolf, Hecht; the ellipsometry convention, Δ = 180° there).
+        r<sub>p</sub> = −r<sub>s</sub>{" "}at normal incidence (Born &amp; Wolf, Hecht; the ellipsometry convention, Δ = 180° there).
       </p>
 
       <div className="flex flex-wrap gap-2 mb-6">
