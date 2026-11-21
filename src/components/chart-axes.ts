@@ -49,7 +49,8 @@ export function niceTicks(min: number, max: number, count: number, log: boolean)
   // 1e-9 of a step absorbs rounding at the ends (3 × 1e-15 > 3e-15).
   const tol = step * 1e-9;
   for (let k = Math.ceil((min - tol) / step); k * step <= max + tol && ticks.length < 100; k++) ticks.push(k * step || 0); // || 0: no −0
-  return ticks;
+  // A step rounded up past the range leaves one tick (−66 … 89 in 3 → 100 → only 0): ask for one more.
+  return ticks.length > 1 || count > 20 ? ticks : niceTicks(min, max, count + 1, log);
 }
 
 /**

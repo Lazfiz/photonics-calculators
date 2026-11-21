@@ -37,10 +37,8 @@ export function criticalPower(lambda: number, n0: number, n2: number): number {
   return (GAUSSIAN_CRITICAL_POWER_FACTOR * lambda ** 2) / (8 * Math.PI * n0 * n2);
 }
 
-/** On-axis peak intensity of a TEM₀₀ beam, I₀ = 2P/(πw²), W/m². NaN for P < 0 or w ≤ 0. */
-export function gaussianPeakIntensity(power: number, w: number): number {
-  return finiteNonNegative(power) && finitePositive(w) ? (2 * power) / (Math.PI * w ** 2) : NaN;
-}
+// Lives in gaussian-beam.ts so that pages which need only this don't load the FFT and fiber modules.
+export { gaussianPeakIntensity } from "./gaussian-beam";
 
 /** Nonlinear phase φ = k₀ n₂ I L with k₀ = 2π/λ (vacuum), rad. Also the B-integral of a uniform slab. */
 export function nonlinearPhase(lambda: number, n2: number, intensity: number, length: number): number {
