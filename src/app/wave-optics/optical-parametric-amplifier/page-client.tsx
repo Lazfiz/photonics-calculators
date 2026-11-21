@@ -127,7 +127,7 @@ export default function OPACalculator() {
           where δ_si is the signal–idler group-velocity mismatch. That sets the gain bandwidth: 0.886/(|δ_si|L) at low gain, widening as √(ΓL)
           towards (2√ln2/π)√(Γ/L)/|δ_si| at high gain (Cerullo &amp; De Silvestri 2003). The spectrum stops at degeneracy 2λ_p, where signal and idler swap roles. The defaults are a 1064 nm-pumped PPLN
           amplifier for 1550 nm: indices and δ_si from the Zelmon Sellmeier (21 °C, extraordinary), first-order QPM period for the entered indices (when you change a wavelength, the line under the inputs offers PPLN&apos;s indices and δ_si){" "}
-          {fmt(qpmPeriod * 1e6, 4)} µm, and d_eff = 2d₃₃/π = 12.4 pm/V
+          {fmt(qpmPeriod * 1e6, 4)}{" "}µm, and d_eff = 2d₃₃/π = 12.4 pm/V
           from d₃₃ = 19.5 pm/V of congruent LiNbO₃ for SHG of 1.313 µm (Shoji et al. 1997; 25.2 pm/V at 1.064 µm).
           Miller&apos;s rule scales d by 0.87 for the 3.39 µm idler, to ≈ 10.8 pm/V.</p>
         {warnings.map((msg) => <p key={msg} className="text-yellow-400">{msg}</p>)}

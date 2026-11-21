@@ -74,7 +74,7 @@ export default function SPCMPage() {
       )}
       {loss > MAX_MODEL_LOSS && (
         <p className="mb-6 text-sm text-yellow-400">
-          {(loss * 100).toFixed(0)} % of the avalanches fall in the dead time. Real modules drift from the non-paralyzable model
+          {(loss * 100).toFixed(0)}{" "}% of the avalanches fall in the dead time. Real modules drift from the non-paralyzable model
           here: the SPCM-AQRH datasheet lists a correction of 1.16 at 5 Mc/s recorded, where a fixed 22 ns gives 1.12. Use the
           module&apos;s own correction table at these rates.
         </p>

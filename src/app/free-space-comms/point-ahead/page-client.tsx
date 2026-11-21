@@ -89,7 +89,7 @@ export default function PointAheadPage() {
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 text-sm text-gray-400 space-y-2">
         <p>
           The beacon from the far terminal shows where it was R/c ago, and the transmitted beam arrives R/c later, so the
-          transmit direction must lead the received beacon by θ<sub>PA</sub> = 2v⊥/c. Use the transverse velocity in an
+          transmit direction must lead the received beacon by θ<sub>PA</sub>{" "}= 2v⊥/c. Use the transverse velocity in an
           inertial frame: a GEO satellite is fixed in the sky, yet relative to the stars it moves 2.61 km/s faster than a
           station beneath it, which gives 17.4 µrad. The cited chapter takes a LEO satellite&apos;s orbital velocity, 7.61 km/s
           at 500 km (51 µrad); the LEO presets subtract the station&apos;s own rotation, 0.465 km/s eastward at the equator,

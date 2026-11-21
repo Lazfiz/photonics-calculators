@@ -106,7 +106,7 @@ export default function IntensifiedCCDPage() {
 
       {gainSaturated && (
         <p className="mb-6 text-sm text-yellow-400">
-          MCP stack gain {fmt(gain)} is above the ≈ 10⁷ chevron saturation level (Wiza 1979); the model doesn&apos;t saturate.
+          MCP stack gain {fmt(gain)}{" "}is above the ≈ 10⁷ chevron saturation level (Wiza 1979); the model doesn&apos;t saturate.
         </p>
       )}
 

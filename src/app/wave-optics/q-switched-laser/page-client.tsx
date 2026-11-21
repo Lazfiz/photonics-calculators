@@ -136,7 +136,7 @@ export default function QSwitchedLaserPage() {
       )}
       {r > 50 && (
         <p className="mb-4 text-sm text-yellow-300" role="status">
-          r = {fmt(r)} is above 50: the pulse shape and its FWHM aren&apos;t integrated; the width shown is the estimate E/P_p.
+          r = {fmt(r)}{" "}is above 50: the pulse shape and its FWHM aren&apos;t integrated; the width shown is the estimate E/P_p.
         </p>
       )}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">

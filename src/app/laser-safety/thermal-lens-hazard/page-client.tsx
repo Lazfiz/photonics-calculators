@@ -121,7 +121,7 @@ export default function ThermalLensHazardPage() {
       <div className="text-sm text-gray-400 space-y-2">
         <p>
           Heat conduction from a Gaussian beam into a laterally infinite plate with insulated faces (Carslaw &amp; Jaeger).
-          Absorbed near the front face, the rise is √2 P/(π<sup>1.5</sup> K w) · arctan(√(8κt)/w) while the heat stays
+          Absorbed near the front face, the rise is √2 P/(π<sup>1.5</sup>{" "}K w) · arctan(√(8κt)/w) while the heat stays
           within the thickness (it tends to Lax&apos;s P/(√(2π) K w)), plus the heat reflected by the back face; absorbed
           evenly, it is P/(4πKL) · ln(1 + 8κt/w²). w is the 1/e² radius, κ = K/(ρc).
         </p>

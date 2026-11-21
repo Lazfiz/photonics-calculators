@@ -97,7 +97,7 @@ export default function FiberCharacterizationPage() {
       )}
       {valid && calc.V > LP11_CUTOFF_V && (
         <p className="mb-6 text-sm text-yellow-300" role="status">
-          V = {calc.V.toFixed(2)} &gt; 2.405: LP11 is also guided at this wavelength. Mode values are for LP01.
+          V = {calc.V.toFixed(2)}{" "}&gt; 2.405: LP11 is also guided at this wavelength. Mode values are for LP01.
         </p>
       )}
 
@@ -108,7 +108,7 @@ export default function FiberCharacterizationPage() {
       )}
       {valid && calc.delta > WEAK_GUIDANCE_DELTA && (
         <p className="mb-6 text-sm text-yellow-300" role="status">
-          Δ = {(calc.delta * 100).toFixed(1)} % &gt; 5 %: this is a weak-guidance (LP) model, so the mode values are approximate.
+          Δ = {(calc.delta * 100).toFixed(1)}{" "}% &gt; 5 %: this is a weak-guidance (LP) model, so the mode values are approximate.
         </p>
       )}
 

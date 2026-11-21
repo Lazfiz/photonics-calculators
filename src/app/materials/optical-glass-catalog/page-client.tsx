@@ -235,10 +235,10 @@ export default function OpticalGlassCatalogPage() {
           <p className="font-mono">Δn<sub>abs</sub>(T) = (n² − 1)/(2n) · (D₀ΔT + D₁ΔT² + D₂ΔT³ + (E₀ΔT + E₁ΔT²)/(λ² − λ<sub>TK</sub>²)),   ΔT = T − 20 °C</p>
           <p>
             Sellmeier coefficients, n<sub>d</sub>, V<sub>d</sub>, density and thermo-optic coefficients from the SCHOTT
-            optical glass catalog (2017). Each formula reproduces its catalog n<sub>d</sub> to 1e-5 and V<sub>d</sub> to 0.01.
+            optical glass catalog (2017). Each formula reproduces its catalog n<sub>d</sub> to 1e-5 and V<sub>d</sub>{" "}to 0.01.
             dn/dT and Δn are absolute (in vacuum), from SCHOTT TIE-19, valid from −100 to +140 °C and 365 to 1014 nm (SCHOTT data sheets); n is the catalog index at
-            20 °C. Values relative to air are larger by about n × 0.9×10⁻⁶/K, from the air&apos;s own dn/dT ≈ −(n<sub>air</sub> − 1)/T.
-            Curves cover each glass&apos;s 0.3–2.5 µm data range. The crystal and fused silica V<sub>d</sub> come from each set&apos;s
+            20 °C. Values relative to air are larger by about n × 0.9×10⁻⁶/K, from the air&apos;s own dn/dT ≈ −(n<sub>air</sub>{" "}− 1)/T.
+            Curves cover each glass&apos;s 0.3–2.5 µm data range. The crystal and fused silica V<sub>d</sub>{" "}come from each set&apos;s
             published formula (fused silica: Malitson 1965, V<sub>d</sub> 67.82).
           </p>
         </div>

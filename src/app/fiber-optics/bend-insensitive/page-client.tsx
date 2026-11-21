@@ -101,7 +101,7 @@ export default function BendInsensitivePage() {
 
       {!valid && (
         <p className="mb-6 text-sm text-yellow-300" role="status">
-          No result: the model needs V ≥ {MIN_V} for both fibres and NA &lt; n₁.
+          No result: the model needs V ≥ {MIN_V}{" "}for both fibres and NA &lt; n₁.
         </p>
       )}
 

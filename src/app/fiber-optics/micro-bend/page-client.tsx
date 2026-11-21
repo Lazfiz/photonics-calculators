@@ -82,7 +82,7 @@ export default function MicroBendPage() {
       )}
       {valid && calc.V > 2.405 && (
         <p className="mb-6 text-sm text-yellow-300" role="status">
-          V = {calc.V.toFixed(2)} &gt; 2.405: the fibre is not single-mode here; LP01 couples to guided LP11 as well, which this model ignores.
+          V = {calc.V.toFixed(2)}{" "}&gt; 2.405: the fibre is not single-mode here; LP01 couples to guided LP11 as well, which this model ignores.
         </p>
       )}
       {valid && calc.firstOrder > FIRST_ORDER_LIMIT && (

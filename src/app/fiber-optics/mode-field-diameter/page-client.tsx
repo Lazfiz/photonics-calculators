@@ -134,12 +134,12 @@ export default function ModeFieldDiameterPage() {
       )}
       {valid && calc.V > LP11_CUTOFF_V && (
         <p className="mb-6 text-sm text-yellow-300" role="status">
-          V = {calc.V.toFixed(2)} &gt; 2.405: LP11 is also guided, so the fibre is not single-mode here. Values are for LP01.
+          V = {calc.V.toFixed(2)}{" "}&gt; 2.405: LP11 is also guided, so the fibre is not single-mode here. Values are for LP01.
         </p>
       )}
       {valid && (calc.V < MFD_FIT_V_RANGE[0] || calc.V > MFD_FIT_V_RANGE[1]) && (
         <p className="mb-6 text-sm text-yellow-300" role="status">
-          V = {calc.V.toFixed(2)} is outside 1.2–2.4, where Marcuse&apos;s Gaussian fit is within about 1 %.
+          V = {calc.V.toFixed(2)}{" "}is outside 1.2–2.4, where Marcuse&apos;s Gaussian fit is within about 1 %.
         </p>
       )}
 

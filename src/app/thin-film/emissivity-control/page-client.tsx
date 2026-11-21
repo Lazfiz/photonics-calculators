@@ -113,7 +113,7 @@ export default function EmissivityControlPage() {
       <div className="bg-gray-900 rounded p-4 mb-6">
         <p className="text-gray-300 text-xs">
           Kirchhoff&apos;s law: at each wavelength and direction a surface emits as well as it absorbs, ε(λ) = A(λ). The substrate is
-          taken as opaque (it absorbs everything the coating lets into it), so A = 1 − R and ε<sub>n</sub> is the Planck-weighted 1 − R
+          taken as opaque (it absorbs everything the coating lets into it), so A = 1 − R and ε<sub>n</sub>{" "}is the Planck-weighted 1 − R
           at normal incidence over the band. That holds for metals and for glass or oxides thick enough to absorb in the thermal IR; for a
           substrate that is transparent there (Si or Ge at 10 µm, say) light passes through instead, ε is lower and this page overstates
           it. A thin metal film is the low-e layer: its free electrons reflect the thermal IR. The overcoat is lossless with a constant

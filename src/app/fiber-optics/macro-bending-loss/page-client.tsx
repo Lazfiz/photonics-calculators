@@ -91,7 +91,7 @@ export default function MacrobendingLossPage() {
       )}
       {valid && calc.V > LP11_CUTOFF_V && (
         <p className="mb-6 text-sm text-yellow-300" role="status">
-          V = {calc.V.toFixed(2)} &gt; 2.405: the fibre is not single-mode at this wavelength. The loss shown is for LP01 only.
+          V = {calc.V.toFixed(2)}{" "}&gt; 2.405: the fibre is not single-mode at this wavelength. The loss shown is for LP01 only.
         </p>
       )}
 

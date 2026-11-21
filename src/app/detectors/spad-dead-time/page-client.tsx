@@ -75,7 +75,7 @@ export default function SpadDeadTimePage() {
         </div>
         {pastPeak && (
           <p className="mt-4 text-sm text-yellow-400">
-            Rτ = {(R * tau).toFixed(2)} &gt; 1: past the paralyzable peak, a higher true rate gives fewer counts. The same recorded
+            Rτ = {(R * tau).toFixed(2)}{" "}&gt; 1: past the paralyzable peak, a higher true rate gives fewer counts. The same recorded
             rate also comes from a true rate below 1/τ, so a rate correction is ambiguous here.
           </p>
         )}

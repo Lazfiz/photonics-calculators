@@ -121,7 +121,7 @@ export default function EllipsometryMeasurementPage() {
       )}
       {filmErrors.length === 0 && Number.isFinite(film.alternative) && (
         <p className="mb-4 text-sm text-yellow-300" role="status">
-          Two thicknesses fit equally well, {fmt(film.thickness * 1e9)} nm and {fmt(film.alternative * 1e9)} nm (plus whole
+          Two thicknesses fit equally well, {fmt(film.thickness * 1e9)} nm and {fmt(film.alternative * 1e9)}{" "}nm (plus whole
           periods): on a lossless substrate with n_s &lt; sin θ the substrate reflects totally, and Ψ, Δ alone can&apos;t tell
           them apart. A second angle or wavelength decides.
         </p>

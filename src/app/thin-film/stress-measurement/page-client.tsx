@@ -97,7 +97,7 @@ export default function StressMeasurementPage() {
 
       {Math.max(Math.abs(deflectionBefore), Math.abs(deflection)) * 1e-3 > 0.3 * substrateThickness && (
         <p className="mb-6 text-sm text-amber-400" role="status">
-          The bow is {fmt((100 * Math.max(Math.abs(deflectionBefore), Math.abs(deflection)) * 1e-3) / substrateThickness, 3)} % of
+          The bow is {fmt((100 * Math.max(Math.abs(deflectionBefore), Math.abs(deflection)) * 1e-3) / substrateThickness, 3)}{" "}% of
           the substrate thickness; Stoney&apos;s equation assumes deflections much smaller than t<sub>s</sub>, and larger
           bows turn geometrically nonlinear (Freund &amp; Suresh, Thin Film Materials, 2004, ch. 2), so treat the stress as
           an estimate.

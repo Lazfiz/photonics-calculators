@@ -172,7 +172,7 @@ export default function DispersionCompPage() {
           <p>
             Agrawal, Fiber-Optic Communication Systems, §2.4.2–2.4.3 and §5.4.4: for a broad source (σ<sub>λ</sub> much larger than the
             modulation bandwidth, ≈ λ²B/c, 0.08 nm at 10 Gb/s and 1550 nm) σ<sub>b</sub> reduces to σ<sub>D</sub>; for a narrow one the
-            transmitted Gaussian pulse is taken at its optimum width, which adds λ²|D<sub>acc</sub>|/4πc to σ<sub>b</sub>² for the penalty. The bit-rate limit uses the total output width σ instead, √(λ²|D<sub>acc</sub>|/2πc) = √(|β<sub>2</sub>|L) for a narrow source. D varies linearly with λ. A DCF compensates the whole band only when its relative slope S<sub>DCF</sub>/D<sub>DCF</sub> equals the
+            transmitted Gaussian pulse is taken at its optimum width, which adds λ²|D<sub>acc</sub>|/4πc to σ<sub>b</sub>² for the penalty. The bit-rate limit uses the total output width σ instead, √(λ²|D<sub>acc</sub>|/2πc) = √(|β<sub>2</sub>|L) for a narrow source. D varies linearly with λ. A DCF compensates the whole band only when its relative slope S<sub>DCF</sub>/D<sub>DCF</sub>{" "}equals the
             span&apos;s S/D.
           </p>
           <p>
