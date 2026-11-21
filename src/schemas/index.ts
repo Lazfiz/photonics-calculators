@@ -412,6 +412,7 @@ import supercontinuum from "./wave-optics/supercontinuum";
 import thinDiskLaser from "./wave-optics/thin-disk-laser";
 import dmdDiffraction from "./spatial-light-modulators/dmd-diffraction";
 import dmdHolography from "./spatial-light-modulators/dmd-holography";
+import lcosSteering from "./spatial-light-modulators/lcos-steering";
 
 export const schemas: readonly CalculatorSchema[] = [
   couplingEfficiency, airyDisk, mpe, nohd, odRequirements, laserOpticalDensity, stokes, blackbody, ftirResolution,
@@ -482,7 +483,7 @@ export const schemas: readonly CalculatorSchema[] = [
   secondHarmonicGeneration, sensorCmos, shackHartmann, signalToNoise, simultaneousMulticolor, speckleImaging,
   spectralUnmixing, spinningDisk, stimulatedRamanMicroscopy, stitching, strehlRatio, structuredIllumination,
   sumFrequencyMicroscopy, superResolution, telecentricity, thirdHarmonicMicroscopy, threePhotonMicroscopy,
-  dmdDiffraction, dmdHolography,
+  dmdDiffraction, dmdHolography, lcosSteering,
 ];
 
 const byHref = new Map(schemas.map((schema) => [schema.href, schema]));
