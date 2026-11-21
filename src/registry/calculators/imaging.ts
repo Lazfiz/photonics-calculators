@@ -173,6 +173,7 @@ export const imaging: CalculatorEntry[] = [
     related: [
       { href: "/spatial-light-modulators/dmd-diffraction", note: "Diffraction orders and blaze of a micromirror (DMD) array" },
       { href: "/spatial-light-modulators/dmd-holography", note: "Binary amplitude holograms on a DMD: Lee and superpixel methods" },
+      { href: "/spatial-light-modulators/lcos-beam-steering", note: "Beam steering with a blazed grating on an LCoS phase SLM" },
     ],
     references: [
       {

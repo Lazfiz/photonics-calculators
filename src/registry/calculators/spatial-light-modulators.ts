@@ -30,6 +30,37 @@ const tiDlps026: Reference = {
   url: "https://www.ti.com/lit/ds/symlink/dlp7000.pdf",
 };
 
+// Read in full from the CORE/Cambridge repository copy; Crossref checked. Eqs. 3–4 (reflective phase stroke), Table 1.
+const zhang2014: Reference = {
+  citation: "Zhang Z., You Z., Chu D. (2014). Fundamentals of phase-only liquid crystal on silicon (LCOS) devices. Light Sci. Appl. 3, e213: Eq. 3, phase stroke δ = 2πΔn·2d/λ of a reflective cell; Eq. 4, d = λ/(2Δn) for 2π.",
+  url: "https://doi.org/10.1038/lsa.2014.94",
+};
+// Read in full as arXiv:1908.04859 (the SPIE PDF was not opened); Crossref checked.
+const shane2019: Reference = {
+  citation: "Shane J. C., McKnight D. J., Hill A., Taberski K., Serati S. (2019). Designing a new spatial light modulator for holographic photostimulation. Proc. SPIE, Optical Trapping and Optical Micromanipulation XVI: first-order efficiency ∝ (area fill factor)² for flat mirrors with non-reflective gaps; fringing fields act as a low-pass filter.",
+  url: "https://doi.org/10.1117/12.2528558",
+};
+// Read in full as arXiv:1512.06241v1; Crossref checked.
+const naber2016: Reference = {
+  citation: "Naber J. B., Vos J., Rengelink R. J., Nusselder R. J., Davtyan D. (2016). Optical techniques for Rydberg physics in lattice geometries. Eur. Phys. J. Spec. Top. 225, 2785–2816: a PLUTO SLM with 87 % fill factor, theoretical efficiency (fill factor)² = 76 %.",
+  url: "https://doi.org/10.1140/epjst/e2015-50329-4",
+};
+// Read in full (PDF from hamamatsu.com, Aug. 2024).
+const hamamatsuX15213: Reference = {
+  citation: "Hamamatsu Photonics (2024). LCOS-SLM X15213 series: Applications and Features, Cat. No. LLAP3012E05: 1272 × 1024 pixels, 12.5 µm pitch, fill factor 96.8 %; Feature 3, 2-level grating at 40 lp/mm, 4-level at 20 lp/mm, efficiency over the unpatterned zero order.",
+  url: "https://www.hamamatsu.com/content/dam/hamamatsu-photonics/sites/documents/99_SALES_LIBRARY/lpd/application_note_LCOS_E.pdf",
+};
+// The same entry as the computer-generated holography page cites (imaging.ts): sinc²(π/N) for N levels.
+const swanson1989: Reference = {
+  citation: "Swanson G. J. (1989). Binary optics technology: the theory and design of multi-level diffractive optical elements. MIT Lincoln Laboratory Technical Report 854. First-order efficiency sinc²(π/L) of an L-level phase profile.",
+  url: "https://apps.dtic.mil/sti/pdfs/ADA213404.pdf",
+};
+// Read in full (PDF from scitepress.org); Crossref checked.
+const improso2017: Reference = {
+  citation: "Improso W. D. G. D., Tapang G. A., Saloma C. A. (2017). Suppression of zeroth-order diffraction in phase-only spatial light modulator via destructive interference with a correction beam. Proc. PHOTOPTICS 2017, 208–214: the unmodulated dead areas, set by the fill factor, form the zero order.",
+  url: "https://doi.org/10.5220/0006129802080214",
+};
+
 export const spatialLightModulators: CalculatorEntry[] = [
   {
     slug: "dmd-diffraction",
@@ -56,6 +87,22 @@ export const spatialLightModulators: CalculatorEntry[] = [
     related: [
       { href: "/spatial-light-modulators/dmd-diffraction", note: "Which DMD order is blazed, and the incidence angle that puts it on the blaze" },
       { href: "/imaging/computer-generated-holography", note: "Replay field and efficiency of a phase hologram on an SLM" },
+      { href: "/spatial-light-modulators/lcos-beam-steering", note: "Phase-only steering with an LCoS SLM: blazed grating efficiency" },
+    ],
+  },
+  {
+    slug: "lcos-beam-steering",
+    title: "LCoS SLM Beam Steering: Blazed Grating Efficiency",
+    description: "Steer a beam with a phase SLM: grating period in pixels to angle, first-order efficiency with fill factor, zero and alias orders, and the 2π phase stroke.",
+    lede: "A phase-only LCoS SLM steers light with a sawtooth phase grating. Set the period in pixels to see the angle, how much power the steered order keeps once pixelation and fill factor take theirs, where the rest goes, and whether the cell reaches 2π.",
+    keywords: ["lcos beam steering", "slm beam steering", "blazed grating slm", "phase slm diffraction efficiency", "slm fill factor", "slm zero order", "lcos phase stroke", "liquid crystal retardance", "spatial light modulator grating"],
+    tier: "textbook",
+    modelNote: "Scalar Fraunhofer, normal incidence, lossless flat square pixels of area fill F, exact per-pixel phase (2π lookup table). Fringing fields (pixel crosstalk) not modelled; Δn held at its value at λ.",
+    references: [zhang2014, shane2019, naber2016, hamamatsuX15213, improso2017, swanson1989],
+    related: [
+      { href: "/imaging/computer-generated-holography", note: "Replay field and quantisation efficiency of a phase hologram on an SLM" },
+      { href: "/spatial-light-modulators/dmd-holography", note: "Binary amplitude holograms on a DMD: Lee and superpixel methods" },
+      { href: "/polarization/birefringence", note: "Retardance of a birefringent layer" },
     ],
   },
 ];
