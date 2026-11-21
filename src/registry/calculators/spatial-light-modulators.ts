@@ -61,6 +61,25 @@ const improso2017: Reference = {
   url: "https://doi.org/10.5220/0006129802080214",
 };
 
+// The DLPC900 datasheet, its programmer's guide and the DLP6500 datasheet were read in full (PDFs from ti.com, Nov. 2026);
+// DMD 101 (DLPA008B) Sec. 4.3 for block clears and phased mirror clocking.
+const tiDlps037: Reference = {
+  citation: "Texas Instruments (2024). DLPC900 Digital Controller for Advanced Light Control, datasheet DLPS037H: Sec. 6.3, binary-weighted bit planes (120 Hz RGB, 2.78 ms per colour); Sec. 6.4.1, at most 24 bits per pixel per pattern frame; Table 6-4, minimum pattern time by bit depth and DMD; Table 6-6, by active blocks.",
+  url: "https://www.ti.com/lit/ds/symlink/dlpc900.pdf",
+};
+const tiDlpu018: Reference = {
+  citation: "Texas Instruments (2024). DLPC900 Programmer's Guide, DLPU018J: Table 2-110 (the same minimum exposures), Sec. 2.1.6 (exposure out of range error), Sec. 2.4.4.3.4 (105 µs dark time before a triggered pattern), Sec. 5.1 (a frame's pattern exposures must end within the frame).",
+  url: "https://www.ti.com/lit/pdf/dlpu018",
+};
+const tiDlps053: Reference = {
+  citation: "Texas Instruments (2016). DLP6500FYE 0.65 1080p MVSP Type A DMD, datasheet DLPS053B, Features: 1920 × 1080 mirrors; with the DLPC900, 9523 Hz and 19.7 Gbit/s for binary patterns; with the DLPC910, 11 574 Hz and 24 Gbit/s; micromirror crossover time 2.5 µs typical.",
+  url: "https://www.ti.com/lit/ds/symlink/dlp6500fye.pdf",
+};
+const tiDlpa008: Reference = {
+  citation: "Texas Instruments (2018). Introduction to ±12 Degree Orthogonal Digital Micromirror Devices (DMD 101), DLPA008B: Secs. 2.3.1–2.3.3, pixel memory loads while the mirrors hold their state, then a mirror clocking pulse; Secs. 4.2–4.3, block clear and phased operation for display times shorter than an array load.",
+  url: "https://www.ti.com/lit/pdf/dlpa008",
+};
+
 export const spatialLightModulators: CalculatorEntry[] = [
   {
     slug: "dmd-diffraction",
@@ -88,6 +107,21 @@ export const spatialLightModulators: CalculatorEntry[] = [
       { href: "/spatial-light-modulators/dmd-diffraction", note: "Which DMD order is blazed, and the incidence angle that puts it on the blaze" },
       { href: "/imaging/computer-generated-holography", note: "Replay field and efficiency of a phase hologram on an SLM" },
       { href: "/spatial-light-modulators/lcos-beam-steering", note: "Phase-only steering with an LCoS SLM: blazed grating efficiency" },
+      { href: "/spatial-light-modulators/dmd-timing", note: "Bit planes, grey levels and pattern rates of a DMD" },
+    ],
+  },
+  {
+    slug: "dmd-timing",
+    title: "DMD Timing: Bit Planes, Grey Levels and Pattern Rate",
+    description: "DMD grey levels by binary PWM: bit-plane times, LSB, on-time per grey level, pattern rate with dark time, and TI DLPC900 minimum exposures by bit depth.",
+    lede: "A DMD mirror is only on or off, so grey levels come from time: a b-bit pattern is b binary bit planes lasting 1, 2, 4 … LSBs. Set the bit depth and exposure to see each plane's duration, a grey level's on-time, the pattern rate, and TI's shortest pattern on the DLPC900.",
+    keywords: ["dmd timing", "dmd bit plane", "dmd pattern rate", "dmd pwm", "dmd grey levels", "dlpc900 exposure", "binary pattern rate", "dmd exposure time", "dlp6500 pattern rate", "dmd dark time"],
+    tier: "exact",
+    modelNote: "Ideal binary PWM: plane k lasts exactly 2^k LSB, mirrors switch instantly (2.5 µs crossover ignored), light steady; equal colour slots. TI's DLPC900 minimum pattern times are its printed full-array table, not modelled; trigger delays left out.",
+    references: [tiDlps037, tiDlpu018, tiDlps053, tiDlpa008],
+    related: [
+      { href: "/spatial-light-modulators/dmd-holography", note: "Binary holograms on a DMD and the hologram rate they allow" },
+      { href: "/spatial-light-modulators/dmd-diffraction", note: "Which DMD order is blazed, and the incidence angle that puts it on the blaze" },
     ],
   },
   {
