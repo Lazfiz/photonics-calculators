@@ -56,13 +56,16 @@ export default defineSchema({
     const warnings: string[] = [];
     const reasons: Partial<
       Record<
-        "halfWaveRetardation" | "halfWavePhase" | "vpiLength" | "indexChange" | "retardation" | "phase" | "transmission" | "transmissionNoRotation",
+        | "halfWaveRetardation" | "halfWavePhase" | "vpiLength" | "indexChange" | "retardation" | "phase" | "transmission"
+        | "transmissionNoRotation" | "rotation",
         string
       >
     > = {};
     if (!Number.isFinite(m.n)) {
       const outsideIndex = "The wavelength is outside the index model's range.";
       warnings.push(outsideIndex);
+      // BSO's rotatory power is tabulated over the same 500–800 nm as its index.
+      reasons.rotation = outsideIndex;
       reasons.halfWaveRetardation = outsideIndex;
       reasons.halfWavePhase = outsideIndex;
       reasons.vpiLength = outsideIndex;
