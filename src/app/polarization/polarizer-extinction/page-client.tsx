@@ -83,7 +83,11 @@ export default function PolarizerExtinctionPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Contrast at {angleDeg}°</p>
           <p className="text-2xl font-bold text-yellow-400">{Number.isFinite(contrastDb) ? `${contrastDb.toFixed(1)} dB` : "—"}</p>
-          {!Number.isFinite(contrastDb) && <p className="text-xs text-gray-500">no transmission (T∥ = 0)</p>}
+          {!Number.isFinite(contrastDb) && (
+            <p className="text-xs text-gray-500">
+              {T_parallel === 0 ? "no transmission (T∥ = 0)" : "transmission at this angle underflows to 0: contrast unbounded"}
+            </p>
+          )}
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Cascaded ER</p>
