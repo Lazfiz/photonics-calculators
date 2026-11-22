@@ -6,6 +6,8 @@ import { parseInputs, runSchema } from "../src/schemas/run";
 import type { CalculatorSchema } from "../src/schemas/types";
 import greenLaserPointer from "../src/schemas/laser-safety/green-laser-pointer";
 import electroOptic from "../src/schemas/materials/electro-optic";
+import polarizerExtinction from "../src/schemas/polarization/polarizer-extinction";
+import coatingStress from "../src/schemas/thin-film/coating-stress";
 import radiationDamage from "../src/schemas/materials/radiation-damage";
 import thermalConductivityOptics from "../src/schemas/materials/thermal-conductivity-optics";
 import fourWaveMixing from "../src/schemas/wave-optics/four-wave-mixing";
@@ -138,4 +140,33 @@ test("optical-parametric-oscillator: the signal-longer-than-pump reason fires on
   const matched = run(opo, { pumpWavelength: 500, signalWavelength: 1000, nPump: 1, nSignal: 1, nIdler: 1 });
   assert.equal(matched.outputs.phaseMismatch, 0);
   assert.match(matched.reasons.qpmPeriod, /^Δk = 0: these indices are already phase matched/);
+});
+
+test("coating-stress: an infinite radius names its cause (no stress, no film, both, or a too-small curvature)", () => {
+  const cases: [Record<string, number>, RegExp][] = [
+    [{ sigmaFilm: 0 }, /^No film stress \(σ_f = 0\): zero curvature/],
+    [{ dFilm: 0 }, /^No film \(thickness t_f = 0\): zero curvature/],
+    [{ sigmaFilm: 0, dFilm: 0 }, /^No film stress and no film \(σ_f = 0, t_f = 0\): zero curvature/],
+    // 1e-310 MPa = 1e-304 Pa: κ ≈ 4e-314 /m is not zero, but 1/κ overflows.
+    [{ sigmaFilm: 1e-310 }, /^The curvature is too small for a finite radius/],
+  ];
+  for (const [inputs, reason] of cases) {
+    const r = run(coatingStress, inputs);
+    assert.equal(r.outputs.radiusN, null, JSON.stringify(inputs));
+    assert.match(r.reasons.radiusN, reason);
+    assertNullsExplained(r, JSON.stringify(inputs));
+  }
+  assert.notEqual(run(coatingStress, { sigmaFilm: 1e-310 }).outputs.curvatureN, 0);
+});
+
+test("polarizer-extinction: \"T∥ = 0\" only when T∥ = 0; a T(θ) that underflows has its own reason", () => {
+  const zero = run(polarizerExtinction, { transmissionPercent: 0 });
+  assert.equal(zero.outputs.contrastDb, null);
+  assert.equal(zero.reasons.contrastDb, "No transmission (T∥ = 0): the contrast is undefined.");
+  // T∥ = 5e-322 (5e-320 %), 100 dB: T⊥ underflows to 0, and at 90° T∥ cos²θ ≈ 5e-322 · 3.7e-33 does too.
+  const under = run(polarizerExtinction, { transmissionPercent: 5e-320, extinctionRatioDb: 100, angleDeg: 90 });
+  assert.equal(under.outputs.contrastDb, null);
+  assert.match(under.reasons.contrastDb, /^The transmission at the analyzer angle underflows to 0/);
+  assert.ok(!under.warnings.some((w) => w.includes("T∥ = 0")));
+  assertNullsExplained(under, "T(θ) underflow");
 });
