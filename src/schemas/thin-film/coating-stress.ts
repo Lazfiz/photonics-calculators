@@ -31,7 +31,14 @@ export default defineSchema({
     const warnings: string[] = [];
     const reasons: Partial<Record<"radiusN", string>> = {};
     if (!Number.isFinite(radiusN)) {
-      const flat = "Zero curvature (no film stress or thickness): the substrate stays flat, so the radius is infinite.";
+      // Name the cause: no stress, no film, or a curvature too small for 1/κ to stay finite.
+      const cause = sigmaFilm === 0 && dFilm === 0 ? "No film stress and no film (σ_f = 0, t_f = 0)"
+        : sigmaFilm === 0 ? "No film stress (σ_f = 0)"
+          : dFilm === 0 ? "No film (thickness t_f = 0)"
+            : null;
+      const flat = cause
+        ? `${cause}: zero curvature, so the substrate stays flat and the radius is infinite.`
+        : "The curvature is too small for a finite radius (1/κ overflows): the substrate is flat for any practical purpose.";
       warnings.push(flat);
       reasons.radiusN = flat;
     }

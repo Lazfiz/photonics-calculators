@@ -32,7 +32,9 @@ export default defineSchema({
     const warnings: string[] = [];
     const reasons: Partial<Record<"contrastDb", string>> = {};
     if (!Number.isFinite(contrast)) {
-      const noTransmission = "No transmission (T∥ = 0): the contrast is undefined.";
+      const noTransmission = tPar > 0
+        ? "The transmission at the analyzer angle underflows to 0 (T∥ cos²θ + T⊥ sin²θ is below the smallest double): the contrast is unbounded."
+        : "No transmission (T∥ = 0): the contrast is undefined.";
       warnings.push(noTransmission);
       reasons.contrastDb = noTransmission;
     }
