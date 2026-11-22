@@ -78,6 +78,11 @@ export default defineSchema({
       reasons.idlerPower = overflowText;
       reasons.pumpConverted = overflowText;
       reasons.peakGain = overflowText;
+    } else if (!pumped) {
+      // No idler and no pump: the no-idler reason covers the rest, but not the gain peak, which needs only the pump.
+      const noPumpPeak = "With no pump there is no parametric gain band, so the wavelength shift of the gain peak is undefined.";
+      warnings.push(noPumpPeak);
+      reasons.peakWavelengthShift = noPumpPeak;
     }
     if (valid && pumped && !overflow && r.peakGain === Infinity) {
       const peakOverflow = "The peak gain overflows: the pump would be depleted long before this.";

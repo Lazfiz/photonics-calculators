@@ -41,9 +41,14 @@ export default defineSchema({
     const nohd = nominalOcularHazardDistance(wavelength, power, beam, t).distance;
     const dAtR = effectiveDiameterAt(beam, distance);
     const warnings: string[] = [];
-    if (cls.laserClass === null || Number.isNaN(nohd)) warnings.push("The limits cover 180 nm to 1 mm.");
+    const reasons: Partial<Record<"classRank" | "nohd" | "flashBlindRange" | "glareRange" | "distractionRange", string>> = {};
+    if (cls.laserClass === null || Number.isNaN(nohd)) {
+      const noLimits = "The limits cover 180 nm to 1 mm.";
+      warnings.push(noLimits);
+      if (cls.laserClass === null) reasons.classRank = noLimits;
+      if (Number.isNaN(nohd)) reasons.nohd = noLimits;
+    }
     if (outsideRule) warnings.push("Outside 400–1400 nm ICNIRP 2013 uses the longest exposure expected; 10 s is assumed.");
-    const reasons: Partial<Record<"nohd" | "flashBlindRange" | "glareRange" | "distractionRange", string>> = {};
     if (!visible) {
       const visibleOnly = "Dazzle levels apply to visible beams only.";
       warnings.push(visibleOnly);

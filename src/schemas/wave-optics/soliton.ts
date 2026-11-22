@@ -30,12 +30,21 @@ export default defineSchema({
     const content = solitonContent(N);
     const warnings: string[] = [];
     const reasons: Partial<
-      Record<"dispersionLength" | "nonlinearLength" | "solitonCount" | "strongestSolitonPower", string>
+      Record<
+        | "dispersionLength" | "nonlinearLength" | "solitonPeriod" | "solitonOrder" | "solitonCount" | "strongestSolitonPower",
+        string
+      >
     > = {};
     if (!Number.isFinite(dispersionLength(t0, beta2))) {
       const noDispersion = "β₂ = 0: no dispersion length, so the pulse only gains SPM phase and keeps its intensity shape.";
       warnings.push(noDispersion);
       reasons.dispersionLength = noDispersion;
+      reasons.solitonPeriod = noDispersion;
+      const noSoliton = "Zero dispersion (β₂ = 0): no soliton forms, so the soliton order, count and strongest-soliton power have no value.";
+      warnings.push(noSoliton);
+      reasons.solitonOrder = noSoliton;
+      reasons.solitonCount = noSoliton;
+      reasons.strongestSolitonPower = noSoliton;
     } else if (!anomalous) {
       const normal = "Normal dispersion (β₂ > 0): no bright soliton, the pulse broadens; the soliton count and strongest-soliton power have no value.";
       warnings.push(normal);

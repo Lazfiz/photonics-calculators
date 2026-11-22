@@ -64,12 +64,13 @@ export default defineSchema({
       const entered = "dndT entered, not the material's preset: its convention (dndTAbsolute) is yours.";
       warnings.push(entered);
       reasons.dndTAbsolute = entered;
-    } else if (f === Infinity) {
+    }
+    // Whether dn/dT is the preset or entered.
+    if (f === Infinity) {
       const noLens = "No thermal lens: zero absorbed power or dn/dT = 0.";
       warnings.push(noLens);
       reasons.focalLength = noLens;
-    }
-    else if (f < 0) warnings.push("Negative focal length: a diverging lens (dn/dT < 0).");
+    } else if (f < 0) warnings.push("Negative focal length: a diverging lens (dn/dT < 0).");
     return {
       values: {
         resistance: thickness / (k * area), faceRise, heatFlux: power / area, centreRise: cylinderCentreRise(power, k, thickness), focalLength: f,
