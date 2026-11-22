@@ -42,7 +42,7 @@ export default defineSchema({
         string
       >
     > = {};
-    if (!(Number.isFinite(r.g) && Number.isFinite(r.Pth))) {
+    if (!(signalWavelength > pumpWavelength)) {
       const noResult = "No result: the signal wavelength must be longer than the pump wavelength.";
       warnings.push(noResult);
       reasons.idlerWavelength = noResult;
@@ -53,6 +53,17 @@ export default defineSchema({
       reasons.thresholdRatio = noResult;
       reasons.phaseMismatch = noResult;
       reasons.qpmPeriod = noResult;
+    } else {
+      if (r.singlePassGain === Infinity) {
+        const gainOverflow = "The single-pass gain cosh²(gL_eff) − 1 overflows: the pump would be depleted long before this.";
+        warnings.push(gainOverflow);
+        reasons.singlePassGain = gainOverflow;
+      }
+      if (r.dk === 0) {
+        const phaseMatched = "Δk = 0: these indices are already phase matched, so no QPM period is needed.";
+        warnings.push(phaseMatched);
+        reasons.qpmPeriod = phaseMatched;
+      }
     }
     const aperture = walkOffApertureLength(beamRadius, walkOff);
     if (aperture === Infinity) {
