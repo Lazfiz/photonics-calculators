@@ -25,10 +25,15 @@ export default defineSchema({
     const doseAtBudget = doseForLoss(a1, exponent, length, lossBudget);
     const warnings: string[] = [];
     const reasons: Partial<Record<"doseAtBudget", string>> = {};
-    if (!Number.isFinite(doseAtBudget)) {
+    if (!(a1 > 0)) {
       const noDose = "No dose reaches the loss budget: it needs A₁ > 0.";
       warnings.push(noDose);
-      if (!(a1 > 0)) reasons.doseAtBudget = noDose;
+      reasons.doseAtBudget = noDose;
+    } else if (!Number.isFinite(doseAtBudget)) {
+      // (budget/(A₁L))^(1/f) overflows when the ratio is large and f small.
+      const beyondRange = "The dose at the loss budget is beyond floating point: (budget/(A₁L))^(1/f) overflows, so no realistic dose reaches the budget.";
+      warnings.push(beyondRange);
+      reasons.doseAtBudget = beyondRange;
     }
     return {
       values: { attenuation: A, loss: A * length, transmission: internalTransmission(A, length), doseAtBudget },
