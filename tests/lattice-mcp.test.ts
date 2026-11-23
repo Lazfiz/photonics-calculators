@@ -8,12 +8,6 @@ import { join } from "node:path";
 
 import { GET, OPTIONS, POST, dynamic, maxDuration, runtime } from "../src/app/lattice/mcp/route";
 
-// Node 24's test runner starts each test file with every Node option spelled out in process.execArgv, per-process ones
-// included (--use-largepages, --node-snapshot, ...). The bundle passes execArgv on to its worker threads, and a Worker
-// refuses per-process options (ERR_WORKER_INVALID_EXEC_ARGV), so they are cleared here. Outside the test runner,
-// execArgv holds only the flags Node was started with.
-process.execArgv.length = 0;
-
 const URL_LATTICE = "https://photonicscalculators.com/lattice/mcp";
 const VENDOR = join(process.cwd(), "vendor", "lattice-mcp");
 

@@ -4003,6 +4003,23 @@ var roundT = (x) => Math.abs(x) < 1e-3 ? sig(x, 4) : round(x, 4);
 
 // src/executor.ts
 var DEFAULT_WORKER_URL = new URL(import.meta.url.endsWith(".ts") ? "./worker.ts" : "./lattice-mcp-worker.mjs", import.meta.url);
+function spawnWorker(url, workerData) {
+  const execArgv = process.execArgv.filter((a) => !a.startsWith("--input-type"));
+  try {
+    return new Worker(url, { workerData, execArgv });
+  } catch (err) {
+    if (err.code !== "ERR_WORKER_INVALID_EXEC_ARGV") throw err;
+    return new Worker(url, { workerData, execArgv: loaderFlags(execArgv) });
+  }
+}
+function loaderFlags(argv) {
+  const out = [];
+  for (let i = 0; i < argv.length; i++) {
+    if (/^(?:--require|--import|--loader|--experimental-loader)=/.test(argv[i])) out.push(argv[i]);
+    else if (/^(?:-r|--require|--import|--loader|--experimental-loader)$/.test(argv[i]) && i + 1 < argv.length) out.push(argv[i], argv[++i]);
+  }
+  return out;
+}
 function workerExecutor(opts = {}) {
   const timeoutMs = opts.timeoutMs ?? LIMITS2.timeoutSeconds * 1e3;
   const maxWorkers = opts.maxWorkers ?? availableParallelism();
@@ -4015,8 +4032,7 @@ function workerExecutor(opts = {}) {
     running++;
     try {
       return await new Promise((resolve, reject) => {
-        const execArgv = process.execArgv.filter((a) => !a.startsWith("--input-type"));
-        const worker = new Worker(opts.workerUrl ?? DEFAULT_WORKER_URL, { workerData: { name: tool.name, args }, execArgv });
+        const worker = spawnWorker(opts.workerUrl ?? DEFAULT_WORKER_URL, { name: tool.name, args });
         const timer = setTimeout(() => {
           void worker.terminate();
           const state = tool.stateOf?.(args) ?? null;
