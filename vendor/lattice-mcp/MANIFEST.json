@@ -1,0 +1,10 @@
+{
+  "note": "Built by lattice-sim apps/mcp/build.mjs; copy this directory unchanged to photonics-calculators vendor/lattice-mcp (docs/mcp-route.md).",
+  "commit": "19c6e3ee4dd5bc62205c6b1b84481fcf4b35aa73",
+  "engineVersion": "0.1.0",
+  "files": {
+    "lattice-mcp.mjs": "455b6e0b6fc956623b8b4cae7312910a58aaebecaeca5597397a6923b983c653",
+    "lattice-mcp-worker.mjs": "096dfab8f53d59b4eaf95ff543c4a50004be1e8312b66995cd177dfcc835a995",
+    "lattice_kernel_bg.wasm": "3ecf8420824eb0271bed8d7ac437a8573d694a9cd83371f7d8a32f8d60a69254"
+  }
+}

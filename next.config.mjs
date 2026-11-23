@@ -11,6 +11,9 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
+  // Lattice's MCP server (src/app/lattice/mcp/route.ts) loads the vendored bundle at run time, so Next can't see it:
+  // ship the bundle, its worker and the .wasm with that function.
+  outputFileTracingIncludes: { '/lattice/mcp': ['./vendor/lattice-mcp/**'] },
   async redirects() {
     return [
       {

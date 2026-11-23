@@ -45,6 +45,11 @@ Almost every calculator (410 of 411 on `main`; the live site gets them with each
 - MCP server (streamable HTTP, no auth): `https://photonicscalculators.com/mcp`, with the tools `find_calculator`,
   `run_calculator`, `get_checks` and `report_problem`. For example
   `claude mcp add --transport http photonics https://photonicscalculators.com/mcp`.
+- Lattice's MCP server (photonic crystals; built in the separate lattice-sim repository):
+  `https://photonicscalculators.com/lattice/mcp`. Its route is `src/app/lattice/mcp/route.ts`; the server itself is
+  the prebuilt bundle in `vendor/lattice-mcp/`, built by lattice-sim's `apps/mcp/build.mjs` at the commit named in
+  its `MANIFEST.json`. To update it, rebuild there and replace the directory (lattice-sim `docs/mcp-route.md`);
+  `tests/lattice-mcp.test.ts` checks the files against the manifest.
 
 ## Run locally
 

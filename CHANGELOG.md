@@ -4,6 +4,12 @@ Changes that alter a number or a statement on the site. Code-only changes are in
 
 ## Unreleased
 
+### Added
+- **Lattice** (photonic crystals): a card on the home page links to the Lattice simulator, and its MCP server is served
+  at `/lattice/mcp` (twelve tools: band structures, gap maps, isofrequency contours, slab transmission, the
+  low-contrast spatial filter, validation cases, `report_problem`). Its problem reports reach the same inbox as the
+  site's, marked "Lattice MCP".
+
 ### Changed
 - **Adaptive optics** (`/imaging/adaptive-optics`): the fitting-error coefficient for piston + tip-tilt mirror segments
   is now κ = 0.18 (was 0.134). 0.134 was Noll's Δ₃ for a circular segment; the other two coefficients (continuous 0.28,
