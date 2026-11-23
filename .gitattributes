@@ -1,2 +1,4 @@
 # Keep LF everywhere (repo came from Linux; CI runs on Linux)
 * text=auto eol=lf
+# Vendored build output: keep the bytes exactly as built, so they match vendor/lattice-mcp/MANIFEST.json
+vendor/** -text

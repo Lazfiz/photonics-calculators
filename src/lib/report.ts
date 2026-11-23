@@ -79,14 +79,19 @@ export function parseReport(raw: string, knownHref: (href: string) => boolean): 
   return { ok: true, report: { href, query, message, contact } };
 }
 
-/** Where a report came from: the page's form, or an AI agent through the MCP server's `report_problem`. */
-export type ReportSource = "form" | "mcp";
+/**
+ * Where a report came from: the page's form, an AI agent through the MCP server's `report_problem`, or an agent
+ * through Lattice's MCP server at /lattice/mcp (lattice-sim, owner decision A4).
+ */
+export type ReportSource = "form" | "mcp" | "lattice-mcp";
+
+const SUBJECT_TAG: Record<ReportSource, string> = { form: "", mcp: " (MCP)", "lattice-mcp": " (Lattice MCP)" };
 
 /** The plain-text email for one report. `origin` is the site that served the form. */
 export function reportEmail(report: Report, origin: string, sha: string | undefined, source: ReportSource = "form") {
   const url = `${origin}${report.href}${report.query ? `?${report.query}` : ""}`;
   return {
-    subject: `Problem report${source === "mcp" ? " (MCP)" : ""}: ${report.href}`,
+    subject: `Problem report${SUBJECT_TAG[source]}: ${report.href}`,
     text: [
       `Page: ${url}`,
       `Source: ${source}`,

@@ -21,6 +21,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Review probe scripts (docs/audit), run with npx tsx.
     "docs/audit/**",
+    // Prebuilt third-party output (Lattice's MCP bundle, built in lattice-sim).
+    "vendor/**",
   ]),
 ]);
 
