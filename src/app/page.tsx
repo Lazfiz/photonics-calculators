@@ -7,7 +7,7 @@ import {
   homeCategories,
   totalCalculatorCount,
 } from "../lib/home-categories";
-import { LATTICE_URL } from "../lib/site";
+import { CONTINUUM_URL, LATTICE_URL } from "../lib/site";
 
 export default function Home() {
   return (
@@ -129,26 +129,46 @@ export default function Home() {
           </h2>
         </div>
 
-        <a
-          href={LATTICE_URL}
-          className="group block rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition hover:border-white/20 hover:bg-white/[0.05] sm:max-w-xl"
-        >
-          <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500">Photonic crystals</p>
-          <h3 className="mt-2 text-xl font-semibold text-white">Lattice</h3>
-          <p className="mt-4 text-sm leading-6 text-slate-300">
-            Band structures, gap maps, isofrequency contours and slab transmission of 2D photonic crystals, and
-            spatial filtering of beams by low-contrast crystals, computed in the browser.
-          </p>
-          <p className="mt-3 text-xs leading-5 text-slate-500">
-            For agents: its MCP server is at /lattice/mcp on this site.
-          </p>
-          <div className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-white group-hover:text-slate-200">
-            Open Lattice
-            <span className="transition-transform group-hover:translate-x-1" aria-hidden>
-              →
-            </span>
-          </div>
-        </a>
+        <div className="grid gap-4 md:grid-cols-2">
+          <a
+            href={LATTICE_URL}
+            className="group block rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition hover:border-white/20 hover:bg-white/[0.05]"
+          >
+            <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500">Photonic crystals</p>
+            <h3 className="mt-2 text-xl font-semibold text-white">Lattice</h3>
+            <p className="mt-4 text-sm leading-6 text-slate-300">
+              Band structures, gap maps, isofrequency contours and slab transmission of 2D photonic crystals, and
+              spatial filtering of beams by low-contrast crystals, computed in the browser.
+            </p>
+            <p className="mt-3 text-xs leading-5 text-slate-500">
+              For agents: its MCP server is at /lattice/mcp on this site.
+            </p>
+            <div className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-white group-hover:text-slate-200">
+              Open Lattice
+              <span className="transition-transform group-hover:translate-x-1" aria-hidden>
+                →
+              </span>
+            </div>
+          </a>
+
+          <a
+            href={CONTINUUM_URL}
+            className="group block rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition hover:border-white/20 hover:bg-white/[0.05]"
+          >
+            <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500">Supercontinuum</p>
+            <h3 className="mt-2 text-xl font-semibold text-white">Continuum</h3>
+            <p className="mt-4 text-sm leading-6 text-slate-300">
+              Supercontinuum in the browser: solve the generalised nonlinear Schrödinger equation for soliton fission,
+              dispersive waves and the Raman shift.
+            </p>
+            <div className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-white group-hover:text-slate-200">
+              Open Continuum
+              <span className="transition-transform group-hover:translate-x-1" aria-hidden>
+                →
+              </span>
+            </div>
+          </a>
+        </div>
       </section>
 
       <AboutFooter />

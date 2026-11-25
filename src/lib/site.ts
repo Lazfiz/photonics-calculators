@@ -12,3 +12,7 @@ export const REPO_URL = "https://github.com/Lazfiz/photonics-calculators";
 // Lattice, the photonic-crystal simulator (lattice-sim, owner decision A6): the home page's back-link card. Its own
 // static site on Vercel; its MCP server is served here at /lattice/mcp.
 export const LATTICE_URL = "https://lattice.photonicscalculators.com";
+
+// Continuum, the supercontinuum simulator (continuum-sim, owner decision A6): the home page's second simulator card.
+// Its own static site on Vercel.
+export const CONTINUUM_URL = "https://continuum.photonicscalculators.com";
