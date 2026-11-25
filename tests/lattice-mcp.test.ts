@@ -66,6 +66,23 @@ test("Lattice MCP: bands on the WASM kernel gives the Joannopoulos rod-lattice T
   assert.deepEqual(tm.map((row) => row[0]), [0.27472, 0.32242]);
 });
 
+test("Lattice MCP: slab_transmission takes cut GK on hexagonal rows (lattice-sim v1.2)", async () => {
+  // The same call and values as lattice-sim's apps/mcp/test/tools.test.ts: 8 hexagonal rows of rods cut along Γ–K,
+  // opaque inside the band the plane-wave solver marks forbidden.
+  const slab = ((await rpc("tools/list")).result.tools as { name: string; inputSchema: { properties: Record<string, { enum?: string[] }> } }[])
+    .find((t) => t.name === "slab_transmission");
+  assert.deepEqual(slab?.inputSchema.properties.cut.enum, ["GM", "GK"]);
+  const result = await call("slab_transmission", {
+    lattice: "hex", cut: "GK", radius_over_a: 0.2, eps_in: 8.9, eps_out: 1,
+    omega_min_a_over_lambda: 0.37, omega_max_a_over_lambda: 0.42, omega_points: 8,
+  });
+  assert.notEqual(result.isError, true, result.content[0].text);
+  assert.equal((result.structuredContent.request as { cut?: string }).cut, "GK");
+  const spectrum = (result.structuredContent.spectra as { T: number[]; pwe_forbidden_a_over_lambda: number[][] }[])[0];
+  assert.ok(spectrum.T.every((t) => t < 1e-3), JSON.stringify(spectrum.T));
+  assert.deepEqual(spectrum.pwe_forbidden_a_over_lambda, [[0.37, 0.42]]);
+});
+
 /** Runs `fn` with the Resend env set and `fetch` replaced; returns the bodies posted to it. */
 async function withResend(fn: () => Promise<void>) {
   const saved = { fetch: globalThis.fetch, key: process.env.RESEND_API_KEY, to: process.env.REPORT_TO_EMAIL };
