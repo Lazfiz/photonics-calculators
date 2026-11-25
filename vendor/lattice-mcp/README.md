@@ -1,6 +1,6 @@
 # Lattice MCP server (vendored build)
 
-Built from the Lattice simulator (`Lazfiz/lattice-sim`, commit `e61699bfc9fc704ab3eef4f59c1ae0c22aa75250`) with `apps/mcp/build.mjs`
+Built from the Lattice simulator (`Lazfiz/lattice-sim`, commit `88650fdc0ea1abe379c4898d2269b91ed2a093b8`) with `apps/mcp/build.mjs`
 (esbuild bundle plus the WASM kernel) and copied byte for byte; `MANIFEST.json` holds each file's SHA-256.
 Rebuild in lattice-sim and replace all files together; don't edit them here.
 

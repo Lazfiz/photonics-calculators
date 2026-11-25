@@ -1,13 +1,13 @@
 import { createRequire as __latticeRequire } from 'node:module'; const require = __latticeRequire(import.meta.url);
 
-// src/executor.ts
+// apps/mcp/src/executor.ts
 import { availableParallelism } from "node:os";
 import { Worker } from "node:worker_threads";
 
-// ../../packages/engine/src/version.ts
+// packages/engine/src/version.ts
 var ENGINE_VERSION = "0.1.0";
 
-// ../../packages/engine/src/kernel/tridiagonal.ts
+// packages/engine/src/kernel/tridiagonal.ts
 function pythag(a, b) {
   const absa = Math.abs(a);
   const absb = Math.abs(b);
@@ -125,7 +125,7 @@ function bisectLowest(d, e, n, count) {
   return out;
 }
 
-// ../../packages/engine/src/kernel/eig-herm.ts
+// packages/engine/src/kernel/eig-herm.ts
 function reduce(re, im, n) {
   if (re.length < n * n || im.length < n * n) throw new RangeError(`matrix smaller than ${n} \xD7 ${n}`);
   const ar = new Float64Array(n * n);
@@ -277,7 +277,7 @@ function eigHerm(re, im, n) {
   return { values, vectorsRe, vectorsIm };
 }
 
-// ../../packages/engine/src/kernel/eig-sym.ts
+// packages/engine/src/kernel/eig-sym.ts
 function lowerCopy(a, n) {
   if (a.length < n * n) throw new RangeError(`matrix of length ${a.length} is smaller than ${n} \xD7 ${n}`);
   const w = new Float64Array(n * n);
@@ -428,7 +428,7 @@ function eigSym(a, n) {
   return { values: d, vectors };
 }
 
-// ../../vendor/continuum/packages/engine/src/fft.ts
+// vendor/continuum/packages/engine/src/fft.ts
 function isPowerOfTwo(n) {
   return Number.isInteger(n) && n >= 1 && n <= 2 ** 30 && (n & n - 1) === 0;
 }
@@ -566,7 +566,7 @@ function build(n) {
   };
 }
 
-// ../../packages/engine/src/kernel/fft2.ts
+// packages/engine/src/kernel/fft2.ts
 function fft2(re, im, rows, cols, inverse = false) {
   if (re.length < rows * cols || im.length < rows * cols) throw new RangeError(`fft2: arrays smaller than ${rows} \xD7 ${cols}`);
   const fr = createFft(cols);
@@ -592,7 +592,7 @@ function fft2(re, im, rows, cols, inverse = false) {
   }
 }
 
-// ../../packages/engine/src/kernel/cmat.ts
+// packages/engine/src/kernel/cmat.ts
 function cmul(ar, ai, br, bi, n, m, p) {
   const cr = new Float64Array(n * p);
   const ci = new Float64Array(n * p);
@@ -689,7 +689,7 @@ function csolve(aRe, aIm, bRe, bIm, n, p) {
   return { re: xr, im: xi };
 }
 
-// ../../packages/engine/src/kernel/star.ts
+// packages/engine/src/kernel/star.ts
 function hcat(x, y, n) {
   const re = new Float64Array(2 * n * n);
   const im = new Float64Array(2 * n * n);
@@ -745,7 +745,7 @@ function starProduct(a, b) {
   return { n, s11, s12: { n, ...s12p }, s21: { n, ...s21p }, s22 };
 }
 
-// ../../packages/engine/src/kernel/ts-kernel.ts
+// packages/engine/src/kernel/ts-kernel.ts
 var tsKernel = Object.freeze({
   name: "ts",
   eigvalsSym,
@@ -756,13 +756,13 @@ var tsKernel = Object.freeze({
   fft2
 });
 
-// ../../packages/engine/src/kernel/select.ts
+// packages/engine/src/kernel/select.ts
 var current = tsKernel;
 function getKernel() {
   return current;
 }
 
-// ../../packages/engine/src/lattice.ts
+// packages/engine/src/lattice.ts
 function lattice(kind) {
   let a1;
   let a2;
@@ -823,7 +823,7 @@ function zonePath(kind, nPerSegment = 20) {
   return { k, distance, ticks };
 }
 
-// ../../packages/engine/src/linalg.ts
+// packages/engine/src/linalg.ts
 function invertSpd(a, n) {
   const L = new Float64Array(n * n);
   for (let j = 0; j < n; j++) {
@@ -865,7 +865,7 @@ function invertSpd(a, n) {
   return out;
 }
 
-// ../../packages/engine/src/fourier.ts
+// packages/engine/src/fourier.ts
 var J1_POINTS = 512;
 var TAU_SIN = Float64Array.from({ length: J1_POINTS }, (_, j) => Math.sin(2 * Math.PI * j / J1_POINTS));
 var TAU = Float64Array.from({ length: J1_POINTS }, (_, j) => 2 * Math.PI * j / J1_POINTS);
@@ -932,7 +932,7 @@ function inverseEpsilon(c2, M) {
   return { lattice: lat, M, n, gx, gy, epsilon, eta };
 }
 
-// ../../packages/engine/src/gaps.ts
+// packages/engine/src/gaps.ts
 function findGaps(bands, options = {}) {
   const nk = bands.length;
   if (nk === 0) return [];
@@ -972,7 +972,7 @@ function completeGaps(te, tm) {
   return out.sort((x, y) => x.bottom - y.bottom);
 }
 
-// ../../packages/engine/src/pwe2d.ts
+// packages/engine/src/pwe2d.ts
 function operatorMatrix(eps, k, pol) {
   const { n, gx, gy, eta } = eps;
   const kx = new Float64Array(n);
@@ -1115,7 +1115,7 @@ function bandStructure(request, kernel = getKernel()) {
   };
 }
 
-// ../../packages/engine/src/pwe1d.ts
+// packages/engine/src/pwe1d.ts
 function epsilonCoefficients1D(layers, M) {
   const period = layers.reduce((s, l) => s + l.thickness, 0);
   if (!(period > 0) || layers.some((l) => !(l.n > 0) || !(l.thickness >= 0))) {
@@ -1183,7 +1183,7 @@ function bands1D(layers, ks, M = 40, nBands = 4, kernel = getKernel()) {
   return out;
 }
 
-// ../../packages/engine/src/tmm1d.ts
+// packages/engine/src/tmm1d.ts
 function response1D(stack, wavelength) {
   if (!(wavelength > 0 && stack.incident > 0 && stack.exit > 0)) throw new RangeError("need \u03BB > 0 and positive media indices");
   let m11r = 1, m11i = 0, m12r = 0, m12i = 0, m21r = 0, m21i = 0, m22r = 1, m22i = 0;
@@ -1225,7 +1225,7 @@ function quarterWaveCell(nH, nL, lambda0) {
   return [{ n: nH, thickness: lambda0 / (4 * nH) }, { n: nL, thickness: lambda0 / (4 * nL) }];
 }
 
-// ../../packages/engine/src/rcwa.ts
+// packages/engine/src/rcwa.ts
 function gratingCoefficients(segments, epsIn, epsOut, M) {
   const size = 4 * M + 1;
   const re = new Float64Array(size);
@@ -1432,10 +1432,15 @@ function pointOf(S, h2, omega) {
   return { omega, R, T, Tm };
 }
 var HEX_ROW_SPACING = Math.sqrt(3) / 2;
-function hexSlabLayout(radius, epsRod, epsBg, M, rows, slices = 16) {
+var HEX_GK_PERIOD = Math.sqrt(3);
+var HEX_GK_PLANE_SPACING = 1 / (2 * Math.sqrt(3));
+function hexSlabLayout(radius, epsRod, epsBg, M, rows, slices = 16, cut = "GM") {
   if (!(Number.isInteger(rows) && rows >= 1)) throw new RangeError(`rows must be a positive integer, got ${rows}`);
   if (!(radius >= 0 && radius <= 0.5 + 1e-12)) throw new RangeError(`r/a must be in [0, 0.5] for a hexagonal slab, got ${radius}`);
-  const h2 = HEX_ROW_SPACING;
+  if (cut === "GK") return staggeredPlanes(radius / HEX_GK_PERIOD, epsRod, epsBg, M, 2 * rows, slices, HEX_GK_PLANE_SPACING, HEX_GK_PERIOD);
+  return staggeredPlanes(radius, epsRod, epsBg, M, rows, slices, HEX_ROW_SPACING, 1);
+}
+function staggeredPlanes(radius, epsRod, epsBg, M, rows, slices, h2, period) {
   const e = Math.max(0, radius - h2 / 2);
   const centres = Array.from({ length: rows }, (_, j2) => [j2 % 2 === 0 ? 0.5 : 0, e + (j2 + 0.5) * h2]);
   const segmentsAt = (j2, u) => {
@@ -1499,7 +1504,7 @@ function hexSlabLayout(radius, epsRod, epsBg, M, rows, slices = 16) {
     starts.push(z);
     z += l.thickness;
   }
-  return { parts, layers, starts, thickness: rows * h2 + 2 * e, rows: centres };
+  return { parts, layers, starts, thickness: rows * h2 + 2 * e, rows: centres, period };
 }
 function layoutPoint(parts, M, omega, thetaRad = 0, nRef = 1, kernel = getKernel()) {
   const h2 = harmonics(M, omega, thetaRad, nRef);
@@ -1520,8 +1525,12 @@ function layoutPoint(parts, M, omega, thetaRad = 0, nRef = 1, kernel = getKernel
   }
   return pointOf(total, h2, omega);
 }
+function hexPoint(layout, M, omega, thetaRad = 0, nRef = 1, kernel = getKernel()) {
+  if (layout.period === 1) return layoutPoint(layout.parts, M, omega, thetaRad, nRef, kernel);
+  return { ...layoutPoint(layout.parts, M, omega * layout.period, thetaRad, nRef, kernel), omega };
+}
 
-// ../../packages/engine/src/isofreq.ts
+// packages/engine/src/isofreq.ts
 var SQ2 = Math.SQRT1_2;
 var U = [SQ2, SQ2];
 var V = [SQ2, -SQ2];
@@ -1762,7 +1771,7 @@ function traceContour(kx, ky, values, level2) {
   return segs;
 }
 
-// ../../packages/engine/src/hash.ts
+// packages/engine/src/hash.ts
 function canonicalJson(value) {
   if (value === null || value === void 0) return "null";
   if (typeof value === "number") return Number.isFinite(value) ? JSON.stringify(value) : JSON.stringify(String(value));
@@ -1898,7 +1907,7 @@ function base64urlEncode(text) {
   return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-// ../../packages/engine/src/trust.ts
+// packages/engine/src/trust.ts
 function level(value, green, amber) {
   if (!Number.isFinite(value)) return "red";
   return value < green ? "green" : value < amber ? "amber" : "red";
@@ -2073,7 +2082,7 @@ function paraxialConvergenceRow(diff) {
   };
 }
 
-// ../../packages/engine/src/state.ts
+// packages/engine/src/state.ts
 var VIEWS = ["crystal", "bands", "gapmap", "isofreq", "slab", "filter"];
 var SWEEP_PARAMS = ["dPerpUm", "dnRel", "N", "chirpSpan"];
 var DEFAULT_STATE = {
@@ -2210,7 +2219,8 @@ function normaliseState(raw) {
       omegaMax,
       points: clamp(sl.points, LIMITS.points, d.slab.points, true),
       harmonics: clamp(sl.harmonics, LIMITS.harmonics, d.slab.harmonics, true),
-      slices: clamp(sl.slices, LIMITS.slices, d.slab.slices, true)
+      slices: clamp(sl.slices, LIMITS.slices, d.slab.slices, true),
+      ...sl.cut === "GK" && s.lattice === "hex" ? { cut: "GK" } : {}
     },
     filter: {
       n0: clamp(fl.n0, LIMITS.n0, fd.n0),
@@ -2241,7 +2251,7 @@ function stateQuery(state) {
   return enc === encodeState(DEFAULT_STATE) ? "" : `s=${enc}`;
 }
 
-// ../../packages/engine/src/solve.ts
+// packages/engine/src/solve.ts
 function assertStructure(s) {
   const problem = structureProblem(s);
   if (problem) throw new RangeError(problem);
@@ -2313,6 +2323,9 @@ function projectedAllowed(eps, kx, omega, pol = "TM", nkz = 25, nBands = 4, kern
   kxf = Math.min(kxf, 2 * Math.PI - kxf);
   const rows = [];
   for (let j = 0; j < nkz; j++) rows.push(Array.from(frequenciesAt(eps, [kxf, kzMax * j / (nkz - 1)], pol, nBands, kernel)));
+  return bandsReach(rows, nBands, omega);
+}
+function bandsReach(rows, nBands, omega) {
   for (let b = 0; b < nBands; b++) {
     const col = rows.map((r) => r[b]);
     if (col.some((v) => Math.abs(v - omega) <= 2e-3)) return true;
@@ -2320,13 +2333,31 @@ function projectedAllowed(eps, kx, omega, pol = "TM", nkz = 25, nBands = 4, kern
   }
   return false;
 }
+function projectedAllowedGK(eps, kpar, omega, pol = "TM", nk = 25, nBands = 6, kernel = getKernel()) {
+  const period = 2 * Math.PI / Math.sqrt(3);
+  let kf = (kpar % period + period) % period;
+  kf = Math.min(kf, period - kf);
+  const rows = [];
+  for (let j = 0; j < nk; j++) rows.push(Array.from(frequenciesAt(eps, [2 * Math.PI * j / (nk - 1), kf], pol, nBands, kernel)));
+  return bandsReach(rows, nBands, omega);
+}
+function slabCut(state) {
+  return state.structure.lattice === "hex" && state.slab.cut === "GK" ? "GK" : "GM";
+}
+function slabSettings(state) {
+  const sl = state.slab;
+  if (sl.cut === void 0 || sl.cut === "GK" && slabCut(state) === "GK") return sl;
+  const { cut: _cut, ...rest } = sl;
+  return rest;
+}
 var linspace = (a, b, n) => Array.from({ length: n }, (_, i) => n === 1 ? a : a + (b - a) * i / (n - 1));
 var OVERLAY_M = 5;
 var OVERLAY_POINTS = 57;
-function projectedForbidden(s, sl, theta, kernel, eps, onPoint) {
+var OVERLAY_GK_STEPS = 25;
+function projectedForbidden(s, sl, theta, kernel, eps, onPoint, cut = "GM") {
   const grid = linspace(sl.omegaMin, sl.omegaMax, OVERLAY_POINTS);
   const allowed = grid.map((w, i) => {
-    const a = s.lattice === "hex" ? projectedAllowed(eps, 2 * Math.PI * w * sl.nRef * Math.sin(theta), w, "TM", 17, 6, kernel, 2 * Math.PI / Math.sqrt(3)) : projectedAllowed(eps, 2 * Math.PI * w * sl.nRef * Math.sin(theta), w, "TM", 17, 6, kernel);
+    const a = s.lattice === "hex" ? cut === "GK" ? projectedAllowedGK(eps, 2 * Math.PI * w * sl.nRef * Math.sin(theta), w, "TM", OVERLAY_GK_STEPS, 6, kernel) : projectedAllowed(eps, 2 * Math.PI * w * sl.nRef * Math.sin(theta), w, "TM", 17, 6, kernel, 2 * Math.PI / Math.sqrt(3)) : projectedAllowed(eps, 2 * Math.PI * w * sl.nRef * Math.sin(theta), w, "TM", 17, 6, kernel);
     onPoint?.(i + 1, grid.length);
     return a;
   });
@@ -2346,8 +2377,8 @@ function slabSolver(state, kernel) {
   const s = state.structure;
   const sl = state.slab;
   if (s.lattice === "hex") {
-    const { parts } = hexSlabLayout(s.radius, s.epsIn, s.epsOut, sl.harmonics, sl.rows, sl.slices);
-    return (w, theta) => layoutPoint(parts, sl.harmonics, w, theta, sl.nRef, kernel);
+    const layout = hexSlabLayout(s.radius, s.epsIn, s.epsOut, sl.harmonics, sl.rows, sl.slices, slabCut(state));
+    return (w, theta) => hexPoint(layout, sl.harmonics, w, theta, sl.nRef, kernel);
   }
   const row = rodRowLayers(s.radius, s.epsIn, s.epsOut, sl.harmonics, sl.slices);
   return (w, theta) => slabPoint(row, sl.rows, sl.harmonics, w, theta, sl.nRef, kernel);
@@ -2356,7 +2387,7 @@ function solveSlab(state, opts = {}) {
   const kernel = opts.kernel ?? getKernel();
   const s = state.structure;
   assertStructure(s);
-  const sl = state.slab;
+  const sl = slabSettings(state);
   const theta = sl.thetaDeg * Math.PI / 180;
   const at = slabSolver(state, kernel);
   const omegas = linspace(sl.omegaMin, sl.omegaMax, sl.points);
@@ -2372,7 +2403,8 @@ function solveSlab(state, opts = {}) {
     theta,
     kernel,
     inverseEpsilon(s, OVERLAY_M),
-    (done, total) => opts.onProgress?.({ phase: "overlay", done, total })
+    (done, total) => opts.onProgress?.({ phase: "overlay", done, total }),
+    slabCut(state)
   );
   const overlayM = OVERLAY_M;
   return withHash({
@@ -2387,7 +2419,7 @@ function solveSlab(state, opts = {}) {
   });
 }
 
-// ../../packages/engine/src/gapmap.ts
+// packages/engine/src/gapmap.ts
 function gapMapValues(g) {
   return Array.from({ length: g.count }, (_, i) => g.count === 1 ? g.from : g.from + (g.to - g.from) * i / (g.count - 1));
 }
@@ -2418,7 +2450,7 @@ function solveGapMap(state, opts = {}) {
   return { ...body, hash: hashOf(body) };
 }
 
-// ../../vendor/pc/src/physics/constants.ts
+// vendor/pc/src/physics/constants.ts
 var c = 299792458;
 var h = 662607015e-42;
 var q = 1602176634e-28;
@@ -2437,20 +2469,20 @@ var k_B_eV = k_B / q;
 var ATM = 101325;
 var TORR = ATM / 760;
 
-// ../../vendor/pc/src/physics/math.ts
+// vendor/pc/src/physics/math.ts
 var SQRT_PI = Math.sqrt(Math.PI);
 var GAUSSIAN_FWHM_PER_SIGMA = 2 * Math.sqrt(2 * Math.LN2);
 var DB_PER_E_FOLD = 10 / Math.LN10;
 var LN_FACTORIAL_TABLE = [0];
 for (let k = 1; k <= 256; k++) LN_FACTORIAL_TABLE.push(LN_FACTORIAL_TABLE[k - 1] + Math.log(k));
 
-// ../../vendor/pc/src/physics/thin-film/quarter-wave-stack.ts
+// vendor/pc/src/physics/thin-film/quarter-wave-stack.ts
 function stopBandHalfWidth(nH, nL) {
   if (!(nH > 0 && nL > 0)) return NaN;
   return 2 / Math.PI * Math.asin(Math.abs(nH - nL) / (nH + nL));
 }
 
-// ../../vendor/pc/src/physics/thin-film/photonic-crystal.ts
+// vendor/pc/src/physics/thin-film/photonic-crystal.ts
 function bilayerBlochCos(nH, dH, nL, dL, lambda) {
   if (!(nH > 0 && nL > 0 && dH >= 0 && dL >= 0 && lambda > 0)) return NaN;
   const dhPhase = 2 * Math.PI * nH * dH / lambda;
@@ -2461,7 +2493,7 @@ function quarterWaveGapMidgap(nH, nL) {
   return 2 * stopBandHalfWidth(nH, nL);
 }
 
-// ../../vendor/pc/src/physics/random.ts
+// vendor/pc/src/physics/random.ts
 function createRng(seed) {
   let state = seed >>> 0;
   return () => {
@@ -2478,7 +2510,7 @@ function gaussian(rng) {
   return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
 }
 
-// ../../packages/engine/src/dft.ts
+// packages/engine/src/dft.ts
 var chirps = /* @__PURE__ */ new Map();
 function bluesteinPlan(n) {
   let p = chirps.get(n);
@@ -2553,7 +2585,7 @@ function fftshift(re, im, inverse = false) {
   }
 }
 
-// ../../packages/engine/src/paraxial.ts
+// packages/engine/src/paraxial.ts
 var constantQ = (Q) => () => Q;
 var linearChirp = (Q0, Q1, Zend) => (Z) => Q0 + (Q1 - Q0) * Z / Zend;
 function propagateModal(K2, f, qpar, Zend, opts = {}, onStep) {
@@ -2789,7 +2821,7 @@ function fitCoupling(Q, series, fMin = 5e-3, fMax = 0.5) {
   return { f, rms: Math.sqrt(cost(f) / series.length), nFullTransfer: Q / (4 * f) };
 }
 
-// ../../packages/engine/src/beam.ts
+// packages/engine/src/beam.ts
 function spectrumOf(re, im) {
   const r = re.slice();
   const i = im.slice();
@@ -2963,7 +2995,7 @@ function cleaningMetrics(beam, out, aperture = 0.5, band = [0.05, 0.185]) {
   };
 }
 
-// ../../packages/engine/src/filter-rcwa.ts
+// packages/engine/src/filter-rcwa.ts
 function harmonicLayer(c2, dn, n0, M, thickness, key) {
   const size = 4 * M + 1;
   const re = new Float64Array(size);
@@ -3012,7 +3044,7 @@ function rcwaFilterT0(s, thetasRad, M = 8, slicesPerPeriod = 16, kernel = getKer
   return { T0, T, R };
 }
 
-// ../../packages/engine/src/filter-solve.ts
+// packages/engine/src/filter-solve.ts
 function filterSpecOf(s) {
   const fl = s.filter;
   const dn = fl.voxel ? voxelDn(fl.voxel.dnPeak, fl.n0, fl.voxel.dutyX, fl.voxel.dutyZ).dnRel : fl.dnRel;
@@ -3169,10 +3201,10 @@ function filterFit(state, series) {
   return { ...fit, dnRel: fit.f / couplingF(s, 1) };
 }
 
-// ../../packages/engine/src/validation-data.ts
+// packages/engine/src/validation-data.ts
 var VALIDATION_DATA = { "convergence": { "reference": { "TM_b1": 0.2747065704339872, "TM_b2": 0.5488375551550362, "TE_b2": 0.4614167998310336, "TE_b1": 0.5488493838763122 }, "rows": { "M5": { "TM_b1": 0.27474077399429997, "TM_b2": 0.5492358352159673, "TE_b2": 0.4607257225713044, "TE_b1": 0.5492469443222723 }, "M7": { "TM_b1": 0.27471870758984557, "TM_b2": 0.5489825675781639, "TE_b2": 0.4609733307007028, "TE_b1": 0.5489931646049757 }, "M10": { "TM_b1": 0.2747108931945537, "TM_b2": 0.5488825403956622, "TE_b2": 0.4611673062896883, "TE_b1": 0.5488936272366506 } } }, "limits": { "thetaDeg": [0, 0.125, 0.25, 0.37500000000000006, 0.5, 0.625, 0.7500000000000001, 0.875, 1, 1.125, 1.25, 1.375, 1.5000000000000002, 1.625, 1.75, 1.8749999999999998, 2, 2.125, 2.25, 2.375, 2.5, 2.625, 2.75, 2.875, 3.0000000000000004, 3.125, 3.25, 3.375, 3.5, 3.6250000000000004, 3.7499999999999996, 3.875, 4, 4.125, 4.25, 4.375, 4.5, 4.625, 4.75, 4.875, 5], "rows": [{ "dnRel": 1e-3, "f": 0.025776880573212643, "rcwa": [1, 0.998, 0.9935, 0.9903, 0.9912, 0.9957, 0.9997, 0.9982, 0.9895, 0.9785, 0.9737, 0.9808, 0.9949, 0.998, 0.9661, 0.883, 0.7544, 0.6126, 0.5056, 0.4747, 0.5335, 0.6595, 0.8059, 0.9245, 0.9879, 0.999, 0.9824, 0.966, 0.9654, 0.9786, 0.9936, 1, 0.9963, 0.9891, 0.986, 0.9893, 0.9958, 0.9998, 0.9988, 0.9949, 0.9923], "paraxial": [1, 0.9981, 0.9939, 0.9906, 0.991, 0.995, 0.9993, 0.999, 0.9919, 0.9811, 0.974, 0.9776, 0.9905, 0.9996, 0.9824, 0.9192, 0.8071, 0.6682, 0.5441, 0.4789, 0.498, 0.5951, 0.7345, 0.8687, 0.9606, 0.9979, 0.994, 0.9752, 0.9641, 0.9689, 0.9835, 0.9963, 0.9999, 0.995, 0.9883, 0.9862, 0.9901, 0.9962, 0.9998, 0.9989, 0.9952] }, { "dnRel": 2e-3, "f": 0.051553761146425285, "rcwa": [0.9989, 0.9921, 0.9764, 0.9637, 0.9643, 0.9787, 0.9956, 0.9972, 0.9729, 0.9314, 0.8993, 0.9029, 0.9438, 0.9878, 0.9758, 0.8525, 0.609, 0.3114, 0.0755, 5e-3, 0.1349, 0.4085, 0.709, 0.9234, 0.9993, 0.9636, 0.892, 0.8556, 0.8794, 0.9386, 0.9879, 0.9989, 0.9771, 0.9509, 0.9453, 0.9634, 0.9882, 0.9999, 0.9925, 0.9769, 0.9688], "paraxial": [0.998, 0.9919, 0.978, 0.9658, 0.9644, 0.9762, 0.9929, 0.9982, 0.9802, 0.9427, 0.906, 0.896, 0.9254, 0.9756, 0.9926, 0.9134, 0.7115, 0.4277, 0.1578, 0.0106, 0.0521, 0.2659, 0.5624, 0.8263, 0.9746, 0.9942, 0.9354, 0.8729, 0.8587, 0.8974, 0.956, 0.9948, 0.9961, 0.9717, 0.9488, 0.9472, 0.9663, 0.9896, 1, 0.9928, 0.9779] }, { "dnRel": 5e-3, "f": 0.12888440286606323, "rcwa": [0.844, 0.8723, 0.931, 0.9631, 0.9279, 0.8468, 0.7926, 0.8131, 0.89, 0.9721, 0.9806, 0.818, 0.5596, 0.3923, 0.3237, 0.2919, 0.2966, 0.3461, 0.3994, 0.3999, 0.3599, 0.2909, 0.2102, 0.1728, 0.2284, 0.3942, 0.6348, 0.866, 0.9906, 0.9679, 0.84, 0.707, 0.6662, 0.7444, 0.8821, 0.9835, 0.9888, 0.9145, 0.8337, 0.8157, 0.8725], "paraxial": [0.8436, 0.8717, 0.9349, 0.9733, 0.9387, 0.8572, 0.7952, 0.7954, 0.8689, 0.9696, 0.9597, 0.7804, 0.593, 0.4857, 0.3875, 0.3078, 0.2989, 0.3486, 0.3946, 0.4076, 0.3935, 0.3378, 0.2552, 0.1904, 0.1883, 0.2856, 0.4829, 0.7252, 0.9216, 0.9991, 0.9415, 0.8057, 0.6918, 0.6765, 0.7665, 0.8988, 0.9884, 0.9872, 0.9142, 0.8364, 0.8168] }, { "dnRel": 0.01, "f": 0.25776880573212646, "rcwa": [0.6621, 0.6534, 0.6872, 0.7524, 0.7349, 0.7125, 0.7632, 0.7533, 0.7363, 0.9014, 0.7252, 0.1149, 0.1407, 0.6098, 0.6238, 0.4323, 0.3167, 0.2573, 0.2962, 0.2473, 0.0746, 43e-4, 0.0153, 0.0504, 0.1628, 0.3061, 0.5127, 0.7432, 0.9049, 0.9928, 0.9397, 0.7568, 0.5377, 0.3709, 0.3458, 0.4881, 0.7293, 0.9357, 0.988, 0.8727, 0.6981], "paraxial": [0.6322, 0.6672, 0.7216, 0.7278, 0.7357, 0.7556, 0.7097, 0.6702, 0.8197, 0.8358, 0.3022, 0.0277, 0.5059, 0.7806, 0.6154, 0.471, 0.3625, 0.323, 0.3288, 0.2055, 0.0511, 0.0117, 59e-4, 0.0236, 0.0936, 0.1972, 0.3769, 0.587, 0.7834, 0.9491, 0.9943, 0.9083, 0.7307, 0.5149, 0.3644, 0.3602, 0.5096, 0.7391, 0.9259, 0.9767, 0.8965] }, { "dnRel": 0.02, "f": 0.5155376114642529 }, { "dnRel": 0.05, "f": 1.2888440286606322 }, { "dnRel": 0.1, "f": 2.5776880573212644 }, { "dnRel": 0.2, "f": 5.155376114642529 }] }, "noisySeed1": { "energyKeptInAperture": 0.7996316257582936, "energyInBandBefore": 0.04331505561270586, "energyInBandAfter": 0.004506935414011695, "M2In": 1.9822795733556944, "M2Out": 1.8726934422024182, "M2CleanGaussian": 0.9900828355203224 }, "supercollimation": { "eps12.1_bulkSi_r0.25": { "omega": 0.19070912294331535, "sOverGM": 0.8198255845668433 }, "eps12.1_bulkSi_r0.3": { "omega": 0.18802782012062805, "sOverGM": 0.7512982800577814 }, "eps12.1_bulkSi_r0.35": { "omega": 0.19097014608944057, "sOverGM": 0.6957105641764847 }, "eps8.4_slab_effective_r0.25": { "omega": 0.23043555488828968, "sOverGM": 0.8331781830216733 }, "eps8.4_slab_effective_r0.3": { "omega": 0.227635693139667, "sOverGM": 0.7688229148754588 }, "eps8.4_slab_effective_r0.35": { "omega": 0.23105482615909675, "sOverGM": 0.7162875135118283 } } };
 
-// ../../packages/engine/src/validation.ts
+// packages/engine/src/validation.ts
 var fmt = (x, digits = 6) => {
   if (!Number.isFinite(x)) return String(x);
   const a = Math.abs(x);
@@ -3612,7 +3644,7 @@ function runValidation(ids, kernel = getKernel(), onCase) {
   };
 }
 
-// ../../vendor/pc/src/physics/materials/sellmeier.ts
+// vendor/pc/src/physics/materials/sellmeier.ts
 function fromResonanceWavelengths(A, B, lambdas_um, range_um) {
   return { A, B, C: lambdas_um.map((l) => l * l), range: [range_um[0] * 1e-6, range_um[1] * 1e-6] };
 }
@@ -3625,7 +3657,7 @@ function fromSquaredForm(A, B, C, range_um) {
   return { A, B, C, range: [range_um[0] * 1e-6, range_um[1] * 1e-6] };
 }
 
-// ../../vendor/pc/src/physics/materials/sellmeier-data.ts
+// vendor/pc/src/physics/materials/sellmeier-data.ts
 var MATERIALS = {
   fusedSilica: {
     name: "Fused silica (SiO\u2082)",
@@ -3866,7 +3898,7 @@ var SCHOTT_GLASSES = {
   )
 };
 
-// ../../packages/engine/src/records.ts
+// packages/engine/src/records.ts
 var DOI = /^10\.\d{4,9}\/\S+$/;
 function validateRecord(r) {
   const e = [];
@@ -3919,7 +3951,7 @@ function presetState(p, from = DEFAULT_STATE) {
   return normaliseState(merge({ ...from, mode }, { ...p.state, view: p.screen === "crystal" && mode === "1d" ? "crystal" : p.screen }));
 }
 
-// src/limits.ts
+// apps/mcp/src/limits.ts
 var LIMITS2 = {
   /** N = (2M+1)² plane waves: M ≤ 15. */
   planeWaves: 961,
@@ -4001,7 +4033,7 @@ var round = (x, digits) => Number.isFinite(x) ? Number(x.toFixed(digits)) : x;
 var sig = (x, digits = 4) => Number.isFinite(x) && x !== 0 ? Number(x.toPrecision(digits)) : x;
 var roundT = (x) => Math.abs(x) < 1e-3 ? sig(x, 4) : round(x, 4);
 
-// src/executor.ts
+// apps/mcp/src/executor.ts
 var DEFAULT_WORKER_URL = new URL(import.meta.url.endsWith(".ts") ? "./worker.ts" : "./lattice-mcp-worker.mjs", import.meta.url);
 function spawnWorker(url, workerData) {
   const execArgv = process.execArgv.filter((a) => !a.startsWith("--input-type"));
@@ -4059,7 +4091,7 @@ function workerExecutor(opts = {}) {
   return Object.assign(execute, { busy: () => running });
 }
 
-// ../../data/presets/index.json
+// data/presets/index.json
 var presets_default = {
   note: "The presets of SPEC \xA75.3, in the order shown. Written with the records; scripts/crossref.ts updates the sources.",
   presets: [
@@ -4077,7 +4109,7 @@ var presets_default = {
   ]
 };
 
-// ../../data/presets/square-rods-tm-gap.json
+// data/presets/square-rods-tm-gap.json
 var square_rods_tm_gap_default = {
   id: "square-rods-tm-gap",
   name: "Square rods, TM gap",
@@ -4141,7 +4173,7 @@ var square_rods_tm_gap_default = {
   published: "0.32 to 0.44 c/a (the owner's note); computed 0.3224 to 0.4425, 31.4 %"
 };
 
-// ../../data/presets/hex-holes-complete-gap.json
+// data/presets/hex-holes-complete-gap.json
 var hex_holes_complete_gap_default = {
   id: "hex-holes-complete-gap",
   name: "Triangular holes, complete gap",
@@ -4204,7 +4236,7 @@ var hex_holes_complete_gap_default = {
   published: "computed 0.4298 to 0.5201 (19.0 %) at M = 8"
 };
 
-// ../../data/presets/hex-holes-te-gap.json
+// data/presets/hex-holes-te-gap.json
 var hex_holes_te_gap_default = {
   id: "hex-holes-te-gap",
   name: "Triangular holes, TE gap",
@@ -4256,7 +4288,7 @@ var hex_holes_te_gap_default = {
   published: "computed 0.1990 to 0.2644 (28.2 %) at M = 8"
 };
 
-// ../../data/presets/quarter-wave-bragg.json
+// data/presets/quarter-wave-bragg.json
 var quarter_wave_bragg_default = {
   id: "quarter-wave-bragg",
   name: "Quarter-wave Bragg mirror",
@@ -4311,7 +4343,7 @@ var quarter_wave_bragg_default = {
   published: "first gap/midgap (4/\u03C0) asin(0.85/3.75) = 0.291131; T(20 periods, midgap) = 3.87e-8"
 };
 
-// ../../data/presets/eight-rows.json
+// data/presets/eight-rows.json
 var eight_rows_default = {
   id: "eight-rows",
   name: "Eight rows of rods",
@@ -4387,7 +4419,7 @@ var eight_rows_default = {
   published: "this document, SPEC \xA73.5: T < 1e-2 from 0.280 to 0.442"
 };
 
-// ../../data/presets/self-collimation-rods.json
+// data/presets/self-collimation-rods.json
 var self_collimation_rods_default = {
   id: "self-collimation-rods",
   name: "Self-collimation in rods",
@@ -4444,7 +4476,7 @@ var self_collimation_rods_default = {
   published: "computed \u03C9_sc = 0.2986 at s/|\u0393M| = 0.728 (M = 10)"
 };
 
-// ../../data/presets/supercollimation-si-slab.json
+// data/presets/supercollimation-si-slab.json
 var supercollimation_si_slab_default = {
   id: "supercollimation-si-slab",
   name: "Supercollimation in a silicon slab (2D proxy)",
@@ -4514,7 +4546,7 @@ var supercollimation_si_slab_default = {
   published: "a/\u03BB \u2248 0.233 (verify); 2D proxy \u03C9_sc = 0.2276 at r = 0.30, \u03B5 = 8.4"
 };
 
-// ../../data/presets/chirped-filter-normalised.json
+// data/presets/chirped-filter-normalised.json
 var chirped_filter_normalised_default = {
   id: "chirped-filter-normalised",
   name: "Chirped filter, normalised",
@@ -4582,7 +4614,7 @@ var chirped_filter_normalised_default = {
   published: "dip at K = 0.04; \u03B2 \u2248 1.24"
 };
 
-// ../../data/presets/glass-633.json
+// data/presets/glass-633.json
 var glass_633_default = {
   id: "glass-633",
   name: "Filters in glass, 633 nm",
@@ -4655,7 +4687,7 @@ var glass_633_default = {
   published: "predicted 0.8 / 2.4 / 4.0\xB0, measured 1.08 / 3.2 / 5.5\xB0; deepest dip at 8 periods, revival at 14"
 };
 
-// ../../data/presets/glass-970.json
+// data/presets/glass-970.json
 var glass_970_default = {
   id: "glass-970",
   name: "Filter at 970 nm, M\xB2 47 \u2192 28",
@@ -4728,7 +4760,7 @@ var glass_970_default = {
   published: "rejected band 1.5\xB0 to 2.5\xB0; M\xB2 from 47 to 28"
 };
 
-// ../../data/presets/paraxial-fails.json
+// data/presets/paraxial-fails.json
 var paraxial_fails_default = {
   id: "paraxial-fails",
   name: "Low-contrast crystal where paraxial fails",
@@ -4800,7 +4832,7 @@ var paraxial_fails_default = {
   published: "this document, SPEC \xA73.10"
 };
 
-// src/presets.ts
+// apps/mcp/src/presets.ts
 var RECORDS = {
   "square-rods-tm-gap": square_rods_tm_gap_default,
   "hex-holes-complete-gap": hex_holes_complete_gap_default,
@@ -4827,7 +4859,7 @@ function presets() {
   return cache2;
 }
 
-// src/tools.ts
+// apps/mcp/src/tools.ts
 var fail = (error) => ({ ok: false, error });
 function guarded(fn) {
   return async (args, ctx) => {
@@ -5154,7 +5186,8 @@ var slabTool = {
     type: "object",
     properties: {
       ...STRUCTURE_PROPS,
-      lattice: { type: "string", enum: ["square", "hex"], default: "square", description: "Rows of the square lattice, or (v1.1) of the hexagonal lattice cut along a1: rows \u221A3/2 a apart, alternately shifted by a/2, so that normal incidence is along \u0393\u2013M." },
+      lattice: { type: "string", enum: ["square", "hex"], default: "square", description: "Rows of the square lattice, or (v1.1) of the hexagonal lattice cut along a1: rows \u221A3/2 a apart, alternately shifted by a/2, so that normal incidence is along \u0393\u2013M (or along \u0393\u2013K: see cut)." },
+      cut: { type: "string", enum: ["GM", "GK"], default: "GM", description: "Hexagonal rows only (v1.2): GM, the rows along a1 above; GK, the face perpendicular to a1 (period \u221A3 a; each row is two planes of rods a/2 apart, a thick in all, and slices_per_row counts per plane), normal incidence along \u0393\u2013K, with the projected bands scanned along \u0393\u2013K\u2013M. Ignored for square rows." },
       rows: { type: "integer", minimum: 1, maximum: LIMITS2.rcwaRows, default: 8 },
       angles_rad: { type: "array", items: { type: "number", minimum: 0, maximum: 1.4835 }, default: [0], description: "Angles of incidence (radians) in the medium of index n_ref." },
       n_ref: { type: "number", minimum: 1, maximum: 4, default: 1, description: "Index of the medium on both sides." },
@@ -5197,6 +5230,7 @@ var slabTool = {
       radius_over_a: state.structure.radius,
       eps_in: state.structure.epsIn,
       eps_out: state.structure.epsOut,
+      ...sl.cut ? { cut: sl.cut } : {},
       rows,
       angles_rad: angles,
       n_ref: sl.nRef,
@@ -5230,13 +5264,24 @@ function slabState(args) {
   const omegaMax = num(args, "omega_max_a_over_lambda", { min: 5e-3, max: 1.5, default: 0.55 });
   if (!(omegaMax > omegaMin)) throw new InputError("omega_max_a_over_lambda must be greater than omega_min_a_over_lambda.");
   const nRef = num(args, "n_ref", { min: 1, max: 4, default: 1 });
+  const cut = choice(args, "cut", ["GM", "GK"], "GM");
   return {
     angles,
     state: stateFrom({
       view: "slab",
       structure,
       polarisation: "TM",
-      slab: { rows: args.rows ?? 8, thetaDeg: deg(angles[0]), nRef, omegaMin, omegaMax, points: args.omega_points ?? 141, harmonics: args.harmonics_order ?? 12, slices: args.slices_per_row ?? 16 }
+      slab: {
+        rows: args.rows ?? 8,
+        thetaDeg: deg(angles[0]),
+        nRef,
+        omegaMin,
+        omegaMax,
+        points: args.omega_points ?? 141,
+        harmonics: args.harmonics_order ?? 12,
+        slices: args.slices_per_row ?? 16,
+        ...cut === "GK" ? { cut } : {}
+      }
     })
   };
 }
@@ -5525,7 +5570,8 @@ function toolRequestFor(p) {
           omega_max_a_over_lambda: s.slab.omegaMax,
           omega_points: s.slab.points,
           harmonics_order: s.slab.harmonics,
-          slices_per_row: s.slab.slices
+          slices_per_row: s.slab.slices,
+          ...s.slab.cut ? { cut: s.slab.cut } : {}
         }
       };
     case "filter": {
@@ -5706,7 +5752,7 @@ var tools = [
   reportTool
 ];
 
-// src/server.ts
+// apps/mcp/src/server.ts
 var PROTOCOL_VERSIONS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
 var SERVER_INFO = {
   name: "lattice",
@@ -5773,7 +5819,7 @@ async function handleMessage(message, ctx, execute = inlineExecutor) {
   }
 }
 
-// src/http.ts
+// apps/mcp/src/http.ts
 var MESSAGES_PER_MINUTE = 120;
 var MAX_BODY = 64 * 1024;
 var HEADERS = { "Access-Control-Allow-Origin": "*", "Cache-Control": "no-store" };
@@ -5843,7 +5889,7 @@ function createHandler(opts = {}) {
   };
 }
 
-// src/route.ts
+// apps/mcp/src/route.ts
 function createLatticeMcpHandler(opts = {}) {
   return createHandler({
     execute: workerExecutor({ timeoutMs: opts.timeoutMs, maxWorkers: opts.maxWorkers }),
